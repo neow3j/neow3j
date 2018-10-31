@@ -1,0 +1,22 @@
+description 'neow3j is a library to interact with NEO nodes'
+
+dependencies {
+    compile project(':utils'),
+            "com.github.jnr:jnr-unixsocket:$jnr_unixsocketVersion",
+            "com.squareup.okhttp3:okhttp:$okhttpVersion",
+            "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
+            "io.reactivex:rxjava:$rxjavaVersion",
+            "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
+            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            "org.slf4j:slf4j-api:$slf4jVersion"
+    testCompile "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
+            "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+configurations {
+    testArtifacts.extendsFrom testRuntime
+}
+
+artifacts {
+    testArtifacts testJar
+}
