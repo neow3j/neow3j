@@ -22,6 +22,7 @@ Neow3j is developed and maintained by [AxLabs](https://axlabs.com).
 * Android support (Java 1.6)
 * 100% implementation of [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html)
 * Wallet implementation
+* Documentation on using neow3j with Android apps
 * Signing and sending raw transactions
 * Observable pattern to get specific transactions
 * Improve the response model: introduce purpose-specific objects rather than the current raw Java types
@@ -97,11 +98,11 @@ System.out.println(getValidatorsResult.getValidators());
 
 Help the development of neow3j by donating to the following addresses:
 
-| Crypto   | Address                                    |
-|----------|--------------------------------------------|
-| NEO      | ARvMqz3hEFE4qBkHAaPNxALquNQtBbH12f         |
-| ETH      | 0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f |
-| BTC      | 3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy         |
+| Crypto   | Address                                      |
+|----------|----------------------------------------------|
+| NEO      | `ARvMqz3hEFE4qBkHAaPNxALquNQtBbH12f`         |
+| ETH      | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
+| BTC      | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
 
 ## NEO API Support
 
@@ -141,7 +142,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [ ] `submitblock <hex>`: Submit new blocks. **Needs to be a consensus node**.
 - [x] `validateaddress <address>`: Verify that the address is a correct NEO address.
 
-## Why "neow3j"? Why Bongo Cat?
+## Why "neow3j"?
 
 This project was based on [web3j](https://web3j.io), but focusing on NEO. That's why the suffix "w3j" was added to the "neo" name, forming "neow3j".
 
