@@ -21,7 +21,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
+        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.12.0'
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
     }
 }
@@ -43,8 +43,9 @@ allprojects {
     apply plugin: 'jacoco'
     //apply plugin: 'checkstyle'
 
-    group 'com.axlabs.neow3j'
+    group 'com.axlabs'
     version '1.0.0'
+    archivesBaseName = "neow3j-${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -124,13 +125,16 @@ configure(subprojects.findAll {it.name != 'integration-tests'}) {
     }
 
     ext {
-        ossrhUsername = project.hasProperty('ossrhUsername') ? project.property('ossrhUsername') : ''
-        ossrhPassword = project.hasProperty('ossrhPassword') ? project.property('ossrhPassword') : ''
+        nexusUsername = project.hasProperty('nexusUsername') ? project.property('nexusUsername') : ''
+        nexusPassword = project.hasProperty('nexusPassword') ? project.property('nexusPassword') : ''
     }
 
     publishing {
         publications {
             mavenJava(MavenPublication) {
+
+                artifactId "neow3j-${project.name}"
+
                 from components.java
 
                 artifact sourcesJar {
@@ -151,8 +155,8 @@ configure(subprojects.findAll {it.name != 'integration-tests'}) {
 
                 repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
                     authentication(
-                            userName: ossrhUsername,
-                            password: ossrhPassword
+                            userName: nexusUsername,
+                            password: nexusPassword
                     )
                 }
 
@@ -194,7 +198,10 @@ configure(subprojects.findAll {it.name != 'integration-tests'}) {
     }
 
     task release {
-        //TODO run clean & closeAndPromoteRepository once
+        // TODO:
+        // Here, we should also run 'clean' and 'closeAndReleaseRepository'
+        // Make sure it runs respecting an order and with a delay between
+        // tasks (due to Sonatype servers).
         dependsOn 'build'
         dependsOn 'uploadArchives'
 
