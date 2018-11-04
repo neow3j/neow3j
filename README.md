@@ -73,6 +73,19 @@ neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(new BlockParameterIndex(
 
 ```
 
+Or, you can just subscribe to the newly generated NEO blocks:
+
+```
+w.catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameterName.LATEST, true)
+        .subscribe((blockReqResult) -> {
+            System.out.println("#######################################");
+            System.out.println("blockIndex: " + blockReqResult.getBlock().getIndex());
+            System.out.println("hashId: " + blockReqResult.getBlock().getHash());
+            System.out.println("confirmations: " + blockReqResult.getBlock().getConfirmations());
+            System.out.println("transactions: " + blockReqResult.getBlock().getTransactions());
+        });
+```
+
 * Get the latest block index received by the NEO node:
 
 ```
