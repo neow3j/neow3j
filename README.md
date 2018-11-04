@@ -8,7 +8,7 @@
 
 By using **neow3j**, you will happily play with NEO and end up "neow'ing" around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat). You can now focus on building Java/Android applications that use the [functions](#NEO-API-Support) provided by the NEO blockchain -- without being concerned on writing specific code to integrate with NEO nodes/clients.
 
-Neow3j is developed and maintained by [AxLabs](https://axlabs.com).
+Neow3j is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
 
 ## Features
 
@@ -90,8 +90,8 @@ System.out.println("isValid=" + validateReq.getValidation().isValid());
 * Get info about NEO consensus nodes:
 
 ```
-NeoGetValidators getValidatorsResult = w.getValidators().send();
-System.out.println(getValidatorsResult.getValidators());
+NeoGetValidators getValidatorsReq = w.getValidators().send();
+System.out.println(getValidatorsReq.getValidators());
 ```
 
 ## Donate
