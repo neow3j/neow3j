@@ -1,0 +1,15 @@
+description 'Neow3j crypto'
+
+dependencies {
+    compile project(':utils'),
+            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            "org.slf4j:slf4j-api:$slf4jVersion"
+}
+
+configurations {
+    testArtifacts.extendsFrom testRuntime
+}
+
+artifacts {
+    testArtifacts testJar
+}
