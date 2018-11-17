@@ -29,6 +29,7 @@ Neow3j is an open-source project developed by the community and maintained by [A
 * Observable pattern to get specific transactions
 * Improve the response model: introduce purpose-specific objects rather than the current raw Java types
 * Multisig addresses
+* Select best seed NEO node based on latency as well as other metrics
 
 ## Getting Started
 
