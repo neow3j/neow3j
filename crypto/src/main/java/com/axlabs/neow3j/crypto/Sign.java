@@ -44,7 +44,7 @@ public class Sign {
             messageHash = message;
         }
 
-        ECDSASignature sig = keyPair.sign(messageHash);
+        ECDSASignature sig = keyPair.signAndGetECDSASignature(messageHash);
         // Now we have to work backwards to figure out the recId needed to recover the signature.
         int recId = -1;
         for (int i = 0; i < 4; i++) {

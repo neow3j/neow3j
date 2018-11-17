@@ -7,10 +7,10 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.util.BigIntegers;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
-import java.util.Arrays;
 
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
@@ -36,16 +36,38 @@ public class ECKeyPair {
      * Sign a hash with the private key of this key pair.
      *
      * @param transactionHash the hash to sign
-     * @return An {@link ECDSASignature} of the hash
+     * @return A raw {@link BigInteger} array with the signature
      */
-    public ECDSASignature sign(byte[] transactionHash) {
+    public BigInteger[] sign(byte[] transactionHash) {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
-
         ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey, Sign.CURVE);
         signer.init(true, privKey);
-        BigInteger[] components = signer.generateSignature(transactionHash);
+        return signer.generateSignature(transactionHash);
+    }
 
+    /**
+     * Sign a hash with the private key of this key pair.
+     *
+     * @param transactionHash the hash to sign
+     * @return An {@link ECDSASignature} of the hash
+     */
+    public ECDSASignature signAndGetECDSASignature(byte[] transactionHash) {
+        BigInteger[] components = sign(transactionHash);
         return new ECDSASignature(components[0], components[1]).toCanonicalised();
+    }
+
+    /**
+     * Sign a hash with the private key of this key pair.
+     *
+     * @param transactionHash the hash to sign
+     * @return A byte array with the canonicalized signature
+     */
+    public byte[] signAndGetArrayBytes(byte[] transactionHash) {
+        BigInteger[] components = sign(transactionHash);
+        byte[] signature = new byte[64];
+        System.arraycopy(BigIntegers.asUnsignedByteArray(32, components[0]), 0, signature, 0, 32);
+        System.arraycopy(BigIntegers.asUnsignedByteArray(32, components[1]), 0, signature, 32, 32);
+        return signature;
     }
 
     public static ECKeyPair create(KeyPair keyPair) {

@@ -4,12 +4,13 @@ import java.util.Arrays;
 
 public class ArrayUtils {
 
-    public static void reverseArray(byte[] array) {
+    public static byte[] reverseArray(byte[] array) {
         for (int i = 0; i < array.length / 2; i++) {
             byte temp = array[i];
             array[i] = array[array.length - i - 1];
             array[array.length - i - 1] = temp;
         }
+        return array;
     }
 
     public static byte[] concatenate(byte[]... arrays) {
