@@ -16,16 +16,20 @@ Neow3j is an open-source project developed by the community and maintained by [A
 * Observable pattern to get info about past **and** upcoming NEO blocks
 * Sync and Async interface
 * Retry on node errors
+* Passphrase-protected Private Key implementation (NEP-2)
+* Wallet SDK implementation (NEP-6)
+* Mneumonic utils implementation (BIP-39), compatible to NEO
 
 ## Upcoming Features
 
 * Android support (Java 1.6)
 * 100% implementation of [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html)
-* Wallet implementation
 * Documentation on using neow3j with Android apps
 * Signing and sending raw transactions
 * Observable pattern to get specific transactions
 * Improve the response model: introduce purpose-specific objects rather than the current raw Java types
+* Multisig addresses
+* Select best seed NEO node based on latency as well as other metrics
 
 ## Getting Started
 

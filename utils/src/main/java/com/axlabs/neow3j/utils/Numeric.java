@@ -132,7 +132,7 @@ public final class Numeric {
         int length = result.length();
         if (length > size) {
             throw new UnsupportedOperationException(
-                    "Value " + result + "is larger then length " + size);
+                    "Value " + result + " is larger then length " + size);
         } else if (value.signum() < 0) {
             throw new UnsupportedOperationException("Value cannot be negative");
         }
