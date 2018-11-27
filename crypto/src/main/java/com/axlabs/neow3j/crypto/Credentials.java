@@ -1,5 +1,6 @@
 package com.axlabs.neow3j.crypto;
 
+import com.axlabs.neow3j.utils.ArrayUtils;
 import com.axlabs.neow3j.utils.Numeric;
 
 import java.util.Arrays;
@@ -51,12 +52,14 @@ public class Credentials {
     }
 
     public String exportAsWIF() {
-        byte[] data = new byte[38];
-        data[0] = (byte) 0x80;
-        System.arraycopy(Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), PRIVATE_KEY_SIZE), 0, data, 1, PRIVATE_KEY_SIZE);
-        data[33] = (byte) 0x01;
-        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, data.length - 4));
-        System.arraycopy(checksum, 0, data, data.length - 4, 4);
+        byte[] data = ArrayUtils.concatenate(
+                new byte[]{(byte) 0x80},
+                Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), PRIVATE_KEY_SIZE),
+                new byte[]{(byte) 0x01}
+        );
+        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, data.length));
+        byte[] first4Bytes = Arrays.copyOfRange(checksum, 0, 4);
+        data = ArrayUtils.concatenate(data, first4Bytes);
         String wif = Base58.encode(data);
         Arrays.fill(data, (byte) 0);
         return wif;
