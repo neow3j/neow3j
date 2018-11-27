@@ -11,6 +11,7 @@ import java.security.NoSuchProviderException;
 
 import static com.axlabs.neow3j.crypto.WIF.getPrivateKeyFromWIF;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class CredentialsTest {
 
@@ -88,9 +89,13 @@ public class CredentialsTest {
 
     @Test
     public void test6() {
+        byte[] publicKeyEncoded = Keys.getPublicKeyEncoded(
+                Numeric.hexStringToByteArray("0465bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d601d2ea55bbc8eb03bc449a2a1692c2521714ef31c7183ea098f27b7098e8981c")
+        );
+
         ECKeyPair ecKeyPair = new ECKeyPair(
                 Numeric.toBigIntNoPrefix("9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3"),
-                Numeric.toBigIntNoPrefix("0465bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d601d2ea55bbc8eb03bc449a2a1692c2521714ef31c7183ea098f27b7098e8981c")
+                Numeric.toBigInt(publicKeyEncoded)
         );
 
         Credentials credentials = Credentials.create(ecKeyPair);
@@ -98,6 +103,18 @@ public class CredentialsTest {
         assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
         String privateKeyAsWIFExported = credentials.exportAsWIF();
         assertEquals("L25kgAQJXNHnhc7Sx9bomxxwVSMsZdkaNQ3m2VfHrnLzKWMLP13A", privateKeyAsWIFExported);
+    }
+
+    @Test
+    public void test7() {
+        ECKeyPair ecKeyPair = new ECKeyPair(
+                Numeric.toBigIntNoPrefix("9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3"),
+                Numeric.toBigIntNoPrefix("0465bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d601d2ea55bbc8eb03bc449a2a1692c2521714ef31c7183ea098f27b7098e8981c")
+        );
+
+        Credentials credentials = Credentials.create(ecKeyPair);
+
+        assertNotEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
     }
 
 }

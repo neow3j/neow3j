@@ -4,8 +4,9 @@ import com.axlabs.neow3j.utils.Numeric;
 
 import java.util.Arrays;
 
-import static com.axlabs.neow3j.constants.NEOConstants.COIN_VERSION;
-import static com.axlabs.neow3j.crypto.Keys.PRIVATE_KEY_SIZE;
+import static com.axlabs.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
+import static com.axlabs.neow3j.crypto.Keys.getPublicKeyEncoded;
+import static com.axlabs.neow3j.crypto.Keys.isPublicKeyEncoded;
 
 /**
  * Credentials wrapper.
@@ -33,27 +34,16 @@ public class Credentials {
         return new Credentials(ecKeyPair, address);
     }
 
-    public static byte[] toScriptHash(String address) {
-        byte[] data = Base58.decode(address);
-        if (data.length != 25) {
-            throw new IllegalArgumentException();
-        }
-        if (data[0] != COIN_VERSION) {
-            throw new IllegalArgumentException();
-        }
-        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, 21));
-        for (int i = 0; i < 4; i++) {
-            if (data[data.length - 4 + i] != checksum[i]) {
-                throw new IllegalArgumentException();
-            }
-        }
-        byte[] buffer = new byte[20];
-        System.arraycopy(data, 1, buffer, 0, 20);
-        return buffer;
+    public byte[] toScriptHash() {
+        return KeyUtils.toScriptHash(this.address);
     }
 
     public static Credentials create(String privateKey, String publicKey) {
-        return create(new ECKeyPair(Numeric.toBigInt(privateKey), Numeric.toBigInt(publicKey)));
+        byte[] pubKey = Numeric.hexStringToByteArray(publicKey);
+        if (!isPublicKeyEncoded(pubKey)) {
+            pubKey = getPublicKeyEncoded(pubKey);
+        }
+        return create(new ECKeyPair(Numeric.toBigInt(privateKey), Numeric.toBigInt(pubKey)));
     }
 
     public static Credentials create(String privateKey) {

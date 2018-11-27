@@ -1,5 +1,6 @@
 package com.axlabs.neow3j.crypto;
 
+import com.axlabs.neow3j.crypto.transaction.RawVerificationScript;
 import com.axlabs.neow3j.utils.Numeric;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -11,27 +12,21 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
+import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.axlabs.neow3j.constants.NEOConstants.COIN_VERSION;
-import static com.axlabs.neow3j.crypto.Hash.sha256;
 import static com.axlabs.neow3j.crypto.Hash.sha256AndThenRipemd160;
+import static com.axlabs.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
+import static com.axlabs.neow3j.crypto.KeyUtils.PUBLIC_KEY_SIZE;
+import static com.axlabs.neow3j.crypto.KeyUtils.toAddress;
 import static com.axlabs.neow3j.crypto.SecureRandomUtils.secureRandom;
 import static com.axlabs.neow3j.utils.ArrayUtils.concatenate;
-import static com.axlabs.neow3j.utils.ArrayUtils.reverseArray;
 
 
 /**
  * Crypto key utilities.
  */
 public class Keys {
-
-    static final int PRIVATE_KEY_SIZE = 32;
-    static final int PUBLIC_KEY_SIZE = 132;
-
-    public static final int ADDRESS_SIZE = 34;
-    static final int PUBLIC_KEY_LENGTH_IN_HEX = PUBLIC_KEY_SIZE << 1;
-    public static final int PRIVATE_KEY_LENGTH_IN_HEX = PRIVATE_KEY_SIZE << 1;
 
     static {
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -81,49 +76,47 @@ public class Keys {
         return toAddress(scriptHash);
     }
 
-    public static byte[] getVerificationScriptFromPublicKey(byte[] publicKey) {
-        return Numeric.hexStringToByteArray(new String("21" + Numeric.toHexStringNoPrefix(publicKey) + "ac"));
+    public static String getMultiSigAddress(int amountSignatures, BigInteger... publicKeys) {
+        byte[][] pubKeysArray = new byte[publicKeys.length][];
+        for (int i = 0; i < publicKeys.length; i++) {
+            pubKeysArray[i] = publicKeys[i].toByteArray();
+        }
+        byte[] scriptHash = getScriptHashFromPublicKey(amountSignatures, pubKeysArray);
+        return toAddress(scriptHash);
     }
 
-    public static String toAddress(byte[] scriptHash) {
-        byte[] data = new byte[1];
-        data[0] = COIN_VERSION;
-        byte[] dataAndScriptHash = concatenate(data, scriptHash);
-        byte[] checksum = sha256(sha256(dataAndScriptHash));
-        byte[] first4BytesCheckSum = new byte[4];
-        System.arraycopy(checksum, 0, first4BytesCheckSum, 0, 4);
-        byte[] dataToEncode = concatenate(dataAndScriptHash, first4BytesCheckSum);
-        return Base58.encode(dataToEncode);
-    }
-
-    public static byte[] toScriptHash(String address) {
-        byte[] data = Base58.decode(address);
-        if (data.length != 25) {
-            throw new IllegalArgumentException();
-        }
-        if (data[0] != COIN_VERSION) {
-            throw new IllegalArgumentException();
-        }
-        byte[] checksum = sha256(sha256(data, 0, 21));
-        for (int i = 0; i < 4; i++) {
-            if (data[data.length - 4 + i] != checksum[i]) {
-                throw new IllegalArgumentException();
-            }
-        }
-        byte[] buffer = new byte[20];
-        System.arraycopy(data, 1, buffer, 0, 20);
-        return buffer;
+    public static String getMultiSigAddress(int amountSignatures, byte[]... publicKeys) {
+        byte[] scriptHash = getScriptHashFromPublicKey(amountSignatures, publicKeys);
+        return toAddress(scriptHash);
     }
 
     public static byte[] getScriptHashFromPublicKey(byte[] publicKey) {
-        // if public key is not encoded, then
-        // convert to the encoded one
-        if (!isPublicKeyEncoded(publicKey)) {
-            publicKey = getPublicKeyEncoded(publicKey);
+        return getScriptHashFromPublicKey(1, publicKey);
+    }
+
+    public static byte[] getScriptHashFromPublicKey(int amountSignatures, byte[]... publicKeys) {
+        for (byte[] pubKey : publicKeys) {
+            // if public key is not encoded, then
+            // convert to the encoded one
+            if (!isPublicKeyEncoded(pubKey)) {
+                pubKey = getPublicKeyEncoded(pubKey);
+            }
         }
-        byte[] verificationScriptFromPublicKey = getVerificationScriptFromPublicKey(publicKey);
-        byte[] hash160 = sha256AndThenRipemd160(verificationScriptFromPublicKey);
+        RawVerificationScript verificationScript = getVerificationScriptFromPublicKey(amountSignatures, publicKeys);
+        byte[] hash160 = sha256AndThenRipemd160(verificationScript.toArray());
         return hash160;
+    }
+
+    public static RawVerificationScript getVerificationScriptFromPublicKey(byte[] publicKey) {
+        return getVerificationScriptFromPublicKey(0, publicKey);
+    }
+
+    public static RawVerificationScript getVerificationScriptFromPublicKey(int amountSignatures, byte[]... publicKeys) {
+        ArrayList<BigInteger> pubKeysBigInt = new ArrayList<>(publicKeys.length);
+        for (byte[] pubKey : publicKeys) {
+            pubKeysBigInt.add(Numeric.toBigInt(pubKey));
+        }
+        return new RawVerificationScript(pubKeysBigInt, amountSignatures);
     }
 
     public static byte[] getPublicKeyEncoded(byte[] publicKeyNotEncoded) {
@@ -132,10 +125,11 @@ public class Keys {
         for (int i = 0; i < publicKeyNotEncoded.length; i++) {
             publicKeyArray[i] = publicKeyNotEncoded[i] & 0xFF;
         }
+        // based on: https://tools.ietf.org/html/rfc5480#section-2.2
         if (publicKeyArray[64] % 2 == 1) {
-            return concatenate(new byte[]{0x03}, Arrays.copyOfRange(publicKeyNotEncoded, 1, 33));
+            return concatenate(new byte[]{0x03}, Arrays.copyOfRange(publicKeyNotEncoded, 1, PUBLIC_KEY_SIZE));
         } else {
-            return concatenate(new byte[]{0x02}, Arrays.copyOfRange(publicKeyNotEncoded, 1, 33));
+            return concatenate(new byte[]{0x02}, Arrays.copyOfRange(publicKeyNotEncoded, 1, PUBLIC_KEY_SIZE));
         }
     }
 

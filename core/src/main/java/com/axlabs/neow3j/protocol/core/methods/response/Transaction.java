@@ -1,5 +1,6 @@
 package com.axlabs.neow3j.protocol.core.methods.response;
 
+import com.axlabs.neow3j.model.types.TransactionType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;

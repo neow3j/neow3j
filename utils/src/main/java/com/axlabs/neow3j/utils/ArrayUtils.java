@@ -13,6 +13,10 @@ public class ArrayUtils {
         return array;
     }
 
+    public static byte[] concatenate(byte a, byte[] b) {
+        return concatenate(new byte[]{a}, b);
+    }
+
     public static byte[] concatenate(byte[]... arrays) {
         byte[] result = new byte[0];
         for (byte[] array : arrays) {
@@ -50,6 +54,10 @@ public class ArrayUtils {
             result[i] = (byte) (b ^ array2[i++]);
         }
         return result;
+    }
+
+    public static int toUnsignedInt(byte b) {
+        return ((int) b) & 0xff;
     }
 
 }

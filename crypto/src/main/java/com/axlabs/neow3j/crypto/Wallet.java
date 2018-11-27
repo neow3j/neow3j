@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static com.axlabs.neow3j.crypto.Hash.sha256;
-import static com.axlabs.neow3j.crypto.Keys.PRIVATE_KEY_SIZE;
+import static com.axlabs.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
 import static com.axlabs.neow3j.crypto.SecureRandomUtils.secureRandom;
 import static java.nio.charset.StandardCharsets.UTF_8;
 

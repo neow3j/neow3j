@@ -1,5 +1,7 @@
 package com.axlabs.neow3j.crypto;
 
+import com.axlabs.neow3j.constants.NeoConstants;
+import com.axlabs.neow3j.crypto.transaction.RawVerificationScript;
 import com.axlabs.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -11,6 +13,9 @@ import org.bouncycastle.util.BigIntegers;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
+
+import static com.axlabs.neow3j.crypto.KeyUtils.PUBLIC_KEY_SIZE;
+
 
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
@@ -40,9 +45,9 @@ public class ECKeyPair {
      */
     public BigInteger[] sign(byte[] transactionHash) {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
-        ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey, Sign.CURVE);
+        ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey, NeoConstants.CURVE);
         signer.init(true, privKey);
-        return signer.generateSignature(transactionHash);
+        return signer.generateSignature(Hash.sha256(transactionHash));
     }
 
     /**
@@ -76,7 +81,7 @@ public class ECKeyPair {
 
         BigInteger privateKeyValue = privateKey.getD();
 
-        byte[] publicKeyBytes = publicKey.getQ().getEncoded(false);
+        byte[] publicKeyBytes = publicKey.getQ().getEncoded(true);
         BigInteger publicKeyValue = new BigInteger(1, publicKeyBytes);
 
         return new ECKeyPair(privateKeyValue, publicKeyValue);
@@ -88,6 +93,20 @@ public class ECKeyPair {
 
     public static ECKeyPair create(byte[] privateKey) {
         return create(Numeric.toBigInt(privateKey));
+    }
+
+    public byte[] toScriptHash() {
+        return KeyUtils.toScriptHash(Keys.getAddress(this));
+    }
+
+    public RawVerificationScript getVerificationScriptFromPublicKey() {
+        return Keys.getVerificationScriptFromPublicKey(
+                Numeric.toBytesPadded(this.getPublicKey(), PUBLIC_KEY_SIZE));
+    }
+
+    public byte[] getVerificationScriptAsArrayFromPublicKey() {
+        return Keys.getVerificationScriptFromPublicKey(
+                Numeric.toBytesPadded(this.getPublicKey(), PUBLIC_KEY_SIZE)).toArray();
     }
 
     @Override

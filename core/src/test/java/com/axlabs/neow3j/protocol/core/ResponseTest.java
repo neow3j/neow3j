@@ -1,5 +1,7 @@
 package com.axlabs.neow3j.protocol.core;
 
+import com.axlabs.neow3j.model.types.TransactionAttributeUsageType;
+import com.axlabs.neow3j.model.types.TransactionType;
 import com.axlabs.neow3j.protocol.ResponseTester;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoBlockCount;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoBlockHash;
@@ -20,10 +22,8 @@ import com.axlabs.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import com.axlabs.neow3j.protocol.core.methods.response.Script;
 import com.axlabs.neow3j.protocol.core.methods.response.Transaction;
 import com.axlabs.neow3j.protocol.core.methods.response.TransactionAttribute;
-import com.axlabs.neow3j.protocol.core.methods.response.TransactionAttributeUsageType;
 import com.axlabs.neow3j.protocol.core.methods.response.TransactionInput;
 import com.axlabs.neow3j.protocol.core.methods.response.TransactionOutput;
-import com.axlabs.neow3j.protocol.core.methods.response.TransactionType;
 import org.junit.Test;
 
 import java.math.BigInteger;

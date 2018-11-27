@@ -1,14 +1,12 @@
 package com.axlabs.neow3j.crypto;
 
+import com.axlabs.neow3j.constants.NeoConstants;
 import com.axlabs.neow3j.utils.Numeric;
-import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
-import org.bouncycastle.crypto.ec.CustomNamedCurves;
-import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.math.ec.ECAlgorithms;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
-import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
+import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
 
 import java.math.BigInteger;
 import java.security.SignatureException;
@@ -22,14 +20,9 @@ import static com.axlabs.neow3j.utils.Assertions.verifyPrecondition;
  * <p>Originally adapted from the
  * <a href="https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/core/ECKey.java">
  * BitcoinJ ECKey</a> implementation.
- * <p>Class from web3j project, and adapted to NEO requirements.</p>
+ * <p>Class from web3j project, and adapted to neow3j project (with NEO requirements).</p>
  */
 public class Sign {
-
-    private static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256r1");
-    static final ECDomainParameters CURVE = new ECDomainParameters(
-            CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
-    static final BigInteger HALF_CURVE_ORDER = CURVE_PARAMS.getN().shiftRight(1);
 
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair) {
         return signMessage(message, keyPair, true);
@@ -99,7 +92,7 @@ public class Sign {
 
         // 1.0 For j from 0 to h   (h == recId here and the loop is outside this function)
         //   1.1 Let x = r + jn
-        BigInteger n = CURVE.getN();  // Curve order.
+        BigInteger n = NeoConstants.CURVE.getN();  // Curve order.
         BigInteger i = BigInteger.valueOf((long) recId / 2);
         BigInteger x = sig.r.add(i.multiply(n));
         //   1.2. Convert the integer x to an octet string X of length mlen using the conversion
@@ -109,7 +102,7 @@ public class Sign {
         //        routine outputs "invalid", then do another iteration of Step 1.
         //
         // More concisely, what these points mean is to use X as a compressed public key.
-        BigInteger prime = SecP256K1Curve.q;
+        BigInteger prime = SecP256R1Curve.q;
         if (x.compareTo(prime) >= 0) {
             // Cannot have point co-ordinates larger than this as everything takes place modulo Q.
             return null;
@@ -142,7 +135,7 @@ public class Sign {
         BigInteger rInv = sig.r.modInverse(n);
         BigInteger srInv = rInv.multiply(sig.s).mod(n);
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
-        ECPoint q = ECAlgorithms.sumOfTwoMultiplies(CURVE.getG(), eInvrInv, R, srInv);
+        ECPoint q = ECAlgorithms.sumOfTwoMultiplies(NeoConstants.CURVE.getG(), eInvrInv, R, srInv);
 
         byte[] qBytes = q.getEncoded(false);
         // We remove the prefix
@@ -150,13 +143,14 @@ public class Sign {
     }
 
     /**
-     * Decompress a compressed public key (x co-ord and low-bit of y-coord).
+     * Decompress a compressed public key (x co-ord and low-bit of y-coord).<br/>
+     * Based on: https://tools.ietf.org/html/rfc5480#section-2.2
      */
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
         X9IntegerConverter x9 = new X9IntegerConverter();
-        byte[] compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(CURVE.getCurve()));
+        byte[] compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(NeoConstants.CURVE.getCurve()));
         compEnc[0] = (byte) (yBit ? 0x03 : 0x02);
-        return CURVE.getCurve().decodePoint(compEnc);
+        return NeoConstants.CURVE.getCurve().decodePoint(compEnc);
     }
 
     /**
@@ -164,7 +158,7 @@ public class Sign {
      * returns the public key that was used to sign it. This can then be compared to the expected
      * public key to determine if the signature was correct.
      *
-     * @param message       RLP encoded message.
+     * @param message       encoded message.
      * @param signatureData The message signature components
      * @return the public key used to sign the message
      * @throws SignatureException If the public key could not be recovered or if there was a
@@ -218,10 +212,10 @@ public class Sign {
          * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
          * order, but that could change in future versions.
          */
-        if (privKey.bitLength() > CURVE.getN().bitLength()) {
-            privKey = privKey.mod(CURVE.getN());
+        if (privKey.bitLength() > NeoConstants.CURVE.getN().bitLength()) {
+            privKey = privKey.mod(NeoConstants.CURVE.getN());
         }
-        return new FixedPointCombMultiplier().multiply(CURVE.getG(), privKey).normalize();
+        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), privKey).normalize();
     }
 
     public static class SignatureData {

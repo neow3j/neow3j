@@ -81,6 +81,10 @@ public final class Numeric {
                 && input.charAt(0) == '0' && input.charAt(1) == 'x';
     }
 
+    public static BigDecimal toBigDecimal(byte[] value) {
+        return new BigDecimal(toBigInt(value));
+    }
+
     public static BigInteger toBigInt(byte[] value, int offset, int length) {
         return toBigInt((Arrays.copyOfRange(value, offset, offset + length)));
     }
@@ -104,6 +108,10 @@ public final class Numeric {
 
     public static String toHexStringNoPrefix(BigInteger value) {
         return value.toString(16);
+    }
+
+    public static String toHexStringNoPrefix(byte input) {
+        return toHexString(new byte[]{ input }, 0, 1, false);
     }
 
     public static String toHexStringNoPrefix(byte[] input) {
@@ -208,6 +216,10 @@ public final class Numeric {
         }
 
         return stringBuilder.toString();
+    }
+
+    public static String toHexString(byte input) {
+        return toHexString(new byte[] { input });
     }
 
     public static String toHexString(byte[] input) {

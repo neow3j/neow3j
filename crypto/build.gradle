@@ -1,9 +1,11 @@
 description 'Neow3j crypto'
 
 dependencies {
-    compile project(':utils'),
+    compile project(':model'),
+            project(':utils'),
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "org.slf4j:slf4j-api:$slf4jVersion"
+    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
 }
 
 configurations {

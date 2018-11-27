@@ -1,6 +1,10 @@
 package com.axlabs.neow3j.crypto;
 
+import com.axlabs.neow3j.constants.NeoConstants;
+
 import java.math.BigInteger;
+
+import static com.axlabs.neow3j.constants.NeoConstants.HALF_CURVE_ORDER;
 
 /**
  * An ECDSA Signature.
@@ -16,12 +20,12 @@ public class ECDSASignature {
 
     /**
      * @return true if the S component is "low", that means it is below
-     * {@link Sign#HALF_CURVE_ORDER}. See
+     * {@link NeoConstants#HALF_CURVE_ORDER}. See
      * <a href="https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki#Low_S_values_in_signatures">
      * BIP62</a>.
      */
     public boolean isCanonical() {
-        return s.compareTo(Sign.HALF_CURVE_ORDER) <= 0;
+        return s.compareTo(HALF_CURVE_ORDER) <= 0;
     }
 
     /**
@@ -42,7 +46,7 @@ public class ECDSASignature {
             //    N = 10
             //    s = 8, so (-8 % 10 == 2) thus both (r, 8) and (r, 2) are valid solutions.
             //    10 - 8 == 2, giving us always the latter solution, which is canonical.
-            return new ECDSASignature(r, Sign.CURVE.getN().subtract(s));
+            return new ECDSASignature(r, NeoConstants.CURVE.getN().subtract(s));
         } else {
             return this;
         }

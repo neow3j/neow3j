@@ -8,6 +8,7 @@ public class Script {
 
     @JsonProperty("invocation")
     private String invocation;
+
     @JsonProperty("verification")
     private String verification;
 

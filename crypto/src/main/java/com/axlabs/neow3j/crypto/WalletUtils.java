@@ -20,8 +20,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.axlabs.neow3j.crypto.Hash.sha256;
-import static com.axlabs.neow3j.crypto.Keys.ADDRESS_SIZE;
-import static com.axlabs.neow3j.crypto.Keys.PRIVATE_KEY_LENGTH_IN_HEX;
+import static com.axlabs.neow3j.crypto.KeyUtils.ADDRESS_SIZE;
+import static com.axlabs.neow3j.crypto.KeyUtils.PRIVATE_KEY_LENGTH_IN_HEX;
 
 /**
  * Utility functions for working with Wallet files.
@@ -163,7 +163,7 @@ public class WalletUtils {
         String cleanInput = Numeric.cleanHexPrefix(address);
 
         try {
-            Keys.toScriptHash(cleanInput);
+            KeyUtils.toScriptHash(cleanInput);
         } catch (IllegalArgumentException e) {
             return false;
         }

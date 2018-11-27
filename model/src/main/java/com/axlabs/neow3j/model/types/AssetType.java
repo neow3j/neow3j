@@ -1,4 +1,4 @@
-package com.axlabs.neow3j.protocol.core.methods.response;
+package com.axlabs.neow3j.model.types;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
