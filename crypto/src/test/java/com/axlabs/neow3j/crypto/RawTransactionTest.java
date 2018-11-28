@@ -1,23 +1,27 @@
 package com.axlabs.neow3j.crypto;
 
 import com.axlabs.neow3j.crypto.transaction.RawTransaction;
+import com.axlabs.neow3j.crypto.transaction.SignedRawTransaction;
 import com.axlabs.neow3j.io.NeoSerializableInterface;
 import com.axlabs.neow3j.crypto.transaction.RawInvocationScript;
 import com.axlabs.neow3j.crypto.transaction.RawScript;
 import com.axlabs.neow3j.crypto.transaction.RawTransactionInput;
 import com.axlabs.neow3j.crypto.transaction.RawTransactionOutput;
 import com.axlabs.neow3j.crypto.transaction.RawVerificationScript;
+import com.axlabs.neow3j.model.types.NEOAsset;
 import com.axlabs.neow3j.utils.Numeric;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class RawTransactionTest {
 
@@ -32,8 +36,8 @@ public class RawTransactionTest {
                         new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)
                 ),
                 Arrays.asList(
-                        new RawTransactionOutput(0, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
+                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
                 ),
                 Arrays.asList(
                         new RawScript(
@@ -60,8 +64,8 @@ public class RawTransactionTest {
                         new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)
                 ),
                 Arrays.asList(
-                        new RawTransactionOutput(0, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
+                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
                 ),
                 Arrays.asList(
                         new RawScript(
@@ -93,8 +97,8 @@ public class RawTransactionTest {
                         new RawTransactionInput("65827ac7308f401dfe110555b41b967e3c1177134bd977a21ca036e703ab05d4", 0)
                 ),
                 Arrays.asList(
-                        new RawTransactionOutput(0, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
+                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
                 )
         );
 
@@ -103,7 +107,7 @@ public class RawTransactionTest {
                 "80000001d405ab03e736a01ca277d94b1377113c7e961bb4550511fe1d408f30c77a82650000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b0000000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001a711802000000295f83f83fc439f56e6e1fb062d89c6f538263d7",
                 Numeric.toHexStringNoPrefix(tUnsignedArray));
 
-        byte[] signature = keyPair.signAndGetArrayBytes(tUnsignedArray);
+        byte[] signature = Sign.signMessage(tUnsignedArray, keyPair).getConcatenated();
         tUnsigned.addScript(
                 Arrays.asList(new RawInvocationScript(signature)),
                 new RawVerificationScript(Arrays.asList(keyPair.getPublicKey()), 1)
@@ -168,8 +172,8 @@ public class RawTransactionTest {
                         new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)
                 ),
                 Arrays.asList(
-                        new RawTransactionOutput(0, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "900.0", multiSigAddress)
+                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "900.0", multiSigAddress)
                 )
         );
 
@@ -182,13 +186,13 @@ public class RawTransactionTest {
 
         // add the signatures -- order here is important!
         List<RawInvocationScript> rawInvocationScriptList = new ArrayList<>();
-        rawInvocationScriptList.add(new RawInvocationScript(ecKeyPair1.signAndGetArrayBytes(tUnsignedArray)));
-        rawInvocationScriptList.add(new RawInvocationScript(ecKeyPair2.signAndGetArrayBytes(tUnsignedArray)));
-        rawInvocationScriptList.add(new RawInvocationScript(ecKeyPair3.signAndGetArrayBytes(tUnsignedArray)));
-        rawInvocationScriptList.add(new RawInvocationScript(ecKeyPair4.signAndGetArrayBytes(tUnsignedArray)));
-        rawInvocationScriptList.add(new RawInvocationScript(ecKeyPair5.signAndGetArrayBytes(tUnsignedArray)));
-        rawInvocationScriptList.add(new RawInvocationScript(ecKeyPair6.signAndGetArrayBytes(tUnsignedArray)));
-        rawInvocationScriptList.add(new RawInvocationScript(ecKeyPair7.signAndGetArrayBytes(tUnsignedArray)));
+        rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair1)));
+        rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair2)));
+        rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair3)));
+        rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair4)));
+        rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair5)));
+        rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair6)));
+        rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair7)));
 
         tUnsigned.addScript(rawInvocationScriptList, verificationScript);
 
@@ -226,6 +230,35 @@ public class RawTransactionTest {
 
         RawTransaction rawTransactionObj = NeoSerializableInterface.from(rawTransactionArray, RawTransaction.class);
         assertNotNull(rawTransaction);
+    }
+
+    @Test
+    public void verify_Signature() throws SignatureException {
+
+        ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
+        Credentials credentials = Credentials.create(ecKeyPair);
+        String address = credentials.getAddress();
+
+        RawTransaction unsignedTx = RawTransaction.createContractTransaction(
+                null,
+                null,
+                Arrays.asList(
+                        new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)
+                ),
+                Arrays.asList(
+                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "900.0", address)
+                )
+        );
+
+        Sign.SignatureData signatureDataTx = Sign.signMessage(unsignedTx.toArray(), ecKeyPair);
+
+        SignedRawTransaction signedRawTransaction = new SignedRawTransaction(unsignedTx, signatureDataTx);
+        String fromAddress = signedRawTransaction.getFrom();
+
+        assertEquals(address, fromAddress);;
+        assertTrue(signedRawTransaction.verify(address));
+
     }
 
 }

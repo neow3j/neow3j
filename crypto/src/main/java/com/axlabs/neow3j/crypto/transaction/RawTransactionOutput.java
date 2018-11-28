@@ -1,7 +1,7 @@
 package com.axlabs.neow3j.crypto.transaction;
 
 import com.axlabs.neow3j.crypto.KeyUtils;
-import com.axlabs.neow3j.crypto.NEOAsset;
+import com.axlabs.neow3j.model.types.NEOAsset;
 import com.axlabs.neow3j.io.BinaryReader;
 import com.axlabs.neow3j.io.BinaryWriter;
 import com.axlabs.neow3j.io.NeoSerializable;

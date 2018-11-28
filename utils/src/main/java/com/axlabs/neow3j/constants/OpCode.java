@@ -4,7 +4,7 @@ import com.axlabs.neow3j.utils.Numeric;
 
 /**
  * This class represents a <b>subset</b> of NEO VM opcodes.
- * <br/>
+ * <br>
  * Based on: https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs
  */
 public enum OpCode {
@@ -125,20 +125,20 @@ public enum OpCode {
     HASH256((byte) 0xAA),
     /**
      * The publickey and signature are taken from main stack.
-     * <br/>
+     * <br>
      * Verifies if transaction was signed by given publickey and a boolean output is put on top of the main stack.
      */
     CHECKSIG((byte) 0xAC),
     /**
      * The publickey, signature and message are taken from main stack.
-     * <br/>
+     * <br>
      * Verifies if given message was signed by given publickey and a boolean output is put on top of the main stack.
      */
     VERIFY((byte) 0xAD),
     /**
      * A set of n public keys (an array or value n followed by n pubkeys) is validated
      * against a set of m signatures (an array or value m followed by m signatures).
-     * <br/>
+     * <br>
      * Verify transaction as multisig and a boolean output is put on top of the main stack.
      */
     CHECKMULTISIG((byte) 0xAE);

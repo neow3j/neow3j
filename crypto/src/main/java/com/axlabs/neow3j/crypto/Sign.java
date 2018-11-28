@@ -1,6 +1,7 @@
 package com.axlabs.neow3j.crypto;
 
 import com.axlabs.neow3j.constants.NeoConstants;
+import com.axlabs.neow3j.utils.ArrayUtils;
 import com.axlabs.neow3j.utils.Numeric;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.math.ec.ECAlgorithms;
@@ -32,7 +33,7 @@ public class Sign {
         BigInteger publicKey = keyPair.getPublicKey();
         byte[] messageHash;
         if (needToHash) {
-            messageHash = Hash.sha3(message);
+            messageHash = Hash.sha256(message);
         } else {
             messageHash = message;
         }
@@ -137,9 +138,8 @@ public class Sign {
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
         ECPoint q = ECAlgorithms.sumOfTwoMultiplies(NeoConstants.CURVE.getG(), eInvrInv, R, srInv);
 
-        byte[] qBytes = q.getEncoded(false);
-        // We remove the prefix
-        return new BigInteger(1, Arrays.copyOfRange(qBytes, 1, qBytes.length));
+        byte[] qBytes = q.getEncoded(true);
+        return new BigInteger(1, qBytes);
     }
 
     /**
@@ -172,6 +172,7 @@ public class Sign {
         verifyPrecondition(r != null && r.length == 32, "r must be 32 bytes");
         verifyPrecondition(s != null && s.length == 32, "s must be 32 bytes");
 
+        // unsigned byte to int
         int header = signatureData.getV() & 0xFF;
         // The header byte: 0x1B = first key with even y, 0x1C = first key with odd y,
         //                  0x1D = second key with even y, 0x1E = second key with odd y
@@ -183,7 +184,7 @@ public class Sign {
                 new BigInteger(1, signatureData.getR()),
                 new BigInteger(1, signatureData.getS()));
 
-        byte[] messageHash = Hash.sha3(message);
+        byte[] messageHash = Hash.sha256(message);
         int recId = header - 27;
         BigInteger key = recoverFromSignature(recId, sig, messageHash);
         if (key == null) {
@@ -241,6 +242,10 @@ public class Sign {
             return s;
         }
 
+        public byte[] getConcatenated() {
+            return ArrayUtils.concatenate(r, s);
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -267,6 +272,15 @@ public class Sign {
             result = 31 * result + Arrays.hashCode(r);
             result = 31 * result + Arrays.hashCode(s);
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "SignatureData{" +
+                    "v=" + v +
+                    ", r=" + Arrays.toString(r) +
+                    ", s=" + Arrays.toString(s) +
+                    '}';
         }
     }
 }

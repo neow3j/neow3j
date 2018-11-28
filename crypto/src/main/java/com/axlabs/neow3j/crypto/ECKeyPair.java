@@ -47,7 +47,7 @@ public class ECKeyPair {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey, NeoConstants.CURVE);
         signer.init(true, privKey);
-        return signer.generateSignature(Hash.sha256(transactionHash));
+        return signer.generateSignature(transactionHash);
     }
 
     /**
@@ -58,7 +58,8 @@ public class ECKeyPair {
      */
     public ECDSASignature signAndGetECDSASignature(byte[] transactionHash) {
         BigInteger[] components = sign(transactionHash);
-        return new ECDSASignature(components[0], components[1]).toCanonicalised();
+        // in bitcoin and ethereum we would/could use .toCanonicalised(), but not in NEO, AFAIK
+        return new ECDSASignature(components[0], components[1]);
     }
 
     /**
