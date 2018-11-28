@@ -1,3 +1,5 @@
+![Maven metadata URI](https://img.shields.io/maven-metadata/v/http/central.maven.org/maven2/com/axlabs/neow3j/maven-metadata.xml.svg)
+
 # neow3j: A Java Library to interact with NEO nodes
 
 <p align="center">
