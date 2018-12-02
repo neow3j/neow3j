@@ -44,7 +44,7 @@ Add the neow3j dependencies to your Java project -- either using Gradle or Maven
 Java 8:
 
 ```
-compile 'com.axlabs:neow3j-core:1.0.2'
+compile 'com.axlabs:neow3j-core:1.0.3'
 ```
 
 ### Maven
@@ -55,7 +55,7 @@ Java 8:
 <dependency>
     <groupId>com.axlabs</groupId>
     <artifactId>neow3j-core</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
@@ -131,9 +131,9 @@ String multiSigAddress = Keys.getMultiSigAddress(
 
 RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(
                 2,
-                ecKeyPair1.getPublicKey().toByteArray(),
-                ecKeyPair2.getPublicKey().toByteArray(),
-                ecKeyPair3.getPublicKey().toByteArray()
+                ecKeyPair1.getPublicKey(),
+                ecKeyPair2.getPublicKey(),
+                ecKeyPair3.getPublicKey()
 );
 
 RawTransaction tUnsigned = RawTransaction.createContractTransaction(
@@ -152,7 +152,7 @@ RawTransaction tUnsigned = RawTransaction.createContractTransaction(
 // Important: without scripts!
 byte[] tUnsignedArray = tUnsigned.toArray();
 
-// add the signatures -- order here is important!
+// add 2 signatures out of the 3 possible -- order here is important!
 List<RawInvocationScript> rawInvocationScriptList = new ArrayList<>();
 rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair1)));
 rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair2)));

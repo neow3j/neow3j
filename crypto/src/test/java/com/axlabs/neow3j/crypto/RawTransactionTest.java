@@ -153,16 +153,16 @@ public class RawTransactionTest {
 
         RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(
                 7,
-                ecKeyPair1.getPublicKey().toByteArray(),
-                ecKeyPair2.getPublicKey().toByteArray(),
-                ecKeyPair3.getPublicKey().toByteArray(),
-                ecKeyPair4.getPublicKey().toByteArray(),
-                ecKeyPair5.getPublicKey().toByteArray(),
-                ecKeyPair6.getPublicKey().toByteArray(),
-                ecKeyPair7.getPublicKey().toByteArray(),
-                ecKeyPair8.getPublicKey().toByteArray(),
-                ecKeyPair9.getPublicKey().toByteArray(),
-                ecKeyPair10.getPublicKey().toByteArray()
+                ecKeyPair1.getPublicKey(),
+                ecKeyPair2.getPublicKey(),
+                ecKeyPair3.getPublicKey(),
+                ecKeyPair4.getPublicKey(),
+                ecKeyPair5.getPublicKey(),
+                ecKeyPair6.getPublicKey(),
+                ecKeyPair7.getPublicKey(),
+                ecKeyPair8.getPublicKey(),
+                ecKeyPair9.getPublicKey(),
+                ecKeyPair10.getPublicKey()
         );
 
         RawTransaction tUnsigned = RawTransaction.createContractTransaction(

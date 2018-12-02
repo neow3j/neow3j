@@ -44,7 +44,7 @@ allprojects {
     //apply plugin: 'checkstyle'
 
     group 'com.axlabs'
-    version '1.0.2'
+    version '1.0.3'
     archivesBaseName = "neow3j-${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8

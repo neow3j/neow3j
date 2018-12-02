@@ -2,6 +2,7 @@ description 'neow3j is a library to interact with NEO nodes'
 
 dependencies {
     compile project(':model'),
+            project(':crypto'),
             project(':utils'),
             "com.github.jnr:jnr-unixsocket:$jnr_unixsocketVersion",
             "com.squareup.okhttp3:okhttp:$okhttpVersion",

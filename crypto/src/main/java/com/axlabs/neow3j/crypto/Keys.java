@@ -14,6 +14,8 @@ import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.axlabs.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static com.axlabs.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
@@ -108,7 +110,12 @@ public class Keys {
     }
 
     public static RawVerificationScript getVerificationScriptFromPublicKey(byte[] publicKey) {
-        return getVerificationScriptFromPublicKey(0, publicKey);
+        return getVerificationScriptFromPublicKey(1, publicKey);
+    }
+
+    public static RawVerificationScript getVerificationScriptFromPublicKey(int amountSignatures, BigInteger... publicKeys) {
+        List<BigInteger> pubKeysBigInt = Arrays.asList(publicKeys);
+        return new RawVerificationScript(pubKeysBigInt, amountSignatures);
     }
 
     public static RawVerificationScript getVerificationScriptFromPublicKey(int amountSignatures, byte[]... publicKeys) {
