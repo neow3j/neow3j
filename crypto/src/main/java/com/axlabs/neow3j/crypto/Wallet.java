@@ -3,7 +3,6 @@ package com.axlabs.neow3j.crypto;
 import com.axlabs.neow3j.crypto.exceptions.CipherException;
 import com.axlabs.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import com.axlabs.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import com.axlabs.neow3j.utils.ArrayUtils;
 import com.axlabs.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.generators.SCrypt;
 
@@ -20,6 +19,10 @@ import java.util.Arrays;
 import static com.axlabs.neow3j.crypto.Hash.sha256;
 import static com.axlabs.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
 import static com.axlabs.neow3j.crypto.SecureRandomUtils.secureRandom;
+import static com.axlabs.neow3j.utils.ArrayUtils.concatenate;
+import static com.axlabs.neow3j.utils.ArrayUtils.getFirstNBytes;
+import static com.axlabs.neow3j.utils.ArrayUtils.getLastNBytes;
+import static com.axlabs.neow3j.utils.ArrayUtils.xor;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -100,13 +103,13 @@ public class Wallet {
     /**
      * Encrypts the private key following the NEP-2 standard.
      *
-     * @param password
-     * @param ecKeyPair
-     * @param n
-     * @param p
-     * @param r
+     * @param password  the passphrase to be used to encrypt
+     * @param ecKeyPair the {@link ECKeyPair} to be encrypted
+     * @param n         the "n" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
+     * @param p         the "p" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
+     * @param r         the "r" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
      * @return encrypted private key as described on NEP-2
-     * @throws CipherException
+     * @throws CipherException thrown when the AES/ECB/NoPadding cipher operation fails
      */
     public static byte[] encrypt(String password, ECKeyPair ecKeyPair, int n, int p, int r)
             throws CipherException {
@@ -116,8 +119,8 @@ public class Wallet {
         byte[] derivedKey = generateDerivedScryptKey(
                 password.getBytes(UTF_8), addressHash, n, r, p, DKLEN);
 
-        byte[] derivedHalf1 = ArrayUtils.getFirstNBytes(derivedKey, 32);
-        byte[] derivedHalf2 = ArrayUtils.getLastNBytes(derivedKey, 32);
+        byte[] derivedHalf1 = getFirstNBytes(derivedKey, 32);
+        byte[] derivedHalf2 = getLastNBytes(derivedKey, 32);
 
         byte[] encryptedHalf1 = performCipherOperation(
                 Cipher.ENCRYPT_MODE,
@@ -136,11 +139,11 @@ public class Wallet {
         // flagbyte, which is always the same
         encryptedPrivKey[2] = NEP2_FLAGBYTE;
 
-        return ArrayUtils.concatenate(encryptedPrivKey, addressHash, encryptedHalf1, encryptedHalf2);
+        return concatenate(encryptedPrivKey, addressHash, encryptedHalf1, encryptedHalf2);
     }
 
     private static byte[] xorPrivateKeyAndDerivedHalf(ECKeyPair ecKeyPair, byte[] derivedHalf, int from, int to) {
-        return ArrayUtils.xor(
+        return xor(
                 Arrays.copyOfRange(privateKeyToBytes(ecKeyPair), from, to),
                 Arrays.copyOfRange(derivedHalf, from, to)
         );
@@ -175,7 +178,7 @@ public class Wallet {
         Credentials credential = Credentials.create(ecKeyPair);
         String address = credential.getAddress();
         byte[] addressHashed = sha256(sha256(address.getBytes()));
-        return ArrayUtils.getFirstNBytes(addressHashed, 4);
+        return getFirstNBytes(addressHashed, 4);
     }
 
     public static ECKeyPair decryptStandard(String password, WalletFile walletFile, WalletFile.Account account)
@@ -208,15 +211,15 @@ public class Wallet {
         byte[] derivedKey = generateDerivedScryptKey(
                 password.getBytes(UTF_8), addressHash, nWallet, rWallet, pWallet, DKLEN);
 
-        byte[] derivedKeyHalf1 = ArrayUtils.getFirstNBytes(derivedKey, 32);
-        byte[] derivedKeyHalf2 = ArrayUtils.getLastNBytes(derivedKey, 32);
+        byte[] derivedKeyHalf1 = getFirstNBytes(derivedKey, 32);
+        byte[] derivedKeyHalf2 = getLastNBytes(derivedKey, 32);
 
         byte[] encrypted = new byte[32];
         System.arraycopy(nep2Data, 7, encrypted, 0, 32);
 
         byte[] decrypted = performCipherOperation(Cipher.DECRYPT_MODE, encrypted, derivedKeyHalf2);
 
-        byte[] plainPrivateKey = ArrayUtils.xor(decrypted, derivedKeyHalf1);
+        byte[] plainPrivateKey = xor(decrypted, derivedKeyHalf1);
 
         Credentials credentials = Credentials.create(Numeric.toHexStringNoPrefix(plainPrivateKey));
         byte[] calculatedAddressHash = getAddressHash(credentials.getEcKeyPair());

@@ -14,7 +14,7 @@ By using **neow3j**, you will happily play with NEO and end up "neow'ing" around
 
 ## Features
 
-* Support to NEO node/client [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html) (~70% currently implemented, mostly "get" methods)
+* Support to NEO node/client [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html) (~70% currently implemented)
 * Observable pattern to get info about past **and** upcoming NEO blocks
 * Passphrase-protected Private Key implementation (NEP-2)
 * Wallet SDK implementation (NEP-6)
@@ -31,7 +31,9 @@ By using **neow3j**, you will happily play with NEO and end up "neow'ing" around
 * Documentation on using neow3j with Android apps
 * Observable pattern to get specific transactions
 * Improve the response model: introduce purpose-specific objects rather than the current raw Java types
+* Interacting with smart contracts
 * Select best seed NEO node based on some metrics (e.g., latency)
+* Integration tests with `neo-privatenet`
 
 ## Getting Started
 
@@ -42,7 +44,7 @@ Add the neow3j dependencies to your Java project -- either using Gradle or Maven
 Java 8:
 
 ```
-compile 'com.axlabs:neow3j-core:1.0.1'
+compile 'com.axlabs:neow3j-core:1.0.2'
 ```
 
 ### Maven
@@ -53,7 +55,7 @@ Java 8:
 <dependency>
     <groupId>com.axlabs</groupId>
     <artifactId>neow3j-core</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -111,6 +113,63 @@ System.out.println("isValid=" + validateReq.getValidation().isValid());
 ```
 NeoGetValidators getValidatorsReq = w.getValidators().send();
 System.out.println(getValidatorsReq.getValidators());
+```
+
+* Build a raw transaction with a 2/3 multisig address:
+
+```
+ECKeyPair ecKeyPair1 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
+ECKeyPair ecKeyPair2 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("KzbKux44feMetfqdA5Cze9FNAkydRmphoFKnK5TGDdEQ8Nv1poXV"));
+ECKeyPair ecKeyPair3 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("L3hxLFUsNDmkzW6QoLH2PGc2DqGG5Kj1gCVwmr7duWJ9FReYWnjU"));
+
+String multiSigAddress = Keys.getMultiSigAddress(
+                2,
+                ecKeyPair1.getPublicKey(),
+                ecKeyPair2.getPublicKey(),
+                ecKeyPair3.getPublicKey()
+);
+
+RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(
+                2,
+                ecKeyPair1.getPublicKey().toByteArray(),
+                ecKeyPair2.getPublicKey().toByteArray(),
+                ecKeyPair3.getPublicKey().toByteArray()
+);
+
+RawTransaction tUnsigned = RawTransaction.createContractTransaction(
+                null,
+                null,
+                Arrays.asList(
+                        new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)
+                ),
+                Arrays.asList(
+                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "900.0", multiSigAddress)
+                )
+);
+
+// serialize the base raw transaction
+// Important: without scripts!
+byte[] tUnsignedArray = tUnsigned.toArray();
+
+// add the signatures -- order here is important!
+List<RawInvocationScript> rawInvocationScriptList = new ArrayList<>();
+rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair1)));
+rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair2)));
+
+// give the invocation and verification script to the raw transaction:
+tUnsigned.addScript(rawInvocationScriptList, verificationScript);
+
+byte[] tSignedArray = tUnsigned.toArray();
+String rawTransactionHexString = Numeric.toHexStringNoPrefix(tSignedArray)
+System.out.println("rawTransactionHexString: " + rawTransactionHexString);
+```
+
+* Send the raw transaction (built in the example above) to a validator node:
+
+```
+NeoSendRawTransaction sendRawTransactionReq = w.sendRawTransaction(rawTransactionHexString).send();
+System.out.println(sendRawTransactionReq.getResult());
 ```
 
 ## Donate

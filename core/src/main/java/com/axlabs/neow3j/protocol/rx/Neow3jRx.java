@@ -54,7 +54,7 @@ public interface Neow3jRx {
      * Create an Observable that emits all transactions from the blockchain starting with a
      * provided block number. Once it has replayed up to the most current block, the provided
      * Observable is invoked.
-     * <p>
+     * <br>
      * <p>To automatically subscribe to new blocks, use
      * {@link #catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameter, boolean)}.
      *

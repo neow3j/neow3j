@@ -17,7 +17,7 @@ import static com.axlabs.neow3j.utils.Assertions.verifyPrecondition;
 
 /**
  * <p>Transaction signing logic.</p>
- * <p>
+ * <br>
  * <p>Originally adapted from the
  * <a href="https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/core/ECKey.java">
  * BitcoinJ ECKey</a> implementation.
@@ -66,16 +66,16 @@ public class Sign {
     /**
      * <p>Given the components of a signature and a selector value, recover and return the public
      * key that generated the signature according to the algorithm in SEC1v2 section 4.1.6.</p>
-     * <p>
+     * <br>
      * <p>The recId is an index from 0 to 3 which indicates which of the 4 possible keys is the
      * correct one. Because the key recovery operation yields multiple potential keys, the correct
      * key must either be stored alongside the
      * signature, or you must be willing to try each recId in turn until you find one that outputs
      * the key you are expecting.</p>
-     * <p>
+     * <br>
      * <p>If this method returns null it means recovery was not possible and recId should be
      * iterated.</p>
-     * <p>
+     * <br>
      * <p>Given the above two points, a correct usage of this method is inside a for loop from
      * 0 to 3, and if the output is null OR a key that is not the one you expect, you try again
      * with the next recId.</p>
@@ -207,6 +207,9 @@ public class Sign {
 
     /**
      * Returns public key point from the given private key.
+     *
+     * @param privKey the private key as BigInteger
+     * @return the ECPoint object representation of the public key based on the given private key
      */
     public static ECPoint publicPointFromPrivateKey(BigInteger privKey) {
         /*

@@ -42,7 +42,7 @@ public interface Neow3jService {
      * by performing a specified JSON-RPC request and is closed by calling
      * the unsubscribe method. Different WebSocket implementations use different pair of
      * subscribe/unsubscribe methods.
-     * <p>
+     * <br>
      * <p>This method creates an Observable that can be used to subscribe to new notifications.
      * When a client unsubscribes from this Observable the service unsubscribes from
      * the underlying stream of events.
