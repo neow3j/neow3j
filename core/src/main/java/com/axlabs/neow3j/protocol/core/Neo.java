@@ -15,9 +15,8 @@ import com.axlabs.neow3j.protocol.core.methods.response.NeoGetValidators;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoGetVersion;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoListAddress;
+import com.axlabs.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoValidateAddress;
-
-import java.math.BigInteger;
 
 /**
  * Core NEO JSON-RPC API.
@@ -67,5 +66,7 @@ public interface Neo {
     Request<?, NeoGetBlockSysFee> getBlockSysFee(BlockParameterIndex blockIndex);
 
     Request<?, NeoGetTxOut> getTxOut(String transactionHash, int txIndex);
+
+    Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex);
 
 }

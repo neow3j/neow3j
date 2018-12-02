@@ -18,6 +18,7 @@ import com.axlabs.neow3j.protocol.core.methods.response.NeoGetValidators;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoGetVersion;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoListAddress;
+import com.axlabs.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import com.axlabs.neow3j.protocol.core.methods.response.Script;
 import com.axlabs.neow3j.protocol.core.methods.response.Transaction;
@@ -870,6 +871,24 @@ public class ResponseTest extends ResponseTester {
                                 "AHb4HXonuseHsAztd97GZTtmNvwEoMDQg7"
                         )
                 )
+        );
+    }
+
+    @Test
+    public void testSendRawTransaction() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": true\n"
+                        + "}"
+        );
+
+        NeoSendRawTransaction sendRawTransaction = deserialiseResponse(NeoSendRawTransaction.class);
+        assertThat(sendRawTransaction.getSendRawTransaction(), is(notNullValue()));
+        assertThat(
+                sendRawTransaction.getSendRawTransaction(),
+                is(true)
         );
     }
 

@@ -17,6 +17,7 @@ import com.axlabs.neow3j.protocol.core.methods.response.NeoGetValidators;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoGetVersion;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoListAddress;
+import com.axlabs.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import com.axlabs.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import com.axlabs.neow3j.protocol.rx.JsonRpc2_0Rx;
 import com.axlabs.neow3j.utils.Async;
@@ -257,6 +258,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(transactionHash, txIndex),
                 neow3jService,
                 NeoGetTxOut.class);
+    }
+
+    @Override
+    public Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex) {
+        return new Request<>(
+                "sendrawtransaction",
+                Arrays.asList(rawTransactionHex),
+                neow3jService,
+                NeoSendRawTransaction.class);
     }
 
     @Override

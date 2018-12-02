@@ -211,7 +211,7 @@ public class RawTransactionTest {
         byte[] rawTransactionArray = Numeric.hexStringToByteArray(rawTransaction);
 
         RawTransaction rawTransactionObj = NeoSerializableInterface.from(rawTransactionArray, RawTransaction.class);
-        assertNotNull(rawTransaction);
+        assertNotNull(rawTransactionObj);
     }
 
     @Test
@@ -220,7 +220,7 @@ public class RawTransactionTest {
         byte[] rawTransactionArray = Numeric.hexStringToByteArray(rawTransaction);
 
         RawTransaction rawTransactionObj = NeoSerializableInterface.from(rawTransactionArray, RawTransaction.class);
-        assertNotNull(rawTransaction);
+        assertNotNull(rawTransactionObj);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class RawTransactionTest {
         byte[] rawTransactionArray = Numeric.hexStringToByteArray(rawTransaction);
 
         RawTransaction rawTransactionObj = NeoSerializableInterface.from(rawTransactionArray, RawTransaction.class);
-        assertNotNull(rawTransaction);
+        assertNotNull(rawTransactionObj);
     }
 
     @Test

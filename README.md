@@ -155,7 +155,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [ ] `invokefunction <script_hash> <operation> <params>`: Invokes a smart contract at specified script hash, passing in an operation and its params.
 - [ ] `invokescript <script>`: Runs a script through the virtual machine and returns the results.
 - [x] `listaddress`: Lists all the addresses in the current wallet.	**Needs to open the wallet**.
-- [ ] `sendrawtransaction <hex>`: Broadcast a transaction over the network. See the network protocol documentation.
+- [x] `sendrawtransaction <hex>`: Broadcast a transaction over the network. See the network protocol documentation.
 - [ ] `sendtoaddress <asset_id> <address> <value> [fee=0]`: Transfer to specified address. **Needs to open the wallet**.
 - [ ] `sendmany <outputs_array> [fee=0] [change_address]`: Bulk transfer order. **Needs to open the wallet**.
 - [ ] `submitblock <hex>`: Submit new blocks. **Needs to be a consensus node**.
@@ -163,7 +163,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 
 ## Why "neow3j"?
 
-This project was based on [web3j](https://web3j.io), but focusing on NEO. That's why the suffix "w3j" was added to the "neo" name, forming "neow3j".
+This project is based on [web3j](https://web3j.io), but focusing on NEO. That's why the suffix "w3j" was added to the "neo" name, forming "neow3j".
 
 Well... then, it was simply natural to imagine [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat) playing on NEO nodes and "neow'ing" instead of "meow'ing", don't you think? :-)
 
