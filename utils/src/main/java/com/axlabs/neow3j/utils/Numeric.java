@@ -51,11 +51,9 @@ public final class Numeric {
             return false;
         }
 
-        // If TestRpc resolves the following issue, we can reinstate this code
-        // https://github.com/ethereumjs/testrpc/issues/220
-        // if (value.length() > 3 && value.charAt(2) == '0') {
-        //    return false;
-        // }
+        if (value.length() > 3 && value.charAt(2) == '0') {
+            return false;
+        }
 
         return true;
     }
@@ -111,7 +109,7 @@ public final class Numeric {
     }
 
     public static String toHexStringNoPrefix(byte input) {
-        return toHexString(new byte[]{ input }, 0, 1, false);
+        return toHexString(new byte[]{input}, 0, 1, false);
     }
 
     public static String toHexStringNoPrefix(byte[] input) {
@@ -219,7 +217,7 @@ public final class Numeric {
     }
 
     public static String toHexString(byte input) {
-        return toHexString(new byte[] { input });
+        return toHexString(new byte[]{input});
     }
 
     public static String toHexString(byte[] input) {

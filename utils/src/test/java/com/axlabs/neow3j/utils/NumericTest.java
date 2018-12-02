@@ -59,9 +59,6 @@ public class NumericTest {
         assertThat(Numeric.decodeQuantity("0x001"), equalTo(BigInteger.valueOf(1L)));
     }
 
-    // If TestRpc resolves the following issue, we can reinstate this code
-    // https://github.com/ethereumjs/testrpc/issues/220
-    @Ignore
     @Test(expected = MessageDecodingException.class)
     public void testQuantityDecodeLeadingZeroException() {
         Numeric.decodeQuantity("0x0400");

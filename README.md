@@ -26,12 +26,12 @@ By using **neow3j**, you will happily play with NEO and end up "neow'ing" around
 
 ## Upcoming Features
 
-* Android support (Java 1.6)
+* Android support (Java 1.8)
 * 100% implementation of [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html)
 * Documentation on using neow3j with Android apps
 * Observable pattern to get specific transactions
 * Improve the response model: introduce purpose-specific objects rather than the current raw Java types
-* Select best seed NEO node based on latency as well as other metrics
+* Select best seed NEO node based on some metrics (e.g., latency)
 
 ## Getting Started
 
@@ -42,7 +42,7 @@ Add the neow3j dependencies to your Java project -- either using Gradle or Maven
 Java 8:
 
 ```
-compile 'com.axlabs:neow3j-core:1.0.0'
+compile 'com.axlabs:neow3j-core:1.0.1'
 ```
 
 ### Maven
@@ -53,7 +53,7 @@ Java 8:
 <dependency>
     <groupId>com.axlabs</groupId>
     <artifactId>neow3j-core</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 

@@ -2,7 +2,7 @@ package com.axlabs.neow3j.utils;
 
 import org.junit.Test;
 
-import static com.axlabs.neow3j.utils.Bytes.trimLeadingZeroes;
+import static com.axlabs.neow3j.utils.ArrayUtils.trimLeadingZeroes;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
