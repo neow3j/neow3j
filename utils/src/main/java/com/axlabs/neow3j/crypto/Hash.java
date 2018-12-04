@@ -1,17 +1,16 @@
 package com.axlabs.neow3j.crypto;
 
-import com.axlabs.neow3j.utils.ArrayUtils;
 import com.axlabs.neow3j.utils.Numeric;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.Arrays;
 
-import static com.axlabs.neow3j.utils.ArrayUtils.*;
+import static com.axlabs.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+import static com.axlabs.neow3j.utils.ArrayUtils.getFirstNBytes;
+import static com.axlabs.neow3j.utils.ArrayUtils.getLastNBytes;
 
 /**
  * Cryptographic hash functions.
@@ -19,9 +18,7 @@ import static com.axlabs.neow3j.utils.ArrayUtils.*;
 public class Hash {
 
     static {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
+        addBouncyCastle();
     }
 
     private Hash() {
@@ -155,7 +152,7 @@ public class Hash {
         byte[] givenChecksum = getLastNBytes(buffer, 4);
 
         byte[] calculatedChecksum = sha256(sha256(data));
-        byte[] first4BytesCalculatedChecksum =  getFirstNBytes(calculatedChecksum, 4);
+        byte[] first4BytesCalculatedChecksum = getFirstNBytes(calculatedChecksum, 4);
 
         if (!Arrays.equals(givenChecksum, first4BytesCalculatedChecksum)) {
             throw new IllegalArgumentException();

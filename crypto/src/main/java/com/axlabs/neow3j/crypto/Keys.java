@@ -10,20 +10,18 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.axlabs.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static com.axlabs.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
 import static com.axlabs.neow3j.crypto.KeyUtils.PUBLIC_KEY_SIZE;
 import static com.axlabs.neow3j.crypto.KeyUtils.toAddress;
 import static com.axlabs.neow3j.crypto.SecureRandomUtils.secureRandom;
+import static com.axlabs.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static com.axlabs.neow3j.utils.ArrayUtils.concatenate;
-
 
 /**
  * Crypto key utilities.
@@ -31,9 +29,7 @@ import static com.axlabs.neow3j.utils.ArrayUtils.concatenate;
 public class Keys {
 
     static {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
+        addBouncyCastle();
     }
 
     private Keys() {
@@ -49,7 +45,7 @@ public class Keys {
     static KeyPair createSecp256r1KeyPair() throws NoSuchProviderException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
         ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec("secp256r1");
         keyPairGenerator.initialize(ecGenParameterSpec, secureRandom());
         return keyPairGenerator.generateKeyPair();
