@@ -134,7 +134,7 @@ configure(subprojects.findAll {it.name != 'integration-tests'}) {
         publications {
             mavenJava(MavenPublication) {
 
-                artifactId "neow3j-${project.name}"
+                artifactId "${project.name}"
 
                 from components.java
 
