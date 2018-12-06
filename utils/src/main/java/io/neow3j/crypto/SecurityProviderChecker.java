@@ -1,11 +1,14 @@
-package com.axlabs.neow3j.crypto;
+package io.neow3j.crypto;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.Provider;
 import java.security.Security;
+import java.util.Optional;
 
 public class SecurityProviderChecker {
+
+    private static final String ANDROID_BC_CLASS_PREFIX = "com.android.org.bouncycastle";
 
     public static void addBouncyCastle() {
         if (isDefaultAndroidBC()) {
@@ -17,18 +20,23 @@ public class SecurityProviderChecker {
     }
 
     private static boolean isDefaultAndroidBC() {
-        Provider provider = getBCProvider();
+        return getBCProvider()
+                .map(SecurityProviderChecker::checkProviderStartsWith)
+                .orElse(false);
+    }
+
+    private static Boolean checkProviderStartsWith(Provider provider) {
         return provider.getClass()
                 .getCanonicalName()
-                .startsWith("com.android.org.bouncycastle");
+                .startsWith(ANDROID_BC_CLASS_PREFIX);
     }
 
     private static boolean isAnyBC() {
-        return getBCProvider() != null;
+        return getBCProvider().isPresent();
     }
 
-    private static Provider getBCProvider() {
-        return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
+    private static Optional<Provider> getBCProvider() {
+        return Optional.ofNullable(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME));
     }
 
 }
