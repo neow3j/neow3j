@@ -1,4 +1,4 @@
-![Maven metadata URI](https://img.shields.io/maven-metadata/v/http/central.maven.org/maven2/com/axlabs/neow3j-core/maven-metadata.xml.svg)
+![Maven metadata URI](https://img.shields.io/maven-metadata/v/http/central.maven.org/maven2/io/neow3j/core/maven-metadata.xml.svg)
 
 # neow3j: A Java Library to interact with NEO nodes
 
@@ -8,7 +8,7 @@
 
 **Neow3j** is a Java library that aims to provide an easy and reliable integration to NEO nodes/clients.
 
-By using **neow3j**, you will happily play with NEO and end up "neow'ing" around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat). You can now focus on building Java/Android applications that use the [functions](#NEO-API-Support) provided by the NEO blockchain -- without being concerned on writing specific code to integrate with NEO nodes/clients.
+By using **neow3j**, you will happily play with NEO and end up neow'ing around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat). You can now focus on building Java/Android applications that use the [functions](#NEO-API-Support) provided by the NEO blockchain -- without being concerned on writing specific code to integrate with NEO nodes/clients.
 
 **Neow3j** is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
 
@@ -16,6 +16,7 @@ By using **neow3j**, you will happily play with NEO and end up "neow'ing" around
 
 * Support to NEO node/client [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html) (~70% currently implemented)
 * Observable pattern to get info about past **and** upcoming NEO blocks
+* Android support (from API 24 -- which covers [~49% of all active Android devices](https://developer.android.com/about/dashboards/))
 * Passphrase-protected Private Key implementation (NEP-2)
 * Wallet SDK implementation (NEP-6)
 * Mneumonic utils implementation (BIP-39), compatible to NEO
@@ -24,9 +25,8 @@ By using **neow3j**, you will happily play with NEO and end up "neow'ing" around
 * Sync and Async interface
 * Retry on node errors
 
-## Upcoming Features
+## Upcoming Features/Enhancements
 
-* Android support (Java 1.8)
 * 100% implementation of [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html)
 * Documentation on using neow3j with Android apps
 * Observable pattern to get specific transactions
@@ -41,21 +41,21 @@ Add the neow3j dependencies to your Java project -- either using Gradle or Maven
 
 ### Gradle
 
-Java 8:
+Java 8 & Android (min. API 24):
 
 ```
-compile 'com.axlabs:neow3j-core:1.0.3'
+compile 'io.neow3j:core:1.0.4'
 ```
 
 ### Maven
 
-Java 8:
+Java 8 & Android (min. API 24):
 
 ```
 <dependency>
-    <groupId>com.axlabs</groupId>
-    <artifactId>neow3j-core</artifactId>
-    <version>1.0.3</version>
+    <groupId>io.neow3j</groupId>
+    <artifactId>core</artifactId>
+    <version>1.0.4</version>
 </dependency>
 ```
 
@@ -224,7 +224,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 
 This project is based on [web3j](https://web3j.io), but focusing on NEO. That's why the suffix "w3j" was added to the "neo" name, forming "neow3j".
 
-Well... then, it was simply natural to imagine [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat) playing on NEO nodes and "neow'ing" instead of "meow'ing", don't you think? :-)
+Well... then, it was simply natural to imagine [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat) playing on NEO nodes and neow'ing instead of meow'ing, don't you think? :-)
 
 ## Thanks and Credits
 

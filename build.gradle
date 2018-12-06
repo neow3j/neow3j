@@ -5,6 +5,7 @@ buildscript {
     ext.jnr_unixsocketVersion = '0.15'
     ext.okhttpVersion = '3.8.1'
     ext.rxjavaVersion = '1.2.4'
+    ext.rxjavaAndroidVersion = '2.1.0'
     ext.slf4jVersion = '1.7.25'
     ext.javaWebSocketVersion = '1.3.8'
 
@@ -43,9 +44,9 @@ allprojects {
     apply plugin: 'jacoco'
     //apply plugin: 'checkstyle'
 
-    group 'com.axlabs'
-    version '1.0.3'
-    archivesBaseName = "neow3j-${it.name}"
+    group 'io.neow3j'
+    version '1.0.4'
+    archivesBaseName = "${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -164,12 +165,12 @@ configure(subprojects.findAll {it.name != 'integration-tests'}) {
                     name 'Neow3j'
                     packaging 'jar'
                     description project.description
-                    url 'https://github.com/AxLabs/neow3j'
+                    url 'https://github.com/neow3j'
 
                     scm {
-                        url 'https://github.com/AxLabs/neow3j'
-                        connection 'scm:https://github.com/AxLabs/neow3j.git'
-                        developerConnection 'scm:https://github.com/AxLabs/neow3j.git'
+                        url 'https://github.com/neow3j/neow3j'
+                        connection 'scm:https://github.com/neow3j/neow3j.git'
+                        developerConnection 'scm:https://github.com/neow3j/neow3j.git'
                     }
 
                     licenses {
@@ -208,7 +209,6 @@ configure(subprojects.findAll {it.name != 'integration-tests'}) {
         tasks.findByName('uploadArchives').mustRunAfter 'build'
     }
 }
-
 
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     dependsOn = subprojects.test
