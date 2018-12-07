@@ -8,7 +8,9 @@
 
 **Neow3j** is a Java library that aims to provide an easy and reliable integration to NEO nodes/clients.
 
-By using **neow3j**, you will happily play with NEO and end up neow'ing around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat). You can now focus on building Java/Android applications that use the [functions](#NEO-API-Support) provided by the NEO blockchain -- without being concerned on writing specific code to integrate with NEO nodes/clients.
+By using **neow3j**, you will happily play with NEO and end up neow'ing around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat).
+
+You can now focus on building Java/Android applications that use the [functions](#NEO-API-Support) provided by the NEO blockchain -- without being concerned on writing specific code to integrate with NEO nodes/clients.
 
 **Neow3j** is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
 
@@ -16,7 +18,7 @@ By using **neow3j**, you will happily play with NEO and end up neow'ing around l
 
 * Support to NEO node/client [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html) (~70% currently implemented)
 * Observable pattern to get info about past **and** upcoming NEO blocks
-* Android support (from API 24 -- which covers [~49% of all active Android devices](https://developer.android.com/about/dashboards/))
+* Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
 * Passphrase-protected Private Key implementation (NEP-2)
 * Wallet SDK implementation (NEP-6)
 * Mneumonic utils implementation (BIP-39), compatible to NEO
@@ -61,15 +63,15 @@ Java 8 & Android (min. API 24):
 
 ## Examples
 
-* Initialize the Neow3j lib providing the JSON-RPC's endpoint of a NEO node/client:
+* Initialize Neow3j providing the JSON-RPC's endpoint of a NEO node/client:
 
-```
+```java
 Neow3j neow3j = Neow3j.build(new HttpService("http://seed1.ngd.network:10332"));
 ```
 
 * Get all blocks starting from, e.g. `2889367`, and subscribe to also get newly generated NEO blocks:
 
-```
+```java
 neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(new BlockParameterIndex(2889367), true)
         .subscribe((blockReqResult) -> {
             System.out.println("#######################################");
@@ -83,7 +85,7 @@ neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(new BlockParameterIndex(
 
 Or, you can just subscribe to the newly generated NEO blocks:
 
-```
+```java
 w.catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameterName.LATEST, true)
         .subscribe((blockReqResult) -> {
             System.out.println("#######################################");
@@ -96,28 +98,104 @@ w.catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameterName.LATEST, tr
 
 * Get the latest block index received by the NEO node:
 
-```
+```java
 NeoBlockCount blockCountReq = w.getBlockCount().send();
 System.out.println(blockCountReq.getBlockIndex());
 ```
 
 * Validate whether an address is a valid NEO address:
 
-```
+```java
 NeoValidateAddress validateReq = w.validateAddress("ARvMqz3hEFE4qBkHAaPNxALquNQtBbH12f").send();
 System.out.println("isValid=" + validateReq.getValidation().isValid());
 ```
 
 * Get info about NEO consensus nodes:
 
-```
+```java
 NeoGetValidators getValidatorsReq = w.getValidators().send();
 System.out.println(getValidatorsReq.getValidators());
 ```
 
+* Create a key pair:
+
+```java
+ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+```
+
+* Create a key pair from WIF:
+
+```java
+ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
+```
+
+* Generate the WIF based on a key pair:
+
+```java
+String wif = ecKeyPair.exportAsWIF();
+```
+
+* Get the NEO address from a key pair:
+
+```java
+String neoAddress = Keys.getAddress(ecKeyPair);
+```
+
+* Create a standard wallet (NEP-6):
+
+```java
+WalletFile wallet = Wallet.createStandardWallet();
+```
+
+* Create an password-protected account (NEP-2) based on a key pair:
+
+```java
+WalletFile.Account account = Wallet.createStandardAccount("myPassw0rd!@#", keyPair);
+```
+
+* Add a password-protected account (NEP-2) to a standard wallet (NEP-6):
+
+```java
+wallet.addAccount(account);
+```
+
+* Get the plain key pair from a password-protected account within a wallet:
+
+```java
+ECKeyPair ecKeyPair = Wallet.decryptStandard("myPassw0rd!@#", wallet, account);
+```
+
+* Also, if you want to create a wallet file (NEP-6), the class `WalletUtils` provide some easy to use methods.
+
+Creates a wallet file, and adds an account based on the provided key pair and password:
+
+```java
+String fileName = WalletUtils.generateWalletFile("myPassw0rd!@#", ecKeyPair, destinationDiretory);
+```
+
+Or, if you want to create a wallet file with a newly created account, you simply can call:
+
+```java
+String fileName = WalletUtils.generateNewWalletFile("myPassw0rd!@#", destinationDiretory);
+```
+
+There's also the possibility to create a new BIP-39 compatible wallet (generating the mnemonic words):
+
+```java
+Bip39Wallet bip39Wallet = WalletUtils.generateBip39Wallet("myPassw0rd!@#", destinationDirectory);
+String mnemonicWords = bip39Wallet.getMnemonic();
+System.out.println("mnemonic words: " + mnemonicWords);
+```
+
+And, load the credential based on the mnemonic words:
+
+```java
+Credentials credentials = WalletUtils.loadBip39Credentials("myPassw0rd!@#", mnemonicWords);
+```
+
 * Build a raw transaction with a 2/3 multisig address:
 
-```
+```java
 ECKeyPair ecKeyPair1 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
 ECKeyPair ecKeyPair2 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("KzbKux44feMetfqdA5Cze9FNAkydRmphoFKnK5TGDdEQ8Nv1poXV"));
 ECKeyPair ecKeyPair3 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("L3hxLFUsNDmkzW6QoLH2PGc2DqGG5Kj1gCVwmr7duWJ9FReYWnjU"));
@@ -136,7 +214,7 @@ RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicK
                 ecKeyPair3.getPublicKey()
 );
 
-RawTransaction tUnsigned = RawTransaction.createContractTransaction(
+RawTransaction rawTx = RawTransaction.createContractTransaction(
                 null,
                 null,
                 Arrays.asList(
@@ -150,24 +228,24 @@ RawTransaction tUnsigned = RawTransaction.createContractTransaction(
 
 // serialize the base raw transaction
 // Important: without scripts!
-byte[] tUnsignedArray = tUnsigned.toArray();
+byte[] rawTxUnsignedArray = rawTx.toArray();
 
 // add 2 signatures out of the 3 possible -- order here is important!
 List<RawInvocationScript> rawInvocationScriptList = new ArrayList<>();
-rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair1)));
-rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(tUnsignedArray, ecKeyPair2)));
+rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(rawTxUnsignedArray, ecKeyPair1)));
+rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(rawTxUnsignedArray, ecKeyPair2)));
 
 // give the invocation and verification script to the raw transaction:
-tUnsigned.addScript(rawInvocationScriptList, verificationScript);
+rawTx.addScript(rawInvocationScriptList, verificationScript);
 
-byte[] tSignedArray = tUnsigned.toArray();
-String rawTransactionHexString = Numeric.toHexStringNoPrefix(tSignedArray)
+byte[] rawTxSignedArray = rawTx.toArray();
+String rawTransactionHexString = Numeric.toHexStringNoPrefix(rawTxSignedArray)
 System.out.println("rawTransactionHexString: " + rawTransactionHexString);
 ```
 
 * Send the raw transaction (built in the example above) to a validator node:
 
-```
+```java
 NeoSendRawTransaction sendRawTransactionReq = w.sendRawTransaction(rawTransactionHexString).send();
 System.out.println(sendRawTransactionReq.getResult());
 ```
