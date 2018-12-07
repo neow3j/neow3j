@@ -145,12 +145,12 @@ public class WalletUtils {
 
         if (osName.startsWith("mac")) {
             return String.format(
-                    "%s%sLibrary%sneo", System.getProperty("user.home"), File.separator,
+                    "%s%sLibrary%sneow3j", System.getProperty("user.home"), File.separator,
                     File.separator);
         } else if (osName.startsWith("win")) {
-            return String.format("%s%sneo", System.getenv("APPDATA"), File.separator);
+            return String.format("%s%sneow3j", System.getenv("APPDATA"), File.separator);
         } else {
-            return String.format("%s%s.neo", System.getProperty("user.home"), File.separator);
+            return String.format("%s%s.neow3j", System.getProperty("user.home"), File.separator);
         }
     }
 

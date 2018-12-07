@@ -3,10 +3,7 @@ package io.neow3j.crypto;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-
-import java.io.IOException;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
@@ -99,46 +96,10 @@ public class WalletTest {
         assertEquals("L5fE7aDEiBLJwcf3Zr9NrUUuT9Rd8nc4kPkuJWqNhftdmx3xcyAd", Credentials.create(ecKeyPair).exportAsWIF());
     }
 
-
-    // AXoxAX2eJfJ1shNpWqUxRh3RWNUJqvQvVa
-
-//    @Test
-//    public void testCreateStandard() throws Exception {
-//        testCreate(Wallet.createStandard(SampleKeys.PASSWORD_1, SampleKeys.KEY_PAIR_1));
-//    }
-//
-//    @Test
-//    public void testCreateLight() throws Exception {
-//        testCreate(Wallet.createLight(SampleKeys.PASSWORD_1, SampleKeys.KEY_PAIR_1));
-//    }
-//
-//    @Test
-//    public void testEncryptDecryptStandard() throws Exception {
-//        testEncryptDecrypt(Wallet.createStandard(SampleKeys.PASSWORD_1, SampleKeys.KEY_PAIR_1));
-//    }
-//
-//    @Test
-//    public void testEncryptDecryptLight() throws Exception {
-//        testEncryptDecrypt(Wallet.createLight(SampleKeys.PASSWORD_1, SampleKeys.KEY_PAIR_1));
-//    }
-
-    private void testCreate(WalletFile walletFile) throws Exception {
-        assertThat(walletFile.getAccounts().stream().findFirst().get(), is(SampleKeys.ADDRESS_1));
-    }
-
     @Test
     public void testGenerateRandomBytes() {
         assertThat(Wallet.generateRandomBytes(0), is(new byte[]{}));
         assertThat(Wallet.generateRandomBytes(10).length, is(10));
-    }
-
-//    private void testEncryptDecrypt(WalletFile walletFile) throws Exception {
-//        assertThat(Wallet.decrypt(SampleKeys.PASSWORD_1, walletFile), equalTo(SampleKeys.KEY_PAIR_1));
-//    }
-
-    private WalletFile load(String source) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(source, WalletFile.class);
     }
 
 }
