@@ -2,7 +2,7 @@
  * MIT License
  * <p>
  * Copyright (c) 2018 AlienWorks
- * Copyright (c) 2018 AxLabs (https://axlabs.com)
+ * Copyright (c) 2018 AxLabs GmbH (https://axlabs.com)
  * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
