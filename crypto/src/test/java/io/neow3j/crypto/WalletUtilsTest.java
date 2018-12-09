@@ -93,11 +93,11 @@ public class WalletUtilsTest {
     @Test
     public void testGetDefaultKeyDirectory() {
         assertTrue(WalletUtils.getDefaultKeyDirectory("Mac OS X")
-                .endsWith(String.format("%sLibrary%sneo", File.separator, File.separator)));
+                .endsWith(String.format("%sLibrary%sneow3j", File.separator, File.separator)));
         assertTrue(WalletUtils.getDefaultKeyDirectory("Windows")
-                .endsWith(String.format("%sneo", File.separator)));
+                .endsWith(String.format("%sneow3j", File.separator)));
         assertTrue(WalletUtils.getDefaultKeyDirectory("Linux")
-                .endsWith(String.format("%s.neo", File.separator)));
+                .endsWith(String.format("%s.neow3j", File.separator)));
     }
 
     private static File createTempDir() throws Exception {
