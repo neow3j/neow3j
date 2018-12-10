@@ -87,7 +87,7 @@ neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(new BlockParameterIndex(
 Or, you can just subscribe to the newly generated NEO blocks:
 
 ```java
-w.catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameterName.LATEST, true)
+neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameterName.LATEST, true)
         .subscribe((blockReqResult) -> {
             System.out.println("#######################################");
             System.out.println("blockIndex: " + blockReqResult.getBlock().getIndex());
@@ -100,21 +100,21 @@ w.catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameterName.LATEST, tr
 * Get the latest block index received by the NEO node:
 
 ```java
-NeoBlockCount blockCountReq = w.getBlockCount().send();
+NeoBlockCount blockCountReq = neow3j.getBlockCount().send();
 System.out.println(blockCountReq.getBlockIndex());
 ```
 
 * Validate whether an address is a valid NEO address:
 
 ```java
-NeoValidateAddress validateReq = w.validateAddress("ARvMqz3hEFE4qBkHAaPNxALquNQtBbH12f").send();
+NeoValidateAddress validateReq = neow3j.validateAddress("ARvMqz3hEFE4qBkHAaPNxALquNQtBbH12f").send();
 System.out.println("isValid=" + validateReq.getValidation().isValid());
 ```
 
 * Get info about NEO consensus nodes:
 
 ```java
-NeoGetValidators getValidatorsReq = w.getValidators().send();
+NeoGetValidators getValidatorsReq = neow3j.getValidators().send();
 System.out.println(getValidatorsReq.getValidators());
 ```
 
@@ -247,7 +247,7 @@ System.out.println("rawTransactionHexString: " + rawTransactionHexString);
 * Send the raw transaction (built in the example above) to a validator node:
 
 ```java
-NeoSendRawTransaction sendRawTransactionReq = w.sendRawTransaction(rawTransactionHexString).send();
+NeoSendRawTransaction sendRawTransactionReq = neow3j.sendRawTransaction(rawTransactionHexString).send();
 System.out.println(sendRawTransactionReq.getResult());
 ```
 
