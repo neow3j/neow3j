@@ -148,7 +148,7 @@ String neoAddress = Keys.getAddress(ecKeyPair);
 WalletFile wallet = Wallet.createStandardWallet();
 ```
 
-* Create an password-protected account (NEP-2) based on a key pair:
+* Create a password-protected account (NEP-2) based on a key pair:
 
 ```java
 WalletFile.Account account = Wallet.createStandardAccount("myPassw0rd!@#", keyPair);
@@ -240,7 +240,7 @@ rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(rawTxUnsign
 rawTx.addScript(rawInvocationScriptList, verificationScript);
 
 byte[] rawTxSignedArray = rawTx.toArray();
-String rawTransactionHexString = Numeric.toHexStringNoPrefix(rawTxSignedArray)
+String rawTransactionHexString = Numeric.toHexStringNoPrefix(rawTxSignedArray);
 System.out.println("rawTransactionHexString: " + rawTransactionHexString);
 ```
 
