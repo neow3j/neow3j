@@ -1,11 +1,6 @@
 package io.neow3j.crypto;
 
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-
-import java.util.Arrays;
-
-import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
 
 /**
  * Credentials wrapper.
@@ -50,17 +45,7 @@ public class Credentials {
     }
 
     public String exportAsWIF() {
-        byte[] data = ArrayUtils.concatenate(
-                new byte[]{(byte) 0x80},
-                Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), PRIVATE_KEY_SIZE),
-                new byte[]{(byte) 0x01}
-        );
-        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, data.length));
-        byte[] first4Bytes = Arrays.copyOfRange(checksum, 0, 4);
-        data = ArrayUtils.concatenate(data, first4Bytes);
-        String wif = Base58.encode(data);
-        Arrays.fill(data, (byte) 0);
-        return wif;
+        return ecKeyPair.exportAsWIF();
     }
 
     @Override
