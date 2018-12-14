@@ -53,10 +53,16 @@ public class WalletUtils {
         WalletFile.Account standardAccount = Wallet.createStandardAccount(password, ecKeyPair);
         standardWallet.addAccount(standardAccount);
 
-        String fileName = getWalletFileName(standardWallet);
+        return generateWalletFile(standardWallet, destinationDirectory);
+    }
+
+    public static String generateWalletFile(WalletFile walletFile, File destinationDirectory)
+            throws IOException {
+
+        String fileName = getWalletFileName(walletFile);
         File destination = new File(destinationDirectory, fileName);
 
-        objectMapper.writeValue(destination, standardWallet);
+        objectMapper.writeValue(destination, walletFile);
 
         return fileName;
     }
