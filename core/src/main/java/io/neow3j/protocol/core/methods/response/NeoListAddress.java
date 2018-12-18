@@ -4,6 +4,7 @@ import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.Objects;
 
 public class NeoListAddress extends Response<List<NeoListAddress.Address>> {
 
@@ -62,6 +63,32 @@ public class NeoListAddress extends Response<List<NeoListAddress.Address>> {
 
         public void setWatchOnly(Boolean watchOnly) {
             this.watchOnly = watchOnly;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Address)) return false;
+            Address address1 = (Address) o;
+            return Objects.equals(getAddress(), address1.getAddress()) &&
+                    Objects.equals(getHasKey(), address1.getHasKey()) &&
+                    Objects.equals(getLabel(), address1.getLabel()) &&
+                    Objects.equals(getWatchOnly(), address1.getWatchOnly());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getAddress(), getHasKey(), getLabel(), getWatchOnly());
+        }
+
+        @Override
+        public String toString() {
+            return "Address{" +
+                    "address='" + address + '\'' +
+                    ", hasKey=" + hasKey +
+                    ", label='" + label + '\'' +
+                    ", watchOnly=" + watchOnly +
+                    '}';
         }
     }
 
