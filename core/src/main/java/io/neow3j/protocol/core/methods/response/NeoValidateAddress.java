@@ -57,8 +57,15 @@ public class NeoValidateAddress extends Response<NeoValidateAddress.Result> {
 
         @Override
         public int hashCode() {
-
             return Objects.hash(getAddress(), isValid);
+        }
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "address='" + address + '\'' +
+                    ", isValid=" + isValid +
+                    '}';
         }
     }
 
