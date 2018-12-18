@@ -60,6 +60,15 @@ public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
         public void setUnconnected(List<AddressEntry> unconnected) {
             this.unconnected = unconnected;
         }
+
+        @Override
+        public String toString() {
+            return "Peers{" +
+                    "connected=" + connected +
+                    ", bad=" + bad +
+                    ", unconnected=" + unconnected +
+                    '}';
+        }
     }
 
     public static class AddressEntry {
@@ -106,6 +115,14 @@ public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
         @Override
         public int hashCode() {
             return Objects.hash(getAddress(), getPort());
+        }
+
+        @Override
+        public String toString() {
+            return "AddressEntry{" +
+                    "address='" + address + '\'' +
+                    ", port=" + port +
+                    '}';
         }
     }
 
