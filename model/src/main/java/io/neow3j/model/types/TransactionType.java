@@ -12,6 +12,7 @@ public enum TransactionType {
     REGISTER_TRANSACTION("RegisterTransaction", 0x40),
     CONTRACT_TRANSACTION("ContractTransaction", 0x80),
     RECORD_TRANSACTION("RecordTransaction", 0x81),
+    STATE_TRANSACTION("StateTransaction", 0x90),
     STATE_UPDATE_TRANSACTION("StateUpdateTransaction", 0x90),
     STATE_UPDATER_TRANSACTION("StateUpdaterTransaction", 0x91),
     DESTROY_TRANSACTION("DestroyTransaction", 0x18),
