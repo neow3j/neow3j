@@ -22,7 +22,7 @@ You can now focus on building Java/Android applications that use the [functions]
 * Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
 * Passphrase-protected Private Key implementation (NEP-2)
 * Wallet SDK implementation (NEP-6)
-* Mneumonic utils implementation (BIP-39), compatible to NEO
+* Mnemonic utils implementation (BIP-39), compatible to NEO
 * Multisig addresses
 * Signing and sending raw transactions
 * Sync and Async interface
