@@ -5,6 +5,7 @@ import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.generators.SCrypt;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -13,11 +14,13 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
+import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.getLastNBytes;
@@ -47,6 +50,10 @@ public class Wallet {
     private static final byte NEP2_PREFIX_1 = (byte) 0x01;
     private static final byte NEP2_PREFIX_2 = (byte) 0x42;
     private static final byte NEP2_FLAGBYTE = (byte) 0xE0;
+
+    static {
+        addBouncyCastle();
+    }
 
     public static WalletFile.Account createAccount(String accountName,
                                                    String password,
@@ -161,13 +168,13 @@ public class Wallet {
             int mode, byte[] data, byte[] encryptKey) throws CipherException {
 
         try {
-            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
 
             SecretKeySpec secretKeySpec = new SecretKeySpec(encryptKey, "AES");
             cipher.init(mode, secretKeySpec);
             return cipher.doFinal(data);
         } catch (NoSuchPaddingException | NoSuchAlgorithmException
-                | InvalidKeyException
+                | InvalidKeyException | NoSuchProviderException
                 | BadPaddingException | IllegalBlockSizeException e) {
             throw new CipherException("Error performing cipher operation", e);
         }
