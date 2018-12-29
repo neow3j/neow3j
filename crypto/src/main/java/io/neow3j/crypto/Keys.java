@@ -92,14 +92,17 @@ public class Keys {
     }
 
     public static byte[] getScriptHashFromPublicKey(int amountSignatures, byte[]... publicKeys) {
-        for (byte[] pubKey : publicKeys) {
+        byte[][] encodedPublicKeys = new byte[publicKeys.length][];
+        for (int i = 0; i < publicKeys.length; i++) {
             // if public key is not encoded, then
             // convert to the encoded one
-            if (!isPublicKeyEncoded(pubKey)) {
-                pubKey = getPublicKeyEncoded(pubKey);
+            if (!isPublicKeyEncoded(publicKeys[i])) {
+                encodedPublicKeys[i] = getPublicKeyEncoded(publicKeys[i]);
+            } else {
+                encodedPublicKeys[i] = Arrays.copyOf(publicKeys[i], publicKeys[i].length);
             }
         }
-        RawVerificationScript verificationScript = getVerificationScriptFromPublicKey(amountSignatures, publicKeys);
+        RawVerificationScript verificationScript = getVerificationScriptFromPublicKey(amountSignatures, encodedPublicKeys);
         byte[] hash160 = sha256AndThenRipemd160(verificationScript.toArray());
         return hash160;
     }

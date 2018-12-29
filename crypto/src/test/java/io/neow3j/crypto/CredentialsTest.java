@@ -11,7 +11,6 @@ import java.security.NoSuchProviderException;
 
 import static io.neow3j.crypto.WIF.getPrivateKeyFromWIF;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 public class CredentialsTest {
 
@@ -114,7 +113,7 @@ public class CredentialsTest {
 
         Credentials credentials = Credentials.create(ecKeyPair);
 
-        assertNotEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
+        assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
     }
 
 }
