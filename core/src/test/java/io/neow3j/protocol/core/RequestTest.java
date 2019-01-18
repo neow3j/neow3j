@@ -15,7 +15,7 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testWeb3ClientVersion() throws Exception {
+    public void testGetVersion() throws Exception {
         neow3j.getVersion().send();
 
         verifyResult(
@@ -29,7 +29,6 @@ public class RequestTest extends RequestTester {
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getbestblockhash\",\"params\":[],\"id\":1}");
     }
-
 
     @Test
     public void testGetBlockHash() throws Exception {
@@ -110,6 +109,15 @@ public class RequestTest extends RequestTester {
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getblock\","
                         + "\"params\":[12345,0],\"id\":1}");
+    }
+
+    @Test
+    public void testGetBlockCount() throws Exception {
+        neow3j.getBlockCount().send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getblockcount\","
+                        + "\"params\":[],\"id\":1}");
     }
 
     @Test

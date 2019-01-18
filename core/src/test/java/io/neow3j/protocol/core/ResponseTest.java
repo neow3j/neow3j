@@ -86,7 +86,7 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testWeb3ClientVersion() {
+    public void testGetVersion() {
         buildResponse(
                 "{\n"
                         + "  \"id\":67,\n"
@@ -99,10 +99,10 @@ public class ResponseTest extends ResponseTester {
                         + "}"
         );
 
-        NeoGetVersion web3ClientVersion = deserialiseResponse(NeoGetVersion.class);
-        assertThat(web3ClientVersion.getVersion().getUserAgent(), is("/NEO:2.7.6/"));
-        assertThat(web3ClientVersion.getVersion().getPort(), is(1234));
-        assertThat(web3ClientVersion.getVersion().getNonce(), is(12345678L));
+        NeoGetVersion neoGetVersion = deserialiseResponse(NeoGetVersion.class);
+        assertThat(neoGetVersion.getVersion().getUserAgent(), is("/NEO:2.7.6/"));
+        assertThat(neoGetVersion.getVersion().getPort(), is(1234));
+        assertThat(neoGetVersion.getVersion().getNonce(), is(12345678L));
     }
 
 
@@ -706,6 +706,21 @@ public class ResponseTest extends ResponseTester {
         NeoGetRawBlock getRawBlock = deserialiseResponse(NeoGetRawBlock.class);
         assertThat(getRawBlock.getRawBlock(), is(notNullValue()));
         assertThat(getRawBlock.getRawBlock(), is("00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000"));
+    }
+
+    @Test
+    public void testGetBlockCount() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":67,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": 1234\n"
+                        + "}"
+        );
+
+        NeoBlockCount neoBlockCount = deserialiseResponse(NeoBlockCount.class);
+        assertThat(neoBlockCount.getBlockIndex(), is(notNullValue()));
+        assertThat(neoBlockCount.getBlockIndex(), is(BigInteger.valueOf(1234)));
     }
 
     @Test
