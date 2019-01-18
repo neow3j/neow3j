@@ -162,6 +162,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
+    public Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex) {
+        return new Request<>(
+                "getblockheader",
+                Arrays.asList(blockIndex.getBlockIndex(), 0),
+                neow3jService,
+                NeoGetRawBlock.class);
+    }
+
+    @Override
     public Request<?, NeoConnectionCount> getConnectionCount() {
         return new Request<>(
                 "getconnectioncount",

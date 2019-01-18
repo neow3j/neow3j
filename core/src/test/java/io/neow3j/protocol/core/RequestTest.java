@@ -175,6 +175,15 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetRawBlockHeader_Index() throws Exception {
+        neow3j.getRawBlockHeader(new BlockParameterIndex(12345)).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getblockheader\","
+                        + "\"params\":[12345,0],\"id\":1}");
+    }
+
+    @Test
     public void testGetNewAddress() throws Exception {
         neow3j.getNewAddress().send();
 

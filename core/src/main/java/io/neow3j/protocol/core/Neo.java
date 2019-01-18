@@ -45,6 +45,8 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(String hash);
 
+    Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex);
+
     Request<?, NeoConnectionCount> getConnectionCount();
 
     Request<?, NeoListAddress> listAddress();
