@@ -3,9 +3,6 @@ package io.neow3j.crypto;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.utils.ArrayUtils;
 
-import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.utils.ArrayUtils.concatenate;
-
 public class KeyUtils {
 
     // private key size (in bytes)
@@ -13,8 +10,6 @@ public class KeyUtils {
 
     // encoded public key size (in bytes)
     public static final int PUBLIC_KEY_SIZE = 33;
-    //
-    public static final int PUBLIC_KEY_SIZE_NOT_ENCODED = 65;
 
     public static final int ADDRESS_SIZE = 34;
 
