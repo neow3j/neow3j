@@ -15,6 +15,8 @@ buildscript {
     ext.logbackVersion = '1.2.3'
     ext.mockitoVersion = '1.10.19'
     ext.hamcrestVersion = '1.3'
+    ext.testcontainersVersion = '1.10.5'
+    ext.awaitility = '3.1.5'
 
     repositories {
         mavenCentral()
@@ -28,6 +30,7 @@ buildscript {
 
 plugins {
     id 'com.jfrog.bintray' version '1.7.3'
+    id 'org.unbroken-dome.test-sets' version '1.4.2'
 }
 
 apply plugin: 'java'
@@ -89,15 +92,21 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'org.unbroken-dome.test-sets'
+
+    testSets {
+        integrationTest { dirName = 'test-integration' }
+    }
 
     dependencies {
         testCompile "junit:junit:$junitVersion",
                 "org.mockito:mockito-core:$mockitoVersion",
-                "org.hamcrest:hamcrest-all:$hamcrestVersion"
+                "org.hamcrest:hamcrest-all:$hamcrestVersion",
+                "org.testcontainers:testcontainers:$testcontainersVersion"
     }
 }
 
-configure(subprojects.findAll {it.name != 'integration-tests'}) {
+configure(subprojects.findAll()) {
     // Required for Maven Nexus repository
     apply plugin: 'maven'
     apply plugin: 'signing'
