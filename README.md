@@ -17,7 +17,7 @@ You can now focus on building Java/Android applications that use the [functions]
 
 ## Features
 
-* Support to NEO node/client [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html) (~70% currently implemented)
+* Support to NEO node/client [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html) (~80% currently implemented)
 * Observable pattern to get info about past **and** upcoming NEO blocks
 * Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
 * Passphrase-protected Private Key implementation (NEP-2)
@@ -282,7 +282,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [ ] `getcontractstate <script_hash>`: Returns information about the contract based on the specified script hash.	
 - [x] `getnewaddress`: Creates a new address. **Needs to open the wallet**.
 - [x] `getrawmempool`: Gets a list of unconfirmed transactions in memory.
-- [ ] `getrawtransaction <txid> [verbose=0]`: Returns the corresponding transaction information based on the specified hash value.
+- [x] `getrawtransaction <txid> [verbose=0]`: Returns the corresponding transaction information based on the specified hash value.
 - [ ] `getstorage <script_hash> <key>`: Returns the stored value based on the contract script hash and key.
 - [x] `gettxout <txid> <n>`: Returns the corresponding transaction output (change) information based on the specified hash and index.
 - [x] `getpeers`: Gets a list of nodes that are currently connected/disconnected by this node.
@@ -294,7 +294,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [ ] `invokescript <script>`: Runs a script through the virtual machine and returns the results.
 - [x] `listaddress`: Lists all the addresses in the current wallet.	**Needs to open the wallet**.
 - [x] `sendrawtransaction <hex>`: Broadcast a transaction over the network. See the network protocol documentation.
-- [ ] `sendtoaddress <asset_id> <address> <value> [fee=0]`: Transfer to specified address. **Needs to open the wallet**.
+- [x] `sendtoaddress <asset_id> <address> <value> [fee=0] [change_address]`: Transfer to specified address. **Needs to open the wallet**.
 - [ ] `sendmany <outputs_array> [fee=0] [change_address]`: Bulk transfer order. **Needs to open the wallet**.
 - [ ] `submitblock <hex>`: Submit new blocks. **Needs to be a consensus node**.
 - [x] `validateaddress <address>`: Verify that the address is a correct NEO address.
