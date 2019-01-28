@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.ResponseTester;
@@ -13,12 +14,15 @@ import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.Script;
 import io.neow3j.protocol.core.methods.response.Transaction;
@@ -31,11 +35,14 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import static io.neow3j.utils.Numeric.prependHexPrefix;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
@@ -558,7 +565,6 @@ public class ResponseTest extends ResponseTester {
                                 null,
                                 null,
                                 new Long(565086327)
-
                         ),
                         new Transaction(
                                 "0x93c569cbe33e918f7a5392025fbdeab5f6c97c8e5897fafc466694b6e8e1b0d2",
@@ -905,6 +911,211 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 sendRawTransaction.getSendRawTransaction(),
                 is(true)
+        );
+    }
+
+    @Test
+    public void testSendToAddress() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"txid\": \"0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",\n"
+                        + "      \"size\": 283,\n"
+                        + "      \"type\": \"ContractTransaction\",\n"
+                        + "      \"version\": 0,\n"
+                        + "      \"attributes\": ["
+                        + "           {"
+                        + "               \"usage\": 32,\n"
+                        + "               \"data\": \"23ba2703c53263e8d6e522dc32203339dcd8eee9\"\n"
+                        + "           }"
+                        + "      ],\n"
+                        + "      \"vin\": [\n"
+                        + "           {\n"
+                        + "               \"txid\": \"0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff\",\n"
+                        + "               \"vout\": 0\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"vout\": [\n"
+                        + "           {\n"
+                        + "               \"n\": 0,\n"
+                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"value\": \"10\",\n"
+                        + "               \"address\": \"AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ\"\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"n\": 1,\n"
+                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"value\": \"99999990\",\n"
+                        + "               \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"sys_fee\": \"0\",\n"
+                        + "      \"net_fee\": \"0\",\n"
+                        + "      \"scripts\": [\n"
+                        + "           {\n"
+                        + "               \"invocation\": \"405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0\",\n"
+                        + "               \"verification\": \"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "           }\n"
+                        + "      ]\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoSendToAddress sendToAddress = deserialiseResponse(NeoSendToAddress.class);
+        assertThat(sendToAddress.getSendToAddress(), is(notNullValue()));
+        assertThat(
+                sendToAddress.getSendToAddress().getOutputs(),
+                hasItems(
+                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
+                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                )
+        );
+        assertThat(
+                sendToAddress.getSendToAddress().getInputs(),
+                hasItem(
+                        new TransactionInput("0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0)
+                )
+        );
+        assertThat(
+                sendToAddress.getSendToAddress().getType(),
+                is(TransactionType.CONTRACT_TRANSACTION)
+        );
+    }
+
+    @Test
+    public void testGetTransaction() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"txid\": \"0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",\n"
+                        + "      \"size\": 283,\n"
+                        + "      \"type\": \"ContractTransaction\",\n"
+                        + "      \"version\": 0,\n"
+                        + "      \"attributes\": ["
+                        + "           {"
+                        + "               \"usage\": 32,\n"
+                        + "               \"data\": \"23ba2703c53263e8d6e522dc32203339dcd8eee9\"\n"
+                        + "           }"
+                        + "      ],\n"
+                        + "      \"vin\": [\n"
+                        + "           {\n"
+                        + "               \"txid\": \"0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff\",\n"
+                        + "               \"vout\": 0\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"vout\": [\n"
+                        + "           {\n"
+                        + "               \"n\": 0,\n"
+                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"value\": \"10\",\n"
+                        + "               \"address\": \"AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ\"\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"n\": 1,\n"
+                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"value\": \"99999990\",\n"
+                        + "               \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"sys_fee\": \"0\",\n"
+                        + "      \"net_fee\": \"0\",\n"
+                        + "      \"scripts\": [\n"
+                        + "           {\n"
+                        + "               \"invocation\": \"405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0\",\n"
+                        + "               \"verification\": \"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"blockhash\": \"0x0c7ec8f8f952d7206b8ef82b6997a5f9ce44a88b356d3ca42a2a29457c608387\",\n"
+                        + "      \"confirmations\": 200,\n"
+                        + "      \"blocktime\": 1548704299\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoGetTransaction getTransaction = deserialiseResponse(NeoGetTransaction.class);
+        assertThat(getTransaction.getTransaction(), is(notNullValue()));
+        assertThat(
+                getTransaction.getTransaction().getTransactionId(),
+                is("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6")
+        );
+        assertThat(
+                getTransaction.getTransaction().getSize(),
+                is(283L)
+        );
+        assertThat(
+                getTransaction.getTransaction().getType(),
+                is(TransactionType.CONTRACT_TRANSACTION)
+        );
+        assertThat(
+                getTransaction.getTransaction().getVersion(),
+                is(0)
+        );
+        assertThat(
+                getTransaction.getTransaction().getAttributes(),
+                hasItem(
+                        new TransactionAttribute(TransactionAttributeUsageType.SCRIPT, "23ba2703c53263e8d6e522dc32203339dcd8eee9")
+                )
+        );
+        assertThat(
+                getTransaction.getTransaction().getOutputs(),
+                hasItems(
+                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
+                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                )
+        );
+        assertThat(
+                getTransaction.getTransaction().getInputs(),
+                hasItem(
+                        new TransactionInput("0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0)
+                )
+        );
+        assertThat(
+                getTransaction.getTransaction().getSysFee(),
+                is("0")
+        );
+        assertThat(
+                getTransaction.getTransaction().getNetFee(),
+                is("0")
+        );
+        assertThat(
+                getTransaction.getTransaction().getScripts(),
+                hasItems(
+                        new Script("405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0", "21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac")
+                )
+        );
+        assertThat(
+                getTransaction.getTransaction().getBlockHash(),
+                is("0x0c7ec8f8f952d7206b8ef82b6997a5f9ce44a88b356d3ca42a2a29457c608387")
+        );
+        assertThat(
+                getTransaction.getTransaction().getConfirmations(),
+                is(200L)
+        );
+        assertThat(
+                getTransaction.getTransaction().getBlockTime(),
+                is(1548704299L)
+        );
+    }
+
+    @Test
+    public void testGetRawTransaction() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": \"8000012023ba2703c53263e8d6e522dc32203339dcd8eee901ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b00000000295f83f83fc439f56e6e1fb062d89c6f538263d79b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500362634f286230023ba2703c53263e8d6e522dc32203339dcd8eee90141405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d02321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "}"
+        );
+
+        NeoGetRawTransaction getRawTransaction = deserialiseResponse(NeoGetRawTransaction.class);
+        assertThat(getRawTransaction.getRawTransaction(), is(notNullValue()));
+        assertThat(
+                getRawTransaction.getRawTransaction(),
+                is("8000012023ba2703c53263e8d6e522dc32203339dcd8eee901ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b00000000295f83f83fc439f56e6e1fb062d89c6f538263d79b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500362634f286230023ba2703c53263e8d6e522dc32203339dcd8eee90141405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d02321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac")
         );
     }
 

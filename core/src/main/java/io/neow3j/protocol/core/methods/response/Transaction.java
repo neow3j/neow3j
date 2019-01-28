@@ -1,10 +1,10 @@
 package io.neow3j.protocol.core.methods.response;
 
-import io.neow3j.model.types.TransactionType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.model.types.TransactionType;
 
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +57,18 @@ public class Transaction {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long nonce;
 
+    @JsonProperty("blockhash")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String blockHash;
+
+    @JsonProperty("confirmations")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long confirmations;
+
+    @JsonProperty("blocktime")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Long blockTime;
+
     public Transaction() {
     }
 
@@ -74,6 +86,25 @@ public class Transaction {
         this.script = script;
         this.gas = gas;
         this.nonce = nonce;
+    }
+
+    public Transaction(String transactionId, long size, TransactionType type, int version, List<TransactionAttribute> attributes, List<TransactionInput> inputs, List<TransactionOutput> outputs, String sysFee, String netFee, List<Script> scripts, String script, String gas, Long nonce, String blockHash, Long confirmations, Long blockTime) {
+        this.transactionId = transactionId;
+        this.size = size;
+        this.type = type;
+        this.version = version;
+        this.attributes = attributes;
+        this.inputs = inputs;
+        this.outputs = outputs;
+        this.sysFee = sysFee;
+        this.netFee = netFee;
+        this.scripts = scripts;
+        this.script = script;
+        this.gas = gas;
+        this.nonce = nonce;
+        this.blockHash = blockHash;
+        this.confirmations = confirmations;
+        this.blockTime = blockTime;
     }
 
     public String getTransactionId() {
@@ -128,6 +159,18 @@ public class Transaction {
         return nonce;
     }
 
+    public String getBlockHash() {
+        return blockHash;
+    }
+
+    public Long getConfirmations() {
+        return confirmations;
+    }
+
+    public Long getBlockTime() {
+        return blockTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -145,12 +188,15 @@ public class Transaction {
                 Objects.equals(getScripts(), that.getScripts()) &&
                 Objects.equals(getScript(), that.getScript()) &&
                 Objects.equals(getGas(), that.getGas()) &&
-                Objects.equals(getNonce(), that.getNonce());
+                Objects.equals(getNonce(), that.getNonce()) &&
+                Objects.equals(getBlockHash(), that.getBlockHash()) &&
+                Objects.equals(getConfirmations(), that.getConfirmations()) &&
+                Objects.equals(getBlockTime(), that.getBlockTime());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getTransactionId(), getSize(), getType(), getVersion(), getAttributes(), getInputs(), getOutputs(), getSysFee(), getNetFee(), getScripts(), getScript(), getGas(), getNonce());
+        return Objects.hash(getTransactionId(), getSize(), getType(), getVersion(), getAttributes(), getInputs(), getOutputs(), getSysFee(), getNetFee(), getScripts(), getScript(), getGas(), getNonce(), getBlockHash(), getConfirmations(), getBlockTime());
     }
 
     @Override
@@ -169,6 +215,9 @@ public class Transaction {
                 ", script='" + script + '\'' +
                 ", gas='" + gas + '\'' +
                 ", nonce=" + nonce +
+                ", blockHash='" + blockHash + '\'' +
+                ", confirmations=" + confirmations +
+                ", blockTime=" + blockTime +
                 '}';
     }
 }

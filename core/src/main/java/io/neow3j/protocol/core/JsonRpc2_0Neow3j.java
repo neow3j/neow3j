@@ -12,12 +12,15 @@ import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
@@ -27,6 +30,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import static io.neow3j.utils.Strings.isEmpty;
 
 /**
  * JSON-RPC 2.0 factory implementation.
@@ -276,6 +282,45 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(rawTransactionHex),
                 neow3jService,
                 NeoSendRawTransaction.class);
+    }
+
+    @Override
+    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value) {
+        return sendToAddress(assetId, toAddress, value, null, null);
+    }
+
+    @Override
+    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee) {
+        return sendToAddress(assetId, toAddress, value, fee, null);
+    }
+
+    @Override
+    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee, String changeAddress) {
+        return new Request<>(
+                "sendtoaddress",
+                Arrays.asList(assetId, toAddress, value, fee, changeAddress).stream()
+                        .filter((param) -> (param != null && !isEmpty(param)))
+                        .collect(Collectors.toList()),
+                neow3jService,
+                NeoSendToAddress.class);
+    }
+
+    @Override
+    public Request<?, NeoGetTransaction> getTransaction(String txId) {
+        return new Request<>(
+                "getrawtransaction",
+                Arrays.asList(txId, 1),
+                neow3jService,
+                NeoGetTransaction.class);
+    }
+
+    @Override
+    public Request<?, NeoGetRawTransaction> getRawTransaction(String txId) {
+        return new Request<>(
+                "getrawtransaction",
+                Arrays.asList(txId, 0),
+                neow3jService,
+                NeoGetRawTransaction.class);
     }
 
     @Override

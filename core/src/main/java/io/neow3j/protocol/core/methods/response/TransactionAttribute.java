@@ -1,10 +1,10 @@
 package io.neow3j.protocol.core.methods.response;
 
-import io.neow3j.model.types.TransactionAttributeUsageType;
-import io.neow3j.utils.Numeric;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import io.neow3j.model.types.TransactionAttributeUsageType;
+import io.neow3j.utils.Numeric;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -30,6 +30,7 @@ public class TransactionAttribute {
         this.data = (data != null ? Numeric.hexStringToByteArray(data) : null);
     }
 
+    @JsonGetter
     public TransactionAttributeUsageType getUsage() {
         return usage;
     }

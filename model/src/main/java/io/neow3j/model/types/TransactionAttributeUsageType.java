@@ -1,5 +1,6 @@
 package io.neow3j.model.types;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TransactionAttributeUsageType {
@@ -59,6 +60,17 @@ public enum TransactionAttributeUsageType {
 
     public byte byteValue() {
         return this.byteValue;
+    }
+
+    @JsonCreator
+    public static TransactionAttributeUsageType fromJson(Object value) {
+        if (value instanceof String) {
+            return fromJsonValue((String) value);
+        }
+        if (value instanceof Integer) {
+            return valueOf(((Integer) value).byteValue());
+        }
+        throw new IllegalArgumentException("TransactionAttributeUsageType value type not found.");
     }
 
     public static TransactionAttributeUsageType valueOf(byte byteValue) {

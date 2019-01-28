@@ -10,12 +10,15 @@ import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 
 /**
@@ -70,5 +73,15 @@ public interface Neo {
     Request<?, NeoGetTxOut> getTxOut(String transactionHash, int txIndex);
 
     Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex);
+
+    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
+
+    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee);
+
+    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee, String changeAddress);
+
+    Request<?, NeoGetTransaction> getTransaction(String txId);
+
+    Request<?, NeoGetRawTransaction> getRawTransaction(String txId);
 
 }
