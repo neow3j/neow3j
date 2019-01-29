@@ -316,6 +316,72 @@ public class CoreIT {
         assertThat(sendRawTransaction, is(true));
     }
 
+    @Test
+    @Ignore("TBD")
+    public void testSendToAddress() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testSendToAddress_Fee() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testSendToAddress_Fee_And_ChangeAddress() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testGetTransaction() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testGetRawTransaction() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testGetBalance() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testSendMany() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testSendMany_Empty_Transaction() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testSendMany_Fee() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testSendMany_Fee_And_ChangeAddress() throws IOException {
+
+    }
+
+    @Test
+    @Ignore("TBD")
+    public void testDumpPrivKey() throws IOException {
+
+    }
+
     private NeoBlockHash getNeoBestBlockHash() throws IOException {
         return neow3jDotNet
                 .getBestBlockHash()
