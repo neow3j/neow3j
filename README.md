@@ -267,10 +267,10 @@ Help the development of neow3j by donating to the following addresses:
 
 The following NEO JSON-RPC methods are implemented in neow3j:
 
-- [ ] `dumpprivkey <address>`: Exports the private key of the specified address. **Needs to open the wallet**.
+- [x] `dumpprivkey <address>`: Exports the private key of the specified address. **Needs to open the wallet**.
 - [x] `getaccountstate <address>`: Checks account asset information according to account address.
-- [ ] `getassetstate <asset_id>`: Queries asset information according to the specified asset number.
-- [ ] `getbalance <asset_id>`: Returns the balance of the corresponding asset in the wallet according to the specified asset number. **Need to open the wallet**.
+- [x] `getassetstate <asset_id>`: Queries asset information according to the specified asset number.
+- [x] `getbalance <asset_id>`: Returns the balance of the corresponding asset in the wallet according to the specified asset number. **Need to open the wallet**.
 - [x] `getbestblockhash`: Gets the hash of the tallest block in the main chain.
 - [x] `getblock <hash> [verbose=0]`: Returns the corresponding block information according to the specified hash value.
 - [x] `getblock	<index> [verbose=0]`: Returns the corresponding block information according to the specified index.
@@ -295,7 +295,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [x] `listaddress`: Lists all the addresses in the current wallet.	**Needs to open the wallet**.
 - [x] `sendrawtransaction <hex>`: Broadcast a transaction over the network. See the network protocol documentation.
 - [x] `sendtoaddress <asset_id> <address> <value> [fee=0] [change_address]`: Transfer to specified address. **Needs to open the wallet**.
-- [ ] `sendmany <outputs_array> [fee=0] [change_address]`: Bulk transfer order. **Needs to open the wallet**.
+- [x] `sendmany <outputs_array> [fee=0] [change_address]`: Bulk transfer order. **Needs to open the wallet**.
 - [ ] `submitblock <hex>`: Submit new blocks. **Needs to be a consensus node**.
 - [x] `validateaddress <address>`: Verify that the address is a correct NEO address.
 

@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.model.types.AssetType;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
@@ -7,7 +8,10 @@ import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
+import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
+import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
+import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -21,6 +25,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
@@ -1116,6 +1121,354 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getRawTransaction.getRawTransaction(),
                 is("8000012023ba2703c53263e8d6e522dc32203339dcd8eee901ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b00000000295f83f83fc439f56e6e1fb062d89c6f538263d79b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500362634f286230023ba2703c53263e8d6e522dc32203339dcd8eee90141405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d02321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac")
+        );
+    }
+
+    @Test
+    public void testGetBalance() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"balance\": \"199999990.0\",\n"
+                        + "      \"confirmed\": \"99999990.0\"\n"
+                        + "  }\n"
+                        + "}"
+        );
+
+        NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
+        assertThat(getBalance.getBalance(), is(notNullValue()));
+        assertThat(
+                getBalance.getBalance().getBalance(),
+                is("199999990.0")
+        );
+        assertThat(
+                getBalance.getBalance().getConfirmed(),
+                is("99999990.0")
+        );
+    }
+
+    @Test
+    public void testGetBalance_UpperCase() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"Balance\": \"199999990.0\",\n"
+                        + "      \"Confirmed\": \"99999990.0\"\n"
+                        + "  }\n"
+                        + "}"
+        );
+
+        NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
+        assertThat(getBalance.getBalance(), is(notNullValue()));
+        assertThat(
+                getBalance.getBalance().getBalance(),
+                is("199999990.0")
+        );
+        assertThat(
+                getBalance.getBalance().getConfirmed(),
+                is("99999990.0")
+        );
+    }
+
+    @Test
+    public void testGetBalance_nullable() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"balance\": \"199999990.0\"\n"
+                        + "  }\n"
+                        + "}"
+        );
+
+        NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
+        assertThat(getBalance.getBalance(), is(notNullValue()));
+        assertThat(
+                getBalance.getBalance().getBalance(),
+                is("199999990.0")
+        );
+        assertThat(
+                getBalance.getBalance().getConfirmed(),
+                is(nullValue())
+        );
+    }
+
+    @Test
+    public void testGetAssetState_NeoCLI() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"version\": 0,\n"
+                        + "      \"id\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "      \"type\": \"GoverningToken\",\n"
+                        + "      \"name\": [\n"
+                        + "           {\n"
+                        + "               \"lang\": \"zh-CN\",\n"
+                        + "               \"name\": \"小蚁股\"\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"lang\": \"en\",\n"
+                        + "               \"name\": \"AntShare\"\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"amount\": \"100000000\",\n"
+                        + "      \"available\": \"100000000\",\n"
+                        + "      \"precision\": 0,\n"
+                        + "      \"owner\": \"00\",\n"
+                        + "      \"admin\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
+                        + "      \"issuer\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
+                        + "      \"expiration\": 4000000,\n"
+                        + "      \"frozen\": false\n"
+                        + "  }\n"
+                        + "}"
+        );
+
+        NeoGetAssetState getAssetState = deserialiseResponse(NeoGetAssetState.class);
+        assertThat(getAssetState.getAssetState(), is(notNullValue()));
+        assertThat(
+                getAssetState.getAssetState().getVersion(),
+                is(0)
+        );
+        assertThat(
+                getAssetState.getAssetState().getId(),
+                is("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
+        );
+        assertThat(
+                getAssetState.getAssetState().getType(),
+                is(AssetType.GOVERNING_TOKEN)
+        );
+        assertThat(
+                getAssetState.getAssetState().getNames(),
+                hasItems(
+                        new NeoGetAssetState.AssetName("zh-CN", "小蚁股"),
+                        new NeoGetAssetState.AssetName("en", "AntShare")
+                )
+        );
+        assertThat(
+                getAssetState.getAssetState().getAmount(),
+                is("100000000")
+        );
+        assertThat(
+                getAssetState.getAssetState().getAvailable(),
+                is("100000000")
+        );
+        assertThat(
+                getAssetState.getAssetState().getPrecision(),
+                is(0)
+        );
+        assertThat(
+                getAssetState.getAssetState().getFee(),
+                is(nullValue())
+        );
+        assertThat(
+                getAssetState.getAssetState().getAddress(),
+                is(nullValue())
+        );
+        assertThat(
+                getAssetState.getAssetState().getOwner(),
+                is("00")
+        );
+        assertThat(
+                getAssetState.getAssetState().getAdmin(),
+                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
+        );
+        assertThat(
+                getAssetState.getAssetState().getIssuer(),
+                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
+        );
+        assertThat(
+                getAssetState.getAssetState().getExpiration(),
+                is(4000000L)
+        );
+        assertThat(
+                getAssetState.getAssetState().getFrozen(),
+                is(false)
+        );
+    }
+
+    @Test
+    public void testGetAssetState_NeoPython() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"assetId\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "      \"assetType\": 0,\n"
+                        + "      \"name\": \"NEO\",\n"
+                        + "      \"amount\": 10000000000000000,\n"
+                        + "      \"available\": 10000000000000000,\n"
+                        + "      \"precision\": 0,\n"
+                        + "      \"fee\": 0,\n"
+                        + "      \"address\": \"0000000000000000000000000000000000000000\",\n"
+                        + "      \"owner\": \"00\",\n"
+                        + "      \"admin\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
+                        + "      \"issuer\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
+                        + "      \"expiration\": 4000000,\n"
+                        + "      \"is_frozen\": false\n"
+                        + "  }\n"
+                        + "}"
+        );
+
+        NeoGetAssetState getAssetState = deserialiseResponse(NeoGetAssetState.class);
+        assertThat(getAssetState.getAssetState(), is(notNullValue()));
+        assertThat(
+                getAssetState.getAssetState().getVersion(),
+                is(nullValue())
+        );
+        assertThat(
+                getAssetState.getAssetState().getId(),
+                is("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
+        );
+        assertThat(
+                getAssetState.getAssetState().getType(),
+                is(AssetType.GOVERNING_TOKEN)
+        );
+        assertThat(
+                getAssetState.getAssetState().getNames(),
+                hasItem(new NeoGetAssetState.AssetName("en", "NEO"))
+        );
+        assertThat(
+                getAssetState.getAssetState().getAmount(),
+                is("10000000000000000")
+        );
+        assertThat(
+                getAssetState.getAssetState().getAvailable(),
+                is("10000000000000000")
+        );
+        assertThat(
+                getAssetState.getAssetState().getPrecision(),
+                is(0)
+        );
+        assertThat(
+                getAssetState.getAssetState().getFee(),
+                is(0)
+        );
+        assertThat(
+                getAssetState.getAssetState().getAddress(),
+                is("0000000000000000000000000000000000000000")
+        );
+        assertThat(
+                getAssetState.getAssetState().getOwner(),
+                is("00")
+        );
+        assertThat(
+                getAssetState.getAssetState().getAdmin(),
+                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
+        );
+        assertThat(
+                getAssetState.getAssetState().getIssuer(),
+                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
+        );
+        assertThat(
+                getAssetState.getAssetState().getExpiration(),
+                is(4000000L)
+        );
+        assertThat(
+                getAssetState.getAssetState().getFrozen(),
+                is(false)
+        );
+    }
+
+    @Test
+    public void testSendMany() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"txid\": \"0x5fd1d2d417a1b26404827672c49953f4d517ba3893954cc9f08daa3c231b4c8d\",\n"
+                        + "      \"size\": 343,\n"
+                        + "      \"type\": \"ContractTransaction\",\n"
+                        + "      \"version\": 0,\n"
+                        + "      \"attributes\": ["
+                        + "           {"
+                        + "               \"usage\": 32,\n"
+                        + "               \"data\": \"23ba2703c53263e8d6e522dc32203339dcd8eee9\"\n"
+                        + "           }"
+                        + "      ],\n"
+                        + "      \"vin\": [\n"
+                        + "           {\n"
+                        + "               \"txid\": \"0xe728209ebbacf28c956d695b7f03221fe6760b7aa8c52fd34656bb56c8ae70da\",\n"
+                        + "               \"vout\": 2\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"vout\": [\n"
+                        + "           {\n"
+                        + "               \"n\": 0,\n"
+                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"value\": \"100\",\n"
+                        + "               \"address\": \"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"n\": 1,\n"
+                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"value\": \"10\",\n"
+                        + "               \"address\": \"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"n\": 2,\n"
+                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"value\": \"99999550\",\n"
+                        + "               \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"sys_fee\": \"0\",\n"
+                        + "      \"net_fee\": \"0\",\n"
+                        + "      \"scripts\": [\n"
+                        + "           {\n"
+                        + "               \"invocation\": \"4038a01e2354e0f80513cad7c0fe6a5e4bb92e34ebe9b4143e7ef1a0e03a2f56513277d9cf65483bd3286c4a357ae23cc36e4fbd3e19ad356a42ce90dee7ac232d\",\n"
+                        + "               \"verification\": \"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "           }\n"
+                        + "      ]\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoSendMany sendMany = deserialiseResponse(NeoSendMany.class);
+        assertThat(sendMany.getSendMany(), is(notNullValue()));
+        assertThat(
+                sendMany.getSendMany().getOutputs(),
+                hasItems(
+                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "10", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput(2, prependHexPrefix(NEOAsset.HASH_ID), "99999550", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                )
+        );
+        assertThat(
+                sendMany.getSendMany().getInputs(),
+                hasItem(
+                        new TransactionInput("0xe728209ebbacf28c956d695b7f03221fe6760b7aa8c52fd34656bb56c8ae70da", 2)
+                )
+        );
+        assertThat(
+                sendMany.getSendMany().getType(),
+                is(TransactionType.CONTRACT_TRANSACTION)
+        );
+    }
+
+    @Test
+    public void testDumpPrivKey() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": \"KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK\"\n"
+                        + "}"
+        );
+
+        NeoDumpPrivKey dumpPrivKey = deserialiseResponse(NeoDumpPrivKey.class);
+        assertThat(dumpPrivKey.getDumpPrivKey(), is(notNullValue()));
+        assertThat(
+                dumpPrivKey.getDumpPrivKey(),
+                is("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
         );
     }
 

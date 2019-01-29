@@ -2,8 +2,11 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
+import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class RequestTest extends RequestTester {
 
@@ -294,6 +297,123 @@ public class RequestTest extends RequestTester {
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getrawtransaction\","
                         + "\"params\":[\"0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",0],\"id\":1}");
+    }
+
+    @Test
+    public void testGetBalance() throws Exception {
+        neow3j.getBalance("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
+                        + "\"params\":[\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\"],\"id\":1}");
+    }
+
+    @Test
+    public void testGetBalance_with_Prefix() throws Exception {
+        neow3j.getBalance("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
+                        + "\"params\":[\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\"],\"id\":1}");
+    }
+
+    @Test
+    public void testGetAssetState() throws Exception {
+        neow3j.getAssetState("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getassetstate\","
+                        + "\"params\":[\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\"],\"id\":1}");
+    }
+
+    @Test
+    public void testGetAssetState_with_Prefix() throws Exception {
+        neow3j.getAssetState("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getassetstate\","
+                        + "\"params\":[\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\"],\"id\":1}");
+    }
+
+    @Test
+    public void testSendMany() throws Exception {
+        neow3j.sendMany(
+                Arrays.asList(
+                        new TransactionOutput("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "10", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2")
+                )
+        ).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"sendmany\","
+                        + "\"params\":["
+                        + "["
+                        + "{\"asset\":\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\"value\":\"100\",\"address\":\"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"},"
+                        + "{\"asset\":\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\"value\":\"10\",\"address\":\"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"}"
+                        + "]"
+                        + "],\"id\":1}");
+    }
+
+    @Test
+    public void testSendMany_Empty_Transaction() throws Exception {
+        neow3j.sendMany(Arrays.asList()).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"sendmany\","
+                        + "\"params\":[[]],\"id\":1}");
+    }
+
+    @Test
+    public void testSendMany_Fee() throws Exception {
+        neow3j.sendMany(
+                Arrays.asList(
+                        new TransactionOutput("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "10", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2")
+                ),
+                "50"
+        ).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"sendmany\","
+                        + "\"params\":["
+                        + "["
+                        + "{\"asset\":\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\"value\":\"100\",\"address\":\"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"},"
+                        + "{\"asset\":\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\"value\":\"10\",\"address\":\"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"}"
+                        + "],"
+                        + "\"50\""
+                        + "],\"id\":1}");
+    }
+
+    @Test
+    public void testSendMany_Fee_And_ChangeAddress() throws Exception {
+        neow3j.sendMany(
+                Arrays.asList(
+                        new TransactionOutput("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "10", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2")
+                ),
+                "50",
+                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
+        ).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"sendmany\","
+                        + "\"params\":["
+                        + "["
+                        + "{\"asset\":\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\"value\":\"100\",\"address\":\"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"},"
+                        + "{\"asset\":\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\"value\":\"10\",\"address\":\"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"}"
+                        + "],"
+                        + "\"50\","
+                        + "\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\""
+                        + "],\"id\":1}");
+    }
+
+    @Test
+    public void testDumpPrivKey() throws Exception {
+        neow3j.dumpPrivKey("ARye5QEj8YX2vpJ297Lrcmz9m6F8hadgxg").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"dumpprivkey\","
+                        + "\"params\":[\"ARye5QEj8YX2vpJ297Lrcmz9m6F8hadgxg\"],\"id\":1}");
     }
 
 }

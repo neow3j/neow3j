@@ -70,7 +70,7 @@ public enum TransactionAttributeUsageType {
         if (value instanceof Integer) {
             return valueOf(((Integer) value).byteValue());
         }
-        throw new IllegalArgumentException("TransactionAttributeUsageType value type not found.");
+        throw new IllegalArgumentException(String.format("%s value type not found.", TransactionAttributeUsageType.class.getName()));
     }
 
     public static TransactionAttributeUsageType valueOf(byte byteValue) {
@@ -79,7 +79,7 @@ public enum TransactionAttributeUsageType {
                 return e;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(String.format("%s value type not found.", TransactionAttributeUsageType.class.getName()));
     }
 
     public static TransactionAttributeUsageType fromJsonValue(String jsonValue) {
@@ -88,7 +88,7 @@ public enum TransactionAttributeUsageType {
                 return e;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(String.format("%s value type not found.", TransactionAttributeUsageType.class.getName()));
     }
 
 }

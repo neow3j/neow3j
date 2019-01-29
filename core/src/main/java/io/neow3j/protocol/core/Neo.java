@@ -3,7 +3,10 @@ package io.neow3j.protocol.core;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
+import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
+import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
+import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -17,9 +20,13 @@ import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.TransactionOutput;
+
+import java.util.List;
 
 /**
  * Core NEO JSON-RPC API.
@@ -83,5 +90,17 @@ public interface Neo {
     Request<?, NeoGetTransaction> getTransaction(String txId);
 
     Request<?, NeoGetRawTransaction> getRawTransaction(String txId);
+
+    Request<?, NeoGetBalance> getBalance(String assetId);
+
+    Request<?, NeoGetAssetState> getAssetState(String assetId);
+
+    Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs);
+
+    Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee);
+
+    Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee, String changeAddress);
+
+    Request<?, NeoDumpPrivKey> dumpPrivKey(String address);
 
 }

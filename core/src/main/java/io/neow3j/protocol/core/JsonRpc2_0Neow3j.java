@@ -5,7 +5,10 @@ import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
+import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
+import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
+import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -19,9 +22,11 @@ import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
 import rx.Observable;
@@ -29,9 +34,11 @@ import rx.Observable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Strings.isEmpty;
 
 /**
@@ -321,6 +328,54 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(txId, 0),
                 neow3jService,
                 NeoGetRawTransaction.class);
+    }
+
+    @Override
+    public Request<?, NeoGetBalance> getBalance(String assetId) {
+        return new Request<>(
+                "getbalance",
+                Arrays.asList(cleanHexPrefix(assetId)),
+                neow3jService,
+                NeoGetBalance.class);
+    }
+
+    @Override
+    public Request<?, NeoGetAssetState> getAssetState(String assetId) {
+        return new Request<>(
+                "getassetstate",
+                Arrays.asList(cleanHexPrefix(assetId)),
+                neow3jService,
+                NeoGetAssetState.class);
+    }
+
+    @Override
+    public Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs) {
+        return sendMany(outputs, null, null);
+    }
+
+    @Override
+    public Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee) {
+        return sendMany(outputs, fee, null);
+    }
+
+    @Override
+    public Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee, String changeAddress) {
+        return new Request<>(
+                "sendmany",
+                Arrays.asList(outputs, fee, changeAddress).stream()
+                        .filter((param) -> (param != null))
+                        .collect(Collectors.toList()),
+                neow3jService,
+                NeoSendMany.class);
+    }
+
+    @Override
+    public Request<?, NeoDumpPrivKey> dumpPrivKey(String address) {
+        return new Request<>(
+                "dumpprivkey",
+                Arrays.asList(address),
+                neow3jService,
+                NeoDumpPrivKey.class);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package io.neow3j.model.types;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum AssetType {
@@ -29,13 +30,24 @@ public enum AssetType {
         return this.byteValue;
     }
 
+    @JsonCreator
+    public static AssetType fromJson(Object value) {
+        if (value instanceof String) {
+            return fromJsonValue((String) value);
+        }
+        if (value instanceof Integer) {
+            return valueOf(((Integer) value).byteValue());
+        }
+        throw new IllegalArgumentException(String.format("%s value type not found.", AssetType.class.getName()));
+    }
+
     public static AssetType valueOf(byte byteValue) {
         for (AssetType e : AssetType.values()) {
             if (e.byteValue == byteValue) {
                 return e;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(String.format("%s value type not found.", AssetType.class.getName()));
     }
 
     public static AssetType fromJsonValue(String jsonValue) {
@@ -44,7 +56,7 @@ public enum AssetType {
                 return e;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(String.format("%s value type not found.", AssetType.class.getName()));
     }
 
 }

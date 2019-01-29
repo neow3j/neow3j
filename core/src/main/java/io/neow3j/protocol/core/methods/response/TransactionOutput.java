@@ -1,15 +1,17 @@
 package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransactionOutput {
 
     @JsonProperty("n")
     @JsonAlias("N")
-    private int index;
+    private Integer index;
 
     @JsonProperty("asset")
     @JsonAlias("Asset")
@@ -26,14 +28,20 @@ public class TransactionOutput {
     public TransactionOutput() {
     }
 
-    public TransactionOutput(int index, String assetId, String value, String address) {
+    public TransactionOutput(String assetId, String value, String address) {
+        this.assetId = assetId;
+        this.value = value;
+        this.address = address;
+    }
+
+    public TransactionOutput(Integer index, String assetId, String value, String address) {
         this.index = index;
         this.assetId = assetId;
         this.value = value;
         this.address = address;
     }
 
-    public int getIndex() {
+    public Integer getIndex() {
         return index;
     }
 
@@ -54,7 +62,7 @@ public class TransactionOutput {
         if (this == o) return true;
         if (!(o instanceof TransactionOutput)) return false;
         TransactionOutput that = (TransactionOutput) o;
-        return getIndex() == that.getIndex() &&
+        return Objects.equals(getIndex(), that.getIndex()) &&
                 Objects.equals(getAssetId(), that.getAssetId()) &&
                 Objects.equals(getValue(), that.getValue()) &&
                 Objects.equals(getAddress(), that.getAddress());
