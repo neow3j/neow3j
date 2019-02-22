@@ -1,13 +1,13 @@
 package io.neow3j.crypto;
 
-import io.neow3j.crypto.transaction.RawTransaction;
-import io.neow3j.crypto.transaction.SignedRawTransaction;
-import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.crypto.transaction.RawInvocationScript;
 import io.neow3j.crypto.transaction.RawScript;
+import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.crypto.transaction.RawVerificationScript;
+import io.neow3j.crypto.transaction.SignedRawTransaction;
+import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
@@ -256,7 +256,8 @@ public class RawTransactionTest {
         SignedRawTransaction signedRawTransaction = new SignedRawTransaction(unsignedTx, signatureDataTx);
         String fromAddress = signedRawTransaction.getFrom();
 
-        assertEquals(address, fromAddress);;
+        assertEquals(address, fromAddress);
+        ;
         assertTrue(signedRawTransaction.verify(address));
 
     }
