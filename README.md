@@ -17,7 +17,7 @@ You can now focus on building Java/Android applications that use the [functions]
 
 ## Features
 
-* Support to NEO node/client [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html) (~80% currently implemented)
+* Support to NEO node/client [API version 2.9.*](https://docs.neo.org/en-us/node/cli/apigen.html) (~80% currently implemented)
 * Observable pattern to get info about past **and** upcoming NEO blocks
 * Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
 * Passphrase-protected Private Key implementation (NEP-2)
@@ -27,16 +27,16 @@ You can now focus on building Java/Android applications that use the [functions]
 * Signing and sending raw transactions
 * Sync and Async interface
 * Retry on node errors
+* Integration tests with the dotnet NEO VM
 
 ## Upcoming Features/Enhancements
 
-* 100% implementation of [API version 2.9.0](http://docs.neo.org/en-us/node/cli/2.9.0/api.html)
+* 100% implementation of [API version 2.9.0](https://docs.neo.org/en-us/node/cli/apigen.html)
 * Documentation on using neow3j with Android apps
 * Observable pattern to get specific transactions
 * Improve the response model: introduce purpose-specific objects rather than the current raw Java types
 * Interacting with smart contracts
 * Select best seed NEO node based on some metrics (e.g., latency)
-* Integration tests with `neo-privatenet`
 
 ## Getting Started
 
