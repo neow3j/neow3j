@@ -1,4 +1,3 @@
-
 description 'NEO Application Binary Interface (ABI) based on NEP-3'
 
 dependencies {

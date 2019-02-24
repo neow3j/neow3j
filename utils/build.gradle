@@ -1,4 +1,4 @@
-description 'Neow3j set of utils'
+description 'neow3j set of utils'
 
 dependencies {
     compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
