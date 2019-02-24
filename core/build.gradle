@@ -1,4 +1,4 @@
-description 'neow3j is a library to interact with NEO nodes'
+description 'neow3j is a Java library to interact with the NEO blockchain'
 
 dependencies {
     compile project(':model'),
@@ -14,6 +14,7 @@ dependencies {
             "org.slf4j:slf4j-api:$slf4jVersion"
     testCompile "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
             "ch.qos.logback:logback-classic:$logbackVersion"
+    integrationTestCompile "org.awaitility:awaitility:$awaitility"
 }
 
 configurations {
