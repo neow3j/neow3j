@@ -38,7 +38,7 @@ apply plugin: 'idea'
 apply plugin: 'io.codearte.nexus-staging'
 apply plugin: 'jacoco'
 
-description 'Neow3j Project'
+description 'neow3j Project'
 
 allprojects {
 
