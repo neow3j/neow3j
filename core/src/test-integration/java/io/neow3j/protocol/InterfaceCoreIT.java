@@ -78,4 +78,6 @@ public interface InterfaceCoreIT {
 
     void testDumpPrivKey() throws Exception;
 
+    void testGetStorage() throws Exception;
+
 }

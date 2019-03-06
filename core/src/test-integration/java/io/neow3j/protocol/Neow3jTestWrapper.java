@@ -604,6 +604,11 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
         assertThat(privKey, is("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr"));
     }
 
+    public void testGetStorage() throws IOException {
+        // TODO: 2019-02-28 Guil:
+        // to be implemented
+    }
+
     public NeoGetBalance getBalance() throws IOException {
         return neow3j.getBalance(NEOAsset.HASH_ID).send();
     }

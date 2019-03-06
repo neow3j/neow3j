@@ -283,7 +283,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [x] `getnewaddress`: Creates a new address. **Needs to open the wallet**.
 - [x] `getrawmempool`: Gets a list of unconfirmed transactions in memory.
 - [x] `getrawtransaction <txid> [verbose=0]`: Returns the corresponding transaction information based on the specified hash value.
-- [ ] `getstorage <script_hash> <key>`: Returns the stored value based on the contract script hash and key.
+- [x] `getstorage <script_hash> <key>`: Returns the stored value based on the contract script hash and key.
 - [x] `gettxout <txid> <n>`: Returns the corresponding transaction output (change) information based on the specified hash and index.
 - [x] `getpeers`: Gets a list of nodes that are currently connected/disconnected by this node.
 - [x] `getversion`: Gets version information of this node.

@@ -19,6 +19,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
@@ -1470,6 +1471,21 @@ public class ResponseTest extends ResponseTester {
                 dumpPrivKey.getDumpPrivKey(),
                 is("KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK")
         );
+    }
+
+    @Test
+    public void testGetStorage() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": \"616e797468696e67\"\n"
+                        + "}"
+        );
+
+        NeoGetStorage getStorage = deserialiseResponse(NeoGetStorage.class);
+        assertThat(getStorage.getStorage(), is(notNullValue()));
+        assertThat(getStorage.getStorage(), is("616e797468696e67"));
     }
 
 }

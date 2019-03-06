@@ -416,4 +416,22 @@ public class RequestTest extends RequestTester {
                         + "\"params\":[\"ARye5QEj8YX2vpJ297Lrcmz9m6F8hadgxg\"],\"id\":1}");
     }
 
+    @Test
+    public void testGetStorage() throws Exception {
+        neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", "616e797468696e67").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getstorage\","
+                        + "\"params\":[\"03febccf81ac85e3d795bc5cbd4e84e907812aa3\",\"616e797468696e67\"],\"id\":1}");
+    }
+
+    @Test
+    public void testGetStorage_with_HexParameter() throws Exception {
+        neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", HexParameter.valueOf("anything")).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getstorage\","
+                        + "\"params\":[\"03febccf81ac85e3d795bc5cbd4e84e907812aa3\",\"616e797468696e67\"],\"id\":1}");
+    }
+
 }

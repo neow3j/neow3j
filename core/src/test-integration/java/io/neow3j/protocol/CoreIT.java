@@ -2,6 +2,7 @@ package io.neow3j.protocol;
 
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -228,6 +229,12 @@ public class CoreIT implements InterfaceCoreIT {
     @Test
     public void testDumpPrivKey() throws IOException {
         this.neow3jTestWrapper.testDumpPrivKey();
+    }
+
+    @Ignore
+    @Test
+    public void testGetStorage() throws IOException {
+        this.neow3jTestWrapper.testGetStorage();
     }
 
     private String getPrivateNetHost(int port) {

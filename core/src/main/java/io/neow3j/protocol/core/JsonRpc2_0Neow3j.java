@@ -16,6 +16,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
@@ -376,6 +377,20 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(address),
                 neow3jService,
                 NeoDumpPrivKey.class);
+    }
+
+    @Override
+    public Request<?, NeoGetStorage> getStorage(String contractAddress, HexParameter keyToLookUp) {
+        return getStorage(contractAddress, keyToLookUp.getHexValue());
+    }
+
+    @Override
+    public Request<?, NeoGetStorage> getStorage(String contractAddress, String keyToLookUpAsHexString) {
+        return new Request<>(
+                "getstorage",
+                Arrays.asList(contractAddress, keyToLookUpAsHexString),
+                neow3jService,
+                NeoGetStorage.class);
     }
 
     @Override
