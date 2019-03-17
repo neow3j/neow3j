@@ -2,6 +2,7 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
+import io.neow3j.protocol.core.methods.response.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
@@ -22,6 +23,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
+import io.neow3j.protocol.core.methods.response.NeoInvoke;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -391,6 +394,31 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(contractAddress, keyToLookUpAsHexString),
                 neow3jService,
                 NeoGetStorage.class);
+    }
+
+    @Override
+    public Request<?, NeoInvoke> invoke(String contractScriptHash, List<ContractParameter> params) {
+        return new Request<>(
+                "invoke",
+                Arrays.asList(contractScriptHash, params),
+                neow3jService,
+                NeoInvoke.class);
+    }
+
+    @Override
+    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName) {
+        return invokeFunction(contractScriptHash, functionName, null);
+    }
+
+    @Override
+    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName, List<ContractParameter> params) {
+        return new Request<>(
+                "invokefunction",
+                Arrays.asList(contractScriptHash, functionName, params).stream()
+                        .filter((param) -> (param != null))
+                        .collect(Collectors.toList()),
+                neow3jService,
+                NeoInvokeFunction.class);
     }
 
     @Override

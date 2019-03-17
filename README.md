@@ -289,8 +289,8 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [x] `getversion`: Gets version information of this node.
 - [x] `getvalidators`: Gets NEO consensus nodes information.
 - [x] `getwalletheight`: Gets the current wallet index height. **Needs to open the wallet**.
-- [ ] `invoke <script_hash> <params>`: Invokes a smart contract at specified script hash with the given parameters.
-- [ ] `invokefunction <script_hash> <operation> <params>`: Invokes a smart contract at specified script hash, passing in an operation and its params.
+- [x] `invoke <script_hash> <params>`: Invokes a smart contract at specified script hash with the given parameters.
+- [x] `invokefunction <script_hash> <operation> <params>`: Invokes a smart contract at specified script hash, passing in an operation and its params.
 - [ ] `invokescript <script>`: Runs a script through the virtual machine and returns the results.
 - [x] `listaddress`: Lists all the addresses in the current wallet.	**Needs to open the wallet**.
 - [x] `sendrawtransaction <hex>`: Broadcast a transaction over the network. See the network protocol documentation.

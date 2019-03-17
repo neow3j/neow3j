@@ -5,6 +5,8 @@ import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.ResponseTester;
+import io.neow3j.protocol.core.methods.response.ContractParameter;
+import io.neow3j.protocol.core.methods.response.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
@@ -25,6 +27,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
+import io.neow3j.protocol.core.methods.response.NeoInvoke;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -1486,6 +1490,128 @@ public class ResponseTest extends ResponseTester {
         NeoGetStorage getStorage = deserialiseResponse(NeoGetStorage.class);
         assertThat(getStorage.getStorage(), is(notNullValue()));
         assertThat(getStorage.getStorage(), is("616e797468696e67"));
+    }
+
+    @Test
+    public void testInvoke() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
+                        + "      \"state\": \"HALT, BREAK\",\n"
+                        + "      \"gas_consumed\": \"2.489\",\n"
+                        + "      \"stack\": ["
+                        + "           {"
+                        + "               \"type\": \"ByteArray\",\n"
+                        + "               \"value\": \"576f6f6c6f6e67\"\n"
+                        + "           }"
+                        + "      ],\n"
+                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoInvoke invoke = deserialiseResponse(NeoInvoke.class);
+        assertThat(invoke.getInvocationResult(), is(notNullValue()));
+        assertThat(invoke.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
+        assertThat(invoke.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invoke.getInvocationResult().getGasConsumed(), is("2.489"));
+        assertThat(invoke.getInvocationResult().getStack(), hasSize(1));
+        assertThat(
+                invoke.getInvocationResult().getStack(),
+                hasItems(
+                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "576f6f6c6f6e67")
+                )
+        );
+        assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
+    }
+
+    @Test
+    public void testInvoke_empty_Stack() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
+                        + "      \"state\": \"HALT, BREAK\",\n"
+                        + "      \"gas_consumed\": \"2.489\",\n"
+                        + "      \"stack\": [],\n"
+                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoInvoke invoke = deserialiseResponse(NeoInvoke.class);
+        assertThat(invoke.getInvocationResult(), is(notNullValue()));
+        assertThat(invoke.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
+        assertThat(invoke.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invoke.getInvocationResult().getGasConsumed(), is("2.489"));
+        assertThat(invoke.getInvocationResult().getStack(), hasSize(0));
+        assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
+    }
+
+    @Test
+    public void testInvokeFunction() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
+                        + "      \"state\": \"HALT, BREAK\",\n"
+                        + "      \"gas_consumed\": \"2.489\",\n"
+                        + "      \"stack\": ["
+                        + "           {"
+                        + "               \"type\": \"ByteArray\",\n"
+                        + "               \"value\": \"576f6f6c6f6e67\"\n"
+                        + "           }"
+                        + "      ],\n"
+                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(1));
+        assertThat(
+                invokeFunction.getInvocationResult().getStack(),
+                hasItems(
+                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "576f6f6c6f6e67")
+                )
+        );
+        assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
+    }
+
+    @Test
+    public void testInvokeFunction_empty_Stack() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
+                        + "      \"state\": \"HALT, BREAK\",\n"
+                        + "      \"gas_consumed\": \"2.489\",\n"
+                        + "      \"stack\": [],\n"
+                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
+        assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
     }
 
 }

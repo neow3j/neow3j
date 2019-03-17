@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.protocol.core.methods.response.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
@@ -20,6 +21,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
+import io.neow3j.protocol.core.methods.response.NeoInvoke;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -107,5 +110,11 @@ public interface Neo {
     Request<?, NeoGetStorage> getStorage(String contractAddress, HexParameter keyToLookUp);
 
     Request<?, NeoGetStorage> getStorage(String contractAddress, String keyToLookUpAsHexString);
+
+    Request<?, NeoInvoke> invoke(String contractScriptHash, List<ContractParameter> params);
+
+    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName);
+
+    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName, List<ContractParameter> params);
 
 }

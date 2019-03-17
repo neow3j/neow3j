@@ -80,4 +80,6 @@ public interface InterfaceCoreIT {
 
     void testGetStorage() throws Exception;
 
+    void testInvoke() throws Exception;
+
 }

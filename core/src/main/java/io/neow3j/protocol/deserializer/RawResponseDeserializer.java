@@ -1,12 +1,12 @@
 package io.neow3j.protocol.deserializer;
 
-import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import io.neow3j.protocol.core.Response;
 
 import java.io.IOException;
 import java.io.InputStream;
