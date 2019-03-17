@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -9,6 +10,7 @@ import io.neow3j.model.types.TransactionType;
 import java.util.List;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
 
     @JsonProperty("txid")

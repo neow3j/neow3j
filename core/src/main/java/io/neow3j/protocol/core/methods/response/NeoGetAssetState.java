@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
@@ -25,6 +26,7 @@ public class NeoGetAssetState extends Response<NeoGetAssetState.State> {
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class State {
 
@@ -188,6 +190,7 @@ public class NeoGetAssetState extends Response<NeoGetAssetState.State> {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AssetName {
 
         @JsonProperty("lang")

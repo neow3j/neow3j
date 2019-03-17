@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,6 +14,7 @@ public class NeoGetValidators extends Response<List<NeoGetValidators.Validator>>
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Validator {
 
         @JsonProperty("publickey")

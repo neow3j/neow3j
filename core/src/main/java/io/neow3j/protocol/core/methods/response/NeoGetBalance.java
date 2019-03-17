@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.protocol.core.Response;
@@ -13,6 +14,7 @@ public class NeoGetBalance extends Response<NeoGetBalance.Balance> {
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Balance {
 
         @JsonProperty("balance")

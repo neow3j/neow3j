@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -11,12 +12,15 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Result {
 
         @JsonProperty("port")
         private int port;
+
         @JsonProperty("nonce")
         private long nonce;
+
         @JsonProperty("useragent")
         private String userAgent;
 

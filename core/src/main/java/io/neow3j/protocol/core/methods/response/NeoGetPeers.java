@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -14,6 +15,7 @@ public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Peers {
 
         @JsonProperty("connected")
@@ -71,6 +73,7 @@ public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AddressEntry {
 
         @JsonProperty("address")

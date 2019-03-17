@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,6 +13,7 @@ public class NeoGetAccountState extends Response<NeoGetAccountState.State> {
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class State {
 
         @JsonProperty("version")
@@ -89,6 +91,7 @@ public class NeoGetAccountState extends Response<NeoGetAccountState.State> {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Balance {
 
         @JsonProperty("asset")

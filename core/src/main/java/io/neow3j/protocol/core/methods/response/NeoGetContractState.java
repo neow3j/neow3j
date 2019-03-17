@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.protocol.core.Response;
 
@@ -12,6 +13,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContractState {
 
         @JsonProperty("version")
@@ -149,6 +151,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContractStateProperties {
 
         @JsonProperty("storage")

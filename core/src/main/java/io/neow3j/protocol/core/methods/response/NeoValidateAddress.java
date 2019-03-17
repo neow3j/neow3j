@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -11,10 +12,12 @@ public class NeoValidateAddress extends Response<NeoValidateAddress.Result> {
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Result {
 
         @JsonProperty("address")
         private String address;
+
         @JsonProperty("isvalid")
         private Boolean isValid;
 

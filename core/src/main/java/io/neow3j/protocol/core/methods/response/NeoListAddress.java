@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,14 +13,18 @@ public class NeoListAddress extends Response<List<NeoListAddress.Address>> {
         return getResult();
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Address {
 
         @JsonProperty("address")
         private String address;
+
         @JsonProperty("haskey")
         private Boolean hasKey;
+
         @JsonProperty("label")
         private String label;
+
         @JsonProperty("watchonly")
         private Boolean watchOnly;
 
