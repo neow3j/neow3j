@@ -82,4 +82,8 @@ public interface InterfaceCoreIT {
 
     void testInvoke() throws Exception;
 
+    void testInvokeFunction() throws Exception;
+
+    void testInvokeScript() throws Exception;
+
 }
