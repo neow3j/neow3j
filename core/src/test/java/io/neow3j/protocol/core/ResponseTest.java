@@ -29,6 +29,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -1612,6 +1613,42 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
         assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
+    }
+
+    @Test
+    public void testInvokeScript() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"script\": \"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n"
+                        + "      \"state\": \"HALT, BREAK\",\n"
+                        + "      \"gas_consumed\": \"0.161\",\n"
+                        + "      \"stack\": ["
+                        + "           {"
+                        + "               \"type\": \"ByteArray\",\n"
+                        + "               \"value\": \"4e45503520474153\"\n"
+                        + "           }"
+                        + "      ],\n"
+                        + "      \"tx\": \"d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoInvokeScript invokeScript = deserialiseResponse(NeoInvokeScript.class);
+        assertThat(invokeScript.getInvocationResult(), is(notNullValue()));
+        assertThat(invokeScript.getInvocationResult().getScript(), is("00046e616d656724058e5e1b6008847cd662728549088a9ee82191"));
+        assertThat(invokeScript.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invokeScript.getInvocationResult().getGasConsumed(), is("0.161"));
+        assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
+        assertThat(
+                invokeScript.getInvocationResult().getStack(),
+                hasItems(
+                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "4e45503520474153")
+                )
+        );
+        assertThat(invokeScript.getInvocationResult().getTx(), is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
     }
 
 }

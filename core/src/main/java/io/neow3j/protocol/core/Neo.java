@@ -23,6 +23,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -116,5 +117,7 @@ public interface Neo {
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName);
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName, List<ContractParameter> params);
+
+    Request<?, NeoInvokeScript> invokeScript(String script);
 
 }

@@ -546,4 +546,14 @@ public class RequestTest extends RequestTester {
         );
     }
 
+    @Test
+    public void testInvokeScript() throws Exception {
+        neow3j.invokeScript("00046e616d656724058e5e1b6008847cd662728549088a9ee82191").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"invokescript\","
+                        + "\"params\":[\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\"],\"id\":1}"
+        );
+    }
+
 }
