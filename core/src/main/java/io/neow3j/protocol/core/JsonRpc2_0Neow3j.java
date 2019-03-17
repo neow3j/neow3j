@@ -12,6 +12,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -429,6 +430,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(script),
                 neow3jService,
                 NeoInvokeScript.class);
+    }
+
+    @Override
+    public Request<?, NeoGetContractState> getContractState(String scriptHash) {
+        return new Request<>(
+                "getcontractstate",
+                Arrays.asList(scriptHash),
+                neow3jService,
+                NeoGetContractState.class);
     }
 
     @Override
