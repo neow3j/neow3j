@@ -86,4 +86,6 @@ public interface InterfaceCoreIT {
 
     void testInvokeScript() throws Exception;
 
+    void testGetContractState() throws Exception;
+
 }
