@@ -279,7 +279,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [x] `getblockheader <hash> [verbose=0]`: Returns the corresponding block header information according to the specified script hash.
 - [x] `getblocksysfee <index>`: Returns the system fees before the block according to the specified index.
 - [x] `getconnectioncount`: Gets the current number of connections for the node.
-- [ ] `getcontractstate <script_hash>`: Returns information about the contract based on the specified script hash.	
+- [x] `getcontractstate <script_hash>`: Returns information about the contract based on the specified script hash.
 - [x] `getnewaddress`: Creates a new address. **Needs to open the wallet**.
 - [x] `getrawmempool`: Gets a list of unconfirmed transactions in memory.
 - [x] `getrawtransaction <txid> [verbose=0]`: Returns the corresponding transaction information based on the specified hash value.
