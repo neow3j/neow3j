@@ -262,7 +262,7 @@ Help the development of neow3j by donating to the following addresses:
 
 ## NEO API Support
 
-### Version 2.9.0
+### Version 2.9.*
 
 The following NEO JSON-RPC methods are implemented in neow3j:
 
