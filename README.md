@@ -46,7 +46,7 @@ Add the neow3j dependencies to your Java project -- either using Gradle or Maven
 Java 8 & Android (min. API 24):
 
 ```groovy
-compile 'io.neow3j:core:1.0.8'
+compile 'io.neow3j:core:1.0.9'
 ```
 
 ### Maven
@@ -57,7 +57,7 @@ Java 8 & Android (min. API 24):
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>core</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
 </dependency>
 ```
 
