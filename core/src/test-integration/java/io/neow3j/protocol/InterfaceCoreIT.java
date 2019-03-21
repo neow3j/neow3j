@@ -88,4 +88,6 @@ public interface InterfaceCoreIT {
 
     void testGetContractState() throws Exception;
 
+    void testSubmitBlock() throws Exception;
+
 }

@@ -35,6 +35,7 @@ import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.Script;
 import io.neow3j.protocol.core.methods.response.Transaction;
@@ -1694,6 +1695,24 @@ public class ResponseTest extends ResponseTester {
         assertThat(getContractState.getContractState().getDescription(), is("GO NEO!!!"));
         assertThat(getContractState.getContractState().getProperties(), is(notNullValue()));
         assertThat(getContractState.getContractState().getProperties(), is(new NeoGetContractState.ContractStateProperties(true, false)));
+    }
+
+    @Test
+    public void testSubmitBlock() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": true\n"
+                        + "}"
+        );
+
+        NeoSubmitBlock submitBlock = deserialiseResponse(NeoSubmitBlock.class);
+        assertThat(submitBlock.getSubmitBlock(), is(notNullValue()));
+        assertThat(
+                submitBlock.getSubmitBlock(),
+                is(true)
+        );
     }
 
 }

@@ -566,4 +566,14 @@ public class RequestTest extends RequestTester {
         );
     }
 
+    @Test
+    public void testSubmitBlock() throws Exception {
+        neow3j.submitBlock("00000000000000000000000000000000").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"submitblock\","
+                        + "\"params\":[\"00000000000000000000000000000000\"],\"id\":1}"
+        );
+    }
+
 }

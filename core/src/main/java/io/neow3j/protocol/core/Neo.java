@@ -29,6 +29,7 @@ import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
 
@@ -122,5 +123,7 @@ public interface Neo {
     Request<?, NeoInvokeScript> invokeScript(String script);
 
     Request<?, NeoGetContractState> getContractState(String scriptHash);
+
+    Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex);
 
 }

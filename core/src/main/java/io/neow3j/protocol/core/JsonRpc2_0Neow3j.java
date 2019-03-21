@@ -31,6 +31,7 @@ import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
@@ -439,6 +440,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(scriptHash),
                 neow3jService,
                 NeoGetContractState.class);
+    }
+
+    @Override
+    public Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex) {
+        return new Request<>(
+                "submitblock",
+                Arrays.asList(serializedBlockAsHex),
+                neow3jService,
+                NeoSubmitBlock.class);
     }
 
     @Override
