@@ -256,7 +256,7 @@ Help the development of neow3j by donating to the following addresses:
 
 | Crypto   | Address                                      |
 |----------|----------------------------------------------|
-| NEO      | `ARvMqz3hEFE4qBkHAaPNxALquNQtBbH12f`         |
+| NEO      | `AHb3PPUY6a36Gd6JXCkn8j8LKtbEUr3UfZ`         |
 | ETH      | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
 | BTC      | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
 
