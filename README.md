@@ -17,7 +17,7 @@ You can now focus on building Java/Android applications that use the [functions]
 
 ## Features
 
-* Support to NEO node/client [API version 2.9.*](https://docs.neo.org/en-us/node/cli/apigen.html) (~80% currently implemented)
+* Support to NEO node/client [API version 2.9.*](https://docs.neo.org/en-us/node/cli/apigen.html) ([100% implemented](#NEO-API-Support))
 * Observable pattern to get info about past **and** upcoming NEO blocks
 * Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
 * Passphrase-protected Private Key implementation (NEP-2)
@@ -31,7 +31,6 @@ You can now focus on building Java/Android applications that use the [functions]
 
 ## Upcoming Features/Enhancements
 
-* 100% implementation of [API version 2.9.0](https://docs.neo.org/en-us/node/cli/apigen.html)
 * Documentation on using neow3j with Android apps
 * Observable pattern to get specific transactions
 * Improve the response model: introduce purpose-specific objects rather than the current raw Java types
@@ -296,7 +295,7 @@ The following NEO JSON-RPC methods are implemented in neow3j:
 - [x] `sendrawtransaction <hex>`: Broadcast a transaction over the network. See the network protocol documentation.
 - [x] `sendtoaddress <asset_id> <address> <value> [fee=0] [change_address]`: Transfer to specified address. **Needs to open the wallet**.
 - [x] `sendmany <outputs_array> [fee=0] [change_address]`: Bulk transfer order. **Needs to open the wallet**.
-- [ ] `submitblock <hex>`: Submit new blocks. **Needs to be a consensus node**.
+- [x] `submitblock <hex>`: Submit new blocks. **Needs to be a consensus node**.
 - [x] `validateaddress <address>`: Verify that the address is a correct NEO address.
 
 ## Why "neow3j"?
