@@ -250,6 +250,8 @@ NeoSendRawTransaction sendRawTransactionReq = neow3j.sendRawTransaction(rawTrans
 System.out.println(sendRawTransactionReq.getResult());
 ```
 
+For more code snippets and examples, check the [neow3j-examples](https://github.com/neow3j/neow3j-examples) repository.
+
 ## Donate
 
 Help the development of neow3j by donating to the following addresses:
