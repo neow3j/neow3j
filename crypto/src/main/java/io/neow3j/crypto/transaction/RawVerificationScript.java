@@ -9,6 +9,7 @@ import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,6 +29,10 @@ public class RawVerificationScript extends NeoSerializable {
 
     public RawVerificationScript(List<BigInteger> publicKeys) {
         this(publicKeys, 0);
+    }
+
+    public RawVerificationScript(BigInteger publicKey) {
+        this(Arrays.asList(publicKey), 1);
     }
 
     public List<BigInteger> getPublicKeys() {
