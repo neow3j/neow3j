@@ -257,7 +257,6 @@ public class RawTransactionTest {
         String fromAddress = signedRawTransaction.getFrom();
 
         assertEquals(address, fromAddress);
-        ;
         assertTrue(signedRawTransaction.verify(address));
 
     }
