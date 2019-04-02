@@ -62,7 +62,7 @@ then hash using [SHA-256](https://en.wikipedia.org/wiki/SHA-2). The result is th
    is `ce9e45ea76472571d66d002a3726104015e656df78491cc6e9d3df4bf71bc13c`. The checksum is the
    first 4 bytes of the double SHA-256 output, which is `ce9e45ea`.
 
-   5.3. Finally, concatenate both parts resulting in the forming the byte array
+   5.3. Finally, concatenate both parts resulting in the byte array
    `17295f83f83fc439f56e6e1fb062d89c6f538263d7ce9e45ea`.
 
    5.4. Compute the [Base58](https://en.wikipedia.org/wiki/Base58)
