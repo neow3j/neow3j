@@ -96,7 +96,7 @@ public class WalletUtils {
     }
 
     public static WalletFile loadWalletFile(String source) throws IOException {
-        return objectMapper.readValue(new File(source), WalletFile.class);
+        return loadWalletFile(new File(source));
     }
 
     public static WalletFile loadWalletFile(File source) throws IOException {
