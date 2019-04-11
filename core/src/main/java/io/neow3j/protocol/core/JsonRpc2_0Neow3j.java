@@ -2,7 +2,7 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
-import io.neow3j.protocol.core.methods.response.ContractParameter;
+import io.neow3j.model.types.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;

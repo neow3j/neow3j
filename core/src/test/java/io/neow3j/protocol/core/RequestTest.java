@@ -1,9 +1,9 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.model.types.ContractParameter;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
-import io.neow3j.protocol.core.methods.response.ContractParameter;
-import io.neow3j.protocol.core.methods.response.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Test;
@@ -454,7 +454,7 @@ public class RequestTest extends RequestTester {
                         // TODO: 2019-03-17: confirm how INTEROP_INTERFACE type is encoded
                         new ContractParameter(ContractParameterType.INTEROP_INTERFACE, "array"),
                         // TODO: 2019-03-17: confirm how VOID type is encoded
-                        new ContractParameter(ContractParameterType.VOID, null)
+                        new ContractParameter(ContractParameterType.VOID, "")
                 )
         ).send();
 
@@ -472,7 +472,8 @@ public class RequestTest extends RequestTester {
                         + "{\"type\":\"String\",\"value\":\"name\"},"
                         + "{\"type\":\"Array\",\"value\":\"array\"},"
                         + "{\"type\":\"InteropInterface\",\"value\":\"array\"},"
-                        + "{\"type\":\"Void\",\"value\":null}"
+                        // TODO: 2019-04-11: confirm whether VOID really returns an empty value
+                        + "{\"type\":\"Void\",\"value\":\"\"}"
                         + "]"
                         + "],\"id\":1}"
         );
