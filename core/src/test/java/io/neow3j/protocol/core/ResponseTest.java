@@ -42,6 +42,8 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -1715,4 +1717,68 @@ public class ResponseTest extends ResponseTester {
         );
     }
 
+    @Test
+    public void testApplicationLog() {
+        buildResponse(
+                "{\n" +
+                        "  \"jsonrpc\": \"2.0\",\n" +
+                        "  \"id\": 1,\n" +
+                        "  \"result\": {\n" +
+                        "    \"txid\": \"0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\",\n" +
+                        "    \"executions\": [\n" +
+                        "      {\n" +
+                        "        \"trigger\": \"Application\",\n" +
+                        "        \"contract\": \"0x857477dd9457d09aff11fc4a791a247a42dbb17f\",\n" +
+                        "        \"vmstate\": \"HALT, BREAK\",\n" +
+                        "        \"gas_consumed\": \"0.173\",\n" +
+                        "        \"stack\": [\n" +
+                        "          {\n" +
+                        "            \"type\": \"ByteArray\",\n" +
+                        "            \"value\": \"b100\"\n" +
+                        "          }\n" +
+                        "        ],\n" +
+                        "        \"notifications\": [\n" +
+                        "          {\n" +
+                        "            \"contract\": \"0x43fa0777cf984faea46b954ec640a266bcbc3319\",\n" +
+                        "            \"state\": {\n" +
+                        "              \"type\": \"Array\",\n" +
+                        "              \"value\": [\n" +
+                        "                {\n" +
+                        "                  \"type\": \"ByteArray\",\n" +
+                        "                  \"value\": \"72656164\"\n" +
+                        "                },\n" +
+                        "                {\n" +
+                        "                  \"type\": \"ByteArray\",\n" +
+                        "                  \"value\": \"10d46912932d6ebcd1d3c4a27a1a8ea77e68ac95\"\n" +
+                        "                },\n" +
+                        "                {\n" +
+                        "                  \"type\": \"ByteArray\",\n" +
+                        "                  \"value\": \"b100\"\n" +
+                        "                }\n" +
+                        "              ]\n" +
+                        "            }\n" +
+                        "          }\n" +
+                        "        ]\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }\n" +
+                        "}"
+        );
+
+        NeoGetApplicationLog applicationLog = deserialiseResponse(NeoGetApplicationLog.class);
+        assertThat(applicationLog.getApplicationLog().getTransactionId(), is("0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b"));
+        assertThat(applicationLog.getApplicationLog().getExecutions(), hasSize(1));
+
+        NeoApplicationLog.Execution execution = applicationLog.getApplicationLog().getExecutions().get(0);
+
+        assertThat(execution.getTrigger(), is("Application"));
+        assertThat(execution.getContract(), is("0x857477dd9457d09aff11fc4a791a247a42dbb17f"));
+        assertThat(execution.getState(), is("HALT, BREAK"));
+        assertThat(execution.getGasConsumed(), is("0.173"));
+        assertThat(execution.getStack(), hasSize(1));
+        assertThat(execution.getNotifications(), hasSize(1));
+        assertThat(execution.getNotifications().get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
+        assertThat(execution.getNotifications().get(0).getState().getType(), is(ContractParameterType.ARRAY));
+        assertThat(execution.getNotifications().get(0).getState().getValue(), hasSize(3));
+    }
 }

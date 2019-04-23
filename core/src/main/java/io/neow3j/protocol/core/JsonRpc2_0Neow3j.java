@@ -34,6 +34,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
 import rx.Observable;
@@ -490,6 +491,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
             BlockParameter startBlock, boolean fullTransactionObjects) {
         return neow3jRx.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 startBlock, fullTransactionObjects, blockTime);
+    }
+
+    @Override
+    public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
+        return new Request<>(
+                "getapplicationlog",
+                Collections.singletonList(txId),
+                neow3jService,
+                NeoGetApplicationLog.class);
     }
 
     @Override
