@@ -49,6 +49,7 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.List;
 
 import static io.neow3j.utils.Numeric.prependHexPrefix;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -1777,8 +1778,20 @@ public class ResponseTest extends ResponseTester {
         assertThat(execution.getGasConsumed(), is("0.173"));
         assertThat(execution.getStack(), hasSize(1));
         assertThat(execution.getNotifications(), hasSize(1));
-        assertThat(execution.getNotifications().get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
-        assertThat(execution.getNotifications().get(0).getState().getType(), is(ContractParameterType.ARRAY));
-        assertThat(execution.getNotifications().get(0).getState().getValue(), hasSize(3));
+
+        List<NeoApplicationLog.Notification> notifications = execution.getNotifications();
+        assertThat(notifications.get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
+        assertThat(notifications.get(0).getState().getType(), is(ContractParameterType.ARRAY));
+        assertThat(notifications.get(0).getState().getValue(), hasSize(3));
+
+        List<NeoApplicationLog.EventParameter> values = notifications.get(0).getState().getValue();
+
+        String eventName = values.get(0).getAsString();
+        String address = values.get(1).getAsAddress();
+        BigInteger amount = values.get(2).getAsNumber();
+
+        assertThat(eventName, is("read"));
+        assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
+        assertThat(amount, is(BigInteger.valueOf(177)));
     }
 }

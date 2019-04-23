@@ -6,7 +6,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.model.types.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.core.HexUtils;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -106,7 +108,7 @@ public class NeoApplicationLog {
 
             @JsonProperty("value")
             @JsonSetter(nulls = Nulls.AS_EMPTY)
-            private List<ContractParameter> value;
+            private List<EventParameter> value;
 
             public ContractParameterType getType() {
                 return type;
@@ -116,11 +118,11 @@ public class NeoApplicationLog {
                 this.type = type;
             }
 
-            public List<ContractParameter> getValue() {
+            public List<EventParameter> getValue() {
                 return value;
             }
 
-            public void setValue(List<ContractParameter> value) {
+            public void setValue(List<EventParameter> value) {
                 this.value = value;
             }
         }
@@ -140,6 +142,31 @@ public class NeoApplicationLog {
         public void setState(State state) {
             this.state = state;
         }
+    }
+
+    public static class EventParameter extends ContractParameter {
+
+        public String getAsAddress() {
+            if (this.value instanceof String) {
+                return HexUtils.scriptHashToAddress((String) this.value);
+            }
+            return null;
+        }
+
+        public String getAsString() {
+            if (this.value instanceof String) {
+                return HexUtils.hexToString((String) this.value);
+            }
+            return null;
+        }
+
+        public BigInteger getAsNumber() {
+            if (this.value instanceof String) {
+                return HexUtils.hexToInteger((String) this.value);
+            }
+            return null;
+        }
+
     }
 
     public String getTransactionId() {

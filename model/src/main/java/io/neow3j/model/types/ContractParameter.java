@@ -17,7 +17,7 @@ public class ContractParameter {
     private ContractParameterType paramType;
 
     @JsonProperty("value")
-    private Object value;
+    protected Object value;
 
     public ContractParameter() {
     }
