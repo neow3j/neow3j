@@ -13,6 +13,10 @@ public class ArrayUtils {
         return array;
     }
 
+    public static byte[] concatenate(byte[] a, byte b) {
+        return concatenate(a, new byte[]{b});
+    }
+
     public static byte[] concatenate(byte a, byte[] b) {
         return concatenate(new byte[]{a}, b);
     }
@@ -37,11 +41,17 @@ public class ArrayUtils {
     }
 
     public static byte[] getFirstNBytes(byte[] array, int nBytes) {
-        return Arrays.copyOfRange(array, 0, nBytes);
+        if (array != null && array.length > 0) {
+            return Arrays.copyOfRange(array, 0, nBytes);
+        }
+        return new byte[]{};
     }
 
     public static byte[] getLastNBytes(byte[] array, int nBytes) {
-        return Arrays.copyOfRange(array, array.length - nBytes, array.length);
+        if (array != null && array.length > 0) {
+            return Arrays.copyOfRange(array, array.length - nBytes, array.length);
+        }
+        return new byte[]{};
     }
 
     public static byte[] xor(byte[] array1, byte[] array2) throws IllegalArgumentException {
@@ -54,10 +64,6 @@ public class ArrayUtils {
             result[i] = (byte) (b ^ array2[i++]);
         }
         return result;
-    }
-
-    public static int toUnsignedInt(byte b) {
-        return ((int) b) & 0xff;
     }
 
     public static byte[] trimLeadingBytes(byte[] bytes, byte b) {
@@ -73,5 +79,19 @@ public class ArrayUtils {
     public static byte[] trimLeadingZeroes(byte[] bytes) {
         return trimLeadingBytes(bytes, (byte) 0);
     }
+
+    public static byte[] toPrimitive(final Byte[] array) {
+        if (array == null) {
+            return null;
+        } else if (array.length == 0) {
+            return new byte[0];
+        }
+        final byte[] result = new byte[array.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i].byteValue();
+        }
+        return result;
+    }
+
 
 }
