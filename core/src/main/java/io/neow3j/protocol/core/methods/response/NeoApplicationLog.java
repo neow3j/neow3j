@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.crypto.KeyUtils;
 import io.neow3j.model.types.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.HexUtils;
+import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -19,6 +20,14 @@ public class NeoApplicationLog {
 
     @JsonProperty("executions")
     private List<Execution> executions;
+
+    public NeoApplicationLog() {
+    }
+
+    public NeoApplicationLog(String transactionId, List<Execution> executions) {
+        this.transactionId = transactionId;
+        this.executions = executions;
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Execution {
@@ -42,52 +51,40 @@ public class NeoApplicationLog {
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<Notification> notifications;
 
-        public String getTrigger() {
-            return trigger;
+        public Execution() {
         }
 
-        public void setTrigger(String trigger) {
+        public Execution(String trigger, String contract, String state, String gasConsumed, List<ContractParameter> stack, List<Notification> notifications) {
             this.trigger = trigger;
+            this.contract = contract;
+            this.state = state;
+            this.gasConsumed = gasConsumed;
+            this.stack = stack;
+            this.notifications = notifications;
+        }
+
+        public String getTrigger() {
+            return trigger;
         }
 
         public String getContract() {
             return contract;
         }
 
-        public void setContract(String contract) {
-            this.contract = contract;
-        }
-
         public String getState() {
             return state;
-        }
-
-        public void setState(String state) {
-            this.state = state;
         }
 
         public String getGasConsumed() {
             return gasConsumed;
         }
 
-        public void setGasConsumed(String gasConsumed) {
-            this.gasConsumed = gasConsumed;
-        }
-
         public List<ContractParameter> getStack() {
             return stack;
         }
 
-        public void setStack(List<ContractParameter> stack) {
-            this.stack = stack;
-        }
-
         public List<Notification> getNotifications() {
             return notifications;
-        }
-
-        public void setNotifications(List<Notification> notifications) {
-            this.notifications = notifications;
         }
     }
 
@@ -100,6 +97,14 @@ public class NeoApplicationLog {
         @JsonProperty("state")
         private State state;
 
+        public Notification() {
+        }
+
+        public Notification(String contract, State state) {
+            this.contract = contract;
+            this.state = state;
+        }
+
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class State {
 
@@ -110,20 +115,20 @@ public class NeoApplicationLog {
             @JsonSetter(nulls = Nulls.AS_EMPTY)
             private List<EventParameter> value;
 
+            public State() {
+            }
+
+            public State(ContractParameterType type, List<EventParameter> value) {
+                this.type = type;
+                this.value = value;
+            }
+
             public ContractParameterType getType() {
                 return type;
             }
 
-            public void setType(ContractParameterType type) {
-                this.type = type;
-            }
-
             public List<EventParameter> getValue() {
                 return value;
-            }
-
-            public void setValue(List<EventParameter> value) {
-                this.value = value;
             }
         }
 
@@ -131,16 +136,8 @@ public class NeoApplicationLog {
             return contract;
         }
 
-        public void setContract(String contract) {
-            this.contract = contract;
-        }
-
         public State getState() {
             return state;
-        }
-
-        public void setState(State state) {
-            this.state = state;
         }
     }
 
@@ -148,21 +145,21 @@ public class NeoApplicationLog {
 
         public String getAsAddress() {
             if (this.value instanceof String) {
-                return HexUtils.scriptHashToAddress((String) this.value);
+                return KeyUtils.scriptHashToAddress((String) this.value);
             }
             return null;
         }
 
         public String getAsString() {
             if (this.value instanceof String) {
-                return HexUtils.hexToString((String) this.value);
+                return Numeric.hexToString((String) this.value);
             }
             return null;
         }
 
         public BigInteger getAsNumber() {
             if (this.value instanceof String) {
-                return HexUtils.hexToInteger((String) this.value);
+                return Numeric.hexToInteger((String) this.value);
             }
             return null;
         }
@@ -173,15 +170,7 @@ public class NeoApplicationLog {
         return transactionId;
     }
 
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
-
     public List<Execution> getExecutions() {
         return executions;
-    }
-
-    public void setExecutions(List<Execution> executions) {
-        this.executions = executions;
     }
 }

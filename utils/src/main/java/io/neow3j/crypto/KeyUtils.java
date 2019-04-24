@@ -2,6 +2,7 @@ package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 
 public class KeyUtils {
 
@@ -43,6 +44,11 @@ public class KeyUtils {
         byte[] buffer = new byte[20];
         System.arraycopy(data, 1, buffer, 0, 20);
         return buffer;
+    }
+
+    public static String scriptHashToAddress(String input) {
+        byte[] inputBytes = Numeric.hexStringToByteArray(input);
+        return KeyUtils.toAddress(inputBytes);
     }
 
 }
