@@ -1,8 +1,11 @@
 package io.neow3j.utils;
 
 import org.junit.Test;
+
 import java.util.ArrayList;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class CollectionTest {
 
@@ -38,10 +41,10 @@ public class CollectionTest {
 
     @Test
     public void testTail() {
-        assertArrayEquals(new String[] {}, Collection.tail(new String[] {}));
-        assertArrayEquals(new String[] {}, Collection.tail(new String[] {"1"}));
-        assertArrayEquals(new String[] {"2"}, Collection.tail(new String[] {"1", "2"}));
-        assertArrayEquals(new String[] {"2", "3"}, Collection.tail(new String[] {"1", "2", "3"}));
+        assertArrayEquals(new String[]{}, Collection.tail(new String[]{}));
+        assertArrayEquals(new String[]{}, Collection.tail(new String[]{"1"}));
+        assertArrayEquals(new String[]{"2"}, Collection.tail(new String[]{"1", "2"}));
+        assertArrayEquals(new String[]{"2", "3"}, Collection.tail(new String[]{"1", "2", "3"}));
     }
 
 }
