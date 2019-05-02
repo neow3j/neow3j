@@ -224,6 +224,21 @@ public final class Numeric {
         return toHexString(input, 0, input.length, true);
     }
 
+    public static String hexToString(String input) {
+        return new String(Numeric.hexStringToByteArray(input));
+    }
+
+    public static BigInteger hexToInteger(String input) {
+        String reverse = reverseHexString(input);
+        return Numeric.toBigInt(reverse);
+    }
+
+    public static String reverseHexString(String input) {
+        byte[] inputBytes = hexStringToByteArray(input);
+        byte[] reversedBytes = ArrayUtils.reverseArray(inputBytes);
+        return toHexStringNoPrefix(reversedBytes);
+    }
+
     public static byte asByte(int m, int n) {
         return (byte) ((m << 4) | n);
     }

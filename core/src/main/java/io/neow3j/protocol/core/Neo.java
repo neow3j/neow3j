@@ -32,6 +32,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 
 import java.util.List;
 
@@ -125,5 +126,7 @@ public interface Neo {
     Request<?, NeoGetContractState> getContractState(String scriptHash);
 
     Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex);
+
+    Request<?, NeoGetApplicationLog> getApplicationLog(String txId);
 
 }

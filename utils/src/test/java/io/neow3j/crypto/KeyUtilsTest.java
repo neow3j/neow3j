@@ -28,4 +28,12 @@ public class KeyUtilsTest {
         );
     }
 
+    @Test
+    public void testScriptHashToAddress() {
+        String script = "d336d7eb9975a29b2404fdb28185e277a4b299bc";
+        String address = "Ab2fvZdmnM4HwDgVbdBrbTLz1wK5TcEyhU";
+
+        assertThat(KeyUtils.scriptHashToAddress(script), is(address));
+    }
+
 }
