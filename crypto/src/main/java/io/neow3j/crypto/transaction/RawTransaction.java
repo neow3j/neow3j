@@ -18,8 +18,6 @@ public class RawTransaction extends NeoSerializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RawTransaction.class);
 
-    public static final byte TRANSACTION_VERSION = 0x00;
-
     private TransactionType transactionType;
     private byte version;
     private List<Object> specificTransactionData;
@@ -31,9 +29,9 @@ public class RawTransaction extends NeoSerializable {
     public RawTransaction() {
     }
 
-    protected RawTransaction(TransactionType transactionType, byte version, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+    protected RawTransaction(TransactionType transactionType, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
         this.transactionType = transactionType;
-        this.version = version;
+        this.version = transactionType.version();
         this.specificTransactionData = specificTransactionData != null ? specificTransactionData : new ArrayList<>();
         this.attributes = attributes != null ? attributes : new ArrayList<>();
         this.inputs = inputs != null ? inputs : new ArrayList<>();
@@ -42,19 +40,15 @@ public class RawTransaction extends NeoSerializable {
     }
 
     public static RawTransaction createTransaction(TransactionType transactionType) {
-        return createTransaction(transactionType, TRANSACTION_VERSION);
+        return createTransaction(transactionType, null, null, null, null, null);
     }
 
-    public static RawTransaction createTransaction(TransactionType transactionType, byte version) {
-        return createTransaction(transactionType, version, null, null, null, null, null);
+    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs) {
+        return new RawTransaction(transactionType, specificTransactionData, attributes, inputs, outputs, null);
     }
 
-    public static RawTransaction createTransaction(TransactionType transactionType, byte version, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs) {
-        return new RawTransaction(transactionType, version, specificTransactionData, attributes, inputs, outputs, null);
-    }
-
-    public static RawTransaction createTransaction(TransactionType transactionType, byte version, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-        return new RawTransaction(transactionType, version, specificTransactionData, attributes, inputs, outputs, scripts);
+    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+        return new RawTransaction(transactionType, specificTransactionData, attributes, inputs, outputs, scripts);
     }
 
     public static RawTransaction createContractTransaction() {
@@ -62,11 +56,11 @@ public class RawTransaction extends NeoSerializable {
     }
 
     public static RawTransaction createContractTransaction(List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs) {
-        return createTransaction(TransactionType.CONTRACT_TRANSACTION, TRANSACTION_VERSION, specificTransactionData, attributes, inputs, outputs);
+        return createTransaction(TransactionType.CONTRACT_TRANSACTION, specificTransactionData, attributes, inputs, outputs);
     }
 
     public static RawTransaction createContractTransaction(List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-        return createTransaction(TransactionType.CONTRACT_TRANSACTION, TRANSACTION_VERSION, specificTransactionData, attributes, inputs, outputs, scripts);
+        return createTransaction(TransactionType.CONTRACT_TRANSACTION, specificTransactionData, attributes, inputs, outputs, scripts);
     }
 
     public TransactionType getTransactionType() {
