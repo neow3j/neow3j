@@ -38,6 +38,18 @@ public class ContractParameter {
         this.value = value;
     }
 
+    public String getParamName() {
+        return paramName;
+    }
+
+    public ContractParameterType getParamType() {
+        return paramType;
+    }
+
+    public Object getValue() {
+        return value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
