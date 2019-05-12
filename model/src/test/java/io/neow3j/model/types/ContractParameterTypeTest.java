@@ -30,8 +30,18 @@ public class ContractParameterTypeTest {
         assertThat(ContractParameterType.valueOf((byte) 0x07), is(ContractParameterType.STRING));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testValueOf_NotFound() {
+        assertThat(ContractParameterType.valueOf((byte) 0xab), is(ContractParameterType.STRING));
+    }
+
     @Test
     public void testFromJsonValue() {
         assertThat(ContractParameterType.fromJsonValue("String"), is(ContractParameterType.STRING));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromJsonValue_NotFound() {
+        assertThat(ContractParameterType.fromJsonValue("Anything"), is(ContractParameterType.STRING));
     }
 }
