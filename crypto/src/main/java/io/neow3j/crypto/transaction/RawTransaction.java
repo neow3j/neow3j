@@ -104,7 +104,7 @@ public abstract class RawTransaction extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeByte(this.transactionType.byteValue());
-        writer.writeByte(this.transactionType.version());
+        writer.writeByte(this.version);
         serializeExclusive(writer);
         writer.writeSerializableVariable(this.attributes);
         writer.writeSerializableVariable(this.inputs);
