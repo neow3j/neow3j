@@ -11,7 +11,6 @@ public class NEOAsset {
 
     public static final AssetType TYPE = AssetType.GOVERNING_TOKEN;
 
-
     public static BigInteger toBigInt(String value) {
         if (value == null) {
             return BigInteger.ZERO;
