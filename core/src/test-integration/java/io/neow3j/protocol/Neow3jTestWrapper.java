@@ -695,7 +695,6 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
     private byte[] createContractTransaction(ECKeyPair keyPair, String inputHash, int inputIndex, BigDecimal amountToSend, String addressToSend, BigDecimal amountAsChange, String changeAddress) {
         RawTransaction tUnsigned = RawTransaction.createContractTransaction(
                 null,
-                null,
                 Arrays.asList(
                         new RawTransactionInput(inputHash, inputIndex)
                 ),

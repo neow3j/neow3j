@@ -14,15 +14,12 @@ import java.util.List;
 /**
  * Transaction class used for signing transactions locally.<br>
  */
-public class RawTransaction extends NeoSerializable {
+public abstract class RawTransaction extends NeoSerializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RawTransaction.class);
 
-    public static final byte TRANSACTION_VERSION = 0x00;
-
     private TransactionType transactionType;
     private byte version;
-    private List<Object> specificTransactionData;
     private List<RawTransactionAttribute> attributes;
     private List<RawTransactionInput> inputs;
     private List<RawTransactionOutput> outputs;
@@ -31,42 +28,32 @@ public class RawTransaction extends NeoSerializable {
     public RawTransaction() {
     }
 
-    protected RawTransaction(TransactionType transactionType, byte version, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+    protected RawTransaction(TransactionType transactionType, List<RawTransactionAttribute> attributes,
+                             List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs,
+                             List<RawScript> scripts) {
+
         this.transactionType = transactionType;
-        this.version = version;
-        this.specificTransactionData = specificTransactionData != null ? specificTransactionData : new ArrayList<>();
+        this.version = transactionType.version();
         this.attributes = attributes != null ? attributes : new ArrayList<>();
         this.inputs = inputs != null ? inputs : new ArrayList<>();
         this.outputs = outputs != null ? outputs : new ArrayList<>();
         this.scripts = scripts != null ? scripts : new ArrayList<>();
     }
 
-    public static RawTransaction createTransaction(TransactionType transactionType) {
-        return createTransaction(transactionType, TRANSACTION_VERSION);
+    public static ContractTransaction createContractTransaction() {
+        return createContractTransaction(null, null, null);
     }
 
-    public static RawTransaction createTransaction(TransactionType transactionType, byte version) {
-        return createTransaction(transactionType, version, null, null, null, null, null);
+    public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
+                                                           List<RawTransactionInput> inputs,
+                                                           List<RawTransactionOutput> outputs) {
+        return createContractTransaction(attributes, inputs, outputs, null);
     }
 
-    public static RawTransaction createTransaction(TransactionType transactionType, byte version, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs) {
-        return new RawTransaction(transactionType, version, specificTransactionData, attributes, inputs, outputs, null);
-    }
-
-    public static RawTransaction createTransaction(TransactionType transactionType, byte version, List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-        return new RawTransaction(transactionType, version, specificTransactionData, attributes, inputs, outputs, scripts);
-    }
-
-    public static RawTransaction createContractTransaction() {
-        return createTransaction(TransactionType.CONTRACT_TRANSACTION);
-    }
-
-    public static RawTransaction createContractTransaction(List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs) {
-        return createTransaction(TransactionType.CONTRACT_TRANSACTION, TRANSACTION_VERSION, specificTransactionData, attributes, inputs, outputs);
-    }
-
-    public static RawTransaction createContractTransaction(List<Object> specificTransactionData, List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-        return createTransaction(TransactionType.CONTRACT_TRANSACTION, TRANSACTION_VERSION, specificTransactionData, attributes, inputs, outputs, scripts);
+    public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
+                                                           List<RawTransactionInput> inputs,
+                                                           List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+        return new ContractTransaction(attributes, inputs, outputs, scripts);
     }
 
     public TransactionType getTransactionType() {
@@ -75,10 +62,6 @@ public class RawTransaction extends NeoSerializable {
 
     public byte getVersion() {
         return version;
-    }
-
-    public List<Object> getSpecificTransactionData() {
-        return specificTransactionData;
     }
 
     public List<RawTransactionAttribute> getAttributes() {
@@ -106,6 +89,7 @@ public class RawTransaction extends NeoSerializable {
         this.transactionType = TransactionType.valueOf(reader.readByte());
         this.version = reader.readByte();
         try {
+            deserializeExclusive(reader);
             this.attributes = reader.readSerializableList(RawTransactionAttribute.class);
             this.inputs = reader.readSerializableList(RawTransactionInput.class);
             this.outputs = reader.readSerializableList(RawTransactionOutput.class);
@@ -121,6 +105,7 @@ public class RawTransaction extends NeoSerializable {
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeByte(this.transactionType.byteValue());
         writer.writeByte(this.version);
+        serializeExclusive(writer);
         writer.writeSerializableVariable(this.attributes);
         writer.writeSerializableVariable(this.inputs);
         writer.writeSerializableVariable(this.outputs);
@@ -129,4 +114,7 @@ public class RawTransaction extends NeoSerializable {
         }
     }
 
+    public abstract void serializeExclusive(BinaryWriter writer) throws IOException;
+
+    public abstract void deserializeExclusive(BinaryReader reader) throws IOException, IllegalAccessException, InstantiationException;
 }
