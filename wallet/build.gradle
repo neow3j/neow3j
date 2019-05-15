@@ -1,0 +1,13 @@
+description 'neow3j wallet'
+
+dependencies {
+    compile project(':crypto')
+
+    configurations {
+        testArtifacts.extendsFrom testRuntime
+    }
+
+    artifacts {
+        testArtifacts testJar
+    }
+}

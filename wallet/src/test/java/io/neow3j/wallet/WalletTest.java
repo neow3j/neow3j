@@ -1,5 +1,8 @@
-package io.neow3j.crypto;
+package io.neow3j.wallet;
 
+import io.neow3j.crypto.Credentials;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
@@ -17,7 +20,7 @@ public class WalletTest {
         byte[] privateKey = WIF.getPrivateKeyFromWIF("L44B5gGEpqEDRS9vVPz7QT35jcBG2r3CZwSwQ4fCewXAhAhqGVpP");
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
 
-        WalletFile.Account account = Wallet.createStandardAccount("TestingOneTwoThree", keyPair);
+        Account account = Wallet.createStandardAccount("TestingOneTwoThree", keyPair);
 
         assertEquals("6PYVPVe1fQznphjbUxXP9KZJqPMVnVwCx5s5pr5axRJ8uHkMtZg97eT5kL", account.getKey());
     }
@@ -28,7 +31,7 @@ public class WalletTest {
         byte[] privateKey = WIF.getPrivateKeyFromWIF("KwYgW8gcxj1JWJXhPSu4Fqwzfhp5Yfi42mdYmMa4XqK7NJxXUSK7");
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
 
-        WalletFile.Account account = Wallet.createStandardAccount("Satoshi", keyPair);
+        Account account = Wallet.createStandardAccount("Satoshi", keyPair);
 
         assertEquals("6PYN6mjwYfjPUuYT3Exajvx25UddFVLpCw4bMsmtLdnKwZ9t1Mi3CfKe8S", account.getKey());
     }
@@ -36,7 +39,7 @@ public class WalletTest {
     @Test
     public void testDecryptStandard1() throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
 
-        WalletFile.Account account = new WalletFile.Account(
+        Account account = new Account(
                 "AStZHy8E6StCqYQbzMqi4poH7YNDHQKxvt",
                 "",
                 true,
@@ -57,7 +60,7 @@ public class WalletTest {
     @Test
     public void testDecryptStandard2() throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
 
-        WalletFile.Account account = new WalletFile.Account(
+        Account account = new Account(
                 "AXoxAX2eJfJ1shNpWqUxRh3RWNUJqvQvVa",
                 "",
                 true,
@@ -78,7 +81,7 @@ public class WalletTest {
     @Test
     public void testDecryptStandard3() throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
 
-        WalletFile.Account account = new WalletFile.Account(
+        Account account = new Account(
                 "AdGPiWRqqoFMauM6anTNFB7MyBwQhEANyZ",
                 "",
                 true,

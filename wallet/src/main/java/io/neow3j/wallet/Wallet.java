@@ -1,5 +1,8 @@
-package io.neow3j.crypto;
+package io.neow3j.wallet;
 
+import io.neow3j.crypto.Credentials;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
@@ -20,6 +23,7 @@ import java.util.Arrays;
 
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
+import io.neow3j.crypto.SecureRandomUtils;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
@@ -55,18 +59,18 @@ public class Wallet {
         addBouncyCastle();
     }
 
-    public static WalletFile.Account createAccount(String accountName,
-                                                   String password,
-                                                   ECKeyPair ecKeyPair,
-                                                   int n,
-                                                   int p,
-                                                   int r)
+    public static Account createAccount(String accountName,
+                                        String password,
+                                        ECKeyPair ecKeyPair,
+                                        int n,
+                                        int p,
+                                        int r)
             throws CipherException {
 
         byte[] encryptedPrivKey = encrypt(password, ecKeyPair, n, p, r);
         String encodedPrivateKey = Hash.base58CheckEncode(encryptedPrivKey);
 
-        return new WalletFile.Account(
+        return new Account(
                 Credentials.create(ecKeyPair).getAddress(),
                 accountName,
                 true,
@@ -77,7 +81,7 @@ public class Wallet {
         );
     }
 
-    public static WalletFile.Account createStandardAccount(String password, ECKeyPair ecKeyPair)
+    public static Account createStandardAccount(String password, ECKeyPair ecKeyPair)
             throws CipherException {
         return createAccount(DEFAULT_ACCOUNT_NAME, password, ecKeyPair, N_STANDARD, P_STANDARD, R);
     }
@@ -86,7 +90,7 @@ public class Wallet {
         return new WalletFile(
                 name,
                 CURRENT_VERSION,
-                new WalletFile.ScryptParams(n, r, p),
+                new ScryptParams(n, r, p),
                 Arrays.asList(),
                 null
         );
@@ -96,7 +100,7 @@ public class Wallet {
         return new WalletFile(
                 DEFAULT_WALLET_NAME,
                 CURRENT_VERSION,
-                new WalletFile.ScryptParams(N_STANDARD, R, P_STANDARD),
+                new ScryptParams(N_STANDARD, R, P_STANDARD),
                 new ArrayList<>(),
                 null
         );
@@ -187,17 +191,17 @@ public class Wallet {
         return getFirstNBytes(addressHashed, 4);
     }
 
-    public static ECKeyPair decryptStandard(String password, WalletFile walletFile, WalletFile.Account account)
+    public static ECKeyPair decryptStandard(String password, WalletFile walletFile, Account account)
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
         return decrypt(password, walletFile, account, N_STANDARD, P_STANDARD, R);
     }
 
-    public static ECKeyPair decrypt(String password, WalletFile walletFile, WalletFile.Account account, int n, int p, int r)
+    public static ECKeyPair decrypt(String password, WalletFile walletFile, Account account, int n, int p, int r)
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
 
         validate(walletFile, n, p, r);
 
-        WalletFile.ScryptParams scryptParams = walletFile.getScrypt();
+        ScryptParams scryptParams = walletFile.getScrypt();
 
         int nWallet = scryptParams.getN();
         int pWallet = scryptParams.getP();
@@ -238,7 +242,7 @@ public class Wallet {
     }
 
     static void validate(WalletFile walletFile, int n, int p, int r) throws NEP2InvalidFormat {
-        WalletFile.ScryptParams scryptParams = walletFile.getScrypt();
+        ScryptParams scryptParams = walletFile.getScrypt();
         validateVersion(walletFile);
         validateScryptParams(scryptParams, n, p, r);
     }
@@ -249,7 +253,7 @@ public class Wallet {
         }
     }
 
-    static void validateScryptParams(WalletFile.ScryptParams scryptParams, int n, int p, int r) throws NEP2InvalidFormat {
+    static void validateScryptParams(ScryptParams scryptParams, int n, int p, int r) throws NEP2InvalidFormat {
         if (scryptParams.getN() != n || scryptParams.getP() != p || scryptParams.getR() != r) {
             throw new NEP2InvalidFormat("Wallet scrypt params are incompatible with the provided values.");
         }

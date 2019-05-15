@@ -1,13 +1,19 @@
-package io.neow3j.crypto;
+package io.neow3j.wallet;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.crypto.Credentials;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.KeyUtils;
+import io.neow3j.crypto.Keys;
+import io.neow3j.crypto.MnemonicUtils;
+import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2AccountNotFound;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.utils.Numeric;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +56,7 @@ public class WalletUtils {
             throws CipherException, IOException {
 
         WalletFile standardWallet = Wallet.createStandardWallet();
-        WalletFile.Account standardAccount = Wallet.createStandardAccount(password, ecKeyPair);
+        Account standardAccount = Wallet.createStandardAccount(password, ecKeyPair);
         standardWallet.addAccount(standardAccount);
 
         return generateWalletFile(standardWallet, destinationDirectory);
@@ -113,7 +119,7 @@ public class WalletUtils {
 
         WalletFile walletFile = objectMapper.readValue(source, WalletFile.class);
 
-        WalletFile.Account account = walletFile.getAccounts().stream()
+        Account account = walletFile.getAccounts().stream()
                 .filter((a) -> a.getAddress() != null)
                 .filter((a) -> a.getAddress().equals(accountAddress))
                 .findFirst()
@@ -122,9 +128,9 @@ public class WalletUtils {
         return loadCredentials(account, password, walletFile);
     }
 
-    public static Credentials loadCredentials(WalletFile.Account account, String password, WalletFile walletFile)
+    public static Credentials loadCredentials(Account account, String password, WalletFile walletFile)
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
-        WalletFile.ScryptParams scryptParams = walletFile.getScrypt();
+        ScryptParams scryptParams = walletFile.getScrypt();
         ECKeyPair decrypted = Wallet.decrypt(password, walletFile, account, scryptParams.getN(), scryptParams.getP(), scryptParams.getR());
         return Credentials.create(decrypted);
     }
