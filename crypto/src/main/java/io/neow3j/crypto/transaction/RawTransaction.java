@@ -6,10 +6,13 @@ import io.neow3j.io.NeoSerializable;
 import io.neow3j.model.types.TransactionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.neow3j.model.types.TransactionType.CONTRACT_TRANSACTION;
 
 /**
  * Transaction class used for signing transactions locally.<br>
@@ -40,8 +43,52 @@ public abstract class RawTransaction extends NeoSerializable {
         this.scripts = scripts != null ? scripts : new ArrayList<>();
     }
 
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createTransaction(TransactionType transactionType) {
+        return createTransaction(transactionType, null, null, null, null, null);
+    }
+
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData,
+                                                   List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs,
+                                                   List<RawTransactionOutput> outputs) {
+        return createTransaction(transactionType, specificTransactionData, attributes, inputs, outputs, null);
+    }
+
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData,
+                                                   List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs,
+                                                   List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+
+        switch (transactionType) {
+            case CONTRACT_TRANSACTION:
+                return new ContractTransaction(attributes, inputs, outputs, scripts);
+            case CLAIM_TRANSACTION:
+                return new ClaimTransaction(attributes, outputs, inputs, scripts);
+            default:
+                throw new NotImplementedException();
+        }
+    }
+
     public static ContractTransaction createContractTransaction() {
         return createContractTransaction(null, null, null);
+    }
+
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
+                                                           List<RawTransactionAttribute> attributes,
+                                                           List<RawTransactionInput> inputs,
+                                                           List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+
+        return createContractTransaction(attributes, inputs, outputs, scripts);
     }
 
     public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
