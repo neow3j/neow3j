@@ -245,4 +245,12 @@ public class NumericTest {
         Assert.assertThat(Numeric.hexToInteger(hex), is(original));
     }
 
+    @Test
+    public void testFromFixed8ToBigDecimal() {
+        byte[] fixed8 = {(byte)0x02, (byte)0x54, (byte)0x0B, (byte)0xE4, (byte)0x01};
+        BigDecimal asBigDecimal = Numeric.fromFixed8ToBigDecimal(fixed8);
+        BigDecimal expected = BigDecimal.valueOf(100.00000001d);
+        Assert.assertEquals(0, expected.compareTo(asBigDecimal));
+    }
+
 }
