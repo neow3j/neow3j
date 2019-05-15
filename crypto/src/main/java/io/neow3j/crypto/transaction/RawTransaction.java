@@ -84,23 +84,27 @@ public abstract class RawTransaction extends NeoSerializable {
      * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
      */
     public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
+                                                                List<RawTransactionAttribute> attributes,
+                                                                List<RawTransactionInput> inputs,
+                                                                List<RawTransactionOutput> outputs) {
+        return createContractTransaction(specificTransactionData, attributes, inputs, outputs, null);
+    }
+
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
                                                            List<RawTransactionAttribute> attributes,
                                                            List<RawTransactionInput> inputs,
                                                            List<RawTransactionOutput> outputs, List<RawScript> scripts) {
 
-        return createContractTransaction(attributes, inputs, outputs, scripts);
+        return new ContractTransaction(attributes, inputs, outputs, scripts);
     }
 
     public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
                                                            List<RawTransactionInput> inputs,
                                                            List<RawTransactionOutput> outputs) {
-        return createContractTransaction(attributes, inputs, outputs, null);
-    }
-
-    public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
-                                                           List<RawTransactionInput> inputs,
-                                                           List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-        return new ContractTransaction(attributes, inputs, outputs, scripts);
+        return new ContractTransaction(attributes, inputs, outputs, null);
     }
 
     public TransactionType getTransactionType() {
