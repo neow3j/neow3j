@@ -6,13 +6,10 @@ import io.neow3j.io.NeoSerializable;
 import io.neow3j.model.types.TransactionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.neow3j.model.types.TransactionType.CONTRACT_TRANSACTION;
 
 /**
  * Transaction class used for signing transactions locally.<br>
@@ -72,7 +69,7 @@ public abstract class RawTransaction extends NeoSerializable {
             case CLAIM_TRANSACTION:
                 return new ClaimTransaction(attributes, outputs, inputs, scripts);
             default:
-                throw new NotImplementedException();
+                throw new UnsupportedOperationException();
         }
     }
 
@@ -84,9 +81,9 @@ public abstract class RawTransaction extends NeoSerializable {
      * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
      */
     public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
-                                                                List<RawTransactionAttribute> attributes,
-                                                                List<RawTransactionInput> inputs,
-                                                                List<RawTransactionOutput> outputs) {
+                                                           List<RawTransactionAttribute> attributes,
+                                                           List<RawTransactionInput> inputs,
+                                                           List<RawTransactionOutput> outputs) {
         return createContractTransaction(specificTransactionData, attributes, inputs, outputs, null);
     }
 
@@ -102,8 +99,8 @@ public abstract class RawTransaction extends NeoSerializable {
     }
 
     public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
-                                                           List<RawTransactionInput> inputs,
-                                                           List<RawTransactionOutput> outputs) {
+                                                                List<RawTransactionInput> inputs,
+                                                                List<RawTransactionOutput> outputs) {
         return new ContractTransaction(attributes, inputs, outputs, null);
     }
 
