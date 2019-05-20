@@ -1,13 +1,14 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.model.types.ContractParameter;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
-import io.neow3j.model.types.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -34,10 +35,9 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
-import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
-import rx.Observable;
+import io.reactivex.Observable;
 
 import java.io.IOException;
 import java.util.Arrays;

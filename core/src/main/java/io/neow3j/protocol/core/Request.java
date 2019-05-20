@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.Neow3jService;
-import rx.Observable;
+import io.reactivex.Observable;
 
 import java.io.IOException;
 import java.util.List;

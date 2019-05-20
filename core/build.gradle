@@ -8,7 +8,7 @@ dependencies {
             "com.squareup.okhttp3:okhttp:$okhttpVersion",
             "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
             "io.reactivex.rxjava2:rxandroid:$rxjavaAndroidVersion",
-            "io.reactivex:rxjava:$rxjavaVersion",
+            "io.reactivex.rxjava2:rxjava:$rxjavaVersion",
             "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "org.slf4j:slf4j-api:$slf4jVersion"
