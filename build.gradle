@@ -206,15 +206,27 @@ configure(subprojects.findAll()) {
     }
 
     task release {
-        // TODO:
-        // Here, we should also run 'clean' and 'closeAndReleaseRepository'
-        // Make sure it runs respecting an order and with a delay between
-        // tasks (due to Sonatype servers).
         dependsOn 'build'
         dependsOn 'uploadArchives'
-
+        
         tasks.findByName('uploadArchives').mustRunAfter 'build'
     }
+
+}
+
+task releaseAndWait {
+    dependsOn 'release'
+    // after releasing (uploadArchives) to nexus,
+    // it's a good practice to wait 1 minute or so
+    // due to issues with nexus servers.
+    sleep(60 * 1000)
+}
+
+task releaseAndClose {
+    dependsOn 'releaseAndWait'
+    dependsOn 'closeAndReleaseRepository'
+    
+    tasks.findByName('closeAndReleaseRepository').mustRunAfter 'releaseAndWait'
 }
 
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
