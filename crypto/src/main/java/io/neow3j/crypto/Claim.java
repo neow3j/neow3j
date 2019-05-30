@@ -7,15 +7,30 @@ import java.util.Objects;
 public class Claim {
 
     private BigDecimal claimValue;
-    /** ID of the transaction that is the source of this claim */
+
+    /**
+     * ID of the transaction that is the source of this claim
+     */
     private String txId;
-    /** Index of the transaction output that is the source of this claim */
+
+    /**
+     * Index of the transaction output that is the source of this claim
+     */
     private int index;
-    /** The value of the transaction output in NEO */
+
+    /**
+     * The value of the transaction output in NEO
+     */
     private BigInteger neoValue;
-    /** Block height of the transaction that is input to this claim */
+
+    /**
+     * Block height of the transaction that is input to this claim
+     */
     private int startHeight;
-    /** Block height of the transaction in which the NEO have been spent */
+
+    /**
+     * Block height of the transaction in which the NEO have been spent
+     */
     private int endHeight;
 
     public Claim(BigDecimal claimValue, String txId, int index, BigInteger neoValue, int startHeight, int endHeight) {
