@@ -267,6 +267,12 @@ public class CoreIT implements InterfaceCoreIT {
         this.neow3jTestWrapper.testSubmitBlock();
     }
 
+    @Ignore
+    @Test
+    public void testGetUnspents() throws IOException {
+        this.neow3jTestWrapper.testGetUnspents();
+    }
+
     private String getPrivateNetHost(int port) {
         return "http://"
                 + privateNetContainer.getContainerIpAddress()

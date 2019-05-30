@@ -1,17 +1,19 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.model.types.AssetType;
+import io.neow3j.model.types.ContractParameter;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.ResponseTester;
-import io.neow3j.model.types.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -25,6 +27,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
+import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
@@ -42,11 +45,10 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
-import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -1715,6 +1717,128 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 submitBlock.getSubmitBlock(),
                 is(true)
+        );
+    }
+
+    @Test
+    public void testGetUnspents() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"balance\": [\n"
+                        + "           {\n"
+                        + "               \"unspent\": [\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"4ee4af75d5aa60598fbae40ce86fb9a23ffec5a75dfa8b59d259d15f9e304319\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 27844.821\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"9906bf2a9f531ac523aad5e9507bd6540acc1c65ae9144918ccc891188578253\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 0.987\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"184e34eb3f9550d07d03563391d73eb6c438130c7fdca37f0700d5d52ad7deb1\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 243.95598\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"448abc64412284fb21c9625ac9edd2100090367a551c18ce546c1eded61e77c3\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 369.84904\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"bd454059e58da4221aaf4effa3278660b231e9af7cea97912f4ac5c4995bb7e4\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 600.41014479\n"
+                        + "                    }\n"
+                        + "               ],\n"
+                        + "               \"asset_hash\": \"602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n"
+                        + "               \"asset\": \"GAS\",\n"
+                        + "               \"asset_symbol\": \"GAS\",\n"
+                        + "               \"amount\": 29060.02316479\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"unspent\": [\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"c3182952855314b3f4b1ecf01a03b891d4627d19426ce841275f6d4c186e729a\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 800000\n"
+                        + "                    }\n"
+                        + "               ],\n"
+                        + "               \"asset_hash\": \"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"NEO\",\n"
+                        + "               \"asset_symbol\": \"NEO\",\n"
+                        + "               \"amount\": 800000\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoGetUnspents getUnspents = deserialiseResponse(NeoGetUnspents.class);
+        assertThat(getUnspents.getUnspents(), is(notNullValue()));
+        assertThat(
+                getUnspents.getUnspents().getAddress(),
+                is("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances(),
+                hasSize(2)
+        );
+        // First balance entry:
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAssetHash(),
+                is("602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAssetName(),
+                is("GAS")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAssetSymbol(),
+                is("GAS")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAmount(),
+                is(new BigDecimal("29060.02316479"))
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getUnspentTransactions(),
+                hasItems(
+                        new NeoGetUnspents.UnspentTransaction("4ee4af75d5aa60598fbae40ce86fb9a23ffec5a75dfa8b59d259d15f9e304319", 0, new BigDecimal("27844.821")),
+                        new NeoGetUnspents.UnspentTransaction("9906bf2a9f531ac523aad5e9507bd6540acc1c65ae9144918ccc891188578253", 0, new BigDecimal("0.987")),
+                        new NeoGetUnspents.UnspentTransaction("184e34eb3f9550d07d03563391d73eb6c438130c7fdca37f0700d5d52ad7deb1", 0, new BigDecimal("243.95598")),
+                        new NeoGetUnspents.UnspentTransaction("448abc64412284fb21c9625ac9edd2100090367a551c18ce546c1eded61e77c3", 0, new BigDecimal("369.84904")),
+                        new NeoGetUnspents.UnspentTransaction("bd454059e58da4221aaf4effa3278660b231e9af7cea97912f4ac5c4995bb7e4", 0, new BigDecimal("600.41014479"))
+                )
+        );
+        // Second balance entry:
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAssetHash(),
+                is("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAssetName(),
+                is("NEO")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAssetSymbol(),
+                is("NEO")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAmount(),
+                is(new BigDecimal("800000"))
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getUnspentTransactions(),
+                hasItems(
+                        new NeoGetUnspents.UnspentTransaction("c3182952855314b3f4b1ecf01a03b891d4627d19426ce841275f6d4c186e729a", 0, new BigDecimal("800000"))
+                )
         );
     }
 

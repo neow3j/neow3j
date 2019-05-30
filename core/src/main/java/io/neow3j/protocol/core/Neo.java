@@ -19,6 +19,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
+import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
@@ -40,6 +41,8 @@ import java.util.List;
  * Core NEO JSON-RPC API.
  */
 public interface Neo {
+
+    // API 2.9.*
 
     Request<?, NeoGetVersion> getVersion();
 
@@ -126,6 +129,12 @@ public interface Neo {
     Request<?, NeoGetContractState> getContractState(String scriptHash);
 
     Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex);
+
+    // API 2.10.*
+
+    Request<?, NeoGetUnspents> getUnspents(String address);
+
+    // Plugins
 
     Request<?, NeoGetApplicationLog> getApplicationLog(String txId);
 
