@@ -639,6 +639,11 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
         // to be implemented
     }
 
+    public void testGetNep5Balances() throws IOException {
+        // TODO: 2019-05-30 Guil:
+        // to be implemented
+    }
+
     public NeoGetBalance getBalance() throws IOException {
         return neow3j.getBalance(NEOAsset.HASH_ID).send();
     }

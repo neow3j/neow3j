@@ -96,4 +96,6 @@ public interface InterfaceCoreIT {
 
     void testGetUnspents() throws Exception;
 
+    void testGetNep5Balances() throws Exception;
+
 }

@@ -14,6 +14,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -460,6 +461,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(address),
                 neow3jService,
                 NeoGetUnspents.class);
+    }
+
+    @Override
+    public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
+        return new Request<>(
+                "getnep5balances",
+                Arrays.asList(address),
+                neow3jService,
+                NeoGetNep5Balances.class);
     }
 
     @Override

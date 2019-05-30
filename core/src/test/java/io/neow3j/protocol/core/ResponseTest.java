@@ -19,6 +19,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -1839,6 +1840,68 @@ public class ResponseTest extends ResponseTester {
                 hasItems(
                         new NeoGetUnspents.UnspentTransaction("c3182952855314b3f4b1ecf01a03b891d4627d19426ce841275f6d4c186e729a", 0, new BigDecimal("800000"))
                 )
+        );
+    }
+
+    @Test
+    public void testGetNep5Balances() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"balance\": [\n"
+                        + "           {\n"
+                        + "               \"asset_hash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n"
+                        + "               \"amount\": \"50000000000\",\n"
+                        + "               \"last_updated_block\": 251604\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"asset_hash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n"
+                        + "               \"amount\": \"50000000000\",\n"
+                        + "               \"last_updated_block\": 251600\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoGetNep5Balances getNep5Balances = deserialiseResponse(NeoGetNep5Balances.class);
+        assertThat(getNep5Balances.getResult(), is(notNullValue()));
+        assertThat(
+                getNep5Balances.getResult().getAddress(),
+                is("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances(),
+                hasSize(2)
+        );
+        // First entry:
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(0).getAssetHash(),
+                is("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(0).getAmount(),
+                is("50000000000")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(0).getLastUpdatedBlock(),
+                is(new BigInteger("251604"))
+        );
+        // Second entry:
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(1).getAssetHash(),
+                is("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(1).getAmount(),
+                is("50000000000")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(1).getLastUpdatedBlock(),
+                is(new BigInteger("251600"))
         );
     }
 
