@@ -2,6 +2,8 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.core.Response;
 
 import java.math.BigDecimal;
@@ -18,6 +20,7 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
     public static class Unspents {
 
         @JsonProperty("balance")
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<Balance> balances;
 
         @JsonProperty("address")
@@ -66,6 +69,7 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
     public static class Balance {
 
         @JsonProperty("unspent")
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<UnspentTransaction> unspentTransactions;
 
         @JsonProperty("asset_hash")
