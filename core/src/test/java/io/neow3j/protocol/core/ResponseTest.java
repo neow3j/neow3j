@@ -18,6 +18,9 @@ import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -1903,6 +1906,68 @@ public class ResponseTest extends ResponseTester {
                 getNep5Balances.getResult().getBalances().get(1).getLastUpdatedBlock(),
                 is(new BigInteger("251600"))
         );
+    }
+
+    @Test
+    public void testGetClaimable() {
+        buildResponse(
+                "{\n"
+                        + "    \"jsonrpc\": \"2.0\",\n"
+                        + "    \"id\": 1,\n"
+                        + "    \"result\": {\n"
+                        + "        \"claimable\": [\n"
+                        + "            {\n"
+                        + "                \"txid\": \"2d7c565c19bfcd288856d6ac16ab69cf17fbf14d7d848f00ea32532c7db6a506\",\n"
+                        + "                \"n\": 2,\n"
+                        + "                \"value\": 700,\n"
+                        + "                \"start_height\": 2025847,\n"
+                        + "                \"end_height\": 2532062,\n"
+                        + "                \"generated\": 24.804535,\n"
+                        + "                \"sys_fee\": 2.229262,\n"
+                        + "                \"unclaimed\": 27.033797\n"
+                        + "            },\n"
+                        + "            {\n"
+                        + "                \"txid\": \"c78eb5a5b148af6a0ef04bf36d5da2d84b17eb2a1d27669b41be95e6f264dd5b\",\n"
+                        + "                \"n\": 1,\n"
+                        + "                \"value\": 795,\n"
+                        + "                \"start_height\": 1866619,\n"
+                        + "                \"end_height\": 2025847,\n"
+                        + "                \"generated\": 9.92141715,\n"
+                        + "                \"sys_fee\": 1.4571873,\n"
+                        + "                \"unclaimed\": 11.37860445\n"
+                        + "            }\n"
+                        + "        ],\n"
+                        + "        \"address\": \"ATBTRWX8v8teMHCvPXovir3Hy92RPnwdEi\",\n"
+                        + "        \"unclaimed\": 38.41240145\n"
+                        + "    }\n"
+                        + "}"
+        );
+
+        Claimables claimables = deserialiseResponse(NeoGetClaimable.class).getResult();
+        assertThat(claimables, is(notNullValue()));
+        assertThat(claimables.getAddress(), is("ATBTRWX8v8teMHCvPXovir3Hy92RPnwdEi"));
+        assertThat(claimables.getTotalUnclaimed(), is("38.41240145"));
+        assertThat(claimables.getClaims(), hasSize(2));
+
+        Claim claim1 = claimables.getClaims().get(0);
+        assertThat(claim1.getTxId(), is("2d7c565c19bfcd288856d6ac16ab69cf17fbf14d7d848f00ea32532c7db6a506"));
+        assertThat(claim1.getIndex(), is(2));
+        assertThat(claim1.getNeoValue(), is(new BigInteger("700")));
+        assertThat(claim1.getStartHeight(), is(new BigInteger("2025847")));
+        assertThat(claim1.getEndHeight(), is(new BigInteger("2532062")));
+        assertThat(claim1.getGeneratedGas(), is("24.804535"));
+        assertThat(claim1.getSystemFee(), is("2.229262"));
+        assertThat(claim1.getUnclaimedGas(), is("27.033797"));
+
+        Claim claim2 = claimables.getClaims().get(1);
+        assertThat(claim2.getTxId(), is("c78eb5a5b148af6a0ef04bf36d5da2d84b17eb2a1d27669b41be95e6f264dd5b"));
+        assertThat(claim2.getIndex(), is(1));
+        assertThat(claim2.getNeoValue(), is(new BigInteger("795")));
+        assertThat(claim2.getStartHeight(), is(new BigInteger("1866619")));
+        assertThat(claim2.getEndHeight(), is(new BigInteger("2025847")));
+        assertThat(claim2.getGeneratedGas(), is("9.92141715"));
+        assertThat(claim2.getSystemFee(), is("1.4571873"));
+        assertThat(claim2.getUnclaimedGas(), is("11.37860445"));
     }
 
     @Test

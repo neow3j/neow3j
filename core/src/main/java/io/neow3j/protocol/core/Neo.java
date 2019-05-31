@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -136,6 +137,8 @@ public interface Neo {
     Request<?, NeoGetUnspents> getUnspents(String address);
 
     Request<?, NeoGetNep5Balances> getNep5Balances(String address);
+
+    Request<?, NeoGetClaimable> getClaimable(String address);
 
     // Plugins
 
