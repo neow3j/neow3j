@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -111,10 +112,10 @@ public class NeoABIUtilsTest {
         return file;
     }
 
-    private String getTestFileContent(String testFile) throws IOException {
+    private String getTestFileContent(String testFile) throws IOException, URISyntaxException {
         return trimWhiteSpaces(
                 Strings.fromByteArray(
-                        Files.readAllBytes(Paths.get(NeoABIUtilsTest.class.getResource(testFile).getFile()))));
+                        Files.readAllBytes(Paths.get(NeoABIUtilsTest.class.getResource(testFile).toURI()))));
     }
 
     private String getResultFileContent(String fileName) throws IOException {
