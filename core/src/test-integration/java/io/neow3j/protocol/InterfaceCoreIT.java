@@ -2,6 +2,8 @@ package io.neow3j.protocol;
 
 public interface InterfaceCoreIT {
 
+    // API 2.9.*
+
     void testGetVersion() throws Exception;
 
     void testGetBestBlockHash() throws Exception;
@@ -89,5 +91,11 @@ public interface InterfaceCoreIT {
     void testGetContractState() throws Exception;
 
     void testSubmitBlock() throws Exception;
+
+    // API 2.10.*
+
+    void testGetUnspents() throws Exception;
+
+    void testGetNep5Balances() throws Exception;
 
 }

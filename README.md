@@ -18,7 +18,7 @@ You can now focus on building Java/Android applications that use the [functions]
 
 ## Features
 
-* Support to NEO node/client [API version 2.9.*](https://docs.neo.org/en-us/node/cli/apigen.html) ([100% implemented](#NEO-API-Support))
+* Support to NEO node/client [API version 2.9.*](https://docs.neo.org/en-us/node/cli/apigen.html) ([100% implemented](#NEO-JSON-RPC-Support))
 * Observable pattern to get info about past **and** upcoming NEO blocks
 * Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
 * Passphrase-protected Private Key implementation (NEP-2)
@@ -263,43 +263,11 @@ Help the development of neow3j by donating to the following addresses:
 | ETH      | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
 | BTC      | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
 
-## NEO API Support
+## NEO JSON-RPC Support
 
-### Version 2.9.*
+[Here you can find](https://github.com/neow3j/neow3j-docs/blob/master/docs/json-rpc-supported-methods.md) a complete list of all JSON-RPC methods supported by `neow3j`.
 
-The following NEO JSON-RPC methods are implemented in neow3j:
-
-- [x] `dumpprivkey <address>`: Exports the private key of the specified address. **Needs to open the wallet**.
-- [x] `getaccountstate <address>`: Checks account asset information according to account address.
-- [x] `getassetstate <asset_id>`: Queries asset information according to the specified asset number.
-- [x] `getbalance <asset_id>`: Returns the balance of the corresponding asset in the wallet according to the specified asset number. **Need to open the wallet**.
-- [x] `getbestblockhash`: Gets the hash of the tallest block in the main chain.
-- [x] `getblock <hash> [verbose=0]`: Returns the corresponding block information according to the specified hash value.
-- [x] `getblock	<index> [verbose=0]`: Returns the corresponding block information according to the specified index.
-- [x] `getblockcount`: Gets the number of blocks in the main chain.
-- [x] `getblockhash <index>`: Returns the hash value of the corresponding block based on the specified index.
-- [x] `getblockheader <hash> [verbose=0]`: Returns the corresponding block header information according to the specified script hash.
-- [x] `getblocksysfee <index>`: Returns the system fees before the block according to the specified index.
-- [x] `getconnectioncount`: Gets the current number of connections for the node.
-- [x] `getcontractstate <script_hash>`: Returns information about the contract based on the specified script hash.
-- [x] `getnewaddress`: Creates a new address. **Needs to open the wallet**.
-- [x] `getrawmempool`: Gets a list of unconfirmed transactions in memory.
-- [x] `getrawtransaction <txid> [verbose=0]`: Returns the corresponding transaction information based on the specified hash value.
-- [x] `getstorage <script_hash> <key>`: Returns the stored value based on the contract script hash and key.
-- [x] `gettxout <txid> <n>`: Returns the corresponding transaction output (change) information based on the specified hash and index.
-- [x] `getpeers`: Gets a list of nodes that are currently connected/disconnected by this node.
-- [x] `getversion`: Gets version information of this node.
-- [x] `getvalidators`: Gets NEO consensus nodes information.
-- [x] `getwalletheight`: Gets the current wallet index height. **Needs to open the wallet**.
-- [x] `invoke <script_hash> <params>`: Invokes a smart contract at specified script hash with the given parameters.
-- [x] `invokefunction <script_hash> <operation> <params>`: Invokes a smart contract at specified script hash, passing in an operation and its params.
-- [x] `invokescript <script>`: Runs a script through the virtual machine and returns the results.
-- [x] `listaddress`: Lists all the addresses in the current wallet.	**Needs to open the wallet**.
-- [x] `sendrawtransaction <hex>`: Broadcast a transaction over the network. See the network protocol documentation.
-- [x] `sendtoaddress <asset_id> <address> <value> [fee=0] [change_address]`: Transfer to specified address. **Needs to open the wallet**.
-- [x] `sendmany <outputs_array> [fee=0] [change_address]`: Bulk transfer order. **Needs to open the wallet**.
-- [x] `submitblock <hex>`: Submit new blocks. **Needs to be a consensus node**.
-- [x] `validateaddress <address>`: Verify that the address is a correct NEO address.
+In summary, `neow3j` supports JSON-RPC API [version 2.9.*](https://docs.neo.org/en-us/node/cli/2.9.4/api.html) and [version 2.10.*](https://docs.neo.org/en-us/node/cli/apigen.html).
 
 ## Why "neow3j"?
 
