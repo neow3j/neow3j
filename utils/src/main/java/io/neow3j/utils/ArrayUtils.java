@@ -25,7 +25,9 @@ public class ArrayUtils {
     public static byte[] concatenate(byte[]... arrays) {
         byte[] result = new byte[0];
         for (byte[] array : arrays) {
-            result = concatenate(result, array);
+            if (array != null) {
+                result = concatenate(result, array);
+            }
         }
         return result;
     }

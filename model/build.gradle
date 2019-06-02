@@ -1,6 +1,7 @@
 description 'neow3j model'
 
 dependencies {
-    compile "org.slf4j:slf4j-api:$slf4jVersion",
+    compile project(':utils'),
+            "org.slf4j:slf4j-api:$slf4jVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 }

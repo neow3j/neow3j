@@ -105,6 +105,38 @@ public enum OpCode {
      */
     PUSH16((byte) 0x60),
 
+
+    // Flow control
+
+    /**
+     * No operation. Nothing is done.
+     */
+    NOP((byte) 0x61),
+    /**
+     * Reads a 2-byte value n and a jump is performed to relative position n-3.
+     */
+    JMP((byte) 0x62),
+    /**
+     * A boolean value b is taken from main stack and reads a 2-byte value n, if b is True then a jump is performed to relative position n-3.
+     */
+    JMPIF((byte) 0x63),
+    /**
+     * A boolean value b is taken from main stack and reads a 2-byte value n, if b is False then a jump is performed to relative position n-3.
+     */
+    JMPIFNOT((byte) 0x64),
+    /**
+     * Current context is copied to the invocation stack. Reads a 2-byte value n and a jump is performed to relative position n-3.
+     */
+    CALL((byte) 0x65),
+    /**
+     * Stops the execution if invocation stack is empty.
+     */
+    RET((byte) 0x66),
+    /**
+     * Reads a string and executes the corresponding operation.
+     */
+    SYSCALL((byte) 0x68),
+
     // Crypto
 
     /**
