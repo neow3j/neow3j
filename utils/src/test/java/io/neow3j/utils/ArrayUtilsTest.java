@@ -7,6 +7,7 @@ import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.getLastNBytes;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.ArrayUtils.toByteArray;
 import static io.neow3j.utils.ArrayUtils.toPrimitive;
 import static io.neow3j.utils.ArrayUtils.trimLeadingBytes;
 import static io.neow3j.utils.ArrayUtils.trimLeadingZeroes;
@@ -116,6 +117,14 @@ public class ArrayUtilsTest {
         assertThat(trimLeadingBytes(new byte[]{0x05, 0x02, 0x03}, (byte) 0x05), is(new byte[]{0x02, 0x03}));
         assertThat(trimLeadingBytes(new byte[]{0x05, 0x02, 0x03}, (byte) 0x05), is(new byte[]{0x02, 0x03}));
         assertThat(trimLeadingBytes(new byte[]{0x05, 0x02, 0x05, 0x03}, (byte) 0x05), is(new byte[]{0x02, 0x05, 0x03}));
+    }
+
+    @Test
+    public void testToByteArray() {
+        assertThat(toByteArray(0), is(new byte[]{ 0x00, 0x00, 0x00, 0x00 }));
+        assertThat(toByteArray(16), is(new byte[]{ 0x00, 0x00, 0x00, 0x10 }));
+        assertThat(toByteArray(255), is(new byte[]{ 0x00, 0x00, 0x00, (byte) 0xFF }));
+        assertThat(toByteArray(2147483647), is(new byte[]{ 0x7F, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF }));
     }
 
 }

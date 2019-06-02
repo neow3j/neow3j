@@ -1,5 +1,6 @@
 package io.neow3j.utils;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class ArrayUtils {
@@ -91,6 +92,10 @@ public class ArrayUtils {
             result[i] = array[i].byteValue();
         }
         return result;
+    }
+
+    public static byte[] toByteArray(int v) {
+        return ByteBuffer.allocate(4).putInt(v).array();
     }
 
 
