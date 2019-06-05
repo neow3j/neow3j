@@ -578,6 +578,36 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetUnspents() throws Exception {
+        neow3j.getUnspents("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getunspents\","
+                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep5Balances() throws Exception {
+        neow3j.getNep5Balances("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5balances\","
+                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetClaimable() throws Exception {
+        neow3j.getClaimable("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getclaimable\","
+                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
+        );
+    }
+
+    @Test
     public void testGetApplicationLog() throws Exception {
         neow3j.getApplicationLog("420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b").send();
 

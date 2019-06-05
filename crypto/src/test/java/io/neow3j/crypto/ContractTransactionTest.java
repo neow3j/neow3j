@@ -32,6 +32,7 @@ public class ContractTransactionTest {
     public void serialize_Unsigned() {
         RawTransaction tUnsigned = RawTransaction.createContractTransaction(
                 null,
+                null,
                 Arrays.asList(
                         new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)
                 ),
@@ -58,6 +59,7 @@ public class ContractTransactionTest {
     @Test
     public void serialize_Signed() {
         RawTransaction tUnsigned = RawTransaction.createContractTransaction(
+                null,
                 null,
                 Arrays.asList(
                         new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)

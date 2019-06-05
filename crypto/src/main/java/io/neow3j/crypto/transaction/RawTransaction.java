@@ -40,20 +40,68 @@ public abstract class RawTransaction extends NeoSerializable {
         this.scripts = scripts != null ? scripts : new ArrayList<>();
     }
 
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createTransaction(TransactionType transactionType) {
+        return createTransaction(transactionType, null, null, null, null, null);
+    }
+
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData,
+                                                   List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs,
+                                                   List<RawTransactionOutput> outputs) {
+        return createTransaction(transactionType, specificTransactionData, attributes, inputs, outputs, null);
+    }
+
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData,
+                                                   List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs,
+                                                   List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+
+        switch (transactionType) {
+            case CONTRACT_TRANSACTION:
+                return new ContractTransaction(attributes, inputs, outputs, scripts);
+            case CLAIM_TRANSACTION:
+                return new ClaimTransaction(attributes, outputs, inputs, scripts);
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
     public static ContractTransaction createContractTransaction() {
         return createContractTransaction(null, null, null);
     }
 
-    public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
+                                                           List<RawTransactionAttribute> attributes,
                                                            List<RawTransactionInput> inputs,
                                                            List<RawTransactionOutput> outputs) {
-        return createContractTransaction(attributes, inputs, outputs, null);
+        return createContractTransaction(specificTransactionData, attributes, inputs, outputs, null);
+    }
+
+    /*
+     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
+     */
+    public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
+                                                           List<RawTransactionAttribute> attributes,
+                                                           List<RawTransactionInput> inputs,
+                                                           List<RawTransactionOutput> outputs, List<RawScript> scripts) {
+
+        return new ContractTransaction(attributes, inputs, outputs, scripts);
     }
 
     public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
-                                                           List<RawTransactionInput> inputs,
-                                                           List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-        return new ContractTransaction(attributes, inputs, outputs, scripts);
+                                                                List<RawTransactionInput> inputs,
+                                                                List<RawTransactionOutput> outputs) {
+        return new ContractTransaction(attributes, inputs, outputs, null);
     }
 
     public TransactionType getTransactionType() {
