@@ -49,6 +49,8 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.protocol.core.methods.response.notification.NotificationParameter;
+import io.neow3j.protocol.core.methods.response.notification.NotificationStateType;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -56,6 +58,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static io.neow3j.utils.Numeric.prependHexPrefix;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -2010,7 +2013,35 @@ public class ResponseTest extends ResponseTester {
                         "                }\n" +
                         "              ]\n" +
                         "            }\n" +
-                        "          }\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "             \"contract\": \"0xef182f4977544adb207507b0c8c6c3ec1749c7df\",\n" +
+                        "             \"state\": {\n" +
+                        "               \"type\": \"Map\",\n" +
+                        "               \"value\": [\n" +
+                        "                 {\n" +
+                        "                   \"key\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"746573745f6b65795f61\"\n" +
+                        "                   },\n" +
+                        "                   \"value\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"54657374206d657373616765\"\n" +
+                        "                   }\n" +
+                        "                 },\n" +
+                        "                 {\n" +
+                        "                   \"key\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"746573745f6b65795f62\"\n" +
+                        "                   },\n" +
+                        "                   \"value\": {\n" +
+                        "                     \"type\": \"Integer\",\n" +
+                        "                     \"value\": \"12345\"\n" +
+                        "                   }\n" +
+                        "                 }\n" +
+                        "               ]\n" +
+                        "             }\n" +
+                        "           }" +
                         "        ]\n" +
                         "      }\n" +
                         "    ]\n" +
@@ -2029,21 +2060,34 @@ public class ResponseTest extends ResponseTester {
         assertThat(execution.getState(), is("HALT, BREAK"));
         assertThat(execution.getGasConsumed(), is("0.173"));
         assertThat(execution.getStack(), hasSize(1));
-        assertThat(execution.getNotifications(), hasSize(1));
+        assertThat(execution.getNotifications(), hasSize(2));
 
         List<NeoApplicationLog.Notification> notifications = execution.getNotifications();
+
         assertThat(notifications.get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
-        assertThat(notifications.get(0).getState().getType(), is(ContractParameterType.ARRAY));
-        assertThat(notifications.get(0).getState().getValue(), hasSize(3));
+        assertThat(notifications.get(0).getState().getType(), is(NotificationStateType.ARRAY));
+        assertThat(notifications.get(0).getState().getArray(), hasSize(3));
 
-        List<NeoApplicationLog.EventParameter> values = notifications.get(0).getState().getValue();
+        List<NotificationParameter> arrayValues = notifications.get(0).getState().getArray();
 
-        String eventName = values.get(0).getAsString();
-        String address = values.get(1).getAsAddress();
-        BigInteger amount = values.get(2).getAsNumber();
+        String eventName = arrayValues.get(0).getAsString();
+        String address = arrayValues.get(1).getAsAddress();
+        BigInteger amount = arrayValues.get(2).getAsNumber();
 
         assertThat(eventName, is("read"));
         assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
         assertThat(amount, is(BigInteger.valueOf(177)));
+
+        assertThat(notifications.get(1).getContract(), is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
+        assertThat(notifications.get(1).getState().getType(), is(NotificationStateType.MAP));
+        assertThat(notifications.get(1).getState().getMap().size(), is(2));
+
+        Map<String, NotificationParameter> mapValues = notifications.get(1).getState().getMap();
+
+        String textValue = mapValues.get("test_key_a").getAsString();
+        BigInteger intValue = mapValues.get("test_key_b").getAsNumber();
+
+        assertThat(textValue, is("Test message"));
+        assertThat(intValue, is(BigInteger.valueOf(12345)));
     }
 }
