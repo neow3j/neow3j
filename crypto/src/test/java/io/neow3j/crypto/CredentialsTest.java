@@ -24,7 +24,7 @@ public class CredentialsTest {
 
         ECKeyPair ecKeyPair = ECKeyPair.create(privateKey);
 
-        Credentials credentials = Credentials.create(ecKeyPair);
+        Credentials credentials = new Credentials(ecKeyPair);
 
         assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
 
@@ -37,14 +37,14 @@ public class CredentialsTest {
     public void test2() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
 
         ECKeyPair ecKeyPair1 = Keys.createEcKeyPair();
-        Credentials credentials1 = Credentials.create(ecKeyPair1);
+        Credentials credentials1 = new Credentials(ecKeyPair1);
 
         String privateKeyAsWIF1 = credentials1.exportAsWIF();
         String address1 = credentials1.getAddress();
 
         byte[] privateKey = getPrivateKeyFromWIF(privateKeyAsWIF1);
         ECKeyPair ecKeyPair2 = ECKeyPair.create(privateKey);
-        Credentials credentials2 = Credentials.create(ecKeyPair2);
+        Credentials credentials2 = new Credentials(ecKeyPair2);
 
         assertEquals(address1, credentials2.getAddress());
         assertEquals(privateKeyAsWIF1, credentials2.exportAsWIF());
@@ -53,7 +53,7 @@ public class CredentialsTest {
 
     @Test
     public void test3() {
-        Credentials credentials = Credentials.create(
+        Credentials credentials = new Credentials(
                 "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3",
                 "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
         assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
@@ -63,7 +63,7 @@ public class CredentialsTest {
 
     @Test
     public void test4() {
-        Credentials credentials = Credentials.create("9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3",
+        Credentials credentials = new Credentials("9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3",
                 "0465bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d601d2ea55bbc8eb03bc449a2a1692c2521714ef31c7183ea098f27b7098e8981c"
         );
         assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
@@ -78,7 +78,7 @@ public class CredentialsTest {
 
         ECKeyPair ecKeyPair = ECKeyPair.create(privateKey);
 
-        Credentials credentials = Credentials.create(ecKeyPair);
+        Credentials credentials = new Credentials(ecKeyPair);
 
         assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", credentials.getAddress());
 
@@ -97,7 +97,7 @@ public class CredentialsTest {
                 Numeric.toBigInt(publicKeyEncoded)
         );
 
-        Credentials credentials = Credentials.create(ecKeyPair);
+        Credentials credentials = new Credentials(ecKeyPair);
 
         assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
         String privateKeyAsWIFExported = credentials.exportAsWIF();
@@ -111,7 +111,7 @@ public class CredentialsTest {
                 Numeric.toBigIntNoPrefix("0465bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d601d2ea55bbc8eb03bc449a2a1692c2521714ef31c7183ea098f27b7098e8981c")
         );
 
-        Credentials credentials = Credentials.create(ecKeyPair);
+        Credentials credentials = new Credentials(ecKeyPair);
 
         assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", credentials.getAddress());
     }

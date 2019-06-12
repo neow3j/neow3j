@@ -1,35 +1,21 @@
 package io.neow3j.wallet;
 
-import io.neow3j.crypto.Credentials;
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Hash;
+import io.neow3j.crypto.NEP2;
+import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.utils.Numeric;
-import org.bouncycastle.crypto.generators.SCrypt;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import io.neow3j.wallet.nep6.NEP6Account;
+import io.neow3j.wallet.nep6.NEP6Wallet;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
-import io.neow3j.crypto.SecureRandomUtils;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
-import static io.neow3j.utils.ArrayUtils.concatenate;
-import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
-import static io.neow3j.utils.ArrayUtils.getLastNBytes;
-import static io.neow3j.utils.ArrayUtils.xor;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * <p>NEO wallet file management. For reference, refer to
@@ -41,227 +27,182 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Wallet {
 
     private static final String DEFAULT_WALLET_NAME = "neow3jWallet";
-    private static final String DEFAULT_ACCOUNT_NAME = "neow3jAccount";
-    private static final String CURRENT_VERSION = "1.0";
 
-    private static final int N_STANDARD = 1 << 14;
-    private static final int P_STANDARD = 8;
+    public static final String CURRENT_VERSION = "1.0";
 
-    private static final int R = 8;
-    private static final int DKLEN = 64;
+    private String name;
 
-    private static final int NEP2_PRIVATE_KEY_LENGTH = 39;
-    private static final byte NEP2_PREFIX_1 = (byte) 0x01;
-    private static final byte NEP2_PREFIX_2 = (byte) 0x42;
-    private static final byte NEP2_FLAGBYTE = (byte) 0xE0;
+    private String version;
+
+    private List<Account> accounts = new ArrayList<>();
+
+    private ScryptParams scryptParams;
 
     static {
         addBouncyCastle();
     }
 
-    public static Account createAccount(String accountName,
-                                        String password,
-                                        ECKeyPair ecKeyPair,
-                                        int n,
-                                        int p,
-                                        int r)
-            throws CipherException {
+    private Wallet() {}
 
-        byte[] encryptedPrivKey = encrypt(password, ecKeyPair, n, p, r);
-        String encodedPrivateKey = Hash.base58CheckEncode(encryptedPrivKey);
-
-        return new Account(
-                Credentials.create(ecKeyPair).getAddress(),
-                accountName,
-                true,
-                false,
-                encodedPrivateKey,
-                null,
-                null
-        );
+    public static Builder with() {
+        return new Builder();
     }
 
-    public static Account createStandardAccount(String password, ECKeyPair ecKeyPair)
-            throws CipherException {
-        return createAccount(DEFAULT_ACCOUNT_NAME, password, ecKeyPair, N_STANDARD, P_STANDARD, R);
+    public String getName() {
+        return name;
     }
 
-    public static WalletFile createWallet(String name, int n, int p, int r) {
-        return new WalletFile(
-                name,
-                CURRENT_VERSION,
-                new ScryptParams(n, r, p),
-                Arrays.asList(),
-                null
-        );
+    public String getVersion() {
+        return version;
     }
 
-    public static WalletFile createStandardWallet() {
-        return new WalletFile(
-                DEFAULT_WALLET_NAME,
-                CURRENT_VERSION,
-                new ScryptParams(N_STANDARD, R, P_STANDARD),
-                new ArrayList<>(),
-                null
-        );
+    public List<Account> getAccounts() {
+        return accounts;
     }
 
-    public static byte[] encryptStandard(String password, ECKeyPair ecKeyPair) throws CipherException {
-        return encrypt(password, ecKeyPair, N_STANDARD, P_STANDARD, R);
+    public ScryptParams getScryptParams() {
+        return scryptParams;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     /**
-     * Encrypts the private key following the NEP-2 standard.
-     *
-     * @param password  the passphrase to be used to encrypt
-     * @param ecKeyPair the {@link ECKeyPair} to be encrypted
-     * @param n         the "n" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
-     * @param p         the "p" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
-     * @param r         the "r" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
-     * @return encrypted private key as described on NEP-2
-     * @throws CipherException thrown when the AES/ECB/NoPadding cipher operation fails
+     * Adds the given account to this wallet.
+     * @param account The account to add.
+     * @return true if the account was added, false if an account with that address was already in
+     * the wallet.
      */
-    public static byte[] encrypt(String password, ECKeyPair ecKeyPair, int n, int p, int r)
-            throws CipherException {
-
-        byte[] addressHash = getAddressHash(ecKeyPair);
-
-        byte[] derivedKey = generateDerivedScryptKey(
-                password.getBytes(UTF_8), addressHash, n, r, p, DKLEN);
-
-        byte[] derivedHalf1 = getFirstNBytes(derivedKey, 32);
-        byte[] derivedHalf2 = getLastNBytes(derivedKey, 32);
-
-        byte[] encryptedHalf1 = performCipherOperation(
-                Cipher.ENCRYPT_MODE,
-                xorPrivateKeyAndDerivedHalf(ecKeyPair, derivedHalf1, 0, 16),
-                derivedHalf2);
-
-        byte[] encryptedHalf2 = performCipherOperation(
-                Cipher.ENCRYPT_MODE,
-                xorPrivateKeyAndDerivedHalf(ecKeyPair, derivedHalf1, 16, 32),
-                derivedHalf2);
-
-        byte[] encryptedPrivKey = new byte[3];
-        // prefix
-        encryptedPrivKey[0] = NEP2_PREFIX_1;
-        encryptedPrivKey[1] = NEP2_PREFIX_2;
-        // flagbyte, which is always the same
-        encryptedPrivKey[2] = NEP2_FLAGBYTE;
-
-        return concatenate(encryptedPrivKey, addressHash, encryptedHalf1, encryptedHalf2);
+    public boolean addAccount(Account account) {
+        if (accounts.stream().anyMatch(acc -> acc.getAddress().equals(account.getAddress()))) {
+            return false;
+        }
+        accounts.add(account);
+        return true;
     }
 
-    private static byte[] xorPrivateKeyAndDerivedHalf(ECKeyPair ecKeyPair, byte[] derivedHalf, int from, int to) {
-        return xor(
-                Arrays.copyOfRange(privateKeyToBytes(ecKeyPair), from, to),
-                Arrays.copyOfRange(derivedHalf, from, to)
-        );
+    /**
+     * Removes the account with the given address from this wallet.
+     * @param address The address of the account to be removed.
+     * @return true if an account was removed, false if no account with the given address was found.
+     */
+    public boolean removeAccount(String address) {
+        return accounts.removeIf(acc -> acc.getAddress().equals(address));
     }
 
-    private static byte[] privateKeyToBytes(ECKeyPair ecKeyPair) {
-        return Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), PRIVATE_KEY_SIZE);
-    }
+    public void decryptAllAccounts(String password) throws NEP2InvalidFormat, CipherException,
+            NEP2InvalidPassphrase {
 
-    private static byte[] generateDerivedScryptKey(
-            byte[] password, byte[] salt, int n, int r, int p, int dkLen) {
-        return SCrypt.generate(password, salt, n, r, p, dkLen);
-    }
-
-    private static byte[] performCipherOperation(
-            int mode, byte[] data, byte[] encryptKey) throws CipherException {
-
-        try {
-            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
-
-            SecretKeySpec secretKeySpec = new SecretKeySpec(encryptKey, "AES");
-            cipher.init(mode, secretKeySpec);
-            return cipher.doFinal(data);
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException
-                | InvalidKeyException | NoSuchProviderException
-                | BadPaddingException | IllegalBlockSizeException e) {
-            throw new CipherException("Error performing cipher operation", e);
+        for (Account acct : accounts) {
+            acct.decryptPrivateKey(password, scryptParams);
         }
     }
 
-    private static byte[] getAddressHash(ECKeyPair ecKeyPair) {
-        Credentials credential = Credentials.create(ecKeyPair);
-        String address = credential.getAddress();
-        byte[] addressHashed = sha256(sha256(address.getBytes()));
-        return getFirstNBytes(addressHashed, 4);
-    }
+    public void encryptAllAccounts(String password) throws CipherException {
 
-    public static ECKeyPair decryptStandard(String password, WalletFile walletFile, Account account)
-            throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
-        return decrypt(password, walletFile, account, N_STANDARD, P_STANDARD, R);
-    }
-
-    public static ECKeyPair decrypt(String password, WalletFile walletFile, Account account, int n, int p, int r)
-            throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
-
-        validate(walletFile, n, p, r);
-
-        ScryptParams scryptParams = walletFile.getScrypt();
-
-        int nWallet = scryptParams.getN();
-        int pWallet = scryptParams.getP();
-        int rWallet = scryptParams.getR();
-
-        String nep2String = account.getKey();
-        byte[] nep2Data = Hash.base58CheckDecode(nep2String);
-
-        if (nep2Data.length != NEP2_PRIVATE_KEY_LENGTH || nep2Data[0] != NEP2_PREFIX_1 || nep2Data[1] != NEP2_PREFIX_2 || nep2Data[2] != NEP2_FLAGBYTE) {
-            throw new NEP2InvalidFormat("Not valid NEP2 prefix.");
-        }
-
-        byte[] addressHash = new byte[4];
-        // copy 4 bytes related to the address hash
-        System.arraycopy(nep2Data, 3, addressHash, 0, 4);
-
-        byte[] derivedKey = generateDerivedScryptKey(
-                password.getBytes(UTF_8), addressHash, nWallet, rWallet, pWallet, DKLEN);
-
-        byte[] derivedKeyHalf1 = getFirstNBytes(derivedKey, 32);
-        byte[] derivedKeyHalf2 = getLastNBytes(derivedKey, 32);
-
-        byte[] encrypted = new byte[32];
-        System.arraycopy(nep2Data, 7, encrypted, 0, 32);
-
-        byte[] decrypted = performCipherOperation(Cipher.DECRYPT_MODE, encrypted, derivedKeyHalf2);
-
-        byte[] plainPrivateKey = xor(decrypted, derivedKeyHalf1);
-
-        Credentials credentials = Credentials.create(Numeric.toHexStringNoPrefix(plainPrivateKey));
-        byte[] calculatedAddressHash = getAddressHash(credentials.getEcKeyPair());
-
-        if (!Arrays.equals(calculatedAddressHash, addressHash)) {
-            throw new NEP2InvalidPassphrase("Calculated address hash does not match the one in the provided encrypted address.");
-        }
-
-        return credentials.getEcKeyPair();
-    }
-
-    static void validate(WalletFile walletFile, int n, int p, int r) throws NEP2InvalidFormat {
-        ScryptParams scryptParams = walletFile.getScrypt();
-        validateVersion(walletFile);
-        validateScryptParams(scryptParams, n, p, r);
-    }
-
-    static void validateVersion(WalletFile walletFile) throws NEP2InvalidFormat {
-        if (walletFile.getVersion() != null && !walletFile.getVersion().equals(CURRENT_VERSION)) {
-            throw new NEP2InvalidFormat("Wallet version is not supported");
+        for (Account acct : accounts) {
+            acct.encryptPrivateKey(password, scryptParams);
         }
     }
 
-    static void validateScryptParams(ScryptParams scryptParams, int n, int p, int r) throws NEP2InvalidFormat {
-        if (scryptParams.getN() != n || scryptParams.getP() != p || scryptParams.getR() != r) {
-            throw new NEP2InvalidFormat("Wallet scrypt params are incompatible with the provided values.");
-        }
+    public NEP6Wallet toNEP6Wallet() {
+        List<NEP6Account> accts = accounts.stream().map(
+                a -> a.toNEP6Account()).collect(Collectors.toList());
+        return new NEP6Wallet(name, version, scryptParams, accts, null);
     }
 
-    static byte[] generateRandomBytes(int size) {
-        byte[] bytes = new byte[size];
-        SecureRandomUtils.secureRandom().nextBytes(bytes);
-        return bytes;
+    public static class Builder {
+
+        String name;
+        String version;
+        List<Account> accounts = new ArrayList<>();
+        ScryptParams scryptParams;
+        NEP6Wallet nep6Wallet;
+
+        /**
+         * Constructs an empty Wallet Builder.
+         */
+        public Builder() {}
+
+        public Builder name(String name) {
+            this.name = name; return this;
+        }
+
+        public Builder version(String version) {
+            this.version = version; return this;
+        }
+
+        public Builder accounts(List<Account> accounts) {
+            this.accounts.addAll(accounts); return this;
+        }
+
+        public Builder account(Account account) {
+            this.accounts.add(account); return this;
+        }
+
+        public Builder genericAccount() throws InvalidAlgorithmParameterException,
+                NoSuchAlgorithmException, NoSuchProviderException {
+
+            return this.account(Account.with().freshKeyPair().build());
+        }
+
+        public Builder scryptParams(ScryptParams scryptParams) {
+            if (this.nep6Wallet != null) {
+                throw new IllegalStateException("Can't specify new Scrypt parameters if " +
+                        "wallet is build from a NEP-6 wallet file.");
+            }
+            this.scryptParams = scryptParams; return this;
+        }
+
+        public Builder nep6Wallet(NEP6Wallet nep6Wallet) {
+            if (this.scryptParams != null) {
+                throw new IllegalStateException("You already specified Scrypt parameters which " +
+                        "would be overwritten by the parameters given in the NEP-6 wallet file.");
+            }
+            this.nep6Wallet = nep6Wallet; return this;
+        }
+
+        // This method is for semantic convenience only. One could also call
+        // Account.with().build() and get the same result.
+        public Builder defaultValues() {
+            this.name = DEFAULT_WALLET_NAME;
+            this.version = CURRENT_VERSION;
+            this.scryptParams = NEP2.DEFAULT_SCRYPT_PARAMS;
+            return this;
+        }
+
+        public Wallet build() {
+            Wallet wallet = new Wallet();
+
+            if (this.nep6Wallet != null) {
+                fillWallet(wallet, this.nep6Wallet);
+            }
+            if (!accounts.isEmpty()) {
+                accounts.forEach(wallet::addAccount);
+            }
+            if (this.name != null) wallet.name = this.name;
+            if (this.version != null) wallet.version = this.version;
+            if (this.scryptParams != null) wallet.scryptParams = this.scryptParams;
+            // Set default values if nothing has been set Till this points.
+            if (wallet.name == null) wallet.name = DEFAULT_WALLET_NAME;
+            if (wallet.version == null) wallet.version = CURRENT_VERSION;
+            if (wallet.scryptParams == null) wallet.scryptParams = NEP2.DEFAULT_SCRYPT_PARAMS;
+
+            return wallet;
+        }
+
+        protected static void fillWallet(Wallet wallet, NEP6Wallet nep6Wallet) {
+            wallet.name = nep6Wallet.getName();
+            wallet.version = nep6Wallet.getVersion();
+            wallet.scryptParams = nep6Wallet.getScrypt();
+            for (NEP6Account nep6Acct : nep6Wallet.getAccounts()) {
+                wallet.accounts.add(Account.with().nep6Account(nep6Acct).build());
+            }
+        }
     }
 }

@@ -1,0 +1,53 @@
+{
+  "name": "Wallet",
+  "version": "1.0",
+  "scrypt": {
+    "cost": 16384,
+    "blockSize": 8,
+    "parallel": 8,
+    "size": 64
+  },
+  "accounts": [
+    {
+      "address": "AWUfbdLYUeJ5X6gvbPQYkjL4JZ78z2X9Pk",
+      "label": "Account1",
+      "isDefault": false,
+      "lock": false,
+      "key": "6PYUnzmokRh7JwfYntrMq6LYw4pF4QJ343fJHMKoKDvCqNgfV6msFGGcEH",
+      "contract": {
+        "script": "210302a6afbfd72400a72bc2af86c45f269f7f694036dae6270d570a1a06531079d9ac",
+        "parameters": [
+          {
+            "name": "signature",
+            "type": "Signature"
+          }
+        ],
+        "deployed": false
+      },
+      "extra": {
+        "publicKey": "0302a6afbfd72400a72bc2af86c45f269f7f694036dae6270d570a1a06531079d9"
+      }
+    },
+    {
+      "address": "AThCriBXLBQxyPNYHUwa8NVoKYM5JwL1Yg",
+      "label": "Account2",
+      "isDefault": false,
+      "lock": false,
+      "key": "6PYRUJuaSqrvkQVdfn9MBdzJDNDwXMdHNNiNAMYJhGk7MUgdiU4KshyuGX",
+      "contract": {
+        "script": "21021bc6c4e94c7ce751ccfd1f86139ed6a01ca85d4b279aa01d77c9afe85a3666dfac",
+        "parameters": [
+          {
+            "name": "signature",
+            "type": "Signature"
+          }
+        ],
+        "deployed": false
+      },
+      "extra": {
+        "publicKey": "021bc6c4e94c7ce751ccfd1f86139ed6a01ca85d4b279aa01d77c9afe85a3666df"
+      }
+    }
+  ],
+  "extra": null
+}

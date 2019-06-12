@@ -235,7 +235,7 @@ public class ContractTransactionTest {
     public void verify_Signature() throws SignatureException {
 
         ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
-        Credentials credentials = Credentials.create(ecKeyPair);
+        Credentials credentials = new Credentials(ecKeyPair);
         String address = credentials.getAddress();
 
         RawTransaction unsignedTx = RawTransaction.createContractTransaction(

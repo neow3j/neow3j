@@ -1,6 +1,7 @@
-package io.neow3j.wallet;
+package io.neow3j.crypto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
@@ -11,6 +12,7 @@ import java.util.Objects;
  * names. Thus, this class includes aliases for
  * compatibility purposes.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ScryptParams {
 
     @JsonProperty("n")
