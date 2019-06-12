@@ -10,6 +10,9 @@ public class ContractParameterTypeSerializable extends NeoSerializable {
 
     private ContractParameterType contractParameterType;
 
+    public ContractParameterTypeSerializable() {
+    }
+
     public ContractParameterTypeSerializable(ContractParameterType contractParameterType) {
         this.contractParameterType = contractParameterType;
     }

@@ -29,6 +29,9 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     private boolean isPayable;
 
+    public ContractFunctionProperties() {
+    }
+
     public ContractFunctionProperties(List<ContractParameterType> parameterTypes, ContractParameterType returnType, boolean needsStorage, boolean needsDynamicInvoke, boolean isPayable) {
         this.parameterTypes = toSerializable(parameterTypes);
         this.returnType = toSerializable(returnType);
@@ -89,7 +92,7 @@ public class ContractFunctionProperties extends NeoSerializable {
         return parameterType.getContractParameterType();
     }
 
-    private int computeFlagsValue() {
+    protected int packFlagsValue() {
         int flagsValue = 0;
         if (this.needsStorage) {
             flagsValue += (1 << 0);
@@ -101,6 +104,18 @@ public class ContractFunctionProperties extends NeoSerializable {
             flagsValue += (1 << 2);
         }
         return flagsValue;
+    }
+
+    protected static boolean unpackNeedsStorage(int value) {
+        return (value & 1) == 1;
+    }
+
+    protected static boolean unpackNeedsDynamicInvoke(int value) {
+        return (value & 2) == 2;
+    }
+
+    protected static boolean unpackIsPayable(int value) {
+        return (value & 4) == 4;
     }
 
     @Override
@@ -133,19 +148,30 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
-//        try {
-//
-//        } catch (IllegalAccessException e) {
-//            LOG.error("Can't access the specified object.", e);
-//        } catch (InstantiationException e) {
-//            LOG.error("Can't instantiate the specified object type.", e);
-//        }
+        try {
+            int functionProperties = reader.readPushInteger();
+            this.needsStorage = unpackNeedsStorage(functionProperties);
+            this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
+            this.isPayable = unpackIsPayable(functionProperties);
+            int returnTypeInt = reader.readPushInteger();
+            this.returnType = toSerializable(ContractParameterType.valueOf((byte) returnTypeInt));
+
+            // TODO: 2019-06-04 Guil:
+            // Maybe, we should use readPushData() instead of readVarInt?!
+            // Tests are required for parameters with the size larger than 22
+            this.parameterTypes = reader.readSerializableList(ContractParameterTypeSerializable.class);
+
+        } catch (IllegalAccessException e) {
+            LOG.error("Can't access the specified object.", e);
+        } catch (InstantiationException e) {
+            LOG.error("Can't instantiate the specified object type.", e);
+        }
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         // flags:
-        int flagsValue = computeFlagsValue();
+        int flagsValue = packFlagsValue();
         writer.pushInteger(flagsValue);
 
         // return type:
