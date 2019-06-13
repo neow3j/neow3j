@@ -24,7 +24,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
-import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -36,6 +35,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
@@ -74,6 +74,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -648,7 +649,13 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
     public void testGetClaimable() throws IOException {
 
         // TODO: 2019-05-31 Claude:
-        // Implement as soon as privatnet docker image is updated to JSON-RPC node version 2.10.2.
+        // Implement
+    }
+
+    public void testListInputs() throws IOException {
+
+        // TODO: 2019-06-12 Claude:
+        // Implement
     }
 
     public NeoGetBalance getBalance() throws IOException {
@@ -730,5 +737,4 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
 
         return tUnsigned.toArray();
     }
-
 }
