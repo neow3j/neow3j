@@ -1,18 +1,21 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.model.types.ContractParameter;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
-import io.neow3j.model.types.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -21,6 +24,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
+import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
@@ -452,6 +456,33 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
+    public Request<?, NeoGetUnspents> getUnspents(String address) {
+        return new Request<>(
+                "getunspents",
+                Arrays.asList(address),
+                neow3jService,
+                NeoGetUnspents.class);
+    }
+
+    @Override
+    public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
+        return new Request<>(
+                "getnep5balances",
+                Arrays.asList(address),
+                neow3jService,
+                NeoGetNep5Balances.class);
+    }
+
+    @Override
+    public Request<?, NeoGetClaimable> getClaimable(String address) {
+        return new Request<>(
+                "getclaimable",
+                Arrays.asList(address),
+                neow3jService,
+                NeoGetClaimable.class);
+    }
+
+    @Override
     public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects) {
         return neow3jRx.blockObservable(fullTransactionObjects, blockTime);
     }
@@ -490,6 +521,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
             BlockParameter startBlock, boolean fullTransactionObjects) {
         return neow3jRx.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 startBlock, fullTransactionObjects, blockTime);
+    }
+
+    @Override
+    public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
+        return new Request<>(
+                "getapplicationlog",
+                Collections.singletonList(txId),
+                neow3jService,
+                NeoGetApplicationLog.class);
     }
 
     @Override

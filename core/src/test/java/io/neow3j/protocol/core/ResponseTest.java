@@ -1,22 +1,23 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.model.types.AssetType;
-import io.neow3j.model.types.NEOAsset;
-import io.neow3j.model.types.TransactionAttributeUsageType;
-import io.neow3j.model.types.TransactionType;
+import io.neow3j.model.types.*;
 import io.neow3j.protocol.ResponseTester;
-import io.neow3j.model.types.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -25,6 +26,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
+import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
@@ -42,11 +44,17 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.protocol.core.methods.response.stack.Item;
+import io.neow3j.protocol.core.methods.response.stack.MapItem;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.neow3j.utils.Numeric.prependHexPrefix;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -1525,7 +1533,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invoke.getInvocationResult().getStack(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "576f6f6c6f6e67")
+                        new Item(StackItemType.BYTE_ARRAY, "576f6f6c6f6e67")
                 )
         );
         assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
@@ -1570,6 +1578,21 @@ public class ResponseTest extends ResponseTester {
                         + "           {"
                         + "               \"type\": \"ByteArray\",\n"
                         + "               \"value\": \"576f6f6c6f6e67\"\n"
+                        + "           },"
+                        + "           {"
+                        + "               \"type\": \"Map\",\n"
+                        + "               \"value\": ["
+                        + "                   {"
+                        + "                     \"key\": {"
+                        + "                         \"type\": \"ByteArray\",\n"
+                        + "                         \"value\": \"6964\"\n"
+                        + "                     },"
+                        + "                     \"value\": {"
+                        + "                         \"type\": \"Integer\",\n"
+                        + "                         \"value\": \"1\"\n"
+                        + "                     }"
+                        + "                   }"
+                        + "               ]"
                         + "           }"
                         + "      ],\n"
                         + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
@@ -1582,11 +1605,21 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
         assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
-        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(1));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
         assertThat(
                 invokeFunction.getInvocationResult().getStack(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "576f6f6c6f6e67")
+                        new Item(StackItemType.BYTE_ARRAY, "576f6f6c6f6e67")
+                )
+        );
+
+        HashMap<String, Item> stackMap = new HashMap<>();
+        stackMap.put("id", new Item(StackItemType.INTEGER, 1));
+
+        assertThat(
+                invokeFunction.getInvocationResult().getStack(),
+                hasItems(
+                        new MapItem(stackMap)
                 )
         );
         assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
@@ -1647,7 +1680,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invokeScript.getInvocationResult().getStack(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "4e45503520474153")
+                        new Item(StackItemType.BYTE_ARRAY, "4e45503520474153")
                 )
         );
         assertThat(invokeScript.getInvocationResult().getTx(), is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
@@ -1715,4 +1748,367 @@ public class ResponseTest extends ResponseTester {
         );
     }
 
+    @Test
+    public void testGetUnspents() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"balance\": [\n"
+                        + "           {\n"
+                        + "               \"unspent\": [\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"4ee4af75d5aa60598fbae40ce86fb9a23ffec5a75dfa8b59d259d15f9e304319\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 27844.821\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"9906bf2a9f531ac523aad5e9507bd6540acc1c65ae9144918ccc891188578253\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 0.987\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"184e34eb3f9550d07d03563391d73eb6c438130c7fdca37f0700d5d52ad7deb1\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 243.95598\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"448abc64412284fb21c9625ac9edd2100090367a551c18ce546c1eded61e77c3\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 369.84904\n"
+                        + "                    },\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"bd454059e58da4221aaf4effa3278660b231e9af7cea97912f4ac5c4995bb7e4\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 600.41014479\n"
+                        + "                    }\n"
+                        + "               ],\n"
+                        + "               \"asset_hash\": \"602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n"
+                        + "               \"asset\": \"GAS\",\n"
+                        + "               \"asset_symbol\": \"GAS\",\n"
+                        + "               \"amount\": 29060.02316479\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"unspent\": [\n"
+                        + "                    {\n"
+                        + "                         \"txid\": \"c3182952855314b3f4b1ecf01a03b891d4627d19426ce841275f6d4c186e729a\",\n"
+                        + "                         \"n\": 0,\n"
+                        + "                         \"value\": 800000\n"
+                        + "                    }\n"
+                        + "               ],\n"
+                        + "               \"asset_hash\": \"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"NEO\",\n"
+                        + "               \"asset_symbol\": \"NEO\",\n"
+                        + "               \"amount\": 800000\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoGetUnspents getUnspents = deserialiseResponse(NeoGetUnspents.class);
+        assertThat(getUnspents.getUnspents(), is(notNullValue()));
+        assertThat(
+                getUnspents.getUnspents().getAddress(),
+                is("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances(),
+                hasSize(2)
+        );
+        // First balance entry:
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAssetHash(),
+                is("602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAssetName(),
+                is("GAS")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAssetSymbol(),
+                is("GAS")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getAmount(),
+                is(new BigDecimal("29060.02316479"))
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(0).getUnspentTransactions(),
+                hasItems(
+                        new NeoGetUnspents.UnspentTransaction("4ee4af75d5aa60598fbae40ce86fb9a23ffec5a75dfa8b59d259d15f9e304319", 0, new BigDecimal("27844.821")),
+                        new NeoGetUnspents.UnspentTransaction("9906bf2a9f531ac523aad5e9507bd6540acc1c65ae9144918ccc891188578253", 0, new BigDecimal("0.987")),
+                        new NeoGetUnspents.UnspentTransaction("184e34eb3f9550d07d03563391d73eb6c438130c7fdca37f0700d5d52ad7deb1", 0, new BigDecimal("243.95598")),
+                        new NeoGetUnspents.UnspentTransaction("448abc64412284fb21c9625ac9edd2100090367a551c18ce546c1eded61e77c3", 0, new BigDecimal("369.84904")),
+                        new NeoGetUnspents.UnspentTransaction("bd454059e58da4221aaf4effa3278660b231e9af7cea97912f4ac5c4995bb7e4", 0, new BigDecimal("600.41014479"))
+                )
+        );
+        // Second balance entry:
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAssetHash(),
+                is("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAssetName(),
+                is("NEO")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAssetSymbol(),
+                is("NEO")
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getAmount(),
+                is(new BigDecimal("800000"))
+        );
+        assertThat(
+                getUnspents.getUnspents().getBalances().get(1).getUnspentTransactions(),
+                hasItems(
+                        new NeoGetUnspents.UnspentTransaction("c3182952855314b3f4b1ecf01a03b891d4627d19426ce841275f6d4c186e729a", 0, new BigDecimal("800000"))
+                )
+        );
+    }
+
+    @Test
+    public void testGetNep5Balances() {
+        buildResponse(
+                "{\n"
+                        + "  \"id\":1,\n"
+                        + "  \"jsonrpc\":\"2.0\",\n"
+                        + "  \"result\": {\n"
+                        + "      \"balance\": [\n"
+                        + "           {\n"
+                        + "               \"asset_hash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n"
+                        + "               \"amount\": \"50000000000\",\n"
+                        + "               \"last_updated_block\": 251604\n"
+                        + "           },\n"
+                        + "           {\n"
+                        + "               \"asset_hash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n"
+                        + "               \"amount\": \"50000000000\",\n"
+                        + "               \"last_updated_block\": 251600\n"
+                        + "           }\n"
+                        + "      ],\n"
+                        + "      \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
+                        + "   }\n"
+                        + "}"
+        );
+
+        NeoGetNep5Balances getNep5Balances = deserialiseResponse(NeoGetNep5Balances.class);
+        assertThat(getNep5Balances.getResult(), is(notNullValue()));
+        assertThat(
+                getNep5Balances.getResult().getAddress(),
+                is("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances(),
+                hasSize(2)
+        );
+        // First entry:
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(0).getAssetHash(),
+                is("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(0).getAmount(),
+                is("50000000000")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(0).getLastUpdatedBlock(),
+                is(new BigInteger("251604"))
+        );
+        // Second entry:
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(1).getAssetHash(),
+                is("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(1).getAmount(),
+                is("50000000000")
+        );
+        assertThat(
+                getNep5Balances.getResult().getBalances().get(1).getLastUpdatedBlock(),
+                is(new BigInteger("251600"))
+        );
+    }
+
+    @Test
+    public void testGetClaimable() {
+        buildResponse(
+                "{\n"
+                        + "    \"jsonrpc\": \"2.0\",\n"
+                        + "    \"id\": 1,\n"
+                        + "    \"result\": {\n"
+                        + "        \"claimable\": [\n"
+                        + "            {\n"
+                        + "                \"txid\": \"2d7c565c19bfcd288856d6ac16ab69cf17fbf14d7d848f00ea32532c7db6a506\",\n"
+                        + "                \"n\": 2,\n"
+                        + "                \"value\": 700,\n"
+                        + "                \"start_height\": 2025847,\n"
+                        + "                \"end_height\": 2532062,\n"
+                        + "                \"generated\": 24.804535,\n"
+                        + "                \"sys_fee\": 2.229262,\n"
+                        + "                \"unclaimed\": 27.033797\n"
+                        + "            },\n"
+                        + "            {\n"
+                        + "                \"txid\": \"c78eb5a5b148af6a0ef04bf36d5da2d84b17eb2a1d27669b41be95e6f264dd5b\",\n"
+                        + "                \"n\": 1,\n"
+                        + "                \"value\": 795,\n"
+                        + "                \"start_height\": 1866619,\n"
+                        + "                \"end_height\": 2025847,\n"
+                        + "                \"generated\": 9.92141715,\n"
+                        + "                \"sys_fee\": 1.4571873,\n"
+                        + "                \"unclaimed\": 11.37860445\n"
+                        + "            }\n"
+                        + "        ],\n"
+                        + "        \"address\": \"ATBTRWX8v8teMHCvPXovir3Hy92RPnwdEi\",\n"
+                        + "        \"unclaimed\": 38.41240145\n"
+                        + "    }\n"
+                        + "}"
+        );
+
+        Claimables claimables = deserialiseResponse(NeoGetClaimable.class).getResult();
+        assertThat(claimables, is(notNullValue()));
+        assertThat(claimables.getAddress(), is("ATBTRWX8v8teMHCvPXovir3Hy92RPnwdEi"));
+        assertThat(claimables.getTotalUnclaimed(), is("38.41240145"));
+        assertThat(claimables.getClaims(), hasSize(2));
+
+        Claim claim1 = claimables.getClaims().get(0);
+        assertThat(claim1.getTxId(), is("2d7c565c19bfcd288856d6ac16ab69cf17fbf14d7d848f00ea32532c7db6a506"));
+        assertThat(claim1.getIndex(), is(2));
+        assertThat(claim1.getNeoValue(), is(new BigInteger("700")));
+        assertThat(claim1.getStartHeight(), is(new BigInteger("2025847")));
+        assertThat(claim1.getEndHeight(), is(new BigInteger("2532062")));
+        assertThat(claim1.getGeneratedGas(), is("24.804535"));
+        assertThat(claim1.getSystemFee(), is("2.229262"));
+        assertThat(claim1.getUnclaimedGas(), is("27.033797"));
+
+        Claim claim2 = claimables.getClaims().get(1);
+        assertThat(claim2.getTxId(), is("c78eb5a5b148af6a0ef04bf36d5da2d84b17eb2a1d27669b41be95e6f264dd5b"));
+        assertThat(claim2.getIndex(), is(1));
+        assertThat(claim2.getNeoValue(), is(new BigInteger("795")));
+        assertThat(claim2.getStartHeight(), is(new BigInteger("1866619")));
+        assertThat(claim2.getEndHeight(), is(new BigInteger("2025847")));
+        assertThat(claim2.getGeneratedGas(), is("9.92141715"));
+        assertThat(claim2.getSystemFee(), is("1.4571873"));
+        assertThat(claim2.getUnclaimedGas(), is("11.37860445"));
+    }
+
+    @Test
+    public void testApplicationLog() {
+        buildResponse(
+                "{\n" +
+                        "  \"jsonrpc\": \"2.0\",\n" +
+                        "  \"id\": 1,\n" +
+                        "  \"result\": {\n" +
+                        "    \"txid\": \"0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\",\n" +
+                        "    \"executions\": [\n" +
+                        "      {\n" +
+                        "        \"trigger\": \"Application\",\n" +
+                        "        \"contract\": \"0x857477dd9457d09aff11fc4a791a247a42dbb17f\",\n" +
+                        "        \"vmstate\": \"HALT, BREAK\",\n" +
+                        "        \"gas_consumed\": \"0.173\",\n" +
+                        "        \"stack\": [\n" +
+                        "          {\n" +
+                        "            \"type\": \"ByteArray\",\n" +
+                        "            \"value\": \"b100\"\n" +
+                        "          }\n" +
+                        "        ],\n" +
+                        "        \"notifications\": [\n" +
+                        "          {\n" +
+                        "            \"contract\": \"0x43fa0777cf984faea46b954ec640a266bcbc3319\",\n" +
+                        "            \"state\": {\n" +
+                        "              \"type\": \"Array\",\n" +
+                        "              \"value\": [\n" +
+                        "                {\n" +
+                        "                  \"type\": \"ByteArray\",\n" +
+                        "                  \"value\": \"72656164\"\n" +
+                        "                },\n" +
+                        "                {\n" +
+                        "                  \"type\": \"ByteArray\",\n" +
+                        "                  \"value\": \"10d46912932d6ebcd1d3c4a27a1a8ea77e68ac95\"\n" +
+                        "                },\n" +
+                        "                {\n" +
+                        "                  \"type\": \"ByteArray\",\n" +
+                        "                  \"value\": \"b100\"\n" +
+                        "                }\n" +
+                        "              ]\n" +
+                        "            }\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "             \"contract\": \"0xef182f4977544adb207507b0c8c6c3ec1749c7df\",\n" +
+                        "             \"state\": {\n" +
+                        "               \"type\": \"Map\",\n" +
+                        "               \"value\": [\n" +
+                        "                 {\n" +
+                        "                   \"key\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"746573745f6b65795f61\"\n" +
+                        "                   },\n" +
+                        "                   \"value\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"54657374206d657373616765\"\n" +
+                        "                   }\n" +
+                        "                 },\n" +
+                        "                 {\n" +
+                        "                   \"key\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"746573745f6b65795f62\"\n" +
+                        "                   },\n" +
+                        "                   \"value\": {\n" +
+                        "                     \"type\": \"Integer\",\n" +
+                        "                     \"value\": \"12345\"\n" +
+                        "                   }\n" +
+                        "                 }\n" +
+                        "               ]\n" +
+                        "             }\n" +
+                        "           }" +
+                        "        ]\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }\n" +
+                        "}"
+        );
+
+        NeoGetApplicationLog applicationLog = deserialiseResponse(NeoGetApplicationLog.class);
+        assertThat(applicationLog.getApplicationLog().getTransactionId(), is("0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b"));
+        assertThat(applicationLog.getApplicationLog().getExecutions(), hasSize(1));
+
+        NeoApplicationLog.Execution execution = applicationLog.getApplicationLog().getExecutions().get(0);
+
+        assertThat(execution.getTrigger(), is("Application"));
+        assertThat(execution.getContract(), is("0x857477dd9457d09aff11fc4a791a247a42dbb17f"));
+        assertThat(execution.getState(), is("HALT, BREAK"));
+        assertThat(execution.getGasConsumed(), is("0.173"));
+        assertThat(execution.getStack(), hasSize(1));
+        assertThat(execution.getNotifications(), hasSize(2));
+
+        List<NeoApplicationLog.Notification> notifications = execution.getNotifications();
+
+        assertThat(notifications.get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
+        assertThat(notifications.get(0).getItem().getType(), is(StackItemType.ARRAY));
+        assertThat(notifications.get(0).getItem().getArray(), hasSize(3));
+
+        List<Item> arrayValues = notifications.get(0).getItem().getArray();
+
+        String eventName = arrayValues.get(0).getAsString();
+        String address = arrayValues.get(1).getAsAddress();
+        BigInteger amount = arrayValues.get(2).getAsNumber();
+
+        assertThat(eventName, is("read"));
+        assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
+        assertThat(amount, is(BigInteger.valueOf(177)));
+
+        assertThat(notifications.get(1).getContract(), is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
+        assertThat(notifications.get(1).getItem().getType(), is(StackItemType.MAP));
+        assertThat(notifications.get(1).getItem().getMap().size(), is(2));
+
+        Map<String, Item> mapValues = notifications.get(1).getItem().getMap();
+
+        String textValue = mapValues.get("test_key_a").getAsString();
+        BigInteger intValue = mapValues.get("test_key_b").getAsNumber();
+
+        assertThat(textValue, is("Test message"));
+        assertThat(intValue, is(BigInteger.valueOf(12345)));
+    }
 }

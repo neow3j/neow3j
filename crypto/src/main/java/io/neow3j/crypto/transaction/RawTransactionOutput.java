@@ -77,7 +77,7 @@ public class RawTransactionOutput extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.assetId = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
-        this.value = Numeric.toBigDecimal(ArrayUtils.reverseArray(reader.readBytes(8))).toString();
+        this.value = Numeric.fromFixed8ToBigDecimal(ArrayUtils.reverseArray(reader.readBytes(8))).toString();
         this.address = KeyUtils.toAddress(reader.readBytes(20));
     }
 

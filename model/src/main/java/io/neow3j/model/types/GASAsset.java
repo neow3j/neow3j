@@ -11,7 +11,6 @@ public class GASAsset {
 
     public static final AssetType TYPE = AssetType.UTILITY_TOKEN;
 
-
     public static BigInteger toBigInt(String value) {
         if (value == null) {
             return BigInteger.ZERO;

@@ -24,6 +24,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -634,6 +635,22 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
         // to be implemented
     }
 
+    public void testGetUnspents() throws IOException {
+        // TODO: 2019-05-30 Guil:
+        // to be implemented
+    }
+
+    public void testGetNep5Balances() throws IOException {
+        // TODO: 2019-05-30 Guil:
+        // to be implemented
+    }
+
+    public void testGetClaimable() throws IOException {
+
+        // TODO: 2019-05-31 Claude:
+        // Implement as soon as privatnet docker image is updated to JSON-RPC node version 2.10.2.
+    }
+
     public NeoGetBalance getBalance() throws IOException {
         return neow3j.getBalance(NEOAsset.HASH_ID).send();
     }
@@ -694,7 +711,6 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
 
     private byte[] createContractTransaction(ECKeyPair keyPair, String inputHash, int inputIndex, BigDecimal amountToSend, String addressToSend, BigDecimal amountAsChange, String changeAddress) {
         RawTransaction tUnsigned = RawTransaction.createContractTransaction(
-                null,
                 null,
                 Arrays.asList(
                         new RawTransactionInput(inputHash, inputIndex)

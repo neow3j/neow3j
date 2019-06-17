@@ -6,6 +6,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class MnemonicUtilsTest {
      *
      * @see <a href="https://github.com/trezor/python-mnemonic/blob/master/vectors.json">Test vectors</a>
      */
-    private static final String SAMPLE_FILE = MnemonicUtilsTest.class.getResource("/mnemonics/test-vectors.txt").getPath();
+    private static final URL SAMPLE_FILE = MnemonicUtilsTest.class.getResource("/mnemonics/test-vectors.txt");
 
     /**
      * Loads the test vectors into a in-memory list and feed them one after another to
@@ -41,8 +43,8 @@ public class MnemonicUtilsTest {
      * @throws IOException Shouldn't happen!
      */
     @Parameters
-    public static Collection<Object[]> data() throws IOException {
-        String data = Files.lines(Paths.get(SAMPLE_FILE)).collect(Collectors.joining("\n"));
+    public static Collection<Object[]> data() throws IOException, URISyntaxException {
+        String data = Files.lines(Paths.get(SAMPLE_FILE.toURI())).collect(Collectors.joining("\n"));
         String[] each = data.split("###");
 
         List<Object[]> parameters = new ArrayList<>();

@@ -17,7 +17,7 @@ public class ContractParameter {
     private ContractParameterType paramType;
 
     @JsonProperty("value")
-    private Object value;
+    protected Object value;
 
     public ContractParameter() {
     }
@@ -36,6 +36,18 @@ public class ContractParameter {
         this.paramName = paramName;
         this.paramType = paramType;
         this.value = value;
+    }
+
+    public String getParamName() {
+        return paramName;
+    }
+
+    public ContractParameterType getParamType() {
+        return paramType;
+    }
+
+    public Object getValue() {
+        return value;
     }
 
     @Override

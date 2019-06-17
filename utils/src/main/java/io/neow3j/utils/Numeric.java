@@ -79,8 +79,8 @@ public final class Numeric {
                 && input.charAt(0) == '0' && input.charAt(1) == 'x';
     }
 
-    public static BigDecimal toBigDecimal(byte[] value) {
-        return new BigDecimal(toBigInt(value));
+    public static BigDecimal fromFixed8ToBigDecimal(byte[] value) {
+        return new BigDecimal(toBigInt(value)).divide(BigDecimal.valueOf(100000000L));
     }
 
     public static BigInteger toBigInt(byte[] value, int offset, int length) {
@@ -222,6 +222,21 @@ public final class Numeric {
 
     public static String toHexString(byte[] input) {
         return toHexString(input, 0, input.length, true);
+    }
+
+    public static String hexToString(String input) {
+        return new String(Numeric.hexStringToByteArray(input));
+    }
+
+    public static BigInteger hexToInteger(String input) {
+        String reverse = reverseHexString(input);
+        return Numeric.toBigInt(reverse);
+    }
+
+    public static String reverseHexString(String input) {
+        byte[] inputBytes = hexStringToByteArray(input);
+        byte[] reversedBytes = ArrayUtils.reverseArray(inputBytes);
+        return toHexStringNoPrefix(reversedBytes);
     }
 
     public static byte asByte(int m, int n) {

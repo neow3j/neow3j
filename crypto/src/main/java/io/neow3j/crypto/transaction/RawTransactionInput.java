@@ -58,12 +58,14 @@ public class RawTransactionInput extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.prevHash = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
-        this.prevIndex = Numeric.toBigInt(reader.readBytes(2)).intValue();
+        byte[] readBytes = reader.readBytes(2);
+        this.prevIndex = Numeric.toBigInt(ArrayUtils.reverseArray(readBytes)).intValue();
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(this.prevHash)));
-        writer.write(BigIntegers.asUnsignedByteArray(2, BigInteger.valueOf(this.prevIndex)));
+        byte[] prevIndex = BigIntegers.asUnsignedByteArray(2, BigInteger.valueOf(this.prevIndex));
+        writer.write(ArrayUtils.reverseArray(prevIndex));
     }
 }

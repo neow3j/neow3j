@@ -2,6 +2,7 @@ package io.neow3j.utils;
 
 import io.neow3j.exceptions.MessageDecodingException;
 import io.neow3j.exceptions.MessageEncodingException;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -219,4 +220,37 @@ public class NumericTest {
         assertFalse(Numeric.containsHexPrefix(null));
         assertFalse(Numeric.containsHexPrefix(""));
     }
+
+    @Test
+    public void testReverseHexString() {
+        String hex = "bc99b2a477e28581b2fd04249ba27599ebd736d3";
+        String reversed = "d336d7eb9975a29b2404fdb28185e277a4b299bc";
+
+        Assert.assertThat(Numeric.reverseHexString(hex), is(reversed));
+    }
+
+    @Test
+    public void testHexToString() {
+        String hex = "72656164";
+        String original = "read";
+
+        Assert.assertThat(Numeric.hexToString(hex), is(original));
+    }
+
+    @Test
+    public void testHexToInteger() {
+        String hex = "b100";
+        BigInteger original = BigInteger.valueOf(177);
+
+        Assert.assertThat(Numeric.hexToInteger(hex), is(original));
+    }
+
+    @Test
+    public void testFromFixed8ToBigDecimal() {
+        byte[] fixed8 = {(byte)0x02, (byte)0x54, (byte)0x0B, (byte)0xE4, (byte)0x01};
+        BigDecimal asBigDecimal = Numeric.fromFixed8ToBigDecimal(fixed8);
+        BigDecimal expected = BigDecimal.valueOf(100.00000001d);
+        Assert.assertEquals(0, expected.compareTo(asBigDecimal));
+    }
+
 }
