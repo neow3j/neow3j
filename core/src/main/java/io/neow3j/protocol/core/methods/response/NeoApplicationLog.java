@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.neow3j.model.types.ContractParameter;
-import io.neow3j.protocol.core.methods.response.notification.State;
-import io.neow3j.protocol.deserializer.NotificationStateDeserializer;
+import io.neow3j.protocol.core.methods.response.stack.Item;
+import io.neow3j.protocol.deserializer.StackDeserializer;
 
 import java.util.List;
 
@@ -94,23 +94,23 @@ public class NeoApplicationLog {
         private String contract;
 
         @JsonProperty("state")
-        @JsonDeserialize(using = NotificationStateDeserializer.class)
-        private State state;
+        @JsonDeserialize(using = StackDeserializer.class)
+        private Item item;
 
         public Notification() {
         }
 
-        public Notification(String contract, State state) {
+        public Notification(String contract, Item item) {
             this.contract = contract;
-            this.state = state;
+            this.item = item;
         }
 
         public String getContract() {
             return contract;
         }
 
-        public State getState() {
-            return state;
+        public Item getItem() {
+            return item;
         }
     }
 
