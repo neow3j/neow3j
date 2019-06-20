@@ -10,14 +10,14 @@ import java.util.ListIterator;
 public class LeftToRightInputCalculationStrategy implements InputCalculationStrategy {
 
     @Override
-    public List<Utxo> calculateInputs(List<Utxo> outputs, BigDecimal requiredAmount) {
+    public List<Utxo> calculateInputs(List<Utxo> utxos, BigDecimal requiredAmount) {
         BigDecimal amount = BigDecimal.ZERO;
-        ListIterator<Utxo> it = outputs.listIterator();
+        ListIterator<Utxo> it = utxos.listIterator();
         List<Utxo> inputs = new ArrayList<>();
         while(amount.compareTo(requiredAmount) < 0 && it.hasNext()) {
-            Utxo output = it.next();
-            amount = amount.add(output.getValue());
-            inputs.add(output);
+            Utxo utxo = it.next();
+            amount = amount.add(utxo.getValue());
+            inputs.add(utxo);
         }
         if (amount.compareTo(requiredAmount) < 0) {
             throw new InsufficientFundsException();
