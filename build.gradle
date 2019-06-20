@@ -199,6 +199,11 @@ configure(subprojects.findAll()) {
                             name 'Guilherme Sperb Machado'
                             email 'guil@axlabs.com'
                         }
+                        developer {
+                            id 'claudemiller'
+                            name 'Claude Müller'
+                            email 'claude@axlabs.com'
+                        }
                     }
                 }
             }
