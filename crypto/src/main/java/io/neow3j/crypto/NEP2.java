@@ -91,14 +91,15 @@ public class NEP2 {
 
         byte[] plainPrivateKey = xor(decrypted, derivedKeyHalf1);
 
-        Credentials credentials = new Credentials(ECKeyPair.create(plainPrivateKey));
-        byte[] calculatedAddressHash = getAddressHash(credentials.getEcKeyPair());
+//        Credentials credentials = new Credentials(ECKeyPair.create(plainPrivateKey));
+        ECKeyPair ecKeyPair = ECKeyPair.create(plainPrivateKey);
+        byte[] calculatedAddressHash = getAddressHash(ecKeyPair);
 
         if (!Arrays.equals(calculatedAddressHash, addressHash)) {
             throw new NEP2InvalidPassphrase("Calculated address hash does not match the one in the provided encrypted address.");
         }
 
-        return credentials.getEcKeyPair();
+        return ecKeyPair;
     }
 
     /**
@@ -205,10 +206,8 @@ public class NEP2 {
     }
 
     public static byte[] getAddressHash(ECKeyPair ecKeyPair) {
-        Credentials credential = new Credentials(ecKeyPair);
-        String address = credential.getAddress();
+        String address = Keys.getAddress(ecKeyPair);
         byte[] addressHashed = sha256(sha256(address.getBytes()));
         return getFirstNBytes(addressHashed, 4);
     }
-
 }
