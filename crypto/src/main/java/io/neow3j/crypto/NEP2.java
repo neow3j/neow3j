@@ -38,11 +38,8 @@ public class NEP2 {
     public static final int N_STANDARD = 1 << 14;
     public static final int P_STANDARD = 8;
     public static final int R_STANDARD = 8;
-    public static final ScryptParams DEFAULT_SCRYPT_PARAMS;
-
-    static {
-        DEFAULT_SCRYPT_PARAMS = new ScryptParams(N_STANDARD, P_STANDARD, R_STANDARD);
-    }
+    public static final ScryptParams DEFAULT_SCRYPT_PARAMS =
+            new ScryptParams(N_STANDARD, P_STANDARD, R_STANDARD);
 
     /**
      * Decrypts the given encrypted private key in NEP-2 format with the given password and standard
