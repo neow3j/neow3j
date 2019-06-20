@@ -1,32 +1,28 @@
-package io.neow3j.crypto;
+package io.neow3j.protocol.transaction;
 
-import io.neow3j.crypto.transaction.ClaimTransaction;
-import io.neow3j.crypto.transaction.ContractTransaction;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Keys;
+import io.neow3j.crypto.Sign;
+import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.transaction.RawInvocationScript;
 import io.neow3j.crypto.transaction.RawScript;
-import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.crypto.transaction.RawVerificationScript;
-import io.neow3j.crypto.transaction.SignedRawTransaction;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.GASAsset;
-import io.neow3j.model.types.NEOAsset;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.security.SignatureException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class ClaimTransactionTest {
 
@@ -42,17 +38,14 @@ public class ClaimTransactionTest {
         // of RawInvocationScript and RawVerificationScript.
         String invocationScript = "0c40efd5f4a37b09fb8dca3e9cd6486c1b2d46c0319ac216c348f546ff44bb5fc3a328a43f2f49c9b2aa4cb1ce3f40327fd8403966e117745eb5c1266614f7d4";
         String verificationScript = "031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4a";
-        ClaimTransaction signedTx = new ClaimTransaction(
-            null,
-            Arrays.asList(new RawTransactionOutput(0, GASAsset.HASH_ID, "7264", receivingAdr)),
-            Arrays.asList(new RawTransactionInput(claimableTxId, idx)),
-            Arrays.asList(
-                new RawScript(
+        ClaimTransaction signedTx = new ClaimTransaction.Builder()
+                .outputs(Arrays.asList(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr)))
+                .claims(Arrays.asList(new RawTransactionInput(claimableTxId, idx)))
+                .scripts(Arrays.asList(new RawScript(
                     Arrays.asList(new RawInvocationScript(Numeric.hexStringToByteArray(invocationScript))),
-                    new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix(verificationScript)), 1)
-                )
-            )
-        );
+                    new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix(verificationScript)), 1)))
+                ).build();
+
         byte[] signedTxArray = signedTx.toArray();
         LOG.info("serialized: " + Numeric.toHexStringNoPrefix(signedTxArray));
 
@@ -77,7 +70,7 @@ public class ClaimTransactionTest {
                 new RawTransactionInput(txId, index),
                 claimTransaction.getClaims().get(0));
         assertEquals(
-                new RawTransactionOutput(0, GASAsset.HASH_ID, claimValue, receivingAdr),
+                new RawTransactionOutput(GASAsset.HASH_ID, claimValue, receivingAdr),
                 claimTransaction.getOutputs().get(0));
     }
 
@@ -90,11 +83,11 @@ public class ClaimTransactionTest {
         byte[] publicKeyByteArray = Numeric.hexStringToByteArray(Numeric.toHexStringNoPrefix(ecKeyPair.getPublicKey()));
         String txId = "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff";
         int index = 0;
-        BigDecimal claimValue = BigDecimal.valueOf(7264);
-        BigInteger neoValue = BigInteger.valueOf(100000000);
-        Claim claim = new Claim(claimValue, txId, index, neoValue, 2007, 2915);
+        String claimValue = "7264";
+        Claim claim = new Claim(txId, index, null, null , null, null, null, claimValue);
+        Claimables claimables = new Claimables(Arrays.asList(claim), adr, claimValue);
 
-        ClaimTransaction tx = ClaimTransaction.fromClaims(Arrays.asList(claim), adr);
+        ClaimTransaction tx = ClaimTransaction.fromClaimables(claimables, adr);
         byte[] unsignedTxArray = tx.toArray();
 
         List<RawInvocationScript> rawInvocationScriptList = Arrays.asList(

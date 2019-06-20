@@ -19,6 +19,8 @@ public enum TransactionType {
     PUBLISH_TRANSACTION("PublishTransaction", 0xd0, 0),
     INVOCATION_TRANSACTION("InvocationTransaction", 0xd1, 0);
 
+    public static final byte DEFAULT_VERSION = 0;
+
     private String jsonValue;
     private byte byteValue;
     private byte version;

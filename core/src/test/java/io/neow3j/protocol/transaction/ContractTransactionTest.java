@@ -1,6 +1,9 @@
-package io.neow3j.crypto;
+package io.neow3j.protocol.transaction;
 
-import io.neow3j.crypto.transaction.ContractTransaction;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Keys;
+import io.neow3j.crypto.Sign;
+import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.transaction.RawInvocationScript;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransaction;
@@ -30,23 +33,16 @@ public class ContractTransactionTest {
 
     @Test
     public void serialize_Unsigned() {
-        RawTransaction tUnsigned = RawTransaction.createContractTransaction(
-                null,
-                null,
-                Arrays.asList(
-                        new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)
-                ),
-                Arrays.asList(
-                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
-                ),
-                Arrays.asList(
-                        new RawScript(
-                                Arrays.asList(),
-                                new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6")), 1)
-                        )
-                )
-        );
+        RawTransaction tUnsigned = new ContractTransaction.Builder()
+                .inputs(Arrays.asList(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)))
+                .outputs(Arrays.asList(
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
+                ))
+                .scripts(Arrays.asList(new RawScript(
+                        Arrays.asList(),
+                        new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6")), 1))))
+                .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
         LOG.info("serialized: " + Numeric.toHexStringNoPrefix(tUnsignedArray));
@@ -58,25 +54,16 @@ public class ContractTransactionTest {
 
     @Test
     public void serialize_Signed() {
-        RawTransaction tUnsigned = RawTransaction.createContractTransaction(
-                null,
-                null,
-                Arrays.asList(
-                        new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)
-                ),
-                Arrays.asList(
-                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
-                ),
-                Arrays.asList(
-                        new RawScript(
-                                Arrays.asList(
-                                        new RawInvocationScript(Numeric.hexStringToByteArray("a1c29ef0b8215d5bf8f3649ff1eae3fd5d74bf38c92007ce6aceea60efa5a986ed1c3d7669f9073f572a52dbbdc7ad7908fe22c2859e85d979e405807ce3d644"))
-                                ),
-                                new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6")), 1)
-                        )
-                )
-        );
+        RawTransaction tUnsigned = new ContractTransaction.Builder()
+                .inputs(Arrays.asList(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)))
+                .outputs(Arrays.asList(
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
+                ))
+                .scripts(Arrays.asList(new RawScript(
+                        Arrays.asList(new RawInvocationScript(Numeric.hexStringToByteArray("a1c29ef0b8215d5bf8f3649ff1eae3fd5d74bf38c92007ce6aceea60efa5a986ed1c3d7669f9073f572a52dbbdc7ad7908fe22c2859e85d979e405807ce3d644"))),
+                        new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6")), 1))))
+                .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
         LOG.info("serialized: " + Numeric.toHexStringNoPrefix(tUnsignedArray));
@@ -91,16 +78,12 @@ public class ContractTransactionTest {
 
         ECKeyPair keyPair = ECKeyPair.create(Numeric.hexStringToByteArray("9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3"));
 
-        RawTransaction tUnsigned = RawTransaction.createContractTransaction(
-                null,
-                Arrays.asList(
-                        new RawTransactionInput("65827ac7308f401dfe110555b41b967e3c1177134bd977a21ca036e703ab05d4", 0)
-                ),
-                Arrays.asList(
-                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")
-                )
-        );
+        RawTransaction tUnsigned = new ContractTransaction.Builder()
+                .inputs(Arrays.asList(new RawTransactionInput("65827ac7308f401dfe110555b41b967e3c1177134bd977a21ca036e703ab05d4", 0)))
+                .outputs(Arrays.asList(
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ")))
+                .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
         assertEquals(
@@ -151,7 +134,7 @@ public class ContractTransactionTest {
         );
         LOG.info("multiSigAddress: " + multiSigAddress);
 
-        RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(
+        RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKeys(
                 7,
                 ecKeyPair1.getPublicKey(),
                 ecKeyPair2.getPublicKey(),
@@ -165,16 +148,12 @@ public class ContractTransactionTest {
                 ecKeyPair10.getPublicKey()
         );
 
-        RawTransaction tUnsigned = RawTransaction.createContractTransaction(
-                null,
-                Arrays.asList(
-                        new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)
-                ),
-                Arrays.asList(
-                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "900.0", multiSigAddress)
-                )
-        );
+        RawTransaction tUnsigned = new ContractTransaction.Builder()
+                .inputs(Arrays.asList(new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)))
+                .outputs(Arrays.asList(
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "900.0", multiSigAddress)))
+                .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
 
@@ -235,19 +214,14 @@ public class ContractTransactionTest {
     public void verify_Signature() throws SignatureException {
 
         ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
-        Credentials credentials = new Credentials(ecKeyPair);
-        String address = credentials.getAddress();
+        String address = Keys.getAddress(ecKeyPair);
 
-        RawTransaction unsignedTx = RawTransaction.createContractTransaction(
-                null,
-                Arrays.asList(
-                        new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)
-                ),
-                Arrays.asList(
-                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "900.0", address)
-                )
-        );
+        RawTransaction unsignedTx = new ContractTransaction.Builder()
+                .inputs(Arrays.asList(new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)))
+                .outputs(Arrays.asList(
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
+                        new RawTransactionOutput(NEOAsset.HASH_ID, "900.0", address)))
+                .build();
 
         Sign.SignatureData signatureDataTx = Sign.signMessage(unsignedTx.toArray(), ecKeyPair);
 

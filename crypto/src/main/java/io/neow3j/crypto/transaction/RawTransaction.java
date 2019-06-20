@@ -25,83 +25,15 @@ public abstract class RawTransaction extends NeoSerializable {
     private List<RawTransactionOutput> outputs;
     private List<RawScript> scripts;
 
-    public RawTransaction() {
-    }
+    public RawTransaction() {}
 
-    protected RawTransaction(TransactionType transactionType, List<RawTransactionAttribute> attributes,
-                             List<RawTransactionInput> inputs, List<RawTransactionOutput> outputs,
-                             List<RawScript> scripts) {
-
-        this.transactionType = transactionType;
-        this.version = transactionType.version();
-        this.attributes = attributes != null ? attributes : new ArrayList<>();
-        this.inputs = inputs != null ? inputs : new ArrayList<>();
-        this.outputs = outputs != null ? outputs : new ArrayList<>();
-        this.scripts = scripts != null ? scripts : new ArrayList<>();
-    }
-
-    /*
-     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
-     */
-    public static RawTransaction createTransaction(TransactionType transactionType) {
-        return createTransaction(transactionType, null, null, null, null, null);
-    }
-
-    /*
-     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
-     */
-    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData,
-                                                   List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs,
-                                                   List<RawTransactionOutput> outputs) {
-        return createTransaction(transactionType, specificTransactionData, attributes, inputs, outputs, null);
-    }
-
-    /*
-     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
-     */
-    public static RawTransaction createTransaction(TransactionType transactionType, List<Object> specificTransactionData,
-                                                   List<RawTransactionAttribute> attributes, List<RawTransactionInput> inputs,
-                                                   List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-
-        switch (transactionType) {
-            case CONTRACT_TRANSACTION:
-                return new ContractTransaction(attributes, inputs, outputs, scripts);
-            case CLAIM_TRANSACTION:
-                return new ClaimTransaction(attributes, outputs, inputs, scripts);
-            default:
-                throw new UnsupportedOperationException();
-        }
-    }
-
-    public static ContractTransaction createContractTransaction() {
-        return createContractTransaction(null, null, null);
-    }
-
-    /*
-     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
-     */
-    public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
-                                                           List<RawTransactionAttribute> attributes,
-                                                           List<RawTransactionInput> inputs,
-                                                           List<RawTransactionOutput> outputs) {
-        return createContractTransaction(specificTransactionData, attributes, inputs, outputs, null);
-    }
-
-    /*
-     * TODO: Remove with neow3j v2.0.0. This method is here for backward compatibility.
-     */
-    public static RawTransaction createContractTransaction(List<Object> specificTransactionData,
-                                                           List<RawTransactionAttribute> attributes,
-                                                           List<RawTransactionInput> inputs,
-                                                           List<RawTransactionOutput> outputs, List<RawScript> scripts) {
-
-        return new ContractTransaction(attributes, inputs, outputs, scripts);
-    }
-
-    public static ContractTransaction createContractTransaction(List<RawTransactionAttribute> attributes,
-                                                                List<RawTransactionInput> inputs,
-                                                                List<RawTransactionOutput> outputs) {
-        return new ContractTransaction(attributes, inputs, outputs, null);
+    protected RawTransaction(Builder builder) {
+        this.transactionType = builder.transactionType;
+        this.version = builder.version;
+        this.attributes = builder.attributes;
+        this.inputs = builder.inputs;
+        this.outputs = builder.outputs;
+        this.scripts = builder.scripts;
     }
 
     public TransactionType getTransactionType() {
@@ -128,8 +60,14 @@ public abstract class RawTransaction extends NeoSerializable {
         return scripts;
     }
 
-    public void addScript(List<RawInvocationScript> invocationScript, RawVerificationScript verificationScript) {
-        this.scripts.add(new RawScript(invocationScript, verificationScript));
+    /**
+     * Adds the given invocation scripts (e.g. signatures) and the verification script to this
+     * transaction's list of witnesses.
+     * @param invocationScripts One or more invocation scripts that are part of the witness.
+     * @param verificationScript The verification script of the witness.
+     */
+    public void addScript(List<RawInvocationScript> invocationScripts, RawVerificationScript verificationScript) {
+        this.scripts.add(new RawScript(invocationScripts, verificationScript));
     }
 
     @Override
@@ -165,4 +103,50 @@ public abstract class RawTransaction extends NeoSerializable {
     public abstract void serializeExclusive(BinaryWriter writer) throws IOException;
 
     public abstract void deserializeExclusive(BinaryReader reader) throws IOException, IllegalAccessException, InstantiationException;
+
+    protected static abstract class Builder<T extends Builder<T>> {
+
+        private TransactionType transactionType;
+        private byte version;
+        private List<RawTransactionAttribute> attributes;
+        private List<RawTransactionInput> inputs;
+        private List<RawTransactionOutput> outputs;
+        private List<RawScript> scripts;
+
+        protected Builder() {
+            this.version = TransactionType.DEFAULT_VERSION;
+            this.attributes = new ArrayList<>();
+            this.inputs = new ArrayList<>();
+            this.outputs = new ArrayList<>();
+            this.scripts = new ArrayList<>();
+        }
+
+        protected T transactionType(TransactionType transactionType) {
+            this.transactionType = transactionType;
+            this.version = transactionType.version();
+            return (T) this;
+        }
+
+        public T version(byte version) {
+            this.version = version; return (T) this;
+        }
+
+        public T attributes(List<RawTransactionAttribute> attributes) {
+            this.attributes = attributes; return (T) this;
+        }
+
+        public T inputs(List<RawTransactionInput> inputs) {
+            this.inputs = inputs; return (T) this;
+        }
+
+        public T outputs(List<RawTransactionOutput> outputs) {
+            this.outputs = outputs; return (T) this;
+        }
+
+        public T scripts(List<RawScript> scripts) {
+            this.scripts = scripts; return (T) this;
+        }
+
+        public abstract RawTransaction build();
+    }
 }
