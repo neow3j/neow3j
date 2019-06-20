@@ -10,6 +10,8 @@ import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,8 @@ public class Wallet {
     private static final String DEFAULT_WALLET_NAME = "neow3jWallet";
 
     public static final String CURRENT_VERSION = "1.0";
+
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private String name;
 
@@ -119,11 +123,19 @@ public class Wallet {
         return new NEP6Wallet(name, version, scryptParams, accts, null);
     }
 
-    public static Builder fromNEP6Wallet(URL nep6WalletFileUrl) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFileUrl, NEP6Wallet.class);
+    public static Builder fromNEP6Wallet(String nep6WalletFileName) throws IOException {
+        return fromNEP6Wallet(Wallet.class.getClassLoader().getResourceAsStream(nep6WalletFileName));
+    }
+
+    public static Builder fromNEP6Wallet(URI nep6WalletFileUri) throws IOException {
+        return fromNEP6Wallet(nep6WalletFileUri.toURL().openStream());
+    }
+
+    public static Builder fromNEP6Wallet(InputStream nep6WalletFileInputStream) throws IOException {
+        NEP6Wallet nep6Wallet = OBJECT_MAPPER.readValue(nep6WalletFileInputStream, NEP6Wallet.class);
         return fromNEP6Wallet(nep6Wallet);
     }
+
 
     public static Builder fromNEP6Wallet(NEP6Wallet nep6Wallet) {
         Builder b = new Builder();

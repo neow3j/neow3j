@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -37,10 +38,10 @@ public class WalletTest {
     @Test
     public void testCreateWalletFromNEP6File() throws IOException {
 
-        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("wallet.json");
-        Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile).build();
+        Wallet w = Wallet.fromNEP6Wallet("wallet.json").build();
 
         ObjectMapper mapper = new ObjectMapper();
+        URL nep6WalletFile = WalletTest.class.getClassLoader().getResource("wallet.json");
         NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
 
         assertEquals("Wallet", w.getName());
@@ -133,12 +134,12 @@ public class WalletTest {
 
 
     @Test
-    public void testFromNEP6WalletToNEP6Wallet() throws IOException {
-        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("wallet.json");
+    public void testFromNEP6WalletToNEP6Wallet() throws IOException, URISyntaxException {
+        URL nep6WalletFile = WalletTest.class.getClassLoader().getResource("wallet.json");
+        Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile.toURI()).build();
+
         ObjectMapper mapper = new ObjectMapper();
         NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
-
-        Wallet w = Wallet.fromNEP6Wallet(nep6Wallet).build();
 
         assertEquals(nep6Wallet, w.toNEP6Wallet());
     }
