@@ -26,14 +26,14 @@ deploy:
   on:
     tags: true
     branch: develop
-    condition: "$TRAVIS_TAG =~ ^(\d+(\.\d+){1,2}(\.\*)?)-SNAPSHOT$"
+    condition: "$TRAVIS_TAG =~ /^(\d+(\.\d+){1,2}(\.\*)?)-SNAPSHOT$/"
 - provider: script
   script: ./scripts/deploy.sh
   skip_cleanup: true
   on:
     tags: true
     branch: master
-    condition: "$TRAVIS_TAG =~ ^(\d+(\.\d+){1,2}(\.\*)?)$"
+    condition: "$TRAVIS_TAG =~ /^(\d+(\.\d+){1,2}(\.\*)?)$/"
 
 env:
   global:
