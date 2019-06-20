@@ -1,6 +1,11 @@
-package io.neow3j.crypto;
+package io.neow3j.wallet;
 
+import io.neow3j.crypto.Credentials;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Hash;
+import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.nep6.NEP6Wallet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +40,7 @@ public class WalletUtilsTest {
     public void testGenerateBip39Wallets() throws Exception {
         Bip39Wallet wallet = WalletUtils.generateBip39Wallet(SampleKeys.PASSWORD_1, tempDir);
         byte[] seed = MnemonicUtils.generateSeed(wallet.getMnemonic(), SampleKeys.PASSWORD_1);
-        Credentials credentials = Credentials.create(ECKeyPair.create(Hash.sha256(seed)));
+        Credentials credentials = new Credentials(ECKeyPair.create(Hash.sha256(seed)));
 
         assertEquals(credentials, WalletUtils.loadBip39Credentials(SampleKeys.PASSWORD_1, wallet.getMnemonic()));
     }
@@ -43,12 +48,12 @@ public class WalletUtilsTest {
     @Test
     public void testGenerateNewWalletFile() throws Exception {
         String fileName = WalletUtils.generateNewWalletFile(SampleKeys.PASSWORD_1, tempDir);
-        WalletFile walletFile = WalletUtils.loadWalletFile(tempDir.getAbsolutePath() + File.separatorChar + fileName);
-        testGeneratedNewWalletFile(walletFile);
+        NEP6Wallet nep6Wallet = WalletUtils.loadWalletFile(tempDir.getAbsolutePath() + File.separatorChar + fileName);
+        testGeneratedNewWalletFile(nep6Wallet);
     }
 
-    private void testGeneratedNewWalletFile(WalletFile walletFile) throws Exception {
-        WalletUtils.loadCredentials(walletFile.getAccounts().stream().findFirst().get(), SampleKeys.PASSWORD_1, walletFile);
+    private void testGeneratedNewWalletFile(NEP6Wallet nep6Wallet) throws Exception {
+        WalletUtils.loadCredentials(nep6Wallet.getAccounts().stream().findFirst().get(), SampleKeys.PASSWORD_1, nep6Wallet);
     }
 
     @Test

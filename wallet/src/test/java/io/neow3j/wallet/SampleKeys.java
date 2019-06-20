@@ -1,5 +1,7 @@
-package io.neow3j.crypto;
+package io.neow3j.wallet;
 
+import io.neow3j.crypto.Credentials;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;

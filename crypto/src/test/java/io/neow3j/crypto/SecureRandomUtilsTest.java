@@ -2,6 +2,8 @@ package io.neow3j.crypto;
 
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 
 public class SecureRandomUtilsTest {
@@ -15,4 +17,11 @@ public class SecureRandomUtilsTest {
     public void testIsNotAndroidRuntime() {
         assertFalse(SecureRandomUtils.isAndroidRuntime());
     }
+
+    @Test
+    public void testGenerateRandomBytes() {
+        assertThat(SecureRandomUtils.generateRandomBytes(0), is(new byte[]{}));
+        assertThat(SecureRandomUtils.generateRandomBytes(10).length, is(10));
+    }
+
 }
