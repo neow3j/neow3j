@@ -8,9 +8,6 @@ import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,8 +41,11 @@ public class Wallet {
 
     private Wallet() {}
 
-    public static Builder with() {
-        return new Builder();
+    protected Wallet(Builder builder) {
+        this.name = builder.name;
+        this.version = builder.version;
+        this.scryptParams = builder.scryptParams;
+        this.accounts = builder.accounts;
     }
 
     public String getName() {
@@ -116,18 +116,30 @@ public class Wallet {
         return new NEP6Wallet(name, version, scryptParams, accts, null);
     }
 
+    public static Builder fromNEP6Wallet(NEP6Wallet nep6Wallet) {
+        Builder b = new Builder();
+        b.name = nep6Wallet.getName();
+        b.version = nep6Wallet.getVersion();
+        b.scryptParams = nep6Wallet.getScrypt();
+        for (NEP6Account nep6Acct : nep6Wallet.getAccounts()) {
+            b.accounts.add(Account.fromNEP6Account(nep6Acct).build());
+        }
+        return b;
+    }
+
     public static class Builder {
 
         String name;
         String version;
-        List<Account> accounts = new ArrayList<>();
+        List<Account> accounts;
         ScryptParams scryptParams;
-        NEP6Wallet nep6Wallet;
 
-        /**
-         * Constructs an empty Wallet Builder.
-         */
-        public Builder() {}
+        public Builder() {
+            this.name = DEFAULT_WALLET_NAME;
+            this.version = CURRENT_VERSION;
+            this.accounts = new ArrayList<>();
+            this.scryptParams = NEP2.DEFAULT_SCRYPT_PARAMS;
+        }
 
         public Builder name(String name) {
             this.name = name; return this;
@@ -145,64 +157,12 @@ public class Wallet {
             this.accounts.add(account); return this;
         }
 
-        public Builder genericAccount() throws InvalidAlgorithmParameterException,
-                NoSuchAlgorithmException, NoSuchProviderException {
-
-            return this.account(Account.with().freshKeyPair().build());
-        }
-
         public Builder scryptParams(ScryptParams scryptParams) {
-            if (this.nep6Wallet != null) {
-                throw new IllegalStateException("Can't specify new Scrypt parameters if " +
-                        "wallet is build from a NEP-6 wallet file.");
-            }
             this.scryptParams = scryptParams; return this;
         }
 
-        public Builder nep6Wallet(NEP6Wallet nep6Wallet) {
-            if (this.scryptParams != null) {
-                throw new IllegalStateException("You already specified Scrypt parameters which " +
-                        "would be overwritten by the parameters given in the NEP-6 wallet file.");
-            }
-            this.nep6Wallet = nep6Wallet; return this;
-        }
-
-        // This method is for semantic convenience only. One could also call
-        // Account.with().build() and get the same result.
-        public Builder defaultValues() {
-            this.name = DEFAULT_WALLET_NAME;
-            this.version = CURRENT_VERSION;
-            this.scryptParams = NEP2.DEFAULT_SCRYPT_PARAMS;
-            return this;
-        }
-
         public Wallet build() {
-            Wallet wallet = new Wallet();
-
-            if (this.nep6Wallet != null) {
-                fillWallet(wallet, this.nep6Wallet);
-            }
-            if (!accounts.isEmpty()) {
-                accounts.forEach(wallet::addAccount);
-            }
-            if (this.name != null) wallet.name = this.name;
-            if (this.version != null) wallet.version = this.version;
-            if (this.scryptParams != null) wallet.scryptParams = this.scryptParams;
-            // Set default values if nothing has been set Till this points.
-            if (wallet.name == null) wallet.name = DEFAULT_WALLET_NAME;
-            if (wallet.version == null) wallet.version = CURRENT_VERSION;
-            if (wallet.scryptParams == null) wallet.scryptParams = NEP2.DEFAULT_SCRYPT_PARAMS;
-
-            return wallet;
-        }
-
-        protected static void fillWallet(Wallet wallet, NEP6Wallet nep6Wallet) {
-            wallet.name = nep6Wallet.getName();
-            wallet.version = nep6Wallet.getVersion();
-            wallet.scryptParams = nep6Wallet.getScrypt();
-            for (NEP6Account nep6Acct : nep6Wallet.getAccounts()) {
-                wallet.accounts.add(Account.with().nep6Account(nep6Acct).build());
-            }
+            return new Wallet(this);
         }
     }
 }

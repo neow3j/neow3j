@@ -1,6 +1,7 @@
 package io.neow3j.wallet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.wallet.nep6.NEP6Account;
@@ -27,7 +28,7 @@ public class WalletTest {
 
     @Test
     public void testCreateDefaultWallet() {
-        Wallet w = Wallet.with().defaultValues().build();
+        Wallet w = new Wallet.Builder().build();
         assertEquals(w.getName(), "neow3jWallet");
         assertEquals(w.getVersion(), Wallet.CURRENT_VERSION);
         assertTrue(w.getAccounts().isEmpty());
@@ -36,11 +37,12 @@ public class WalletTest {
     @Test
     public void testCreateWalletFromNEP6File() throws IOException {
 
-        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("test_wallet.json");
+        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("wallet.json");
         ObjectMapper mapper = new ObjectMapper();
         NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
 
-        Wallet w = Wallet.with().nep6Wallet(nep6Wallet).build();
+        Wallet w = Wallet.fromNEP6Wallet(nep6Wallet).build();
+
 
         assertEquals("Wallet", w.getName());
         assertEquals(Wallet.CURRENT_VERSION, w.getVersion());
@@ -68,8 +70,8 @@ public class WalletTest {
     public void testAddAccount() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Wallet w = Wallet.with().defaultValues().build();
-        Account acct = Account.with().freshKeyPair().build();
+        Wallet w = new Wallet.Builder().build();
+        Account acct = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(acct);
         assertTrue(!w.getAccounts().isEmpty());
         assertEquals(w.getAccounts().get(0),acct);
@@ -79,8 +81,8 @@ public class WalletTest {
     public void testAddDuplicateAccount() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Wallet w = Wallet.with().defaultValues().build();
-        Account acct = Account.with().freshKeyPair().build();
+        Wallet w = new Wallet.Builder().build();
+        Account acct = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         assertTrue(w.addAccount(acct));
         assertFalse(w.addAccount(acct));
     }
@@ -89,11 +91,11 @@ public class WalletTest {
     public void testRemoveAccounts() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Wallet w = Wallet.with().defaultValues().build();
+        Wallet w = new Wallet.Builder().build();
         assertFalse(w.removeAccount(SampleKeys.ADDRESS_1));
-        Account acct1 = Account.with().freshKeyPair().build();
+        Account acct1 = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(acct1);
-        Account acct2 = Account.with().freshKeyPair().build();
+        Account acct2 = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(acct2);
         assertTrue(w.removeAccount(acct1.getAddress()));
         assertTrue(w.removeAccount(acct2.getAddress()));
@@ -104,8 +106,8 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException, CipherException {
 
         String walletName = "TestWallet";
-        Wallet w = Wallet.with().name(walletName).build();
-        Account a = Account.with().freshKeyPair().build();
+        Wallet w = new Wallet.Builder().name(walletName).build();
+        Account a = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(a);
         w.encryptAllAccounts("12345678");
 
@@ -122,8 +124,8 @@ public class WalletTest {
     public void testToNEP6WalletWithUnencryptedPrivateKey() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Wallet w = Wallet.with().defaultValues().build();
-        Account a = Account.with().freshKeyPair().build();
+        Wallet w = new Wallet.Builder().build();
+        Account a = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(a);
 
         exceptionRule.expect(IllegalStateException.class);
@@ -133,11 +135,11 @@ public class WalletTest {
 
     @Test
     public void testFromNEP6WalletToNEP6Wallet() throws IOException {
-        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("test_wallet.json");
+        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("wallet.json");
         ObjectMapper mapper = new ObjectMapper();
         NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
 
-        Wallet w = Wallet.with().nep6Wallet(nep6Wallet).build();
+        Wallet w = Wallet.fromNEP6Wallet(nep6Wallet).build();
 
         assertEquals(nep6Wallet, w.toNEP6Wallet());
     }

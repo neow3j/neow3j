@@ -59,8 +59,8 @@ public class WalletUtils {
             String password, ECKeyPair ecKeyPair, File destinationDirectory)
             throws CipherException, IOException {
 
-        Account a = Account.with().ecKeyPair(ecKeyPair).build();
-        Wallet w = Wallet.with().defaultValues().account(a).build();
+        Account a = Account.fromECKeyPair(ecKeyPair).build();
+        Wallet w = new Wallet.Builder().account(a).build();
         w.encryptAllAccounts(password);
         return generateWalletFile(w.toNEP6Wallet(), destinationDirectory);
     }

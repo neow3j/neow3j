@@ -1,57 +1,82 @@
 package io.neow3j.wallet;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.crypto.Credentials;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
+import io.neow3j.crypto.Sign;
+import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
+import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static io.neow3j.constants.OpCode.CHECKMULTISIG;
 
 public class Account {
 
-    private Credentials credentials;
-
+    private BigInteger privateKey;
+    private BigInteger publicKey;
+    private String address;
     private String encryptedPrivateKey;
-
     private String label;
-
     private boolean isDefault;
-
     private boolean isLocked;
-
     private NEP6Contract contract;
+    private Balances balances;
 
     private Account() {}
 
-    public static Builder with() {
-        return new Builder();
-    }
-
-    public Credentials getCredentials() {
-        return credentials;
+    private Account(Builder b) {
+        this.label = b.label;
+        this.privateKey = b.privateKey;
+        this.publicKey = b.publicKey;
+        this.isDefault = b.isDefault;
+        this.isLocked = b.isLocked;
+        this.address = b.address;
+        this.encryptedPrivateKey = b.encryptedPrivateKey;
+        this.contract = b.contract;
+        this.balances = new Balances(this);
+        this.tryAddVerificationScriptContract();
     }
 
     public String getAddress() {
-        return credentials == null ? null : credentials.getAddress();
+        return address;
     }
 
-    public ECKeyPair getEcKeyPair() {
-        return credentials == null ? null : credentials.getEcKeyPair();
+    public ECKeyPair getECKeyPair() {
+        if (privateKey != null && publicKey != null) {
+            return new ECKeyPair(privateKey, publicKey);
+        } else if (privateKey != null) {
+            return ECKeyPair.create(privateKey);
+        } else {
+            return null;
+        }
+    }
+
+    public BigInteger getPrivateKey() {
+        return privateKey;
+    }
+
+    public BigInteger getPublicKey() {
+        return publicKey;
     }
 
     public String getLabel() {
@@ -74,6 +99,21 @@ public class Account {
         return encryptedPrivateKey;
     }
 
+    public Balances getBalances() {
+        return balances;
+    }
+
+    public void updateAssetBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
+        NeoGetUnspents response = neow3j.getUnspents(getAddress()).send();
+        response.throwOnError();
+        balances.updateAssetBalances(response.getUnspents());
+    }
+
+    public void updateTokenBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
+        NeoGetNep5Balances response = neow3j.getNep5Balances(getAddress()).send();
+        response.throwOnError();
+        balances.updateTokenBalances(response.getBalances());
+    }
 
     /**
      * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted.
@@ -83,11 +123,13 @@ public class Account {
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
-        if (credentials == null || credentials.getEcKeyPair() == null) {
-            // No null check done for or the encrypted private key because an Account is either
-            // constructed with a key pair or with an encrypted private key.
-            ECKeyPair keyPair = NEP2.decrypt(password, encryptedPrivateKey, scryptParams);
-            credentials = new Credentials(keyPair);
+        if (privateKey == null) {
+            if (encryptedPrivateKey == null) {
+                throw new IllegalStateException("The account does not hold an encrypted private key.");
+            }
+            ECKeyPair ecKeyPair = NEP2.decrypt(password, encryptedPrivateKey, scryptParams);
+            privateKey = ecKeyPair.getPrivateKey();
+            publicKey = ecKeyPair.getPublicKey();
             tryAddVerificationScriptContract();
         }
     }
@@ -100,19 +142,19 @@ public class Account {
     public void encryptPrivateKey(String password, ScryptParams scryptParams) throws CipherException {
 
         if (encryptedPrivateKey == null) {
-            // No null checks done for credentials or key pair because an Account is either
-            // constructed with a key pair or with an encrypted private key.
-            this.encryptedPrivateKey= NEP2.encrypt(password, credentials.getEcKeyPair(), scryptParams);
+            if (privateKey == null) {
+                throw new IllegalStateException("The account does not hold a private key.");
+            }
+            this.encryptedPrivateKey= NEP2.encrypt(password, getECKeyPair(), scryptParams);
         }
     }
 
     public boolean isMultiSig() {
-        // TODO Claude 11.06.19
-        // Multi-sig accounts
-        String script = contract.getScript();
-        return contract != null &&
-                script != null &&
-                script.substring(script.length() - 2).equals(OpCode.toHexString(CHECKMULTISIG));
+        if (contract != null && contract.getScript() != null) {
+            String script = contract.getScript();
+            return script.substring(script.length() - 2).equals(OpCode.toHexString(CHECKMULTISIG));
+        }
+        return false;
     }
 
     public NEP6Account toNEP6Account() {
@@ -125,8 +167,8 @@ public class Account {
 
     private void tryAddVerificationScriptContract() {
         if (contract == null || contract.getScript() == null) {
-            if (getEcKeyPair() != null) {
-                byte[] scriptBytes = credentials.getEcKeyPair().getVerificationScriptAsArrayFromPublicKey();
+            if (publicKey != null) {
+                byte[] scriptBytes = Keys.getVerificationScriptFromPublicKey(publicKey).toArray();
                 String scriptHex = Numeric.toHexStringNoPrefix(scriptBytes);
                 NEP6Parameter param = new NEP6Parameter("signature", ContractParameterType.SIGNATURE);
                 contract = new NEP6Contract(scriptHex, Collections.singletonList(param), false);
@@ -134,39 +176,87 @@ public class Account {
         }
     }
 
+    /**
+     * Creates a multi-sig account builder from the given public keys.
+     * Mind that the ordering of the keys is important for later usage of the account.
+     *
+     * @param publicKeys The public keys from which to derive the multi-sig account.
+     * @param signatureThreshold The number of signatures needed when using this account for signing
+     *                           transactions.
+     * @return the multi-sig account builder;
+     */
+    public static Builder fromMultiSigKeys(List<BigInteger> publicKeys, int signatureThreshold) {
+        Builder b = new Builder();
+        b.publicKey = Sign.publicKeyFromPrivate(b.privateKey);
+        b.address = Keys.getMultiSigAddress(signatureThreshold, publicKeys);
+        b.label = b.address;
+
+        RawVerificationScript verificationScript =
+                Keys.getVerificationScriptFromPublicKeys(signatureThreshold, publicKeys);
+        String scriptHexString = Numeric.toHexStringNoPrefix(verificationScript.toArray());
+
+        List<NEP6Parameter> parameters = new ArrayList<>();
+        IntStream.range(0, publicKeys.size()).forEachOrdered(i ->
+                parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE)));
+
+        b.contract = new NEP6Contract(scriptHexString, parameters, false);
+        return b;
+    }
+
+    public static Builder fromWIF(String wif) {
+        Builder b = new Builder();
+        b.privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
+        b.publicKey = Sign.publicKeyFromPrivate(b.privateKey);
+        b.address = Keys.getAddress(b.publicKey);
+        b.label = b.address;
+        return b;
+    }
+
+    public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
+        Builder b = new Builder();
+        b.privateKey = ecKeyPair.getPrivateKey();
+        b.publicKey = ecKeyPair.getPublicKey();
+        b.address = Keys.getAddress(ecKeyPair);
+        b.label = b.address;
+        return b;
+    }
+
+    public static Builder fromNEP6Account(NEP6Account nep6Acct) {
+        Builder b = new Builder();
+        b.address = nep6Acct.getAddress();
+        b.label = nep6Acct.getLabel();
+        b.encryptedPrivateKey = nep6Acct.getKey();
+        b.isLocked = nep6Acct.getLock();
+        b.isDefault = nep6Acct.getDefault();
+        b.contract = nep6Acct.getContract();
+        return b;
+    }
+
+    public static Builder fromAddress(String address) {
+        Builder b = new Builder();
+        b.address = address;
+        b.label = address;
+        return b;
+    }
+
     public static class Builder {
 
         String label;
-        ECKeyPair ecKeyPair;
-        Boolean isDefault;
-        Boolean isLocked;
-        NEP6Account nep6Account;
+        BigInteger privateKey;
+        BigInteger publicKey;
+        boolean isDefault;
+        boolean isLocked;
+        String address;
+        String encryptedPrivateKey;
+        NEP6Contract contract;
 
-        /**
-         * Constructs an empty Account Builder.
-         */
-        public Builder() {}
+        private Builder() {
+            isDefault = false;
+            isLocked = false;
+        }
 
         public Builder label(String label) {
             this.label = label; return this;
-        }
-
-        public Builder ecKeyPair(ECKeyPair ecKeyPair) {
-            if (nep6Account != null) {
-                throw new IllegalStateException("Build an account either from a NEP-6 account or a " +
-                        "key pair, but not both.");
-            }
-            this.ecKeyPair = ecKeyPair; return this;
-        }
-
-        public Builder freshKeyPair() throws InvalidAlgorithmParameterException,
-                NoSuchAlgorithmException, NoSuchProviderException {
-
-            if (nep6Account != null) {
-                throw new IllegalStateException("Build an account either from a NEP-6 account or a " +
-                        "key pair, but not both.");
-            }
-            this.ecKeyPair = Keys.createEcKeyPair(); return this;
         }
 
         public Builder isDefault(boolean isDefault) {
@@ -177,43 +267,8 @@ public class Account {
             this.isLocked = isLocked; return this;
         }
 
-        public Builder nep6Account(NEP6Account nep6Account) {
-            if (ecKeyPair != null) {
-                throw new IllegalStateException("Build an account either from a NEP-6 account or a " +
-                        "key pair, but not both.");
-            }
-            this.nep6Account = nep6Account; return this;
-        }
-
         public Account build() {
-            if (nep6Account == null && ecKeyPair == null) {
-                throw new IllegalStateException("Creation of an account needs either a NEP-6 " +
-                        "account or a EC key pair as input.");
-            }
-            Account acct = new Account();
-            if (nep6Account != null) {
-                fillAccount(acct, nep6Account);
-            } else if (ecKeyPair != null) {
-                Credentials cred = new Credentials(ecKeyPair);
-                acct.credentials = cred;
-                acct.label = cred.getAddress();
-            }
-
-            if (this.label != null) acct.label = this.label;
-            if (this.isDefault != null) acct.isDefault = this.isDefault;
-            if (this.isLocked != null) acct.isLocked = this.isLocked;
-
-            acct.tryAddVerificationScriptContract();
-            return acct;
-        }
-
-        protected static void fillAccount(Account acct, NEP6Account nep6Acct) {
-            acct.credentials = new Credentials(nep6Acct.getAddress());
-            acct.label = nep6Acct.getLabel();
-            acct.encryptedPrivateKey = nep6Acct.getKey();
-            acct.isLocked = nep6Acct.getLock();
-            acct.isDefault = nep6Acct.getDefault();
-            acct.contract = nep6Acct.getContract();
+            return new Account(this);
         }
     }
 }

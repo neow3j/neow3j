@@ -2,6 +2,7 @@ description 'neow3j wallet'
 
 dependencies {
     compile project(':crypto')
+    compile project(':core')
 
     configurations {
         testArtifacts.extendsFrom testRuntime
