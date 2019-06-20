@@ -17,7 +17,6 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Balances.AssetBalance;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
-import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -93,17 +92,17 @@ public class AssetTransfer {
             return this;
         }
 
-        public Builder inputs(List<RawTransactionInput> inputs) throws OperationNotSupportedException {
+        public Builder inputs(List<RawTransactionInput> inputs) {
             // TODO Claude 19.06.19:
             // Remove exception when inputs are handled correctly in transaction building.
-            throw new OperationNotSupportedException();
+            throw new UnsupportedOperationException();
             // this.inputs.addAll(inputs); return this;
         }
 
-        public Builder input(RawTransactionInput input) throws OperationNotSupportedException {
+        public Builder input(RawTransactionInput input) {
             // TODO Claude 19.06.19:
             // Remove exception when inputs are handled correctly in transaction building.
-            throw new OperationNotSupportedException();
+            throw new UnsupportedOperationException();
             // this.inputs.add(input); return this;
         }
 
@@ -155,7 +154,7 @@ public class AssetTransfer {
             // must not appear in the final transaction as an output.
             List<RawTransactionOutput> intendedOutputs = new ArrayList<>(outputs);
             if (fee != null && fee.compareTo(BigDecimal.ZERO) > 0) {
-                intendedOutputs.add(new RawTransactionOutput(GASAsset.HASH_ID, fee.toPlainString(), ""));
+                intendedOutputs.add(new RawTransactionOutput(GASAsset.HASH_ID, fee.toPlainString(), null));
             }
 
             Map<String, BigDecimal> assets = new HashMap<>();
@@ -212,15 +211,10 @@ public class AssetTransfer {
             }
             byte[] rawUnsignedTx = tx.toArray();
             ECKeyPair keyPair = account.getECKeyPair();
-
-            RawInvocationScript invocationScript = new RawInvocationScript(
-                    Sign.signMessage(rawUnsignedTx, keyPair));
-
-            String publicKeyHexString = Numeric.toHexStringNoPrefix(account.getPublicKey());
-            byte[] publicKeyByteArray = Numeric.hexStringToByteArray(publicKeyHexString);
-            RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(publicKeyByteArray);
-
-            tx.addScript(Arrays.asList(invocationScript), verificationScript);
+            tx.addScript(
+                    Arrays.asList(new RawInvocationScript(Sign.signMessage(rawUnsignedTx, keyPair))),
+                    Keys.getVerificationScriptFromPublicKey(account.getPublicKey())
+            );
         }
     }
 }

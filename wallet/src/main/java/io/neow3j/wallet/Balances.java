@@ -33,7 +33,7 @@ public class Balances {
             throw new IllegalArgumentException("The provided unspents are not related to the " +
                     "account of this balance");
         }
-        assetBalances = new HashMap<>();
+        assetBalances = new HashMap<>(unspents.getBalances().size());
         unspents.getBalances().forEach(b -> {
             List<Utxo> utxos = b.getUnspentTransactions().stream()
                     .map(utxo -> new Utxo(utxo.getTxId(), utxo.getIndex(), utxo.getValue()))
@@ -59,7 +59,7 @@ public class Balances {
             throw new IllegalArgumentException("The provided token balances are not related to the " +
                     "account of this balance");
         }
-        this.tokenBalances = new HashMap<>();
+        this.tokenBalances = new HashMap<>(balances.getBalances().size());
         balances.getBalances().forEach(
                 b -> this.tokenBalances.put(b.getAssetHash(), new BigDecimal(b.getAmount())));
     }

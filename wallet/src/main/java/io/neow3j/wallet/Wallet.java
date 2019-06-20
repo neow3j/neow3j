@@ -1,5 +1,6 @@
 package io.neow3j.wallet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -8,6 +9,8 @@ import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -114,6 +117,12 @@ public class Wallet {
         List<NEP6Account> accts = accounts.stream().map(
                 a -> a.toNEP6Account()).collect(Collectors.toList());
         return new NEP6Wallet(name, version, scryptParams, accts, null);
+    }
+
+    public static Builder fromNEP6Wallet(URL nep6WalletFileUrl) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFileUrl, NEP6Wallet.class);
+        return fromNEP6Wallet(nep6Wallet);
     }
 
     public static Builder fromNEP6Wallet(NEP6Wallet nep6Wallet) {

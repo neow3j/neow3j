@@ -38,11 +38,10 @@ public class WalletTest {
     public void testCreateWalletFromNEP6File() throws IOException {
 
         URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("wallet.json");
+        Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile).build();
+
         ObjectMapper mapper = new ObjectMapper();
         NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
-
-        Wallet w = Wallet.fromNEP6Wallet(nep6Wallet).build();
-
 
         assertEquals("Wallet", w.getName());
         assertEquals(Wallet.CURRENT_VERSION, w.getVersion());

@@ -150,7 +150,12 @@ public class Account {
     }
 
     public boolean isMultiSig() {
-        if (contract != null && contract.getScript() != null) {
+        // TODO Claude 20.06.19:
+        // Even if the contract script is not empty this might be a multi-sig account. Additionally,
+        // the script in the contract could be something else than a verification script.
+        // Clarify if it makes sense to enforce that the contract's script must be a verification
+        // script and that it must be available (especially for mutli-sig accounts).
+        if (contract != null && contract.getScript() != null && contract.getScript().length() >= 2) {
             String script = contract.getScript();
             return script.substring(script.length() - 2).equals(OpCode.toHexString(CHECKMULTISIG));
         }
