@@ -46,12 +46,16 @@ allprojects {
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '1.0.11'
+    version '1.0.12'
     archivesBaseName = "${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 
+    if (project.hasProperty('snapshot')) {
+        version = version + '-SNAPSHOT'
+    }
+    
     repositories {
         mavenLocal()
         mavenCentral()
@@ -161,12 +165,11 @@ configure(subprojects.findAll()) {
             mavenDeployer {
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-                repository {
-                    if(project.version.endsWith('-SNAPSHOT')) {
-                        url 'https://oss.sonatype.org/content/repositories/snapshots/'
-                    } else {
-                        url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-                    }
+                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+                def repoUrl = project.hasProperty('snapshot') ? snapshotsRepoUrl : releasesRepoUrl
+                
+                repository(url: repoUrl) {
                     authentication(
                             userName: nexusUsername,
                             password: nexusPassword
