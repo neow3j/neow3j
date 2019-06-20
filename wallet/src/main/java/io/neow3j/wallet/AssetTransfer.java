@@ -4,7 +4,6 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.transaction.RawInvocationScript;
-import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.crypto.transaction.RawVerificationScript;
@@ -46,11 +45,11 @@ public class AssetTransfer {
         tx.addScript(invocationScripts, verificationScript);
     }
 
-    public ContractTransaction send() throws IOException, ErrorResponseException {
+    public AssetTransfer send() throws IOException, ErrorResponseException {
         String rawTx = Numeric.toHexStringNoPrefix(tx.toArray());
         NeoSendRawTransaction response = neow3j.sendRawTransaction(rawTx).send();
         response.throwOnError();
-        return tx;
+        return this;
     }
 
 
@@ -141,8 +140,9 @@ public class AssetTransfer {
                     .build();
 
             // TODO Claude 19.06.19:
-            // Cover other possible scenarios. E.g. verification script is given in the mutli-sig
-            // account's contract and can be added automatically.
+            // Cover other possible scenarios. E.g. only add verification script automatically and
+            // let dev add signature manually. Verification script could be in account's contract
+            // object.
             if (!signManually) {
                 createAndAddWitness();
             }
@@ -203,7 +203,7 @@ public class AssetTransfer {
             return null;
         }
 
-        public void createAndAddWitness() {
+        private void createAndAddWitness() {
             if (account.getPrivateKey() == null) {
                 throw new IllegalStateException("Account does not hold a decrypted private key " +
                         "for signing the transaction. Either add the private key to the account " +
