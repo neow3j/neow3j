@@ -19,7 +19,7 @@ public class NEP6WalletTest {
 
     @Test
     public void testReadWallet() throws IOException {
-        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("test_wallet.json");
+        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("wallet.json");
         ObjectMapper mapper = new ObjectMapper();
         NEP6Wallet w = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
         assertEquals(w.getName(), "Wallet");
