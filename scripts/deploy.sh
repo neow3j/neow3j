@@ -3,10 +3,11 @@
 SNAPSHOT_TAG_PATTERN="^(\d+(\.\d+){1,2}(\.\*)?)-SNAPSHOT$"
 RELEASE_TAG_PATTERN="^(\d+(\.\d+){1,2}(\.\*)?)$"
 
-GPG_ENC_FILE="./scripts/neow3j.gpg.enc"
-GPG_FILE="./scripts/neow3j.gpg"
+GPG_ENC_FILE="${TRAVIS_BUILD_DIR}/scripts/neow3j.gpg.enc"
+GPG_FILE="${TRAVIS_BUILD_DIR}/scripts/neow3j.gpg"
 
 echo "Tag detected: ${TRAVIS_TAG}"
+echo "Travis build dir: ${TRAVIS_BUILD_DIR}"
 
 if echo "${TRAVIS_TAG}" | grep -P -q ${SNAPSHOT_TAG_PATTERN}; then
     PARAMS="-Psnapshot"
@@ -20,12 +21,14 @@ if (echo "${TRAVIS_TAG}" | grep -P -q ${SNAPSHOT_TAG_PATTERN}) || (echo "${TRAVI
         # release (uploadArchives)
         ./gradlew release -PnexusUsername=${SONATYPE_USERNAME} -PnexusPassword=${SONATYPE_PASSWORD} -Psigning.keyId=${GPG_KEY_ID} -Psigning.password=${GPG_KEY_PASSPHRASE} -Psigning.secretKeyRingFile=${GPG_FILE} ${PARAMS}
 
-        # After releasing (uploadArchives) to nexus,
-        # it's a good practice to wait 1 minute or so
-        # due to issues with nexus servers.
-        sleep 60
+        if [ $? -eq 0 ]; then
+            # After releasing (uploadArchives) to nexus,
+            # it's a good practice to wait 1 minute or so
+            # due to issues with nexus servers.
+            sleep 60
 
-        # close and release repo!
-        ./gradlew closeAndReleaseRepository -PnexusUsername=${SONATYPE_USERNAME} -PnexusPassword=${SONATYPE_PASSWORD} -Psigning.keyId=${GPG_KEY_ID} -Psigning.password=${GPG_KEY_PASSPHRASE} -Psigning.secretKeyRingFile=${GPG_FILE} ${PARAMS}
+            # close and release repo!
+            ./gradlew closeAndReleaseRepository -PnexusUsername=${SONATYPE_USERNAME} -PnexusPassword=${SONATYPE_PASSWORD} -Psigning.keyId=${GPG_KEY_ID} -Psigning.password=${GPG_KEY_PASSPHRASE} -Psigning.secretKeyRingFile=${GPG_FILE} ${PARAMS}
+        fi
     fi
 fi
