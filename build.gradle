@@ -224,21 +224,6 @@ configure(subprojects.findAll()) {
         
         tasks.findByName('uploadArchives').mustRunAfter 'build'
     }
-
-    task releaseAndWait {
-        dependsOn 'release'
-        // after releasing (uploadArchives) to nexus,
-        // it's a good practice to wait 1 minute or so
-        // due to issues with nexus servers.
-        sleep(60 * 1000)
-    }
-
-    task releaseAndClose {
-        dependsOn 'releaseAndWait'
-        dependsOn 'closeAndReleaseRepository'
-
-        tasks.findByName('closeAndReleaseRepository').mustRunAfter 'releaseAndWait'
-    }
 }
 
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
