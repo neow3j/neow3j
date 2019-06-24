@@ -98,4 +98,6 @@ public interface InterfaceCoreIT {
 
     void testGetNep5Balances() throws Exception;
 
+    void testGetClaimable() throws Exception;
+
 }

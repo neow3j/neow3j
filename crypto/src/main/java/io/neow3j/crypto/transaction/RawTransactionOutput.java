@@ -1,10 +1,10 @@
 package io.neow3j.crypto.transaction;
 
 import io.neow3j.crypto.KeyUtils;
-import io.neow3j.model.types.NEOAsset;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.util.BigIntegers;
@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class RawTransactionOutput extends NeoSerializable {
-
-    private int index;
 
     private String assetId;
 
@@ -25,15 +23,10 @@ public class RawTransactionOutput extends NeoSerializable {
     public RawTransactionOutput() {
     }
 
-    public RawTransactionOutput(int index, String assetId, String value, String address) {
-        this.index = index;
+    public RawTransactionOutput(String assetId, String value, String address) {
         this.assetId = assetId;
         this.value = value;
         this.address = address;
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     public String getAssetId() {
@@ -48,27 +41,29 @@ public class RawTransactionOutput extends NeoSerializable {
         return address;
     }
 
+    public static RawTransactionOutput createNeoTransactionOutput(String value, String address) {
+        return new RawTransactionOutput(NEOAsset.HASH_ID, value, address);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof RawTransactionOutput)) return false;
         RawTransactionOutput that = (RawTransactionOutput) o;
-        return getIndex() == that.getIndex() &&
-                Objects.equals(getAssetId(), that.getAssetId()) &&
+        return Objects.equals(getAssetId(), that.getAssetId()) &&
                 Objects.equals(getValue(), that.getValue()) &&
                 Objects.equals(getAddress(), that.getAddress());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getIndex(), getAssetId(), getValue(), getAddress());
+        return Objects.hash(getAssetId(), getValue(), getAddress());
     }
 
     @Override
     public String toString() {
         return "TransactionOutput{" +
-                "index=" + index +
-                ", assetId='" + assetId + '\'' +
+                "assetId='" + assetId + '\'' +
                 ", value='" + value + '\'' +
                 ", address='" + address + '\'' +
                 '}';

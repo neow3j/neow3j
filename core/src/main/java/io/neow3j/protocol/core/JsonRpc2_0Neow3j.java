@@ -13,6 +13,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -31,6 +32,7 @@ import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
@@ -470,6 +472,24 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(address),
                 neow3jService,
                 NeoGetNep5Balances.class);
+    }
+
+    @Override
+    public Request<?, NeoGetClaimable> getClaimable(String address) {
+        return new Request<>(
+                "getclaimable",
+                Arrays.asList(address),
+                neow3jService,
+                NeoGetClaimable.class);
+    }
+
+    @Override
+    public Request<?, NeoListPlugins> listPlugins() {
+        return new Request<>(
+                "listplugins",
+                Collections.<String>emptyList(),
+                neow3jService,
+                NeoListPlugins.class);
     }
 
     @Override

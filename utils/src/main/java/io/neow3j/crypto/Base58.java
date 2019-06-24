@@ -18,6 +18,7 @@
 package io.neow3j.crypto;
 
 import io.neow3j.crypto.exceptions.AddressFormatException;
+import io.neow3j.utils.ArrayUtils;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -160,4 +161,32 @@ public class Base58 {
         }
         return (byte) remainder;
     }
+
+    public static String base58CheckEncode(byte[] data) {
+        byte[] checksum = Hash.sha256(Hash.sha256(data));
+        byte[] buffer = new byte[data.length + 4];
+        System.arraycopy(data, 0, buffer, 0, data.length);
+        System.arraycopy(checksum, 0, buffer, data.length, 4);
+        return Base58.encode(buffer);
+    }
+
+    public static byte[] base58CheckDecode(String input) {
+        byte[] buffer = Base58.decode(input);
+        if (buffer.length < 4) {
+            throw new IllegalArgumentException("The input should contain at least 4 bytes.");
+        }
+
+        byte[] data = ArrayUtils.getFirstNBytes(buffer, buffer.length - 4);
+        byte[] givenChecksum = ArrayUtils.getLastNBytes(buffer, 4);
+
+        byte[] calculatedChecksum = Hash.sha256(Hash.sha256(data));
+        byte[] first4BytesCalculatedChecksum = ArrayUtils.getFirstNBytes(calculatedChecksum, 4);
+
+        if (!Arrays.equals(givenChecksum, first4BytesCalculatedChecksum)) {
+            throw new IllegalArgumentException();
+        }
+
+        return data;
+    }
+
 }

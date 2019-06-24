@@ -1,0 +1,30 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "name": "ApplicationLogs",
+      "version": "2.10.2.0",
+      "interfaces": [
+        "IRpcPlugin",
+        "IPersistencePlugin"
+      ]
+    },
+    {
+      "name": "RpcSystemAssetTrackerPlugin",
+      "version": "2.10.2.0",
+      "interfaces": [
+        "IPersistencePlugin",
+        "IRpcPlugin"
+      ]
+    },
+    {
+      "name": "SimplePolicyPlugin",
+      "version": "2.10.2.0",
+      "interfaces": [
+        "ILogPlugin",
+        "IPolicyPlugin"
+      ]
+    }
+  ]
+}

@@ -44,6 +44,7 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.protocol.transaction.ContractTransaction;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsNull;
@@ -644,6 +645,18 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
         // to be implemented
     }
 
+    public void testGetClaimable() throws IOException {
+
+        // TODO: 2019-05-31 Claude:
+        // Implement
+    }
+
+    public void testListInputs() throws IOException {
+
+        // TODO: 2019-06-12 Claude:
+        // Implement
+    }
+
     public NeoGetBalance getBalance() throws IOException {
         return neow3j.getBalance(NEOAsset.HASH_ID).send();
     }
@@ -703,16 +716,12 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
     }
 
     private byte[] createContractTransaction(ECKeyPair keyPair, String inputHash, int inputIndex, BigDecimal amountToSend, String addressToSend, BigDecimal amountAsChange, String changeAddress) {
-        RawTransaction tUnsigned = RawTransaction.createContractTransaction(
-                null,
-                Arrays.asList(
-                        new RawTransactionInput(inputHash, inputIndex)
-                ),
-                Arrays.asList(
-                        new RawTransactionOutput(0, NEOAsset.HASH_ID, amountToSend.toPlainString(), addressToSend),
-                        new RawTransactionOutput(1, NEOAsset.HASH_ID, amountAsChange.toPlainString(), changeAddress)
-                )
-        );
+        RawTransaction tUnsigned = new ContractTransaction.Builder()
+                .inputs(Arrays.asList(new RawTransactionInput(inputHash, inputIndex)))
+                .outputs(Arrays.asList(
+                        new RawTransactionOutput(NEOAsset.HASH_ID, amountToSend.toPlainString(), addressToSend),
+                        new RawTransactionOutput(NEOAsset.HASH_ID, amountAsChange.toPlainString(), changeAddress)))
+                .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
         byte[] signature = Sign.signMessage(tUnsignedArray, keyPair).getConcatenated();
@@ -723,5 +732,4 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
 
         return tUnsigned.toArray();
     }
-
 }

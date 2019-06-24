@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
+import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -29,6 +30,7 @@ import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
@@ -136,6 +138,10 @@ public interface Neo {
     Request<?, NeoGetUnspents> getUnspents(String address);
 
     Request<?, NeoGetNep5Balances> getNep5Balances(String address);
+
+    Request<?, NeoGetClaimable> getClaimable(String address);
+
+    Request<?, NeoListPlugins> listPlugins();
 
     // Plugins
 
