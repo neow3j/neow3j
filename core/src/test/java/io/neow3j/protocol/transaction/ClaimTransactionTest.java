@@ -4,11 +4,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.WIF;
-import io.neow3j.crypto.transaction.RawInvocationScript;
-import io.neow3j.crypto.transaction.RawScript;
-import io.neow3j.crypto.transaction.RawTransactionInput;
-import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.crypto.transaction.RawVerificationScript;
+import io.neow3j.crypto.transaction.*;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
@@ -42,8 +38,8 @@ public class ClaimTransactionTest {
                 .outputs(Arrays.asList(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr)))
                 .claims(Arrays.asList(new RawTransactionInput(claimableTxId, idx)))
                 .scripts(Arrays.asList(new RawScript(
-                    Arrays.asList(new RawInvocationScript(Numeric.hexStringToByteArray(invocationScript))),
-                    new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix(verificationScript)), 1)))
+                        Arrays.asList(new RawInvocationScript(Numeric.hexStringToByteArray(invocationScript))),
+                        new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix(verificationScript)), 1)))
                 ).build();
 
         byte[] signedTxArray = signedTx.toArray();
@@ -84,7 +80,7 @@ public class ClaimTransactionTest {
         String txId = "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff";
         int index = 0;
         String claimValue = "7264";
-        Claim claim = new Claim(txId, index, null, null , null, null, null, claimValue);
+        Claim claim = new Claim(txId, index, null, null, null, null, null, claimValue);
         Claimables claimables = new Claimables(Arrays.asList(claim), adr, claimValue);
 
         ClaimTransaction tx = ClaimTransaction.fromClaimables(claimables, adr);
@@ -95,10 +91,12 @@ public class ClaimTransactionTest {
         RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(publicKeyByteArray);
         tx.addScript(rawInvocationScriptList, verificationScript);
 
+        tx.getScripts().add(new Witness("00c10430323134", ""));
+
         byte[] signedTxArray = tx.toArray();
         String txHexString = Numeric.toHexStringNoPrefix(signedTxArray);
         assertEquals(
-                "020001ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000000001e72d286979ee6cb1b7e65dfddfb2e384100b8d148e7758de42e4168b71792c600060d020a900000023ba2703c53263e8d6e522dc32203339dcd8eee90141400c40efd5f4a37b09fb8dca3e9cd6486c1b2d46c0319ac216c348f546ff44bb5fc3a328a43f2f49c9b2aa4cb1ce3f40327fd8403966e117745eb5c1266614f7d42321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac",
+                "020001ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000000001e72d286979ee6cb1b7e65dfddfb2e384100b8d148e7758de42e4168b71792c600060d020a900000023ba2703c53263e8d6e522dc32203339dcd8eee90241400c40efd5f4a37b09fb8dca3e9cd6486c1b2d46c0319ac216c348f546ff44bb5fc3a328a43f2f49c9b2aa4cb1ce3f40327fd8403966e117745eb5c1266614f7d42321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac0700c1043032313400",
                 txHexString);
     }
 }
