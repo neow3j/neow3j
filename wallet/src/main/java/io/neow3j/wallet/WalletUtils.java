@@ -1,13 +1,23 @@
-package io.neow3j.crypto;
+package io.neow3j.wallet;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.crypto.Credentials;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.KeyUtils;
+import io.neow3j.crypto.Keys;
+import io.neow3j.crypto.MnemonicUtils;
+import io.neow3j.crypto.NEP2;
+import io.neow3j.crypto.ScryptParams;
+import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2AccountNotFound;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.utils.Numeric;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.wallet.nep6.NEP6Account;
+import io.neow3j.wallet.nep6.NEP6Wallet;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,20 +59,19 @@ public class WalletUtils {
             String password, ECKeyPair ecKeyPair, File destinationDirectory)
             throws CipherException, IOException {
 
-        WalletFile standardWallet = Wallet.createStandardWallet();
-        WalletFile.Account standardAccount = Wallet.createStandardAccount(password, ecKeyPair);
-        standardWallet.addAccount(standardAccount);
-
-        return generateWalletFile(standardWallet, destinationDirectory);
+        Account a = Account.fromECKeyPair(ecKeyPair).build();
+        Wallet w = new Wallet.Builder().account(a).build();
+        w.encryptAllAccounts(password);
+        return generateWalletFile(w.toNEP6Wallet(), destinationDirectory);
     }
 
-    public static String generateWalletFile(WalletFile walletFile, File destinationDirectory)
+    public static String generateWalletFile(NEP6Wallet nep6Wallet, File destinationDirectory)
             throws IOException {
 
-        String fileName = getWalletFileName(walletFile);
+        String fileName = getWalletFileName(nep6Wallet);
         File destination = new File(destinationDirectory, fileName);
 
-        objectMapper.writeValue(destination, walletFile);
+        objectMapper.writeValue(destination, nep6Wallet);
 
         return fileName;
     }
@@ -95,12 +104,12 @@ public class WalletUtils {
         return new Bip39Wallet(walletFile, mnemonic);
     }
 
-    public static WalletFile loadWalletFile(String source) throws IOException {
+    public static NEP6Wallet loadWalletFile(String source) throws IOException {
         return loadWalletFile(new File(source));
     }
 
-    public static WalletFile loadWalletFile(File source) throws IOException {
-        return objectMapper.readValue(source, WalletFile.class);
+    public static NEP6Wallet loadWalletFile(File source) throws IOException {
+        return objectMapper.readValue(source, NEP6Wallet.class);
     }
 
     public static Credentials loadCredentials(String accountAddress, String password, String source)
@@ -111,35 +120,35 @@ public class WalletUtils {
     public static Credentials loadCredentials(String accountAddress, String password, File source)
             throws IOException, CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase, NEP2AccountNotFound {
 
-        WalletFile walletFile = objectMapper.readValue(source, WalletFile.class);
+        NEP6Wallet nep6Wallet = objectMapper.readValue(source, NEP6Wallet.class);
 
-        WalletFile.Account account = walletFile.getAccounts().stream()
+        NEP6Account account = nep6Wallet.getAccounts().stream()
                 .filter((a) -> a.getAddress() != null)
                 .filter((a) -> a.getAddress().equals(accountAddress))
                 .findFirst()
                 .orElseThrow(() -> new NEP2AccountNotFound("Account not found in the specified wallet."));
 
-        return loadCredentials(account, password, walletFile);
+        return loadCredentials(account, password, nep6Wallet);
     }
 
-    public static Credentials loadCredentials(WalletFile.Account account, String password, WalletFile walletFile)
+    public static Credentials loadCredentials(NEP6Account account, String password, NEP6Wallet nep6Wallet)
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
-        WalletFile.ScryptParams scryptParams = walletFile.getScrypt();
-        ECKeyPair decrypted = Wallet.decrypt(password, walletFile, account, scryptParams.getN(), scryptParams.getP(), scryptParams.getR());
-        return Credentials.create(decrypted);
+        ScryptParams scryptParams = nep6Wallet.getScrypt();
+        ECKeyPair decrypted = NEP2.decrypt(password, account.getKey(), scryptParams);
+        return new Credentials(decrypted);
     }
 
     public static Credentials loadBip39Credentials(String password, String mnemonic) {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
-        return Credentials.create(ECKeyPair.create(sha256(seed)));
+        return new Credentials(ECKeyPair.create(sha256(seed)));
     }
 
-    private static String getWalletFileName(WalletFile walletFile) {
+    private static String getWalletFileName(NEP6Wallet nep6Wallet) {
         DateTimeFormatter format = DateTimeFormatter.ofPattern(
                 "'UTC--'yyyy-MM-dd'T'HH-mm-ss.nVV'--'");
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
 
-        return now.format(format) + walletFile.getName() + ".json";
+        return now.format(format) + nep6Wallet.getName() + ".json";
     }
 
     public static String getDefaultKeyDirectory() {

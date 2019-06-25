@@ -32,6 +32,7 @@ import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
@@ -480,6 +481,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 Arrays.asList(address),
                 neow3jService,
                 NeoGetClaimable.class);
+    }
+
+    @Override
+    public Request<?, NeoListPlugins> listPlugins() {
+        return new Request<>(
+                "listplugins",
+                Collections.<String>emptyList(),
+                neow3jService,
+                NeoListPlugins.class);
     }
 
     @Override

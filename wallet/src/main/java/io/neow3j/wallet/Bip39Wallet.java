@@ -1,4 +1,4 @@
-package io.neow3j.crypto;
+package io.neow3j.wallet;
 
 /**
  * Data class encapsulating a BIP-39 compatible NEO wallet.

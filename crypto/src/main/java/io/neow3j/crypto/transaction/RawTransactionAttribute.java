@@ -22,11 +22,18 @@ public class RawTransactionAttribute extends NeoSerializable {
     public RawTransactionAttribute(TransactionAttributeUsageType usage, byte[] data) {
         this.usage = usage;
         this.data = data;
+        if (usage.fixedDataLength() != null && data.length != usage.fixedDataLength()) {
+            throw new IllegalArgumentException("The data has different length than the length " +
+                    "required by the attribute usage type.");
+        }
+        if (usage.maxDataLength() != null && data.length > usage.maxDataLength()) {
+            throw new IllegalArgumentException("The data is longer then the maximum length " +
+                    "allowed by the attribute usage type.");
+        }
     }
 
     public RawTransactionAttribute(TransactionAttributeUsageType usage, String data) {
-        this.usage = usage;
-        this.data = (data != null ? Numeric.hexStringToByteArray(data) : null);
+        this(usage, (data != null ? Numeric.hexStringToByteArray(data) : null));
     }
 
     public TransactionAttributeUsageType getUsage() {
@@ -39,10 +46,6 @@ public class RawTransactionAttribute extends NeoSerializable {
 
     public String getData() {
         return this.data != null ? Numeric.toHexString(data) : null;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
     }
 
     @Override
@@ -72,48 +75,22 @@ public class RawTransactionAttribute extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.usage = TransactionAttributeUsageType.valueOf(reader.readByte());
-        int bytesToRead = readBytesBaseOnUsageType();
-        if (bytesToRead > 32) {
-            this.data = reader.readVarBytes(bytesToRead);
+        if (usage.fixedDataLength() != null) {
+            this.data = reader.readBytes(usage.fixedDataLength());
+        } else if (usage.maxDataLength() != null){
+            this.data = reader.readVarBytes(usage.maxDataLength());
         } else {
-            this.data = reader.readBytes(bytesToRead);
+            this.data = reader.readVarBytes();
         }
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        writer.writeByte(this.usage.byteValue());
-        int bytesToWrite = readBytesBaseOnUsageType();
-        if (bytesToWrite > 32) {
-            writer.writeVarBytes(this.data);
+        writer.writeByte(usage.byteValue());
+        if (usage.fixedDataLength() != null) {
+            writer.write(data);
         } else {
-            writer.writeVarBytes(this.data);
+            writer.writeVarBytes(data);
         }
     }
-
-    private int readBytesBaseOnUsageType() {
-        switch (this.usage) {
-            case CONTRACT_HASH:
-            case ECDH02:
-            case ECDH03:
-            case HASH1:
-            case HASH2:
-            case HASH3:
-            case HASH4:
-            case HASH5:
-            case HASH6:
-            case HASH7:
-            case HASH8:
-            case HASH9:
-            case HASH10:
-            case HASH11:
-            case HASH12:
-            case HASH13:
-            case HASH15:
-                return 32;
-            default:
-                return 255;
-        }
-    }
-
 }

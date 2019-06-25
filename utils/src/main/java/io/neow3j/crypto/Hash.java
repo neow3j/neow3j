@@ -131,31 +131,4 @@ public class Hash {
         return sha256(input);
     }
 
-    public static String base58CheckEncode(byte[] data) {
-        byte[] checksum = sha256(sha256(data));
-        byte[] buffer = new byte[data.length + 4];
-        System.arraycopy(data, 0, buffer, 0, data.length);
-        System.arraycopy(checksum, 0, buffer, data.length, 4);
-        return Base58.encode(buffer);
-    }
-
-    public static byte[] base58CheckDecode(String input) {
-        byte[] buffer = Base58.decode(input);
-        if (buffer.length < 4) {
-            throw new IllegalArgumentException("The input should contain at least 4 bytes.");
-        }
-
-        byte[] data = ArrayUtils.getFirstNBytes(buffer, buffer.length - 4);
-        byte[] givenChecksum = ArrayUtils.getLastNBytes(buffer, 4);
-
-        byte[] calculatedChecksum = sha256(sha256(data));
-        byte[] first4BytesCalculatedChecksum = ArrayUtils.getFirstNBytes(calculatedChecksum, 4);
-
-        if (!Arrays.equals(givenChecksum, first4BytesCalculatedChecksum)) {
-            throw new IllegalArgumentException();
-        }
-
-        return data;
-    }
-
 }
