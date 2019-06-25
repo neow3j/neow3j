@@ -275,6 +275,44 @@ public class AssetTransferTest {
     }
 
     @Test
+    public void test_erroneously_add_outputs1() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+        RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
+
+        try {
+            AssetTransfer at = new AssetTransfer.Builder()
+                    .neow3j(neow3j)
+                    .account(a)
+                    .asset(NEOAsset.HASH_ID)
+                    .output(output)
+                    .build();
+        } catch(IllegalStateException e) {
+            return;
+        }
+        fail();
+    }
+
+    @Test
+    public void test_erroneously_add_outputs2() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+        RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
+
+        try {
+            AssetTransfer at = new AssetTransfer.Builder()
+                    .neow3j(neow3j)
+                    .account(a)
+                    .output(output)
+                    .amount(BigDecimal.ONE)
+                    .build();
+        } catch(IllegalStateException e) {
+            return;
+        }
+        fail();
+    }
+
+    @Test
     public void test_transfer_from_multisig_account() {
 //        String multiSigAddress = Keys.getMultiSigAddress(2, SampleKeys.PUBLIC_KEY_1, SampleKeys.PUBLIC_KEY_2);
 //        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(multiSigAddress);
