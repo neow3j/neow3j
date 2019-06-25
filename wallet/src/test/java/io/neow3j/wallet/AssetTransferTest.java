@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
 
 public class AssetTransferTest {
 
@@ -172,144 +171,104 @@ public class AssetTransferTest {
         assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(1).getAddress());
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_missing_neow3j() {
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .account(a)
-                    .output(output)
-                    .build();
-        } catch (IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .account(a)
+                .output(output)
+                .build();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_missing_account() {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .neow3j(neow3j)
-                    .output(output)
-                    .build();
-        } catch(IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .output(output)
+                .build();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_missing_outputs() {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .neow3j(neow3j)
-                    .account(a)
-                    .build();
-        } catch(IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .build();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_partially_missing_output1() {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .neow3j(neow3j)
-                    .account(a)
-                    .asset(NEOAsset.HASH_ID)
-                    .amount(BigDecimal.ONE)
-                    .build();
-        } catch(IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .asset(NEOAsset.HASH_ID)
+                .amount(BigDecimal.ONE)
+                .build();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_partially_missing_output2() {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .neow3j(neow3j)
-                    .account(a)
-                    .asset(NEOAsset.HASH_ID)
-                    .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
-                    .build();
-        } catch(IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .asset(NEOAsset.HASH_ID)
+                .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
+                .build();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_partially_missing_output3() {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .neow3j(neow3j)
-                    .account(a)
-                    .amount(BigDecimal.ONE)
-                    .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
-                    .build();
-        } catch(IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .amount(BigDecimal.ONE)
+                .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
+                .build();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_erroneously_add_outputs1() {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .neow3j(neow3j)
-                    .account(a)
-                    .asset(NEOAsset.HASH_ID)
-                    .output(output)
-                    .build();
-        } catch(IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .asset(NEOAsset.HASH_ID)
+                .output(output)
+                .build();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void test_erroneously_add_outputs2() {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        try {
-            AssetTransfer at = new AssetTransfer.Builder()
-                    .neow3j(neow3j)
-                    .account(a)
-                    .output(output)
-                    .amount(BigDecimal.ONE)
-                    .build();
-        } catch(IllegalStateException e) {
-            return;
-        }
-        fail();
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .output(output)
+                .amount(BigDecimal.ONE)
+                .build();
     }
 
     @Test
