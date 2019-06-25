@@ -7,6 +7,7 @@ import io.neow3j.crypto.transaction.RawInvocationScript;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.crypto.transaction.RawVerificationScript;
+import io.neow3j.model.types.AssetType;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -63,6 +64,9 @@ public class AssetTransfer {
         private InputCalculationStrategy inputCalculationStrategy;
         private ContractTransaction tx;
         private boolean signManually;
+        private String assetId;
+        private String toAddress;
+        private BigDecimal amount;
 
         public Builder() {
             outputs = new ArrayList<>();
@@ -82,11 +86,13 @@ public class AssetTransfer {
         }
 
         public Builder output(RawTransactionOutput output) {
+            throwIfSingleOutputIsUsed();
             this.outputs.add(output);
             return this;
         }
 
         public Builder outputs(List<RawTransactionOutput> outputs) {
+            throwIfSingleOutputIsUsed();
             this.outputs.addAll(outputs);
             return this;
         }
@@ -105,6 +111,24 @@ public class AssetTransfer {
             // this.inputs.add(input); return this;
         }
 
+        public Builder asset(String assetId) {
+            throwIfOutputsAreSet();
+            this.assetId = assetId;
+            return this;
+        }
+
+        public Builder toAddress(String address){
+            throwIfOutputsAreSet();
+            this.toAddress = address;
+            return this;
+        }
+
+        public Builder amount(BigDecimal amount){
+            throwIfOutputsAreSet();
+            this.amount = amount;
+            return this;
+        }
+
         public Builder fee(BigDecimal fee) {
             this.fee = fee;
             return this;
@@ -120,11 +144,18 @@ public class AssetTransfer {
             return this;
         }
 
+
         public AssetTransfer build() {
             if (neow3j == null) throw new IllegalStateException("Neow3j not set");
-            if (outputs == null || outputs.isEmpty())
-                throw new IllegalStateException("No outputs set");
             if (account == null) throw new IllegalStateException("Account not set");
+            if (outputs.isEmpty()) {
+                if (allSingleOutputAttributesSet()) {
+                    outputs.add(new RawTransactionOutput(assetId, amount.toPlainString(), toAddress));
+                } else {
+                    throw new IllegalStateException("No or incomplete transaction outputs set");
+                }
+            }
+
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssets();
             if (!inputs.isEmpty()) {
                 // TODO Claude 19.06.19:
@@ -215,6 +246,26 @@ public class AssetTransfer {
                     Arrays.asList(new RawInvocationScript(Sign.signMessage(rawUnsignedTx, keyPair))),
                     Keys.getVerificationScriptFromPublicKey(account.getPublicKey())
             );
+        }
+
+        private void throwIfOutputsAreSet() {
+            if (!outputs.isEmpty()) {
+                throw new IllegalStateException("Don't set transaction outputs and use the " +
+                        "single output methods `asset()`, `toAddress()` and `amount()` " +
+                        "simultaneously");
+            }
+        }
+
+        private void throwIfSingleOutputIsUsed() {
+            if (amount != null || toAddress != null || assetId != null)  {
+                throw new IllegalStateException("Don't set transaction outputs and use the " +
+                        "single output methods `asset()`, `toAddress()` and `amount()` " +
+                        "simultaneously");
+            }
+        }
+
+        private boolean allSingleOutputAttributesSet() {
+            return amount != null && toAddress != null && assetId != null;
         }
     }
 }

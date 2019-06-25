@@ -65,7 +65,6 @@ public class AssetTransferTest {
         assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(1).getAddress());
     }
 
-
     @Test
     public void test_transfer_with_fee() throws IOException, ErrorResponseException {
         // setup
@@ -120,6 +119,156 @@ public class AssetTransferTest {
         assertEquals(expectedChangeNeo.getAddress(), o.getAddress());
         assertEquals(expectedChangeNeo.getValue(), o.getValue());
         assertEquals(expectedChangeNeo.getAssetId(), o.getAssetId());
+    }
+
+    @Test
+    public void test_transfer_with_single_output() throws IOException, ErrorResponseException {
+        String address = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(address);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+        a.updateAssetBalances(neow3j);
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .asset(NEOAsset.HASH_ID)
+                .amount(BigDecimal.ONE)
+                .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
+                .build();
+        RawTransaction tx = at.getTransaction();
+
+        RawTransactionOutput expectedChange = new RawTransactionOutput(NEOAsset.HASH_ID, "99999999", a.getAddress());
+        RawTransactionInput expectedInput = new RawTransactionInput("4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0);
+        // The ordering of the inputs and outputs is important
+        RawTransactionOutput expectedOutput = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
+        ContractTransaction expectedTx = new ContractTransaction.Builder()
+                .outputs(Arrays.asList(expectedOutput, expectedChange))
+                .inputs(Arrays.asList(expectedInput))
+                .build();
+        SignatureData expectedSig = Sign.signMessage(expectedTx.toArray(), a.getECKeyPair());
+
+        // Test Witness
+        assertEquals(1, tx.getScripts().size());
+        RawScript script = tx.getScripts().get(0);
+        assertEquals(1, script.getInvocation().size());
+        assertEquals(expectedSig, script.getInvocation().get(0).getSignature());
+        assertEquals(1, script.getVerification().getAmountSignatures());
+        assertEquals(a.getPublicKey(), script.getVerification().getPublicKeys().get(0));
+
+        // Test inputs
+        assertEquals(1, tx.getInputs().size());
+        assertEquals(expectedInput.getPrevHash(), tx.getInputs().get(0).getPrevHash());
+        assertEquals(expectedInput.getPrevIndex(), tx.getInputs().get(0).getPrevIndex());
+
+        // Test outputs
+        assertEquals(2, tx.getOutputs().size());
+        // Intended output
+        assertEquals(NEOAsset.HASH_ID,tx.getOutputs().get(0).getAssetId());
+        assertEquals("1", tx.getOutputs().get(0).getValue());
+        assertEquals("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3", tx.getOutputs().get(0).getAddress());
+        // Change
+        assertEquals(NEOAsset.HASH_ID,tx.getOutputs().get(1).getAssetId());
+        assertEquals("99999999", tx.getOutputs().get(1).getValue());
+        assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(1).getAddress());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_missing_neow3j() {
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+        RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .account(a)
+                .output(output)
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_missing_account() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .output(output)
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_missing_outputs() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_partially_missing_output1() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .asset(NEOAsset.HASH_ID)
+                .amount(BigDecimal.ONE)
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_partially_missing_output2() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .asset(NEOAsset.HASH_ID)
+                .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_partially_missing_output3() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .amount(BigDecimal.ONE)
+                .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_erroneously_add_outputs1() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+        RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .asset(NEOAsset.HASH_ID)
+                .output(output)
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void test_erroneously_add_outputs2() {
+        Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
+        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+        RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
+
+        AssetTransfer at = new AssetTransfer.Builder()
+                .neow3j(neow3j)
+                .account(a)
+                .output(output)
+                .amount(BigDecimal.ONE)
+                .build();
     }
 
     @Test
