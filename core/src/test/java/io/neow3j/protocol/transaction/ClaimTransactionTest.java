@@ -101,4 +101,15 @@ public class ClaimTransactionTest {
                 "020001ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000000001e72d286979ee6cb1b7e65dfddfb2e384100b8d148e7758de42e4168b71792c600060d020a900000023ba2703c53263e8d6e522dc32203339dcd8eee90141400c40efd5f4a37b09fb8dca3e9cd6486c1b2d46c0319ac216c348f546ff44bb5fc3a328a43f2f49c9b2aa4cb1ce3f40327fd8403966e117745eb5c1266614f7d42321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac",
                 txHexString);
     }
+
+    @Test
+    public void testGetTxId() {
+        RawTransactionInput in = new RawTransactionInput("887eb3e48f468dac5c42d4877cd5f0edde20bab79e288b43ad7cf8c0c6c657f1", 0);
+        RawTransactionOutput out = new RawTransactionOutput(GASAsset.HASH_ID, "0.78719928", "Ach3RRuGyFC3vQFA6AZ5yktuYB4jtQyT12");
+
+        ClaimTransaction tx = new ClaimTransaction.Builder().input(in).output(out).build();
+
+        String expectedTxId = "47eb138abf497a50ee4b0111e87083c75647f16f3eee27c8f1de4f420da382cd";
+        assertEquals(expectedTxId, tx.getTxId());
+    }
 }
