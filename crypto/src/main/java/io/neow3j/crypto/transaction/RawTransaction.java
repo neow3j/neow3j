@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -135,12 +136,24 @@ public abstract class RawTransaction extends NeoSerializable {
             this.attributes = attributes; return (T) this;
         }
 
+        public T attributes(RawTransactionAttribute attribute) {
+            return attributes(Arrays.asList(attribute));
+        }
+
         public T inputs(List<RawTransactionInput> inputs) {
             this.inputs = inputs; return (T) this;
         }
 
+        public T input(RawTransactionInput input) {
+            return inputs(Arrays.asList(input));
+        }
+
         public T outputs(List<RawTransactionOutput> outputs) {
             this.outputs = outputs; return (T) this;
+        }
+
+        public T output(RawTransactionOutput output) {
+            return outputs(Arrays.asList(output));
         }
 
         public T scripts(List<RawScript> scripts) {
