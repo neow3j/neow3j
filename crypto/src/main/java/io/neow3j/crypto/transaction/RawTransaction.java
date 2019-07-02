@@ -1,14 +1,19 @@
 package io.neow3j.crypto.transaction;
 
+import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.model.types.TransactionType;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -70,6 +75,16 @@ public abstract class RawTransaction extends NeoSerializable {
         this.scripts.add(new RawScript(invocationScripts, verificationScript));
     }
 
+    public String getTxId() {
+        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
+            serializeWithoutScripts(new BinaryWriter(byteStream));
+            byte[] hash = Hash.sha256(Hash.sha256(byteStream.toByteArray()));
+            return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
+        } catch (IOException e) {
+            throw new IllegalStateException("Got an IOException without doing IO.");
+        }
+    }
+
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.transactionType = TransactionType.valueOf(reader.readByte());
@@ -87,14 +102,18 @@ public abstract class RawTransaction extends NeoSerializable {
         }
     }
 
-    @Override
-    public void serialize(BinaryWriter writer) throws IOException {
+    private void serializeWithoutScripts(BinaryWriter writer) throws IOException {
         writer.writeByte(this.transactionType.byteValue());
         writer.writeByte(this.version);
         serializeExclusive(writer);
         writer.writeSerializableVariable(this.attributes);
         writer.writeSerializableVariable(this.inputs);
         writer.writeSerializableVariable(this.outputs);
+    }
+
+    @Override
+    public void serialize(BinaryWriter writer) throws IOException {
+        serializeWithoutScripts(writer);
         if (this.scripts.size() != 0) {
             writer.writeSerializableVariable(this.scripts);
         }
@@ -135,12 +154,24 @@ public abstract class RawTransaction extends NeoSerializable {
             this.attributes = attributes; return (T) this;
         }
 
+        public T attributes(RawTransactionAttribute attribute) {
+            return attributes(Arrays.asList(attribute));
+        }
+
         public T inputs(List<RawTransactionInput> inputs) {
             this.inputs = inputs; return (T) this;
         }
 
+        public T input(RawTransactionInput input) {
+            return inputs(Arrays.asList(input));
+        }
+
         public T outputs(List<RawTransactionOutput> outputs) {
             this.outputs = outputs; return (T) this;
+        }
+
+        public T output(RawTransactionOutput output) {
+            return outputs(Arrays.asList(output));
         }
 
         public T scripts(List<RawScript> scripts) {

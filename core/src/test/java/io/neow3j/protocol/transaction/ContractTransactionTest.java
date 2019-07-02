@@ -233,4 +233,15 @@ public class ContractTransactionTest {
 
     }
 
+    @Test
+    public void testGetTxId() {
+        RawTransactionInput in = new RawTransactionInput("7aadf91ca8ac1e2c323c025a7e492bee2dd90c783b86ebfc3b18db66b530a76d", 0);
+        RawTransactionOutput out = new RawTransactionOutput("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "100000000", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
+
+        ContractTransaction tx = new ContractTransaction.Builder().input(in).output(out).build();
+
+        String expectedTxId = "dc44739e2f97743f2ed258988327560e2185ed13eec0097938eef4aea584bf04";
+        assertEquals(expectedTxId, tx.getTxId());
+    }
+
 }
