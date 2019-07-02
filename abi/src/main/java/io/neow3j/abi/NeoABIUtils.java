@@ -36,8 +36,8 @@ public class NeoABIUtils {
         objectMapper.setDefaultPrettyPrinter(prettyPrinter);
     }
 
-    public static NeoContractInterface loadABIFile(String fileName) throws NEP3Exception {
-        return loadABIFile(new File(fileName));
+    public static NeoContractInterface loadABIFile(String absoluteFileName) throws NEP3Exception {
+        return loadABIFile(new File(absoluteFileName));
     }
 
     public static NeoContractInterface loadABIFile(File source) throws NEP3Exception {

@@ -11,9 +11,9 @@ import java.io.IOException;
 
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 
-public class NeoContract extends NeoSerializable {
+public class ContractDeployment extends NeoSerializable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NeoContract.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContractDeployment.class);
 
     private byte[] scriptBinary;
 
@@ -23,7 +23,7 @@ public class NeoContract extends NeoSerializable {
 
     private byte[] scriptHash;
 
-    public NeoContract(byte[] scriptBinary, ContractFunctionProperties functionProperties, ContractDescriptionProperties descriptionProperties) {
+    public ContractDeployment(byte[] scriptBinary, ContractFunctionProperties functionProperties, ContractDescriptionProperties descriptionProperties) {
         this.scriptBinary = scriptBinary;
         this.functionProperties = functionProperties;
         this.descriptionProperties = descriptionProperties;
