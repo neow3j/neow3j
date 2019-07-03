@@ -1,49 +1,90 @@
 package io.neow3j.contract;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.neow3j.abi.model.NeoContractEvent;
+import io.neow3j.abi.model.NeoContractFunction;
+import io.neow3j.abi.model.NeoContractInterface;
+import io.neow3j.model.types.ContractParameter;
+import io.neow3j.model.types.ContractParameterType;
+
+import java.util.List;
+
+import static io.neow3j.utils.Strings.isEmpty;
 
 public class Contract {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Contract.class);
+    // TODO: 2019-07-03 Guil:
+    // Maybe, should we use the NEP6Contract class?
 
-    private AbiBuilder abiBuilder;
-    private InvocationBuilder invocationBuilder;
-    private DeploymentBuilder deploymentBuilder;
+    private final String contractScriptHash;
 
-    public Contract(final AbiBuilder builder) {
-        this.abiBuilder = builder;
+    private NeoContractInterface abi;
+
+    public Contract(String contractScriptHash) {
+        this.contractScriptHash = contractScriptHash;
     }
 
-    public Contract(final InvocationBuilder builder) {
-        this.invocationBuilder = builder;
+    public Contract(String contractScriptHash, NeoContractInterface abi) {
+        this.contractScriptHash = contractScriptHash;
+        this.abi = abi;
     }
 
-    public Contract(final DeploymentBuilder builder) {
-        this.deploymentBuilder = builder;
+    public String getContractScriptHash() {
+        return contractScriptHash;
     }
 
-    public Contract invoke() {
-        // TODO: 2019-07-03 Guil: to be implemented
+    public NeoContractInterface getAbi() {
+        return abi;
+    }
+
+    public Contract abi(NeoContractInterface abi) {
+        this.abi = abi;
         return this;
     }
 
-    public Contract deploy() {
-        // TODO: 2019-07-03 Guil: to be implemented
-        return this;
+    public List<ContractParameter> getEntryPointParameters() {
+        return getFunctionParameters(abi.getEntryPoint());
     }
 
-    public static AbiBuilder abi() {
-        return new AbiBuilder();
+    public ContractParameterType getEntryPointReturnType() {
+        return getFunctionReturnType(abi.getEntryPoint());
     }
 
-    public InvocationBuilder invocation() {
-        return new InvocationBuilder();
+    public List<NeoContractFunction> getFunctions() {
+        return abi.getFunctions();
     }
 
-    public static DeploymentBuilder deployment() {
-        return new DeploymentBuilder();
+    public List<NeoContractEvent> getEvents() {
+        return abi.getEvents();
     }
 
+    public List<ContractParameter> getFunctionParameters(final String functionName) {
+        return abi.getFunctions()
+                .stream()
+                .filter(f -> isEmpty(f.getName()))
+                .filter(f -> f.getName().equals(functionName))
+                .findFirst()
+                .map(NeoContractFunction::getParameters)
+                .orElseThrow(() -> new IllegalArgumentException("No parameters found for the function (" + functionName + ")."));
+    }
+
+    public ContractParameterType getFunctionReturnType(final String functionName) {
+        return abi.getFunctions()
+                .stream()
+                .filter(f -> isEmpty(f.getName()))
+                .filter(f -> f.getName().equals(functionName))
+                .findFirst()
+                .map(NeoContractFunction::getReturnType)
+                .orElseThrow(() -> new IllegalArgumentException("No returnType found for the function (" + functionName + ")."));
+    }
+
+    public List<ContractParameter> getEventParameters(final String eventName) {
+        return abi.getEvents()
+                .stream()
+                .filter(e -> isEmpty((e.getName())))
+                .filter(e -> e.getName().equals(eventName))
+                .findFirst()
+                .map(NeoContractEvent::getParameters)
+                .orElseThrow(() -> new IllegalArgumentException("No parameters found for the event (" + eventName + ")."));
+    }
 
 }

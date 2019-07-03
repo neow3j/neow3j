@@ -1,83 +1,115 @@
 package io.neow3j.contract;
 
-import io.neow3j.io.BinaryReader;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.Numeric;
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.Neow3j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.File;
+import java.util.List;
 
-import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
-
-public class ContractDeployment extends NeoSerializable {
+public class ContractDeployment {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContractDeployment.class);
 
-    private byte[] scriptBinary;
+    private Neow3j neow3j;
 
-    private ContractDescriptionProperties descriptionProperties;
-
-    private ContractFunctionProperties functionProperties;
-
-    private byte[] scriptHash;
-
-    public ContractDeployment(byte[] scriptBinary, ContractFunctionProperties functionProperties, ContractDescriptionProperties descriptionProperties) {
-        this.scriptBinary = scriptBinary;
-        this.functionProperties = functionProperties;
-        this.descriptionProperties = descriptionProperties;
-        this.scriptHash = getScriptHash(scriptBinary);
+    private ContractDeployment(final Builder builder) {
+        this.neow3j = builder.neow3j;
     }
 
-    public byte[] getScriptBinary() {
-        return scriptBinary;
+    public Contract deploy() {
+        // TODO: 2019-07-03 Guil: to be implemented
+        return new Contract(null, null);
     }
 
-    public ContractDescriptionProperties getDescriptionProperties() {
-        return descriptionProperties;
-    }
+    public static class Builder {
 
-    public ContractFunctionProperties getFunctionProperties() {
-        return functionProperties;
-    }
+        private Neow3j neow3j;
 
-    public String getScriptHashHexNoPrefix() {
-        return Numeric.toHexStringNoPrefix(scriptHash);
-    }
-
-    public byte[] getScriptHash() {
-        return scriptHash;
-    }
-
-    private byte[] getScriptHash(byte[] script) {
-        return sha256AndThenRipemd160(script);
-    }
-
-    @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        try {
-            this.descriptionProperties = reader.readSerializable(ContractDescriptionProperties.class);
-            this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
-            this.scriptBinary = reader.readPushData();
-            this.scriptHash = getScriptHash(this.scriptBinary);
-        } catch (IllegalAccessException e) {
-            LOG.error("Can't access the specified object.", e);
-        } catch (InstantiationException e) {
-            LOG.error("Can't instantiate the specified object type.", e);
+        public Builder(final Neow3j neow3j) {
+            this.neow3j = neow3j;
         }
-    }
 
-    @Override
-    public void serialize(BinaryWriter writer) throws IOException {
-        // description properties (i.e., description,
-        // email, author, version, name)
-        writer.writeSerializableFixed(this.descriptionProperties);
-        // function properties (i.e., parameter types, return type,
-        // needs storage, needs dynamic invoke, is payable)
-        writer.writeSerializableFixed(this.functionProperties);
-        // script binary (.avm)
-        writer.pushData(this.scriptBinary);
+        public Builder loadAVMFile(String absoluteFileName) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder loadAVMFile(File source) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder loadABIFile(String absoluteFileName) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder loadABIFile(File source) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder needsStorage() {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder needsDynamicInvoke() {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder isPayable() {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder parameter(ContractParameterType parameterType) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder parameters(List<ContractParameterType> parameters) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder returnType(ContractParameterType returnType) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder name(String name) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder version(String version) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder author(String author) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder email(String email) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public Builder description(String description) {
+            // TODO: 2019-07-03 Guil: to be implemented
+            return this;
+        }
+
+        public ContractDeployment build() {
+            return new ContractDeployment(this);
+        }
+
     }
 
 }

@@ -22,18 +22,18 @@ public class ContractTest {
     @Ignore
     @Test
     public void abi() {
-        Contract c = Contract.abi()
+        Contract c1 = new ContractAbiLoader.Builder()
                 .address("anything")
                 .loadABIFile("file.abi")
-                .build();
+                .build()
+                .load();
 
         // TODO: 2019-07-03 Guil: to be implemented
     }
 
     @Test
     public void deploy() {
-        Contract c1 = Contract.deployment()
-                .neow3j(this.neow3j)
+        Contract c1 = new ContractDeployment.Builder(this.neow3j)
                 .loadAVMFile("file.avm")
                 .needsStorage()
                 .needsDynamicInvoke()
@@ -53,14 +53,13 @@ public class ContractTest {
                 .build()
                 .deploy();
 
-        Contract c2 = Contract.deployment()
-                .neow3j(this.neow3j)
+        Contract c2 = new ContractDeployment.Builder(this.neow3j)
                 .loadAVMFile("file.avm")
                 .needsStorage()
                 .needsDynamicInvoke()
                 .isPayable()
-                .addParameter(ContractParameterType.STRING)
-                .addParameter(ContractParameterType.ARRAY)
+                .parameter(ContractParameterType.STRING)
+                .parameter(ContractParameterType.ARRAY)
                 .returnType(ContractParameterType.BYTE_ARRAY)
                 .name("ContractName")
                 .version("1.0.0")
@@ -76,14 +75,13 @@ public class ContractTest {
     @Test
     public void invoke() {
 
-        Contract c1 = Contract.deployment()
-                .neow3j(this.neow3j)
+        Contract contract = new ContractDeployment.Builder(this.neow3j)
                 .loadAVMFile("file.avm")
                 .needsStorage()
                 .needsDynamicInvoke()
                 .isPayable()
-                .addParameter(ContractParameterType.STRING)
-                .addParameter(ContractParameterType.ARRAY)
+                .parameter(ContractParameterType.STRING)
+                .parameter(ContractParameterType.ARRAY)
                 .returnType(ContractParameterType.BYTE_ARRAY)
                 .name("ContractName")
                 .version("1.0.0")
@@ -93,8 +91,7 @@ public class ContractTest {
                 .build()
                 .deploy();
 
-        c1.invocation()
-                .neow3j(this.neow3j)
+        ContractInvocation invocation = new ContractInvocation.Builder(this.neow3j, contract)
                 .parameter(ContractParameterType.STRING, "valueString1")
                 .parameter(
                         ContractParameterType.ARRAY,
@@ -104,6 +101,9 @@ public class ContractTest {
                         )
                 )
                 .build()
+                // TODO: 2019-07-03 Guil:
+                // Maybe the "invoke" can even check if the Contract class has the "correct" parameters
+                // that the user wants to call -- like a validation check.
                 .invoke();
 
         // TODO: 2019-07-03 Guil: to be implemented
