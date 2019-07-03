@@ -5,6 +5,7 @@ import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -18,6 +19,7 @@ public class ContractTest {
         this.neow3j = Neow3j.build(new HttpService("http://localhost:30333"));
     }
 
+    @Ignore
     @Test
     public void abi() {
         Contract c = Contract.abi()
