@@ -136,7 +136,6 @@ public class Wallet {
         return fromNEP6Wallet(nep6Wallet);
     }
 
-
     public static Builder fromNEP6Wallet(NEP6Wallet nep6Wallet) {
         Builder b = new Builder();
         b.name = nep6Wallet.getName();
@@ -146,6 +145,15 @@ public class Wallet {
             b.accounts.add(Account.fromNEP6Account(nep6Acct).build());
         }
         return b;
+    }
+
+    /**
+     * Creates a new wallet with one account that is set as the default account.
+     * @return the new wallet.
+     */
+    public static Wallet createGenericWallet() {
+        Account a = Account.fromNewECKeyPair().isDefault(true).build();
+        return new Builder().account(a).build();
     }
 
     public static class Builder {
