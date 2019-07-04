@@ -24,22 +24,32 @@ public class RawScript extends NeoSerializable {
     private static final Logger LOG = LoggerFactory.getLogger(RawScript.class);
 
     private RawInvocationScript invocationScript;
-
     private RawVerificationScript verificationScript;
+    private String scriptHash;
 
     public RawScript() {
-        this.invocationScript = new RawInvocationScript();
-        this.verificationScript = new RawVerificationScript();
+        this(new RawInvocationScript(), new RawVerificationScript());
+    }
+
+    public RawScript(byte[] invocationScript, byte[] verificationScript) {
+        this(new RawInvocationScript(invocationScript),
+                new RawVerificationScript(verificationScript));
     }
 
     public RawScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
         this.invocationScript = invocationScript;
         this.verificationScript = verificationScript;
+        this.scriptHash = verificationScript.getScriptHash();
     }
 
-    public RawScript(byte[] invocationScript, byte[] verificationScript) {
-        this.invocationScript = new RawInvocationScript(invocationScript);
-        this.verificationScript = new RawVerificationScript(verificationScript);
+    /**
+     * Creates a new script from the given invocation script and script hash.
+     * Use this if you don't need a verification script. It will be empty. But, because there is no
+     * verification script, a script hash needs to be provided.
+     */
+    public RawScript(byte[] invocationScript, String scriptHash) {
+       this(invocationScript, new byte[0]);
+       this.scriptHash = scriptHash;
     }
 
     /**
@@ -97,11 +107,7 @@ public class RawScript extends NeoSerializable {
      * @return the script hash of this script.
      */
     public String getScriptHash() {
-        if (verificationScript == null) {
-                throw new IllegalStateException("Can't obtain script hash because verification " +
-                        "script is not set.");
-        }
-        return verificationScript.getScriptHash();
+        return this.scriptHash;
     }
 
     @Override

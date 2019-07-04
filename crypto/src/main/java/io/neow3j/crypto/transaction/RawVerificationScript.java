@@ -22,7 +22,6 @@ import static io.neow3j.constants.OpCode.PUSHBYTES33;
 public class RawVerificationScript extends NeoSerializable {
 
     private byte[] script;
-    private String scriptHash;
 
     public RawVerificationScript() {
         script = new byte[0];
@@ -65,14 +64,10 @@ public class RawVerificationScript extends NeoSerializable {
     }
 
     public String getScriptHash() {
-        if (scriptHash == null) {
-            // TODO Claude 02.07.19: Does it need to be reversed?
-//            scriptHash = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(
-//                    Hash.sha256AndThenRipemd160(script)));
-            scriptHash = Numeric.toHexStringNoPrefix(
-                    Hash.sha256AndThenRipemd160(script));
-        }
-        return scriptHash;
+        if (script.length == 0) return "";
+        else return Numeric.toHexStringNoPrefix(Hash.sha256AndThenRipemd160(script));
+        // TODO Claude 02.07.19: Does the script hash need to be reversed?
+        // Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(Hash.sha256AndThenRipemd160(script)));
     }
 
     @Override
