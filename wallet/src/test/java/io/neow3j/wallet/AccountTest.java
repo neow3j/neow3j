@@ -20,6 +20,10 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 
@@ -105,6 +109,42 @@ public class AccountTest {
 
         Account a = Account.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").build();
         a.updateAssetBalances(neow3j);
+    }
+
+    @Test
+    public void testCreateGenericAccount() {
+        Account a = Account.createGenericAccount();
+        assertThat(a, notNullValue());
+        assertThat(a.getAddress(), notNullValue());
+        assertThat(a.getBalances(), notNullValue());
+        assertThat(a.getContract(), notNullValue());
+        assertThat(a.getECKeyPair(), notNullValue());
+        assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
+        assertThat(a.getLabel(), notNullValue());
+        assertThat(a.getPrivateKey(), notNullValue());
+        assertThat(a.getPublicKey(), notNullValue());
+        assertThat(a.isDefault(), is(false));
+        assertThat(a.isLocked(), is(false));
+    }
+
+    @Test
+    public void testFromNewECKeyPair() {
+        Account a = Account.fromNewECKeyPair()
+                .isDefault(true)
+                .isLocked(false)
+                .build();
+
+        assertThat(a, notNullValue());
+        assertThat(a.getAddress(), notNullValue());
+        assertThat(a.getBalances(), notNullValue());
+        assertThat(a.getContract(), notNullValue());
+        assertThat(a.getECKeyPair(), notNullValue());
+        assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
+        assertThat(a.getLabel(), notNullValue());
+        assertThat(a.getPrivateKey(), notNullValue());
+        assertThat(a.getPublicKey(), notNullValue());
+        assertThat(a.isDefault(), is(true));
+        assertThat(a.isLocked(), is(false));
     }
 
 }
