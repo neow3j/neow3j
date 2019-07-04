@@ -233,6 +233,14 @@ public class Sign {
             this.s = s;
         }
 
+        public static SignatureData fromByteArray(byte[] signature) {
+            return new SignatureData(
+                    (byte) 0x00,
+                    Arrays.copyOfRange(signature, 0, 32),
+                    Arrays.copyOfRange(signature, 32, 64)
+            );
+        }
+
         public byte getV() {
             return v;
         }

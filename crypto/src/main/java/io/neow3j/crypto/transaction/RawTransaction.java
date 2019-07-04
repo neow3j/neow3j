@@ -155,7 +155,7 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T attributes(List<RawTransactionAttribute> attributes) {
-            this.attributes = attributes; return (T) this;
+            this.attributes.addAll(attributes); return (T) this;
         }
 
         public T attributes(RawTransactionAttribute attribute) {
@@ -163,7 +163,7 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T inputs(List<RawTransactionInput> inputs) {
-            this.inputs = inputs; return (T) this;
+            this.inputs.addAll(inputs); return (T) this;
         }
 
         public T input(RawTransactionInput input) {
@@ -171,7 +171,7 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T outputs(List<RawTransactionOutput> outputs) {
-            this.outputs = outputs; return (T) this;
+            this.outputs.addAll(outputs); return (T) this;
         }
 
         public T output(RawTransactionOutput output) {
@@ -179,7 +179,11 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T scripts(List<RawScript> scripts) {
-            this.scripts = scripts; return (T) this;
+            this.scripts.addAll(scripts); return (T) this;
+        }
+
+        public T script(RawScript script) {
+            return scripts(Arrays.asList(script));
         }
 
         public abstract RawTransaction build();
