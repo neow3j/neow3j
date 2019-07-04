@@ -5,7 +5,6 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.Script;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +76,7 @@ public class RawScript extends NeoSerializable {
     public static RawScript createMultiSigWitness(List<SignatureData> signatures,
                                                   RawVerificationScript verificationScript) {
 
-        int signingThreshold = Script.extractSigningThreshold(verificationScript.getScript());
+        int signingThreshold = verificationScript.getSigningThreshold();
         return createMultiSigWitness(signingThreshold, signatures, verificationScript);
     }
 
