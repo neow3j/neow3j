@@ -67,8 +67,25 @@ public class Wallet {
         return accounts;
     }
 
+    /**
+     * Sets the account at the given index to be the default account.
+     * The previous default account is unset.
+     * @param index the index of the new default account.
+     */
+    public void setDefaultAccount(int index) {
+        for (int i = 0; i < accounts.size(); i++) {
+            accounts.get(i).setIsDefault(i == index);
+        }
+    }
+
     public ScryptParams getScryptParams() {
         return scryptParams;
+    }
+
+    public Account getDefaultAccount() {
+        return this.accounts.stream().filter(Account::isDefault)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No default account found."));
     }
 
     public void setName(String name) {
@@ -136,7 +153,6 @@ public class Wallet {
         return fromNEP6Wallet(nep6Wallet);
     }
 
-
     public static Builder fromNEP6Wallet(NEP6Wallet nep6Wallet) {
         Builder b = new Builder();
         b.name = nep6Wallet.getName();
@@ -146,6 +162,15 @@ public class Wallet {
             b.accounts.add(Account.fromNEP6Account(nep6Acct).build());
         }
         return b;
+    }
+
+    /**
+     * Creates a new wallet with one account that is set as the default account.
+     * @return the new wallet.
+     */
+    public static Wallet createGenericWallet() {
+        Account a = Account.fromNewECKeyPair().isDefault(true).build();
+        return new Builder().account(a).build();
     }
 
     public static class Builder {
