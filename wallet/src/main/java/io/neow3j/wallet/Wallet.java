@@ -67,8 +67,25 @@ public class Wallet {
         return accounts;
     }
 
+    /**
+     * Sets the account at the given index to be the default account.
+     * The previous default account is unset.
+     * @param index the index of the new default account.
+     */
+    public void setDefaultAccount(int index) {
+        for (int i = 0; i < accounts.size(); i++) {
+            accounts.get(i).setIsDefault(i == index);
+        }
+    }
+
     public ScryptParams getScryptParams() {
         return scryptParams;
+    }
+
+    public Account getDefaultAccount() {
+        return this.accounts.stream().filter(Account::isDefault)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No default account found."));
     }
 
     public void setName(String name) {

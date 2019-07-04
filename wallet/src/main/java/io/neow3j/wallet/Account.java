@@ -90,6 +90,10 @@ public class Account {
         return isDefault;
     }
 
+    void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
     public Boolean isLocked() {
         return isLocked;
     }
