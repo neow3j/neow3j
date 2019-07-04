@@ -6,9 +6,7 @@ import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -28,9 +26,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class WalletTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testCreateDefaultWallet() {
@@ -125,7 +120,7 @@ public class WalletTest {
         assertEquals(nep6w, w.toNEP6Wallet());
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testToNEP6WalletWithUnencryptedPrivateKey() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
@@ -133,7 +128,6 @@ public class WalletTest {
         Account a = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(a);
 
-        exceptionRule.expect(IllegalStateException.class);
         w.toNEP6Wallet();
     }
 

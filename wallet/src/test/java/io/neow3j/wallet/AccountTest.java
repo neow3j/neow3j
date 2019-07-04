@@ -11,9 +11,7 @@ import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.wallet.nep6.NEP6Account;
 import okhttp3.OkHttpClient;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -28,9 +26,6 @@ import static org.junit.Assert.assertEquals;
 
 
 public class AccountTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testBuildAccountFromKeyPair() throws InvalidAlgorithmParameterException,
