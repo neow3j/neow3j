@@ -13,7 +13,6 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.transaction.ContractTransaction;
 import io.neow3j.utils.ArrayUtils;
-import jdk.internal.org.objectweb.asm.Opcodes;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,7 +21,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertArrayEquals;
 
 public class AssetTransferTest {
