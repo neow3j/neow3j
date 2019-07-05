@@ -45,7 +45,8 @@ public class Account {
     private NEP6Contract contract;
     private Balances balances;
 
-    private Account() {}
+    private Account() {
+    }
 
     private Account(Builder b) {
         this.label = b.label;
@@ -124,7 +125,8 @@ public class Account {
 
     /**
      * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted.
-     * @param password The passphrase used to decrypt this account's private key.
+     *
+     * @param password     The passphrase used to decrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for decryption.
      */
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
@@ -143,7 +145,8 @@ public class Account {
 
     /**
      * Encrypts this account's private key, according to the NEP-2 standard, if not already encrypted.
-     * @param password The passphrase used to encrypt this account's private key.
+     *
+     * @param password     The passphrase used to encrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for encryption.
      */
     public void encryptPrivateKey(String password, ScryptParams scryptParams) throws CipherException {
@@ -152,7 +155,7 @@ public class Account {
             if (privateKey == null) {
                 throw new IllegalStateException("The account does not hold a private key.");
             }
-            this.encryptedPrivateKey= NEP2.encrypt(password, getECKeyPair(), scryptParams);
+            this.encryptedPrivateKey = NEP2.encrypt(password, getECKeyPair(), scryptParams);
         }
     }
 
@@ -192,7 +195,7 @@ public class Account {
      * Creates a multi-sig account builder from the given public keys.
      * Mind that the ordering of the keys is important for later usage of the account.
      *
-     * @param publicKeys The public keys from which to derive the multi-sig account.
+     * @param publicKeys         The public keys from which to derive the multi-sig account.
      * @param signatureThreshold The number of signatures needed when using this account for signing
      *                           transactions.
      * @return the multi-sig account builder;
@@ -261,6 +264,7 @@ public class Account {
 
     /**
      * Creates a new generic account with a fresh key pair.
+     *
      * @return the new account.
      */
     public static Account createGenericAccount() {
@@ -284,15 +288,18 @@ public class Account {
         }
 
         public Builder label(String label) {
-            this.label = label; return this;
+            this.label = label;
+            return this;
         }
 
         public Builder isDefault(boolean isDefault) {
-            this.isDefault = isDefault; return this;
+            this.isDefault = isDefault;
+            return this;
         }
 
         public Builder isLocked(boolean isLocked) {
-            this.isLocked = isLocked; return this;
+            this.isLocked = isLocked;
+            return this;
         }
 
         public Account build() {
