@@ -80,6 +80,12 @@ public class RawScript extends NeoSerializable {
         return createMultiSigWitness(signingThreshold, signatures, verificationScript);
     }
 
+    public static RawScript createMultiSigWitness(List<SignatureData> signatures,
+                                                  byte[] verificationScript) {
+
+        return createMultiSigWitness(signatures, new RawVerificationScript(verificationScript));
+    }
+
     public static RawScript createMultiSigWitness(int signingThreshold,
                                                    List<SignatureData> signatures,
                                                    RawVerificationScript verificationScript) {
@@ -147,7 +153,5 @@ public class RawScript extends NeoSerializable {
     public void serialize(BinaryWriter writer) throws IOException {
         invocationScript.serialize(writer);
         verificationScript.serialize(writer);
-//        writer.writeSerializableVariableBytes(this.invocationScript);
-//        writer.writeSerializableVariableBytes(this.verificationScript);
     }
 }

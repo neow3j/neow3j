@@ -14,12 +14,10 @@ import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.crypto.transaction.SignedRawTransaction;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.NEOAsset;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.org.glassfish.jersey.spi.Contract;
 
 import java.math.BigInteger;
 import java.security.SignatureException;
@@ -43,7 +41,6 @@ public class ContractTransactionTest {
                 .inputs(Arrays.asList(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-//                .script(new RawScript(new byte[]{}, RawVerificationScript.fromPublicKey(publicKey).getScript()))
                 .script(new RawScript(new RawInvocationScript(), RawVerificationScript.fromPublicKey(publicKey)))
                 .build();
 

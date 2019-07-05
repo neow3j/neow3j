@@ -1,6 +1,5 @@
 package io.neow3j.crypto.transaction;
 
-import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.Keys;
@@ -11,7 +10,6 @@ import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
-import org.testcontainers.shaded.io.netty.buffer.ByteBufUtil;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
