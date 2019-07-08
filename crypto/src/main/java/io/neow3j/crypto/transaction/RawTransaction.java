@@ -66,13 +66,17 @@ public abstract class RawTransaction extends NeoSerializable {
     }
 
     /**
-     * Adds the given invocation scripts (e.g. signatures) and the verification script to this
+     * Adds the given invocation script (e.g. signatures) and the verification script to this
      * transaction's list of witnesses.
-     * @param invocationScripts One or more invocation scripts that are part of the witness.
+     * @param invocationScript The invocation script of the witness.
      * @param verificationScript The verification script of the witness.
      */
-    public void addScript(List<RawInvocationScript> invocationScripts, RawVerificationScript verificationScript) {
-        this.scripts.add(new RawScript(invocationScripts, verificationScript));
+    public void addScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
+        this.scripts.add(new RawScript(invocationScript, verificationScript));
+    }
+
+    public void addScript(RawScript script) {
+        this.scripts.add(script);
     }
 
     public String getTxId() {
