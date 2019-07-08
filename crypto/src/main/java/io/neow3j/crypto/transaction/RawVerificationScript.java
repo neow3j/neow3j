@@ -13,6 +13,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
 import static io.neow3j.constants.OpCode.CHECKMULTISIG;
@@ -40,7 +41,7 @@ public class RawVerificationScript extends NeoSerializable {
         return new RawVerificationScript(script);
     }
 
-    public static RawVerificationScript fromPublicKeys(int signingThreshold, List<BigInteger> publicKeys) {
+    public static RawVerificationScript fromPublicKeysAsByteArrays(int signingThreshold, List<byte[]> publicKeys) {
         if (signingThreshold < 2 || signingThreshold > publicKeys.size()) {
             throw new IllegalArgumentException("Signing threshold must be at least 2 and not " +
                     "higher than the number of supplied public keys.");
@@ -52,8 +53,8 @@ public class RawVerificationScript extends NeoSerializable {
         try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
             BinaryWriter w = new BinaryWriter(byteStream);
             w.pushInteger(signingThreshold);
-            for (BigInteger key : publicKeys) {
-                w.pushData(key.toByteArray());
+            for (byte[] key : publicKeys) {
+                w.pushData(key);
             }
             w.pushInteger(publicKeys.size());
             w.writeByte(CHECKMULTISIG.getValue());
@@ -63,15 +64,25 @@ public class RawVerificationScript extends NeoSerializable {
         }
     }
 
+    public static RawVerificationScript fromPublicKeys(int signingThreshold, List<BigInteger> publicKeys) {
+        List<byte[]> asByteArrays = publicKeys.stream()
+                .map(BigInteger::toByteArray)
+                .collect(Collectors.toList());
+
+        return fromPublicKeysAsByteArrays(signingThreshold, asByteArrays);
+    }
+
     public byte[] getScript() {
         return script;
     }
 
-    public String getScriptHash() {
-        if (script.length == 0) return "";
-        else return Numeric.toHexStringNoPrefix(Hash.sha256AndThenRipemd160(script));
-        // TODO Claude 02.07.19: Does the script hash need to be reversed?
-        // Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(Hash.sha256AndThenRipemd160(script)));
+    /** Calculates the script hash of this verification script.
+     * I.e. applies SHA256 and RIPMED160 to the script byte array.
+     * @return the script hash in big-endian order.
+     */
+    public byte[] getScriptHash() {
+        if (script.length == 0) return new byte[0];
+        else return Hash.sha256AndThenRipemd160(script);
     }
 
     /**

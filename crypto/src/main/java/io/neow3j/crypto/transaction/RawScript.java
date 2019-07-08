@@ -5,6 +5,7 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class RawScript extends NeoSerializable {
 
     private RawInvocationScript invocationScript;
     private RawVerificationScript verificationScript;
-    private String scriptHash;
+    private byte[] scriptHash;
 
     public RawScript() {
         this(new RawInvocationScript(), new RawVerificationScript());
@@ -43,12 +44,10 @@ public class RawScript extends NeoSerializable {
 
     /**
      * Creates a new script from the given invocation script and script hash.
-     * Use this if you don't need a verification script. It will be empty. But, because there is no
-     * verification script, a script hash needs to be provided.
+     * Use this if you don't need a verification script.
      */
     public RawScript(byte[] invocationScript, String scriptHash) {
-       this(invocationScript, new byte[0]);
-       this.scriptHash = scriptHash;
+       this(invocationScript, Numeric.hexStringToByteArray(scriptHash));
     }
 
     /**
@@ -63,6 +62,15 @@ public class RawScript extends NeoSerializable {
         RawInvocationScript i = RawInvocationScript.fromMessageAndKeyPair(messageToSign, keyPair);
         RawVerificationScript v = RawVerificationScript.fromPublicKey(keyPair.getPublicKey());
         return new RawScript(i, v);
+    }
+
+    public static RawScript createMultiSigWitnessFromByteArrays(int signingThreshold,
+                                                  List<SignatureData> signatures,
+                                                  List<byte[]> publicKeys) {
+
+        RawVerificationScript v = RawVerificationScript.fromPublicKeysAsByteArrays(
+                signingThreshold, publicKeys);
+        return createMultiSigWitness(signingThreshold, signatures, v);
     }
 
     public static RawScript createMultiSigWitness(int signingThreshold,
@@ -108,10 +116,9 @@ public class RawScript extends NeoSerializable {
     }
 
     /**
-     * The script hash is the hash of the verification script.
-     * @return the script hash of this script.
+     * @return the script hash of this script in big-endian order.
      */
-    public String getScriptHash() {
+    public byte[] getScriptHash() {
         return this.scriptHash;
     }
 

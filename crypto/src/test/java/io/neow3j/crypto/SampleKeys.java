@@ -13,7 +13,7 @@ public class SampleKeys {
     public static final String PRIVATE_KEY_STRING_1 =
             "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3";
 
-    static final String PUBLIC_KEY_STRING_1 = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
+    public static final String PUBLIC_KEY_STRING_1 = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
 
     public static final String ADDRESS_1 = "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ";
     public static final String PASSWORD_1 = "Insecure Pa55w0rd";
@@ -30,7 +30,7 @@ public class SampleKeys {
     public static final String PRIVATE_KEY_STRING_2 =
             "fbd35970456f1aa51fd8fb70b4a1f717eba072240f8a4f408f529fe3e7678ace";
 
-    static final String PUBLIC_KEY_STRING_2 = "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43";
+    public static final String PUBLIC_KEY_STRING_2 = "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43";
 
     public static final String ADDRESS_2 = "AdGPiWRqqoFMauM6anTNFB7MyBwQhEANyZ";
     public static final String PASSWORD_2 = "q1w2e3!@#";

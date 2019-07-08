@@ -111,7 +111,7 @@ public class Keys {
         } else {
             script = RawVerificationScript.fromPublicKeys(amountSignatures, encodedPublicKeys);
         }
-        return  Numeric.hexStringToByteArray(script.getScriptHash());
+        return  script.getScriptHash();
     }
 
     public static byte[] getPublicKeyEncoded(byte[] publicKeyNotEncoded) {
