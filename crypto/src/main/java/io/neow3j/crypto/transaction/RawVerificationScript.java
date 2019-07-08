@@ -1,13 +1,13 @@
 package io.neow3j.crypto.transaction;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -16,9 +16,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
-import static io.neow3j.constants.OpCode.CHECKMULTISIG;
-import static io.neow3j.constants.OpCode.CHECKSIG;
-import static io.neow3j.constants.OpCode.PUSHBYTES33;
 
 public class RawVerificationScript extends NeoSerializable {
 
@@ -33,10 +30,9 @@ public class RawVerificationScript extends NeoSerializable {
     }
 
     public static RawVerificationScript fromPublicKey(BigInteger publicKey) {
-        byte[] script = ArrayUtils.concatenate(
-                new byte[]{PUSHBYTES33.getValue()},
-                publicKey.toByteArray(),
-                new byte[]{CHECKSIG.getValue()});
+        byte[] script = new ScriptBuilder()
+                .pushData(publicKey.toByteArray())
+                .opCode(OpCode.CHECKSIG).toArray();
 
         return new RawVerificationScript(script);
     }
@@ -50,18 +46,11 @@ public class RawVerificationScript extends NeoSerializable {
             throw new IllegalArgumentException("At max " + MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT +
                     " public keys can take part in a multi-sig account");
         }
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
-            BinaryWriter w = new BinaryWriter(byteStream);
-            w.pushInteger(signingThreshold);
-            for (byte[] key : publicKeys) {
-                w.pushData(key);
-            }
-            w.pushInteger(publicKeys.size());
-            w.writeByte(CHECKMULTISIG.getValue());
-            return new RawVerificationScript(byteStream.toByteArray());
-        } catch (IOException e) {
-            throw new IllegalStateException("Got an IOException without doing IO.");
-        }
+        ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);
+        publicKeys.forEach(builder::pushData);
+        byte[] script = builder.pushInteger(publicKeys.size())
+                .opCode(OpCode.CHECKMULTISIG).toArray();
+        return new RawVerificationScript(script);
     }
 
     public static RawVerificationScript fromPublicKeys(int signingThreshold, List<BigInteger> publicKeys) {
