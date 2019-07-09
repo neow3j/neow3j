@@ -133,9 +133,21 @@ public enum OpCode {
      */
     RET((byte) 0x66),
     /**
+     * Reads a script hash and executes the corresponding contract.
+     * If script hash is zero, performs dynamic invoke by taking script hash from main stack.
+     */
+    APPCALL((byte) 0x67),
+    /**
      * Reads a string and executes the corresponding operation.
      */
     SYSCALL((byte) 0x68),
+    /**
+     * Reads a script hash and executes the corresponding contract.
+     * If script hash is zero, performs dynamic invoke by taking script hash from main stack.
+     * Disposes the top item on invocation stack.
+     */
+    TAILCALL((byte) 0x69),
+
 
     // Crypto
 

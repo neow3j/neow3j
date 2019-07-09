@@ -1,22 +1,18 @@
 package io.neow3j.crypto.transaction;
 
+import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.security.Signature;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
-import static io.neow3j.constants.OpCode.PUSHBYTES64;
 
 /**
  * An invocation script used in the script/witness part of a transaction.
@@ -55,7 +51,7 @@ public class RawInvocationScript extends NeoSerializable {
      * @return the constructed invocation script.
      */
     public static RawInvocationScript fromSignature(SignatureData signature) {
-        byte[] script = ArrayUtils.concatenate(PUSHBYTES64.getValue(), signature.getConcatenated());
+        byte[] script = new ScriptBuilder().pushData(signature.getConcatenated()).toArray();
         return new RawInvocationScript(script, signature);
     }
 
@@ -72,12 +68,9 @@ public class RawInvocationScript extends NeoSerializable {
     }
 
     public static RawInvocationScript fromSignatures(List<SignatureData> sigs) {
-        ByteBuffer buffer = ByteBuffer.allocate(sigs.size() + sigs.size()*PUSHBYTES64.getValue());
-        for (SignatureData sig : sigs) {
-            buffer.put(PUSHBYTES64.getValue());
-            buffer.put(sig.getConcatenated());
-        }
-        return new RawInvocationScript(buffer.array());
+        ScriptBuilder builder = new ScriptBuilder();
+        sigs.forEach(sig -> builder.pushData(sig.getConcatenated()));
+        return new RawInvocationScript(builder.toArray());
     }
 
     public byte[] getScript() {
