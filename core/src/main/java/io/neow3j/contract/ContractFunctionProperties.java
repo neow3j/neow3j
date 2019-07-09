@@ -170,14 +170,6 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        // flags:
-        int flagsValue = packFlagsValue();
-        writer.pushInteger(flagsValue);
-
-        // return type:
-        writer.pushInteger((int) getReturnType().byteValue());
-
-        // parameter types:
         Byte[] parameterTypesArray = new Byte[this.parameterTypes.size()];
         Byte[] bytes = fromSerializable(this.parameterTypes)
                 .stream()
@@ -185,6 +177,11 @@ public class ContractFunctionProperties extends NeoSerializable {
                 .collect(Collectors.toList())
                 .toArray(parameterTypesArray);
         byte[] bytesPrimitive = ArrayUtils.toPrimitive(bytes);
-        writer.pushData(bytesPrimitive);
+
+        writer.write(new ScriptBuilder()
+                .pushInteger(packFlagsValue())
+                .pushInteger((int) getReturnType().byteValue())
+                .pushData(bytesPrimitive)
+                .toArray());
     }
 }

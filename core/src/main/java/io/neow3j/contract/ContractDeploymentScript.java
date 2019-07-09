@@ -77,7 +77,9 @@ public class ContractDeploymentScript extends NeoSerializable {
         // needs storage, needs dynamic invoke, is payable)
         writer.writeSerializableFixed(this.functionProperties);
         // script binary (.avm)
-        writer.pushData(this.scriptBinary);
+        writer.write(new ScriptBuilder()
+                .pushData(this.scriptBinary)
+                .toArray());
     }
 
 }

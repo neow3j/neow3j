@@ -90,10 +90,12 @@ public class ContractDescriptionProperties extends NeoSerializable {
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        writer.pushData(this.description);
-        writer.pushData(this.email);
-        writer.pushData(this.author);
-        writer.pushData(this.version);
-        writer.pushData(this.name);
+        writer.write(new ScriptBuilder()
+                .pushData(this.description)
+                .pushData(this.email)
+                .pushData(this.author)
+                .pushData(this.version)
+                .pushData(this.name)
+                .toArray());
     }
 }
