@@ -1,5 +1,7 @@
 package io.neow3j.crypto.transaction;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptReader;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -85,31 +87,22 @@ public class RawVerificationScript extends NeoSerializable {
         else return Hash.sha256AndThenRipemd160(script);
     }
 
+
     /**
      * Extracts (from the script itself) the number of signatures required for signing this
      * verification script.
      * @return The signing threshold.
      */
     public int getSigningThreshold() {
-        throw new UnsupportedOperationException();
-//        int scriptLen = this.script.length;
-//        byte opCode = this.script[scriptLen];
-//        if (opCode == OpCode.CHECKSIG.getValue()) {
-//            return 1;
-//        } else if (opCode == OpCode.CHECKMULTISIG.getValue()) {
-//            byte th = this.script[0];
-//            if (th < OpCode.PUSHM1.getValue()) {
-//                // TODO 02.07.19 claude: Handle variable length opcodes.
-//                return -1;
-//            } else if (th >= OpCode.PUSH1.getValue() && th <= OpCode.PUSH16.getValue()){
-//                return th - (OpCode.PUSHM1.getValue()-1);
-//            } else {
-//                throw new IllegalArgumentException("Can't read valid threshold from script.");
-//            }
-//        } else {
-//            throw new IllegalArgumentException("The script does not include a CHECKSIG or " +
-//                    "CHECKMULTISIG OpCode.");
-//        }
+        int scriptLen = this.script.length;
+        byte opCode = this.script[scriptLen-1];
+        if (opCode == OpCode.CHECKSIG.getValue()) {
+            return 1;
+        } else if (opCode == OpCode.CHECKMULTISIG.getValue()) {
+            return ScriptReader.readInteger(this.script).intValue();
+        } else {
+            throw new IllegalArgumentException("The script is not a valid verification script.");
+        }
     }
 
     @Override

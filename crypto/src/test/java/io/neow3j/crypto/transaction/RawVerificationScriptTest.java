@@ -5,7 +5,9 @@ import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 import org.junit.Test;
+import org.testcontainers.shaded.org.glassfish.hk2.api.ValidationService;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -111,4 +113,32 @@ public class RawVerificationScriptTest {
         script = NeoSerializableInterface.from(buf.array(), RawVerificationScript.class);
         assertArrayEquals(message, script.getScript());
     }
+    
+    @Test
+    public void testGetSigningThreshold() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray("522102028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef21031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c92102232ce8d2e2063dce0451131851d47421bfc4fc1da4db116fca5302c0756462fa53ae");
+        int th = new RawVerificationScript(scriptBytes).getSigningThreshold();
+        assertEquals(2, th);
+
+        scriptBytes = Numeric.hexStringToByteArray("532102028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef21031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c92102232ce8d2e2063dce0451131851d47421bfc4fc1da4db116fca5302c0756462fa53ae");
+        th = new RawVerificationScript(scriptBytes).getSigningThreshold();
+        assertEquals(3, th);
+
+        scriptBytes = Numeric.hexStringToByteArray("60ae");
+        th = new RawVerificationScript(scriptBytes).getSigningThreshold();
+        assertEquals(16, th);
+
+        scriptBytes = Numeric.hexStringToByteArray("01ffae");
+        th = new RawVerificationScript(scriptBytes).getSigningThreshold();
+        assertEquals(255, th);
+
+        scriptBytes = Numeric.hexStringToByteArray("020100ae");
+        th = new RawVerificationScript(scriptBytes).getSigningThreshold();
+        assertEquals(256, th);
+
+        scriptBytes = Numeric.hexStringToByteArray("020400ae");
+        th = new RawVerificationScript(scriptBytes).getSigningThreshold();
+        assertEquals(1024, th);
+    }
+    
 }
