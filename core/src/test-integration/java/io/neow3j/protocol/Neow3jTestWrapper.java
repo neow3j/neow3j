@@ -725,9 +725,8 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
 
         byte[] tUnsignedArray = tUnsigned.toArray();
         byte[] signature = Sign.signMessage(tUnsignedArray, keyPair).getConcatenated();
-        tUnsigned.addScript(
-                Arrays.asList(new RawInvocationScript(signature)),
-                new RawVerificationScript(Arrays.asList(keyPair.getPublicKey()), 1)
+        tUnsigned.addScript(new RawInvocationScript(signature),
+                RawVerificationScript.fromPublicKey(keyPair.getPublicKey())
         );
 
         return tUnsigned.toArray();

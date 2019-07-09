@@ -23,6 +23,9 @@ import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,6 +88,10 @@ public class Account {
 
     public Boolean isDefault() {
         return isDefault;
+    }
+
+    void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
     public Boolean isLocked() {
@@ -173,7 +180,7 @@ public class Account {
     private void tryAddVerificationScriptContract() {
         if (contract == null || contract.getScript() == null) {
             if (publicKey != null) {
-                byte[] scriptBytes = Keys.getVerificationScriptFromPublicKey(publicKey).toArray();
+                byte[] scriptBytes = RawVerificationScript.fromPublicKey(publicKey).getScript();
                 String scriptHex = Numeric.toHexStringNoPrefix(scriptBytes);
                 NEP6Parameter param = new NEP6Parameter("signature", ContractParameterType.SIGNATURE);
                 contract = new NEP6Contract(scriptHex, Collections.singletonList(param), false);
@@ -196,9 +203,8 @@ public class Account {
         b.address = Keys.getMultiSigAddress(signatureThreshold, publicKeys);
         b.label = b.address;
 
-        RawVerificationScript verificationScript =
-                Keys.getVerificationScriptFromPublicKeys(signatureThreshold, publicKeys);
-        String scriptHexString = Numeric.toHexStringNoPrefix(verificationScript.toArray());
+        byte[] script = RawVerificationScript.fromPublicKeys(signatureThreshold, publicKeys).getScript();
+        String scriptHexString = Numeric.toHexStringNoPrefix(script);
 
         List<NEP6Parameter> parameters = new ArrayList<>();
         IntStream.range(0, publicKeys.size()).forEachOrdered(i ->
@@ -215,6 +221,14 @@ public class Account {
         b.address = Keys.getAddress(b.publicKey);
         b.label = b.address;
         return b;
+    }
+
+    public static Builder fromNewECKeyPair() {
+        try {
+            return fromECKeyPair(Keys.createEcKeyPair());
+        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException("Failed to create a new EC key pair.", e);
+        }
     }
 
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
@@ -242,6 +256,14 @@ public class Account {
         b.address = address;
         b.label = address;
         return b;
+    }
+
+    /**
+     * Creates a new generic account with a fresh key pair.
+     * @return the new account.
+     */
+    public static Account createGenericAccount() {
+        return fromNewECKeyPair().build();
     }
 
     public static class Builder {

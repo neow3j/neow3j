@@ -6,9 +6,7 @@ import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,14 +16,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Collections;
 
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class WalletTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testCreateDefaultWallet() {
@@ -74,7 +74,7 @@ public class WalletTest {
         Account acct = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(acct);
         assertTrue(!w.getAccounts().isEmpty());
-        assertEquals(w.getAccounts().get(0),acct);
+        assertEquals(w.getAccounts().get(0), acct);
     }
 
     @Test
@@ -114,13 +114,13 @@ public class WalletTest {
         NEP6Account nep6acct = new NEP6Account(a.getAddress(), a.getLabel(), false, false,
                 a.getEncryptedPrivateKey(), a.getContract(), null);
         NEP6Wallet nep6w = new NEP6Wallet(walletName, Wallet.CURRENT_VERSION,
-                NEP2.DEFAULT_SCRYPT_PARAMS,  Collections.singletonList(nep6acct), null);
+                NEP2.DEFAULT_SCRYPT_PARAMS, Collections.singletonList(nep6acct), null);
 
 
         assertEquals(nep6w, w.toNEP6Wallet());
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testToNEP6WalletWithUnencryptedPrivateKey() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
@@ -128,10 +128,8 @@ public class WalletTest {
         Account a = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
         w.addAccount(a);
 
-        exceptionRule.expect(IllegalStateException.class);
         w.toNEP6Wallet();
     }
-
 
     @Test
     public void testFromNEP6WalletToNEP6Wallet() throws IOException, URISyntaxException {
@@ -143,4 +141,28 @@ public class WalletTest {
 
         assertEquals(nep6Wallet, w.toNEP6Wallet());
     }
+
+    @Test
+    public void testCreateGenericWallet() {
+        Wallet w = Wallet.createGenericWallet();
+        assertThat(w.getName(), is("neow3jWallet"));
+        assertThat(w.getVersion(), is(Wallet.CURRENT_VERSION));
+        assertThat(w.getScryptParams(), is(NEP2.DEFAULT_SCRYPT_PARAMS));
+        assertThat(w.getAccounts().size(), is(1));
+        assertThat(w.getAccounts(), not(empty()));
+        assertThat(w.getAccounts().get(0).getECKeyPair(), notNullValue());
+    }
+
+    @Test
+    public void testGetAndSetDefaultAccount() {
+        Wallet w = Wallet.createGenericWallet();
+        assertThat(w.getDefaultAccount(), notNullValue());
+
+        Account a = Account.createGenericAccount();
+        w.addAccount(a);
+        w.setDefaultAccount(1);
+        assertThat(w.getDefaultAccount(), notNullValue());
+        assertThat(w.getDefaultAccount(), is(a));
+    }
+
 }

@@ -4,6 +4,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.transaction.RawInvocationScript;
+import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.crypto.transaction.RawVerificationScript;
@@ -40,10 +41,8 @@ public class AssetTransfer {
         return tx;
     }
 
-    public void addWitness(List<RawInvocationScript> invocationScripts,
-                           RawVerificationScript verificationScript) {
-
-        tx.addScript(invocationScripts, verificationScript);
+    public void addWitness(RawScript witness) {
+        tx.addScript(witness);
     }
 
     public AssetTransfer send() throws IOException, ErrorResponseException {
@@ -241,11 +240,7 @@ public class AssetTransfer {
                         "or create the transaction signature manually.");
             }
             byte[] rawUnsignedTx = tx.toArray();
-            ECKeyPair keyPair = account.getECKeyPair();
-            tx.addScript(
-                    Arrays.asList(new RawInvocationScript(Sign.signMessage(rawUnsignedTx, keyPair))),
-                    Keys.getVerificationScriptFromPublicKey(account.getPublicKey())
-            );
+            tx.addScript(RawScript.createWitness(tx.toArray(), account.getECKeyPair()));
         }
 
         private void throwIfOutputsAreSet() {
