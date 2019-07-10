@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.model.types.ContractParameter;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.ArrayUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.List;
 
 import static io.neow3j.utils.ArrayUtils.trimLeadingZeroes;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -25,15 +28,89 @@ public class ScriptBuilder {
         buffer = ByteBuffer.wrap(new byte[8]).order(ByteOrder.LITTLE_ENDIAN);
     }
 
+    /**
+     * Appends an OpCode to the script.
+     * @param opCode The OpCode to append.
+     */
     public ScriptBuilder opCode(OpCode opCode) {
         writeByte(opCode.getValue());
         return this;
     }
 
+    /**
+     * Appends an app call to the script.
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param operation The operation to call.
+     * @param params The parameters that will be used in the app call. Need to be in correct order.
+     */
+    public ScriptBuilder appCall(byte[] scriptHash, String operation,
+                                        List<ContractParameter> params) {
+
+        for (int i = params.size() - 1; i >= 0; i--) {
+            pushParam(params.get(i));
+        }
+        pushInteger(params.size());
+        opCode(OpCode.PACK);
+        pushData(operation);
+        appCall(scriptHash);
+        return this;
+    }
+
+    /**
+     * Appends an app call to the script.
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param params The parameters that will be used in the app call. Need to be in correct order.
+     */
+    public ScriptBuilder appCall(byte[] scriptHash, List<ContractParameter> params) {
+        for (int i = params.size() - 1; i >= 0; i--) {
+            pushParam(params.get(i));
+        }
+        appCall(scriptHash);
+        return this;
+    }
+
+    /**
+     * Appends an app call to the script.
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param operation The operation to call.
+     */
+    public ScriptBuilder appCall(byte[] scriptHash, String operation) {
+        pushBoolean(false);
+        pushData(operation);
+        appCall(scriptHash);
+        return this;
+    }
+
+//    /**
+//     * Appends an app call to the script.
+//     * @param scriptHash The script hash of the contract to call in big-endian order.
+//     * @param operation The operation to call.
+//     * @param args The arguments to pass to the operation.
+//     */
+//    public ScriptBuilder appCall(byte[] scriptHash, String operation, List<Object> args)
+//    {
+//        for (int i = args.size() - 1; i >= 0; i--) {
+//            pushObject(args.get(i));
+//        }
+//        pushInteger(args.size());
+//        opCode(OpCode.PACK);
+//        pushData(operation);
+//        appCall(scriptHash);
+//        return this;
+//    }
+
+    /**
+     * Appends an app call to the script.
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     */
     public ScriptBuilder appCall(byte[] scriptHash) {
         return call(scriptHash, OpCode.APPCALL);
     }
 
+    /**
+     * Appends a tail call to the script.
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     */
     public ScriptBuilder tailCall(byte[] scriptHash) {
         return call(scriptHash, OpCode.TAILCALL);
     }
@@ -64,6 +141,55 @@ public class ScriptBuilder {
         return this;
     }
 
+//    public ScriptBuilder sysCall(String operation, List<Object> args) {
+//        for (int i = args.size() - 1; i >= 0; i--) {
+//            pushObject(args.get(0));
+//        }
+//        sysCall(operation);
+//        return this;
+//    }
+
+//    public ScriptBuilder pushObject(Object obj) {
+//        if (obj instanceof Boolean) {
+//            pushBoolean((boolean)obj);
+//        } else if (obj instanceof byte[]) {
+//            pushData((byte[])obj);
+//        }
+//        ...
+//        return this;
+//    }
+
+    public ScriptBuilder pushParam(ContractParameter param) {
+        switch (param.getParamType()) {
+            case SIGNATURE:
+            case BYTE_ARRAY:
+                pushData((byte[])param.getValue()); break;
+            case BOOLEAN:
+                pushBoolean((boolean)param.getValue()); break;
+            case INTEGER:
+                if (param.getValue() instanceof Integer) {
+                    pushInteger((Integer) param.getValue());
+                } else if (param.getValue() instanceof BigInteger) {
+                    pushInteger((BigInteger) param.getValue());
+                } break;
+            case HASH160:
+            case HASH256:
+                // Needs to be added in little-endian order.
+                pushData(ArrayUtils.reverseArray((byte[])param.getValue())); break;
+            case PUBLIC_KEY:
+                // TODO 10.07.19 claude: Implement
+                throw new UnsupportedOperationException();
+            case STRING:
+                pushData((String)param.getValue()); break;
+            case ARRAY:
+                pushArray((ContractParameter[])param.getValue()); break;
+            default:
+                throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
+                        "' not supported.");
+        }
+        return this;
+    }
+
     public ScriptBuilder pushInteger(int v) {
         return pushInteger(BigInteger.valueOf(v));
     }
@@ -79,12 +205,14 @@ public class ScriptBuilder {
             writeByte(base + number.intValue());
         } else {
             // If the number is larger than 16, it needs to be pushed as a data array.
+            // TODO 10.07.19 claude:
+            // Doesn't the integer byte array need to be added in little-endian order?
             pushData(trimLeadingZeroes(number.toByteArray()));
         }
         return this;
     }
 
-    public ScriptBuilder pushBoolean(boolean bool) throws IOException {
+    public ScriptBuilder pushBoolean(boolean bool) {
         if (bool) {
             writeByte(OpCode.PUSHT.getValue());
         } else {
@@ -133,6 +261,15 @@ public class ScriptBuilder {
             writeByte(OpCode.PUSHDATA4.getValue());
             writeInt(length);
         }
+        return this;
+    }
+
+    public ScriptBuilder pushArray(ContractParameter[] params) {
+        for (int i = params.length-1; i >= 0; i--) {
+            pushParam(params[i]);
+        }
+        pushInteger(params.length);
+        opCode(OpCode.PACK);
         return this;
     }
 
