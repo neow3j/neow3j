@@ -1,7 +1,7 @@
 package io.neow3j.protocol;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.KeyUtils;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.transaction.RawInvocationScript;
 import io.neow3j.crypto.transaction.RawTransaction;
@@ -263,7 +263,7 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
         NeoGetNewAddress getNewAddress = getNewAddress();
         String address = getNewAddress.getAddress();
         assertNotNull(address);
-        assertThat(address.length(), is(KeyUtils.ADDRESS_SIZE));
+        assertThat(address.length(), is(NeoConstants.ADDRESS_SIZE));
     }
 
     public void testGetWalletHeight() throws IOException {

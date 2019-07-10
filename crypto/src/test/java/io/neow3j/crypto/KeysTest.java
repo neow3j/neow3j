@@ -3,12 +3,12 @@ package io.neow3j.crypto;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
-import static io.neow3j.crypto.KeyUtils.toAddress;
-import static io.neow3j.crypto.KeyUtils.toScriptHash;
+import static io.neow3j.crypto.Keys.toAddress;
+import static io.neow3j.crypto.Keys.toScriptHash;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 
-public class KeyUtilsTest {
+public class KeysTest {
 
     @Test
     public void testToAddress() {
@@ -33,7 +33,8 @@ public class KeyUtilsTest {
         String script = "d336d7eb9975a29b2404fdb28185e277a4b299bc";
         String address = "Ab2fvZdmnM4HwDgVbdBrbTLz1wK5TcEyhU";
 
-        assertThat(KeyUtils.scriptHashToAddress(script), is(address));
+        assertThat(Keys.scriptHashToAddress(script), is(address));
     }
 
 }
+

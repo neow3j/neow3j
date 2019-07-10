@@ -1,13 +1,12 @@
 package io.neow3j.crypto.transaction;
 
-import io.neow3j.crypto.KeyUtils;
+import io.neow3j.crypto.Keys;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-import org.bouncycastle.util.BigIntegers;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -73,7 +72,7 @@ public class RawTransactionOutput extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws IOException {
         this.assetId = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
         this.value = Numeric.fromFixed8ToBigDecimal(ArrayUtils.reverseArray(reader.readBytes(8))).toString();
-        this.address = KeyUtils.toAddress(reader.readBytes(20));
+        this.address = Keys.toAddress(reader.readBytes(20));
     }
 
     @Override
@@ -81,6 +80,6 @@ public class RawTransactionOutput extends NeoSerializable {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(assetId)));
         byte[] value = Numeric.fromBigDecimalToFixed8Bytes(this.value);
         writer.write(ArrayUtils.reverseArray(value));
-        writer.write(KeyUtils.toScriptHash(this.address));
+        writer.write(Keys.toScriptHash(this.address));
     }
 }

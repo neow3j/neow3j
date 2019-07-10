@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.Credentials;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.KeyUtils;
 import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.NEP2;
@@ -30,8 +29,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.crypto.KeyUtils.ADDRESS_SIZE;
-import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_LENGTH_IN_HEX;
+import static io.neow3j.constants.NeoConstants.ADDRESS_SIZE;
+import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_LENGTH_IN_HEX;
 
 /**
  * Utility functions for working with Wallet files.
@@ -178,7 +177,7 @@ public class WalletUtils {
         String cleanInput = Numeric.cleanHexPrefix(address);
 
         try {
-            KeyUtils.toScriptHash(cleanInput);
+            Keys.toScriptHash(cleanInput);
         } catch (IllegalArgumentException e) {
             return false;
         }

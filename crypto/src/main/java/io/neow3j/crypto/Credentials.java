@@ -51,7 +51,7 @@ public class Credentials {
     }
 
     public byte[] toScriptHash() {
-        return KeyUtils.toScriptHash(this.address);
+        return Keys.toScriptHash(this.address);
     }
 
 

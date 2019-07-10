@@ -18,7 +18,7 @@ import java.security.NoSuchProviderException;
 import java.util.Arrays;
 
 import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
+import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.getLastNBytes;

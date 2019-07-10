@@ -1,7 +1,6 @@
 package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -16,8 +15,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.util.Arrays;
 
-import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
-import static io.neow3j.crypto.KeyUtils.PUBLIC_KEY_SIZE;
+import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
 
 
 /**

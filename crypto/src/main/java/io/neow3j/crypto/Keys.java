@@ -1,5 +1,6 @@
 package io.neow3j.crypto;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -15,10 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
-import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
-import static io.neow3j.crypto.KeyUtils.PUBLIC_KEY_SIZE;
-import static io.neow3j.crypto.KeyUtils.toAddress;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 
@@ -122,9 +119,9 @@ public class Keys {
         }
         // based on: https://tools.ietf.org/html/rfc5480#section-2.2
         if (publicKeyArray[64] % 2 == 1) {
-            return concatenate(new byte[]{0x03}, Arrays.copyOfRange(publicKeyNotEncoded, 1, PUBLIC_KEY_SIZE));
+            return concatenate(new byte[]{0x03}, Arrays.copyOfRange(publicKeyNotEncoded, 1, NeoConstants.PUBLIC_KEY_SIZE));
         } else {
-            return concatenate(new byte[]{0x02}, Arrays.copyOfRange(publicKeyNotEncoded, 1, PUBLIC_KEY_SIZE));
+            return concatenate(new byte[]{0x02}, Arrays.copyOfRange(publicKeyNotEncoded, 1, NeoConstants.PUBLIC_KEY_SIZE));
         }
     }
 
@@ -136,22 +133,57 @@ public class Keys {
     }
 
     public static byte[] serialize(ECKeyPair ecKeyPair) {
-        byte[] privateKey = Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), PRIVATE_KEY_SIZE);
-        byte[] publicKey = Numeric.toBytesPadded(ecKeyPair.getPublicKey(), PUBLIC_KEY_SIZE);
+        byte[] privateKey = Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), NeoConstants.PRIVATE_KEY_SIZE);
+        byte[] publicKey = Numeric.toBytesPadded(ecKeyPair.getPublicKey(), NeoConstants.PUBLIC_KEY_SIZE);
 
-        byte[] result = Arrays.copyOf(privateKey, PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE);
-        System.arraycopy(publicKey, 0, result, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE);
+        byte[] result = Arrays.copyOf(privateKey, NeoConstants.PRIVATE_KEY_SIZE + NeoConstants.PUBLIC_KEY_SIZE);
+        System.arraycopy(publicKey, 0, result, NeoConstants.PRIVATE_KEY_SIZE, NeoConstants.PUBLIC_KEY_SIZE);
         return result;
     }
 
     public static ECKeyPair deserialize(byte[] input) {
-        if (input.length != PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE) {
+        if (input.length != NeoConstants.PRIVATE_KEY_SIZE + NeoConstants.PUBLIC_KEY_SIZE) {
             throw new RuntimeException("Invalid input key size");
         }
 
-        BigInteger privateKey = Numeric.toBigInt(input, 0, PRIVATE_KEY_SIZE);
-        BigInteger publicKey = Numeric.toBigInt(input, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE);
+        BigInteger privateKey = Numeric.toBigInt(input, 0, NeoConstants.PRIVATE_KEY_SIZE);
+        BigInteger publicKey = Numeric.toBigInt(input, NeoConstants.PRIVATE_KEY_SIZE, NeoConstants.PUBLIC_KEY_SIZE);
 
         return new ECKeyPair(privateKey, publicKey);
+    }
+
+    public static String toAddress(byte[] scriptHash) {
+        byte[] data = new byte[1];
+        data[0] = NeoConstants.COIN_VERSION;
+        byte[] dataAndScriptHash = concatenate(data, scriptHash);
+        byte[] checksum = Hash.sha256(Hash.sha256(dataAndScriptHash));
+        byte[] first4BytesCheckSum = new byte[4];
+        System.arraycopy(checksum, 0, first4BytesCheckSum, 0, 4);
+        byte[] dataToEncode = concatenate(dataAndScriptHash, first4BytesCheckSum);
+        return Base58.encode(dataToEncode);
+    }
+
+    public static byte[] toScriptHash(String address) {
+        byte[] data = Base58.decode(address);
+        if (data.length != 25) {
+            throw new IllegalArgumentException();
+        }
+        if (data[0] != NeoConstants.COIN_VERSION) {
+            throw new IllegalArgumentException();
+        }
+        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, 21));
+        for (int i = 0; i < 4; i++) {
+            if (data[data.length - 4 + i] != checksum[i]) {
+                throw new IllegalArgumentException();
+            }
+        }
+        byte[] buffer = new byte[20];
+        System.arraycopy(data, 1, buffer, 0, 20);
+        return buffer;
+    }
+
+    public static String scriptHashToAddress(String input) {
+        byte[] inputBytes = Numeric.hexStringToByteArray(input);
+        return toAddress(inputBytes);
     }
 }
