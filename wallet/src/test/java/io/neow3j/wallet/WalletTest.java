@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
+import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
+import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -143,6 +146,18 @@ public class WalletTest {
     }
 
     @Test
+    public void testFromNEP6WalletFileToNEP6Wallet() throws IOException, URISyntaxException {
+        URL nep6WalletFileUrl = WalletTest.class.getClassLoader().getResource("wallet.json");
+        File nep6WalletFile = new File(nep6WalletFileUrl.toURI());
+        Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile).build();
+
+        ObjectMapper mapper = new ObjectMapper();
+        NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
+
+        assertEquals(nep6Wallet, w.toNEP6Wallet());
+    }
+
+    @Test
     public void testCreateGenericWallet() {
         Wallet w = Wallet.createGenericWallet();
         assertThat(w.getName(), is("neow3jWallet"));
@@ -151,6 +166,62 @@ public class WalletTest {
         assertThat(w.getAccounts().size(), is(1));
         assertThat(w.getAccounts(), not(empty()));
         assertThat(w.getAccounts().get(0).getECKeyPair(), notNullValue());
+    }
+
+    @Test
+    public void testCreateGenericWalletAndSaveToFile() throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
+        File tempFile = createTempFile();
+
+        Wallet w1 = Wallet.createGenericWallet();
+        w1.encryptAllAccounts("12345678");
+        w1.saveNEP6Wallet(tempFile);
+
+        assertThat(w1.getName(), is("neow3jWallet"));
+        assertThat(w1.getVersion(), is(Wallet.CURRENT_VERSION));
+        assertThat(w1.getScryptParams(), is(NEP2.DEFAULT_SCRYPT_PARAMS));
+        assertThat(w1.getAccounts().size(), is(1));
+        assertThat(w1.getAccounts(), not(empty()));
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), notNullValue());
+        assertThat(tempFile.exists(), is(true));
+
+        Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
+        w2.decryptAllAccounts("12345678");
+
+        assertThat(w2.toNEP6Wallet(), is(w1.toNEP6Wallet()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateGenericWalletAndSaveToNull() throws IOException {
+        File test = null;
+        Wallet.createGenericWallet(test);
+    }
+
+    @Test
+    public void testCreateGenericWalletAndSaveToFileWithPasswordAndDestination()
+            throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
+        File tempFile = createTempFile();
+
+        Wallet w1 = Wallet.createGenericWallet("12345678", tempFile);
+
+        assertThat(w1.getName(), is("neow3jWallet"));
+        assertThat(w1.getVersion(), is(Wallet.CURRENT_VERSION));
+        assertThat(w1.getScryptParams(), is(NEP2.DEFAULT_SCRYPT_PARAMS));
+        assertThat(w1.getAccounts().size(), is(1));
+        assertThat(w1.getAccounts(), not(empty()));
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), notNullValue());
+        assertThat(tempFile.exists(), is(true));
+
+        Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
+        w2.decryptAllAccounts("12345678");
+
+        assertThat(w1.getName(), is(w2.getName()));
+        assertThat(w1.getVersion(), is(w2.getVersion()));
+        assertThat(w1.getScryptParams(), is(w2.getScryptParams()));
+        assertThat(w1.getAccounts().size(), is(w2.getAccounts().size()));
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), is(w2.getAccounts().get(0).getECKeyPair()));
+        assertThat(tempFile.exists(), is(true));
+
+        assertThat(w2.toNEP6Wallet(), is(w1.toNEP6Wallet()));
     }
 
     @Test
@@ -163,6 +234,12 @@ public class WalletTest {
         w.setDefaultAccount(1);
         assertThat(w.getDefaultAccount(), notNullValue());
         assertThat(w.getDefaultAccount(), is(a));
+    }
+
+    private File createTempFile() throws IOException {
+        File testFile = File.createTempFile("neow3j", "-test");
+        testFile.deleteOnExit();
+        return testFile;
     }
 
 }

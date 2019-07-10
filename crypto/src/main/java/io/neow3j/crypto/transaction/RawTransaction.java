@@ -19,6 +19,7 @@ import java.util.List;
 /**
  * Transaction class used for signing transactions locally.<br>
  */
+@SuppressWarnings("unchecked")
 public abstract class RawTransaction extends NeoSerializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(RawTransaction.class);
@@ -30,7 +31,8 @@ public abstract class RawTransaction extends NeoSerializable {
     private List<RawTransactionOutput> outputs;
     private List<RawScript> scripts;
 
-    public RawTransaction() {}
+    public RawTransaction() {
+    }
 
     protected RawTransaction(Builder builder) {
         this.transactionType = builder.transactionType;
@@ -68,7 +70,8 @@ public abstract class RawTransaction extends NeoSerializable {
     /**
      * Adds the given invocation scripts (e.g. signatures) and the verification script to this
      * transaction's list of witnesses.
-     * @param invocationScripts One or more invocation scripts that are part of the witness.
+     *
+     * @param invocationScripts  One or more invocation scripts that are part of the witness.
      * @param verificationScript The verification script of the witness.
      */
     public void addScript(List<RawInvocationScript> invocationScripts, RawVerificationScript verificationScript) {
@@ -147,11 +150,13 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T version(byte version) {
-            this.version = version; return (T) this;
+            this.version = version;
+            return (T) this;
         }
 
         public T attributes(List<RawTransactionAttribute> attributes) {
-            this.attributes = attributes; return (T) this;
+            this.attributes = attributes;
+            return (T) this;
         }
 
         public T attributes(RawTransactionAttribute attribute) {
@@ -159,7 +164,8 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T inputs(List<RawTransactionInput> inputs) {
-            this.inputs = inputs; return (T) this;
+            this.inputs = inputs;
+            return (T) this;
         }
 
         public T input(RawTransactionInput input) {
@@ -167,7 +173,8 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T outputs(List<RawTransactionOutput> outputs) {
-            this.outputs = outputs; return (T) this;
+            this.outputs = outputs;
+            return (T) this;
         }
 
         public T output(RawTransactionOutput output) {
@@ -175,7 +182,8 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T scripts(List<RawScript> scripts) {
-            this.scripts = scripts; return (T) this;
+            this.scripts = scripts;
+            return (T) this;
         }
 
         public abstract RawTransaction build();

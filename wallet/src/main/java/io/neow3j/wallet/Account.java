@@ -33,6 +33,7 @@ import java.util.stream.IntStream;
 
 import static io.neow3j.constants.OpCode.CHECKMULTISIG;
 
+@SuppressWarnings("unchecked")
 public class Account {
 
     private BigInteger privateKey;
@@ -48,7 +49,7 @@ public class Account {
     private Account() {
     }
 
-    private Account(Builder b) {
+    protected Account(Builder b) {
         this.label = b.label;
         this.privateKey = b.privateKey;
         this.publicKey = b.publicKey;
@@ -271,7 +272,7 @@ public class Account {
         return fromNewECKeyPair().build();
     }
 
-    public static class Builder {
+    protected static class Builder<T extends Account, B extends Builder<T, B>> {
 
         String label;
         BigInteger privateKey;
@@ -282,28 +283,43 @@ public class Account {
         String encryptedPrivateKey;
         NEP6Contract contract;
 
-        private Builder() {
+        protected Builder() {
             isDefault = false;
             isLocked = false;
         }
 
-        public Builder label(String label) {
+        public B label(String label) {
             this.label = label;
-            return this;
+            return (B) this;
         }
 
-        public Builder isDefault(boolean isDefault) {
+        public B isDefault(boolean isDefault) {
             this.isDefault = isDefault;
-            return this;
+            return (B) this;
         }
 
-        public Builder isLocked(boolean isLocked) {
+        public B isLocked(boolean isLocked) {
             this.isLocked = isLocked;
-            return this;
+            return (B) this;
         }
 
-        public Account build() {
-            return new Account(this);
+        public T build() {
+            return (T) new Account(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "privateKey=" + privateKey +
+                ", publicKey=" + publicKey +
+                ", address='" + address + '\'' +
+                ", encryptedPrivateKey='" + encryptedPrivateKey + '\'' +
+                ", label='" + label + '\'' +
+                ", isDefault=" + isDefault +
+                ", isLocked=" + isLocked +
+                ", contract=" + contract +
+                ", balances=" + balances +
+                '}';
     }
 }
