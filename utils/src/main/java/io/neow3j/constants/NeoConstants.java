@@ -25,4 +25,6 @@ public class NeoConstants {
     public static final int FIXED8_SCALE = 8;
     public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
 
+    public static final int SCRIPTHASH_LENGHT_BITS = 160;
+    public static final int SCRIPTHASH_LENGHT_BYTES = SCRIPTHASH_LENGHT_BITS/8;
 }

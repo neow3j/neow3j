@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.model.types.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
@@ -116,9 +117,8 @@ public class ScriptBuilder {
     }
 
     private ScriptBuilder call(byte[] scriptHash, OpCode opCode) {
-        if (scriptHash.length != 20) {
-            // a NEO script hash is always 160 bit/20 byte long
-            throw new IllegalArgumentException("Script hash must be 20 bytes long.");
+        if (scriptHash.length != NeoConstants.SCRIPTHASH_LENGHT_BYTES) {
+            throw new IllegalArgumentException("Script hash must be 160 bits long.");
         }
         writeByte(opCode.getValue());
         // Needs to be written in reverse because of NEO's little-endianness of integers.
