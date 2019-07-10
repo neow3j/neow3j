@@ -2,10 +2,14 @@ package io.neow3j.utils;
 
 import io.neow3j.exceptions.MessageDecodingException;
 import io.neow3j.exceptions.MessageEncodingException;
+import org.bouncycastle.util.BigIntegers;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+
+import static io.neow3j.constants.NeoConstants.FIXED8_DECIMALS;
+import static io.neow3j.constants.NeoConstants.FIXED8_SCALE;
 
 /**
  * <p>Message codec functions.</p>
@@ -79,8 +83,57 @@ public final class Numeric {
                 && input.charAt(0) == '0' && input.charAt(1) == 'x';
     }
 
+    /**
+     * Converts the given Fixed8 number to a BigDecimal. This means that the resulting number is
+     * represented using a decimal point.
+     * @param value The Fixed8 value as a byte array. Must be 8 bytes in big-endian order.
+     */
     public static BigDecimal fromFixed8ToBigDecimal(byte[] value) {
-        return new BigDecimal(toBigInt(value)).divide(BigDecimal.valueOf(100000000L));
+        if (value.length != 8)
+            throw new IllegalArgumentException("Given value is not a Fixed8 number.");
+
+        return fromFixed8ToBigDecimal(toBigInt(value));
+    }
+
+    /**
+     * Converts the given Fixed8 number to a BigDecimal. This means that the resulting number is
+     * represented using a decimal point.
+     * @param value The Fixed8 value as an integer.
+     */
+    public static BigDecimal fromFixed8ToBigDecimal(BigInteger value) {
+        return new BigDecimal(value).divide(FIXED8_DECIMALS);
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 in the form of an integer.
+     * @param value The decimal number to convert.
+     */
+    public static BigInteger fromBigDecimalToFixed8(String value) {
+        return fromBigDecimalToFixed8(new BigDecimal(value));
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 in the form of an integer.
+     * @param value The decimal number to convert.
+     */
+    public static BigInteger fromBigDecimalToFixed8(BigDecimal value) {
+        return value.multiply(FIXED8_DECIMALS).toBigInteger();
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 in the form of 8 bytes in big-endian order.
+     * @param value The decimal number to convert.
+     */
+    public static byte[] fromBigDecimalToFixed8Bytes(String value) {
+        return BigIntegers.asUnsignedByteArray(8, fromBigDecimalToFixed8(value));
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 in the form of 8 bytes in big-endian order.
+     * @param value The decimal number to convert.
+     */
+    public static byte[] fromBigDecimalToFixed8Bytes(BigDecimal value) {
+        return BigIntegers.asUnsignedByteArray(8, fromBigDecimalToFixed8(value));
     }
 
     public static BigInteger toBigInt(byte[] value, int offset, int length) {

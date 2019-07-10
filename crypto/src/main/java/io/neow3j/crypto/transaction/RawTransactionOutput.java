@@ -79,7 +79,7 @@ public class RawTransactionOutput extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(assetId)));
-        byte[] value = BigIntegers.asUnsignedByteArray(8, NEOAsset.toBigInt(this.value));
+        byte[] value = Numeric.fromBigDecimalToFixed8Bytes(this.value);
         writer.write(ArrayUtils.reverseArray(value));
         writer.write(KeyUtils.toScriptHash(this.address));
     }

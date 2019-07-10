@@ -3,6 +3,7 @@ import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class NeoConstants {
@@ -20,5 +21,8 @@ public class NeoConstants {
      * at https://github.com/neo-project/neo.
      */
     public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
+
+    public static final int FIXED8_SCALE = 8;
+    public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
 
 }
