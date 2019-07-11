@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neow3j.model.types.ContractParameter;
 import io.neow3j.protocol.core.methods.response.stack.Item;
 import io.neow3j.protocol.deserializer.StackDeserializer;
 
@@ -44,7 +43,7 @@ public class NeoApplicationLog {
         private String gasConsumed;
 
         @JsonProperty("stack")
-        private List<ContractParameter> stack;
+        private List<Item> stack;
 
         @JsonProperty("notifications")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -53,7 +52,7 @@ public class NeoApplicationLog {
         public Execution() {
         }
 
-        public Execution(String trigger, String contract, String state, String gasConsumed, List<ContractParameter> stack, List<Notification> notifications) {
+        public Execution(String trigger, String contract, String state, String gasConsumed, List<Item> stack, List<Notification> notifications) {
             this.trigger = trigger;
             this.contract = contract;
             this.state = state;
@@ -78,7 +77,7 @@ public class NeoApplicationLog {
             return gasConsumed;
         }
 
-        public List<ContractParameter> getStack() {
+        public List<Item> getStack() {
             return stack;
         }
 
