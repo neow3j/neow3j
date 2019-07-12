@@ -1,19 +1,13 @@
 package io.neow3j.wallet;
 
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
-import io.neow3j.crypto.Sign;
-import io.neow3j.crypto.transaction.RawInvocationScript;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.crypto.transaction.RawVerificationScript;
-import io.neow3j.model.types.AssetType;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.protocol.transaction.ContractTransaction;
+import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Balances.AssetBalance;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
@@ -21,7 +15,6 @@ import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -44,7 +44,7 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
-import io.neow3j.protocol.transaction.ContractTransaction;
+import io.neow3j.transaction.ContractTransaction;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsNull;

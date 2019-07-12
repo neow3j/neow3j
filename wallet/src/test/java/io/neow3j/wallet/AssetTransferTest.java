@@ -11,7 +11,7 @@ import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.protocol.transaction.ContractTransaction;
+import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.ArrayUtils;
 import org.junit.Test;
 
