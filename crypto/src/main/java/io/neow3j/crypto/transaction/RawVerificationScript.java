@@ -49,7 +49,9 @@ public class RawVerificationScript extends NeoSerializable {
 
     /** Calculates the script hash of this verification script.
      * I.e. applies SHA256 and RIPMED160 to the script byte array.
-     * @return the script hash in big-endian order.
+     * Apparently, after hashing, the script hash is considered to be in little-endian order. That
+     * means, it can directly be used in transactions without reversing it.
+     * @return the script hash.
      */
     public byte[] getScriptHash() {
         if (script.length == 0) return new byte[0];
