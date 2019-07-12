@@ -2,8 +2,8 @@ package io.neow3j.crypto.transaction;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptReader;
-import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.crypto.Hash;
+import io.neow3j.crypto.Keys;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
@@ -14,9 +14,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
 
 public class RawVerificationScript extends NeoSerializable {
 
@@ -31,35 +28,19 @@ public class RawVerificationScript extends NeoSerializable {
     }
 
     public static RawVerificationScript fromPublicKey(BigInteger publicKey) {
-        byte[] script = new ScriptBuilder()
-                .pushData(publicKey.toByteArray())
-                .opCode(OpCode.CHECKSIG).toArray();
-
-        return new RawVerificationScript(script);
+        return new RawVerificationScript(Keys.getVerificationScriptFromPublicKey(publicKey));
     }
 
-    public static RawVerificationScript fromPublicKeysAsByteArrays(int signingThreshold, List<byte[]> publicKeys) {
-        if (signingThreshold < 2 || signingThreshold > publicKeys.size()) {
-            throw new IllegalArgumentException("Signing threshold must be at least 2 and not " +
-                    "higher than the number of supplied public keys.");
-        }
-        if (publicKeys.size() > MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
-            throw new IllegalArgumentException("At max " + MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT +
-                    " public keys can take part in a multi-sig account");
-        }
-        ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);
-        publicKeys.forEach(builder::pushData);
-        byte[] script = builder.pushInteger(publicKeys.size())
-                .opCode(OpCode.CHECKMULTISIG).toArray();
-        return new RawVerificationScript(script);
+    public static RawVerificationScript fromPublicKeys(int signingThreshold, byte[]... publicKeys) {
+        return new RawVerificationScript(
+                Keys.getVerificationScriptFromPublicKeys(signingThreshold, publicKeys)
+        );
     }
 
     public static RawVerificationScript fromPublicKeys(int signingThreshold, List<BigInteger> publicKeys) {
-        List<byte[]> asByteArrays = publicKeys.stream()
-                .map(BigInteger::toByteArray)
-                .collect(Collectors.toList());
-
-        return fromPublicKeysAsByteArrays(signingThreshold, asByteArrays);
+        return new RawVerificationScript(
+                Keys.getVerificationScriptFromPublicKeys(signingThreshold, publicKeys)
+        );
     }
 
     public byte[] getScript() {

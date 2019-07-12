@@ -1,7 +1,8 @@
 package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.transaction.RawVerificationScript;
+import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 
@@ -93,23 +95,112 @@ public class Keys {
     }
 
     public static byte[] getScriptHashFromPublicKey(int amountSignatures, byte[]... publicKeys) {
-        List<BigInteger> encodedPublicKeys = new ArrayList<>(publicKeys.length);
-        for (byte[] key : publicKeys) {
-            // if public key is not encoded, then convert to the encoded one
-            if (!isPublicKeyEncoded(key)) {
-                encodedPublicKeys.add(Numeric.toBigInt(getPublicKeyEncoded(key)));
-            } else {
-                encodedPublicKeys.add(Numeric.toBigInt(Arrays.copyOf(key, key.length)));
-            }
-        }
-        RawVerificationScript script;
-        if (encodedPublicKeys.size() == 1) {
-            script = RawVerificationScript.fromPublicKey(encodedPublicKeys.get(0));
+        byte[] verificationScript;
+        if (publicKeys.length == 1) {
+            verificationScript = getVerificationScriptFromPublicKey(publicKeys[0]);
         } else {
-            script = RawVerificationScript.fromPublicKeys(amountSignatures, encodedPublicKeys);
+            verificationScript = getVerificationScriptFromPublicKeys(amountSignatures, publicKeys);
         }
-        return  script.getScriptHash();
+        return Hash.getScriptHash(verificationScript);
     }
+
+    /**
+     * Checks if the given public key is in encoded format and encodes it if not.
+     */
+    public static byte[] checkAndEncodePublicKey(byte[] publicKey) {
+        if (!isPublicKeyEncoded(publicKey)) {
+            return getPublicKeyEncoded(publicKey);
+        } else {
+            return publicKey;
+        }
+    }
+
+    public static byte[] publicKeyBigIntegerToByteArray(BigInteger publicKey) {
+        // TODO 12.07.19 claude:
+        // Check if BigInteger.toByteArray() is always giving the desired result.
+        return publicKey.toByteArray();
+    }
+
+    /**
+     * Creates the verification script for the given key.
+     * Checks if the key is in encoded format, and encodes it if not.
+     * @return the verification script.
+     */
+    public static byte[] getVerificationScriptFromPublicKey(BigInteger publicKey) {
+        byte[] publicKeyBytes = checkAndEncodePublicKey(publicKeyBigIntegerToByteArray(publicKey));
+        return getVerificationScriptFromPublicKeyEncoded(publicKeyBytes);
+    }
+
+    /**
+     * Creates the verification script for the given key.
+     * Checks if the key is in encoded format, and encodes it if not.
+     * @return the verification script.
+     */
+    public static byte[] getVerificationScriptFromPublicKey(byte[] publicKey) {
+        publicKey = checkAndEncodePublicKey(publicKey);
+        return getVerificationScriptFromPublicKeyEncoded(publicKey);
+    }
+
+    private static byte[] getVerificationScriptFromPublicKeyEncoded(byte[] encodedPublicKey) {
+        return new ScriptBuilder()
+                .pushData(encodedPublicKey)
+                .opCode(OpCode.CHECKSIG)
+                .toArray();
+    }
+
+    /**
+     * Creates the multi-sig verification script for the given keys and the signing threshold.
+     * Checks if the keys are in encoded format, and encodes them if not.
+     * @return the multi-sig verification script.
+     */
+    public  static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
+                                                              List<BigInteger> publicKeys) {
+
+       return getVerificationScriptFromPublicKeys(
+               signingThreshold,
+               publicKeys.stream()
+                       .map(Keys::publicKeyBigIntegerToByteArray)
+                       .toArray(byte[][]::new)
+       );
+    }
+
+    /**
+     * Creates the multi-sig verification script for the given keys and the signing threshold.
+     * Checks if the keys are in encoded format, and encodes them if not.
+     * @return the multi-sig verification script.
+     */
+    public  static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
+                                                              byte[]... publicKeys) {
+
+        List<byte[]> encodedPublicKeys = new ArrayList<>(publicKeys.length);
+        for (byte[] key : publicKeys) {
+            encodedPublicKeys.add(checkAndEncodePublicKey(key));
+        }
+
+        return getVerificationScriptFromPublicKeysEncoded(signingThreshold, encodedPublicKeys);
+    }
+
+    private static byte[] getVerificationScriptFromPublicKeysEncoded(int signingThreshold,
+                                                                    List<byte[]> encodedPublicKeys) {
+
+        if (signingThreshold < 2 || signingThreshold > encodedPublicKeys.size()) {
+            throw new IllegalArgumentException("Signing threshold must be at least 2 and not " +
+                    "higher than the number of public keys.");
+        }
+        if (encodedPublicKeys.size() > MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
+            throw new IllegalArgumentException("At max " + MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT +
+                    " public keys can take part in a multi-sig account");
+        }
+        ScriptBuilder builder = new ScriptBuilder()
+                .pushInteger(signingThreshold);
+        encodedPublicKeys.forEach(key -> builder
+                .pushData(key));
+        return builder
+                .pushInteger(encodedPublicKeys.size())
+                .opCode(OpCode.CHECKMULTISIG)
+                .toArray();
+    }
+
 
     public static byte[] getPublicKeyEncoded(byte[] publicKeyNotEncoded) {
         // converting to unsigned (Java byte's type is signed)

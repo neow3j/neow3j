@@ -19,16 +19,11 @@ import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static io.neow3j.constants.OpCode.CHECKMULTISIG;
 import static io.neow3j.constants.OpCode.CHECKSIG;
-import static io.neow3j.constants.OpCode.PUSH2;
-import static io.neow3j.constants.OpCode.PUSH3;
 import static io.neow3j.constants.OpCode.PUSHBYTES33;
 import static io.neow3j.constants.OpCode.PUSHBYTES64;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 public class RawScriptTest {
 
@@ -125,8 +120,8 @@ public class RawScriptTest {
         assertArrayEquals(expectedScript, script.toArray());
 
         // Test create from byte arrays.
-        List<byte[]> keys = publicKeys.stream().map(BigInteger::toByteArray).collect(Collectors.toList());
-        script = RawScript.createMultiSigWitnessFromByteArrays(signingThreshold, signatures, keys);
+        byte[][] keys = publicKeys.stream().map(BigInteger::toByteArray).toArray(byte[][]::new);
+        script = RawScript.createMultiSigWitness(signingThreshold, signatures, keys);
         assertArrayEquals(expectedScript, script.toArray());
     }
 

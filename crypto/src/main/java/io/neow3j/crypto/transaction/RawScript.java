@@ -64,12 +64,11 @@ public class RawScript extends NeoSerializable {
         return new RawScript(i, v);
     }
 
-    public static RawScript createMultiSigWitnessFromByteArrays(int signingThreshold,
+    public static RawScript createMultiSigWitness(int signingThreshold,
                                                   List<SignatureData> signatures,
-                                                  List<byte[]> publicKeys) {
+                                                  byte[]... publicKeys) {
 
-        RawVerificationScript v = RawVerificationScript.fromPublicKeysAsByteArrays(
-                signingThreshold, publicKeys);
+        RawVerificationScript v = RawVerificationScript.fromPublicKeys(signingThreshold, publicKeys);
         return createMultiSigWitness(signingThreshold, signatures, v);
     }
 
