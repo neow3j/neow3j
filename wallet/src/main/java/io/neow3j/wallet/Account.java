@@ -157,6 +157,10 @@ public class Account {
                 throw new IllegalStateException("The account does not hold a private key.");
             }
             this.encryptedPrivateKey = NEP2.encrypt(password, getECKeyPair(), scryptParams);
+            // TODO: 2019-07-14 Guil:
+            // Is it the safest way of overwriting a variable on the JVM?
+            // I don't think so. ;-)
+            this.privateKey = null;
         }
     }
 
@@ -202,8 +206,11 @@ public class Account {
      * @return the multi-sig account builder;
      */
     public static Builder fromMultiSigKeys(List<BigInteger> publicKeys, int signatureThreshold) {
+        // TODO: 2019-07-14 Guil:
+        // Review this method and the functionality it provides.
+        // Maybe we should get rid of this.
+
         Builder b = new Builder();
-        b.publicKey = Sign.publicKeyFromPrivate(b.privateKey);
         b.address = Keys.getMultiSigAddress(signatureThreshold, publicKeys);
         b.label = b.address;
 
@@ -268,7 +275,7 @@ public class Account {
      *
      * @return the new account.
      */
-    public static Account createGenericAccount() {
+    public static Account createAccount() {
         return fromNewECKeyPair().build();
     }
 

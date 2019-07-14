@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -108,7 +109,7 @@ public class AccountTest {
 
     @Test
     public void testCreateGenericAccount() {
-        Account a = Account.createGenericAccount();
+        Account a = Account.createAccount();
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
         assertThat(a.getBalances(), notNullValue());
@@ -140,6 +141,23 @@ public class AccountTest {
         assertThat(a.getPublicKey(), notNullValue());
         assertThat(a.isDefault(), is(true));
         assertThat(a.isLocked(), is(false));
+    }
+
+    @Test
+    public void testFromMultiSigKeys() {
+        Account a = Account.fromMultiSigKeys(
+                Arrays.asList(
+                        SampleKeys.KEY_PAIR_1.getPrivateKey(),
+                        SampleKeys.KEY_PAIR_2.getPrivateKey()
+                ),
+                1
+        ).build();
+
+        assertThat(a.isMultiSig(), is(true));
+        assertThat(a.getAddress(), is("AQaJcwAsd3kUmshkmapHd4B94JVfPvVzAQ"));
+        assertThat(a.getPublicKey(), is(nullValue()));
+        assertThat(a.getPrivateKey(), is(nullValue()));
+        assertThat(a.getLabel(), is(a.getAddress()));
     }
 
 }

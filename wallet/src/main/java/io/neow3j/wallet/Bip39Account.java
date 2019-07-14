@@ -1,6 +1,7 @@
 package io.neow3j.wallet;
 
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -10,14 +11,14 @@ import java.security.SecureRandom;
 import static io.neow3j.crypto.Hash.sha256;
 
 /**
- * Data class encapsulating a BIP-39 compatible NEO account.
+ * Class encapsulating a BIP-39 compatible NEO account.
  */
 public class Bip39Account extends Account {
 
     private static final SecureRandom secureRandom = SecureRandomUtils.secureRandom();
 
     /**
-     * Generated BIP-39 mnemonic for the wallet.
+     * Generated BIP-39 mnemonic for the account.
      */
     private String mnemonic;
 
@@ -33,10 +34,10 @@ public class Bip39Account extends Account {
      *     Key = SHA-256(BIP_39_SEED(mnemonic, password))
      * </pre>
      *
-     * @param password Will be *only* used as passphrase for BIP-39 seed.
+     * @param password Will be *only* used as passphrase for BIP-39 seed (i.e., used to recover the account).
      * @return A BIP-39 compatible NEO account.
      */
-    public static Bip39Account createBip39Account(final String password) throws CipherException {
+    public static Bip39Account createAccount(final String password) throws CipherException {
         byte[] initialEntropy = new byte[16];
         secureRandom.nextBytes(initialEntropy);
 
@@ -44,19 +45,33 @@ public class Bip39Account extends Account {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair keyPair = ECKeyPair.create(sha256(seed));
 
-        Account.Builder accountBuilder = fromECKeyPair(keyPair).isDefault(true);
-        Bip39Account bip39Account = new Builder()
-                .accountBuilder(accountBuilder)
+        Builder builder = fromECKeyPair(keyPair).isDefault(true);
+        Bip39Account bip39Account = builder
                 .mnemonic(mnemonic)
                 .build();
         return bip39Account;
     }
 
+    /**
+     * Recovers a key pair based on BIP-39 mnemonic and password.
+     *
+     * @param password passphrase given when the BIP-39 account was generated.
+     * @param mnemonic the generated mnemonic with the given passphrase.
+     * @return a Bip39Account builder.
+     */
     public static Builder fromBip39Mnemonic(String password, String mnemonic) {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair ecKeyPair = ECKeyPair.create(sha256(seed));
-        Account.Builder accountBuilder = fromECKeyPair(ecKeyPair);
-        return new Builder().accountBuilder(accountBuilder);
+        return fromECKeyPair(ecKeyPair);
+    }
+
+    public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
+        Builder b = new Builder();
+        b.privateKey = ecKeyPair.getPrivateKey();
+        b.publicKey = ecKeyPair.getPublicKey();
+        b.address = Keys.getAddress(ecKeyPair);
+        b.label = b.address;
+        return b;
     }
 
     public String getMnemonic() {
@@ -65,21 +80,9 @@ public class Bip39Account extends Account {
 
     protected static class Builder extends Account.Builder<Bip39Account, Builder> {
 
-        private String mnemonic;
+        String mnemonic;
 
         protected Builder() {
-        }
-
-        protected Builder accountBuilder(Account.Builder builder) {
-            this.address = builder.address;
-            this.contract = builder.contract;
-            this.encryptedPrivateKey = builder.encryptedPrivateKey;
-            this.isDefault = builder.isDefault;
-            this.isLocked = builder.isLocked;
-            this.label = builder.label;
-            this.privateKey = builder.privateKey;
-            this.publicKey = builder.publicKey;
-            return this;
         }
 
         public Builder mnemonic(String mnemonic) {
@@ -92,4 +95,19 @@ public class Bip39Account extends Account {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Bip39Account{" +
+                "privateKey=" + getPrivateKey() +
+                ", publicKey=" + getPublicKey() +
+                ", address='" + getAddress() + '\'' +
+                ", encryptedPrivateKey='" + getEncryptedPrivateKey() + '\'' +
+                ", label='" + getLabel() + '\'' +
+                ", isDefault=" + isDefault() +
+                ", isLocked=" + isLocked() +
+                ", contract=" + getContract() +
+                ", balances=" + getBalances() +
+                ", mnemonic='" + mnemonic + '\'' +
+                '}';
+    }
 }
