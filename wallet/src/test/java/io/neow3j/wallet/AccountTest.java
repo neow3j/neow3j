@@ -154,7 +154,7 @@ public class AccountTest {
         ).build();
 
         assertThat(a.isMultiSig(), is(true));
-        assertThat(a.getAddress(), is("AQaJcwAsd3kUmshkmapHd4B94JVfPvVzAQ"));
+        assertThat(a.getAddress(), is("ASiyuZG5hfHChwTz3VGvicDzzBLCSrUqDu"));
         assertThat(a.getPublicKey(), is(nullValue()));
         assertThat(a.getPrivateKey(), is(nullValue()));
         assertThat(a.getLabel(), is(a.getAddress()));
