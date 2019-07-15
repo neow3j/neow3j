@@ -188,7 +188,7 @@ public class Account {
     private void tryAddVerificationScriptContract() {
         if (contract == null || contract.getScript() == null) {
             if (publicKey != null) {
-                byte[] scriptBytes = Keys.getVerificationScriptFromPublicKey(publicKey).toArray();
+                byte[] scriptBytes = RawVerificationScript.fromPublicKey(publicKey).getScript();
                 String scriptHex = Numeric.toHexStringNoPrefix(scriptBytes);
                 NEP6Parameter param = new NEP6Parameter("signature", ContractParameterType.SIGNATURE);
                 contract = new NEP6Contract(scriptHex, Collections.singletonList(param), false);
@@ -214,9 +214,8 @@ public class Account {
         b.address = Keys.getMultiSigAddress(signatureThreshold, publicKeys);
         b.label = b.address;
 
-        RawVerificationScript verificationScript =
-                Keys.getVerificationScriptFromPublicKeys(signatureThreshold, publicKeys);
-        String scriptHexString = Numeric.toHexStringNoPrefix(verificationScript.toArray());
+        byte[] script = RawVerificationScript.fromPublicKeys(signatureThreshold, publicKeys).getScript();
+        String scriptHexString = Numeric.toHexStringNoPrefix(script);
 
         List<NEP6Parameter> parameters = new ArrayList<>();
         IntStream.range(0, publicKeys.size()).forEachOrdered(i ->

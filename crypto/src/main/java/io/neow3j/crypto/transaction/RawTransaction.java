@@ -68,14 +68,18 @@ public abstract class RawTransaction extends NeoSerializable {
     }
 
     /**
-     * Adds the given invocation scripts (e.g. signatures) and the verification script to this
+     * Adds the given invocation script (e.g. signatures) and the verification script to this
      * transaction's list of witnesses.
      *
-     * @param invocationScripts  One or more invocation scripts that are part of the witness.
+     * @param invocationScript The invocation script of the witness.
      * @param verificationScript The verification script of the witness.
      */
-    public void addScript(List<RawInvocationScript> invocationScripts, RawVerificationScript verificationScript) {
-        this.scripts.add(new RawScript(invocationScripts, verificationScript));
+    public void addScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
+        this.scripts.add(new RawScript(invocationScript, verificationScript));
+    }
+
+    public void addScript(RawScript script) {
+        this.scripts.add(script);
     }
 
     public String getTxId() {
@@ -155,7 +159,7 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T attributes(List<RawTransactionAttribute> attributes) {
-            this.attributes = attributes;
+            this.attributes.addAll(attributes);
             return (T) this;
         }
 
@@ -164,7 +168,7 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T inputs(List<RawTransactionInput> inputs) {
-            this.inputs = inputs;
+            this.inputs.addAll(inputs);
             return (T) this;
         }
 
@@ -173,7 +177,7 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T outputs(List<RawTransactionOutput> outputs) {
-            this.outputs = outputs;
+            this.outputs.addAll(outputs);
             return (T) this;
         }
 
@@ -182,8 +186,12 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T scripts(List<RawScript> scripts) {
-            this.scripts = scripts;
+            this.scripts.addAll(scripts);
             return (T) this;
+        }
+
+        public T script(RawScript script) {
+            return scripts(Arrays.asList(script));
         }
 
         public abstract RawTransaction build();

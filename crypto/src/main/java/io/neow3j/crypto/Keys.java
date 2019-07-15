@@ -96,44 +96,22 @@ public class Keys {
     }
 
     public static byte[] getScriptHashFromPublicKey(int amountSignatures, byte[]... publicKeys) {
-        byte[][] encodedPublicKeys = new byte[publicKeys.length][];
-        for (int i = 0; i < publicKeys.length; i++) {
-            // if public key is not encoded, then
-            // convert to the encoded one
-            if (!isPublicKeyEncoded(publicKeys[i])) {
-                encodedPublicKeys[i] = getPublicKeyEncoded(publicKeys[i]);
+        List<BigInteger> encodedPublicKeys = new ArrayList<>(publicKeys.length);
+        for (byte[] key : publicKeys) {
+            // if public key is not encoded, then convert to the encoded one
+            if (!isPublicKeyEncoded(key)) {
+                encodedPublicKeys.add(Numeric.toBigInt(getPublicKeyEncoded(key)));
             } else {
-                encodedPublicKeys[i] = Arrays.copyOf(publicKeys[i], publicKeys[i].length);
+                encodedPublicKeys.add(Numeric.toBigInt(Arrays.copyOf(key, key.length)));
             }
         }
-        RawVerificationScript verificationScript = getVerificationScriptFromPublicKeys(amountSignatures, encodedPublicKeys);
-        byte[] hash160 = sha256AndThenRipemd160(verificationScript.toArray());
-        return hash160;
-    }
-
-    public static RawVerificationScript getVerificationScriptFromPublicKey(BigInteger publicKey) {
-        return getVerificationScriptFromPublicKeys(1, publicKey);
-    }
-
-    public static RawVerificationScript getVerificationScriptFromPublicKey(byte[] publicKey) {
-        return getVerificationScriptFromPublicKeys(1, publicKey);
-    }
-
-    public static RawVerificationScript getVerificationScriptFromPublicKeys(int amountSignatures, List<BigInteger> publicKeys) {
-        return getVerificationScriptFromPublicKeys(amountSignatures, publicKeys.toArray(new BigInteger[0]));
-    }
-
-    public static RawVerificationScript getVerificationScriptFromPublicKeys(int amountSignatures, BigInteger... publicKeys) {
-        List<BigInteger> pubKeysBigInt = Arrays.asList(publicKeys);
-        return new RawVerificationScript(pubKeysBigInt, amountSignatures);
-    }
-
-    public static RawVerificationScript getVerificationScriptFromPublicKeys(int amountSignatures, byte[]... publicKeys) {
-        ArrayList<BigInteger> pubKeysBigInt = new ArrayList<>(publicKeys.length);
-        for (byte[] pubKey : publicKeys) {
-            pubKeysBigInt.add(Numeric.toBigInt(pubKey));
+        RawVerificationScript script;
+        if (encodedPublicKeys.size() == 1) {
+            script = RawVerificationScript.fromPublicKey(encodedPublicKeys.get(0));
+        } else {
+            script = RawVerificationScript.fromPublicKeys(amountSignatures, encodedPublicKeys);
         }
-        return new RawVerificationScript(pubKeysBigInt, amountSignatures);
+        return  script.getScriptHash();
     }
 
     public static byte[] getPublicKeyEncoded(byte[] publicKeyNotEncoded) {

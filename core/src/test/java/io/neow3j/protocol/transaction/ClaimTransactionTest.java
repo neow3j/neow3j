@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,17 +35,13 @@ public class ClaimTransactionTest {
         String claimableTxId = "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff";
         int idx = 0;
         String receivingAdr = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
-        // These scripts in hex format do not include the byte length at the front. This is prepended by the instances
-        // of RawInvocationScript and RawVerificationScript.
-        String invocationScript = "0c40efd5f4a37b09fb8dca3e9cd6486c1b2d46c0319ac216c348f546ff44bb5fc3a328a43f2f49c9b2aa4cb1ce3f40327fd8403966e117745eb5c1266614f7d4";
-        String verificationScript = "031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4a";
+        byte[] invocationScript = Numeric.hexStringToByteArray("400c40efd5f4a37b09fb8dca3e9cd6486c1b2d46c0319ac216c348f546ff44bb5fc3a328a43f2f49c9b2aa4cb1ce3f40327fd8403966e117745eb5c1266614f7d4");
+        BigInteger publicKey = Numeric.toBigIntNoPrefix("031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4a");
         ClaimTransaction signedTx = new ClaimTransaction.Builder()
-                .outputs(Arrays.asList(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr)))
-                .claims(Arrays.asList(new RawTransactionInput(claimableTxId, idx)))
-                .scripts(Arrays.asList(new RawScript(
-                    Arrays.asList(new RawInvocationScript(Numeric.hexStringToByteArray(invocationScript))),
-                    new RawVerificationScript(Arrays.asList(Numeric.toBigIntNoPrefix(verificationScript)), 1)))
-                ).build();
+                .output(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr))
+                .claim(new RawTransactionInput(claimableTxId, idx))
+                .script(new RawScript(invocationScript, RawVerificationScript.fromPublicKey(publicKey).getScript())
+        ).build();
 
         byte[] signedTxArray = signedTx.toArray();
         LOG.info("serialized: " + Numeric.toHexStringNoPrefix(signedTxArray));
@@ -80,7 +77,6 @@ public class ClaimTransactionTest {
         String wif = "KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr";
         ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif));
         String adr = Keys.getAddress(ecKeyPair.getPublicKey()); // "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
-        byte[] publicKeyByteArray = Numeric.hexStringToByteArray(Numeric.toHexStringNoPrefix(ecKeyPair.getPublicKey()));
         String txId = "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff";
         int index = 0;
         String claimValue = "7264";
@@ -90,10 +86,8 @@ public class ClaimTransactionTest {
         ClaimTransaction tx = ClaimTransaction.fromClaimables(claimables, adr);
         byte[] unsignedTxArray = tx.toArray();
 
-        List<RawInvocationScript> rawInvocationScriptList = Arrays.asList(
-                new RawInvocationScript(Sign.signMessage(unsignedTxArray, ecKeyPair)));
-        RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(publicKeyByteArray);
-        tx.addScript(rawInvocationScriptList, verificationScript);
+        RawScript witness = RawScript.createWitness(unsignedTxArray, ecKeyPair);
+        tx.addScript(witness);
 
         byte[] signedTxArray = tx.toArray();
         String txHexString = Numeric.toHexStringNoPrefix(signedTxArray);

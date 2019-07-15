@@ -99,20 +99,6 @@ public class ECKeyPair {
         return create(Numeric.toBigInt(privateKey));
     }
 
-    public byte[] toScriptHash() {
-        return KeyUtils.toScriptHash(Keys.getAddress(this));
-    }
-
-    public RawVerificationScript getVerificationScriptFromPublicKey() {
-        return Keys.getVerificationScriptFromPublicKey(
-                Numeric.toBytesPadded(this.getPublicKey(), PUBLIC_KEY_SIZE));
-    }
-
-    public byte[] getVerificationScriptAsArrayFromPublicKey() {
-        return Keys.getVerificationScriptFromPublicKey(
-                Numeric.toBytesPadded(this.getPublicKey(), PUBLIC_KEY_SIZE)).toArray();
-    }
-
     public String exportAsWIF() {
         byte[] data = ArrayUtils.concatenate(
                 new byte[]{(byte) 0x80},

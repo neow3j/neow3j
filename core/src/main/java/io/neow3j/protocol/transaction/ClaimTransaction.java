@@ -10,6 +10,8 @@ import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,11 +57,16 @@ public class ClaimTransaction extends RawTransaction {
 
         public Builder() {
             super();
+            claims = new ArrayList<>();
             transactionType(TransactionType.CLAIM_TRANSACTION);
         }
 
         public Builder claims(List<RawTransactionInput> claims) {
-            this.claims = claims; return this;
+            this.claims.addAll(claims); return this;
+        }
+
+        public Builder claim(RawTransactionInput claim) {
+            return claims(Arrays.asList(claim));
         }
 
         @Override
@@ -73,7 +80,7 @@ public class ClaimTransaction extends RawTransaction {
 
         @Override
         public Builder inputs(List<RawTransactionInput> inputs) {
-            this.claims = inputs; return this;
+            return claims(inputs);
         }
 
         @Override

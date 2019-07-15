@@ -1,5 +1,6 @@
 package io.neow3j.wallet;
 
+import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.transaction.RawScript;
@@ -11,13 +12,16 @@ import io.neow3j.model.types.NEOAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.transaction.ContractTransaction;
+import io.neow3j.utils.ArrayUtils;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
 public class AssetTransferTest {
 
@@ -43,10 +47,15 @@ public class AssetTransferTest {
         // Test Witness
         assertEquals(1, tx.getScripts().size());
         RawScript script = tx.getScripts().get(0);
-        assertEquals(1, script.getInvocation().size());
-        assertEquals(expectedSig, script.getInvocation().get(0).getSignature());
-        assertEquals(1, script.getVerification().getAmountSignatures());
-        assertEquals(a.getPublicKey(), script.getVerification().getPublicKeys().get(0));
+        assertArrayEquals(
+                ArrayUtils.concatenate(OpCode.PUSHBYTES64.getValue(), expectedSig.getConcatenated()),
+                script.getInvocationScript().getScript()
+        );
+        assertArrayEquals(ByteBuffer.allocate(1+33+1)
+                .put(OpCode.PUSHBYTES33.getValue())
+                .put(a.getPublicKey().toByteArray())
+                .put(OpCode.CHECKSIG.getValue()).array(), script.getVerificationScript().getScript()
+        );
 
         // Test inputs
         assertEquals(1, tx.getInputs().size());
@@ -91,10 +100,16 @@ public class AssetTransferTest {
         // Test Witness
         assertEquals(1, tx.getScripts().size());
         RawScript script = tx.getScripts().get(0);
-        assertEquals(1, script.getInvocation().size());
-        assertEquals(expectedSig, script.getInvocation().get(0).getSignature());
-        assertEquals(1, script.getVerification().getAmountSignatures());
-        assertEquals(a.getPublicKey(), script.getVerification().getPublicKeys().get(0));
+        assertArrayEquals(
+                ArrayUtils.concatenate(OpCode.PUSHBYTES64.getValue(), expectedSig.getConcatenated()),
+                script.getInvocationScript().getScript()
+        );
+        assertArrayEquals(ByteBuffer.allocate(1+33+1)
+                .put(OpCode.PUSHBYTES33.getValue())
+                .put(a.getPublicKey().toByteArray())
+                .put(OpCode.CHECKSIG.getValue()).array(),
+                script.getVerificationScript().getScript()
+        );
 
         // Test inputs
         assertEquals(2, tx.getInputs().size());
@@ -149,10 +164,15 @@ public class AssetTransferTest {
         // Test Witness
         assertEquals(1, tx.getScripts().size());
         RawScript script = tx.getScripts().get(0);
-        assertEquals(1, script.getInvocation().size());
-        assertEquals(expectedSig, script.getInvocation().get(0).getSignature());
-        assertEquals(1, script.getVerification().getAmountSignatures());
-        assertEquals(a.getPublicKey(), script.getVerification().getPublicKeys().get(0));
+        assertArrayEquals(
+                ArrayUtils.concatenate(OpCode.PUSHBYTES64.getValue(), expectedSig.getConcatenated()),
+                script.getInvocationScript().getScript()
+        );
+        assertArrayEquals(ByteBuffer.allocate(1+33+1)
+                .put(OpCode.PUSHBYTES33.getValue())
+                .put(a.getPublicKey().toByteArray())
+                .put(OpCode.CHECKSIG.getValue()).array(), script.getVerificationScript().getScript()
+        );
 
         // Test inputs
         assertEquals(1, tx.getInputs().size());
