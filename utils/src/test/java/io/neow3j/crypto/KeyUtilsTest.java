@@ -28,6 +28,11 @@ public class KeyUtilsTest {
         );
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testToScriptHashLargerThan25Chars() {
+        toScriptHash("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8yyyy");
+    }
+
     @Test
     public void testScriptHashToAddress() {
         String script = "d336d7eb9975a29b2404fdb28185e277a4b299bc";
