@@ -208,19 +208,6 @@ public class Wallet {
 
     /**
      * Creates a new wallet with one account that is set as the default account.
-     * Also, encrypts such account and persists the NEP6 wallet to a file.
-     *
-     * @param destination destination to the new NEP6 wallet file.
-     * @return the new wallet.
-     */
-    public static Wallet createGenericWallet(final File destination) throws IOException {
-        Wallet wallet = createGenericWallet();
-        wallet.saveNEP6Wallet(destination);
-        return wallet;
-    }
-
-    /**
-     * Creates a new wallet with one account that is set as the default account.
      * Encrypts such account with the password.
      *
      * @param password password used to encrypt the account.

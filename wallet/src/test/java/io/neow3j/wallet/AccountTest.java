@@ -147,8 +147,8 @@ public class AccountTest {
     public void testFromMultiSigKeys() {
         Account a = Account.fromMultiSigKeys(
                 Arrays.asList(
-                        SampleKeys.KEY_PAIR_1.getPrivateKey(),
-                        SampleKeys.KEY_PAIR_2.getPrivateKey()
+                        SampleKeys.KEY_PAIR_1.getPublicKey(),
+                        SampleKeys.KEY_PAIR_2.getPublicKey()
                 ),
                 1
         ).build();

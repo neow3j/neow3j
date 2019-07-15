@@ -4,7 +4,6 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.SecureRandomUtils;
-import io.neow3j.crypto.exceptions.CipherException;
 
 import java.security.SecureRandom;
 
@@ -37,9 +36,8 @@ public class Bip39Account extends Account {
      * @param password Will be *only* used as passphrase for BIP-39 seed (i.e., used to recover the account).
      * @return A BIP-39 compatible NEO account.
      */
-    public static Bip39Account createAccount(final String password) throws CipherException {
-        byte[] initialEntropy = new byte[16];
-        secureRandom.nextBytes(initialEntropy);
+    public static Bip39Account createAccount(final String password) {
+        byte[] initialEntropy = SecureRandomUtils.generateRandomBytes(16);
 
         String mnemonic = MnemonicUtils.generateMnemonic(initialEntropy);
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);

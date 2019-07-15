@@ -191,12 +191,6 @@ public class WalletTest {
         assertThat(w2.toNEP6Wallet(), is(w1.toNEP6Wallet()));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateGenericWalletAndSaveToNull() throws IOException {
-        File test = null;
-        Wallet.createGenericWallet(test);
-    }
-
     @Test
     public void testCreateGenericWalletAndSaveToFileWithPasswordAndDestination()
             throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
