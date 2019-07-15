@@ -250,7 +250,7 @@ public class NumericTest {
     @Test
     public void testFromFixed8ToBigDecimal() {
         byte[] fixed8 = {0x00, 0x00, 0x00, (byte)0x02, (byte)0x54, (byte)0x0B, (byte)0xE4, (byte)0x01};
-        BigDecimal asBigDecimal = Numeric.fromFixed8ToBigDecimal(fixed8);
+        BigDecimal asBigDecimal = Numeric.fromFixed8ToDecimal(fixed8);
         BigDecimal expected = BigDecimal.valueOf(100.00000001d);
         Assert.assertEquals(0, expected.compareTo(asBigDecimal));
     }
@@ -258,19 +258,19 @@ public class NumericTest {
     @Test
     public void testFromBigDecimalToFixed8() {
         BigDecimal d = BigDecimal.TEN;
-        BigInteger i = Numeric.fromBigDecimalToFixed8(d);
+        BigInteger i = Numeric.fromDecimalToFixed8(d);
         assertEquals(i, new BigInteger("1000000000"));
 
         d = new BigDecimal("0.001");
-        i = Numeric.fromBigDecimalToFixed8(d);
+        i = Numeric.fromDecimalToFixed8(d);
         assertEquals(i, new BigInteger("100000"));
 
         d = new BigDecimal("0.00000001");
-        i = Numeric.fromBigDecimalToFixed8(d);
+        i = Numeric.fromDecimalToFixed8(d);
         assertEquals(i, BigInteger.ONE);
 
         d = new BigDecimal("0.000000001");
-        i = Numeric.fromBigDecimalToFixed8(d);
+        i = Numeric.fromDecimalToFixed8(d);
         assertEquals(i, BigInteger.ZERO);
     }
 

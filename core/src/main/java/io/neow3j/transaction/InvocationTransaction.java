@@ -33,7 +33,7 @@ public class InvocationTransaction extends RawTransaction {
     @Override
     public void deserializeExclusive(BinaryReader reader) throws IOException {
         this.contractScript = reader.readVarBytes();
-        this.systemFee = Numeric.fromFixed8ToBigDecimal(
+        this.systemFee = Numeric.fromFixed8ToDecimal(
                 ArrayUtils.reverseArray(reader.readBytes(8)));
     }
 

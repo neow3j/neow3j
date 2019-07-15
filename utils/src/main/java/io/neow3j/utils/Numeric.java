@@ -9,7 +9,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import static io.neow3j.constants.NeoConstants.FIXED8_DECIMALS;
-import static io.neow3j.constants.NeoConstants.FIXED8_SCALE;
 
 /**
  * <p>Message codec functions.</p>
@@ -88,11 +87,12 @@ public final class Numeric {
      * represented using a decimal point.
      * @param value The Fixed8 value as a byte array. Must be 8 bytes in big-endian order.
      */
-    public static BigDecimal fromFixed8ToBigDecimal(byte[] value) {
+    public static BigDecimal fromFixed8ToDecimal(byte[] value) {
         if (value.length != 8)
             throw new IllegalArgumentException("Given value is not a Fixed8 number.");
 
-        return fromFixed8ToBigDecimal(toBigInt(value));
+        // TODO 14.07.19 claude: Clarify correct conversion from Fixed8
+        return new BigDecimal(toBigInt(value)).divide(FIXED8_DECIMALS);
     }
 
     /**
@@ -100,7 +100,7 @@ public final class Numeric {
      * represented using a decimal point.
      * @param value The Fixed8 value as an integer.
      */
-    public static BigDecimal fromFixed8ToBigDecimal(BigInteger value) {
+    public static BigDecimal fromFixed8ToDecimal(BigInteger value) {
         return new BigDecimal(value).divide(FIXED8_DECIMALS);
     }
 
@@ -108,15 +108,15 @@ public final class Numeric {
      * Converts the given decimal number to a Fixed8 in the form of an integer.
      * @param value The decimal number to convert.
      */
-    public static BigInteger fromBigDecimalToFixed8(String value) {
-        return fromBigDecimalToFixed8(new BigDecimal(value));
+    public static BigInteger fromDecimalToFixed8(String value) {
+        return fromDecimalToFixed8(new BigDecimal(value));
     }
 
     /**
      * Converts the given decimal number to a Fixed8 in the form of an integer.
      * @param value The decimal number to convert.
      */
-    public static BigInteger fromBigDecimalToFixed8(BigDecimal value) {
+    public static BigInteger fromDecimalToFixed8(BigDecimal value) {
         return value.multiply(FIXED8_DECIMALS).toBigInteger();
     }
 
@@ -125,7 +125,7 @@ public final class Numeric {
      * @param value The decimal number to convert.
      */
     public static byte[] fromBigDecimalToFixed8Bytes(String value) {
-        return BigIntegers.asUnsignedByteArray(8, fromBigDecimalToFixed8(value));
+        return fromIntegerToFixed8Bytes(fromDecimalToFixed8(value));
     }
 
     /**
@@ -133,7 +133,22 @@ public final class Numeric {
      * @param value The decimal number to convert.
      */
     public static byte[] fromBigDecimalToFixed8Bytes(BigDecimal value) {
-        return BigIntegers.asUnsignedByteArray(8, fromBigDecimalToFixed8(value));
+        return fromIntegerToFixed8Bytes(fromDecimalToFixed8(value));
+    }
+
+    /**
+     *
+     * @param value
+     * @return
+     */
+    public static byte[] fromIntegerToFixed8Bytes(BigInteger value) {
+        // TODO 14.07.19 claude: Does this handle negative numbers correctly?
+        if (value.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0 ||
+                value.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) {
+            throw new IllegalArgumentException("Given integer is bigger than the maximum value " +
+                    "allowed by a Fixed8 number.");
+        }
+        return BigIntegers.asUnsignedByteArray(8, value);
     }
 
     public static BigInteger toBigInt(byte[] value, int offset, int length) {
