@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 
 public class NeoContractFunctionTest {
 
@@ -25,7 +26,7 @@ public class NeoContractFunctionTest {
         NeoContractFunction neoContractFunction = new NeoContractFunction(
                 "anything",
                 Arrays.asList(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010")
+                        ContractParameter.byteArray("001010101010")
                 ),
                 ContractParameterType.BYTE_ARRAY
         );
@@ -109,7 +110,7 @@ public class NeoContractFunctionTest {
         assertThat(neoContractFunction.getParameters(), not(emptyCollectionOf(ContractParameter.class)));
         assertThat(neoContractFunction.getParameters(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010")
+                        ContractParameter.byteArray("001010101010")
                 )
         );
         assertThat(neoContractFunction.getReturnType(), is(ContractParameterType.BYTE_ARRAY));

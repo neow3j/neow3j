@@ -9,6 +9,7 @@ import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -17,6 +18,8 @@ import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class NeoContractEventTest {
 
@@ -27,9 +30,9 @@ public class NeoContractEventTest {
         NeoContractEvent neoContractEvent = new NeoContractEvent(
                 "anything",
                 Arrays.asList(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010"),
-                        new ContractParameter(ContractParameterType.BOOLEAN, true),
-                        new ContractParameter(ContractParameterType.INTEGER, 123)
+                        ContractParameter.byteArray("001010101010"),
+                        ContractParameter.bool(true),
+                        ContractParameter.integer(123)
                 )
         );
         String neoContractEventString = objectMapper.writeValueAsString(neoContractEvent);
@@ -49,7 +52,7 @@ public class NeoContractEventTest {
                                 "}," +
                                 "{" +
                                 "\"type\":\"Integer\"," +
-                                "\"value\":123" +
+                                "\"value\":\"123\"" +
                                 "}" +
                                 "]" +
                                 "}"
@@ -111,7 +114,7 @@ public class NeoContractEventTest {
                 "}," +
                 "{" +
                 "\"type\":\"Integer\"," +
-                "\"value\":123" +
+                "\"value\":\"123\"" +
                 "}" +
                 "]" +
                 "}";
@@ -122,9 +125,10 @@ public class NeoContractEventTest {
         assertThat(neoContractEvent.getParameters(), not(emptyCollectionOf(ContractParameter.class)));
         assertThat(neoContractEvent.getParameters(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010"),
-                        new ContractParameter(ContractParameterType.BOOLEAN, true),
-                        new ContractParameter(ContractParameterType.INTEGER, 123)
+                        ContractParameter.integer(123),
+                        ContractParameter.byteArray("001010101010"),
+                        ContractParameter.bool(true),
+                        ContractParameter.integer(123)
                 )
         );
     }

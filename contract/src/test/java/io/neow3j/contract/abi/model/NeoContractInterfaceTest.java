@@ -27,10 +27,10 @@ public class NeoContractInterfaceTest {
                 "anything",
                 "Main",
                 Arrays.asList(
-                        new NeoContractFunction("anything", Arrays.asList(new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010")), ContractParameterType.BYTE_ARRAY)
+                        new NeoContractFunction("anything", Arrays.asList(ContractParameter.byteArray("001010101010")), ContractParameterType.BYTE_ARRAY)
                 ),
                 Arrays.asList(
-                        new NeoContractEvent("anything", Arrays.asList(new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010")))
+                        new NeoContractEvent("anything", Arrays.asList(ContractParameter.byteArray("001010101010")))
                 )
         );
         String neoContractInterfaceString = objectMapper.writeValueAsString(neoContractInterface);
@@ -154,13 +154,13 @@ public class NeoContractInterfaceTest {
         assertThat(neoContractInterface.getFunctions(), not(emptyCollectionOf(NeoContractFunction.class)));
         assertThat(neoContractInterface.getFunctions(),
                 CoreMatchers.hasItems(
-                        new NeoContractFunction("anything", Arrays.asList(new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010")), ContractParameterType.BYTE_ARRAY)
+                        new NeoContractFunction("anything", Arrays.asList(ContractParameter.byteArray("001010101010")), ContractParameterType.BYTE_ARRAY)
                 )
         );
         assertThat(neoContractInterface.getEvents(), not(emptyCollectionOf(NeoContractEvent.class)));
         assertThat(neoContractInterface.getEvents(),
                 CoreMatchers.hasItems(
-                        new NeoContractEvent("anything", Arrays.asList(new ContractParameter(ContractParameterType.BYTE_ARRAY, "001010101010")))
+                        new NeoContractEvent("anything", Arrays.asList(ContractParameter.byteArray("001010101010")))
                 )
         );
     }
