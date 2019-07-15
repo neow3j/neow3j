@@ -150,11 +150,11 @@ public class AccountTest {
                         SampleKeys.KEY_PAIR_1.getPublicKey(),
                         SampleKeys.KEY_PAIR_2.getPublicKey()
                 ),
-                1
+                2
         ).build();
 
         assertThat(a.isMultiSig(), is(true));
-        assertThat(a.getAddress(), is("ASiyuZG5hfHChwTz3VGvicDzzBLCSrUqDu"));
+        assertThat(a.getAddress(), is("ATcWffQV1A7NMEsqQ1RmKfS7AbSqcAp2hd"));
         assertThat(a.getPublicKey(), is(nullValue()));
         assertThat(a.getPrivateKey(), is(nullValue()));
         assertThat(a.getLabel(), is(a.getAddress()));
