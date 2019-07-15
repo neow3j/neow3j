@@ -4,6 +4,7 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.model.ContractParameter;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -46,6 +47,16 @@ public class ScriptBuilder {
     public ScriptBuilder appCall(byte[] scriptHash, String operation,
                                         List<ContractParameter> params) {
 
+        if (params == null || params.isEmpty()) {
+            if (operation == null) {
+                return appCall(scriptHash);
+            }  else {
+                return appCall(scriptHash, operation);
+            }
+        } else if (operation == null) {
+            return appCall(scriptHash, params);
+        }
+
         for (int i = params.size() - 1; i >= 0; i--) {
             pushParam(params.get(i));
         }
@@ -81,24 +92,6 @@ public class ScriptBuilder {
         return this;
     }
 
-//    /**
-//     * Appends an app call to the script.
-//     * @param scriptHash The script hash of the contract to call in big-endian order.
-//     * @param operation The operation to call.
-//     * @param args The arguments to pass to the operation.
-//     */
-//    public ScriptBuilder appCall(byte[] scriptHash, String operation, List<Object> args)
-//    {
-//        for (int i = args.size() - 1; i >= 0; i--) {
-//            pushObject(args.get(i));
-//        }
-//        pushInteger(args.size());
-//        opCode(OpCode.PACK);
-//        pushData(operation);
-//        appCall(scriptHash);
-//        return this;
-//    }
-
     /**
      * Appends an app call to the script.
      * @param scriptHash The script hash of the contract to call in big-endian order.
@@ -120,7 +113,7 @@ public class ScriptBuilder {
             throw new IllegalArgumentException("Script hash must be 160 bits long.");
         }
         writeByte(opCode.getValue());
-        // Needs to be written in reverse because of NEO's little-endianness of integers.
+        // Needs to be written in little-endian order
         writeReversed(scriptHash);
         return this;
     }
@@ -140,48 +133,34 @@ public class ScriptBuilder {
         return this;
     }
 
-//    public ScriptBuilder sysCall(String operation, List<Object> args) {
-//        for (int i = args.size() - 1; i >= 0; i--) {
-//            pushObject(args.get(0));
-//        }
-//        sysCall(operation);
-//        return this;
-//    }
-
-//    public ScriptBuilder pushObject(Object obj) {
-//        if (obj instanceof Boolean) {
-//            pushBoolean((boolean)obj);
-//        } else if (obj instanceof byte[]) {
-//            pushData((byte[])obj);
-//        }
-//        ...
-//        return this;
-//    }
-
     public ScriptBuilder pushParam(ContractParameter param) {
+        Object value = param.getValue();
         switch (param.getParamType()) {
             case SIGNATURE:
             case BYTE_ARRAY:
-                pushData((byte[])param.getValue()); break;
+                pushData(Numeric.hexStringToByteArray((String) value));
+                break;
             case BOOLEAN:
-                pushBoolean((boolean)param.getValue()); break;
+                pushBoolean((boolean)value);
+                break;
             case INTEGER:
-                if (param.getValue() instanceof Integer) {
-                    pushInteger((Integer) param.getValue());
-                } else if (param.getValue() instanceof BigInteger) {
-                    pushInteger((BigInteger) param.getValue());
-                } break;
+                pushInteger(new BigInteger((String)value));
+                break;
             case HASH160:
             case HASH256:
+                byte[] bytes = Numeric.hexStringToByteArray((String) value);
                 // Needs to be added in little-endian order.
-                pushData(ArrayUtils.reverseArray((byte[])param.getValue())); break;
+                pushData(ArrayUtils.reverseArray(bytes)) ;
+                break;
             case PUBLIC_KEY:
                 // TODO 10.07.19 claude: Implement
                 throw new UnsupportedOperationException();
             case STRING:
-                pushData((String)param.getValue()); break;
+                pushData((String)value);
+                break;
             case ARRAY:
-                pushArray((ContractParameter[])param.getValue()); break;
+                pushArray((ContractParameter[])value);
+                break;
             default:
                 throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
                         "' not supported.");
