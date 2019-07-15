@@ -1,13 +1,11 @@
 package io.neow3j.crypto;
 
 import io.neow3j.utils.Numeric;
-import io.neow3j.utils.ArrayUtils;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 /**
  * Cryptographic hash functions.
