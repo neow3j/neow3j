@@ -2,7 +2,7 @@ package io.neow3j.wallet;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
+import io.neow3j.utils.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.Sign;
@@ -225,7 +225,7 @@ public class Account {
 
     public static Builder fromNewECKeyPair() {
         try {
-            return fromECKeyPair(Keys.createEcKeyPair());
+            return fromECKeyPair(ECKeyPair.createEcKeyPair());
         } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
             throw new RuntimeException("Failed to create a new EC key pair.", e);
         }
@@ -235,7 +235,7 @@ public class Account {
         Builder b = new Builder();
         b.privateKey = ecKeyPair.getPrivateKey();
         b.publicKey = ecKeyPair.getPublicKey();
-        b.address = Keys.getAddress(ecKeyPair);
+        b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;
     }

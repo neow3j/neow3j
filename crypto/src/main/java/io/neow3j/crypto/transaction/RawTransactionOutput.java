@@ -1,6 +1,6 @@
 package io.neow3j.crypto.transaction;
 
-import io.neow3j.crypto.Keys;
+import io.neow3j.utils.Keys;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
@@ -71,7 +71,7 @@ public class RawTransactionOutput extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.assetId = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
-        this.value = Numeric.fromFixed8ToBigDecimal(ArrayUtils.reverseArray(reader.readBytes(8))).toString();
+        this.value = Numeric.fromFixed8ToDecimal(ArrayUtils.reverseArray(reader.readBytes(8))).toString();
         this.address = Keys.toAddress(reader.readBytes(20));
     }
 

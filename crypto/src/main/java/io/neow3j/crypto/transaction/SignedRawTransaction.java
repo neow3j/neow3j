@@ -1,6 +1,6 @@
 package io.neow3j.crypto.transaction;
 
-import io.neow3j.crypto.Keys;
+import io.neow3j.utils.Keys;
 import io.neow3j.crypto.Sign;
 
 import java.math.BigInteger;

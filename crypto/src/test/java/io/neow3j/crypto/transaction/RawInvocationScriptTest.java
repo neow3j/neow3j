@@ -1,7 +1,6 @@
 package io.neow3j.crypto.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.NeoSerializableInterface;
@@ -25,7 +24,7 @@ public class RawInvocationScriptTest {
 
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         RawInvocationScript invScript = RawInvocationScript.fromMessageAndKeyPair(message, keyPair);
         SignatureData expectedSignature = Sign.signMessage(message, keyPair);
         byte[] expectedScript = ArrayUtils.concatenate(PUSHBYTES64.getValue(), expectedSignature.getConcatenated());
@@ -38,7 +37,7 @@ public class RawInvocationScriptTest {
 
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         RawInvocationScript invScript = RawInvocationScript.fromMessageAndKeyPair(message, keyPair);
         byte[] signature = Sign.signMessage(message, keyPair).getConcatenated();
 
@@ -71,7 +70,7 @@ public class RawInvocationScriptTest {
         RawInvocationScript script = NeoSerializableInterface.from(serializedScript, RawInvocationScript.class);
         assertArrayEquals(message, script.getScript());
 
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         byte[] signature = Sign.signMessage(message, keyPair).getConcatenated();
         byte[] expectedScript = ArrayUtils.concatenate(PUSHBYTES64.getValue(), signature);
         serializedScript = ArrayUtils.concatenate((byte)65, expectedScript);

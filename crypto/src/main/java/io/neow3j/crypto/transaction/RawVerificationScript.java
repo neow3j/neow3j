@@ -3,7 +3,7 @@ package io.neow3j.crypto.transaction;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptReader;
 import io.neow3j.crypto.Hash;
-import io.neow3j.crypto.Keys;
+import io.neow3j.utils.Keys;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;

@@ -1,7 +1,6 @@
 package io.neow3j.crypto.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -30,7 +29,7 @@ public class RawVerificationScriptTest {
     public void testFromPublicKey() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        BigInteger key = Keys.createEcKeyPair().getPublicKey();
+        BigInteger key = ECKeyPair.createEcKeyPair().getPublicKey();
         RawVerificationScript veriScript = RawVerificationScript.fromPublicKey(key);
 
         byte[] expectedScript = ArrayUtils.concatenate(ArrayUtils.concatenate(
@@ -44,9 +43,9 @@ public class RawVerificationScriptTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         List<BigInteger> publicKeys = new ArrayList<>();
-        publicKeys.add(Keys.createEcKeyPair().getPublicKey());
-        publicKeys.add(Keys.createEcKeyPair().getPublicKey());
-        publicKeys.add(Keys.createEcKeyPair().getPublicKey());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
 
         ByteBuffer buf = ByteBuffer.allocate(1 + 3*(1 + 33) + 1 + 1);
         buf.put(PUSH2.getValue());
@@ -67,7 +66,7 @@ public class RawVerificationScriptTest {
     public void testSerialize() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
             NoSuchProviderException {
 
-        BigInteger key = Keys.createEcKeyPair().getPublicKey();
+        BigInteger key = ECKeyPair.createEcKeyPair().getPublicKey();
         RawVerificationScript veriScript = RawVerificationScript.fromPublicKey(key);
 
         byte[] expectedScript = ByteBuffer.allocate(1+1+33+1)
@@ -91,7 +90,7 @@ public class RawVerificationScriptTest {
         RawVerificationScript script = NeoSerializableInterface.from(serializedScript, RawVerificationScript.class);
         assertArrayEquals(message, script.getScript());
 
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         byte[] pub = ArrayUtils.concatenate(PUSHBYTES33.getValue(), keyPair.getPublicKey().toByteArray());
         byte[] expectedScript = ArrayUtils.concatenate(pub, CHECKSIG.getValue());
         serializedScript = ArrayUtils.concatenate((byte)35, expectedScript);

@@ -1,7 +1,7 @@
 package io.neow3j.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
+import io.neow3j.utils.Keys;
 import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionInput;

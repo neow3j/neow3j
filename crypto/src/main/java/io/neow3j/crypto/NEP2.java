@@ -3,6 +3,7 @@ package io.neow3j.crypto;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -203,7 +204,7 @@ public class NEP2 {
     }
 
     public static byte[] getAddressHash(ECKeyPair ecKeyPair) {
-        String address = Keys.getAddress(ecKeyPair);
+        String address = ecKeyPair.getAddress();
         byte[] addressHashed = sha256(sha256(address.getBytes()));
         return getFirstNBytes(addressHashed, 4);
     }

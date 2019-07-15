@@ -1,7 +1,7 @@
 package io.neow3j.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
+import io.neow3j.utils.Keys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
@@ -187,7 +187,7 @@ public class ContractTransactionTest {
     public void verify_Signature() throws SignatureException {
 
         ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
-        String address = Keys.getAddress(ecKeyPair);
+        String address = ecKeyPair.getAddress();
 
         RawTransaction unsignedTx = new ContractTransaction.Builder()
                 .input(new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0))

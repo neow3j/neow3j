@@ -2,7 +2,6 @@ package io.neow3j.crypto.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Hash;
-import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.SampleKeys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
@@ -33,7 +32,7 @@ public class RawScriptTest {
 
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         RawScript witness = RawScript.createWitness(message, keyPair);
 
         SignatureData expectedSignature = Sign.signMessage(message, keyPair);
@@ -51,7 +50,7 @@ public class RawScriptTest {
 
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         RawScript witness = RawScript.createWitness(message, keyPair);
 
         byte[] invScript = RawInvocationScript.fromMessageAndKeyPair(message, keyPair).getScript();
@@ -76,7 +75,7 @@ public class RawScriptTest {
         List<BigInteger> publicKeys = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            ECKeyPair keyPair = Keys.createEcKeyPair();
+            ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
             signatures.add(Sign.signMessage(message, keyPair));
             publicKeys.add(keyPair.getPublicKey());
         }
@@ -143,7 +142,7 @@ public class RawScriptTest {
         int messageSize = 10;
         byte[] message = new byte[messageSize];
         Arrays.fill(message, (byte) 1);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
 
         ByteBuffer buf = ByteBuffer.allocate(1 + 1 + 64 + 1 + 1 + 33 + 1);
         buf.put((byte)65);

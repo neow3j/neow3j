@@ -1,10 +1,11 @@
-package io.neow3j.crypto;
+package io.neow3j.utils;
 
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
-import static io.neow3j.crypto.Keys.toAddress;
-import static io.neow3j.crypto.Keys.toScriptHash;
+import static io.neow3j.utils.Keys.toAddress;
+import static io.neow3j.utils.Keys.toScriptHash;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 

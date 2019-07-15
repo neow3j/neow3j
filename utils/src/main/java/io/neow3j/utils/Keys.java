@@ -1,18 +1,12 @@
-package io.neow3j.crypto;
+package io.neow3j.utils;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.utils.Numeric;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import io.neow3j.crypto.Base58;
+import io.neow3j.crypto.Hash;
 
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,41 +16,11 @@ import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 
 /**
- * Crypto key utilities.
+ * Key utilities.
  */
 public class Keys {
 
-    static {
-        addBouncyCastle();
-    }
-
     private Keys() {
-    }
-
-    /**
-     * Create a keypair using SECP-256r1 curve.
-     * <p>
-     * <p>Private keypairs are encoded using PKCS8
-     * <p>
-     * <p>Private keys are encoded using X.509
-     */
-    static KeyPair createSecp256r1KeyPair() throws NoSuchProviderException,
-            NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
-        ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec("secp256r1");
-        keyPairGenerator.initialize(ecGenParameterSpec, SecureRandomUtils.secureRandom());
-        return keyPairGenerator.generateKeyPair();
-    }
-
-    public static ECKeyPair createEcKeyPair() throws InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, NoSuchProviderException {
-        KeyPair keyPair = createSecp256r1KeyPair();
-        return ECKeyPair.create(keyPair);
-    }
-
-    public static String getAddress(ECKeyPair ecKeyPair) {
-        return getAddress(ecKeyPair.getPublicKey());
     }
 
     public static String getAddress(BigInteger publicKey) {
@@ -115,10 +79,12 @@ public class Keys {
         }
     }
 
-    public static byte[] publicKeyBigIntegerToByteArray(BigInteger publicKey) {
-        // TODO 12.07.19 claude:
-        // Check if BigInteger.toByteArray() is always giving the desired result.
-        return publicKey.toByteArray();
+    public static byte[] publicKeyIntegerToByteArray(BigInteger publicKey) {
+        return Numeric.toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE);
+    }
+
+    public static byte[] privateKeyIntegerToByteArray(BigInteger privateKey) {
+        return Numeric.toBytesPadded(privateKey, NeoConstants.PRIVATE_KEY_SIZE);
     }
 
     /**
@@ -127,7 +93,7 @@ public class Keys {
      * @return the verification script.
      */
     public static byte[] getVerificationScriptFromPublicKey(BigInteger publicKey) {
-        byte[] publicKeyBytes = checkAndEncodePublicKey(publicKeyBigIntegerToByteArray(publicKey));
+        byte[] publicKeyBytes = checkAndEncodePublicKey(publicKeyIntegerToByteArray(publicKey));
         return getVerificationScriptFromPublicKeyEncoded(publicKeyBytes);
     }
 
@@ -159,7 +125,7 @@ public class Keys {
        return getVerificationScriptFromPublicKeys(
                signingThreshold,
                publicKeys.stream()
-                       .map(Keys::publicKeyBigIntegerToByteArray)
+                       .map(Keys::publicKeyIntegerToByteArray)
                        .toArray(byte[][]::new)
        );
     }
@@ -223,26 +189,6 @@ public class Keys {
         return false;
     }
 
-    public static byte[] serialize(ECKeyPair ecKeyPair) {
-        byte[] privateKey = Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), NeoConstants.PRIVATE_KEY_SIZE);
-        byte[] publicKey = Numeric.toBytesPadded(ecKeyPair.getPublicKey(), NeoConstants.PUBLIC_KEY_SIZE);
-
-        byte[] result = Arrays.copyOf(privateKey, NeoConstants.PRIVATE_KEY_SIZE + NeoConstants.PUBLIC_KEY_SIZE);
-        System.arraycopy(publicKey, 0, result, NeoConstants.PRIVATE_KEY_SIZE, NeoConstants.PUBLIC_KEY_SIZE);
-        return result;
-    }
-
-    public static ECKeyPair deserialize(byte[] input) {
-        if (input.length != NeoConstants.PRIVATE_KEY_SIZE + NeoConstants.PUBLIC_KEY_SIZE) {
-            throw new RuntimeException("Invalid input key size");
-        }
-
-        BigInteger privateKey = Numeric.toBigInt(input, 0, NeoConstants.PRIVATE_KEY_SIZE);
-        BigInteger publicKey = Numeric.toBigInt(input, NeoConstants.PRIVATE_KEY_SIZE, NeoConstants.PUBLIC_KEY_SIZE);
-
-        return new ECKeyPair(privateKey, publicKey);
-    }
-
     public static String toAddress(byte[] scriptHash) {
         byte[] data = new byte[1];
         data[0] = NeoConstants.COIN_VERSION;
@@ -254,20 +200,21 @@ public class Keys {
         return Base58.encode(dataToEncode);
     }
 
-    public static byte[] toScriptHash(String address) {
+    // TODO 14.07.19 claude: Write test
+    public static boolean isValidAddress(String address) {
         byte[] data = Base58.decode(address);
-        if (data.length != 25) {
-            throw new IllegalArgumentException();
-        }
-        if (data[0] != NeoConstants.COIN_VERSION) {
-            throw new IllegalArgumentException();
-        }
+        if (data.length != 25) return false;
+        if (data[0] != NeoConstants.COIN_VERSION) return false;
         byte[] checksum = Hash.sha256(Hash.sha256(data, 0, 21));
         for (int i = 0; i < 4; i++) {
-            if (data[data.length - 4 + i] != checksum[i]) {
-                throw new IllegalArgumentException();
-            }
+            if (data[data.length - 4 + i] != checksum[i]) return false;
         }
+        return true;
+    }
+
+    public static byte[] toScriptHash(String address) {
+        if (!isValidAddress(address)) throw new IllegalArgumentException("Not a valid NEO address.");
+        byte[] data = Base58.decode(address);
         byte[] buffer = new byte[20];
         System.arraycopy(data, 1, buffer, 0, 20);
         return buffer;
