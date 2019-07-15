@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.contract.abi.model.NeoContractEvent;
 import io.neow3j.contract.abi.model.NeoContractFunction;
 import io.neow3j.contract.abi.model.NeoContractInterface;
-import io.neow3j.model.types.ContractParameter;
+import io.neow3j.model.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 
 import java.util.List;

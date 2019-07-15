@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.crypto.Keys;
-import io.neow3j.model.types.ContractParameter;
+import io.neow3j.utils.Keys;
+import io.neow3j.model.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
 

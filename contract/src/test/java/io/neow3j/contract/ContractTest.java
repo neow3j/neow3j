@@ -1,10 +1,7 @@
 package io.neow3j.contract;
 
-import io.neow3j.model.types.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoInvoke;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;

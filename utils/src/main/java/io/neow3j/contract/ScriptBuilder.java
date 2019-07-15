@@ -2,8 +2,7 @@ package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
-import io.neow3j.model.types.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.ContractParameter;
 import io.neow3j.utils.ArrayUtils;
 
 import java.io.ByteArrayOutputStream;
