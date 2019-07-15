@@ -14,7 +14,6 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
-//@JsonSerialize(using = ContractParameterSerializer.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContractParameter {
@@ -237,91 +236,5 @@ public class ContractParameter {
                 ", value=" + value +
                 '}';
     }
-
-//    public static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
-//
-//        public ContractParameterSerializer() {
-//            this(null);
-//        }
-//
-//        public ContractParameterSerializer(Class<ContractParameter> t) {
-//            super(t);
-//        }
-//
-//        @Override
-//        public void serialize(ContractParameter param, JsonGenerator jsonGenerator,
-//                              SerializerProvider serializer) throws IOException {
-//
-//            jsonGenerator.writeStartObject();
-//            writeContractPrameter(param, jsonGenerator);
-//            jsonGenerator.writeEndObject();
-//        }
-//
-//        private void writeContractPrameter(ContractParameter param,
-//                                                 JsonGenerator jsonGenerator) throws IOException {
-//
-//            // The name is null for example when the parameter is used in a contract invocation.
-//            if (param.getParamName() != null) {
-//                jsonGenerator.writeStringField("name", param.getParamName());
-//            }
-//            jsonGenerator.writeStringField("type", param.getParamType().jsonValue());
-//
-//            Object value = param.getValue();
-//            // The value is null for example when the parameter is used to write an ABI file.
-//            if (value != null) {
-//                switch (param.getParamType()) {
-//                    case BYTE_ARRAY:
-//                    case SIGNATURE:
-//                    case HASH160:
-//                    case HASH256:
-//                    case PUBLIC_KEY:
-//                        String json = Numeric.toHexStringNoPrefix((byte[]) value);
-//                        jsonGenerator.writeStringField("value", json);
-//                        break;
-//                    case ARRAY:
-//                        ContractParameter[] params = (ContractParameter[]) value;
-//                        jsonGenerator.writeArrayFieldStart("value");
-//                        for (ContractParameter p : params) {
-//                            jsonGenerator.writeStartObject();
-//                            writeContractPrameter(p, jsonGenerator);
-//                            jsonGenerator.writeEndObject();
-//                        }
-//                        jsonGenerator.writeEndArray();
-//                        break;
-//                    case BOOLEAN:
-//                        jsonGenerator.writeBooleanField("value", (boolean) value);
-//                        break;
-//                    case INTEGER:
-//                    case STRING:
-//                    case VOID:
-//                    case INTEROP_INTERFACE:
-//                        json = value.toString();
-//                        jsonGenerator.writeStringField("value", json);
-//                        break;
-//                    default:
-//                        throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
-//                                "' not supported.");
-//                }
-//            }
-//        }
-//    }
-
-//    public static class ContractParameterDesarializer extends StdDeserializer<ContractParameter> {
-//
-//        public ContractParameterDesarializer() {
-//            this(null);
-//        }
-//
-//        public ContractParameterDesarializer(Class<ContractParameter> t) {
-//            super(t);
-//        }
-//
-//        @Override
-//        public ContractParameter deserialize(JsonParser p, DeserializationContext ctxt)
-//                throws IOException, JsonProcessingException {
-//
-//            return null;
-//        }
-//    }
 
 }

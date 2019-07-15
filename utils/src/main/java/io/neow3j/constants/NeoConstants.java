@@ -27,6 +27,7 @@ public class NeoConstants {
 
     public static final int SCRIPTHASH_LENGHT_BITS = 160;
     public static final int SCRIPTHASH_LENGHT_BYTES = SCRIPTHASH_LENGHT_BITS/8;
+    public static final int SCRIPTHASH_LENGHT_HEXSTRING = SCRIPTHASH_LENGHT_BYTES*2;
 
     /**
      * The amount of GAS that is free in every execution/invocation of a smart contract.
