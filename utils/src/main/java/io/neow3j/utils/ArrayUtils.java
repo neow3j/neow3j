@@ -6,12 +6,14 @@ import java.util.Arrays;
 public class ArrayUtils {
 
     public static byte[] reverseArray(byte[] array) {
-        for (int i = 0; i < array.length / 2; i++) {
-            byte temp = array[i];
-            array[i] = array[array.length - i - 1];
-            array[array.length - i - 1] = temp;
+        byte[] copy = new byte[array.length];
+        System.arraycopy(array, 0, copy, 0, array.length);
+        for (int i = 0; i < copy.length / 2; i++) {
+            byte temp = copy[i];
+            copy[i] = copy[copy.length - i - 1];
+            copy[copy.length - i - 1] = temp;
         }
-        return array;
+        return copy;
     }
 
     public static byte[] concatenate(byte[] a, byte b) {
