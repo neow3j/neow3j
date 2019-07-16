@@ -32,7 +32,7 @@ public class AssetTransferTest {
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         a.updateAssetBalances(neow3j);
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
-        AssetTransfer at = new AssetTransfer.Builder().neow3j(neow3j).account(a).output(output).build();
+        AssetTransfer at = new AssetTransfer.Builder(neow3j).account(a).output(output).build().sign();
         RawTransaction tx = at.getTransaction();
 
         RawTransactionOutput expectedChange = new RawTransactionOutput(NEOAsset.HASH_ID, "99999999", a.getAddress());
@@ -83,7 +83,7 @@ public class AssetTransferTest {
         a.updateAssetBalances(neow3j);
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
         BigDecimal fee = BigDecimal.ONE;
-        AssetTransfer at = new AssetTransfer.Builder().neow3j(neow3j).account(a).output(output).fee(fee).build();
+        AssetTransfer at = new AssetTransfer.Builder(neow3j).account(a).output(output).networkFee(fee).build().sign();
         RawTransaction tx = at.getTransaction();
 
         RawTransactionOutput expectedChangeNeo = new RawTransactionOutput(NEOAsset.HASH_ID, "99999999", a.getAddress());
@@ -142,13 +142,13 @@ public class AssetTransferTest {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(address);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         a.updateAssetBalances(neow3j);
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .asset(NEOAsset.HASH_ID)
                 .amount(BigDecimal.ONE)
                 .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
-                .build();
+                .build()
+                .sign();
         RawTransaction tx = at.getTransaction();
 
         RawTransactionOutput expectedChange = new RawTransactionOutput(NEOAsset.HASH_ID, "99999999", a.getAddress());
@@ -196,7 +196,7 @@ public class AssetTransferTest {
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        AssetTransfer at = new AssetTransfer.Builder()
+        AssetTransfer at = new AssetTransfer.Builder(null)
                 .account(a)
                 .output(output)
                 .build();
@@ -207,8 +207,7 @@ public class AssetTransferTest {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .output(output)
                 .build();
     }
@@ -218,8 +217,7 @@ public class AssetTransferTest {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .build();
     }
@@ -229,8 +227,7 @@ public class AssetTransferTest {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .asset(NEOAsset.HASH_ID)
                 .amount(BigDecimal.ONE)
@@ -242,8 +239,7 @@ public class AssetTransferTest {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .asset(NEOAsset.HASH_ID)
                 .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
@@ -255,8 +251,7 @@ public class AssetTransferTest {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(null);
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .amount(BigDecimal.ONE)
                 .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
@@ -269,8 +264,7 @@ public class AssetTransferTest {
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .asset(NEOAsset.HASH_ID)
                 .output(output)
@@ -283,8 +277,7 @@ public class AssetTransferTest {
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
 
-        AssetTransfer at = new AssetTransfer.Builder()
-                .neow3j(neow3j)
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .output(output)
                 .amount(BigDecimal.ONE)
