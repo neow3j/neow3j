@@ -35,7 +35,7 @@ final public class SecureRandomUtils {
         return isAndroid == 1;
     }
 
-    static byte[] generateRandomBytes(int size) {
+    public static byte[] generateRandomBytes(int size) {
         byte[] bytes = new byte[size];
         SecureRandomUtils.secureRandom().nextBytes(bytes);
         return bytes;
