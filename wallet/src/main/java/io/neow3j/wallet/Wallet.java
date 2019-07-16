@@ -176,8 +176,7 @@ public class Wallet {
     /**
      * Creates a NEP6 compatible wallet file.
      *
-     * @param destination the file or directory that the wallet file should be saved.
-     *                    If a directory is provided, then a filename will be automatically chosen.
+     * @param destination the file that the wallet file should be saved.
      * @return the new wallet.
      * @throws IOException
      */

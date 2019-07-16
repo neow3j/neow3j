@@ -5,16 +5,12 @@ import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.SecureRandomUtils;
 
-import java.security.SecureRandom;
-
 import static io.neow3j.crypto.Hash.sha256;
 
 /**
  * Class encapsulating a BIP-39 compatible NEO account.
  */
 public class Bip39Account extends Account {
-
-    private static final SecureRandom secureRandom = SecureRandomUtils.secureRandom();
 
     /**
      * Generated BIP-39 mnemonic for the account.
@@ -43,11 +39,10 @@ public class Bip39Account extends Account {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair keyPair = ECKeyPair.create(sha256(seed));
 
-        Builder builder = fromECKeyPair(keyPair).isDefault(true);
-        Bip39Account bip39Account = builder
+        return fromECKeyPair(keyPair)
+                .isDefault(true)
                 .mnemonic(mnemonic)
                 .build();
-        return bip39Account;
     }
 
     /**
