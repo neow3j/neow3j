@@ -9,10 +9,11 @@ import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +47,8 @@ public class Wallet {
         addBouncyCastle();
     }
 
-    private Wallet() {}
+    private Wallet() {
+    }
 
     protected Wallet(Builder builder) {
         this.name = builder.name;
@@ -70,6 +72,7 @@ public class Wallet {
     /**
      * Sets the account at the given index to be the default account.
      * The previous default account is unset.
+     *
      * @param index the index of the new default account.
      */
     public void setDefaultAccount(int index) {
@@ -98,6 +101,7 @@ public class Wallet {
 
     /**
      * Adds the given account to this wallet.
+     *
      * @param account The account to add.
      * @return true if the account was added, false if an account with that address was already in
      * the wallet.
@@ -112,6 +116,7 @@ public class Wallet {
 
     /**
      * Removes the account with the given address from this wallet.
+     *
      * @param address The address of the account to be removed.
      * @return true if an account was removed, false if no account with the given address was found.
      */
@@ -119,8 +124,8 @@ public class Wallet {
         return accounts.removeIf(acc -> acc.getAddress().equals(address));
     }
 
-    public void decryptAllAccounts(String password) throws NEP2InvalidFormat, CipherException,
-            NEP2InvalidPassphrase {
+    public void decryptAllAccounts(String password)
+            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
         for (Account acct : accounts) {
             acct.decryptPrivateKey(password, scryptParams);
@@ -148,6 +153,10 @@ public class Wallet {
         return fromNEP6Wallet(nep6WalletFileUri.toURL().openStream());
     }
 
+    public static Builder fromNEP6Wallet(File nep6WalletFile) throws IOException {
+        return fromNEP6Wallet(new FileInputStream(nep6WalletFile));
+    }
+
     public static Builder fromNEP6Wallet(InputStream nep6WalletFileInputStream) throws IOException {
         NEP6Wallet nep6Wallet = OBJECT_MAPPER.readValue(nep6WalletFileInputStream, NEP6Wallet.class);
         return fromNEP6Wallet(nep6Wallet);
@@ -165,12 +174,69 @@ public class Wallet {
     }
 
     /**
+     * Creates a NEP6 compatible wallet file.
+     *
+     * @param destination the file that the wallet file should be saved.
+     * @return the new wallet.
+     * @throws IOException
+     */
+    public Wallet saveNEP6Wallet(File destination) throws IOException {
+        if (destination == null) {
+            throw new IllegalArgumentException("Destination file cannot be null");
+        }
+
+        NEP6Wallet nep6Wallet = toNEP6Wallet();
+
+        if (!destination.isFile()) {
+            throw new IllegalArgumentException("Destination file cannot be a directory");
+        }
+
+        OBJECT_MAPPER.writeValue(destination, nep6Wallet);
+        return this;
+    }
+
+    /**
      * Creates a new wallet with one account that is set as the default account.
+     *
      * @return the new wallet.
      */
     public static Wallet createGenericWallet() {
-        Account a = Account.fromNewECKeyPair().isDefault(true).build();
+        Account a = getNewDefaultAccount();
         return new Builder().account(a).build();
+    }
+
+    /**
+     * Creates a new wallet with one account that is set as the default account.
+     * Encrypts such account with the password.
+     *
+     * @param password password used to encrypt the account.
+     * @return the new wallet.
+     */
+    public static Wallet createGenericWallet(final String password)
+            throws CipherException {
+        Account a = getNewDefaultAccount();
+        Wallet wallet = new Builder().account(a).build();
+        wallet.encryptAllAccounts(password);
+        return wallet;
+    }
+
+    /**
+     * Creates a new wallet with one account that is set as the default account.
+     * Also, encrypts such account and persists the NEP6 wallet to a file.
+     *
+     * @param password    password used to encrypt the account.
+     * @param destination destination to the new NEP6 wallet file.
+     * @return the new wallet.
+     */
+    public static Wallet createGenericWallet(String password, File destination)
+            throws CipherException, IOException {
+        Wallet wallet = createGenericWallet(password);
+        wallet.saveNEP6Wallet(destination);
+        return wallet;
+    }
+
+    private static Account getNewDefaultAccount() {
+        return Account.fromNewECKeyPair().isDefault(true).build();
     }
 
     public static class Builder {
@@ -188,27 +254,42 @@ public class Wallet {
         }
 
         public Builder name(String name) {
-            this.name = name; return this;
+            this.name = name;
+            return this;
         }
 
         public Builder version(String version) {
-            this.version = version; return this;
+            this.version = version;
+            return this;
         }
 
         public Builder accounts(List<Account> accounts) {
-            this.accounts.addAll(accounts); return this;
+            this.accounts.addAll(accounts);
+            return this;
         }
 
         public Builder account(Account account) {
-            this.accounts.add(account); return this;
+            this.accounts.add(account);
+            return this;
         }
 
         public Builder scryptParams(ScryptParams scryptParams) {
-            this.scryptParams = scryptParams; return this;
+            this.scryptParams = scryptParams;
+            return this;
         }
 
         public Wallet build() {
             return new Wallet(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Wallet{" +
+                "name='" + name + '\'' +
+                ", version='" + version + '\'' +
+                ", accounts=" + accounts +
+                ", scryptParams=" + scryptParams +
+                '}';
     }
 }

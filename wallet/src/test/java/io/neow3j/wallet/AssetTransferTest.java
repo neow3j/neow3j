@@ -51,7 +51,7 @@ public class AssetTransferTest {
                 ArrayUtils.concatenate(OpCode.PUSHBYTES64.getValue(), expectedSig.getConcatenated()),
                 script.getInvocationScript().getScript()
         );
-        assertArrayEquals(ByteBuffer.allocate(1+33+1)
+        assertArrayEquals(ByteBuffer.allocate(1 + 33 + 1)
                 .put(OpCode.PUSHBYTES33.getValue())
                 .put(a.getPublicKey().toByteArray())
                 .put(OpCode.CHECKSIG.getValue()).array(), script.getVerificationScript().getScript()
@@ -65,11 +65,11 @@ public class AssetTransferTest {
         // Test outputs
         assertEquals(2, tx.getOutputs().size());
         // Intended output
-        assertEquals(NEOAsset.HASH_ID,tx.getOutputs().get(0).getAssetId());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(0).getAssetId());
         assertEquals("1", tx.getOutputs().get(0).getValue());
         assertEquals("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3", tx.getOutputs().get(0).getAddress());
         // Change
-        assertEquals(NEOAsset.HASH_ID,tx.getOutputs().get(1).getAssetId());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(1).getAssetId());
         assertEquals("99999999", tx.getOutputs().get(1).getValue());
         assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(1).getAddress());
     }
@@ -104,10 +104,10 @@ public class AssetTransferTest {
                 ArrayUtils.concatenate(OpCode.PUSHBYTES64.getValue(), expectedSig.getConcatenated()),
                 script.getInvocationScript().getScript()
         );
-        assertArrayEquals(ByteBuffer.allocate(1+33+1)
-                .put(OpCode.PUSHBYTES33.getValue())
-                .put(a.getPublicKey().toByteArray())
-                .put(OpCode.CHECKSIG.getValue()).array(),
+        assertArrayEquals(ByteBuffer.allocate(1 + 33 + 1)
+                        .put(OpCode.PUSHBYTES33.getValue())
+                        .put(a.getPublicKey().toByteArray())
+                        .put(OpCode.CHECKSIG.getValue()).array(),
                 script.getVerificationScript().getScript()
         );
 
@@ -168,7 +168,7 @@ public class AssetTransferTest {
                 ArrayUtils.concatenate(OpCode.PUSHBYTES64.getValue(), expectedSig.getConcatenated()),
                 script.getInvocationScript().getScript()
         );
-        assertArrayEquals(ByteBuffer.allocate(1+33+1)
+        assertArrayEquals(ByteBuffer.allocate(1 + 33 + 1)
                 .put(OpCode.PUSHBYTES33.getValue())
                 .put(a.getPublicKey().toByteArray())
                 .put(OpCode.CHECKSIG.getValue()).array(), script.getVerificationScript().getScript()
@@ -182,11 +182,11 @@ public class AssetTransferTest {
         // Test outputs
         assertEquals(2, tx.getOutputs().size());
         // Intended output
-        assertEquals(NEOAsset.HASH_ID,tx.getOutputs().get(0).getAssetId());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(0).getAssetId());
         assertEquals("1", tx.getOutputs().get(0).getValue());
         assertEquals("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3", tx.getOutputs().get(0).getAddress());
         // Change
-        assertEquals(NEOAsset.HASH_ID,tx.getOutputs().get(1).getAssetId());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(1).getAssetId());
         assertEquals("99999999", tx.getOutputs().get(1).getValue());
         assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(1).getAddress());
     }

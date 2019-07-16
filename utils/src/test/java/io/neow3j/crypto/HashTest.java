@@ -88,4 +88,20 @@ public class HashTest {
         assertThat(Numeric.asByte(0xf, 0xf), is((byte) 0xff));
         assertThat(Numeric.asByte(0xc, 0x5), is((byte) 0xc5));
     }
+
+    @Test
+    public void testRipeMD160() {
+        final String expected = "c5d570cb5b85319dbafc0385b998fd98eb62295e";
+        final byte[] bytesToHash = "Hello World.".getBytes();
+        final byte[] result = Hash.ripemd160(bytesToHash);
+        assertThat(Numeric.toHexStringNoPrefix(result), is(expected));
+    }
+
+    @Test
+    public void testRipeMD160String() {
+        final String expected = "0xc5d570cb5b85319dbafc0385b998fd98eb62295e";
+        final String hexStringToHash = Numeric.toHexString("Hello World.".getBytes());
+        final String result = Hash.ripemd160(hexStringToHash);
+        assertThat(result, is(expected));
+    }
 }

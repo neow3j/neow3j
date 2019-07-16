@@ -1,72 +1,20 @@
 package io.neow3j.wallet;
 
 import io.neow3j.crypto.Credentials;
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Hash;
-import io.neow3j.crypto.MnemonicUtils;
-import io.neow3j.utils.Numeric;
-import io.neow3j.wallet.nep6.NEP6Wallet;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.file.Files;
 
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class WalletUtilsTest {
-
-    private File tempDir;
-
-    @Before
-    public void setUp() throws Exception {
-        tempDir = createTempDir();
-    }
-
-    @After
-    public void tearDown() {
-        for (File file : tempDir.listFiles()) {
-            file.delete();
-        }
-        tempDir.delete();
-    }
-
-    @Test
-    public void testGenerateBip39Wallets() throws Exception {
-        Bip39Wallet wallet = WalletUtils.generateBip39Wallet(SampleKeys.PASSWORD_1, tempDir);
-        byte[] seed = MnemonicUtils.generateSeed(wallet.getMnemonic(), SampleKeys.PASSWORD_1);
-        Credentials credentials = new Credentials(ECKeyPair.create(Hash.sha256(seed)));
-
-        assertEquals(credentials, WalletUtils.loadBip39Credentials(SampleKeys.PASSWORD_1, wallet.getMnemonic()));
-    }
-
-    @Test
-    public void testGenerateNewWalletFile() throws Exception {
-        String fileName = WalletUtils.generateNewWalletFile(SampleKeys.PASSWORD_1, tempDir);
-        NEP6Wallet nep6Wallet = WalletUtils.loadWalletFile(tempDir.getAbsolutePath() + File.separatorChar + fileName);
-        testGeneratedNewWalletFile(nep6Wallet);
-    }
-
-    private void testGeneratedNewWalletFile(NEP6Wallet nep6Wallet) throws Exception {
-        WalletUtils.loadCredentials(nep6Wallet.getAccounts().stream().findFirst().get(), SampleKeys.PASSWORD_1, nep6Wallet);
-    }
+public class WalletUtilsTest extends BaseTest {
 
     @Test
     public void testGenerateWalletFile() throws Exception {
-        String fileName = WalletUtils.generateWalletFile(SampleKeys.PASSWORD_1, SampleKeys.KEY_PAIR_1, tempDir);
+        String fileName = WalletUtils.generateWalletFile(SampleKeys.PASSWORD_1, SampleKeys.KEY_PAIR_1, getTempDir());
         testGenerateWalletFile(fileName);
-    }
-
-    private void testGenerateWalletFile(String fileName) throws Exception {
-        Credentials credentials = WalletUtils.loadCredentials(SampleKeys.ADDRESS_1,
-                SampleKeys.PASSWORD_1, new File(tempDir, fileName));
-
-        assertThat(credentials, equalTo(SampleKeys.CREDENTIALS_1));
     }
 
     @Test
@@ -105,27 +53,4 @@ public class WalletUtilsTest {
                 .endsWith(String.format("%s.neow3j", File.separator)));
     }
 
-    private static File createTempDir() throws Exception {
-        return Files.createTempDirectory(
-                WalletUtilsTest.class.getSimpleName() + "-testkeys").toFile();
-    }
-
-    @Test
-    public void testIsValidPrivateKey() {
-        assertTrue(WalletUtils.isValidPrivateKey(SampleKeys.PRIVATE_KEY_STRING_1));
-        assertTrue(WalletUtils.isValidPrivateKey(Numeric.prependHexPrefix(SampleKeys.PRIVATE_KEY_STRING_1)));
-
-        assertFalse(WalletUtils.isValidPrivateKey(""));
-        assertFalse(WalletUtils.isValidPrivateKey(SampleKeys.PRIVATE_KEY_STRING_1 + "a"));
-        assertFalse(WalletUtils.isValidPrivateKey(SampleKeys.PRIVATE_KEY_STRING_1.substring(1)));
-    }
-
-    @Test
-    public void testIsValidAddress() {
-        assertTrue(WalletUtils.isValidAddress(SampleKeys.ADDRESS_1));
-
-        assertFalse(WalletUtils.isValidAddress(""));
-        assertFalse(WalletUtils.isValidAddress(SampleKeys.ADDRESS_1 + 'a'));
-        assertFalse(WalletUtils.isValidAddress(SampleKeys.ADDRESS_1.substring(1)));
-    }
 }

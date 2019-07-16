@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.Credentials;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.utils.Keys;
-import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.SecureRandomUtils;
@@ -14,7 +12,6 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2AccountNotFound;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 
@@ -27,10 +24,6 @@ import java.security.SecureRandom;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-
-import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.constants.NeoConstants.ADDRESS_SIZE;
-import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_LENGTH_IN_HEX;
 
 /**
  * Utility functions for working with Wallet files.
@@ -75,34 +68,6 @@ public class WalletUtils {
         return fileName;
     }
 
-    /**
-     * Generates a BIP-39 compatible NEO wallet. The private key for the wallet can
-     * be calculated using following algorithm:
-     * <pre>
-     *     Key = SHA-256(BIP_39_SEED(mnemonic, password))
-     * </pre>
-     *
-     * @param password             Will be used for both wallet encryption and passphrase for BIP-39 seed
-     * @param destinationDirectory The directory containing the wallet
-     * @return A BIP-39 compatible NEO wallet
-     * @throws CipherException if the underlying cipher is not available
-     * @throws IOException     if the destination cannot be written to
-     */
-    public static Bip39Wallet generateBip39Wallet(String password, File destinationDirectory)
-            throws CipherException, IOException {
-
-        byte[] initialEntropy = new byte[16];
-        secureRandom.nextBytes(initialEntropy);
-
-        String mnemonic = MnemonicUtils.generateMnemonic(initialEntropy);
-        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
-        ECKeyPair privateKey = ECKeyPair.create(sha256(seed));
-
-        String walletFile = generateWalletFile(password, privateKey, destinationDirectory);
-
-        return new Bip39Wallet(walletFile, mnemonic);
-    }
-
     public static NEP6Wallet loadWalletFile(String source) throws IOException {
         return loadWalletFile(new File(source));
     }
@@ -137,12 +102,7 @@ public class WalletUtils {
         return new Credentials(decrypted);
     }
 
-    public static Credentials loadBip39Credentials(String password, String mnemonic) {
-        byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
-        return new Credentials(ECKeyPair.create(sha256(seed)));
-    }
-
-    private static String getWalletFileName(NEP6Wallet nep6Wallet) {
+    public static String getWalletFileName(NEP6Wallet nep6Wallet) {
         DateTimeFormatter format = DateTimeFormatter.ofPattern(
                 "'UTC--'yyyy-MM-dd'T'HH-mm-ss.nVV'--'");
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
@@ -154,34 +114,18 @@ public class WalletUtils {
         return getDefaultKeyDirectory(System.getProperty("os.name"));
     }
 
-    static String getDefaultKeyDirectory(String osName1) {
-        String osName = osName1.toLowerCase();
+    static String getDefaultKeyDirectory(String osName) {
+        String osNameLowerCase = osName.toLowerCase();
 
-        if (osName.startsWith("mac")) {
+        if (osNameLowerCase.startsWith("mac")) {
             return String.format(
                     "%s%sLibrary%sneow3j", System.getProperty("user.home"), File.separator,
                     File.separator);
-        } else if (osName.startsWith("win")) {
+        } else if (osNameLowerCase.startsWith("win")) {
             return String.format("%s%sneow3j", System.getenv("APPDATA"), File.separator);
         } else {
             return String.format("%s%s.neow3j", System.getProperty("user.home"), File.separator);
         }
     }
 
-    public static boolean isValidPrivateKey(String privateKey) {
-        String cleanPrivateKey = Numeric.cleanHexPrefix(privateKey);
-        return cleanPrivateKey.length() == PRIVATE_KEY_LENGTH_IN_HEX;
-    }
-
-    public static boolean isValidAddress(String address) {
-        String cleanInput = Numeric.cleanHexPrefix(address);
-
-        try {
-            Keys.toScriptHash(cleanInput);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-
-        return cleanInput.length() == ADDRESS_SIZE;
-    }
 }

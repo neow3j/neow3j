@@ -36,6 +36,7 @@ import java.util.stream.IntStream;
 
 import static io.neow3j.constants.OpCode.CHECKMULTISIG;
 
+@SuppressWarnings("unchecked")
 public class Account {
 
     private BigInteger privateKey;
@@ -48,9 +49,10 @@ public class Account {
     private NEP6Contract contract;
     private Balances balances;
 
-    private Account() {}
+    private Account() {
+    }
 
-    private Account(Builder b) {
+    protected Account(Builder b) {
         this.label = b.label;
         this.privateKey = b.privateKey;
         this.publicKey = b.publicKey;
@@ -146,7 +148,8 @@ public class Account {
 
     /**
      * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted.
-     * @param password The passphrase used to decrypt this account's private key.
+     *
+     * @param password     The passphrase used to decrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for decryption.
      */
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
@@ -165,7 +168,8 @@ public class Account {
 
     /**
      * Encrypts this account's private key, according to the NEP-2 standard, if not already encrypted.
-     * @param password The passphrase used to encrypt this account's private key.
+     *
+     * @param password     The passphrase used to encrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for encryption.
      */
     public void encryptPrivateKey(String password, ScryptParams scryptParams) throws CipherException {
@@ -174,7 +178,11 @@ public class Account {
             if (privateKey == null) {
                 throw new IllegalStateException("The account does not hold a private key.");
             }
-            this.encryptedPrivateKey= NEP2.encrypt(password, getECKeyPair(), scryptParams);
+            this.encryptedPrivateKey = NEP2.encrypt(password, getECKeyPair(), scryptParams);
+            // TODO: 2019-07-14 Guil:
+            // Is it the safest way of overwriting a variable on the JVM?
+            // I don't think so. ;-)
+            this.privateKey = null;
         }
     }
 
@@ -183,7 +191,7 @@ public class Account {
         // Even if the contract script is not empty this might be a multi-sig account. Additionally,
         // the script in the contract could be something else than a verification script.
         // Clarify if it makes sense to enforce that the contract's script must be a verification
-        // script and that it must be available (especially for mutli-sig accounts).
+        // script and that it must be available (especially for multi-sig accounts).
         if (contract != null && contract.getScript() != null && contract.getScript().length() >= 2) {
             String script = contract.getScript();
             return script.substring(script.length() - 2).equals(OpCode.toHexString(CHECKMULTISIG));
@@ -214,14 +222,17 @@ public class Account {
      * Creates a multi-sig account builder from the given public keys.
      * Mind that the ordering of the keys is important for later usage of the account.
      *
-     * @param publicKeys The public keys from which to derive the multi-sig account.
+     * @param publicKeys         The public keys from which to derive the multi-sig account.
      * @param signatureThreshold The number of signatures needed when using this account for signing
      *                           transactions.
      * @return the multi-sig account builder;
      */
     public static Builder fromMultiSigKeys(List<BigInteger> publicKeys, int signatureThreshold) {
+        // TODO: 2019-07-14 Guil:
+        // Review this method and the functionality it provides.
+        // Maybe we should get rid of this.
+
         Builder b = new Builder();
-        b.publicKey = Sign.publicKeyFromPrivate(b.privateKey);
         b.address = Keys.getMultiSigAddress(signatureThreshold, publicKeys);
         b.label = b.address;
 
@@ -282,13 +293,14 @@ public class Account {
 
     /**
      * Creates a new generic account with a fresh key pair.
+     *
      * @return the new account.
      */
-    public static Account createGenericAccount() {
+    public static Account createAccount() {
         return fromNewECKeyPair().build();
     }
 
-    public static class Builder {
+    public static class Builder<T extends Account, B extends Builder<T, B>> {
 
         String label;
         BigInteger privateKey;
@@ -299,25 +311,43 @@ public class Account {
         String encryptedPrivateKey;
         NEP6Contract contract;
 
-        private Builder() {
+        protected Builder() {
             isDefault = false;
             isLocked = false;
         }
 
-        public Builder label(String label) {
-            this.label = label; return this;
+        public B label(String label) {
+            this.label = label;
+            return (B) this;
         }
 
-        public Builder isDefault(boolean isDefault) {
-            this.isDefault = isDefault; return this;
+        public B isDefault(boolean isDefault) {
+            this.isDefault = isDefault;
+            return (B) this;
         }
 
-        public Builder isLocked(boolean isLocked) {
-            this.isLocked = isLocked; return this;
+        public B isLocked(boolean isLocked) {
+            this.isLocked = isLocked;
+            return (B) this;
         }
 
-        public Account build() {
-            return new Account(this);
+        public T build() {
+            return (T) new Account(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "privateKey=" + privateKey +
+                ", publicKey=" + publicKey +
+                ", address='" + address + '\'' +
+                ", encryptedPrivateKey='" + encryptedPrivateKey + '\'' +
+                ", label='" + label + '\'' +
+                ", isDefault=" + isDefault +
+                ", isLocked=" + isLocked +
+                ", contract=" + contract +
+                ", balances=" + balances +
+                '}';
     }
 }

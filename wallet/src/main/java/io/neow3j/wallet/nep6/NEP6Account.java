@@ -48,6 +48,8 @@ public class NEP6Account {
         return label;
     }
 
+    // https://stackoverflow.com/questions/32270422/jackson-renames-primitive-boolean-field-by-removing-is
+    @JsonProperty("isDefault")
     public Boolean getDefault() {
         return isDefault;
     }
