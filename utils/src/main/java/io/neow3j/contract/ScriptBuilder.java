@@ -14,7 +14,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 
-import static io.neow3j.utils.ArrayUtils.trimLeadingZeroes;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ScriptBuilder {
@@ -189,9 +188,7 @@ public class ScriptBuilder {
             writeByte(base + number.intValue());
         } else {
             // If the number is larger than 16, it needs to be pushed as a data array.
-            // TODO 10.07.19 claude:
-            // Doesn't the integer byte array need to be added in little-endian order?
-            pushData(trimLeadingZeroes(number.toByteArray()));
+            pushData(Numeric.toLittleEndianByteArray(number));
         }
         return this;
     }
