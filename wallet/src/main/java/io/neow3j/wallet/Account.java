@@ -69,6 +69,10 @@ public class Account {
         return address;
     }
 
+    public byte[] getScriptHash() {
+        return Keys.toScriptHash(address);
+    }
+
     public ECKeyPair getECKeyPair() {
         if (privateKey != null && publicKey != null) {
             return new ECKeyPair(privateKey, publicKey);
