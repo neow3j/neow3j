@@ -114,7 +114,9 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter signature(String signatureHexString) {
-        Numeric.isValidHexString(signatureHexString);
+        if (!Numeric.isValidHexString(signatureHexString)) {
+            throw new IllegalArgumentException("String is not a valid hex number");
+        }
         return new ContractParameter(ContractParameterType.SIGNATURE, signatureHexString);
     }
 
@@ -165,7 +167,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter hash160(String hashHexString) {
-        if (Numeric.isValidHexString(hashHexString)) {
+        if (!Numeric.isValidHexString(hashHexString)) {
             throw new IllegalArgumentException("String is not a valid hex number");
         }
         hashHexString = Numeric.cleanHexPrefix(hashHexString);
@@ -194,7 +196,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter hash256(String hashHexString) {
-        if (Numeric.isValidHexString(hashHexString)) {
+        if (!Numeric.isValidHexString(hashHexString)) {
             throw new IllegalArgumentException("String is not a valid hex number");
         }
         hashHexString = Numeric.cleanHexPrefix(hashHexString);

@@ -455,8 +455,11 @@ public class RequestTest extends RequestTester {
                                         ContractParameter.string("name")
                                 )
                         )
-//                        ContractParameter.publicKey("4e45503520474153"),
-                        // INTEROP_INTERFACE and VOID are only return types
+                        // TODO 17.07.19 claude:
+                        // Include public key parameter when it is implemented.
+                        // ContractParameter.publicKey("4e45503520474153"),
+
+                        // INTEROP_INTERFACE and VOID are only return types and need not be tested here.
                         // ContractParameter(ContractParameterType.INTEROP_INTERFACE, "array"),
                         // ContractParameter(ContractParameterType.VOID, "")
                 )
