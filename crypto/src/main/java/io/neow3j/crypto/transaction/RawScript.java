@@ -45,6 +45,8 @@ public class RawScript extends NeoSerializable {
     /**
      * Creates a new script from the given invocation script and script hash.
      * Use this if you don't need a verification script.
+     * @param invocationScript the invocation script
+     * @param scriptHash a script hash instead of a verification script.
      */
     public RawScript(byte[] invocationScript, String scriptHash) {
        this(invocationScript, Numeric.hexStringToByteArray(scriptHash));

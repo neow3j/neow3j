@@ -194,10 +194,12 @@ public class ContractParameter {
     }
 
     public static ContractParameter publicKey(String publicKey) {
+        // TODO 17.07.19 claude: Implement
         throw new UnsupportedOperationException();
     }
 
     public static ContractParameter publicKey(byte[] publicKey) {
+        // TODO 17.07.19 claude: Implement
         throw new UnsupportedOperationException();
     }
 

@@ -5,6 +5,7 @@ import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.crypto.Base58;
 import io.neow3j.crypto.Hash;
+import io.neow3j.crypto.exceptions.AddressFormatException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -12,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
-import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 
 /**
@@ -65,7 +65,7 @@ public class Keys {
         } else {
             verificationScript = getVerificationScriptFromPublicKeys(amountSignatures, publicKeys);
         }
-        return Hash.getScriptHash(verificationScript);
+        return Hash.calculateScriptHash(verificationScript);
     }
 
     /**
@@ -202,7 +202,12 @@ public class Keys {
 
     // TODO 14.07.19 claude: Write test
     public static boolean isValidAddress(String address) {
-        byte[] data = Base58.decode(address);
+        byte[] data;
+        try {
+             data = Base58.decode(address);
+        } catch (AddressFormatException e) {
+            return false;
+        }
         if (data.length != 25) return false;
         if (data[0] != NeoConstants.COIN_VERSION) return false;
         byte[] checksum = Hash.sha256(Hash.sha256(data, 0, 21));

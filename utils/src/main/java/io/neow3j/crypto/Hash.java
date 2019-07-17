@@ -30,7 +30,7 @@ public class Hash {
         return ripemd160(sha256);
     }
 
-    public static byte[] getScriptHash(byte[] script) {
+    public static byte[] calculateScriptHash(byte[] script) {
         return sha256AndThenRipemd160(script);
     }
 

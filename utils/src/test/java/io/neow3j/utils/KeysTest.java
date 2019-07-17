@@ -6,8 +6,11 @@ import org.junit.Test;
 
 import static io.neow3j.utils.Keys.toAddress;
 import static io.neow3j.utils.Keys.toScriptHash;
+import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
 
 public class KeysTest {
 
@@ -40,6 +43,26 @@ public class KeysTest {
         String address = "Ab2fvZdmnM4HwDgVbdBrbTLz1wK5TcEyhU";
 
         assertThat(Keys.scriptHashToAddress(script), is(address));
+    }
+
+    @Test
+    public void testIsValidAddress() {
+        assertTrue(Keys.isValidAddress("Ab2fvZdmnM4HwDgVbdBrbTLz1wK5TcEyhU"));
+        assertTrue(Keys.isValidAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"));
+
+        assertFalse(Keys.isValidAddress(""));
+        assertFalse(Keys.isValidAddress("0"));
+        assertFalse(Keys.isValidAddress("b2fvZdmnM4HwDgVbdBrbTLz1wK5TcEyhU"));
+        assertFalse(Keys.isValidAddress("AAb2fvZdmnM4HwDgVbdBrbTLz1wK5TcEyhU"));
+
+        // If the address string is null, we don't want to say it is an invalid address because
+        // there isn't even an address to be deemed invalid. Therefore expect NullPointerException.
+        try {
+           Keys.isValidAddress(null);
+        } catch (NullPointerException e) {
+            return;
+        }
+        fail();
     }
 
 }
