@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.model.ContractParameter;
 import io.neow3j.protocol.core.Response;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;
 import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.transaction.RawScript;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -390,14 +392,18 @@ public class ContractInvocation {
                         TransactionAttributeUsageType.SCRIPT,
                         Keys.toScriptHash(account.getAddress()));
 
-                String remark = Long.toString(Instant.now().toEpochMilli())
-                        + Numeric.toHexStringNoPrefix(SecureRandomUtils.generateRandomBytes(4));
                 RawTransactionAttribute remarkAttr =  new RawTransactionAttribute(
-                        TransactionAttributeUsageType.REMARK, remark);
+                        TransactionAttributeUsageType.REMARK, createRandomRemark());
 
                 this.attributes.add(scriptAttr);
                 this.attributes.add(remarkAttr);
             }
+        }
+
+        byte[] createRandomRemark() {
+            return ArrayUtils.concatenate(
+                    ByteBuffer.allocate(Long.BYTES).putLong(Instant.now().toEpochMilli()).array(),
+                    SecureRandomUtils.generateRandomBytes(4));
         }
 
         private List<RawTransactionOutput> createOutputsFromFees(BigDecimal... fees) {
