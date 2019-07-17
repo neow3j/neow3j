@@ -60,6 +60,7 @@ public class ContractParameter {
 
     /**
      * Creates a byte array parameter from the given value.
+     *
      * @param byteArray The parameter value.
      * @return the contract parameter.
      */
@@ -68,18 +69,23 @@ public class ContractParameter {
     }
 
     /**
-     * Creates a byte array parameter from the given hexadecimal string.
-     * @param hexString The parameter value as a hexadecimal string.
+     * Creates a byte array parameter from the given string. <br><br>
+     *
+     * If this parameter is used in an invocation, and its string is not a valid hexadecimal number
+     * it will be converted to the number made up from his UTF8 characters before adding it to the
+     * vm script.
+     *
+     * @param value The value as a string.
      * @return the contract parameter.
      */
-    public static ContractParameter byteArray(String hexString) {
-        // TODO 14.07.19 claude: Check if it is hexadecimal, if not create UTF8 byte array.
-        return new ContractParameter(ContractParameterType.BYTE_ARRAY, hexString);
+    public static ContractParameter byteArray(String value) {
+        return new ContractParameter(ContractParameterType.BYTE_ARRAY, value);
     }
 
     /**
      * Creates a byte array parameter from the given address.
      * The address is converted to its script hash.
+     *
      * @param address An address.
      * @return the contract parameter.
      */
@@ -93,6 +99,7 @@ public class ContractParameter {
     /**
      * Creates a byte array parameter from the given number, transforming it to the Fixed8 number
      * format in little-andian order.
+     *
      * @param number A decimal number
      * @return the contract parameter.
      */
@@ -102,16 +109,18 @@ public class ContractParameter {
 
     /**
      * Creates a signature parameter from the given signature hexadecimal string.
+     *
      * @param signatureHexString A signature as hexadecimal string.
      * @return the contract parameter.
      */
     public static ContractParameter signature(String signatureHexString) {
-        // TODO 14.07.19 claude: ensure its a hex string
+        Numeric.isValidHexString(signatureHexString);
         return new ContractParameter(ContractParameterType.SIGNATURE, signatureHexString);
     }
 
     /**
      * Creates a signature parameter from the given signature.
+     *
      * @param signature A signature.
      * @return the contract parameter.
      */
@@ -121,6 +130,7 @@ public class ContractParameter {
 
     /**
      * Creates a boolean parameter from the given boolean.
+     *
      * @param  bool a boolean value.
      * @return the contract parameter.
      */
@@ -130,6 +140,7 @@ public class ContractParameter {
 
     /**
      * Creates an integer parameter from the given integer.
+     *
      * @param  integer an integer value.
      * @return the contract parameter.
      */
@@ -139,6 +150,7 @@ public class ContractParameter {
 
     /**
      * Creates an integer parameter from the given integer.
+     *
      * @param  integer an integer value.
      * @return the contract parameter.
      */
@@ -148,21 +160,26 @@ public class ContractParameter {
 
     /**
      * Creates a hash160 parameter from the given hexadecimal string.
+     *
      * @param  hashHexString a hash160 value as hexadecimal string.
      * @return the contract parameter.
      */
     public static ContractParameter hash160(String hashHexString) {
+        if (Numeric.isValidHexString(hashHexString)) {
+            throw new IllegalArgumentException("String is not a valid hex number");
+        }
+        hashHexString = Numeric.cleanHexPrefix(hashHexString);
         if (hashHexString.length() != NeoConstants.SCRIPTHASH_LENGHT_HEXSTRING) {
             throw new IllegalArgumentException("Hash160 is expected to have a length of " +
                     NeoConstants.SCRIPTHASH_LENGHT_BYTES + " bytes, but had " +
                     hashHexString.length()/2 + ".");
         }
-        // TODO 14.07.19 claude: Verify that it is hexadecimal.
         return new ContractParameter(ContractParameterType.HASH160, hashHexString);
     }
 
     /**
      * Creates a hash160 parameter from the given hash.
+     *
      * @param  hash a hash160 value.
      * @return the contract parameter.
      */
@@ -172,20 +189,25 @@ public class ContractParameter {
 
     /**
      * Creates a hash256 parameter from the given hexadecimal string.
+     *
      * @param  hashHexString a hash256 value as hexadecimal string.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(String hashHexString) {
+        if (Numeric.isValidHexString(hashHexString)) {
+            throw new IllegalArgumentException("String is not a valid hex number");
+        }
+        hashHexString = Numeric.cleanHexPrefix(hashHexString);
         if (hashHexString.length() != 64) {
             throw new IllegalArgumentException("Hash256 is expected to have a length of 32 " +
                     "bytes, but had " + hashHexString.length()/2 + ".");
         }
-        // TODO 14.07.19 claude: verify that it is hexadecimal.
         return new ContractParameter(ContractParameterType.HASH256, hashHexString);
     }
 
     /**
      * Creates a hash256 parameter from the given hash.
+     *
      * @param  hash a hash256 value.
      * @return the contract parameter.
      */

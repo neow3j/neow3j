@@ -293,4 +293,17 @@ public class NumericTest {
         assertArrayEquals(i, new byte[]{0x00, 0x00, 0x00, 0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00});
     }
 
+    @Test
+    public void testIsValidHexString() {
+        assertTrue(Numeric.isValidHexString("0x9ef022"));
+        assertTrue(Numeric.isValidHexString("9ef022"));
+        assertTrue(Numeric.isValidHexString("0123456789abcdef"));
+        // Empty string considered to be valid hex.
+        assertTrue(Numeric.isValidHexString(""));
+        // Strings with odd number of digits not considered to be valid.
+        assertFalse(Numeric.isValidHexString("9ef02"));
+        assertFalse(Numeric.isValidHexString("1g"));
+        assertFalse(Numeric.isValidHexString("0x1g"));
+        assertFalse(Numeric.isValidHexString("0x123456789abcdeg"));
+    }
 }

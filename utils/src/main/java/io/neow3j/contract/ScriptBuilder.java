@@ -137,8 +137,14 @@ public class ScriptBuilder {
         Object value = param.getValue();
         switch (param.getParamType()) {
             case SIGNATURE:
-            case BYTE_ARRAY:
                 pushData(Numeric.hexStringToByteArray((String) value));
+            case BYTE_ARRAY:
+                String valueString = (String)value;
+                if (Numeric.isValidHexString(valueString)) {
+                    pushData(Numeric.hexStringToByteArray((String) value));
+                } else {
+                    pushData(valueString);
+                }
                 break;
             case BOOLEAN:
                 pushBoolean((boolean)value);

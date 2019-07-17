@@ -7,6 +7,8 @@ import org.bouncycastle.util.BigIntegers;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static io.neow3j.constants.NeoConstants.FIXED8_DECIMALS;
 
@@ -18,6 +20,7 @@ import static io.neow3j.constants.NeoConstants.FIXED8_DECIMALS;
 public final class Numeric {
 
     private static final String HEX_PREFIX = "0x";
+    private static final Pattern HEX_PATTERN = Pattern.compile("^([0-9A-Fa-f]{2})*$");
 
     private Numeric() {
     }
@@ -80,6 +83,18 @@ public final class Numeric {
     public static boolean containsHexPrefix(String input) {
         return !Strings.isEmpty(input) && input.length() > 1
                 && input.charAt(0) == '0' && input.charAt(1) == 'x';
+    }
+
+    /**
+     * Checks if the given string is a valid hexadecimal string. Next to the character constraint
+     * (0-f) the string also needs to have a even number of character to pass as valid.
+     *
+     * @param string The string to check.
+     * @return       true, if the string is hexadecimal or empty. False, otherwise.
+     */
+    public static boolean isValidHexString(String string) {
+        string = cleanHexPrefix(string);
+        return HEX_PATTERN.matcher(string).matches();
     }
 
     /**
