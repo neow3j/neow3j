@@ -67,7 +67,7 @@ public class ContractInvocationTest {
      * attribute is added manually in the builder.
      */
     @Test
-    public void invocation_with_fee() {
+    public void invocation_with_network_fee() {
         BigDecimal fee = BigDecimal.ONE;
         Account spyAcct = spy(ACCT);
         Utxo utxo = new Utxo("9f1b9a6f3593ff546a9dab147ba8ad520f7b6233bb0f8e75e05ad23d57ebd76e", 0, BigDecimal.valueOf(96));

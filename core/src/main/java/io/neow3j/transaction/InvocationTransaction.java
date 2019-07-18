@@ -45,6 +45,8 @@ public class InvocationTransaction extends RawTransaction {
         public Builder() {
             super();
             transactionType(TransactionType.INVOCATION_TRANSACTION);
+            systemFee = BigDecimal.ZERO;
+            contractScript = new byte[]{};
         }
 
         public Builder contractScript(byte[] script) {
