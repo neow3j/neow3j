@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -15,7 +14,6 @@ public class BinaryReaderTest extends TestBinaryUtils {
     private BinaryReader testBinaryReader;
     private ByteArrayBuilder arrayBuilder;
     private byte[] readResultByteArray;
-    private BigInteger readResultBigInt;
     private int readResultInt;
     private String readResultString;
 
@@ -177,6 +175,98 @@ public class BinaryReaderTest extends TestBinaryUtils {
     }
 
     @Test
+    public void readPushInteger_1_via_pushData1() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4c0101");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(1));
+    }
+
+    @Test
+    public void readPushInteger_256_via_pushData1() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4c020100");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(1));
+    }
+
+    @Test
+    public void readPushInteger_1_via_pushData2() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4d010001");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(1));
+    }
+
+    @Test
+    public void readPushInteger_256_via_pushData2() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4d02000001");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(256));
+    }
+
+    @Test
+    public void readPushInteger_11010147_via_pushData2() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4d04006300a800");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(11010147));
+    }
+
+    @Test
+    public void readPushInteger_1_via_pushData4() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4e0100000001");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(1));
+    }
+
+    @Test
+    public void readPushInteger_872340981_via_pushData4() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4e05000000f5ddfe3300");
+        readPushInteger();
+        assertThat(this.readResultInt, is(872340981));
+
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("4e04000000f5ddfe33");
+        readPushInteger();
+        assertThat(this.readResultInt, is(872340981));
+    }
+
+    @Test
+    public void readPushInteger_1_via_pushData_1_byte() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("0101");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(1));
+    }
+
+    @Test
+    public void readPushInteger_1_via_pushData_8_bytes() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("080100000000000000");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(1));
+    }
+
+    @Test
+    public void readPushInteger_256_via_pushData_8_bytes() throws IOException {
+        this.arrayBuilder = new ByteArrayBuilder().setPrefix("080001000000000000");
+
+        readPushInteger();
+
+        assertThat(this.readResultInt, is(256));
+    }
+
+    @Test
     public void readPushData_String_0Bytes() throws IOException {
 
         this.arrayBuilder = new ByteArrayBuilder()
@@ -236,6 +326,5 @@ public class BinaryReaderTest extends TestBinaryUtils {
         buildBinaryReader(testArray);
         this.readResultInt = this.testBinaryReader.readPushInteger();
     }
-
 
 }

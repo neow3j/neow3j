@@ -26,8 +26,10 @@ package io.neow3j.io;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
+import io.neow3j.utils.BigIntegers;
 import org.bouncycastle.math.ec.ECPoint;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +51,10 @@ public class BinaryReader implements AutoCloseable {
 
     public BinaryReader(InputStream stream) {
         this.reader = new DataInputStream(stream);
+    }
+
+    public BinaryReader(byte[] input) {
+        this(new ByteArrayInputStream(input, 0, input.length));
     }
 
     public int getPosition() {
@@ -94,6 +100,11 @@ public class BinaryReader implements AutoCloseable {
     public int readUnsignedByte() throws IOException {
         int result = reader.readUnsignedByte();
         position += Byte.BYTES;
+        return result;
+    }
+
+    public byte readByteKeepPosition() throws IOException {
+        byte result = reader.readByte();
         return result;
     }
 
@@ -222,9 +233,10 @@ public class BinaryReader implements AutoCloseable {
             // the singleByte is actually the data size already
             size = singleByte;
         }
-
-        // based on the data size, read the buffer
-        // and return
+        // read the buffer based on the data size
+        if (size == 1) {
+            return new byte[]{readByte()};
+        }
         return readBytes(size);
     }
 
@@ -263,19 +275,21 @@ public class BinaryReader implements AutoCloseable {
     }
 
     public BigInteger readPushBigInteger() throws IOException {
+        mark(2);
         byte read = readByte();
         if (read == OpCode.PUSHM1.getValue()) {
-            return BigInteger.ZERO.subtract(BigInteger.ONE);
+            return BigInteger.ONE.negate();
         } else if (read == OpCode.PUSH0.getValue()) {
             return BigInteger.ZERO;
-        } else if (read > OpCode.PUSH0.getValue() && read <= OpCode.PUSH16.getValue()) {
+        } else if (read >= OpCode.PUSH1.getValue() && read <= OpCode.PUSH16.getValue()) {
             int base = (OpCode.PUSH1.getValue() - (byte) 0x01);
             return BigInteger.valueOf(read - base);
         } else {
-            // if the value is larger than the PUSH16 opcode,
-            // then read as data array...
-            byte[] bytes = readPushData();
-            return toBigInt(bytes);
+            // If the value is larger than the PUSH16 opcode then read as data array.
+            // The same byte that has just been read needs to be read again in pushData(), so we
+            // reset the stream to the mark.
+            reset();
+            return BigIntegers.fromLittleEndianByteArray(readPushData());
         }
     }
 

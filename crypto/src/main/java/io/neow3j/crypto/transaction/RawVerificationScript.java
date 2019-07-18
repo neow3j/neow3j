@@ -1,7 +1,6 @@
 package io.neow3j.crypto.transaction;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.ScriptReader;
 import io.neow3j.crypto.Hash;
 import io.neow3j.utils.Keys;
 import io.neow3j.io.BinaryReader;
@@ -9,6 +8,7 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.utils.Numeric;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -70,7 +70,11 @@ public class RawVerificationScript extends NeoSerializable {
         if (opCode == OpCode.CHECKSIG.getValue()) {
             return 1;
         } else if (opCode == OpCode.CHECKMULTISIG.getValue()) {
-            return ScriptReader.readInteger(this.script).intValue();
+            try (ByteArrayInputStream stream = new ByteArrayInputStream(script, 0, script.length)) {
+                return new BinaryReader(stream).readPushInteger();
+            } catch (IOException e){
+                throw new IllegalStateException("Got IOException without doing IO.");
+            }
         } else {
             throw new IllegalArgumentException("The script is not a valid verification script.");
         }

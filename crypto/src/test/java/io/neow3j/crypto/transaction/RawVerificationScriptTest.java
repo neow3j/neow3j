@@ -3,6 +3,7 @@ package io.neow3j.crypto.transaction;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
@@ -33,7 +34,7 @@ public class RawVerificationScriptTest {
         RawVerificationScript veriScript = RawVerificationScript.fromPublicKey(key);
 
         byte[] expectedScript = ArrayUtils.concatenate(ArrayUtils.concatenate(
-                PUSHBYTES33.getValue(), key.toByteArray()), CHECKSIG.getValue());
+                PUSHBYTES33.getValue(), Keys.publicKeyIntegerToByteArray(key)), CHECKSIG.getValue());
 
         assertArrayEquals(expectedScript, veriScript.getScript());
     }
@@ -125,15 +126,15 @@ public class RawVerificationScriptTest {
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(16, th);
 
-        scriptBytes = Numeric.hexStringToByteArray("01ffae");
+        scriptBytes = Numeric.hexStringToByteArray("02ff00ae");
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(255, th);
 
-        scriptBytes = Numeric.hexStringToByteArray("020100ae");
+        scriptBytes = Numeric.hexStringToByteArray("020001ae");
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(256, th);
 
-        scriptBytes = Numeric.hexStringToByteArray("020400ae");
+        scriptBytes = Numeric.hexStringToByteArray("020004ae");
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(1024, th);
     }
