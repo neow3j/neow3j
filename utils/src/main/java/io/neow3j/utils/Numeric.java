@@ -101,6 +101,7 @@ public final class Numeric {
      * Converts the given Fixed8 number to a BigDecimal. This means that the resulting number is
      * represented using a decimal point.
      * @param value The Fixed8 value as a byte array. Must be 8 bytes in big-endian order.
+     * @return converted BigDecimal value.
      */
     public static BigDecimal fromFixed8ToDecimal(byte[] value) {
         if (value.length != 8)
@@ -114,6 +115,7 @@ public final class Numeric {
      * Converts the given Fixed8 number to a BigDecimal. This means that the resulting number is
      * represented using a decimal point.
      * @param value The Fixed8 value as an integer.
+     * @return converted BigDecimal value.
      */
     public static BigDecimal fromFixed8ToDecimal(BigInteger value) {
         return new BigDecimal(value).divide(FIXED8_DECIMALS);
@@ -122,6 +124,7 @@ public final class Numeric {
     /**
      * Converts the given decimal number to a Fixed8 in the form of an integer.
      * @param value The decimal number to convert.
+     * @return converted BigInteger value.
      */
     public static BigInteger fromDecimalToFixed8(String value) {
         return fromDecimalToFixed8(new BigDecimal(value));
@@ -130,6 +133,7 @@ public final class Numeric {
     /**
      * Converts the given decimal number to a Fixed8 in the form of an integer.
      * @param value The decimal number to convert.
+     * @return converted BigInteger value.
      */
     public static BigInteger fromDecimalToFixed8(BigDecimal value) {
         return value.multiply(FIXED8_DECIMALS).toBigInteger();
@@ -138,6 +142,7 @@ public final class Numeric {
     /**
      * Converts the given decimal number to a Fixed8 in the form of 8 bytes in big-endian order.
      * @param value The decimal number to convert.
+     * @return converted byte array.
      */
     public static byte[] fromBigDecimalToFixed8Bytes(String value) {
         return fromIntegerToFixed8Bytes(fromDecimalToFixed8(value));
@@ -146,16 +151,12 @@ public final class Numeric {
     /**
      * Converts the given decimal number to a Fixed8 in the form of 8 bytes in big-endian order.
      * @param value The decimal number to convert.
+     * @return the Fixed8 as a byte array.
      */
     public static byte[] fromBigDecimalToFixed8Bytes(BigDecimal value) {
         return fromIntegerToFixed8Bytes(fromDecimalToFixed8(value));
     }
 
-    /**
-     *
-     * @param value
-     * @return
-     */
     public static byte[] fromIntegerToFixed8Bytes(BigInteger value) {
         // TODO 14.07.19 claude: Does this handle negative numbers correctly?
         if (value.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0 ||

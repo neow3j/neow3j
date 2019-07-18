@@ -31,6 +31,7 @@ public class ScriptBuilder {
     /**
      * Appends an OpCode to the script.
      * @param opCode The OpCode to append.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder opCode(OpCode opCode) {
         writeByte(opCode.getValue());
@@ -42,6 +43,7 @@ public class ScriptBuilder {
      * @param scriptHash The script hash of the contract to call in big-endian order.
      * @param operation The operation to call.
      * @param params The parameters that will be used in the app call. Need to be in correct order.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder appCall(byte[] scriptHash, String operation,
                                         List<ContractParameter> params) {
@@ -70,6 +72,7 @@ public class ScriptBuilder {
      * Appends an app call to the script.
      * @param scriptHash The script hash of the contract to call in big-endian order.
      * @param params The parameters that will be used in the app call. Need to be in correct order.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder appCall(byte[] scriptHash, List<ContractParameter> params) {
         for (int i = params.size() - 1; i >= 0; i--) {
@@ -83,6 +86,7 @@ public class ScriptBuilder {
      * Appends an app call to the script.
      * @param scriptHash The script hash of the contract to call in big-endian order.
      * @param operation The operation to call.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder appCall(byte[] scriptHash, String operation) {
         pushBoolean(false);
@@ -94,6 +98,7 @@ public class ScriptBuilder {
     /**
      * Appends an app call to the script.
      * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder appCall(byte[] scriptHash) {
         return call(scriptHash, OpCode.APPCALL);
@@ -102,6 +107,7 @@ public class ScriptBuilder {
     /**
      * Appends a tail call to the script.
      * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder tailCall(byte[] scriptHash) {
         return call(scriptHash, OpCode.TAILCALL);
@@ -205,6 +211,7 @@ public class ScriptBuilder {
     /**
      * Adds the data to the script, prefixed with the correct code for its length.
      * @param data The data to add to the script.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder pushData(String data) {
         if (data != null) {
@@ -218,6 +225,7 @@ public class ScriptBuilder {
     /**
      * Adds the data to the script, prefixed with the correct code for its length.
      * @param data The data to add to the script.
+     * @return this ScriptBuilder object.
      */
     public ScriptBuilder pushData(byte[] data) {
         pushDataLength(data.length);

@@ -121,11 +121,11 @@ public class ECKeyPair {
     }
 
     /**
-     * Create a keypair using SECP-256r1 curve.
-     * <p>
-     * <p>Private keypairs are encoded using PKCS8
-     * <p>
-     * <p>Private keys are encoded using X.509
+     * Create a keypair using SECP-256r1 curve.<br><br>
+     *
+     * Private keypairs are encoded using PKCS8<br><br>
+     *
+     * Private keys are encoded using X.509<br><br>
      */
     public static ECKeyPair createEcKeyPair() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {

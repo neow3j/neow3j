@@ -70,6 +70,8 @@ public class Keys {
 
     /**
      * Checks if the given public key is in encoded format and encodes it if not.
+     * @param publicKey Key to encode.
+     * @return encoded public key.
      */
     public static byte[] checkAndEncodePublicKey(byte[] publicKey) {
         if (!isPublicKeyEncoded(publicKey)) {
@@ -90,6 +92,7 @@ public class Keys {
     /**
      * Creates the verification script for the given key.
      * Checks if the key is in encoded format, and encodes it if not.
+     * @param publicKey Key to create script for.
      * @return the verification script.
      */
     public static byte[] getVerificationScriptFromPublicKey(BigInteger publicKey) {
@@ -100,6 +103,7 @@ public class Keys {
     /**
      * Creates the verification script for the given key.
      * Checks if the key is in encoded format, and encodes it if not.
+     * @param publicKey Key to create script for.
      * @return the verification script.
      */
     public static byte[] getVerificationScriptFromPublicKey(byte[] publicKey) {
@@ -117,6 +121,9 @@ public class Keys {
     /**
      * Creates the multi-sig verification script for the given keys and the signing threshold.
      * Checks if the keys are in encoded format, and encodes them if not.
+     * @param signingThreshold the minimum number of public keys needed to sign transactions from
+     *                         the given public keys.
+     * @param publicKeys the public keys to create the script for.
      * @return the multi-sig verification script.
      */
     public  static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
@@ -133,6 +140,9 @@ public class Keys {
     /**
      * Creates the multi-sig verification script for the given keys and the signing threshold.
      * Checks if the keys are in encoded format, and encodes them if not.
+     * @param signingThreshold the minimum number of public keys needed to sign transactions from
+     *                         the given public keys.
+     * @param publicKeys the public keys to create the script for.
      * @return the multi-sig verification script.
      */
     public  static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
@@ -166,7 +176,6 @@ public class Keys {
                 .opCode(OpCode.CHECKMULTISIG)
                 .toArray();
     }
-
 
     public static byte[] getPublicKeyEncoded(byte[] publicKeyNotEncoded) {
         // converting to unsigned (Java byte's type is signed)

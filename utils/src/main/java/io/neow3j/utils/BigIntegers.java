@@ -9,10 +9,10 @@ public class BigIntegers {
      *
      * The resulting byte array is correct for usage e.g. in NEO VM scripts. The conversion behaves
      * equally to the one used in the C#-based
-     * <a href=https://github.com/neo-project/neo-vm>neo-vm</a> implementation.
+     * <a href="https://github.com/neo-project/neo-vm">neo-vm</a> implementation.
      * It is basically how the BigIntger.toByteArray() in C# works
      * (Cf.
-     * <a href=https://docs.microsoft.com/en-us/dotnet/api/system.numerics.biginteger.tobytearray?view=netframework-4.8>C# docs</a>
+     * <a href="https://docs.microsoft.com/en-us/dotnet/api/system.numerics.biginteger.tobytearray?view=netframework-4.8">C# docs</a>
      * ).
      *
      * @param value The integer to convert.
@@ -37,7 +37,8 @@ public class BigIntegers {
      * Gets the two's complement in little-endian order of the given integer. If the resulting byte
      * array is smaller than the given minimum length, it is padded with zero-valued bytes.
      *
-     * @param value the integer to convert
+     * @param value The integer to convert.
+     * @param minByteLength Desired length of the byte array.
      * @return the byte representation of the integer.
      * @throws IllegalArgumentException if the length of the integer in bytes is bigger than the
      *                                  given minimum length.
@@ -62,6 +63,7 @@ public class BigIntegers {
      * array is smaller than the given minimum length, it is padded with zero-valued bytes.
      *
      * @param value the integer to convert
+     * @param minByteLength Desired length of the byte array.
      * @return the byte representation of the integer.
      * @throws IllegalArgumentException if the length of the integer in bytes is bigger than the
      *                                  given minimum length.
