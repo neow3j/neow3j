@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.model.types.AssetType;
-import io.neow3j.model.types.ContractParameter;
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.NodePluginType;
@@ -1538,7 +1538,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invoke.getInvocationResult().getStack(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "576f6f6c6f6e67")
+                        ContractParameter.byteArray("576f6f6c6f6e67")
                 )
         );
         assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
@@ -1599,7 +1599,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invokeFunction.getInvocationResult().getStack(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "576f6f6c6f6e67")
+                        ContractParameter.byteArray("576f6f6c6f6e67")
                 )
         );
         assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
@@ -1660,7 +1660,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invokeScript.getInvocationResult().getStack(),
                 hasItems(
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "4e45503520474153")
+                        ContractParameter.byteArray("4e45503520474153")
                 )
         );
         assertThat(invokeScript.getInvocationResult().getTx(), is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));

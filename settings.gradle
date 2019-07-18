@@ -1,6 +1,6 @@
 rootProject.name = 'neow3j'
 
-include 'abi'
+include 'contract'
 include 'core'
 include 'crypto'
 include 'model'

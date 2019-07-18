@@ -1,27 +1,19 @@
 package io.neow3j.wallet;
 
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
-import io.neow3j.crypto.Sign;
-import io.neow3j.crypto.transaction.RawInvocationScript;
 import io.neow3j.crypto.transaction.RawScript;
+import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.crypto.transaction.RawVerificationScript;
-import io.neow3j.model.types.AssetType;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.protocol.transaction.ContractTransaction;
+import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
-import io.neow3j.wallet.Balances.AssetBalance;
-import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,18 +23,32 @@ public class AssetTransfer {
 
     private Neow3j neow3j;
     private ContractTransaction tx;
+    private Account account;
 
     private AssetTransfer(Builder builder) {
         this.neow3j = builder.neow3j;
         this.tx = builder.tx;
+        this.account = builder.account;
     }
 
     public ContractTransaction getTransaction() {
         return tx;
     }
 
-    public void addWitness(RawScript witness) {
+    /**
+     * Adds the given witness to the transaction's witnesses.
+     * <br><br>
+     * Use this method for adding a custom witness to the transaction.
+     * This does the same as the method {@link Builder#witness(RawScript)}, namely just adds the
+     * provided witness. But here it allows to add a witness from the created transaction object
+     * ({@link AssetTransfer#getTransaction()}) which is not possible in the builder.
+     *
+     * @param witness   The witness to be added.
+     * @return          this asset transfer object.
+     */
+    public AssetTransfer addWitness(RawScript witness) {
         tx.addScript(witness);
+        return this;
     }
 
     public AssetTransfer send() throws IOException, ErrorResponseException {
@@ -52,31 +58,45 @@ public class AssetTransfer {
         return this;
     }
 
+    /**
+     * Adds a witness to the transaction. The witness is created with the transaction in its current
+     * state and the account involved in this asser transfer.
+     *
+     * @return this asset transfer object, updated with a witness.
+     */
+    public AssetTransfer sign() {
+        if (account.getPrivateKey() == null) {
+            throw new IllegalStateException("Account does not hold a decrypted private key for " +
+                    "signing the transaction. Decrypt the private key before attempting to sign " +
+                    "with it.");
+        }
+        tx.addScript(RawScript.createWitness(tx.toArray(), account.getECKeyPair()));
+        return this;
+    }
 
     public static class Builder {
 
         private Neow3j neow3j;
         private Account account;
-        private BigDecimal fee;
+        private BigDecimal networkFee;
         private List<RawTransactionOutput> outputs;
         private List<RawTransactionInput> inputs;
+        private List<RawScript> witnesses;
+        private List<RawTransactionAttribute> attributes;
         private InputCalculationStrategy inputCalculationStrategy;
         private ContractTransaction tx;
-        private boolean signManually;
         private String assetId;
         private String toAddress;
         private BigDecimal amount;
 
-        public Builder() {
-            outputs = new ArrayList<>();
-            inputs = new ArrayList<>();
-            inputCalculationStrategy = InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY;
-            signManually = false;
-        }
-
-        public Builder neow3j(Neow3j neow3j) {
+        public Builder(Neow3j neow3j) {
             this.neow3j = neow3j;
-            return this;
+            this.outputs = new ArrayList<>();
+            this.inputs = new ArrayList<>();
+            this.attributes = new ArrayList<>();
+            this.witnesses = new ArrayList<>();
+            this.networkFee = BigDecimal.ZERO;
+            this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY;
         }
 
         public Builder account(Account account) {
@@ -110,6 +130,11 @@ public class AssetTransfer {
             // this.inputs.add(input); return this;
         }
 
+        public Builder witness(RawScript script) {
+            this.witnesses.add(script);
+            return this;
+        }
+
         public Builder asset(String assetId) {
             throwIfOutputsAreSet();
             this.assetId = assetId;
@@ -128,8 +153,27 @@ public class AssetTransfer {
             return this;
         }
 
-        public Builder fee(BigDecimal fee) {
-            this.fee = fee;
+        public Builder attribute(RawTransactionAttribute attribute) {
+            this.attributes.add(attribute);
+            return this;
+        }
+
+        public Builder attributes(List<RawTransactionAttribute> attributes) {
+            this.attributes.addAll(attributes);
+            return this;
+        }
+
+        /**
+         * Adds a network fee.
+         * <br><br>
+         * Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in the asset transfer.
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         */
+        public Builder networkFee(BigDecimal networkFee) {
+            this.networkFee = networkFee;
             return this;
         }
 
@@ -137,12 +181,6 @@ public class AssetTransfer {
             this.inputCalculationStrategy = strategy;
             return this;
         }
-
-        public Builder signManually() {
-            this.signManually = true;
-            return this;
-        }
-
 
         public AssetTransfer build() {
             if (neow3j == null) throw new IllegalStateException("Neow3j not set");
@@ -155,92 +193,67 @@ public class AssetTransfer {
                 }
             }
 
-            Map<String, BigDecimal> requiredAssets = calculateRequiredAssets();
-            if (!inputs.isEmpty()) {
-                // TODO Claude 19.06.19:
-                // Try building the transaction with given inputs. Calculate change only. Fee must be
-                // covered by the given inputs as well.
-            } else {
-                calculateInputsAndChange(requiredAssets);
-            }
+            List<RawTransactionOutput> intents = new ArrayList<>(outputs);
+            intents.addAll(createOutputsFromFees(networkFee));
+            Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
-            this.tx = new ContractTransaction.Builder()
-                    .outputs(outputs)
-                    .inputs(inputs)
-                    .build();
+            calculateInputsAndChange(requiredAssets);
 
-            // TODO Claude 19.06.19:
-            // Cover other possible scenarios. E.g. only add verification script automatically and
-            // let dev add signature manually. Verification script could be in account's contract
-            // object.
-            if (!signManually) {
-                createAndAddWitness();
-            }
+            this.tx = buildTransaction();
+
             return new AssetTransfer(this);
         }
 
-        private Map<String, BigDecimal> calculateRequiredAssets() {
-            // Create a new list of outputs, because the fee ouput is only used for calculations but
-            // must not appear in the final transaction as an output.
-            List<RawTransactionOutput> intendedOutputs = new ArrayList<>(outputs);
-            if (fee != null && fee.compareTo(BigDecimal.ZERO) > 0) {
-                intendedOutputs.add(new RawTransactionOutput(GASAsset.HASH_ID, fee.toPlainString(), null));
+        private ContractTransaction buildTransaction() {
+
+            return new ContractTransaction.Builder()
+                    .outputs(this.outputs)
+                    .inputs(this.inputs)
+                    .scripts(this.witnesses)
+                    .attributes(this.attributes)
+                    .build();
+        }
+
+        private List<RawTransactionOutput> createOutputsFromFees(BigDecimal... fees) {
+            List<RawTransactionOutput> outputs = new ArrayList<>(fees.length);
+            for (BigDecimal fee : fees) {
+                if (fee.compareTo(BigDecimal.ZERO) > 0) {
+                    outputs.add(new RawTransactionOutput(GASAsset.HASH_ID, fee.toPlainString(), null));
+                }
             }
+            return outputs;
+        }
+
+        private Map<String, BigDecimal> calculateRequiredAssetsForIntents(
+                List<RawTransactionOutput> outputs) {
 
             Map<String, BigDecimal> assets = new HashMap<>();
-            intendedOutputs.forEach(o -> {
-                BigDecimal value = new BigDecimal(o.getValue());
-                if (assets.containsKey(o.getAssetId())) {
-                    value = assets.get(o.getAssetId()).add(value);
+            outputs.forEach(output -> {
+                BigDecimal value = new BigDecimal(output.getValue());
+                if (assets.containsKey(output.getAssetId())) {
+                    value = assets.get(output.getAssetId()).add(value);
                 }
-                assets.put(o.getAssetId(), value);
+                assets.put(output.getAssetId(), value);
             });
             return assets;
         }
 
         private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets) {
             requiredAssets.forEach((reqAssetId, reqValue) -> {
-                List<Utxo> utxos = fetchUtxosForAsset(reqAssetId, reqValue);
+                List<Utxo> utxos = account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
                 inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                BigDecimal changeAmount = calculcateChange(utxos, reqValue);
+                BigDecimal changeAmount = calculateChange(utxos, reqValue);
                 if (changeAmount != null) outputs.add(
                         new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), account.getAddress()));
             });
         }
 
-        private List<Utxo> fetchUtxosForAsset(String assetId, BigDecimal assetValue) {
-            if (account.getBalances() == null) {
-                throw new IllegalStateException("Account does not have any asset balances. " +
-                        "Update account's asset balances first.");
-            }
-            if (!account.getBalances().hasAsset(assetId)) {
-                throw new InsufficientFundsException("Account balance does not contain the asset " +
-                        "with ID " + assetId);
-            }
-            AssetBalance balance = account.getBalances().getAssetBalance(assetId);
-            if (balance.getAmount().compareTo(assetValue) < 0) {
-                throw new InsufficientFundsException("Needed " + assetValue + " but only found " +
-                        balance.getAmount() + " for asset with ID " + assetId);
-            }
-            return inputCalculationStrategy.calculateInputs(balance.getUtxos(), assetValue);
-        }
-
-        private BigDecimal calculcateChange(List<Utxo> utxos, BigDecimal reqValue) {
+        private BigDecimal calculateChange(List<Utxo> utxos, BigDecimal reqValue) {
             BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
             if (inputAmount.compareTo(reqValue) > 0) {
                 return inputAmount.subtract(reqValue);
             }
             return null;
-        }
-
-        private void createAndAddWitness() {
-            if (account.getPrivateKey() == null) {
-                throw new IllegalStateException("Account does not hold a decrypted private key " +
-                        "for signing the transaction. Either add the private key to the account " +
-                        "or create the transaction signature manually.");
-            }
-            byte[] rawUnsignedTx = tx.toArray();
-            tx.addScript(RawScript.createWitness(tx.toArray(), account.getECKeyPair()));
         }
 
         private void throwIfOutputsAreSet() {

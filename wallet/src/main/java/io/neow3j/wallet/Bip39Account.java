@@ -1,7 +1,6 @@
 package io.neow3j.wallet;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.SecureRandomUtils;
 
@@ -62,7 +61,7 @@ public class Bip39Account extends Account {
         Builder b = new Builder();
         b.privateKey = ecKeyPair.getPrivateKey();
         b.publicKey = ecKeyPair.getPublicKey();
-        b.address = Keys.getAddress(ecKeyPair);
+        b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;
     }
@@ -71,7 +70,7 @@ public class Bip39Account extends Account {
         return mnemonic;
     }
 
-    protected static class Builder extends Account.Builder<Bip39Account, Builder> {
+    public static class Builder extends Account.Builder<Bip39Account, Builder> {
 
         String mnemonic;
 

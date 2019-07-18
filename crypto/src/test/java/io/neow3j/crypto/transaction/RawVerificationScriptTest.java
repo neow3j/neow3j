@@ -1,13 +1,11 @@
 package io.neow3j.crypto.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
-import io.neow3j.crypto.Sign;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
-import org.testcontainers.shaded.org.glassfish.hk2.api.ValidationService;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -32,11 +30,11 @@ public class RawVerificationScriptTest {
     public void testFromPublicKey() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        BigInteger key = Keys.createEcKeyPair().getPublicKey();
+        BigInteger key = ECKeyPair.createEcKeyPair().getPublicKey();
         RawVerificationScript veriScript = RawVerificationScript.fromPublicKey(key);
 
         byte[] expectedScript = ArrayUtils.concatenate(ArrayUtils.concatenate(
-                PUSHBYTES33.getValue(), key.toByteArray()), CHECKSIG.getValue());
+                PUSHBYTES33.getValue(), Keys.publicKeyIntegerToByteArray(key)), CHECKSIG.getValue());
 
         assertArrayEquals(expectedScript, veriScript.getScript());
     }
@@ -46,9 +44,9 @@ public class RawVerificationScriptTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         List<BigInteger> publicKeys = new ArrayList<>();
-        publicKeys.add(Keys.createEcKeyPair().getPublicKey());
-        publicKeys.add(Keys.createEcKeyPair().getPublicKey());
-        publicKeys.add(Keys.createEcKeyPair().getPublicKey());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
 
         ByteBuffer buf = ByteBuffer.allocate(1 + 3*(1 + 33) + 1 + 1);
         buf.put(PUSH2.getValue());
@@ -69,7 +67,7 @@ public class RawVerificationScriptTest {
     public void testSerialize() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
             NoSuchProviderException {
 
-        BigInteger key = Keys.createEcKeyPair().getPublicKey();
+        BigInteger key = ECKeyPair.createEcKeyPair().getPublicKey();
         RawVerificationScript veriScript = RawVerificationScript.fromPublicKey(key);
 
         byte[] expectedScript = ByteBuffer.allocate(1+1+33+1)
@@ -93,7 +91,7 @@ public class RawVerificationScriptTest {
         RawVerificationScript script = NeoSerializableInterface.from(serializedScript, RawVerificationScript.class);
         assertArrayEquals(message, script.getScript());
 
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         byte[] pub = ArrayUtils.concatenate(PUSHBYTES33.getValue(), keyPair.getPublicKey().toByteArray());
         byte[] expectedScript = ArrayUtils.concatenate(pub, CHECKSIG.getValue());
         serializedScript = ArrayUtils.concatenate((byte)35, expectedScript);
@@ -128,15 +126,15 @@ public class RawVerificationScriptTest {
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(16, th);
 
-        scriptBytes = Numeric.hexStringToByteArray("01ffae");
+        scriptBytes = Numeric.hexStringToByteArray("02ff00ae");
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(255, th);
 
-        scriptBytes = Numeric.hexStringToByteArray("020100ae");
+        scriptBytes = Numeric.hexStringToByteArray("020001ae");
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(256, th);
 
-        scriptBytes = Numeric.hexStringToByteArray("020400ae");
+        scriptBytes = Numeric.hexStringToByteArray("020004ae");
         th = new RawVerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(1024, th);
     }

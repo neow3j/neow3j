@@ -25,15 +25,21 @@
 package io.neow3j.io;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.constants.OpCode;
+import io.neow3j.utils.BigIntegers;
 import org.bouncycastle.math.ec.ECPoint;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.neow3j.utils.Numeric.toBigInt;
 
 public class BinaryReader implements AutoCloseable {
 
@@ -45,6 +51,10 @@ public class BinaryReader implements AutoCloseable {
 
     public BinaryReader(InputStream stream) {
         this.reader = new DataInputStream(stream);
+    }
+
+    public BinaryReader(byte[] input) {
+        this(new ByteArrayInputStream(input, 0, input.length));
     }
 
     public int getPosition() {
@@ -90,6 +100,11 @@ public class BinaryReader implements AutoCloseable {
     public int readUnsignedByte() throws IOException {
         int result = reader.readUnsignedByte();
         position += Byte.BYTES;
+        return result;
+    }
+
+    public byte readByteKeepPosition() throws IOException {
+        byte result = reader.readByte();
         return result;
     }
 
@@ -197,7 +212,32 @@ public class BinaryReader implements AutoCloseable {
     }
 
     public byte[] readVarBytes() throws IOException {
-        return readVarBytes(0X7fffffc7);
+        return readVarBytes(0x7fffffc7);
+    }
+
+    public byte[] readPushData() throws IOException {
+        byte singleByte = readByte();
+        int size = 0;
+        if (singleByte == OpCode.PUSHDATA1.getValue()) {
+            // read the next byte (as the data size)
+            size = readUnsignedByte();
+        } else if (singleByte == OpCode.PUSHDATA2.getValue()) {
+            // read the next 2 bytes (as the data size)
+            // short is 2 bytes
+            size = readShort();
+        } else if (singleByte == OpCode.PUSHDATA4.getValue()) {
+            // read the next 4 bytes (as the data size)
+            // int is 4 bytes
+            size = readInt();
+        } else {
+            // the singleByte is actually the data size already
+            size = singleByte;
+        }
+        // read the buffer based on the data size
+        if (size == 1) {
+            return new byte[]{readByte()};
+        }
+        return readBytes(size);
     }
 
     public byte[] readVarBytes(int max) throws IOException {
@@ -226,8 +266,31 @@ public class BinaryReader implements AutoCloseable {
         return value;
     }
 
-    public String readVarString() throws IOException {
-        return new String(readVarBytes(), "UTF-8");
+    public String readPushString() throws IOException {
+        return new String(readPushData(), "UTF-8");
+    }
+
+    public int readPushInteger() throws IOException {
+        return readPushBigInteger().intValue();
+    }
+
+    public BigInteger readPushBigInteger() throws IOException {
+        mark(2);
+        byte read = readByte();
+        if (read == OpCode.PUSHM1.getValue()) {
+            return BigInteger.ONE.negate();
+        } else if (read == OpCode.PUSH0.getValue()) {
+            return BigInteger.ZERO;
+        } else if (read >= OpCode.PUSH1.getValue() && read <= OpCode.PUSH16.getValue()) {
+            int base = (OpCode.PUSH1.getValue() - (byte) 0x01);
+            return BigInteger.valueOf(read - base);
+        } else {
+            // If the value is larger than the PUSH16 opcode then read as data array.
+            // The same byte that has just been read needs to be read again in pushData(), so we
+            // reset the stream to the mark.
+            reset();
+            return BigIntegers.fromLittleEndianByteArray(readPushData());
+        }
     }
 
 }

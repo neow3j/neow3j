@@ -12,6 +12,8 @@ import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -247,10 +249,61 @@ public class NumericTest {
 
     @Test
     public void testFromFixed8ToBigDecimal() {
-        byte[] fixed8 = {(byte)0x02, (byte)0x54, (byte)0x0B, (byte)0xE4, (byte)0x01};
-        BigDecimal asBigDecimal = Numeric.fromFixed8ToBigDecimal(fixed8);
+        byte[] fixed8 = {0x00, 0x00, 0x00, (byte)0x02, (byte)0x54, (byte)0x0B, (byte)0xE4, (byte)0x01};
+        BigDecimal asBigDecimal = Numeric.fromFixed8ToDecimal(fixed8);
         BigDecimal expected = BigDecimal.valueOf(100.00000001d);
         Assert.assertEquals(0, expected.compareTo(asBigDecimal));
     }
 
+    @Test
+    public void testFromBigDecimalToFixed8() {
+        BigDecimal d = BigDecimal.TEN;
+        BigInteger i = Numeric.fromDecimalToFixed8(d);
+        assertEquals(i, new BigInteger("1000000000"));
+
+        d = new BigDecimal("0.001");
+        i = Numeric.fromDecimalToFixed8(d);
+        assertEquals(i, new BigInteger("100000"));
+
+        d = new BigDecimal("0.00000001");
+        i = Numeric.fromDecimalToFixed8(d);
+        assertEquals(i, BigInteger.ONE);
+
+        d = new BigDecimal("0.000000001");
+        i = Numeric.fromDecimalToFixed8(d);
+        assertEquals(i, BigInteger.ZERO);
+    }
+
+    @Test
+    public void testFromBigDecimalToFixed8Bytes() {
+        BigDecimal d = BigDecimal.TEN;
+        byte[] i = Numeric.fromBigDecimalToFixed8Bytes(d);
+        assertArrayEquals(i, new byte[]{0x00, 0x00, 0x00, 0x00, (byte)0x3B, (byte)0x9A, (byte)0xCA, (byte)0x00});
+
+        d = new BigDecimal("0.001");
+        i = Numeric.fromBigDecimalToFixed8Bytes(d);
+        assertArrayEquals(i, new byte[]{0x00, 0x00, 0x00, 0x00, (byte)0x00, (byte)0x01, (byte)0x86, (byte)0xA0});
+
+        d = new BigDecimal("0.00000001");
+        i = Numeric.fromBigDecimalToFixed8Bytes(d);
+        assertArrayEquals(i, new byte[]{0x00, 0x00, 0x00, 0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x01});
+
+        d = new BigDecimal("0.000000001");
+        i = Numeric.fromBigDecimalToFixed8Bytes(d);
+        assertArrayEquals(i, new byte[]{0x00, 0x00, 0x00, 0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00});
+    }
+
+    @Test
+    public void testIsValidHexString() {
+        assertTrue(Numeric.isValidHexString("0x9ef022"));
+        assertTrue(Numeric.isValidHexString("9ef022"));
+        assertTrue(Numeric.isValidHexString("0123456789abcdef"));
+        // Empty string considered to be valid hex.
+        assertTrue(Numeric.isValidHexString(""));
+        // Strings with odd number of digits not considered to be valid.
+        assertFalse(Numeric.isValidHexString("9ef02"));
+        assertFalse(Numeric.isValidHexString("1g"));
+        assertFalse(Numeric.isValidHexString("0x1g"));
+        assertFalse(Numeric.isValidHexString("0x123456789abcdeg"));
+    }
 }

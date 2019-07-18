@@ -1,7 +1,6 @@
 package io.neow3j.wallet;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
@@ -32,7 +31,7 @@ public class AccountTest {
     public void testBuildAccountFromKeyPair() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+        ECKeyPair ecKeyPair = ECKeyPair.createEcKeyPair();
         Account a = Account.fromECKeyPair(ecKeyPair).build();
         assertEquals(ecKeyPair, a.getECKeyPair());
         // TODO Claude 11.06.19 Implement

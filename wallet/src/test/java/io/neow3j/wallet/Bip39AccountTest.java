@@ -1,7 +1,6 @@
 package io.neow3j.wallet;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
 import org.junit.Test;
 
 import static io.neow3j.wallet.Bip39Account.fromBip39Mnemonic;
@@ -28,7 +27,7 @@ public class Bip39AccountTest extends BaseTest {
 
     @Test
     public void testBuildBip39AccountFromKeyPair() throws Exception {
-        ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+        ECKeyPair ecKeyPair = ECKeyPair.createEcKeyPair();
         Bip39Account a = Bip39Account.fromECKeyPair(ecKeyPair).build();
         assertEquals(ecKeyPair, a.getECKeyPair());
     }

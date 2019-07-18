@@ -1,0 +1,10 @@
+description 'NEO Smart Contracts'
+
+dependencies {
+    compile project(':utils'),
+            project(':model'),
+            project(':core'),
+            project(':crypto'),
+            project(':wallet'),
+            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+}

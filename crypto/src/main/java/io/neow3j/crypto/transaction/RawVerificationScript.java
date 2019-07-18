@@ -1,26 +1,19 @@
 package io.neow3j.crypto.transaction;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.ScriptReader;
 import io.neow3j.crypto.Hash;
+import io.neow3j.utils.Keys;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
-import static io.neow3j.constants.OpCode.CHECKMULTISIG;
-import static io.neow3j.constants.OpCode.CHECKSIG;
-import static io.neow3j.constants.OpCode.PUSHBYTES33;
 
 public class RawVerificationScript extends NeoSerializable {
 
@@ -35,43 +28,19 @@ public class RawVerificationScript extends NeoSerializable {
     }
 
     public static RawVerificationScript fromPublicKey(BigInteger publicKey) {
-        byte[] script = ArrayUtils.concatenate(
-                new byte[]{PUSHBYTES33.getValue()},
-                publicKey.toByteArray(),
-                new byte[]{CHECKSIG.getValue()});
-
-        return new RawVerificationScript(script);
+        return new RawVerificationScript(Keys.getVerificationScriptFromPublicKey(publicKey));
     }
 
-    public static RawVerificationScript fromPublicKeysAsByteArrays(int signingThreshold, List<byte[]> publicKeys) {
-        if (signingThreshold < 2 || signingThreshold > publicKeys.size()) {
-            throw new IllegalArgumentException("Signing threshold must be at least 2 and not " +
-                    "higher than the number of supplied public keys.");
-        }
-        if (publicKeys.size() > MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
-            throw new IllegalArgumentException("At max " + MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT +
-                    " public keys can take part in a multi-sig account");
-        }
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
-            BinaryWriter w = new BinaryWriter(byteStream);
-            w.pushInteger(signingThreshold);
-            for (byte[] key : publicKeys) {
-                w.pushData(key);
-            }
-            w.pushInteger(publicKeys.size());
-            w.writeByte(CHECKMULTISIG.getValue());
-            return new RawVerificationScript(byteStream.toByteArray());
-        } catch (IOException e) {
-            throw new IllegalStateException("Got an IOException without doing IO.");
-        }
+    public static RawVerificationScript fromPublicKeys(int signingThreshold, byte[]... publicKeys) {
+        return new RawVerificationScript(
+                Keys.getVerificationScriptFromPublicKeys(signingThreshold, publicKeys)
+        );
     }
 
     public static RawVerificationScript fromPublicKeys(int signingThreshold, List<BigInteger> publicKeys) {
-        List<byte[]> asByteArrays = publicKeys.stream()
-                .map(BigInteger::toByteArray)
-                .collect(Collectors.toList());
-
-        return fromPublicKeysAsByteArrays(signingThreshold, asByteArrays);
+        return new RawVerificationScript(
+                Keys.getVerificationScriptFromPublicKeys(signingThreshold, publicKeys)
+        );
     }
 
     public byte[] getScript() {
@@ -80,7 +49,9 @@ public class RawVerificationScript extends NeoSerializable {
 
     /** Calculates the script hash of this verification script.
      * I.e. applies SHA256 and RIPMED160 to the script byte array.
-     * @return the script hash in big-endian order.
+     * Apparently, after hashing, the script hash is considered to be in little-endian order. That
+     * means, it can directly be used in transactions without reversing it.
+     * @return the script hash.
      */
     public byte[] getScriptHash() {
         if (script.length == 0) return new byte[0];
@@ -99,7 +70,11 @@ public class RawVerificationScript extends NeoSerializable {
         if (opCode == OpCode.CHECKSIG.getValue()) {
             return 1;
         } else if (opCode == OpCode.CHECKMULTISIG.getValue()) {
-            return ScriptReader.readInteger(this.script).intValue();
+            try (ByteArrayInputStream stream = new ByteArrayInputStream(script, 0, script.length)) {
+                return new BinaryReader(stream).readPushInteger();
+            } catch (IOException e){
+                throw new IllegalStateException("Got IOException without doing IO.");
+            }
         } else {
             throw new IllegalArgumentException("The script is not a valid verification script.");
         }

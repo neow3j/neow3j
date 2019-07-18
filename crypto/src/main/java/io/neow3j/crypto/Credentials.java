@@ -1,5 +1,6 @@
 package io.neow3j.crypto;
 
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
 /**
@@ -15,7 +16,7 @@ public class Credentials {
      */
     public Credentials(ECKeyPair ecKeyPair) {
         this.ecKeyPair = ecKeyPair;
-        this.address = Keys.getAddress(ecKeyPair);
+        this.address = ecKeyPair.getAddress();
     }
 
     /**
@@ -38,7 +39,7 @@ public class Credentials {
             pubKey = Keys.getPublicKeyEncoded(pubKey);
         }
         this.ecKeyPair = new ECKeyPair(Numeric.toBigInt(privateKey), Numeric.toBigInt(pubKey));
-        this.address = Keys.getAddress(ecKeyPair);
+        this.address = ecKeyPair.getAddress();
     }
 
 
@@ -51,7 +52,7 @@ public class Credentials {
     }
 
     public byte[] toScriptHash() {
-        return KeyUtils.toScriptHash(this.address);
+        return Keys.toScriptHash(this.address);
     }
 
 

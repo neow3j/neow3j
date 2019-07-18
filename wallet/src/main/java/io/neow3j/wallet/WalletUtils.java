@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.Credentials;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.SecureRandomUtils;
@@ -44,7 +43,7 @@ public class WalletUtils {
             throws CipherException, IOException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+        ECKeyPair ecKeyPair = ECKeyPair.createEcKeyPair();
         return generateWalletFile(password, ecKeyPair, destinationDirectory);
     }
 

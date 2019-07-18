@@ -30,6 +30,10 @@ public class Hash {
         return ripemd160(sha256);
     }
 
+    public static byte[] calculateScriptHash(byte[] script) {
+        return sha256AndThenRipemd160(script);
+    }
+
     /**
      * RipeMD-160 hash function.
      *

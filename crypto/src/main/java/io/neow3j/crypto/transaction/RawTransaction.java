@@ -163,7 +163,7 @@ public abstract class RawTransaction extends NeoSerializable {
             return (T) this;
         }
 
-        public T attributes(RawTransactionAttribute attribute) {
+        public T attribute(RawTransactionAttribute attribute) {
             return attributes(Arrays.asList(attribute));
         }
 

@@ -105,6 +105,50 @@ public enum OpCode {
      */
     PUSH16((byte) 0x60),
 
+
+    // Flow control
+
+    /**
+     * No operation. Nothing is done.
+     */
+    NOP((byte) 0x61),
+    /**
+     * Reads a 2-byte value n and a jump is performed to relative position n-3.
+     */
+    JMP((byte) 0x62),
+    /**
+     * A boolean value b is taken from main stack and reads a 2-byte value n, if b is True then a jump is performed to relative position n-3.
+     */
+    JMPIF((byte) 0x63),
+    /**
+     * A boolean value b is taken from main stack and reads a 2-byte value n, if b is False then a jump is performed to relative position n-3.
+     */
+    JMPIFNOT((byte) 0x64),
+    /**
+     * Current context is copied to the invocation stack. Reads a 2-byte value n and a jump is performed to relative position n-3.
+     */
+    CALL((byte) 0x65),
+    /**
+     * Stops the execution if invocation stack is empty.
+     */
+    RET((byte) 0x66),
+    /**
+     * Reads a script hash and executes the corresponding contract.
+     * If script hash is zero, performs dynamic invoke by taking script hash from main stack.
+     */
+    APPCALL((byte) 0x67),
+    /**
+     * Reads a string and executes the corresponding operation.
+     */
+    SYSCALL((byte) 0x68),
+    /**
+     * Reads a script hash and executes the corresponding contract.
+     * If script hash is zero, performs dynamic invoke by taking script hash from main stack.
+     * Disposes the top item on invocation stack.
+     */
+    TAILCALL((byte) 0x69),
+
+
     // Crypto
 
     /**
@@ -141,7 +185,13 @@ public enum OpCode {
      * <br>
      * Verify transaction as multisig and a boolean output is put on top of the main stack.
      */
-    CHECKMULTISIG((byte) 0xAE);
+    CHECKMULTISIG((byte) 0xAE),
+
+    /**
+     * A value n is taken from top of main stack. The next n items on main stack are removed,
+     * put inside n-sized array and this array is put on top of the main stack.
+     */
+    PACK((byte) 0xC1);
 
     private byte opCode;
 

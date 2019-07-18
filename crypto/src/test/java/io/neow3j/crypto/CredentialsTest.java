@@ -1,5 +1,6 @@
 package io.neow3j.crypto;
 
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -36,7 +37,7 @@ public class CredentialsTest {
     @Test
     public void test2() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
 
-        ECKeyPair ecKeyPair1 = Keys.createEcKeyPair();
+        ECKeyPair ecKeyPair1 = ECKeyPair.createEcKeyPair();
         Credentials credentials1 = new Credentials(ecKeyPair1);
 
         String privateKeyAsWIF1 = credentials1.exportAsWIF();

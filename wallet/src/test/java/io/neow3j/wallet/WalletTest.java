@@ -1,7 +1,7 @@
 package io.neow3j.wallet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neow3j.crypto.Keys;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
@@ -75,7 +75,7 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Wallet w = new Wallet.Builder().build();
-        Account acct = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
+        Account acct = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct);
         assertTrue(!w.getAccounts().isEmpty());
         assertEquals(w.getAccounts().get(0), acct);
@@ -86,7 +86,7 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Wallet w = new Wallet.Builder().build();
-        Account acct = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
+        Account acct = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         assertTrue(w.addAccount(acct));
         assertFalse(w.addAccount(acct));
     }
@@ -97,9 +97,9 @@ public class WalletTest {
 
         Wallet w = new Wallet.Builder().build();
         assertFalse(w.removeAccount(SampleKeys.ADDRESS_1));
-        Account acct1 = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
+        Account acct1 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct1);
-        Account acct2 = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
+        Account acct2 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct2);
         assertTrue(w.removeAccount(acct1.getAddress()));
         assertTrue(w.removeAccount(acct2.getAddress()));
@@ -111,7 +111,7 @@ public class WalletTest {
 
         String walletName = "TestWallet";
         Wallet w = new Wallet.Builder().name(walletName).build();
-        Account a = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
+        Account a = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(a);
         w.encryptAllAccounts("12345678");
 
@@ -129,7 +129,7 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Wallet w = new Wallet.Builder().build();
-        Account a = Account.fromECKeyPair(Keys.createEcKeyPair()).build();
+        Account a = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(a);
 
         w.toNEP6Wallet();

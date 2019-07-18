@@ -2,7 +2,6 @@ package io.neow3j.crypto.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Hash;
-import io.neow3j.crypto.Keys;
 import io.neow3j.crypto.SampleKeys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
@@ -19,16 +18,11 @@ import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static io.neow3j.constants.OpCode.CHECKMULTISIG;
 import static io.neow3j.constants.OpCode.CHECKSIG;
-import static io.neow3j.constants.OpCode.PUSH2;
-import static io.neow3j.constants.OpCode.PUSH3;
 import static io.neow3j.constants.OpCode.PUSHBYTES33;
 import static io.neow3j.constants.OpCode.PUSHBYTES64;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 public class RawScriptTest {
 
@@ -38,7 +32,7 @@ public class RawScriptTest {
 
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         RawScript witness = RawScript.createWitness(message, keyPair);
 
         SignatureData expectedSignature = Sign.signMessage(message, keyPair);
@@ -56,7 +50,7 @@ public class RawScriptTest {
 
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         RawScript witness = RawScript.createWitness(message, keyPair);
 
         byte[] invScript = RawInvocationScript.fromMessageAndKeyPair(message, keyPair).getScript();
@@ -81,7 +75,7 @@ public class RawScriptTest {
         List<BigInteger> publicKeys = new ArrayList<>();
 
         for (int i = 0; i < 3; i++) {
-            ECKeyPair keyPair = Keys.createEcKeyPair();
+            ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
             signatures.add(Sign.signMessage(message, keyPair));
             publicKeys.add(keyPair.getPublicKey());
         }
@@ -125,8 +119,8 @@ public class RawScriptTest {
         assertArrayEquals(expectedScript, script.toArray());
 
         // Test create from byte arrays.
-        List<byte[]> keys = publicKeys.stream().map(BigInteger::toByteArray).collect(Collectors.toList());
-        script = RawScript.createMultiSigWitnessFromByteArrays(signingThreshold, signatures, keys);
+        byte[][] keys = publicKeys.stream().map(BigInteger::toByteArray).toArray(byte[][]::new);
+        script = RawScript.createMultiSigWitness(signingThreshold, signatures, keys);
         assertArrayEquals(expectedScript, script.toArray());
     }
 
@@ -148,7 +142,7 @@ public class RawScriptTest {
         int messageSize = 10;
         byte[] message = new byte[messageSize];
         Arrays.fill(message, (byte) 1);
-        ECKeyPair keyPair = Keys.createEcKeyPair();
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
 
         ByteBuffer buf = ByteBuffer.allocate(1 + 1 + 64 + 1 + 1 + 33 + 1);
         buf.put((byte)65);

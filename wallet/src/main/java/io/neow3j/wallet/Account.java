@@ -2,7 +2,7 @@ package io.neow3j.wallet;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Keys;
+import io.neow3j.utils.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.Sign;
@@ -17,11 +17,14 @@ import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.Balances.AssetBalance;
+import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -64,6 +67,10 @@ public class Account {
 
     public String getAddress() {
         return address;
+    }
+
+    public byte[] getScriptHash() {
+        return Keys.toScriptHash(address);
     }
 
     public ECKeyPair getECKeyPair() {
@@ -122,6 +129,25 @@ public class Account {
         NeoGetNep5Balances response = neow3j.getNep5Balances(getAddress()).send();
         response.throwOnError();
         balances.updateTokenBalances(response.getBalances());
+    }
+
+    public List<Utxo> getUtxosForAssetAmount(String assetId, BigDecimal amount,
+                                             InputCalculationStrategy strategy) {
+
+        if (getBalances() == null) {
+            throw new IllegalStateException("Account does not have any asset balances. " +
+                    "Update account's asset balances first.");
+        }
+        if (!getBalances().hasAsset(assetId)) {
+            throw new InsufficientFundsException("Account balance does not contain the asset " +
+                    "with ID " + assetId);
+        }
+        AssetBalance balance = getBalances().getAssetBalance(assetId);
+        if (balance.getAmount().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Needed " + amount + " but only found " +
+                    balance.getAmount() + " for asset with ID " + assetId);
+        }
+        return strategy.calculateInputs(balance.getUtxos(), amount);
     }
 
     /**
@@ -236,7 +262,7 @@ public class Account {
 
     public static Builder fromNewECKeyPair() {
         try {
-            return fromECKeyPair(Keys.createEcKeyPair());
+            return fromECKeyPair(ECKeyPair.createEcKeyPair());
         } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
             throw new RuntimeException("Failed to create a new EC key pair.", e);
         }
@@ -246,7 +272,7 @@ public class Account {
         Builder b = new Builder();
         b.privateKey = ecKeyPair.getPrivateKey();
         b.publicKey = ecKeyPair.getPublicKey();
-        b.address = Keys.getAddress(ecKeyPair);
+        b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;
     }
@@ -278,7 +304,7 @@ public class Account {
         return fromNewECKeyPair().build();
     }
 
-    protected static class Builder<T extends Account, B extends Builder<T, B>> {
+    public static class Builder<T extends Account, B extends Builder<T, B>> {
 
         String label;
         BigInteger privateKey;
