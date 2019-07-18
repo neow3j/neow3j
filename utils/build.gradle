@@ -1,6 +1,6 @@
 description 'neow3j set of utils'
 
 dependencies {
-    compile project(':model')
-    compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
+    compile project(":model"),
+        "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
 }

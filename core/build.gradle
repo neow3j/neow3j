@@ -1,8 +1,7 @@
 description 'neow3j is a Java library to interact with the NEO blockchain'
 
 dependencies {
-    compile project(':contract'),
-            project(':model'),
+    compile project(':model'),
             project(':crypto'),
             project(':utils'),
             "com.github.jnr:jnr-unixsocket:$jnr_unixsocketVersion",

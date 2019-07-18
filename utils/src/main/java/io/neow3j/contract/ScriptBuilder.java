@@ -2,7 +2,6 @@ package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
-import io.neow3j.model.ContractParameter;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;

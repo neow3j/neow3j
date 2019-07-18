@@ -2,14 +2,10 @@ package io.neow3j.contract.abi.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neow3j.model.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.Keys;
-import io.neow3j.utils.Numeric;
+import io.neow3j.contract.ContractParameter;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.hasItems;

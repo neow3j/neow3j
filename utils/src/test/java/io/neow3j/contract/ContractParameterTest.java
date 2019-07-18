@@ -1,6 +1,6 @@
-package io.neow3j.model;
+package io.neow3j.contract;
 
-import io.neow3j.model.ContractParameter;
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 import org.hamcrest.core.Is;
 import org.junit.Before;

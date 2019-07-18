@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.contract.ContractInvocation.Builder;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.model.ContractParameter;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
@@ -14,8 +13,6 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
 import io.neow3j.wallet.Utxo;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Arrays;

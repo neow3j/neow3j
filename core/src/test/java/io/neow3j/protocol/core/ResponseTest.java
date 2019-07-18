@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.model.types.AssetType;
-import io.neow3j.model.ContractParameter;
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.NodePluginType;

@@ -1,7 +1,6 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.model.ContractParameter;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;

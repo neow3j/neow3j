@@ -1,4 +1,4 @@
-package io.neow3j.model;
+package io.neow3j.contract;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -1,6 +1,6 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.model.ContractParameter;
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;

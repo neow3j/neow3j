@@ -8,7 +8,6 @@ import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Objects;
 
 public class RawTransactionInput extends NeoSerializable {
