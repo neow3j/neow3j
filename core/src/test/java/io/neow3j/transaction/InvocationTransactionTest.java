@@ -42,7 +42,7 @@ public class InvocationTransactionTest {
                 "d8eee90141ebfe0b717ca2e1a14da323c630ffa16643586e46aca00d670e6fadb72b8ed2000001e72d286979ee6cb1b7e65d" +
                 "fddfb2e384100b8d148e7758de42e4168b71792c60b80548cd0900000023ba2703c53263e8d6e522dc32203339dcd8eee9";
 
-        assertEquals(unsignedTxHexStr, Numeric.toHexStringNoPrefix(unsigTx.toArray()));
+        assertEquals(unsignedTxHexStr, Numeric.toHexStringNoPrefix(unsigTx.toArrayWithoutScripts()));
 
 //        ECKeyPair keyPair = ECKeyPair.create(Numeric.hexStringToByteArray(PRIVATE_KEY));
 //        unsigTx.addScript(RawScript.createWitness(unsigTx.toArray(), keyPair));

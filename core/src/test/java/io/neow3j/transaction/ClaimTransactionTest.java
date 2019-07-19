@@ -81,7 +81,7 @@ public class ClaimTransactionTest {
         Claimables claimables = new Claimables(Arrays.asList(claim), adr, claimValue);
 
         ClaimTransaction tx = ClaimTransaction.fromClaimables(claimables, adr);
-        byte[] unsignedTxArray = tx.toArray();
+        byte[] unsignedTxArray = tx.toArrayWithoutScripts();
 
         RawScript witness = RawScript.createWitness(unsignedTxArray, ecKeyPair);
         tx.addScript(witness);

@@ -123,7 +123,7 @@ public class ContractInvocation {
                     "signing the transaction. Decrypt the private key before attempting to sign " +
                     "with it.");
         }
-        tx.addScript(RawScript.createWitness(tx.toArray(), account.getECKeyPair()));
+        tx.addScript(RawScript.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
         return this;
     }
 

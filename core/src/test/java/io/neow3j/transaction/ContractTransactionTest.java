@@ -82,7 +82,7 @@ public class ContractTransactionTest {
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
                 .build();
 
-        byte[] tUnsignedArray = tUnsigned.toArray();
+        byte[] tUnsignedArray = tUnsigned.toArrayWithoutScripts();
         tUnsigned.addScript(RawScript.createWitness(tUnsignedArray, keyPair));
 
         assertEquals(
@@ -130,7 +130,7 @@ public class ContractTransactionTest {
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "900.0", multiSigAddress))
                 .build();
 
-        byte[] tUnsignedArray = tUnsigned.toArray();
+        byte[] tUnsignedArray = tUnsigned.toArrayWithoutScripts();
 
         List<SignatureData> sigs = new ArrayList<>();
         sigs.add(Sign.signMessage(tUnsignedArray, ecKeyPair1));
