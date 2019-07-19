@@ -124,8 +124,8 @@ public abstract class RawTransaction extends NeoSerializable {
     public abstract void deserializeExclusive(BinaryReader reader) throws IOException, IllegalAccessException, InstantiationException;
 
     /**
-     * Serializes this transaction to a raw byte array without any scripts. This is the required
-     * form for creating signatures for this transaction.
+     * Serializes this transaction to a raw byte array without any scripts. This is required if the
+     * serialized transaction gets signed, e.g. by an external keypair/provider.
      * @return the serialized transaction
      */
     public byte[] toArrayWithoutScripts() {
