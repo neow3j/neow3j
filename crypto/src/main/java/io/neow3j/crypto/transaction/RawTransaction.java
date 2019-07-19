@@ -83,13 +83,8 @@ public abstract class RawTransaction extends NeoSerializable {
     }
 
     public String getTxId() {
-        try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream()) {
-            serializeWithoutScripts(new BinaryWriter(byteStream));
-            byte[] hash = Hash.sha256(Hash.sha256(byteStream.toByteArray()));
-            return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
-        } catch (IOException e) {
-            throw new IllegalStateException("Got an IOException without doing IO.");
-        }
+        byte[] hash = Hash.sha256(Hash.sha256(toArrayWithoutScripts()));
+        return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 
     @Override
@@ -121,14 +116,40 @@ public abstract class RawTransaction extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         serializeWithoutScripts(writer);
-        if (this.scripts.size() != 0) {
-            writer.writeSerializableVariable(this.scripts);
-        }
+        writer.writeSerializableVariable(this.scripts);
     }
 
     public abstract void serializeExclusive(BinaryWriter writer) throws IOException;
 
     public abstract void deserializeExclusive(BinaryReader reader) throws IOException, IllegalAccessException, InstantiationException;
+
+    /**
+     * Serializes this transaction to a raw byte array without any scripts. This is required if the
+     * serialized transaction gets signed, e.g. by an external keypair/provider.
+     * @return the serialized transaction
+     */
+    public byte[] toArrayWithoutScripts() {
+        try (ByteArrayOutputStream ms = new ByteArrayOutputStream()) {
+            try (BinaryWriter writer = new BinaryWriter(ms)) {
+                serializeWithoutScripts(writer);
+                writer.flush();
+                return ms.toByteArray();
+            }
+        } catch (IOException ex) {
+            throw new UnsupportedOperationException(ex);
+        }
+    }
+
+    /**
+     * Serializes this transaction to a raw byte array including scripts (witnesses/signatures).
+     * The byte array can be sent as a transaction with the `sendrawtransaction` RPC method.
+     *
+     * @return the serialized transaction.
+     */
+    @Override
+    public byte[] toArray() {
+        return super.toArray();
+    }
 
     protected static abstract class Builder<T extends Builder<T>> {
 

@@ -1,7 +1,6 @@
 package io.neow3j.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.utils.Keys;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
@@ -14,6 +13,7 @@ import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.crypto.transaction.SignedRawTransaction;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.NEOAsset;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -82,7 +82,7 @@ public class ContractTransactionTest {
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
                 .build();
 
-        byte[] tUnsignedArray = tUnsigned.toArray();
+        byte[] tUnsignedArray = tUnsigned.toArrayWithoutScripts();
         tUnsigned.addScript(RawScript.createWitness(tUnsignedArray, keyPair));
 
         assertEquals(
@@ -130,7 +130,7 @@ public class ContractTransactionTest {
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "900.0", multiSigAddress))
                 .build();
 
-        byte[] tUnsignedArray = tUnsigned.toArray();
+        byte[] tUnsignedArray = tUnsigned.toArrayWithoutScripts();
 
         List<SignatureData> sigs = new ArrayList<>();
         sigs.add(Sign.signMessage(tUnsignedArray, ecKeyPair1));
@@ -216,4 +216,74 @@ public class ContractTransactionTest {
         assertEquals(expectedTxId, tx.getTxId());
     }
 
+
+    @Test
+    public void serialize_without_scripts() {
+        ContractTransaction tUnsigned = new ContractTransaction.Builder()
+                .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
+                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
+                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
+                .build();
+
+        byte[] tx = tUnsigned.toArray();
+        String expectedTx = "80000001d22dcd884f5d065ce8596629ad9abed8b24c3428c43767d8ac9bacb0940f4dc90000029b7cffdaa6" +
+                "74beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b0000000023ba2703c53263e8d6e522dc322033" +
+                "39dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001a711802000000295f83f83f" +
+                "c439f56e6e1fb062d89c6f538263d700";
+
+        assertEquals(expectedTx, Numeric.toHexStringNoPrefix(tx));
+
+    }
+
+    @Test
+    public void serialize_then_deserialize_without_scripts() throws IllegalAccessException, InstantiationException {
+        ContractTransaction tx = new ContractTransaction.Builder()
+                .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
+                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
+                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
+                .build();
+
+        tx = NeoSerializableInterface.from(tx.toArray(), ContractTransaction.class);
+
+        assertEquals(0, tx.getScripts().size());
+        assertEquals(2, tx.getOutputs().size());
+        assertEquals("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", tx.getInputs().get(0).getPrevHash());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(0).getAssetId());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(1).getAssetId());
+        assertEquals("10", tx.getOutputs().get(0).getValue());
+        assertEquals("90", tx.getOutputs().get(1).getValue());
+        assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(0).getAddress());
+        assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", tx.getOutputs().get(1).getAddress());
+    }
+
+    @Test
+    public void serialize_then_deserialize_with_script() throws IllegalAccessException, InstantiationException {
+        BigInteger publicKey = Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        byte[] invocationScript = Numeric.hexStringToByteArray("40a1c29ef0b8215d5bf8f3649ff1eae3fd5d74bf38c92007ce6ac" +
+                "eea60efa5a986ed1c3d7669f9073f572a52dbbdc7ad7908fe22c2859e85d979e405807ce3d644");
+
+        ContractTransaction tx = new ContractTransaction.Builder()
+                .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
+                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
+                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
+                .script((new RawScript(new RawInvocationScript(invocationScript), RawVerificationScript.fromPublicKey(publicKey))))
+                .build();
+
+        tx = NeoSerializableInterface.from(tx.toArray(), ContractTransaction.class);
+
+        assertEquals(2, tx.getOutputs().size());
+        assertEquals("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", tx.getInputs().get(0).getPrevHash());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(0).getAssetId());
+        assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(1).getAssetId());
+        assertEquals("10", tx.getOutputs().get(0).getValue());
+        assertEquals("90", tx.getOutputs().get(1).getValue());
+        assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(0).getAddress());
+        assertEquals("AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ", tx.getOutputs().get(1).getAddress());
+        assertEquals(1, tx.getScripts().size());
+        assertArrayEquals(invocationScript, tx.getScripts().get(0).getInvocationScript().getScript());
+        assertArrayEquals(
+                Keys.getVerificationScriptFromPublicKey(publicKey),
+                tx.getScripts().get(0).getVerificationScript().getScript()
+        );
+    }
 }
