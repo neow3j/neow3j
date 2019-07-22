@@ -440,7 +440,7 @@ public class RequestTest extends RequestTester {
         neow3j.invoke(
                 "dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f",
                 Arrays.asList(
-                        ContractParameter.signature("576f6f6c6f6e67"),
+                        ContractParameter.signature("53c874d7c434b9912b9ee38b958ec78c1c4b0a3c4b5753bada198a1e49649f13bf5def112ee8d31133799759d3d88dd3c1650a4d6fa36f29493ffbc8068600ed"),
                         ContractParameter.bool(false),
                         ContractParameter.integer(8),
                         ContractParameter.hash160("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f"),
@@ -468,7 +468,7 @@ public class RequestTest extends RequestTester {
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invoke\","
                         + "\"params\":[\"dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f\","
                         + "["
-                        +   "{\"type\":\"Signature\",\"value\":\"576f6f6c6f6e67\"},"
+                        +   "{\"type\":\"Signature\",\"value\":\"53c874d7c434b9912b9ee38b958ec78c1c4b0a3c4b5753bada198a1e49649f13bf5def112ee8d31133799759d3d88dd3c1650a4d6fa36f29493ffbc8068600ed\"},"
                         +   "{\"type\":\"Boolean\",\"value\":false},"
                         +   "{\"type\":\"Integer\",\"value\":\"8\"},"
                         +   "{\"type\":\"Hash160\",\"value\":\"576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f\"},"

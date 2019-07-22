@@ -49,4 +49,10 @@ public class NeoConstants {
      * Number of characters in a NEO address String.
      */
     public static final int ADDRESS_SIZE = 34;
+
+    /**
+     * Standard size of a signature used in NEO.
+     */
+    public static final int SIGNATURE_SIZE_BYTES = 64;
+    public static final int SIGNATURE_SIZE_HEXSTRING = SIGNATURE_SIZE_BYTES*2;
 }

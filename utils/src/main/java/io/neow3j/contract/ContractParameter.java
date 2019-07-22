@@ -14,6 +14,17 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Contract parameters are used for example in contract invocations and represent an input parameter.
+ * But it can also represent an output type and value. <br><br>
+ *
+ * The static creation methods in this class all create parameters with values of type string. E.g.
+ * if you create a parameter of type {@link ContractParameterType#INTEGER} the value will be stored
+ * as a string. The only exceptions are {@link ContractParameterType#BOOLEAN} and
+ * {@link ContractParameterType#ARRAY} type parameters. The reason for this is the serialization and
+ * deserialization of <code>ContractParameter</code>'s. It works without any custom code when
+ * strings are used.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContractParameter {
@@ -30,18 +41,7 @@ public class ContractParameter {
     protected ContractParameter() {
     }
 
-    private ContractParameter(String paramName, ContractParameterType paramType) {
-        this.paramName = paramName;
-        this.paramType = paramType;
-    }
-
     private ContractParameter(ContractParameterType paramType, Object value) {
-        this.paramType = paramType;
-        this.value = value;
-    }
-
-    private ContractParameter(String paramName, ContractParameterType paramType, Object value) {
-        this.paramName = paramName;
         this.paramType = paramType;
         this.value = value;
     }
@@ -79,6 +79,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(String value) {
+        value = Numeric.cleanHexPrefix(value);
         return new ContractParameter(ContractParameterType.BYTE_ARRAY, value);
     }
 
@@ -116,6 +117,12 @@ public class ContractParameter {
     public static ContractParameter signature(String signatureHexString) {
         if (!Numeric.isValidHexString(signatureHexString)) {
             throw new IllegalArgumentException("String is not a valid hex number");
+        }
+        signatureHexString = Numeric.cleanHexPrefix(signatureHexString);
+        if (signatureHexString.length() != NeoConstants.SIGNATURE_SIZE_HEXSTRING) {
+            throw new IllegalArgumentException("Signature is expected to have a length of " +
+                    NeoConstants.SIGNATURE_SIZE_BYTES + " bytes, but had " +
+                    signatureHexString.length()/2 + ".");
         }
         return new ContractParameter(ContractParameterType.SIGNATURE, signatureHexString);
     }
