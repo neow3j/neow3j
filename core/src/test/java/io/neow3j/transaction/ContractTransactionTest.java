@@ -195,7 +195,7 @@ public class ContractTransactionTest {
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "900.0", address))
                 .build();
 
-        Sign.SignatureData signatureDataTx = Sign.signMessage(unsignedTx.toArray(), ecKeyPair);
+        Sign.SignatureData signatureDataTx = Sign.signMessage(unsignedTx.toArrayWithoutScripts(), ecKeyPair);
 
         SignedRawTransaction signedRawTransaction = new SignedRawTransaction(unsignedTx, signatureDataTx);
         String fromAddress = signedRawTransaction.getFrom();

@@ -723,7 +723,7 @@ public class Neow3jTestWrapper implements InterfaceCoreIT {
                         new RawTransactionOutput(NEOAsset.HASH_ID, amountAsChange.toPlainString(), changeAddress)))
                 .build();
 
-        byte[] tUnsignedArray = tUnsigned.toArray();
+        byte[] tUnsignedArray = tUnsigned.toArrayWithoutScripts();
         byte[] signature = Sign.signMessage(tUnsignedArray, keyPair).getConcatenated();
         tUnsigned.addScript(new RawInvocationScript(signature),
                 RawVerificationScript.fromPublicKey(keyPair.getPublicKey())

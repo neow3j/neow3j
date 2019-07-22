@@ -42,7 +42,7 @@ public class AssetTransferTest {
                 .outputs(Arrays.asList(output, expectedChange))
                 .inputs(Arrays.asList(expectedInput))
                 .build();
-        SignatureData expectedSig = Sign.signMessage(expectedTx.toArray(), a.getECKeyPair());
+        SignatureData expectedSig = Sign.signMessage(expectedTx.toArrayWithoutScripts(), a.getECKeyPair());
 
         // Test Witness
         assertEquals(1, tx.getScripts().size());
@@ -95,7 +95,7 @@ public class AssetTransferTest {
                 .outputs(Arrays.asList(output, expectedChangeGas, expectedChangeNeo))
                 .inputs(Arrays.asList(expectedInputFee, expectedInput))
                 .build();
-        SignatureData expectedSig = Sign.signMessage(expectedTx.toArray(), a.getECKeyPair());
+        SignatureData expectedSig = Sign.signMessage(expectedTx.toArrayWithoutScripts(), a.getECKeyPair());
 
         // Test Witness
         assertEquals(1, tx.getScripts().size());
@@ -159,7 +159,7 @@ public class AssetTransferTest {
                 .outputs(Arrays.asList(expectedOutput, expectedChange))
                 .inputs(Arrays.asList(expectedInput))
                 .build();
-        SignatureData expectedSig = Sign.signMessage(expectedTx.toArray(), a.getECKeyPair());
+        SignatureData expectedSig = Sign.signMessage(expectedTx.toArrayWithoutScripts(), a.getECKeyPair());
 
         // Test Witness
         assertEquals(1, tx.getScripts().size());

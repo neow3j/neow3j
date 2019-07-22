@@ -24,7 +24,7 @@ public class SignedRawTransaction {
     }
 
     public String getFrom() throws SignatureException {
-        byte[] encodedTransaction = rawTransaction.toArray();
+        byte[] encodedTransaction = rawTransaction.toArrayWithoutScripts();
         byte v = signatureData.getV();
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
