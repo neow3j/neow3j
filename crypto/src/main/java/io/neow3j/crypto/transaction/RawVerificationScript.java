@@ -54,7 +54,7 @@ public class RawVerificationScript extends NeoSerializable {
      * @return the script hash.
      */
     public byte[] getScriptHash() {
-        if (script.length == 0) return new byte[0];
+        if (script.length == 0) return null;
         else return Hash.sha256AndThenRipemd160(script);
     }
 

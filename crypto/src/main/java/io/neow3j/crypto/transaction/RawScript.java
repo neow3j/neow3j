@@ -25,37 +25,63 @@ public class RawScript extends NeoSerializable {
 
     private RawInvocationScript invocationScript;
     private RawVerificationScript verificationScript;
+    private byte[] scriptHash;
 
     public RawScript() {
-        this(new RawInvocationScript(), new RawVerificationScript());
     }
 
+    /**
+     * Creates a new script from the given invocation and verification script.
+     *
+     * @param invocationScript   the invocation script
+     * @param verificationScript the verification script
+     * @see RawScript#RawScript(RawInvocationScript, RawVerificationScript)
+     */
     public RawScript(byte[] invocationScript, byte[] verificationScript) {
         this(new RawInvocationScript(invocationScript),
                 new RawVerificationScript(verificationScript));
     }
 
+    /**
+     * Creates a new script from the given invocation and verification script.<br><br>
+     *
+     * The verification script cannot be null because the script hash is derived from it. If you
+     * don't have a verification script you can use the constructor
+     * {@link RawScript#RawScript(byte[], String)} and just provide a script Hash instead of the
+     * verification script.
+     *
+     * @param invocationScript   the invocation script
+     * @param verificationScript the verification script
+     */
     public RawScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
         this.invocationScript = invocationScript;
         this.verificationScript = verificationScript;
+        if (verificationScript == null || verificationScript.getScriptHash() == null) {
+            throw new IllegalArgumentException("The script hash cannot be produced. " +
+                    "The verification script must not be null because the script hash is derived " +
+                    "from it.");
+        }
+        this.scriptHash = verificationScript.getScriptHash();
     }
 
     /**
      * Creates a new script from the given invocation script and script hash.
      * Use this if you don't need a verification script.
+     *
      * @param invocationScript the invocation script
-     * @param scriptHash a script hash instead of a verification script.
+     * @param scriptHash       a script hash instead of a verification script.
      */
     public RawScript(byte[] invocationScript, String scriptHash) {
-       this(invocationScript, Numeric.hexStringToByteArray(scriptHash));
+       this.invocationScript = new RawInvocationScript(invocationScript);
+       this.scriptHash = Numeric.hexStringToByteArray(scriptHash);
     }
 
     /**
      * Creates a witness (invocation and verification scripts) from the given message, using the
      * given keys for signing the message.
      * @param messageToSign The message from which the signature is added to the invocation script.
-     * @param keyPair The key pair which is used for signing. The verification script is created
-     *                from the public key.
+     * @param keyPair       The key pair which is used for signing. The verification script is created
+     *                      from the public key.
      * @return the constructed witness/script.
      */
     public static RawScript createWitness(byte[] messageToSign, ECKeyPair keyPair) {
@@ -118,7 +144,7 @@ public class RawScript extends NeoSerializable {
      * @return the script hash of this script in big-endian order.
      */
     public byte[] getScriptHash() {
-        return verificationScript.getScriptHash();
+        return scriptHash;
     }
 
     @Override
@@ -148,6 +174,7 @@ public class RawScript extends NeoSerializable {
         try {
             this.invocationScript = reader.readSerializable(RawInvocationScript.class);
             this.verificationScript = reader.readSerializable(RawVerificationScript.class);
+            this.scriptHash = verificationScript.getScriptHash();
         } catch (IllegalAccessException e) {
             LOG.error("Can't access the specified object.", e);
         } catch (InstantiationException e) {

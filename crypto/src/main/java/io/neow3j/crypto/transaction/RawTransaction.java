@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -75,11 +76,16 @@ public abstract class RawTransaction extends NeoSerializable {
      * @param verificationScript The verification script of the witness.
      */
     public void addScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
-        this.scripts.add(new RawScript(invocationScript, verificationScript));
+        addScript(new RawScript(invocationScript, verificationScript));
     }
 
     public void addScript(RawScript script) {
+        if (script.getScriptHash() == null || script.getScriptHash().length == 0) {
+            throw new IllegalArgumentException("The script hash of the given script is " +
+                    "empty. Please set the script hash.");
+        }
         this.scripts.add(script);
+        this.scripts.sort(Comparator.comparing(s -> Numeric.toBigInt(s.getScriptHash())));
     }
 
     public String getTxId() {
@@ -207,7 +213,15 @@ public abstract class RawTransaction extends NeoSerializable {
         }
 
         public T scripts(List<RawScript> scripts) {
+            for (RawScript script : scripts) {
+                if (script.getScriptHash() == null || script.getScriptHash().length == 0) {
+                    throw new IllegalArgumentException("The script hash of the given script is " +
+                            "empty. Please set the script hash.");
+                }
+            }
+
             this.scripts.addAll(scripts);
+            this.scripts.sort(Comparator.comparing(s -> Numeric.toBigInt(s.getScriptHash())));
             return (T) this;
         }
 
