@@ -1,7 +1,9 @@
 package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.math.ec.ECAlgorithms;
@@ -24,6 +26,8 @@ import static io.neow3j.utils.Assertions.verifyPrecondition;
  * <p>Class from web3j project, and adapted to neow3j project (with NEO requirements).</p>
  */
 public class Sign {
+
+    private static final int LOWER_REAL_V = 27;
 
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair) {
         return signMessage(message, keyPair, true);
@@ -220,6 +224,37 @@ public class Sign {
             privKey = privKey.mod(NeoConstants.CURVE.getN());
         }
         return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), privKey).normalize();
+    }
+
+    /**
+     * Recovers the address that created the given signature from the given transaction.
+     *
+     * @param signatureData The signature.
+     * @param tx            The signed transaction.
+     * @return the address that produced the siganture data from the transaction.
+     */
+    public static String recoverSigningAddress(RawTransaction tx, SignatureData signatureData)
+            throws SignatureException {
+
+        byte[] encodedTransaction = tx.toArrayWithoutScripts();
+        byte v = signatureData.getV();
+        byte[] r = signatureData.getR();
+        byte[] s = signatureData.getS();
+        SignatureData signatureDataV = new Sign.SignatureData(getRealV(v), r, s);
+        BigInteger key = Sign.signedMessageToKey(encodedTransaction, signatureDataV);
+        return Keys.getAddress(key);
+    }
+
+    private static byte getRealV(byte v) {
+        if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {
+            return v;
+        }
+        byte realV = LOWER_REAL_V;
+        int inc = 0;
+        if ((int) v % 2 == 0) {
+            inc = 1;
+        }
+        return (byte) (realV + inc);
     }
 
     public static class SignatureData {

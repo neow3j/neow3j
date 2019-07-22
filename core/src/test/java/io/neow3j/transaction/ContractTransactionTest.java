@@ -10,7 +10,6 @@ import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.crypto.transaction.RawVerificationScript;
-import io.neow3j.crypto.transaction.SignedRawTransaction;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.Keys;
@@ -28,7 +27,6 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class ContractTransactionTest {
 
@@ -197,12 +195,9 @@ public class ContractTransactionTest {
 
         Sign.SignatureData signatureDataTx = Sign.signMessage(unsignedTx.toArrayWithoutScripts(), ecKeyPair);
 
-        SignedRawTransaction signedRawTransaction = new SignedRawTransaction(unsignedTx, signatureDataTx);
-        String fromAddress = signedRawTransaction.getFrom();
+        String fromAddress = Sign.recoverSigningAddress(unsignedTx, signatureDataTx);
 
         assertEquals(address, fromAddress);
-        assertTrue(signedRawTransaction.verify(address));
-
     }
 
     @Test
