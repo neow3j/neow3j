@@ -25,7 +25,6 @@ public class RawScript extends NeoSerializable {
 
     private RawInvocationScript invocationScript;
     private RawVerificationScript verificationScript;
-    private byte[] scriptHash;
 
     public RawScript() {
         this(new RawInvocationScript(), new RawVerificationScript());
@@ -39,7 +38,6 @@ public class RawScript extends NeoSerializable {
     public RawScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
         this.invocationScript = invocationScript;
         this.verificationScript = verificationScript;
-        this.scriptHash = verificationScript.getScriptHash();
     }
 
     /**
@@ -120,7 +118,7 @@ public class RawScript extends NeoSerializable {
      * @return the script hash of this script in big-endian order.
      */
     public byte[] getScriptHash() {
-        return this.scriptHash;
+        return verificationScript.getScriptHash();
     }
 
     @Override
