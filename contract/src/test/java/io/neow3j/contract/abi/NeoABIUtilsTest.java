@@ -92,6 +92,18 @@ public class NeoABIUtilsTest {
     }
 
     @Test
+    public void testLoadCredentialsFromStream_SmartContract4() throws Exception {
+        NeoContractInterface neoContractABI = NeoABIUtils.loadABIFile(
+                NeoABIUtilsTest.class.getResourceAsStream(
+                        TEST4_SMARTCONTRACT_ABI_FILENAME)
+        );
+
+        assertThat(neoContractABI, notNullValue());
+        assertThat(neoContractABI.getHash(), is("0x5944fc67643207920ec129d13181297fed10350c"));
+        assertThat(neoContractABI.getEntryPoint(), nullValue());
+    }
+
+    @Test
     public void testGenerateNeoContractABIFile() throws Exception {
         // load test smartcontract ABI 2
         NeoContractInterface neoContractABI = NeoABIUtils.loadABIFile(
