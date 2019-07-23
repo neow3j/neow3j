@@ -19,36 +19,38 @@ You can now focus on building Java/Android applications that use the [functions]
 
 ## Features
 
-* Support to NEO node/client [API version 2.9.*](https://docs.neo.org/en-us/node/cli/apigen.html) ([100% implemented](#NEO-JSON-RPC-Support))
-* Observable pattern to get info about past **and** upcoming NEO blocks
-* Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
-* Passphrase-protected Private Key implementation (NEP-2)
-* Wallet SDK implementation (NEP-6)
-* Mnemonic utils implementation (BIP-39), compatible to NEO
-* Multisig addresses
-* Signing and sending raw transactions
-* Sync and Async interface
+* Support for NEO RPC [API version 2.10.2](https://docs.neo.org/docs/en-us/reference/rpc/latest-version/api.html)
+* Observable pattern to get info about past and upcoming NEO blocks
+* Asset transfers
+* Contract invocations
+* Passphrase-protected private keys (NEP-2)
+* Wallet and Account model supporting NEP-6
+* NEO-compatible Mnemonic utilities (BIP-39)
+* Multisig address utilities
+* Building, signing, and sending raw transactions
+* Sync and async interface
 * Retry on node errors
 * Integration tests with the dotnet NEO VM
+* Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
 
 ## Upcoming Features/Enhancements
 
-* Documentation on using neow3j with Android apps
-* Observable pattern to get specific transactions
-* Improve the response model: introduce purpose-specific objects rather than the current raw Java types
-* Interacting with smart contracts
+* Documentation and example Android apps
+* GAS claiming
+* Convenient NEP5 token contract interaction (already possible via normal contract invocation API)
 * Select best seed NEO node based on some metrics (e.g., latency)
 
 ## Getting Started
 
-Add the neow3j dependencies to your Java project -- either using Gradle or Maven:
+Neow3j is split into multiple project modules to allow the reuse of independent functionality. 
+For most use cases you will want to depend on the `contract` artifact which brings you all functionalities:
 
 ### Gradle
 
 Java 8 & Android (min. API 24):
 
 ```groovy
-compile 'io.neow3j:core:1.0.11'
+compile 'io.neow3j:contract:2.0.0'
 ```
 
 ### Maven
@@ -58,8 +60,8 @@ Java 8 & Android (min. API 24):
 ```xml
 <dependency>
     <groupId>io.neow3j</groupId>
-    <artifactId>core</artifactId>
-    <version>1.0.11</version>
+    <artifactId>contract</artifactId>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -112,17 +114,10 @@ NeoValidateAddress validateReq = neow3j.validateAddress("ARvMqz3hEFE4qBkHAaPNxAL
 System.out.println("isValid=" + validateReq.getValidation().isValid());
 ```
 
-* Get info about NEO consensus nodes:
+* Create a NEO-compatible key pair:
 
 ```java
-NeoGetValidators getValidatorsReq = neow3j.getValidators().send();
-System.out.println(getValidatorsReq.getValidators());
-```
-
-* Create a key pair:
-
-```java
-ECKeyPair ecKeyPair = Keys.createEcKeyPair();
+ECKeyPair ecKeyPair = ECKeyPair.createEcKeyPair();
 ```
 
 * Create a key pair from WIF:
@@ -137,120 +132,62 @@ ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjS
 String wif = ecKeyPair.exportAsWIF();
 ```
 
-* Get the NEO address from a key pair:
+* And many more key related utility methods.
+
+* Create a new wallet with a new account:
 
 ```java
-String neoAddress = Keys.getAddress(ecKeyPair);
+Wallet wallet = Wallet.createGenericWallet();
 ```
 
-* Create a standard wallet (NEP-6):
+* Load a wallet stored in the NEP-6 wallet standard
 
 ```java
-WalletFile wallet = Wallet.createStandardWallet();
+Wallet wallet = Wallet.fromNEP6Wallet("path/to/file");
 ```
 
-* Create a password-protected account (NEP-2) based on a key pair:
+* And many more wallet and account related functionalities 
+
+* Invoke a contract
 
 ```java
-WalletFile.Account account = Wallet.createStandardAccount("myPassw0rd!@#", keyPair);
+Neow3j neow3j = Neow3j.build(new HttpService("https://node2.neocompiler.io"));
+String contractScriptHash = "1a70eac53f5882e40dd90f55463cce31a9f72cd4";
+Account acct = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+acct.updateAssetBalances(neow3j);
+
+ContractInvocation invoc = new ContractInvocation.Builder(neow3j)
+        .contractScriptHash(contractScriptHash)
+        .account(acct)
+        .parameter(ContractParameter.string("register"))
+        .parameter(ContractParameter.array(
+                ContractParameter.string("neow3j.com"),
+                ContractParameter.byteArrayFromAddress(acct.getAddress())))
+        .networkFee(new BigDecimal("0.1"))
+        .build()
+        .sign();
+
+InvocationResult result = invoc.testInvoke();
+invoc.invoke();
 ```
 
-* Add a password-protected account (NEP-2) to a standard wallet (NEP-6):
+* Transfer an asset
 
 ```java
-wallet.addAccount(account);
+Neow3j neow3j = Neow3j.build(new HttpService("https://node2.neocompiler.io"));
+Account acct = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();;
+acct.updateAssetBalances(neow3j);
+String toAddress = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
+RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "10", toAddress);
+AssetTransfer transfer = new AssetTransfer.Builder(neow3j)
+        .account(acct)
+        .output(output)
+        .networkFee(new BigDecimal("0.1"))
+        .build()
+        .sign()
+        .send();
 ```
 
-* Get the plain key pair from a password-protected account within a wallet:
-
-```java
-ECKeyPair ecKeyPair = Wallet.decryptStandard("myPassw0rd!@#", wallet, account);
-```
-
-* Also, if you want to create a wallet file (NEP-6), the class `WalletUtils` provide some easy to use methods.
-
-Creates a wallet file, and adds an account based on the provided key pair and password:
-
-```java
-String fileName = WalletUtils.generateWalletFile("myPassw0rd!@#", ecKeyPair, destinationDiretory);
-```
-
-Or, if you want to create a wallet file with a newly created account, you simply can call:
-
-```java
-String fileName = WalletUtils.generateNewWalletFile("myPassw0rd!@#", destinationDiretory);
-```
-
-There's also the possibility to create a new BIP-39 compatible wallet (generating the mnemonic words):
-
-```java
-Bip39Wallet bip39Wallet = WalletUtils.generateBip39Wallet("myPassw0rd!@#", destinationDirectory);
-String mnemonicWords = bip39Wallet.getMnemonic();
-System.out.println("mnemonic words: " + mnemonicWords);
-```
-
-And, load the credential based on the mnemonic words:
-
-```java
-Credentials credentials = WalletUtils.loadBip39Credentials("myPassw0rd!@#", mnemonicWords);
-```
-
-* Build a raw transaction with a 2/3 multisig address:
-
-```java
-ECKeyPair ecKeyPair1 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("Kx9xMQVipBYAAjSxYEoZVatdVQfhYHbMFWSYPinSgAVd1d4Qgbpf"));
-ECKeyPair ecKeyPair2 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("KzbKux44feMetfqdA5Cze9FNAkydRmphoFKnK5TGDdEQ8Nv1poXV"));
-ECKeyPair ecKeyPair3 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("L3hxLFUsNDmkzW6QoLH2PGc2DqGG5Kj1gCVwmr7duWJ9FReYWnjU"));
-
-String multiSigAddress = Keys.getMultiSigAddress(
-                2,
-                ecKeyPair1.getPublicKey(),
-                ecKeyPair2.getPublicKey(),
-                ecKeyPair3.getPublicKey()
-);
-
-RawVerificationScript verificationScript = Keys.getVerificationScriptFromPublicKey(
-                2,
-                ecKeyPair1.getPublicKey(),
-                ecKeyPair2.getPublicKey(),
-                ecKeyPair3.getPublicKey()
-);
-
-RawTransaction rawTx = RawTransaction.createContractTransaction(
-                null,
-                null,
-                Arrays.asList(
-                        new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0)
-                ),
-                Arrays.asList(
-                        new RawTransactionOutput(0, NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                        new RawTransactionOutput(1, NEOAsset.HASH_ID, "900.0", multiSigAddress)
-                )
-);
-
-// serialize the base raw transaction
-// Important: without scripts!
-byte[] rawTxUnsignedArray = rawTx.toArray();
-
-// add 2 signatures out of the 3 possible -- order here is important!
-List<RawInvocationScript> rawInvocationScriptList = new ArrayList<>();
-rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(rawTxUnsignedArray, ecKeyPair1)));
-rawInvocationScriptList.add(new RawInvocationScript(Sign.signMessage(rawTxUnsignedArray, ecKeyPair2)));
-
-// give the invocation and verification script to the raw transaction:
-rawTx.addScript(rawInvocationScriptList, verificationScript);
-
-byte[] rawTxSignedArray = rawTx.toArray();
-String rawTransactionHexString = Numeric.toHexStringNoPrefix(rawTxSignedArray);
-System.out.println("rawTransactionHexString: " + rawTransactionHexString);
-```
-
-* Send the raw transaction (built in the example above) to a validator node:
-
-```java
-NeoSendRawTransaction sendRawTransactionReq = neow3j.sendRawTransaction(rawTransactionHexString).send();
-System.out.println(sendRawTransactionReq.getResult());
-```
 
 For more code snippets and examples, check the [neow3j-examples](https://github.com/neow3j/neow3j-examples) repository.
 
@@ -268,7 +205,7 @@ Help the development of neow3j by donating to the following addresses:
 
 [Here you can find](https://github.com/neow3j/neow3j-docs/blob/master/docs/json-rpc-supported-methods.md) a complete list of all JSON-RPC methods supported by `neow3j`.
 
-In summary, `neow3j` supports JSON-RPC API [version 2.9.*](https://docs.neo.org/en-us/node/cli/2.9.4/api.html) and [version 2.10.*](https://docs.neo.org/en-us/node/cli/apigen.html).
+In summary, `neow3j` supports JSON-RPC API [version 2.10.2](https://docs.neo.org/docs/en-us/reference/rpc/latest-version/api.html) and lower.
 
 ## Why "neow3j"?
 
