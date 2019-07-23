@@ -30,6 +30,7 @@ public class ScriptBuilder {
 
     /**
      * Appends an OpCode to the script.
+     *
      * @param opCode The OpCode to append.
      * @return this ScriptBuilder object.
      */
@@ -40,18 +41,19 @@ public class ScriptBuilder {
 
     /**
      * Appends an app call to the script.
+     *
      * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param operation The operation to call.
-     * @param params The parameters that will be used in the app call. Need to be in correct order.
+     * @param operation  The operation to call.
+     * @param params     The parameters that will be used in the app call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder appCall(byte[] scriptHash, String operation,
-                                        List<ContractParameter> params) {
+                                 List<ContractParameter> params) {
 
         if (params == null || params.isEmpty()) {
             if (operation == null) {
                 return appCall(scriptHash);
-            }  else {
+            } else {
                 return appCall(scriptHash, operation);
             }
         } else if (operation == null) {
@@ -70,8 +72,9 @@ public class ScriptBuilder {
 
     /**
      * Appends an app call to the script.
+     *
      * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param params The parameters that will be used in the app call. Need to be in correct order.
+     * @param params     The parameters that will be used in the app call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder appCall(byte[] scriptHash, List<ContractParameter> params) {
@@ -84,8 +87,9 @@ public class ScriptBuilder {
 
     /**
      * Appends an app call to the script.
+     *
      * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param operation The operation to call.
+     * @param operation  The operation to call.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder appCall(byte[] scriptHash, String operation) {
@@ -97,6 +101,7 @@ public class ScriptBuilder {
 
     /**
      * Appends an app call to the script.
+     *
      * @param scriptHash The script hash of the contract to call in big-endian order.
      * @return this ScriptBuilder object.
      */
@@ -106,6 +111,7 @@ public class ScriptBuilder {
 
     /**
      * Appends a tail call to the script.
+     *
      * @param scriptHash The script hash of the contract to call in big-endian order.
      * @return this ScriptBuilder object.
      */
@@ -132,7 +138,7 @@ public class ScriptBuilder {
         if (operationBytes.length > 252)
             throw new IllegalArgumentException("Provided operation is too long.");
 
-        byte[] callArgument = ArrayUtils.concatenate((byte)operationBytes.length, operationBytes);
+        byte[] callArgument = ArrayUtils.concatenate((byte) operationBytes.length, operationBytes);
         writeByte(OpCode.SYSCALL.getValue());
         write(callArgument);
         return this;
@@ -144,7 +150,7 @@ public class ScriptBuilder {
             case SIGNATURE:
                 pushData(Numeric.hexStringToByteArray((String) value));
             case BYTE_ARRAY:
-                String valueString = (String)value;
+                String valueString = (String) value;
                 if (Numeric.isValidHexString(valueString)) {
                     pushData(Numeric.hexStringToByteArray((String) value));
                 } else {
@@ -152,25 +158,25 @@ public class ScriptBuilder {
                 }
                 break;
             case BOOLEAN:
-                pushBoolean((boolean)value);
+                pushBoolean((boolean) value);
                 break;
             case INTEGER:
-                pushInteger(new BigInteger((String)value));
+                pushInteger(new BigInteger((String) value));
                 break;
             case HASH160:
             case HASH256:
                 byte[] bytes = Numeric.hexStringToByteArray((String) value);
                 // Needs to be added in little-endian order.
-                pushData(ArrayUtils.reverseArray(bytes)) ;
+                pushData(ArrayUtils.reverseArray(bytes));
                 break;
             case PUBLIC_KEY:
                 // TODO 10.07.19 claude: Implement
                 throw new UnsupportedOperationException();
             case STRING:
-                pushData((String)value);
+                pushData((String) value);
                 break;
             case ARRAY:
-                pushArray((ContractParameter[])value);
+                pushArray((ContractParameter[]) value);
                 break;
             default:
                 throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
@@ -210,6 +216,7 @@ public class ScriptBuilder {
 
     /**
      * Adds the data to the script, prefixed with the correct code for its length.
+     *
      * @param data The data to add to the script.
      * @return this ScriptBuilder object.
      */
@@ -224,6 +231,7 @@ public class ScriptBuilder {
 
     /**
      * Adds the data to the script, prefixed with the correct code for its length.
+     *
      * @param data The data to add to the script.
      * @return this ScriptBuilder object.
      */
@@ -245,7 +253,7 @@ public class ScriptBuilder {
             // If the data is 256 to 65535 (0xffff) bytes long then write PUSHDATA2 + uint16
             writeByte(OpCode.PUSHDATA2.getValue());
             writeShort(length);
-        } else{
+        } else {
             // If the data is bigger than 65536 then write PUSHDATA4 + uint32
             writeByte(OpCode.PUSHDATA4.getValue());
             writeInt(length);
@@ -254,7 +262,7 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder pushArray(ContractParameter[] params) {
-        for (int i = params.length-1; i >= 0; i--) {
+        for (int i = params.length - 1; i >= 0; i--) {
             pushParam(params[i]);
         }
         pushInteger(params.length);
@@ -263,35 +271,53 @@ public class ScriptBuilder {
     }
 
     private void writeByte(int v) {
-        try { stream.writeByte(v); }
-        catch (IOException e) {throw new IllegalStateException("Got IOException without doing IO.");}
+        try {
+            stream.writeByte(v);
+        } catch (IOException e) {
+            throw new IllegalStateException("Got IOException without doing IO.");
+        }
     }
 
     private void writeShort(int v) {
         buffer.putInt(0, v);
-        try { stream.write(buffer.array(), 0, 2); }
-        catch (IOException e) {throw new IllegalStateException("Got IOException without doing IO.");}
+        try {
+            stream.write(buffer.array(), 0, 2);
+        } catch (IOException e) {
+            throw new IllegalStateException("Got IOException without doing IO.");
+        }
     }
 
     private void writeInt(int v) {
         buffer.putInt(0, v);
-        try { stream.write(buffer.array(), 0, 4); }
-        catch (IOException e) {throw new IllegalStateException("Got IOException without doing IO.");}
+        try {
+            stream.write(buffer.array(), 0, 4);
+        } catch (IOException e) {
+            throw new IllegalStateException("Got IOException without doing IO.");
+        }
     }
 
     private void write(byte[] data) {
-        try { stream.write(data); }
-        catch (IOException e) {throw new IllegalStateException("Got IOException without doing IO.");}
+        try {
+            stream.write(data);
+        } catch (IOException e) {
+            throw new IllegalStateException("Got IOException without doing IO.");
+        }
     }
 
     private void writeReversed(byte[] data) {
-        try { stream.write(ArrayUtils.reverseArray(data)); }
-        catch (IOException e) {throw new IllegalStateException("Got IOException without doing IO.");}
+        try {
+            stream.write(ArrayUtils.reverseArray(data));
+        } catch (IOException e) {
+            throw new IllegalStateException("Got IOException without doing IO.");
+        }
     }
 
     public byte[] toArray() {
-        try { stream.flush(); }
-        catch (IOException e) {throw new IllegalStateException("Got IOException without doing IO.");}
+        try {
+            stream.flush();
+        } catch (IOException e) {
+            throw new IllegalStateException("Got IOException without doing IO.");
+        }
         return byteStream.toByteArray();
     }
 }
