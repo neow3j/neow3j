@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,9 @@ public class ContractDeploymentScript extends NeoSerializable {
     private ContractFunctionProperties functionProperties;
 
     private byte[] scriptHash;
+
+    public ContractDeploymentScript() {
+    }
 
     public ContractDeploymentScript(byte[] scriptBinary, ContractFunctionProperties functionProperties, ContractDescriptionProperties descriptionProperties) {
         this.scriptBinary = scriptBinary;
@@ -60,7 +64,7 @@ public class ContractDeploymentScript extends NeoSerializable {
             this.descriptionProperties = reader.readSerializable(ContractDescriptionProperties.class);
             this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
             this.scriptBinary = reader.readPushData();
-            this.scriptHash = getScriptHash(this.scriptBinary);
+            this.scriptHash = ArrayUtils.reverseArray(getScriptHash(this.scriptBinary));
         } catch (IllegalAccessException e) {
             LOG.error("Can't access the specified object.", e);
         } catch (InstantiationException e) {

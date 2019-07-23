@@ -23,6 +23,9 @@ public class ContractDescriptionProperties extends NeoSerializable {
 
     private String description;
 
+    public ContractDescriptionProperties() {
+    }
+
     public ContractDescriptionProperties(String name, String version, String author, String email, String description) {
         this.name = name;
         this.version = version;
