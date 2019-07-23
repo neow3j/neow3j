@@ -59,7 +59,7 @@ public class ContractFunctionProperties extends NeoSerializable {
         return isPayable;
     }
 
-    private List<ContractParameterTypeSerializable> toSerializable(List<ContractParameterType> parameterTypes) {
+    private static List<ContractParameterTypeSerializable> toSerializable(List<ContractParameterType> parameterTypes) {
         if (parameterTypes == null) {
             return Arrays.asList();
         }
@@ -68,14 +68,14 @@ public class ContractFunctionProperties extends NeoSerializable {
                 .collect(Collectors.toList());
     }
 
-    private ContractParameterTypeSerializable toSerializable(ContractParameterType parameterType) {
+    private static ContractParameterTypeSerializable toSerializable(ContractParameterType parameterType) {
         if (parameterType == null) {
             return null;
         }
         return new ContractParameterTypeSerializable(parameterType);
     }
 
-    private List<ContractParameterType> fromSerializable(List<ContractParameterTypeSerializable> parameterTypes) {
+    private static List<ContractParameterType> fromSerializable(List<ContractParameterTypeSerializable> parameterTypes) {
         if (parameterTypes == null) {
             return Arrays.asList();
         }
@@ -84,7 +84,7 @@ public class ContractFunctionProperties extends NeoSerializable {
                 .collect(Collectors.toList());
     }
 
-    private ContractParameterType fromSerializable(ContractParameterTypeSerializable parameterType) {
+    private static ContractParameterType fromSerializable(ContractParameterTypeSerializable parameterType) {
         if (parameterType == null) {
             return null;
         }

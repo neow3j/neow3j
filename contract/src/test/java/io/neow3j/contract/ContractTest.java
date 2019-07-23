@@ -33,7 +33,7 @@ public class ContractTest {
     }
 
     @Test
-    public void deploy() {
+    public void deploy() throws IOException {
         Contract c1 = new ContractDeployment.Builder(this.neow3j)
                 .loadAVMFile("file.avm")
                 .needsStorage()

@@ -11,12 +11,25 @@ import static io.neow3j.utils.Strings.isEmpty;
 
 public class Contract {
 
-    // TODO: 2019-07-03 Guil:
-    // Maybe, should we use the NEP6Contract class?
+    // TODO: 2019-07-24 Guil:
+    // Apply the build pattern here?
 
     private final byte[] contractScriptHash;
 
+    private ContractDeploymentScript deploymentScript;
+
     private NeoContractInterface abi;
+
+    public Contract(ContractDeploymentScript deploymentScript) {
+        this.deploymentScript = deploymentScript;
+        this.contractScriptHash = deploymentScript.getScriptHash();
+    }
+
+    public Contract(ContractDeploymentScript deploymentScript, NeoContractInterface abi) {
+        this.deploymentScript = deploymentScript;
+        this.contractScriptHash = deploymentScript.getScriptHash();
+        this.abi = abi;
+    }
 
     public Contract(byte[] contractScriptHash) {
         this.contractScriptHash = contractScriptHash;
@@ -29,6 +42,10 @@ public class Contract {
 
     public byte[] getContractScriptHash() {
         return contractScriptHash;
+    }
+
+    public ContractDeploymentScript getDeploymentScript() {
+        return deploymentScript;
     }
 
     public NeoContractInterface getAbi() {
@@ -57,6 +74,7 @@ public class Contract {
     }
 
     public List<ContractParameter> getFunctionParameters(final String functionName) {
+        throwIfABINotSet();
         return abi.getFunctions()
                 .stream()
                 .filter(f -> isEmpty(f.getName()))
@@ -67,6 +85,7 @@ public class Contract {
     }
 
     public ContractParameterType getFunctionReturnType(final String functionName) {
+        throwIfABINotSet();
         return abi.getFunctions()
                 .stream()
                 .filter(f -> isEmpty(f.getName()))
@@ -77,6 +96,7 @@ public class Contract {
     }
 
     public List<ContractParameter> getEventParameters(final String eventName) {
+        throwIfABINotSet();
         return abi.getEvents()
                 .stream()
                 .filter(e -> isEmpty((e.getName())))
@@ -84,6 +104,12 @@ public class Contract {
                 .findFirst()
                 .map(NeoContractEvent::getParameters)
                 .orElseThrow(() -> new IllegalArgumentException("No parameters found for the event (" + eventName + ")."));
+    }
+
+    private void throwIfABINotSet() {
+        if (abi == null) {
+            throw new IllegalStateException("ABI should be set first.");
+        }
     }
 
 }
