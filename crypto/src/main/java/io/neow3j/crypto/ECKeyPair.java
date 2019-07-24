@@ -1,8 +1,8 @@
 package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
@@ -10,14 +10,21 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.BigIntegers;
 
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
 
-import static io.neow3j.crypto.KeyUtils.PRIVATE_KEY_SIZE;
-import static io.neow3j.crypto.KeyUtils.PUBLIC_KEY_SIZE;
+import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
+import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
+import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 
 /**
@@ -27,10 +34,15 @@ public class ECKeyPair {
     private final BigInteger privateKey;
     private final BigInteger publicKey;
 
+    static {
+        addBouncyCastle();
+    }
+
     public ECKeyPair(BigInteger privateKey, BigInteger publicKey) {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
+
 
     public BigInteger getPrivateKey() {
         return privateKey;
@@ -38,6 +50,15 @@ public class ECKeyPair {
 
     public BigInteger getPublicKey() {
         return publicKey;
+    }
+
+    /**
+     * Constructs the NEO address from this key pairs public key.
+     * The address is constructed ad hoc each time this method is called.
+     * @return the NEO address of the public key.
+     */
+    public String getAddress() {
+        return Keys.getAddress(this.getPublicKey());
     }
 
     /**
@@ -99,18 +120,27 @@ public class ECKeyPair {
         return create(Numeric.toBigInt(privateKey));
     }
 
-    public byte[] toScriptHash() {
-        return KeyUtils.toScriptHash(Keys.getAddress(this));
+    /**
+     * Create a keypair using SECP-256r1 curve.<br><br>
+     *
+     * Private keypairs are encoded using PKCS8<br><br>
+     *
+     * Private keys are encoded using X.509<br><br>
+     */
+    public static ECKeyPair createEcKeyPair() throws InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException {
+        KeyPair keyPair = createSecp256r1KeyPair();
+        return create(keyPair);
     }
 
-    public RawVerificationScript getVerificationScriptFromPublicKey() {
-        return Keys.getVerificationScriptFromPublicKey(
-                Numeric.toBytesPadded(this.getPublicKey(), PUBLIC_KEY_SIZE));
-    }
+    private static KeyPair createSecp256r1KeyPair() throws NoSuchProviderException,
+            NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
-    public byte[] getVerificationScriptAsArrayFromPublicKey() {
-        return Keys.getVerificationScriptFromPublicKey(
-                Numeric.toBytesPadded(this.getPublicKey(), PUBLIC_KEY_SIZE)).toArray();
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+
+        ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec("secp256r1");
+        keyPairGenerator.initialize(ecGenParameterSpec, SecureRandomUtils.secureRandom());
+        return keyPairGenerator.generateKeyPair();
     }
 
     public String exportAsWIF() {
@@ -125,6 +155,26 @@ public class ECKeyPair {
         String wif = Base58.encode(data);
         Arrays.fill(data, (byte) 0);
         return wif;
+    }
+
+    public byte[] serialize() {
+        byte[] privateKey = Keys.privateKeyIntegerToByteArray(this.getPublicKey());
+        byte[] publicKey = Keys.publicKeyIntegerToByteArray(this.getPublicKey());
+
+        byte[] result = Arrays.copyOf(privateKey, PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE);
+        System.arraycopy(publicKey, 0, result, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE);
+        return result;
+    }
+
+    public static ECKeyPair deserialize(byte[] input) {
+        if (input.length != PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE) {
+            throw new RuntimeException("Invalid input key size");
+        }
+
+        BigInteger privateKey = Numeric.toBigInt(input, 0, PRIVATE_KEY_SIZE);
+        BigInteger publicKey = Numeric.toBigInt(input, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE);
+
+        return new ECKeyPair(privateKey, publicKey);
     }
 
     @Override
@@ -153,4 +203,5 @@ public class ECKeyPair {
         result = 31 * result + (publicKey != null ? publicKey.hashCode() : 0);
         return result;
     }
+
 }

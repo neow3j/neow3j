@@ -33,6 +33,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class BinaryWriter implements AutoCloseable {
 
     private DataOutputStream writer;
@@ -84,7 +86,7 @@ public class BinaryWriter implements AutoCloseable {
         if (v.length() > length) {
             throw new IllegalArgumentException();
         }
-        byte[] bytes = v.getBytes("UTF-8");
+        byte[] bytes = v.getBytes(UTF_8);
         if (bytes.length > length) {
             throw new IllegalArgumentException();
         }
@@ -128,6 +130,10 @@ public class BinaryWriter implements AutoCloseable {
         writeSerializableFixed(v);
     }
 
+    public void writeSerializableFixed(NeoSerializable v) throws IOException {
+        v.serialize(this);
+    }
+
     public void writeSerializableFixed(List<? extends NeoSerializable> v) throws IOException {
         for (int i = 0; i < v.size(); i++) {
             v.get(i).serialize(this);
@@ -162,7 +168,4 @@ public class BinaryWriter implements AutoCloseable {
         }
     }
 
-    public void writeVarString(String v) throws IOException {
-        writeVarBytes(v.getBytes("UTF-8"));
-    }
 }

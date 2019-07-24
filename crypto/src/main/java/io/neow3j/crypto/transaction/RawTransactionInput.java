@@ -4,11 +4,10 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
-import org.bouncycastle.util.BigIntegers;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Objects;
 
 public class RawTransactionInput extends NeoSerializable {
@@ -65,7 +64,6 @@ public class RawTransactionInput extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(this.prevHash)));
-        byte[] prevIndex = BigIntegers.asUnsignedByteArray(2, BigInteger.valueOf(this.prevIndex));
-        writer.write(ArrayUtils.reverseArray(prevIndex));
+        writer.write(BigIntegers.toLittleEndianByteArrayZeroPadded(this.prevIndex, 2));
     }
 }
