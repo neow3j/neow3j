@@ -17,7 +17,9 @@ public enum TransactionType {
     STATE_UPDATER_TRANSACTION("StateUpdaterTransaction", 0x91, 0),
     DESTROY_TRANSACTION("DestroyTransaction", 0x18, 0),
     PUBLISH_TRANSACTION("PublishTransaction", 0xd0, 0),
-    INVOCATION_TRANSACTION("InvocationTransaction", 0xd1, 0);
+    INVOCATION_TRANSACTION("InvocationTransaction", 0xd1, 1);
+
+    public static final byte DEFAULT_VERSION = 0;
 
     private String jsonValue;
     private byte byteValue;

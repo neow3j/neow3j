@@ -1,5 +1,12 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.model.types.AssetType;
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.NEOAsset;
+import io.neow3j.model.types.NodePluginType;
+import io.neow3j.model.types.TransactionAttributeUsageType;
+import io.neow3j.model.types.TransactionType;
 import io.neow3j.model.types.*;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
@@ -34,6 +41,7 @@ import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
@@ -66,6 +74,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -2110,5 +2120,69 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(textValue, is("Test message"));
         assertThat(intValue, is(BigInteger.valueOf(12345)));
+    }
+
+    @Test
+    public void testListPlugins() {
+        buildResponse(
+            "{\n"
+                + "    \"jsonrpc\": \"2.0\",\n"
+                + "    \"id\": 1,\n"
+                + "    \"result\": [\n"
+                + "        {\n"
+                + "            \"name\": \"ApplicationLogs\",\n"
+                + "            \"version\": \"2.10.2.0\",\n"
+                + "            \"interfaces\": [\n"
+                + "                \"IRpcPlugin\",\n"
+                + "                \"IPersistencePlugin\"\n"
+                + "            ]\n"
+                + "        },\n"
+                + "        {\n"
+                + "            \"name\": \"RpcSystemAssetTrackerPlugin\",\n"
+                + "            \"version\": \"2.10.2.0\",\n"
+                + "            \"interfaces\": [\n"
+                + "                \"IPersistencePlugin\",\n"
+                + "                \"IRpcPlugin\"\n"
+                + "            ]\n"
+                + "        },\n"
+                + "        {\n"
+                + "            \"name\": \"SimplePolicyPlugin\",\n"
+                + "            \"version\": \"2.10.2.0\",\n"
+                + "            \"interfaces\": [\n"
+                + "                \"ILogPlugin\",\n"
+                + "                \"IPolicyPlugin\"\n"
+                + "            ]\n"
+                + "        }\n"
+                + "    ]\n"
+                + "}"
+        );
+
+        List<NeoListPlugins.Plugin> plugins = deserialiseResponse(NeoListPlugins.class).getPlugins();
+        assertNotNull(plugins);
+        assertEquals(3, plugins.size());
+
+        NeoListPlugins.Plugin plugin = plugins.get(0);
+        assertEquals(NodePluginType.APPLICATION_LOGS, NodePluginType.valueOfName(plugin.getName()));
+        assertEquals("2.10.2.0", plugin.getVersion());
+        assertNotNull(plugin.getInterfaces());
+        assertEquals(2, plugin.getInterfaces().size());
+        assertEquals("IRpcPlugin", plugin.getInterfaces().get(0));
+        assertEquals("IPersistencePlugin", plugin.getInterfaces().get(1));
+
+        plugin = plugins.get(1);
+        assertEquals(NodePluginType.RPC_SYSTEM_ASSET_TRACKER, NodePluginType.valueOfName(plugin.getName()));
+        assertEquals("2.10.2.0", plugin.getVersion());
+        assertNotNull(plugin.getInterfaces());
+        assertEquals(2, plugin.getInterfaces().size());
+        assertEquals("IPersistencePlugin", plugin.getInterfaces().get(0));
+        assertEquals("IRpcPlugin", plugin.getInterfaces().get(1));
+
+        plugin = plugins.get(2);
+        assertEquals(NodePluginType.SIMPLE_POLICY, NodePluginType.valueOfName(plugin.getName()));
+        assertEquals("2.10.2.0", plugin.getVersion());
+        assertNotNull(plugin.getInterfaces());
+        assertEquals(2, plugin.getInterfaces().size());
+        assertEquals("ILogPlugin", plugin.getInterfaces().get(0));
+        assertEquals("IPolicyPlugin", plugin.getInterfaces().get(1));
     }
 }

@@ -10,12 +10,6 @@ import static org.junit.Assert.assertThat;
 public class NEOAssetTest {
 
     @Test
-    public void testToBigInt() {
-        assertThat(NEOAsset.toBigInt(null), is(BigInteger.ZERO));
-        assertThat(NEOAsset.toBigInt("10000000000"), is(BigInteger.valueOf(1000000000000000000L)));
-    }
-
-    @Test
     public void testField_HashId() {
         assertThat(NEOAsset.HASH_ID, is("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b"));
     }

@@ -1,13 +1,11 @@
 package io.neow3j.crypto;
 
 import io.neow3j.utils.Numeric;
-import io.neow3j.utils.ArrayUtils;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 /**
  * Cryptographic hash functions.
@@ -30,6 +28,10 @@ public class Hash {
     public static byte[] sha256AndThenRipemd160(byte[] input) {
         byte[] sha256 = sha256(input);
         return ripemd160(sha256);
+    }
+
+    public static byte[] calculateScriptHash(byte[] script) {
+        return sha256AndThenRipemd160(script);
     }
 
     /**
@@ -129,33 +131,6 @@ public class Hash {
             input = array;
         }
         return sha256(input);
-    }
-
-    public static String base58CheckEncode(byte[] data) {
-        byte[] checksum = sha256(sha256(data));
-        byte[] buffer = new byte[data.length + 4];
-        System.arraycopy(data, 0, buffer, 0, data.length);
-        System.arraycopy(checksum, 0, buffer, data.length, 4);
-        return Base58.encode(buffer);
-    }
-
-    public static byte[] base58CheckDecode(String input) {
-        byte[] buffer = Base58.decode(input);
-        if (buffer.length < 4) {
-            throw new IllegalArgumentException("The input should contain at least 4 bytes.");
-        }
-
-        byte[] data = ArrayUtils.getFirstNBytes(buffer, buffer.length - 4);
-        byte[] givenChecksum = ArrayUtils.getLastNBytes(buffer, 4);
-
-        byte[] calculatedChecksum = sha256(sha256(data));
-        byte[] first4BytesCalculatedChecksum = ArrayUtils.getFirstNBytes(calculatedChecksum, 4);
-
-        if (!Arrays.equals(givenChecksum, first4BytesCalculatedChecksum)) {
-            throw new IllegalArgumentException();
-        }
-
-        return data;
     }
 
 }

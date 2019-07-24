@@ -1,5 +1,6 @@
 package io.neow3j.crypto;
 
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
 /**
@@ -10,10 +11,37 @@ public class Credentials {
     private final ECKeyPair ecKeyPair;
     private final String address;
 
-    private Credentials(ECKeyPair ecKeyPair, String address) {
+    /**
+     * Creates credentials from the given key pair. Derives corresponding address from the key pair.
+     */
+    public Credentials(ECKeyPair ecKeyPair) {
         this.ecKeyPair = ecKeyPair;
-        this.address = address;
+        this.address = ecKeyPair.getAddress();
     }
+
+    /**
+     * Constructs credentials only with the address. The key pair is set to null.
+     * Use this constructor when you don't have the full key material available yet. E.g. private
+     * key is not yet decrypted.
+     */
+    public Credentials(String address) {
+        this.address = address;
+        this.ecKeyPair = null;
+    }
+
+    /**
+     * Constructs credentials with the given private and public key. Derives corresponding address
+     * from the key pair.
+     */
+    public Credentials(String privateKey, String publicKey) {
+        byte[] pubKey = Numeric.hexStringToByteArray(publicKey);
+        if (!Keys.isPublicKeyEncoded(pubKey)) {
+            pubKey = Keys.getPublicKeyEncoded(pubKey);
+        }
+        this.ecKeyPair = new ECKeyPair(Numeric.toBigInt(privateKey), Numeric.toBigInt(pubKey));
+        this.address = ecKeyPair.getAddress();
+    }
+
 
     public ECKeyPair getEcKeyPair() {
         return ecKeyPair;
@@ -23,26 +51,10 @@ public class Credentials {
         return address;
     }
 
-    public static Credentials create(ECKeyPair ecKeyPair) {
-        String address = Keys.getAddress(ecKeyPair);
-        return new Credentials(ecKeyPair, address);
-    }
-
     public byte[] toScriptHash() {
-        return KeyUtils.toScriptHash(this.address);
+        return Keys.toScriptHash(this.address);
     }
 
-    public static Credentials create(String privateKey, String publicKey) {
-        byte[] pubKey = Numeric.hexStringToByteArray(publicKey);
-        if (!Keys.isPublicKeyEncoded(pubKey)) {
-            pubKey = Keys.getPublicKeyEncoded(pubKey);
-        }
-        return create(new ECKeyPair(Numeric.toBigInt(privateKey), Numeric.toBigInt(pubKey)));
-    }
-
-    public static Credentials create(String privateKey) {
-        return create(ECKeyPair.create(Numeric.toBigInt(privateKey)));
-    }
 
     public String exportAsWIF() {
         return ecKeyPair.exportAsWIF();
