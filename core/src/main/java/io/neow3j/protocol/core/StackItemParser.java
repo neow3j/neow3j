@@ -1,8 +1,8 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.crypto.KeyUtils;
 import io.neow3j.model.types.StackItem;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
@@ -12,7 +12,7 @@ public class StackItemParser {
     public static String readAddress(StackItem parameter) {
         if (parameter.getType() == StackItemType.BYTE_ARRAY) {
             String param = String.valueOf(parameter.getValue());
-            return param.isEmpty() ? "" : KeyUtils.scriptHashToAddress(param);
+            return param.isEmpty() ? "" : Keys.scriptHashToAddress(param);
         }
         return null;
     }
