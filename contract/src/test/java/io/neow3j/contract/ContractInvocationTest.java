@@ -1,19 +1,25 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.ContractInvocation.Builder;
+import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.InvocationTransaction;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
 import io.neow3j.wallet.Utxo;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
@@ -38,9 +44,16 @@ public class ContractInvocationTest {
     /**
      * Script hash from name service smart contract (NS SC) at
      * https://github.com/CityOfZion/python-smart-contract-workshop/blob/master/4-domain.py.
-     * Compiled with Neo EcoLab compiler.
+     * Compiled with Neo EcoLab compiler. The hash is in big-endian order.
      */
     private static final String NS_SC_SCRIPT_HASH = "1a70eac53f5882e40dd90f55463cce31a9f72cd4";
+
+    /**
+     * Script hash from number incrementing smart contract at
+     * https://github.com/CityOfZion/python-smart-contract-workshop/blob/master/3-storage.py
+     * Compiled with Neo EcoLab compiler. The hash is in big-endian order.
+     */
+    private static final String NUMBER_INCREMENT_SC_SCRIPT_HASH = "bff561a41a780fa0a4771d03bcc924e90c04fc8e";
 
     /**
      * First parameter to the name service smart contract, used for registering a name.
@@ -173,6 +186,38 @@ public class ContractInvocationTest {
                 "2203339dcd8eee90141400131b26785f2b522ea420e6f432611ffdb1bf0b2e1f7473eef17124faf227f27693bffef0765467" +
                 "7025bae09b90e8e5a3c0918c35a3c8ec6ab97090541687bd22321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc" +
                 "2b7548ca2a46c4fcf4aac";
+        assertEquals(expextedTxHex, txHex);
+    }
+
+    /**
+     * This tests the raw transaction array built by the ContractInvocation for an invocation made
+     * to the number incrementing smart contract. The contract takes no parameters. The transaction
+     * was executed on the Neo EcoLab private network. <br><br>
+     *
+     * No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
+     * to attach a random remark which has to be mocked. The mock value was extracted from the
+     * transaction executed on the private net.
+     */
+    @Test
+    public void invocation_without_parameters() {
+
+        ContractInvocation.Builder builder = new ContractInvocation.Builder(EMPTY_NEOW3J);
+        builder = spy(builder);
+        byte[] randomRemark = Numeric.hexStringToByteArray("313536333839373239313436343632313664663666");
+        doReturn(randomRemark).when(builder).createRandomRemark();
+        InvocationTransaction tx = builder
+                .contractScriptHash(NUMBER_INCREMENT_SC_SCRIPT_HASH)
+                .account(ACCT)
+                .build()
+                .sign()
+                .getTransaction();
+
+        String txHex = Numeric.toHexStringNoPrefix(tx.toArray());
+        // Transaction hex string produced from a valid transaction executed on the EcoLab private net.
+        String expextedTxHex = "d10115678efc040ce924c9bc031d77a4a00f781aa461f5bf0000000000000000022023ba2703c53263e8d" +
+                "6e522dc32203339dcd8eee9f01531353633383937323931343634363231366466366600000141408a9de1564fbdd53315f41" +
+                "1237a9865e5976d362e39f60f1045dce03cd95eb16846cd69443e6dc3ddbf2c53e5eabc863cf5ce588d2e6eef60cfd7e84ec" +
+                "de879cb2321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac";
         assertEquals(expextedTxHex, txHex);
     }
 
