@@ -37,6 +37,10 @@ public class InvocationTransaction extends RawTransaction {
                 ArrayUtils.reverseArray(reader.readBytes(8)));
     }
 
+    public byte[] getContractScript() {
+        return this.contractScript;
+    }
+
     public static class Builder extends RawTransaction.Builder<Builder> {
 
         private byte[] contractScript;
