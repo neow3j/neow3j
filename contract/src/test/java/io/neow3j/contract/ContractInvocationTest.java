@@ -1,25 +1,19 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.ContractInvocation.Builder;
-import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.InvocationTransaction;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
 import io.neow3j.wallet.Utxo;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
@@ -73,7 +67,7 @@ public class ContractInvocationTest {
      * to the name service smart contract with the 'register' operation. The transaction was
      * executed on the Neo EcoLab private network. The only GAS input that was used for paying the
      * network fee is mocked in the test. <br><br>
-     *
+     * <p>
      * The EcoLab always attaches an attribute to the transaction that holds the script hash of the
      * invoking account. We only do this in case the inputs and outputs of the transaction are
      * empty, i.e. if no fee is attached. Because this is not the case in this test, the script hash
@@ -112,7 +106,7 @@ public class ContractInvocationTest {
      * This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
      * executed on the Neo EcoLab private network. <br><br>
-     *
+     * <p>
      * No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
      * to attach a random remark which is usually based on some randomness and the current time.
      * This value was extracted from the transaction executed on the private net to mock the random
@@ -147,11 +141,11 @@ public class ContractInvocationTest {
      * This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
      * executed on the Neo EcoLab private network. <br><br>
-     *
+     * <p>
      * This time the transaction was extended with a NEO output to some other address then the one
      * doing the invocation. The required inputs for that output where mocked according to the Utxo
      * that was available when running the transaction on the EcoLab private net.
-     *
+     * <p>
      * The EcoLab always attaches an attribute to the transaction that holds the script hash of the
      * invoking account. Therefore, in this test, the script hash attribute is added manually in the
      * builder.
@@ -193,7 +187,7 @@ public class ContractInvocationTest {
      * This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the number incrementing smart contract. The contract takes no parameters. The transaction
      * was executed on the Neo EcoLab private network. <br><br>
-     *
+     * <p>
      * No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
      * to attach a random remark which has to be mocked. The mock value was extracted from the
      * transaction executed on the private net.
@@ -286,13 +280,6 @@ public class ContractInvocationTest {
     public void not_adding_required_script_hash() {
         new ContractInvocation.Builder(EMPTY_NEOW3J)
                 .account(ACCT)
-                .build();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void not_adding_required_account() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(NS_SC_SCRIPT_HASH)
                 .build();
     }
 
