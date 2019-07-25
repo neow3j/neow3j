@@ -45,7 +45,8 @@ public class ContractInvocation {
     private Account account;
     private InvocationTransaction tx;
 
-    private ContractInvocation() {}
+    private ContractInvocation() {
+    }
 
     private ContractInvocation(final Builder builder) {
         this.neow3j = builder.neow3j;
@@ -59,7 +60,6 @@ public class ContractInvocation {
     /**
      * Gets the transaction object that will be serialized and sent to the RPC node when
      * {@link ContractInvocation#invoke()} is called.
-     *
      */
     public InvocationTransaction getTransaction() {
         return tx;
@@ -73,9 +73,9 @@ public class ContractInvocation {
      * witness with {@link ContractInvocation#addWitness(RawScript)}.
      *
      * @return this contract invocation object.
-     * @throws IOException if a connection problem with the RPC node arises.
+     * @throws IOException            if a connection problem with the RPC node arises.
      * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
-     * node.
+     *                                node.
      */
     public ContractInvocation invoke() throws IOException, ErrorResponseException {
         String rawTx = Numeric.toHexStringNoPrefix(tx.toArray());
@@ -92,7 +92,7 @@ public class ContractInvocation {
      * invocation runs thorugh a `CheckWitness()` statement in the smart contract code.
      *
      * @return the result of the invocation.
-     * @throws IOException if a connection problem with the RPC node arises.
+     * @throws IOException            if a connection problem with the RPC node arises.
      * @throws ErrorResponseException if the call to the node lead to an error. Not due to the
      *                                contract invocation itself but due to the call in general.
      */
@@ -140,8 +140,8 @@ public class ContractInvocation {
      * transaction object ({@link ContractInvocation#getTransaction()}) which is not possible in the
      * builder.
      *
-     * @param witness   The witness to be added.
-     * @return          this invocation object.
+     * @param witness The witness to be added.
+     * @return this invocation object.
      */
     public ContractInvocation addWitness(RawScript witness) {
         tx.addScript(witness);
@@ -223,7 +223,7 @@ public class ContractInvocation {
 
         /**
          * Adds the given list of parameters to this invocation. <br><br>
-         *
+         * <p>
          * The order in which parameters are added is important. The ordering they have in the given
          * list is preserved.
          *
@@ -237,7 +237,7 @@ public class ContractInvocation {
 
         /**
          * Adds the given parameter to this invocation. <br><br>
-         *
+         * <p>
          * The order in which parameters are added is important.
          *
          * @param param The parameter to add.
@@ -265,7 +265,7 @@ public class ContractInvocation {
             }
             if (scriptHash.length() != NeoConstants.SCRIPTHASH_LENGHT_HEXSTRING) {
                 throw new IllegalArgumentException("Script hash must be 20 bytes long but was " +
-                        scriptHash.length()/2 + " bytes long.");
+                        scriptHash.length() / 2 + " bytes long.");
             }
             this.scriptHash = scriptHash;
             return this;
@@ -289,7 +289,7 @@ public class ContractInvocation {
          * @param function The function name.
          * @return this Builder object.
          * @see <a href="https://docs.neo.org/docs/en-us/reference/rpc/latest-version/api/invokefunction.html">
-         *     invokefunction in NEO API reference</a>
+         * invokefunction in NEO API reference</a>
          */
         public Builder function(String function) {
             this.function = function;
@@ -298,7 +298,7 @@ public class ContractInvocation {
 
         /**
          * Adds the given witness to this invocation.<br><br>
-         *
+         * <p>
          * A witness can also be added later after the transaction has been constructed. E.g. for
          * creating a signature.
          *
@@ -314,7 +314,7 @@ public class ContractInvocation {
          * Adds the given account to this invocation. It will be used to fetch inputs if there are
          * fees or other outputs attached to this invocation. It is also used for creating a
          * signature when {@link ContractInvocation#sign()} is called. <br><br>
-         *
+         * <p>
          * If you don't add an account, the invocation cannot have any fees or outputs attached, and
          * automatically signing the transaction with {@link ContractInvocation#sign()} will not
          * work. Additionally, you will have to manually add an attribute of type script with the
@@ -334,6 +334,7 @@ public class ContractInvocation {
 
         /**
          * Adds the default account of the given wallet to this invocation.
+         *
          * @param wallet the wallet to use the default account from.
          * @return this Builder object.
          * @see Builder#account(Account)
@@ -448,7 +449,7 @@ public class ContractInvocation {
 
         /**
          * Builds the contract invocation object ready for signing and invoking.<br><br>
-         *
+         * <p>
          * In more detail:
          * - Collects the necessary inputs, if this invocation has fees or other outputs attached.
          * - Adds necessary attributes if the invocation does not have any fees and outputs.
@@ -506,7 +507,7 @@ public class ContractInvocation {
                     this.attributes.add(scriptAttr);
                 }
 
-                RawTransactionAttribute remarkAttr =  new RawTransactionAttribute(
+                RawTransactionAttribute remarkAttr = new RawTransactionAttribute(
                         TransactionAttributeUsageType.REMARK, createRandomRemark());
 
                 this.attributes.add(remarkAttr);
