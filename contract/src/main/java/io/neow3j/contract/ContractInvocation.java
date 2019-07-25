@@ -1,9 +1,6 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.protocol.core.Response;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
@@ -12,10 +9,13 @@ import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.InvocationTransaction;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
@@ -118,6 +118,10 @@ public class ContractInvocation {
      * @return this invocation object, updated with a witness.
      */
     public ContractInvocation sign() {
+        if (account == null) {
+            throw new IllegalStateException("No account provided. Can't automatically sign " +
+                    "transaction without account.");
+        }
         if (account.getPrivateKey() == null) {
             throw new IllegalStateException("Account does not hold a decrypted private key for " +
                     "signing the transaction. Decrypt the private key before attempting to sign " +
@@ -217,11 +221,28 @@ public class ContractInvocation {
             this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY;
         }
 
+        /**
+         * Adds the given list of parameters to this invocation. <br><br>
+         *
+         * The order in which parameters are added is important. The ordering they have in the given
+         * list is preserved.
+         *
+         * @param params The parameters to add.
+         * @return this Builder object.
+         */
         public Builder parameters(List<ContractParameter> params) {
             params.addAll(params);
             return this;
         }
 
+        /**
+         * Adds the given parameter to this invocation. <br><br>
+         *
+         * The order in which parameters are added is important.
+         *
+         * @param param The parameter to add.
+         * @return this Builder object.
+         */
         public Builder parameter(ContractParameter param) {
             params.add(param);
             return this;
@@ -231,6 +252,13 @@ public class ContractInvocation {
             return contractScriptHash(contract.getContractScriptHash());
         }
 
+        /**
+         * Adds the given script hash to this invocation. This script hash specifies the contract
+         * to call in this invocation.
+         *
+         * @param scriptHash The contract script hash to add.
+         * @return this Builder object.
+         */
         public Builder contractScriptHash(String scriptHash) {
             if (scriptHash == null) {
                 throw new IllegalArgumentException("Script hash must not be null");
@@ -243,20 +271,59 @@ public class ContractInvocation {
             return this;
         }
 
+        /**
+         * Adds the given script hash to this invocation. This script hash specifies the contract
+         * to call in this invocation.
+         *
+         * @param scriptHash The contract script hash to add.
+         * @return this Builder object.
+         */
         public Builder contractScriptHash(byte[] scriptHash) {
             return contractScriptHash(Numeric.toHexStringNoPrefix(scriptHash));
         }
 
+        /**
+         * Adds the given function name to this invocation. Use this if you want to call a specific
+         * function of the contract and not the main method.
+         *
+         * @param function The function name.
+         * @return this Builder object.
+         * @see <a href="https://docs.neo.org/docs/en-us/reference/rpc/latest-version/api/invokefunction.html">
+         *     invokefunction in NEO API reference</a>
+         */
         public Builder function(String function) {
             this.function = function;
             return this;
         }
 
-        public Builder witness(RawScript script) {
-            this.witnesses.add(script);
+        /**
+         * Adds the given witness to this invocation.<br><br>
+         *
+         * A witness can also be added later after the transaction has been constructed. E.g. for
+         * creating a signature.
+         *
+         * @param witness The witness to add.
+         * @return this Builder object.
+         */
+        public Builder witness(RawScript witness) {
+            this.witnesses.add(witness);
             return this;
         }
 
+        /**
+         * Adds the given account to this invocation. It will be used to fetch inputs if there are
+         * fees or other outputs attached to this invocation. It is also used for creating a
+         * signature when {@link ContractInvocation#sign()} is called. <br><br>
+         *
+         * If you don't add an account, the invocation cannot have any fees or outputs attached, and
+         * automatically signing the transaction with {@link ContractInvocation#sign()} will not
+         * work. Additionally, you will have to manually add an attribute of type script with the
+         * script hash of some address in order that it is clear which address should be used for
+         * verifying the transaction.
+         *
+         * @param account The account to add.
+         * @return this Builder object.
+         */
         public Builder account(Account account) {
             if (this.account != null) {
                 throw new IllegalStateException("Account already set.");
@@ -265,6 +332,12 @@ public class ContractInvocation {
             return this;
         }
 
+        /**
+         * Adds the default account of the given wallet to this invocation.
+         * @param wallet the wallet to use the default account from.
+         * @return this Builder object.
+         * @see Builder#account(Account)
+         */
         public Builder wallet(Wallet wallet) {
             if (this.account != null) {
                 throw new IllegalStateException("Account already set.");
@@ -306,7 +379,7 @@ public class ContractInvocation {
          * Add the strategy used to calculate which unspent transaction outputs from the involved
          * account should be use to pay for any outputs.
          *
-         * @param strategy the strategy to use.
+         * @param strategy The strategy to use.
          * @return this Builder object.
          */
         public Builder inputCalculationStrategy(InputCalculationStrategy strategy) {
@@ -314,11 +387,23 @@ public class ContractInvocation {
             return this;
         }
 
+        /**
+         * Adds the given attribute to this invocation.
+         *
+         * @param attribute The attribute to add.
+         * @return this Builder object.
+         */
         public Builder attribute(RawTransactionAttribute attribute) {
             this.attributes.add(attribute);
             return this;
         }
 
+        /**
+         * Adds the given attributes to this invocation.
+         *
+         * @param attributes The attributes to add.
+         * @return this Builder object.
+         */
         public Builder attributes(List<RawTransactionAttribute> attributes) {
             this.attributes.addAll(attributes);
             return this;
@@ -337,26 +422,53 @@ public class ContractInvocation {
 
         }
 
+        /**
+         * Adds the given outputs to this invocation. The outputs are sent in the same transaction
+         * with the invocation.
+         *
+         * @param outputs The outputs to add.
+         * @return this Builder object.
+         */
         public Builder outputs(List<RawTransactionOutput> outputs) {
             this.outputs.addAll(outputs);
             return this;
         }
 
+        /**
+         * Adds the given output to this invocation. The output are sent in the same transaction
+         * with the invocation.
+         *
+         * @param output The output to add.
+         * @return this Builder object.
+         */
         public Builder output(RawTransactionOutput output) {
             this.outputs.add(output);
             return this;
         }
 
+        /**
+         * Builds the contract invocation object ready for signing and invoking.<br><br>
+         *
+         * In more detail:
+         * - Collects the necessary inputs, if this invocation has fees or other outputs attached.
+         * - Adds necessary attributes if the invocation does not have any fees and outputs.
+         * - Constructs an {@link InvocationTransaction} object.
+         *
+         * @return the constructed contract invocation object.
+         */
         public ContractInvocation build() {
             if (neow3j == null) throw new IllegalStateException("Neow3j not set");
-            if (account == null) throw new IllegalStateException("No account set");
             if (scriptHash == null) throw new IllegalStateException("Contract script hash not set");
 
             List<RawTransactionOutput> intents = new ArrayList<>(outputs);
             intents.addAll(createOutputsFromFees(networkFee, systemFee));
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
-            calculateInputsAndChange(requiredAssets);
+            if (!requiredAssets.isEmpty()) {
+                if (account == null) throw new IllegalStateException("No account set but needed " +
+                        "for fetching transaction inputs.");
+                calculateInputsAndChange(requiredAssets);
+            }
 
             addAttributesIfTransactionIsEmpty();
 
@@ -387,14 +499,16 @@ public class ContractInvocation {
          */
         private void addAttributesIfTransactionIsEmpty() {
             if (outputs.isEmpty() && inputs.isEmpty()) {
-                RawTransactionAttribute scriptAttr =  new RawTransactionAttribute(
-                        TransactionAttributeUsageType.SCRIPT,
-                        Keys.toScriptHash(account.getAddress()));
+                if (account != null) {
+                    RawTransactionAttribute scriptAttr = new RawTransactionAttribute(
+                            TransactionAttributeUsageType.SCRIPT,
+                            Keys.toScriptHash(account.getAddress()));
+                    this.attributes.add(scriptAttr);
+                }
 
                 RawTransactionAttribute remarkAttr =  new RawTransactionAttribute(
                         TransactionAttributeUsageType.REMARK, createRandomRemark());
 
-                this.attributes.add(scriptAttr);
                 this.attributes.add(remarkAttr);
             }
         }

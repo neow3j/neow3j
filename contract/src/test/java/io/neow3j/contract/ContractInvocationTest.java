@@ -290,13 +290,6 @@ public class ContractInvocationTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void not_adding_required_account() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(NS_SC_SCRIPT_HASH)
-                .build();
-    }
-
-    @Test(expected = IllegalStateException.class)
     public void not_adding_rquired_neow3j() {
         new ContractInvocation.Builder(null)
                 .account(ACCT)
