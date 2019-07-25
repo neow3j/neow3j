@@ -5,15 +5,15 @@ import java.math.BigInteger;
 public class BigIntegers {
 
     /**
-     * Gets the two's complement in little-endian order of the given integer.
-     * <p/>
-     * The resulting byte array is correct for usage e.g. in NEO VM scripts. The conversion behaves
+     * <p>Gets the two's complement in little-endian order of the given integer.</p>
+     * <br>
+     * <p>The resulting byte array is correct for usage e.g. in NEO VM scripts. The conversion behaves
      * equally to the one used in the C#-based
      * <a href="https://github.com/neo-project/neo-vm">neo-vm</a> implementation.
      * It is basically how the BigIntger.toByteArray() in C# works
      * (Cf.
      * <a href="https://docs.microsoft.com/en-us/dotnet/api/system.numerics.biginteger.tobytearray?view=netframework-4.8">C# docs</a>
-     * ).
+     * ).</p>
      *
      * @param value The integer to convert.
      * @return the byte representation of the integer.
