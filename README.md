@@ -50,7 +50,7 @@ For most use cases you will want to depend on the `contract` artifact which brin
 Java 8 & Android (min. API 24):
 
 ```groovy
-compile 'io.neow3j:contract:2.0.0'
+compile 'io.neow3j:contract:2.+'
 ```
 
 ### Maven
@@ -61,7 +61,7 @@ Java 8 & Android (min. API 24):
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>2.0.0</version>
+    <version>[2.0.0,3.0.0)</version>
 </dependency>
 ```
 
