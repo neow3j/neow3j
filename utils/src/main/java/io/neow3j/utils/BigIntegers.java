@@ -5,8 +5,8 @@ import java.math.BigInteger;
 public class BigIntegers {
 
     /**
-     * Gets the  two's complement in little-endian order of the given integer. <br><br>
-     *
+     * Gets the two's complement in little-endian order of the given integer.
+     * <p/>
      * The resulting byte array is correct for usage e.g. in NEO VM scripts. The conversion behaves
      * equally to the one used in the C#-based
      * <a href="https://github.com/neo-project/neo-vm">neo-vm</a> implementation.
@@ -23,7 +23,7 @@ public class BigIntegers {
     }
 
     /**
-     * Gets the two's complement in little-endian order of the given integer. <br><br>
+     * Gets the two's complement in little-endian order of the given integer.
      *
      * @param value the integer to convert
      * @return the byte representation of the integer.
@@ -37,7 +37,7 @@ public class BigIntegers {
      * Gets the two's complement in little-endian order of the given integer. If the resulting byte
      * array is smaller than the given length, it is padded with zero-valued bytes.
      *
-     * @param value The integer to convert.
+     * @param value  The integer to convert.
      * @param length Desired length of the byte array.
      * @return the byte representation of the integer.
      * @throws IllegalArgumentException if the length of the integer in bytes is bigger than the
@@ -63,7 +63,7 @@ public class BigIntegers {
      * Gets the two's complement in little-endian order of the given integer. If the resulting byte
      * array is smaller than the given minimum length, it is padded with zero-valued bytes.
      *
-     * @param value the integer to convert
+     * @param value         the integer to convert
      * @param minByteLength Desired length of the byte array.
      * @return the byte representation of the integer.
      * @throws IllegalArgumentException if the length of the integer in bytes is bigger than the
@@ -76,7 +76,7 @@ public class BigIntegers {
 
     /**
      * Converts the integer in the given byte array to a BigInteger. The integer is assumed to be
-     * in its two's complement and in little-endian order.<br><br>
+     * in its two's complement and in little-endian order.
      *
      * @param value The byte array to convert.
      * @return the BigInteger.
@@ -90,7 +90,7 @@ public class BigIntegers {
 
     /**
      * Converts the integer in the given hex string to a BigInteger. The integer is assumed to be
-     * in its two's complement and in big-endian order.<br><br>
+     * in its two's complement and in big-endian order.
      *
      * @param value The byte array to convert.
      * @return the BigInteger.
