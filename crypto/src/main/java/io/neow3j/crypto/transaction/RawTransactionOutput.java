@@ -9,6 +9,7 @@ import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class RawTransactionOutput extends NeoSerializable {
@@ -71,15 +72,14 @@ public class RawTransactionOutput extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.assetId = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
-        this.value = Numeric.fromFixed8ToDecimal(ArrayUtils.reverseArray(reader.readBytes(8))).toString();
+        this.value = Numeric.fromFixed8ToDecimal(reader.readBytes(8)).toPlainString();
         this.address = Keys.toAddress(reader.readBytes(20));
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(assetId)));
-        byte[] value = Numeric.fromBigDecimalToFixed8Bytes(this.value);
-        writer.write(ArrayUtils.reverseArray(value));
+        writer.write(Numeric.fromDecimalToFixed8ByteArray(new BigDecimal(this.value)));
         writer.write(Keys.toScriptHash(this.address));
     }
 }

@@ -105,7 +105,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter fixed8ByteArray(BigDecimal number) {
-        return byteArray(ArrayUtils.reverseArray(Numeric.fromBigDecimalToFixed8Bytes(number)));
+        return byteArray(Numeric.fromDecimalToFixed8ByteArray(number));
     }
 
     /**

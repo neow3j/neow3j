@@ -35,24 +35,25 @@ public class BigIntegers {
 
     /**
      * Gets the two's complement in little-endian order of the given integer. If the resulting byte
-     * array is smaller than the given minimum length, it is padded with zero-valued bytes.
+     * array is smaller than the given length, it is padded with zero-valued bytes.
      *
      * @param value The integer to convert.
-     * @param minByteLength Desired length of the byte array.
+     * @param length Desired length of the byte array.
      * @return the byte representation of the integer.
      * @throws IllegalArgumentException if the length of the integer in bytes is bigger than the
-     *                                  given minimum length.
+     *                                  given length.
      * @see BigIntegers#toLittleEndianByteArray(BigInteger)
      */
-    public static byte[] toLittleEndianByteArrayZeroPadded(BigInteger value, int minByteLength) {
+    public static byte[] toLittleEndianByteArrayZeroPadded(BigInteger value, int length) {
+        // BigInteger.toByteArray() returns the two's complement of the number in big-endian order.
         byte[] bytes = value.toByteArray();
-        if (bytes.length > minByteLength) {
+        if (bytes.length > length) {
             throw new IllegalArgumentException("given integer needs more space (" + bytes.length +
-                    " bytes) than the given minimum length (" + minByteLength + " bytes).");
+                    " bytes) than the given minimum length (" + length + " bytes).");
         }
-        if (bytes.length < minByteLength) {
-            byte[] temp = new byte[minByteLength];
-            System.arraycopy(bytes, 0, temp, minByteLength - bytes.length, bytes.length);
+        if (bytes.length < length) {
+            byte[] temp = new byte[length];
+            System.arraycopy(bytes, 0, temp, length - bytes.length, bytes.length);
             return ArrayUtils.reverseArray(temp);
         }
         return ArrayUtils.reverseArray(bytes);
@@ -81,11 +82,21 @@ public class BigIntegers {
      * @return the BigInteger.
      */
     public static BigInteger fromLittleEndianByteArray(byte[] value) {
-        /*
-         * The {@link BigInteger#BigInteger(byte[])} constructor takes a two's complement byte array
-         * in big-endian order. So, the only thing that we have to do is to convert the
-         * little-endian byte array into big-endian.
-         */
+        // The BigInteger(byte[]) constructor takes a two's complement byte array in big-endian
+        // order. So, the only thing that we have to do is to convert the little-endian byte array
+        // into big-endian.
         return new BigInteger(ArrayUtils.reverseArray(value));
+    }
+
+    /**
+     * Converts the integer in the given hex string to a BigInteger. The integer is assumed to be
+     * in its two's complement and in big-endian order.<br><br>
+     *
+     * @param value The byte array to convert.
+     * @return the BigInteger.
+     */
+    public static BigInteger fromBigEndianHexString(String value) {
+        // The BigInteger(byte[]) constructor takes a two's complement byte array in big-endian order.
+        return new BigInteger(Numeric.hexStringToByteArray(value));
     }
 }

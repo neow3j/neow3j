@@ -26,15 +26,13 @@ public class InvocationTransaction extends RawTransaction {
     @Override
     public void serializeExclusive(BinaryWriter writer) throws IOException {
         writer.writeVarBytes(contractScript);
-        byte[] gas = Numeric.fromBigDecimalToFixed8Bytes(this.systemFee);
-        writer.write(ArrayUtils.reverseArray(gas));
+        writer.write(Numeric.fromDecimalToFixed8ByteArray(this.systemFee));
     }
 
     @Override
     public void deserializeExclusive(BinaryReader reader) throws IOException {
         this.contractScript = reader.readVarBytes();
-        this.systemFee = Numeric.fromFixed8ToDecimal(
-                ArrayUtils.reverseArray(reader.readBytes(8)));
+        this.systemFee = Numeric.fromFixed8ToDecimal(reader.readBytes(8));
     }
 
     public byte[] getContractScript() {
