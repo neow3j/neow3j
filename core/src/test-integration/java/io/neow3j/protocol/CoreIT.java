@@ -2,6 +2,8 @@ package io.neow3j.protocol;
 
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,31 +16,33 @@ import java.time.Duration;
 public class CoreIT implements InterfaceCoreIT {
 
     private static int EXPOSED_INTERNAL_PORT_NEO_DOTNET = 30333;
-    private static int EXPOSED_INTERNAL_PORT_NEO_PYTHON = 30337;
 
-    @Rule
-    public GenericContainer privateNetContainer
+    @ClassRule
+    public static GenericContainer privateNetContainer
             = new GenericContainer("axlabs/neo-privatenet-openwallet-docker:latest")
-            .withExposedPorts(EXPOSED_INTERNAL_PORT_NEO_DOTNET, EXPOSED_INTERNAL_PORT_NEO_PYTHON)
+            .withExposedPorts(EXPOSED_INTERNAL_PORT_NEO_DOTNET)
             .waitingFor(Wait.forListeningPort())
             .withStartupTimeout(Duration.ofMinutes(1L));
 
-    // TODO: 2019-02-24 Guil:
-    // neo-python is not yet fully working on the docker container.
-    // left it out for now.
-    //private Neow3j neow3jNeoPython;
-    private Neow3j neow3jNeoDotNet;
+    private static Neow3j neow3jNeoDotNet;
 
-    private Neow3jTestWrapper neow3jTestWrapper;
+    private static Neow3jTestWrapper neow3jTestWrapper;
 
-    @Before
-    public void setup() {
-        //neow3jNeoPython = Neow3j.build(new HttpService(getPrivateNetHost(EXPOSED_INTERNAL_PORT_NEO_PYTHON)));
+    @BeforeClass
+    public static void setup() {
         neow3jNeoDotNet = Neow3j.build(new HttpService(getPrivateNetHost(EXPOSED_INTERNAL_PORT_NEO_DOTNET)));
         neow3jTestWrapper = new Neow3jTestWrapper(neow3jNeoDotNet);
         // ensure that the wallet with NEO/GAS is initialized for the tests
         neow3jTestWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
     }
+
+    private static String getPrivateNetHost(int port) {
+        return "http://"
+                + privateNetContainer.getContainerIpAddress()
+                + ":"
+                + privateNetContainer.getMappedPort(port);
+    }
+
 
     @Test
     public void testGetVersion() throws IOException {
@@ -166,6 +170,7 @@ public class CoreIT implements InterfaceCoreIT {
         neow3jTestWrapper.testGetTxOut();
     }
 
+    @Ignore
     @Test
     public void testSendRawTransaction() throws IOException {
         neow3jTestWrapper.testSendRawTransaction();
@@ -177,12 +182,12 @@ public class CoreIT implements InterfaceCoreIT {
     }
 
     @Test
-    public void testSendToAddress_Fee() throws IOException {
+    public void testSendToAddress_Fee() throws IOException, InterruptedException {
         neow3jTestWrapper.testSendToAddress_Fee();
     }
 
     @Test
-    public void testSendToAddress_Fee_And_ChangeAddress() throws IOException {
+    public void testSendToAddress_Fee_And_ChangeAddress() throws IOException, InterruptedException {
         neow3jTestWrapper.testSendToAddress_Fee_And_ChangeAddress();
     }
 
@@ -207,7 +212,7 @@ public class CoreIT implements InterfaceCoreIT {
     }
 
     @Test
-    public void testSendMany() throws IOException {
+    public void testSendMany() throws IOException, InterruptedException {
         neow3jTestWrapper.testSendMany();
     }
 
@@ -217,12 +222,12 @@ public class CoreIT implements InterfaceCoreIT {
     }
 
     @Test
-    public void testSendMany_Fee() throws IOException {
+    public void testSendMany_Fee() throws IOException, InterruptedException {
         neow3jTestWrapper.testSendMany_Fee();
     }
 
     @Test
-    public void testSendMany_Fee_And_ChangeAddress() throws IOException {
+    public void testSendMany_Fee_And_ChangeAddress() throws IOException, InterruptedException {
         neow3jTestWrapper.testSendMany_Fee_And_ChangeAddress();
     }
 
@@ -267,7 +272,6 @@ public class CoreIT implements InterfaceCoreIT {
         this.neow3jTestWrapper.testSubmitBlock();
     }
 
-    @Ignore
     @Test
     public void testGetUnspents() throws IOException {
         this.neow3jTestWrapper.testGetUnspents();
@@ -289,13 +293,6 @@ public class CoreIT implements InterfaceCoreIT {
     @Test
     public void testListInputs() throws IOException {
         this.neow3jTestWrapper.testListInputs();
-    }
-
-    private String getPrivateNetHost(int port) {
-        return "http://"
-                + privateNetContainer.getContainerIpAddress()
-                + ":"
-                + privateNetContainer.getMappedPort(port);
     }
 
 }
