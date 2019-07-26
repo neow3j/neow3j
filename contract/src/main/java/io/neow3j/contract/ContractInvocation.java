@@ -452,13 +452,12 @@ public class ContractInvocation {
         /**
          * <p>Builds the contract invocation object ready for signing and invoking.</p>
          * <br>
-         * <p>In more detail:
+         * <p>In more detail:</p>
          * <ul>
          * <li>Collects the necessary inputs, if this invocation has fees or other outputs attached.</li>
          * <li>Adds necessary attributes if the invocation does not have any fees and outputs.</li>
          * <li>Constructs an {@link InvocationTransaction} object.</li>
          * </ul>
-         * </p>
          *
          * @return the constructed contract invocation object.
          */
