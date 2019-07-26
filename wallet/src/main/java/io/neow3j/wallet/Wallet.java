@@ -178,7 +178,7 @@ public class Wallet {
      *
      * @param destination the file that the wallet file should be saved.
      * @return the new wallet.
-     * @throws IOException
+     * @throws IOException throws if failed to create the wallet on disk.
      */
     public Wallet saveNEP6Wallet(File destination) throws IOException {
         if (destination == null) {
@@ -211,6 +211,7 @@ public class Wallet {
      *
      * @param password password used to encrypt the account.
      * @return the new wallet.
+     * @throws CipherException throws if failed encrypt the created wallet.
      */
     public static Wallet createGenericWallet(final String password)
             throws CipherException {
@@ -227,6 +228,8 @@ public class Wallet {
      * @param password    password used to encrypt the account.
      * @param destination destination to the new NEP6 wallet file.
      * @return the new wallet.
+     * @throws IOException     throws if failed to create the wallet on disk.
+     * @throws CipherException throws if failed encrypt the created wallet.
      */
     public static Wallet createGenericWallet(String password, File destination)
             throws CipherException, IOException {

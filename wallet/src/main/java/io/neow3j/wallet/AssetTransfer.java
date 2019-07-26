@@ -36,12 +36,12 @@ public class AssetTransfer {
     }
 
     /**
-     * Adds the given witness to the transaction's witnesses.
-     * <br><br>
-     * Use this method for adding a custom witness to the transaction.
+     * <p>Adds the given witness to the transaction's witnesses.</p>
+     * <br>
+     * <p>Use this method for adding a custom witness to the transaction.
      * This does the same as the method {@link Builder#witness(RawScript)}, namely just adds the
      * provided witness. But here it allows to add a witness from the created transaction object
-     * ({@link AssetTransfer#getTransaction()}) which is not possible in the builder.
+     * ({@link AssetTransfer#getTransaction()}) which is not possible in the builder.</p>
      *
      * @param witness   The witness to be added.
      * @return          this asset transfer object.
@@ -164,10 +164,10 @@ public class AssetTransfer {
         }
 
         /**
-         * Adds a network fee.
-         * <br><br>
-         * Network fees add priority to a transaction and are paid in GAS. If a fee is added the
-         * GAS will be taken from the account used in the asset transfer.
+         * <p>Adds a network fee.</p>
+         * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in the asset transfer.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.

@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Transaction class used for signing transactions locally.<br>
+ * <p>Transaction class used for signing transactions locally.</p>
  */
 @SuppressWarnings("unchecked")
 public abstract class RawTransaction extends NeoSerializable {
@@ -72,7 +72,7 @@ public abstract class RawTransaction extends NeoSerializable {
      * Adds the given invocation script (e.g. signatures) and the verification script to this
      * transaction's list of witnesses.
      *
-     * @param invocationScript The invocation script of the witness.
+     * @param invocationScript   The invocation script of the witness.
      * @param verificationScript The verification script of the witness.
      */
     public void addScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
@@ -132,6 +132,7 @@ public abstract class RawTransaction extends NeoSerializable {
     /**
      * Serializes this transaction to a raw byte array without any scripts. This is required if the
      * serialized transaction gets signed, e.g. by an external keypair/provider.
+     *
      * @return the serialized transaction
      */
     public byte[] toArrayWithoutScripts() {

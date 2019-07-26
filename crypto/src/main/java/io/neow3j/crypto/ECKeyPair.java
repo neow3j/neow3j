@@ -55,6 +55,7 @@ public class ECKeyPair {
     /**
      * Constructs the NEO address from this key pairs public key.
      * The address is constructed ad hoc each time this method is called.
+     *
      * @return the NEO address of the public key.
      */
     public String getAddress() {
@@ -121,11 +122,16 @@ public class ECKeyPair {
     }
 
     /**
-     * Create a keypair using SECP-256r1 curve.<br><br>
+     * <p>Create a keypair using SECP-256r1 curve.</p>
+     * <br>
+     * <p>Private keypairs are encoded using PKCS8.</p>
+     * <br>
+     * <p>Private keys are encoded using X.509.</p>
      *
-     * Private keypairs are encoded using PKCS8<br><br>
-     *
-     * Private keys are encoded using X.509<br><br>
+     * @return The created {@link ECKeyPair}.
+     * @throws InvalidAlgorithmParameterException throws if the algorithm parameter used is invalid.
+     * @throws NoSuchAlgorithmException           throws if the encryption algorithm is not available in the specified provider.
+     * @throws NoSuchProviderException            throws if the provider is not available.
      */
     public static ECKeyPair createEcKeyPair() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {

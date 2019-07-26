@@ -43,12 +43,12 @@ public class RawScript extends NeoSerializable {
     }
 
     /**
-     * Creates a new script from the given invocation and verification script.<br><br>
-     *
-     * The verification script cannot be null because the script hash is derived from it. If you
+     * <p>Creates a new script from the given invocation and verification script.</p>
+     * <br>
+     * <p>The verification script cannot be null because the script hash is derived from it. If you
      * don't have a verification script you can use the constructor
      * {@link RawScript#RawScript(byte[], String)} and just provide a script Hash instead of the
-     * verification script.
+     * verification script.</p>
      *
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script

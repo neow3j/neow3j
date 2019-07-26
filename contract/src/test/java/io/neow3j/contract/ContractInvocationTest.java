@@ -63,15 +63,15 @@ public class ContractInvocationTest {
             ContractParameter.byteArrayFromAddress(ACCT.getAddress()));
 
     /**
-     * This tests the raw transaction array built by the ContractInvocation for a invocation made
+     * <p>This tests the raw transaction array built by the ContractInvocation for a invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
      * executed on the Neo EcoLab private network. The only GAS input that was used for paying the
-     * network fee is mocked in the test. <br><br>
-     * <p>
-     * The EcoLab always attaches an attribute to the transaction that holds the script hash of the
+     * network fee is mocked in the test.</p>
+     * <br>
+     * <p>The EcoLab always attaches an attribute to the transaction that holds the script hash of the
      * invoking account. We only do this in case the inputs and outputs of the transaction are
      * empty, i.e. if no fee is attached. Because this is not the case in this test, the script hash
-     * attribute is added manually in the builder.
+     * attribute is added manually in the builder.</p>
      */
     @Test
     public void invocation_with_network_fee() {
@@ -103,14 +103,14 @@ public class ContractInvocationTest {
     }
 
     /**
-     * This tests the raw transaction array built by the ContractInvocation for an invocation made
+     * <p>This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
-     * executed on the Neo EcoLab private network. <br><br>
-     * <p>
-     * No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
+     * executed on the Neo EcoLab private network.</p>
+     * <br>
+     * <p>No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
      * to attach a random remark which is usually based on some randomness and the current time.
      * This value was extracted from the transaction executed on the private net to mock the random
-     * remark.
+     * remark.</p>
      */
     @Test
     public void invocation_without_fee() {
@@ -138,17 +138,17 @@ public class ContractInvocationTest {
     }
 
     /**
-     * This tests the raw transaction array built by the ContractInvocation for an invocation made
+     * <p>This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
-     * executed on the Neo EcoLab private network. <br><br>
-     * <p>
-     * This time the transaction was extended with a NEO output to some other address then the one
+     * executed on the Neo EcoLab private network.</p>
+     * <br>
+     * <p>This time the transaction was extended with a NEO output to some other address then the one
      * doing the invocation. The required inputs for that output where mocked according to the Utxo
-     * that was available when running the transaction on the EcoLab private net.
-     * <p>
-     * The EcoLab always attaches an attribute to the transaction that holds the script hash of the
+     * that was available when running the transaction on the EcoLab private net.</p>
+     * <br>
+     * <p>The EcoLab always attaches an attribute to the transaction that holds the script hash of the
      * invoking account. Therefore, in this test, the script hash attribute is added manually in the
-     * builder.
+     * builder.</p>
      */
     @Test
     public void invocation_with_additional_outputs_no_fee() {
@@ -184,13 +184,13 @@ public class ContractInvocationTest {
     }
 
     /**
-     * This tests the raw transaction array built by the ContractInvocation for an invocation made
+     * <p>This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the number incrementing smart contract. The contract takes no parameters. The transaction
-     * was executed on the Neo EcoLab private network. <br><br>
-     * <p>
-     * No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
+     * was executed on the Neo EcoLab private network.</p>
+     * <br>
+     * <p>No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
      * to attach a random remark which has to be mocked. The mock value was extracted from the
-     * transaction executed on the private net.
+     * transaction executed on the private net.</p>
      */
     @Test
     public void invocation_without_parameters() {

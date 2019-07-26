@@ -60,17 +60,19 @@ public class ContractInvocation {
     /**
      * Gets the transaction object that will be serialized and sent to the RPC node when
      * {@link ContractInvocation#invoke()} is called.
+     *
+     * @return this invocation transaction.
      */
     public InvocationTransaction getTransaction() {
         return tx;
     }
 
     /**
-     * Sends the serialized invocation transaction to the RPC node (synchronous).
-     * <br><br>
-     * Before calling this method you should make sure that the transaction is signed either by
+     * <p>Sends the serialized invocation transaction to the RPC node (synchronous).</p>
+     * <br>
+     * <p>Before calling this method you should make sure that the transaction is signed either by
      * calling {@link ContractInvocation#sign()}} to automatically sign or by adding a custom
-     * witness with {@link ContractInvocation#addWitness(RawScript)}.
+     * witness with {@link ContractInvocation#addWitness(RawScript)}.</p>
      *
      * @return this contract invocation object.
      * @throws IOException            if a connection problem with the RPC node arises.
@@ -85,11 +87,11 @@ public class ContractInvocation {
     }
 
     /**
-     * Tests the contract invocation by calling the invoke/invokescript method of the RPC node.
-     * <br><br>
-     * Doing this does not affect the blockchain's state. It can be used to see what result the
+     * <p>Tests the contract invocation by calling the invoke/invokescript method of the RPC node.</p>
+     * <br>
+     * <p>Doing this does not affect the blockchain's state. It can be used to see what result the
      * invocation will create. But, with NEO 2 nodes this invoke will probably fail if the
-     * invocation runs thorugh a `CheckWitness()` statement in the smart contract code.
+     * invocation runs thorugh a `CheckWitness()` statement in the smart contract code.</p>
      *
      * @return the result of the invocation.
      * @throws IOException            if a connection problem with the RPC node arises.
@@ -132,13 +134,13 @@ public class ContractInvocation {
     }
 
     /**
-     * Adds the given witness to the invocation transaction's witnesses.
-     * <br><br>
-     * Use this method for adding a custom witness to the invocation transaction.
+     * <p>Adds the given witness to the invocation transaction's witnesses.</p>
+     * <br>
+     * <p>Use this method for adding a custom witness to the invocation transaction.
      * This does the same as the method {@link Builder#witness(RawScript)}, namely just add the
      * provided witness. But here it allows to add a witness from the created invocation
      * transaction object ({@link ContractInvocation#getTransaction()}) which is not possible in the
-     * builder.
+     * builder.</p>
      *
      * @param witness The witness to be added.
      * @return this invocation object.
@@ -222,10 +224,10 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds the given list of parameters to this invocation. <br><br>
-         * <p>
-         * The order in which parameters are added is important. The ordering they have in the given
-         * list is preserved.
+         * <p>Adds the given list of parameters to this invocation.</p>
+         * <br>
+         * <p>The order in which parameters are added is important. The ordering they have in the given
+         * list is preserved.</p>
          *
          * @param params The parameters to add.
          * @return this Builder object.
@@ -236,9 +238,9 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds the given parameter to this invocation. <br><br>
-         * <p>
-         * The order in which parameters are added is important.
+         * <p>Adds the given parameter to this invocation.</p>
+         * <br>
+         * <p>The order in which parameters are added is important.</p>
          *
          * @param param The parameter to add.
          * @return this Builder object.
@@ -297,10 +299,10 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds the given witness to this invocation.<br><br>
-         * <p>
-         * A witness can also be added later after the transaction has been constructed. E.g. for
-         * creating a signature.
+         * <p>Adds the given witness to this invocation.</p>
+         * <br>
+         * <p>A witness can also be added later after the transaction has been constructed. E.g. for
+         * creating a signature.</p>
          *
          * @param witness The witness to add.
          * @return this Builder object.
@@ -311,15 +313,15 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds the given account to this invocation. It will be used to fetch inputs if there are
+         * <p>Adds the given account to this invocation. It will be used to fetch inputs if there are
          * fees or other outputs attached to this invocation. It is also used for creating a
-         * signature when {@link ContractInvocation#sign()} is called. <br><br>
-         * <p>
-         * If you don't add an account, the invocation cannot have any fees or outputs attached, and
+         * signature when {@link ContractInvocation#sign()} is called.</p>
+         * <br>
+         * <p>If you don't add an account, the invocation cannot have any fees or outputs attached, and
          * automatically signing the transaction with {@link ContractInvocation#sign()} will not
          * work. Additionally, you will have to manually add an attribute of type script with the
          * script hash of some address in order that it is clear which address should be used for
-         * verifying the transaction.
+         * verifying the transaction.</p>
          *
          * @param account The account to add.
          * @return this Builder object.
@@ -348,10 +350,10 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds a network fee.
-         * <br><br>
-         * Network fees add priority to a transaction and are paid in GAS. If a fee is added the
-         * GAS will be taken from the account used in contract invocation.
+         * <p>Adds a network fee.</p>
+         * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in contract invocation.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.
@@ -362,11 +364,11 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds a system fee.
-         * <br><br>
-         * The system fee is required for successfully executing the invocation. But, if the
+         * <p>Adds a system fee.</p>
+         * <br>
+         * <p>The system fee is required for successfully executing the invocation. But, if the
          * invocation consumes less than 10 GAS no system fee needs to be paid. If you know that the
-         * invocation consumes more than 10 GAS, then add here only the additional amount.
+         * invocation consumes more than 10 GAS, then add here only the additional amount.</p>
          *
          * @param systemFee The fee amount to add.
          * @return this Builder object.
@@ -448,12 +450,15 @@ public class ContractInvocation {
         }
 
         /**
-         * Builds the contract invocation object ready for signing and invoking.<br><br>
-         * <p>
-         * In more detail:
-         * - Collects the necessary inputs, if this invocation has fees or other outputs attached.
-         * - Adds necessary attributes if the invocation does not have any fees and outputs.
-         * - Constructs an {@link InvocationTransaction} object.
+         * <p>Builds the contract invocation object ready for signing and invoking.</p>
+         * <br>
+         * <p>In more detail:
+         * <ul>
+         * <li>Collects the necessary inputs, if this invocation has fees or other outputs attached.</li>
+         * <li>Adds necessary attributes if the invocation does not have any fees and outputs.</li>
+         * <li>Constructs an {@link InvocationTransaction} object.</li>
+         * </ul>
+         * </p>
          *
          * @return the constructed contract invocation object.
          */

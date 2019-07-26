@@ -15,15 +15,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Contract parameters are used for example in contract invocations and represent an input parameter.
- * But it can also represent an output type and value. <br><br>
- *
- * The static creation methods in this class all create parameters with values of type string. E.g.
+ * <p>Contract parameters are used for example in contract invocations and represent an input parameter.
+ * But it can also represent an output type and value.</p>
+ * <br>
+ * <p>The static creation methods in this class all create parameters with values of type string. E.g.
  * if you create a parameter of type {@link ContractParameterType#INTEGER} the value will be stored
  * as a string. The only exceptions are {@link ContractParameterType#BOOLEAN} and
  * {@link ContractParameterType#ARRAY} type parameters. The reason for this is the serialization and
  * deserialization of <code>ContractParameter</code>'s. It works without any custom code when
- * strings are used.
+ * strings are used.</p>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -69,11 +69,11 @@ public class ContractParameter {
     }
 
     /**
-     * Creates a byte array parameter from the given string. <br><br>
-     *
-     * If this parameter is used in an invocation, and its string is not a valid hexadecimal number
+     * <p>Creates a byte array parameter from the given string.</p>
+     * <br>
+     * <p>If this parameter is used in an invocation, and its string is not a valid hexadecimal number
      * it will be converted to the number made up from his UTF8 characters before adding it to the
-     * vm script.
+     * VM script.</p>
      *
      * @param value The value as a string.
      * @return the contract parameter.

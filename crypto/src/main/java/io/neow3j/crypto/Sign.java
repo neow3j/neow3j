@@ -23,6 +23,7 @@ import static io.neow3j.utils.Assertions.verifyPrecondition;
  * <p>Originally adapted from the
  * <a href="https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/core/ECKey.java">
  * BitcoinJ ECKey</a> implementation.
+ * <br>
  * <p>Class from web3j project, and adapted to neow3j project (with NEO requirements).</p>
  */
 public class Sign {
@@ -212,8 +213,8 @@ public class Sign {
     /**
      * Returns public key point from the given private key.
      *
-     * @param privKey the private key as BigInteger
-     * @return the ECPoint object representation of the public key based on the given private key
+     * @param privKey The private key as BigInteger
+     * @return The ECPoint object representation of the public key based on the given private key
      */
     public static ECPoint publicPointFromPrivateKey(BigInteger privKey) {
         /*
@@ -232,6 +233,7 @@ public class Sign {
      * @param signatureData The signature.
      * @param tx            The signed transaction.
      * @return the address that produced the siganture data from the transaction.
+     * @throws SignatureException throws if the signature is invalid.
      */
     public static String recoverSigningAddress(RawTransaction tx, SignatureData signatureData)
             throws SignatureException {

@@ -38,14 +38,14 @@ public interface Neow3jService {
             Request request, Class<T> responseType);
 
     /**
-     * Subscribe to a stream of notifications. A stream of notifications is opened by
+     * <p>Subscribe to a stream of notifications. A stream of notifications is opened by
      * by performing a specified JSON-RPC request and is closed by calling
      * the unsubscribe method. Different WebSocket implementations use different pair of
-     * subscribe/unsubscribe methods.
+     * subscribe/unsubscribe methods.</p>
      * <br>
      * <p>This method creates an Observable that can be used to subscribe to new notifications.
      * When a client unsubscribes from this Observable the service unsubscribes from
-     * the underlying stream of events.
+     * the underlying stream of events.</p>
      *
      * @param request           JSON-RPC request that will be send to subscribe to a stream of
      *                          events
