@@ -2,8 +2,6 @@ package io.neow3j.protocol;
 
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,8 +15,8 @@ public class CoreIT implements InterfaceCoreIT {
 
     private static int EXPOSED_INTERNAL_PORT_NEO_DOTNET = 30333;
 
-    @ClassRule
-    public static GenericContainer privateNetContainer
+    @Rule
+    public GenericContainer privateNetContainer
             = new GenericContainer("axlabs/neo-privatenet-openwallet-docker:latest")
             .withExposedPorts(EXPOSED_INTERNAL_PORT_NEO_DOTNET)
             .waitingFor(Wait.forListeningPort())
@@ -28,21 +26,20 @@ public class CoreIT implements InterfaceCoreIT {
 
     private static Neow3jTestWrapper neow3jTestWrapper;
 
-    @BeforeClass
-    public static void setup() {
+    @Before
+    public void setup() {
         neow3jNeoDotNet = Neow3j.build(new HttpService(getPrivateNetHost(EXPOSED_INTERNAL_PORT_NEO_DOTNET)));
         neow3jTestWrapper = new Neow3jTestWrapper(neow3jNeoDotNet);
         // ensure that the wallet with NEO/GAS is initialized for the tests
         neow3jTestWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
     }
 
-    private static String getPrivateNetHost(int port) {
+    private String getPrivateNetHost(int port) {
         return "http://"
                 + privateNetContainer.getContainerIpAddress()
                 + ":"
                 + privateNetContainer.getMappedPort(port);
     }
-
 
     @Test
     public void testGetVersion() throws IOException {
@@ -170,6 +167,8 @@ public class CoreIT implements InterfaceCoreIT {
         neow3jTestWrapper.testGetTxOut();
     }
 
+    // Sending a raw transaction doesn't have to be tested here but rather in contract invocation or
+    // asset transfer tests.
     @Ignore
     @Test
     public void testSendRawTransaction() throws IOException {
