@@ -473,7 +473,7 @@ public class ContractParameter {
                         for (final JsonNode param : value) {
                             arr.add(deserializeParameter(param, jp));
                         }
-                        return arr.toArray();
+                        return arr.toArray(new ContractParameter[]{});
                     }
                 case INTEROP_INTERFACE:
                     // We assume that the interop interface parameter holds a plain string.
