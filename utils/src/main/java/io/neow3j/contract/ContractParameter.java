@@ -94,7 +94,7 @@ public class ContractParameter {
         if (!Keys.isValidAddress(address)) {
             throw new IllegalArgumentException("Not a valid address.");
         }
-        return byteArray(Keys.toScriptHash(address));
+        return byteArray(ScriptHash.fromAddress(address).toArray());
     }
 
     /**
@@ -122,7 +122,7 @@ public class ContractParameter {
         if (signatureHexString.length() != NeoConstants.SIGNATURE_SIZE_HEXSTRING) {
             throw new IllegalArgumentException("Signature is expected to have a length of " +
                     NeoConstants.SIGNATURE_SIZE_BYTES + " bytes, but had " +
-                    signatureHexString.length()/2 + ".");
+                    signatureHexString.length() / 2 + ".");
         }
         return new ContractParameter(ContractParameterType.SIGNATURE, signatureHexString);
     }
@@ -140,7 +140,7 @@ public class ContractParameter {
     /**
      * Creates a boolean parameter from the given boolean.
      *
-     * @param  bool a boolean value.
+     * @param bool a boolean value.
      * @return the contract parameter.
      */
     public static ContractParameter bool(boolean bool) {
@@ -150,7 +150,7 @@ public class ContractParameter {
     /**
      * Creates an integer parameter from the given integer.
      *
-     * @param  integer an integer value.
+     * @param integer an integer value.
      * @return the contract parameter.
      */
     public static ContractParameter integer(int integer) {
@@ -160,7 +160,7 @@ public class ContractParameter {
     /**
      * Creates an integer parameter from the given integer.
      *
-     * @param  integer an integer value.
+     * @param integer an integer value.
      * @return the contract parameter.
      */
     public static ContractParameter integer(BigInteger integer) {
@@ -170,7 +170,7 @@ public class ContractParameter {
     /**
      * Creates a hash160 parameter from the given hexadecimal string.
      *
-     * @param  hashHexString a hash160 value as hexadecimal string.
+     * @param hashHexString a hash160 value as hexadecimal string.
      * @return the contract parameter.
      */
     public static ContractParameter hash160(String hashHexString) {
@@ -181,7 +181,7 @@ public class ContractParameter {
         if (hashHexString.length() != NeoConstants.SCRIPTHASH_LENGHT_HEXSTRING) {
             throw new IllegalArgumentException("Hash160 is expected to have a length of " +
                     NeoConstants.SCRIPTHASH_LENGHT_BYTES + " bytes, but had " +
-                    hashHexString.length()/2 + ".");
+                    hashHexString.length() / 2 + ".");
         }
         return new ContractParameter(ContractParameterType.HASH160, hashHexString);
     }
@@ -189,7 +189,7 @@ public class ContractParameter {
     /**
      * Creates a hash160 parameter from the given hash.
      *
-     * @param  hash a hash160 value.
+     * @param hash a hash160 value.
      * @return the contract parameter.
      */
     public static ContractParameter hash160(byte[] hash) {
@@ -199,7 +199,7 @@ public class ContractParameter {
     /**
      * Creates a hash256 parameter from the given hexadecimal string.
      *
-     * @param  hashHexString a hash256 value as hexadecimal string.
+     * @param hashHexString a hash256 value as hexadecimal string.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(String hashHexString) {
@@ -209,7 +209,7 @@ public class ContractParameter {
         hashHexString = Numeric.cleanHexPrefix(hashHexString);
         if (hashHexString.length() != 64) {
             throw new IllegalArgumentException("Hash256 is expected to have a length of 32 " +
-                    "bytes, but had " + hashHexString.length()/2 + ".");
+                    "bytes, but had " + hashHexString.length() / 2 + ".");
         }
         return new ContractParameter(ContractParameterType.HASH256, hashHexString);
     }
@@ -217,7 +217,7 @@ public class ContractParameter {
     /**
      * Creates a hash256 parameter from the given hash.
      *
-     * @param  hash a hash256 value.
+     * @param hash a hash256 value.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(byte[] hash) {

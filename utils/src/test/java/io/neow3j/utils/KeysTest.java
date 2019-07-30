@@ -1,7 +1,5 @@
 package io.neow3j.utils;
 
-import io.neow3j.utils.Keys;
-import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
 import static io.neow3j.utils.Keys.toAddress;
@@ -58,7 +56,7 @@ public class KeysTest {
         // If the address string is null, we don't want to say it is an invalid address because
         // there isn't even an address to be deemed invalid. Therefore expect NullPointerException.
         try {
-           Keys.isValidAddress(null);
+            Keys.isValidAddress(null);
         } catch (NullPointerException e) {
             return;
         }

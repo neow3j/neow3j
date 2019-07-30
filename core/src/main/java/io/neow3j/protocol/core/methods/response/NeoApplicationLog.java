@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.utils.Keys;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
@@ -145,7 +146,8 @@ public class NeoApplicationLog {
 
         public String getAsAddress() {
             if (this.value instanceof String) {
-                return Keys.scriptHashToAddress((String) this.value);
+                // The value, a script hash in this case, is expected to be in little-endian order.
+                return new ScriptHash(Numeric.hexStringToByteArray((String)this.value)).toAddress();
             }
             return null;
         }

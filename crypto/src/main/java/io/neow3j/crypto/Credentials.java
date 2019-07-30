@@ -1,5 +1,6 @@
 package io.neow3j.crypto;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
@@ -58,8 +59,8 @@ public class Credentials {
         return address;
     }
 
-    public byte[] toScriptHash() {
-        return Keys.toScriptHash(this.address);
+    public ScriptHash toScriptHash() {
+        return ScriptHash.fromAddress(this.address);
     }
 
 

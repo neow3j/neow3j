@@ -1,6 +1,7 @@
 package io.neow3j.wallet;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
@@ -69,8 +70,8 @@ public class Account {
         return address;
     }
 
-    public byte[] getScriptHash() {
-        return Keys.toScriptHash(address);
+    public ScriptHash getScriptHash() {
+        return ScriptHash.fromAddress(address);
     }
 
     public ECKeyPair getECKeyPair() {

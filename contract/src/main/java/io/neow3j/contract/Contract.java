@@ -4,6 +4,7 @@ import io.neow3j.contract.abi.model.NeoContractEvent;
 import io.neow3j.contract.abi.model.NeoContractFunction;
 import io.neow3j.contract.abi.model.NeoContractInterface;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.core.methods.response.Script;
 
 import java.util.List;
 
@@ -14,20 +15,55 @@ public class Contract {
     // TODO: 2019-07-03 Guil:
     // Maybe, should we use the NEP6Contract class?
 
-    private final byte[] contractScriptHash;
+    private final ScriptHash contractScriptHash;
 
     private NeoContractInterface abi;
 
+    /**
+     * Creates a new contract with the given script hash
+     *
+     * @param contractScriptHash Contract script hash in little-endian order.
+     * @deprecated
+     */
+    @Deprecated
     public Contract(byte[] contractScriptHash) {
-        this.contractScriptHash = contractScriptHash;
+        this.contractScriptHash = new ScriptHash(contractScriptHash);
     }
 
+    /**
+     * Creates a new contract with the given script hash and ABI.
+     *
+     * @param contractScriptHash Contract script hash in little-endian order.
+     * @param abi                The contract's ABI.
+     * @deprecated
+     */
+    @Deprecated
     public Contract(byte[] contractScriptHash, NeoContractInterface abi) {
-        this.contractScriptHash = contractScriptHash;
+        this(contractScriptHash);
         this.abi = abi;
     }
 
-    public byte[] getContractScriptHash() {
+    /**
+     * Creates a new contract with the given script hash
+     *
+     * @param contractScriptHash Contract script hash.
+     */
+    public Contract(ScriptHash contractScriptHash) {
+        this.contractScriptHash = contractScriptHash;
+    }
+
+    /**
+     * Creates a new contract with the given script hash and ABI.
+     *
+     * @param contractScriptHash Contract script hash in little-endian order.
+     * @param abi                The contract's ABI.
+     */
+    public Contract(ScriptHash contractScriptHash, NeoContractInterface abi) {
+        this(contractScriptHash);
+        this.abi = abi;
+    }
+
+    public ScriptHash getContractScriptHash() {
         return contractScriptHash;
     }
 
