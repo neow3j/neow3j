@@ -3,6 +3,7 @@ package io.neow3j.utils;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.Base58;
 import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.exceptions.AddressFormatException;
@@ -32,8 +33,7 @@ public class Keys {
     }
 
     public static String getAddress(byte[] publicKey) {
-        byte[] scriptHash = getScriptHashFromPublicKey(publicKey);
-        return toAddress(scriptHash);
+        return ScriptHash.fromPublicKey(publicKey).toAddress();
     }
 
     public static String getMultiSigAddress(int amountSignatures, List<BigInteger> publicKeys) {
@@ -45,19 +45,34 @@ public class Keys {
         for (int i = 0; i < publicKeys.length; i++) {
             pubKeysArray[i] = publicKeys[i].toByteArray();
         }
-        byte[] scriptHash = getScriptHashFromPublicKey(amountSignatures, pubKeysArray);
-        return toAddress(scriptHash);
+        return getMultiSigAddress(amountSignatures, pubKeysArray);
     }
 
     public static String getMultiSigAddress(int amountSignatures, byte[]... publicKeys) {
-        byte[] scriptHash = getScriptHashFromPublicKey(amountSignatures, publicKeys);
-        return toAddress(scriptHash);
+        return ScriptHash.fromPublicKeys(amountSignatures, publicKeys).toAddress();
     }
 
+    /**
+     * Creates a script hash from the given public key.
+     *
+     * @param publicKey The public key to calculate the script hash for.
+     * @return the script hash.
+     */
+    @Deprecated
     public static byte[] getScriptHashFromPublicKey(byte[] publicKey) {
-        return getScriptHashFromPublicKey(1, publicKey);
+        return ScriptHash.fromPublicKey(publicKey).toArray();
     }
 
+    /**
+     * Calculates the script hash from the given public keys and number of signatures needed to sign
+     * with them.
+     *
+     * @param amountSignatures The signing threshold for the set of public keys.
+     * @param publicKeys       The public keys.
+     * @return the script hash in little-endian order.
+     * @deprecated Use {@link io.neow3j.contract.ScriptHash#fromPublicKey(byte[])} instead.
+     */
+    @Deprecated
     public static byte[] getScriptHashFromPublicKey(int amountSignatures, byte[]... publicKeys) {
         byte[] verificationScript;
         if (publicKeys.length == 1) {
@@ -65,11 +80,12 @@ public class Keys {
         } else {
             verificationScript = getVerificationScriptFromPublicKeys(amountSignatures, publicKeys);
         }
-        return Hash.calculateScriptHash(verificationScript);
+        return Hash.sha256AndThenRipemd160(verificationScript);
     }
 
     /**
      * Checks if the given public key is in encoded format and encodes it if not.
+     *
      * @param publicKey Key to encode.
      * @return encoded public key.
      */
@@ -92,6 +108,7 @@ public class Keys {
     /**
      * Creates the verification script for the given key.
      * Checks if the key is in encoded format, and encodes it if not.
+     *
      * @param publicKey Key to create script for.
      * @return the verification script.
      */
@@ -103,6 +120,7 @@ public class Keys {
     /**
      * Creates the verification script for the given key.
      * Checks if the key is in encoded format, and encodes it if not.
+     *
      * @param publicKey Key to create script for.
      * @return the verification script.
      */
@@ -121,32 +139,34 @@ public class Keys {
     /**
      * Creates the multi-sig verification script for the given keys and the signing threshold.
      * Checks if the keys are in encoded format, and encodes them if not.
+     *
      * @param signingThreshold the minimum number of public keys needed to sign transactions from
      *                         the given public keys.
-     * @param publicKeys the public keys to create the script for.
+     * @param publicKeys       the public keys to create the script for.
      * @return the multi-sig verification script.
      */
-    public  static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
-                                                              List<BigInteger> publicKeys) {
+    public static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
+                                                             List<BigInteger> publicKeys) {
 
-       return getVerificationScriptFromPublicKeys(
-               signingThreshold,
-               publicKeys.stream()
-                       .map(Keys::publicKeyIntegerToByteArray)
-                       .toArray(byte[][]::new)
-       );
+        return getVerificationScriptFromPublicKeys(
+                signingThreshold,
+                publicKeys.stream()
+                        .map(Keys::publicKeyIntegerToByteArray)
+                        .toArray(byte[][]::new)
+        );
     }
 
     /**
      * Creates the multi-sig verification script for the given keys and the signing threshold.
      * Checks if the keys are in encoded format, and encodes them if not.
+     *
      * @param signingThreshold the minimum number of public keys needed to sign transactions from
      *                         the given public keys.
-     * @param publicKeys the public keys to create the script for.
+     * @param publicKeys       the public keys to create the script for.
      * @return the multi-sig verification script.
      */
-    public  static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
-                                                              byte[]... publicKeys) {
+    public static byte[] getVerificationScriptFromPublicKeys(int signingThreshold,
+                                                             byte[]... publicKeys) {
 
         List<byte[]> encodedPublicKeys = new ArrayList<>(publicKeys.length);
         for (byte[] key : publicKeys) {
@@ -157,7 +177,7 @@ public class Keys {
     }
 
     private static byte[] getVerificationScriptFromPublicKeysEncoded(int signingThreshold,
-                                                                    List<byte[]> encodedPublicKeys) {
+                                                                     List<byte[]> encodedPublicKeys) {
 
         if (signingThreshold < 2 || signingThreshold > encodedPublicKeys.size()) {
             throw new IllegalArgumentException("Signing threshold must be at least 2 and not " +
@@ -198,6 +218,16 @@ public class Keys {
         return false;
     }
 
+    /**
+     * <p>Derives the address from the given script hash.</p>
+     * <br>
+     * <p>The script hash needs to be in little-endian order.</p>
+     *
+     * @param scriptHash The script hash to get the address for.
+     * @return the address
+     * @deprecated Use {@link ScriptHash#toAddress()} instead.
+     */
+    @Deprecated
     public static String toAddress(byte[] scriptHash) {
         byte[] data = new byte[1];
         data[0] = NeoConstants.COIN_VERSION;
@@ -213,7 +243,7 @@ public class Keys {
     public static boolean isValidAddress(String address) {
         byte[] data;
         try {
-             data = Base58.decode(address);
+            data = Base58.decode(address);
         } catch (AddressFormatException e) {
             return false;
         }
@@ -226,16 +256,35 @@ public class Keys {
         return true;
     }
 
+    /**
+     * Transforms the given address into its script hash.
+     *
+     * @param address The address to get the script hash for.
+     * @return the script hash byte array in little-endian order.
+     * @deprecated Use {@link io.neow3j.contract.ScriptHash#fromAddress(String)} instead.
+     */
+    @Deprecated
     public static byte[] toScriptHash(String address) {
-        if (!isValidAddress(address)) throw new IllegalArgumentException("Not a valid NEO address.");
+        if (!isValidAddress(address))
+            throw new IllegalArgumentException("Not a valid NEO address.");
         byte[] data = Base58.decode(address);
         byte[] buffer = new byte[20];
         System.arraycopy(data, 1, buffer, 0, 20);
         return buffer;
     }
 
-    public static String scriptHashToAddress(String input) {
-        byte[] inputBytes = Numeric.hexStringToByteArray(input);
+    /**
+     * <p>Derives the address from the given script hash.</p>
+     * <br>
+     * <p>The script hash needs to be in little-endian order.</p>
+     *
+     * @param scriptHash The script hash to get the address for.
+     * @return the address
+     * @deprecated Use {@link ScriptHash#toAddress()} instead.
+     */
+    @Deprecated
+    public static String scriptHashToAddress(String scriptHash) {
+        byte[] inputBytes = Numeric.hexStringToByteArray(scriptHash);
         return toAddress(inputBytes);
     }
 }

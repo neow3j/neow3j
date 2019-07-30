@@ -121,7 +121,6 @@ public class NeoContractEventTest {
         assertThat(neoContractEvent.getParameters(), not(emptyCollectionOf(ContractParameter.class)));
         assertThat(neoContractEvent.getParameters(),
                 hasItems(
-                        ContractParameter.integer(123),
                         ContractParameter.byteArray("001010101010"),
                         ContractParameter.bool(true),
                         ContractParameter.integer(123)

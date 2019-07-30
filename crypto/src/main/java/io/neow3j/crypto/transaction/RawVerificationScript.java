@@ -1,11 +1,11 @@
 package io.neow3j.crypto.transaction;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.crypto.Hash;
-import io.neow3j.utils.Keys;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
 import java.io.ByteArrayInputStream;
@@ -47,32 +47,35 @@ public class RawVerificationScript extends NeoSerializable {
         return script;
     }
 
-    /** Calculates the script hash of this verification script.
-     * I.e. applies SHA256 and RIPMED160 to the script byte array.
-     * Apparently, after hashing, the script hash is considered to be in little-endian order. That
-     * means, it can directly be used in transactions without reversing it.
+    /**
+     * Gets the script hash of this verification script.
+     *
      * @return the script hash.
      */
-    public byte[] getScriptHash() {
-        if (script.length == 0) return null;
-        else return Hash.sha256AndThenRipemd160(script);
+    public ScriptHash getScriptHash() {
+        if (this.script.length == 0) {
+            return null;
+        } else {
+            return ScriptHash.fromScript(this.script);
+        }
     }
 
 
     /**
      * Extracts (from the script itself) the number of signatures required for signing this
      * verification script.
+     *
      * @return The signing threshold.
      */
     public int getSigningThreshold() {
         int scriptLen = this.script.length;
-        byte opCode = this.script[scriptLen-1];
+        byte opCode = this.script[scriptLen - 1];
         if (opCode == OpCode.CHECKSIG.getValue()) {
             return 1;
         } else if (opCode == OpCode.CHECKMULTISIG.getValue()) {
             try (ByteArrayInputStream stream = new ByteArrayInputStream(script, 0, script.length)) {
                 return new BinaryReader(stream).readPushInteger();
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new IllegalStateException("Got IOException without doing IO.");
             }
         } else {

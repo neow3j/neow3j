@@ -80,12 +80,12 @@ public abstract class RawTransaction extends NeoSerializable {
     }
 
     public void addScript(RawScript script) {
-        if (script.getScriptHash() == null || script.getScriptHash().length == 0) {
+        if (script.getScriptHash() == null || script.getScriptHash().length() == 0) {
             throw new IllegalArgumentException("The script hash of the given script is " +
                     "empty. Please set the script hash.");
         }
         this.scripts.add(script);
-        this.scripts.sort(Comparator.comparing(s -> Numeric.toBigInt(s.getScriptHash())));
+        this.scripts.sort(Comparator.comparing(RawScript::getScriptHash));
     }
 
     public String getTxId() {
@@ -215,14 +215,14 @@ public abstract class RawTransaction extends NeoSerializable {
 
         public T scripts(List<RawScript> scripts) {
             for (RawScript script : scripts) {
-                if (script.getScriptHash() == null || script.getScriptHash().length == 0) {
+                if (script.getScriptHash() == null || script.getScriptHash().length() == 0) {
                     throw new IllegalArgumentException("The script hash of the given script is " +
                             "empty. Please set the script hash.");
                 }
             }
 
             this.scripts.addAll(scripts);
-            this.scripts.sort(Comparator.comparing(s -> Numeric.toBigInt(s.getScriptHash())));
+            this.scripts.sort(Comparator.comparing(RawScript::getScriptHash));
             return (T) this;
         }
 

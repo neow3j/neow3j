@@ -40,14 +40,14 @@ public class ContractInvocationTest {
      * https://github.com/CityOfZion/python-smart-contract-workshop/blob/master/4-domain.py.
      * Compiled with Neo EcoLab compiler. The hash is in big-endian order.
      */
-    private static final String NS_SC_SCRIPT_HASH = "1a70eac53f5882e40dd90f55463cce31a9f72cd4";
+    private static final ScriptHash NS_SC_SCRIPT_HASH = new ScriptHash("1a70eac53f5882e40dd90f55463cce31a9f72cd4");
 
     /**
      * Script hash from number incrementing smart contract at
      * https://github.com/CityOfZion/python-smart-contract-workshop/blob/master/3-storage.py
      * Compiled with Neo EcoLab compiler. The hash is in big-endian order.
      */
-    private static final String NUMBER_INCREMENT_SC_SCRIPT_HASH = "bff561a41a780fa0a4771d03bcc924e90c04fc8e";
+    private static final ScriptHash NUMBER_INCREMENT_SC_SCRIPT_HASH = new ScriptHash("bff561a41a780fa0a4771d03bcc924e90c04fc8e");
 
     /**
      * First parameter to the name service smart contract, used for registering a name.
@@ -86,7 +86,7 @@ public class ContractInvocationTest {
                 .networkFee(fee)
                 .parameter(REGISTER)
                 .parameter(ARGUMENTS)
-                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash()))
+                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray()))
                 .build()
                 .sign()
                 .getTransaction();
@@ -164,7 +164,7 @@ public class ContractInvocationTest {
                 .account(spyAcct)
                 .parameter(REGISTER)
                 .parameter(ARGUMENTS)
-                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash()))
+                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray()))
                 .output(RawTransactionOutput.createNeoTransactionOutput(neoOut.toPlainString(), toAddress))
                 .build()
                 .sign()
@@ -226,54 +226,12 @@ public class ContractInvocationTest {
 
         RawTransactionAttribute attr = i.getTransaction().getAttributes().get(0);
         assertEquals(TransactionAttributeUsageType.SCRIPT, attr.getUsage());
-        assertArrayEquals(ACCT.getScriptHash(), attr.getDataAsBytes());
+        assertArrayEquals(ACCT.getScriptHash().toArray(), attr.getDataAsBytes());
 
         attr = i.getTransaction().getAttributes().get(1);
         assertEquals(TransactionAttributeUsageType.REMARK, attr.getUsage());
         assertEquals(12, attr.getDataAsBytes().length);
         // Can't test the contents of the remark because they are random.
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_big_script_hash_bytes() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(Numeric.hexStringToByteArray(NS_SC_SCRIPT_HASH + "4"))
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_big_script_hash_string() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(NS_SC_SCRIPT_HASH + "4")
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_small_script_hash_bytes() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(new byte[]{0x1a, 0x38, 0x3b, 0x0d})
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_small_script_hash_string() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash("a0c882d")
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_empty_script_hash_string() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash("")
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_empty_script_hash_bytes() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(new byte[]{})
-                .build();
     }
 
     @Test(expected = IllegalStateException.class)

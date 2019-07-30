@@ -1,13 +1,11 @@
 package io.neow3j.transaction;
 
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.transaction.RawScript;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
@@ -25,7 +23,7 @@ public class InvocationTransactionTest {
     @Test
     public void serialize_tx() {
 
-        byte[] scriptHash = Keys.toScriptHash(ADDRESS);
+        ScriptHash scriptHash = ScriptHash.fromAddress(ADDRESS);
         String contractScript = "1423ba2703c53263e8d6e522dc32203339dcd8eee9076e656f2e636f6d52c108726567697374657267d42cf7a931ce3c46550fd90de482583fc5ea701a";
 
 
@@ -33,7 +31,7 @@ public class InvocationTransactionTest {
                 .systemFee(BigDecimal.ONE)
                 .input(new RawTransactionInput("d28e2bb7ad6f0e670da0ac466e584366a1ff30c623a34da1e1a27c710bfeeb41", 0))
                 .output(new RawTransactionOutput(GASAsset.HASH_ID, "420.98755", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
-                .attribute(new RawTransactionAttribute(SCRIPT, scriptHash))
+                .attribute(new RawTransactionAttribute(SCRIPT, scriptHash.toArray()))
                 .contractScript(Numeric.hexStringToByteArray(contractScript))
                 .build();
 
