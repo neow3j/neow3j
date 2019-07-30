@@ -1,32 +1,37 @@
 package io.neow3j.contract;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
+import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * <p>Contract parameters are used for example in contract invocations and represent an input parameter.
- * But it can also represent an output type and value.</p>
- * <br>
- * <p>The static creation methods in this class all create parameters with values of type string. E.g.
- * if you create a parameter of type {@link ContractParameterType#INTEGER} the value will be stored
- * as a string. The only exceptions are {@link ContractParameterType#BOOLEAN} and
- * {@link ContractParameterType#ARRAY} type parameters. The reason for this is the serialization and
- * deserialization of <code>ContractParameter</code>'s. It works without any custom code when
- * strings are used.</p>
+ * Contract parameters are used for example in contract invocations and represent an input parameter.
+ * But they can also represent an output type and value.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonSerialize(using = ContractParameterSerializer.class)
+@JsonDeserialize(using = ContractParameterDeserializer.class)
 public class ContractParameter {
 
     @JsonProperty("name")
@@ -39,6 +44,12 @@ public class ContractParameter {
     protected Object value;
 
     protected ContractParameter() {
+    }
+
+    protected ContractParameter(String name, ContractParameterType paramType, Object value) {
+        this.paramName = name;
+        this.paramType = paramType;
+        this.value = value;
     }
 
     private ContractParameter(ContractParameterType paramType, Object value) {
@@ -59,28 +70,32 @@ public class ContractParameter {
     }
 
     /**
-     * Creates a byte array parameter from the given value.
+     * <p>Creates a byte array parameter from the given value.</p>
+     * <br>
+     * <p>Make sure that the array is already in the right order. E.g. Fixed8 numbers need to be in
+     * little-endian order. It will be sent in the order provided.</p>
      *
      * @param byteArray The parameter value.
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(byte[] byteArray) {
-        return byteArray(Numeric.toHexStringNoPrefix(byteArray));
+        return new ContractParameter(ContractParameterType.BYTE_ARRAY, byteArray);
     }
 
     /**
-     * <p>Creates a byte array parameter from the given string.</p>
+     * <p>Creates a byte array parameter from the given hex string.</p>
      * <br>
-     * <p>If this parameter is used in an invocation, and its string is not a valid hexadecimal number
-     * it will be converted to the number made up from his UTF8 characters before adding it to the
-     * VM script.</p>
+     * <p>Make sure that the value is already in the right order. E.g. Fixed8 numbers need to be in
+     * little-endian order. It will be sent in the order provided.</p>
      *
      * @param value The value as a string.
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(String value) {
-        value = Numeric.cleanHexPrefix(value);
-        return new ContractParameter(ContractParameterType.BYTE_ARRAY, value);
+        if (!Numeric.isValidHexString(value)) {
+            throw new IllegalArgumentException("Argument is not a valid hex number");
+        }
+        return byteArray(Numeric.hexStringToByteArray(value));
     }
 
     /**
@@ -92,14 +107,14 @@ public class ContractParameter {
      */
     public static ContractParameter byteArrayFromAddress(String address) {
         if (!Keys.isValidAddress(address)) {
-            throw new IllegalArgumentException("Not a valid address.");
+            throw new IllegalArgumentException("Argument is not a valid address.");
         }
         return byteArray(ScriptHash.fromAddress(address).toArray());
     }
 
     /**
      * Creates a byte array parameter from the given number, transforming it to the Fixed8 number
-     * format in little-andian order.
+     * format in little-endian order.
      *
      * @param number A decimal number
      * @return the contract parameter.
@@ -116,16 +131,11 @@ public class ContractParameter {
      */
     public static ContractParameter signature(String signatureHexString) {
         if (!Numeric.isValidHexString(signatureHexString)) {
-            throw new IllegalArgumentException("String is not a valid hex number");
+            throw new IllegalArgumentException("Argument is not a valid hex number");
         }
-        signatureHexString = Numeric.cleanHexPrefix(signatureHexString);
-        if (signatureHexString.length() != NeoConstants.SIGNATURE_SIZE_HEXSTRING) {
-            throw new IllegalArgumentException("Signature is expected to have a length of " +
-                    NeoConstants.SIGNATURE_SIZE_BYTES + " bytes, but had " +
-                    signatureHexString.length() / 2 + ".");
-        }
-        return new ContractParameter(ContractParameterType.SIGNATURE, signatureHexString);
+        return signature(Numeric.hexStringToByteArray(signatureHexString));
     }
+
 
     /**
      * Creates a signature parameter from the given signature.
@@ -134,7 +144,12 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter signature(byte[] signature) {
-        return signature(Numeric.toHexStringNoPrefix(signature));
+        if (signature.length != NeoConstants.SIGNATURE_SIZE_BYTES) {
+            throw new IllegalArgumentException("Signature is expected to have a length of " +
+                    NeoConstants.SIGNATURE_SIZE_BYTES + " bytes, but had " +
+                    signature.length + ".");
+        }
+        return new ContractParameter(ContractParameterType.SIGNATURE, signature);
     }
 
     /**
@@ -164,64 +179,89 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter integer(BigInteger integer) {
-        return new ContractParameter(ContractParameterType.INTEGER, integer.toString());
+        return new ContractParameter(ContractParameterType.INTEGER, integer);
     }
 
     /**
      * Creates a hash160 parameter from the given hexadecimal string.
      *
-     * @param hashHexString a hash160 value as hexadecimal string.
+     * @param hashHexString a hash160 value as hexadecimal string in big-endian order.
      * @return the contract parameter.
+     * @deprecated
      */
+    @Deprecated
     public static ContractParameter hash160(String hashHexString) {
         if (!Numeric.isValidHexString(hashHexString)) {
-            throw new IllegalArgumentException("String is not a valid hex number");
+            throw new IllegalArgumentException("Argument is not a valid hex number");
         }
-        hashHexString = Numeric.cleanHexPrefix(hashHexString);
-        if (hashHexString.length() != NeoConstants.SCRIPTHASH_LENGHT_HEXSTRING) {
-            throw new IllegalArgumentException("Hash160 is expected to have a length of " +
-                    NeoConstants.SCRIPTHASH_LENGHT_BYTES + " bytes, but had " +
-                    hashHexString.length() / 2 + ".");
-        }
-        return new ContractParameter(ContractParameterType.HASH160, hashHexString);
+        return hash160(new ScriptHash(hashHexString));
     }
 
     /**
      * Creates a hash160 parameter from the given hash.
      *
-     * @param hash a hash160 value.
+     * @param hash a hash160 value in little-endian order.
+     * @return the contract parameter.
+     * @deprecated
+     */
+    @Deprecated
+    public static ContractParameter hash160(byte[] hash) {
+        return hash160(new ScriptHash(hash));
+    }
+
+    /**
+     * Creates a hash160 parameter from the given script hash.
+     *
+     * @param hash a script hash
      * @return the contract parameter.
      */
-    public static ContractParameter hash160(byte[] hash) {
-        return hash160(Numeric.toHexStringNoPrefix(hash));
+    public static ContractParameter hash160(ScriptHash hash) {
+        if (hash.length() != NeoConstants.SCRIPTHASH_LENGHT_BYTES) {
+            throw new IllegalArgumentException("A Hash160 parameter expects a value of length " +
+                    NeoConstants.SCRIPTHASH_LENGHT_BYTES);
+        }
+        return new ContractParameter(ContractParameterType.HASH160, hash);
     }
 
     /**
      * Creates a hash256 parameter from the given hexadecimal string.
      *
-     * @param hashHexString a hash256 value as hexadecimal string.
+     * @param hashHexString a hash256 value as hexadecimal string in big-endian order.
      * @return the contract parameter.
+     * @deprecated
      */
+    @Deprecated
     public static ContractParameter hash256(String hashHexString) {
         if (!Numeric.isValidHexString(hashHexString)) {
-            throw new IllegalArgumentException("String is not a valid hex number");
+            throw new IllegalArgumentException("Argument is not a valid hex number");
         }
-        hashHexString = Numeric.cleanHexPrefix(hashHexString);
-        if (hashHexString.length() != 64) {
-            throw new IllegalArgumentException("Hash256 is expected to have a length of 32 " +
-                    "bytes, but had " + hashHexString.length() / 2 + ".");
-        }
-        return new ContractParameter(ContractParameterType.HASH256, hashHexString);
+        return hash256(new ScriptHash(hashHexString));
     }
 
     /**
      * Creates a hash256 parameter from the given hash.
      *
-     * @param hash a hash256 value.
+     * @param hash a hash256 value in little-endian order.
+     * @return the contract parameter.
+     * @deprecated
+     */
+    @Deprecated
+    public static ContractParameter hash256(byte[] hash) {
+        return hash256(new ScriptHash(hash));
+    }
+
+    /**
+     * Creates a hash256 parameter from the given script hash.
+     *
+     * @param hash a script hash
      * @return the contract parameter.
      */
-    public static ContractParameter hash256(byte[] hash) {
-        return hash256(Numeric.toHexStringNoPrefix(hash));
+    public static ContractParameter hash256(ScriptHash hash) {
+        if (hash.length() != NeoConstants.ASSET_ID_LENGHT_BYTES) {
+            throw new IllegalArgumentException("A Hash256 parameter expects a value of length " +
+                    NeoConstants.ASSET_ID_LENGHT_BYTES);
+        }
+        return new ContractParameter(ContractParameterType.HASH256, hash);
     }
 
     public static ContractParameter publicKey(String publicKey) {
@@ -251,9 +291,22 @@ public class ContractParameter {
         if (this == o) return true;
         if (!(o instanceof ContractParameter)) return false;
         ContractParameter that = (ContractParameter) o;
-        return Objects.equals(paramName, that.paramName) &&
-                paramType == that.paramType &&
-                Objects.equals(value, that.value);
+
+        if (paramType == that.paramType &&
+                Objects.equals(paramName, that.paramName)) {
+
+            if (paramType.equals(ContractParameterType.BYTE_ARRAY) ||
+                    paramType.equals(ContractParameterType.SIGNATURE) ||
+                    paramType.equals(ContractParameterType.HASH160) ||
+                    paramType.equals(ContractParameterType.HASH256)) {
+
+                return Arrays.equals((byte[]) value, (byte[]) that.value);
+            } else {
+                return Objects.equals(value, that.value);
+            }
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -268,6 +321,170 @@ public class ContractParameter {
                 ", paramType=" + paramType +
                 ", value=" + value +
                 '}';
+    }
+
+    protected static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
+
+        public ContractParameterSerializer() {
+            this(null);
+        }
+
+        public ContractParameterSerializer(Class<ContractParameter> vc) {
+            super(vc);
+        }
+
+        @Override
+        public void serialize(ContractParameter value, JsonGenerator gen,
+                              SerializerProvider provider) throws IOException {
+
+            serializeParameter(value, gen);
+        }
+
+        private void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
+            gen.writeStartObject();
+            if (p.getParamName() != null) {
+                gen.writeStringField("name", p.getParamName());
+            }
+            if (p.getParamType() != null) {
+                gen.writeStringField("type", p.getParamType().jsonValue());
+            }
+            if (p.getValue() != null) {
+                serializeValue(p, gen);
+            }
+            gen.writeEndObject();
+        }
+
+        private void serializeValue(ContractParameter p, JsonGenerator gen) throws IOException {
+            switch (p.getParamType()) {
+                case BYTE_ARRAY:
+                case SIGNATURE:
+                    // Byte array and signature values are byte arrays. It is simply converted to a
+                    // hex string. The byte order is not changed. It already has to be correct.
+                    gen.writeStringField("value", Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
+                    break;
+                case BOOLEAN:
+                    // Convert to true or false without quotes
+                    gen.writeBooleanField("value", (boolean) p.getValue());
+                    break;
+                case INTEGER:
+                    // Convert to a string, i.e. in the final json the number has quotes around it.
+                case HASH160:
+                case HASH256:
+                    // In case of a script hash the value is of type ScriptHash, of which the
+                    // toString() method returns a big-endian hex string of the hash.
+                case INTEROP_INTERFACE:
+                    // We assume that the interop interface parameter holds a plain string.
+                case STRING:
+                    gen.writeStringField("value", p.getValue().toString());
+                    break;
+                case ARRAY:
+                    gen.writeArrayFieldStart("value");
+                    for (final ContractParameter param : (ContractParameter[]) p.getValue()) {
+                        serializeParameter(param, gen);
+                    }
+                    gen.writeEndArray();
+                    break;
+                case PUBLIC_KEY:
+                    // TODO 30.07.19 claude: Implement public key serialization
+                default:
+                    throw new UnsupportedOperationException("Parameter type \'" +
+                            p.getParamType().toString() + "\' not supported.");
+            }
+        }
+
+    }
+
+    protected static class ContractParameterDeserializer
+            extends ParameterDeserializer<ContractParameter> {
+
+        @Override
+        public ContractParameter newInstance(String name, ContractParameterType type, Object value) {
+            return new ContractParameter(name, type, value);
+        }
+
+    }
+
+    protected static abstract class ParameterDeserializer<T extends ContractParameter>
+            extends StdDeserializer<T> {
+
+        public ParameterDeserializer() {
+            this(null);
+        }
+
+        public ParameterDeserializer(Class<T> vc) {
+            super(vc);
+        }
+
+        public abstract T newInstance(String name, ContractParameterType type, Object value);
+
+        @Override
+        public T deserialize(JsonParser jp, DeserializationContext ctxt)
+                throws IOException {
+
+            JsonNode node = jp.getCodec().readTree(jp);
+            return deserializeParameter(node, jp);
+        }
+
+        private T deserializeParameter(JsonNode param, JsonParser jp)
+                throws JsonProcessingException {
+
+            JsonNode nameNode = param.get("name");
+            String name = null;
+            if (nameNode != null) {
+                name = nameNode.asText();
+            }
+
+            JsonNode typeNode = param.get("type");
+            ContractParameterType type = null;
+            if (typeNode != null) {
+                type = jp.getCodec().treeToValue(typeNode, ContractParameterType.class);
+            }
+
+            JsonNode valueNode = param.get("value");
+            Object value = null;
+            if (valueNode != null) {
+                value = deserializeValue(valueNode, type, jp);
+            }
+            return newInstance(name, type, value);
+        }
+
+        private Object deserializeValue(JsonNode value, ContractParameterType type, JsonParser jp)
+                throws JsonProcessingException {
+
+            switch (type) {
+                case BYTE_ARRAY:
+                case SIGNATURE:
+                    // For byte array and signature the data is expected to be a hex string in the
+                    // correct ordering. E.g. little-endian for Fixed8 numbers.
+                    return Numeric.hexStringToByteArray(value.asText());
+                case STRING:
+                    return value.asText();
+                case BOOLEAN:
+                    return value.asBoolean();
+                case INTEGER:
+                    return new BigInteger(value.asText());
+                case HASH160:
+                case HASH256:
+                    // The script hash value is expected to be a big-endian hex string.
+                    return new ScriptHash(value.asText());
+                case ARRAY:
+                    if (value.isArray()) {
+                        List<ContractParameter> arr = new ArrayList<>(value.size());
+                        for (final JsonNode param : value) {
+                            arr.add(deserializeParameter(param, jp));
+                        }
+                        return arr.toArray();
+                    }
+                case INTEROP_INTERFACE:
+                    // We assume that the interop interface parameter holds a plain string.
+                    return value.asText();
+                case PUBLIC_KEY:
+                    // TODO 30.07.19 claude: Implement public key deserialization
+                default:
+                    throw new UnsupportedOperationException("Parameter type \'" + type +
+                            "\' not supported.");
+            }
+        }
     }
 
 }

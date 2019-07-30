@@ -206,40 +206,31 @@ public class ScriptBuilder {
     public ScriptBuilder pushParam(ContractParameter param) {
         Object value = param.getValue();
         switch (param.getParamType()) {
-            case SIGNATURE:
-                pushData(Numeric.hexStringToByteArray((String) value));
             case BYTE_ARRAY:
-                String valueString = (String) value;
-                if (Numeric.isValidHexString(valueString)) {
-                    pushData(Numeric.hexStringToByteArray((String) value));
-                } else {
-                    pushData(valueString);
-                }
+            case SIGNATURE:
+                pushData((byte[]) value);
                 break;
             case BOOLEAN:
                 pushBoolean((boolean) value);
                 break;
             case INTEGER:
-                pushInteger(new BigInteger((String) value));
+                pushInteger((BigInteger) value);
                 break;
             case HASH160:
             case HASH256:
-                byte[] bytes = Numeric.hexStringToByteArray((String) value);
-                // Needs to be added in little-endian order.
-                pushData(ArrayUtils.reverseArray(bytes));
+                pushData(((ScriptHash) value).toArray());
                 break;
-            case PUBLIC_KEY:
-                // TODO 10.07.19 claude: Implement
-                throw new UnsupportedOperationException();
             case STRING:
                 pushData((String) value);
                 break;
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
+            case PUBLIC_KEY:
+                // TODO 10.07.19 claude: Implement public key push operation.
             default:
-                throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
-                        "' not supported.");
+                throw new IllegalArgumentException("Parameter type \'" + param.getParamType() +
+                        "\' not supported.");
         }
         return this;
     }
