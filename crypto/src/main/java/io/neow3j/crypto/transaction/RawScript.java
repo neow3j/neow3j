@@ -1,5 +1,6 @@
 package io.neow3j.crypto.transaction;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
@@ -25,7 +26,7 @@ public class RawScript extends NeoSerializable {
 
     private RawInvocationScript invocationScript;
     private RawVerificationScript verificationScript;
-    private byte[] scriptHash;
+    private ScriptHash scriptHash;
 
     public RawScript() {
     }
@@ -47,7 +48,7 @@ public class RawScript extends NeoSerializable {
      * <br>
      * <p>The verification script cannot be null because the script hash is derived from it. If you
      * don't have a verification script you can use the constructor
-     * {@link RawScript#RawScript(byte[], String)} and just provide a script Hash instead of the
+     * {@link RawScript#RawScript(byte[], ScriptHash)} and just provide a script Hash instead of the
      * verification script.</p>
      *
      * @param invocationScript   the invocation script
@@ -69,11 +70,25 @@ public class RawScript extends NeoSerializable {
      * Use this if you don't need a verification script.
      *
      * @param invocationScript the invocation script
-     * @param scriptHash       a script hash instead of a verification script.
+     * @param scriptHash       a script hash in big-endian order.
+     * @deprecated Use {@link RawScript#RawScript(byte[], ScriptHash)} instead.
      */
+    @Deprecated
     public RawScript(byte[] invocationScript, String scriptHash) {
        this.invocationScript = new RawInvocationScript(invocationScript);
-       this.scriptHash = Numeric.hexStringToByteArray(scriptHash);
+       this.scriptHash = new ScriptHash(scriptHash);
+    }
+
+    /**
+     * Creates a new script from the given invocation script and script hash.
+     * Use this if you don't need a verification script.
+     *
+     * @param invocationScript the invocation script
+     * @param scriptHash       a script hash instead of a verification script.
+     */
+    public RawScript(byte[] invocationScript, ScriptHash scriptHash) {
+        this.invocationScript = new RawInvocationScript(invocationScript);
+        this.scriptHash = scriptHash;
     }
 
     /**
@@ -143,7 +158,7 @@ public class RawScript extends NeoSerializable {
     /**
      * @return the script hash of this script in big-endian order.
      */
-    public byte[] getScriptHash() {
+    public ScriptHash getScriptHash() {
         return scriptHash;
     }
 

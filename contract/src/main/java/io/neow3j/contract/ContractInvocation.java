@@ -39,7 +39,7 @@ public class ContractInvocation {
     private static final Logger LOG = LoggerFactory.getLogger(ContractInvocation.class);
 
     private Neow3j neow3j;
-    private String scriptHash;
+    private ScriptHash scriptHash;
     private String function;
     private List<ContractParameter> params;
     private Account account;
@@ -102,12 +102,12 @@ public class ContractInvocation {
         Response<InvocationResult> response;
         if (function != null) {
             if (params.isEmpty()) {
-                response = neow3j.invokeFunction(scriptHash, function).send();
+                response = neow3j.invokeFunction(scriptHash.toString(), function).send();
             } else {
-                response = neow3j.invokeFunction(scriptHash, function, params).send();
+                response = neow3j.invokeFunction(scriptHash.toString(), function, params).send();
             }
         } else {
-            response = neow3j.invoke(scriptHash, params).send();
+            response = neow3j.invoke(scriptHash.toString(), params).send();
         }
         response.throwOnError();
         return response.getResult();
@@ -198,7 +198,7 @@ public class ContractInvocation {
     public static class Builder {
 
         private Neow3j neow3j;
-        private String scriptHash;
+        private ScriptHash scriptHash;
         private String function;
         private List<RawScript> witnesses;
         private List<ContractParameter> params;
@@ -255,33 +255,43 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds the given script hash to this invocation. This script hash specifies the contract
+         * Adds the given script hash to this invocation. The script hash specifies the contract
          * to call in this invocation.
          *
-         * @param scriptHash The contract script hash to add.
+         * @param scriptHash The contract script hash in big-endian order.
          * @return this Builder object.
+         * @deprecated Use {@link Builder#contractScriptHash(ScriptHash)} instead.
          */
+        @Deprecated
         public Builder contractScriptHash(String scriptHash) {
-            if (scriptHash == null) {
-                throw new IllegalArgumentException("Script hash must not be null");
-            }
-            if (scriptHash.length() != NeoConstants.SCRIPTHASH_LENGHT_HEXSTRING) {
-                throw new IllegalArgumentException("Script hash must be 20 bytes long but was " +
-                        scriptHash.length() / 2 + " bytes long.");
-            }
-            this.scriptHash = scriptHash;
+            this.scriptHash = new ScriptHash(scriptHash);
             return this;
         }
 
         /**
-         * Adds the given script hash to this invocation. This script hash specifies the contract
+         * Adds the given script hash to this invocation. The script hash specifies the contract
          * to call in this invocation.
          *
-         * @param scriptHash The contract script hash to add.
+         * @param scriptHash The contract script hash in little-endian order.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#contractScriptHash(ScriptHash)} instead.
+         */
+        @Deprecated
+        public Builder contractScriptHash(byte[] scriptHash) {
+            this.scriptHash = new ScriptHash(scriptHash);
+            return this;
+        }
+
+        /**
+         * Adds the given script hash to this invocation. The script hash specifies the contract
+         * to call in this invocation.
+         *
+         * @param scriptHash The contract script hash.
          * @return this Builder object.
          */
-        public Builder contractScriptHash(byte[] scriptHash) {
-            return contractScriptHash(Numeric.toHexStringNoPrefix(scriptHash));
+        public Builder contractScriptHash(ScriptHash scriptHash) {
+            this.scriptHash = scriptHash;
+            return this;
         }
 
         /**
@@ -485,7 +495,7 @@ public class ContractInvocation {
         private InvocationTransaction buildTransaction() {
 
             byte[] script = new ScriptBuilder()
-                    .appCall(Numeric.hexStringToByteArray(scriptHash), function, params)
+                    .appCall(scriptHash, function, params)
                     .toArray();
 
             return new InvocationTransaction.Builder()
@@ -507,7 +517,7 @@ public class ContractInvocation {
                 if (account != null) {
                     RawTransactionAttribute scriptAttr = new RawTransactionAttribute(
                             TransactionAttributeUsageType.SCRIPT,
-                            Keys.toScriptHash(account.getAddress()));
+                            account.getScriptHash().toArray());
                     this.attributes.add(scriptAttr);
                 }
 
