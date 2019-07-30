@@ -7,9 +7,6 @@ import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.InvocationResult;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.InvocationTransaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -17,7 +14,6 @@ import io.neow3j.wallet.InputCalculationStrategy;
 import io.neow3j.wallet.Utxo;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 

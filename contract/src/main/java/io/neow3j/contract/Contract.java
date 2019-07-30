@@ -4,7 +4,6 @@ import io.neow3j.contract.abi.model.NeoContractEvent;
 import io.neow3j.contract.abi.model.NeoContractFunction;
 import io.neow3j.contract.abi.model.NeoContractInterface;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.Script;
 
 import java.util.List;
 
