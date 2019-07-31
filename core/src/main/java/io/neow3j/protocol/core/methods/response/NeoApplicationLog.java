@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neow3j.protocol.core.methods.response.stack.Item;
-import io.neow3j.protocol.deserializer.StackDeserializer;
 
 import java.util.List;
 
@@ -43,7 +40,7 @@ public class NeoApplicationLog {
         private String gasConsumed;
 
         @JsonProperty("stack")
-        private List<Item> stack;
+        private List<StackItem> stack;
 
         @JsonProperty("notifications")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -52,7 +49,7 @@ public class NeoApplicationLog {
         public Execution() {
         }
 
-        public Execution(String trigger, String contract, String state, String gasConsumed, List<Item> stack, List<Notification> notifications) {
+        public Execution(String trigger, String contract, String state, String gasConsumed, List<StackItem> stack, List<Notification> notifications) {
             this.trigger = trigger;
             this.contract = contract;
             this.state = state;
@@ -77,7 +74,7 @@ public class NeoApplicationLog {
             return gasConsumed;
         }
 
-        public List<Item> getStack() {
+        public List<StackItem> getStack() {
             return stack;
         }
 
@@ -93,23 +90,22 @@ public class NeoApplicationLog {
         private String contract;
 
         @JsonProperty("state")
-        @JsonDeserialize(using = StackDeserializer.class)
-        private Item item;
+        private StackItem state;
 
         public Notification() {
         }
 
-        public Notification(String contract, Item item) {
+        public Notification(String contract, StackItem state) {
             this.contract = contract;
-            this.item = item;
+            this.state = state;
         }
 
         public String getContract() {
             return contract;
         }
 
-        public Item getItem() {
-            return item;
+        public StackItem getState() {
+            return state;
         }
     }
 

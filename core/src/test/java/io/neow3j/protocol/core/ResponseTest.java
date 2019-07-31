@@ -4,10 +4,14 @@ import io.neow3j.model.types.AssetType;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.NodePluginType;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
-import io.neow3j.model.types.*;
 import io.neow3j.protocol.ResponseTester;
+import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.ByteArrayStackItem;
+import io.neow3j.protocol.core.methods.response.IntegerStackItem;
+import io.neow3j.protocol.core.methods.response.MapStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
@@ -47,12 +51,11 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.Script;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
-import io.neow3j.protocol.core.methods.response.stack.Item;
-import io.neow3j.protocol.core.methods.response.stack.MapItem;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -1542,7 +1545,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invoke.getInvocationResult().getStack(),
                 hasItems(
-                        new Item(StackItemType.BYTE_ARRAY, "576f6f6c6f6e67")
+                        new ByteArrayStackItem("576f6f6c6f6e67")
                 )
         );
         assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
@@ -1615,22 +1618,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
+        Map<StackItem, StackItem> stackMap = new HashMap<>();
+        stackMap.put(new ByteArrayStackItem("6964"), new IntegerStackItem(new BigInteger("1")));
         assertThat(
                 invokeFunction.getInvocationResult().getStack(),
                 hasItems(
-                        new Item(StackItemType.BYTE_ARRAY, "576f6f6c6f6e67")
+                        new ByteArrayStackItem("576f6f6c6f6e67"),
+                        new MapStackItem(stackMap)
                 )
         );
 
-        HashMap<String, Item> stackMap = new HashMap<>();
-        stackMap.put("id", new Item(StackItemType.INTEGER, 1));
-
-        assertThat(
-                invokeFunction.getInvocationResult().getStack(),
-                hasItems(
-                        new MapItem(stackMap)
-                )
-        );
         assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
     }
 
@@ -1689,7 +1686,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invokeScript.getInvocationResult().getStack(),
                 hasItems(
-                        new Item(StackItemType.BYTE_ARRAY, "4e45503520474153")
+                        new ByteArrayStackItem("4e45503520474153")
                 )
         );
         assertThat(invokeScript.getInvocationResult().getTx(), is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
@@ -2095,27 +2092,27 @@ public class ResponseTest extends ResponseTester {
         List<NeoApplicationLog.Notification> notifications = execution.getNotifications();
 
         assertThat(notifications.get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
-        assertThat(notifications.get(0).getItem().getType(), is(StackItemType.ARRAY));
-        assertThat(notifications.get(0).getItem().getArray(), hasSize(3));
+        assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
+        assertTrue(notifications.get(0).getState() instanceof ArrayStackItem);
 
-        List<Item> arrayValues = notifications.get(0).getItem().getArray();
+        ArrayStackItem array = (ArrayStackItem) notifications.get(0).getState();
 
-        String eventName = arrayValues.get(0).getAsString();
-        String address = arrayValues.get(1).getAsAddress();
-        BigInteger amount = arrayValues.get(2).getAsNumber();
+        String eventName = ((ByteArrayStackItem) array.getValue().get(0)).getAsString();
+        String address = ((ByteArrayStackItem) array.getValue().get(1)).getAsAddress();
+        BigInteger amount = ((ByteArrayStackItem) array.getValue().get(2)).getAsNumber();
 
         assertThat(eventName, is("read"));
         assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
         assertThat(amount, is(BigInteger.valueOf(177)));
 
         assertThat(notifications.get(1).getContract(), is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
-        assertThat(notifications.get(1).getItem().getType(), is(StackItemType.MAP));
-        assertThat(notifications.get(1).getItem().getMap().size(), is(2));
+        assertTrue(notifications.get(1).getState() instanceof MapStackItem);
+        assertThat(notifications.get(1).getState().getType(), is(StackItemType.MAP));
+        MapStackItem map = (MapStackItem) notifications.get(1).getState();
+        assertThat(map.getValue().size(), is(2));
 
-        Map<String, Item> mapValues = notifications.get(1).getItem().getMap();
-
-        String textValue = mapValues.get("test_key_a").getAsString();
-        BigInteger intValue = mapValues.get("test_key_b").getAsNumber();
+        String textValue = ((ByteArrayStackItem) map.get("test_key_a")).getAsString();
+        BigInteger intValue = ((IntegerStackItem) map.get("test_key_b")).getValue();
 
         assertThat(textValue, is("Test message"));
         assertThat(intValue, is(BigInteger.valueOf(12345)));
