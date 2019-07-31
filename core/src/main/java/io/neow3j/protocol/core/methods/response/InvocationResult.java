@@ -2,9 +2,6 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.neow3j.protocol.core.methods.response.stack.Item;
-import io.neow3j.protocol.deserializer.StackDeserializer;
 
 import java.util.List;
 import java.util.Objects;
@@ -22,8 +19,7 @@ public class InvocationResult {
     private String gasConsumed;
 
     @JsonProperty("stack")
-    @JsonDeserialize(contentUsing = StackDeserializer.class)
-    private List<Item> stack;
+    private List<StackItem> stack;
 
     @JsonProperty("tx")
     private String tx;
@@ -31,7 +27,7 @@ public class InvocationResult {
     public InvocationResult() {
     }
 
-    public InvocationResult(String script, String state, String gasConsumed, List<Item> stack, String tx) {
+    public InvocationResult(String script, String state, String gasConsumed, List<StackItem> stack, String tx) {
         this.script = script;
         this.state = state;
         this.gasConsumed = gasConsumed;
@@ -51,7 +47,7 @@ public class InvocationResult {
         return gasConsumed;
     }
 
-    public List<Item> getStack() {
+    public List<StackItem> getStack() {
         return stack;
     }
 
