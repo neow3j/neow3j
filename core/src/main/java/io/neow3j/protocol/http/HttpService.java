@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  * HTTP implementation of the Service API.
@@ -39,31 +40,59 @@ public class HttpService extends Service {
 
     private HashMap<String, String> headers = new HashMap<>();
 
-    public HttpService(String url, OkHttpClient httpClient, boolean includeRawResponses) {
-        super(includeRawResponses);
+    public HttpService(String url, OkHttpClient httpClient, ExecutorService executorService, boolean includeRawResponses) {
+        super(executorService, includeRawResponses);
         this.url = url;
         this.httpClient = httpClient;
         this.includeRawResponse = includeRawResponses;
+    }
+
+    public HttpService(String url, OkHttpClient httpClient, boolean includeRawResponses) {
+        this(url, httpClient, null, includeRawResponses);
+    }
+
+    public HttpService(OkHttpClient httpClient, ExecutorService executorService, boolean includeRawResponses) {
+        this(DEFAULT_URL, httpClient, executorService, includeRawResponses);
     }
 
     public HttpService(OkHttpClient httpClient, boolean includeRawResponses) {
         this(DEFAULT_URL, httpClient, includeRawResponses);
     }
 
-    private HttpService(String url, OkHttpClient httpClient) {
+    public HttpService(String url, OkHttpClient httpClient, ExecutorService executorService) {
+        this(url, httpClient, executorService, false);
+    }
+
+    public HttpService(String url, OkHttpClient httpClient) {
         this(url, httpClient, false);
+    }
+
+    public HttpService(String url, ExecutorService executorService) {
+        this(url, createOkHttpClient(), executorService);
     }
 
     public HttpService(String url) {
         this(url, createOkHttpClient());
     }
 
+    public HttpService(String url, ExecutorService executorService, boolean includeRawResponse) {
+        this(url, createOkHttpClient(), executorService, includeRawResponse);
+    }
+
     public HttpService(String url, boolean includeRawResponse) {
         this(url, createOkHttpClient(), includeRawResponse);
     }
 
+    public HttpService(OkHttpClient httpClient, ExecutorService executorService) {
+        this(DEFAULT_URL, httpClient, executorService);
+    }
+
     public HttpService(OkHttpClient httpClient) {
         this(DEFAULT_URL, httpClient);
+    }
+
+    public HttpService(ExecutorService executorService, boolean includeRawResponse) {
+        this(DEFAULT_URL, executorService, includeRawResponse);
     }
 
     public HttpService(boolean includeRawResponse) {

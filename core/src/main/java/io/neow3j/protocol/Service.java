@@ -1,15 +1,16 @@
 package io.neow3j.protocol;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.notifications.Notification;
 import io.neow3j.utils.Async;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import rx.Observable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Base service implementation.
@@ -17,6 +18,13 @@ import java.util.concurrent.CompletableFuture;
 public abstract class Service implements Neow3jService {
 
     protected final ObjectMapper objectMapper;
+
+    protected ExecutorService asyncExecutorService;
+
+    public Service(ExecutorService executorService, boolean includeRawResponses) {
+        objectMapper = ObjectMapperFactory.getObjectMapper(includeRawResponses);
+        asyncExecutorService = executorService;
+    }
 
     public Service(boolean includeRawResponses) {
         objectMapper = ObjectMapperFactory.getObjectMapper(includeRawResponses);
@@ -41,7 +49,7 @@ public abstract class Service implements Neow3jService {
     @Override
     public <T extends Response> CompletableFuture<T> sendAsync(
             Request jsonRpc20Request, Class<T> responseType) {
-        return Async.run(() -> send(jsonRpc20Request, responseType));
+        return Async.run(() -> send(jsonRpc20Request, responseType), asyncExecutorService);
     }
 
     @Override
