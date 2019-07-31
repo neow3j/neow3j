@@ -1,15 +1,23 @@
 package io.neow3j.wallet;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
+import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.GASAsset;
+import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.Strings;
+import io.neow3j.wallet.Balances.AssetBalance;
+import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -43,8 +51,8 @@ public class AssetTransfer {
      * provided witness. But here it allows to add a witness from the created transaction object
      * ({@link AssetTransfer#getTransaction()}) which is not possible in the builder.</p>
      *
-     * @param witness   The witness to be added.
-     * @return          this asset transfer object.
+     * @param witness The witness to be added.
+     * @return this asset transfer object.
      */
     public AssetTransfer addWitness(RawScript witness) {
         tx.addScript(witness);
@@ -88,6 +96,7 @@ public class AssetTransfer {
         private String assetId;
         private String toAddress;
         private BigDecimal amount;
+        private ScriptHash fromContractScriptHash;
 
         public Builder(Neow3j neow3j) {
             this.neow3j = neow3j;
@@ -101,6 +110,11 @@ public class AssetTransfer {
 
         public Builder account(Account account) {
             this.account = account;
+            return this;
+        }
+
+        public Builder fromContract(ScriptHash contractScriptHash) {
+            this.fromContractScriptHash = contractScriptHash;
             return this;
         }
 
@@ -141,13 +155,13 @@ public class AssetTransfer {
             return this;
         }
 
-        public Builder toAddress(String address){
+        public Builder toAddress(String address) {
             throwIfOutputsAreSet();
             this.toAddress = address;
             return this;
         }
 
-        public Builder amount(BigDecimal amount){
+        public Builder amount(BigDecimal amount) {
             throwIfOutputsAreSet();
             this.amount = amount;
             return this;
@@ -197,11 +211,69 @@ public class AssetTransfer {
             intents.addAll(createOutputsFromFees(networkFee));
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
-            calculateInputsAndChange(requiredAssets);
+            if (fromContractScriptHash != null) {
+                handleTransferFromContract(requiredAssets);
+            } else {
+                calculateInputsAndChange(requiredAssets);
+            }
 
             this.tx = buildTransaction();
 
             return new AssetTransfer(this);
+        }
+
+        private void handleTransferFromContract(Map<String, BigDecimal> requiredAssets) {
+            NeoGetUnspents unspents = null;
+            try {
+                unspents = neow3j.getUnspents(fromContractScriptHash.toAddress()).send();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            Map<String, AssetBalance> balances = getBalances(unspents.getUnspents());
+            requiredAssets.forEach((reqAssetId, reqValue) -> {
+                List<Utxo> utxos = getUtxosForAssetAmount(reqAssetId, reqValue, balances, inputCalculationStrategy);
+                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
+                BigDecimal changeAmount = calculateChange(utxos, reqValue);
+                if (changeAmount != null) outputs.add(
+                        new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), fromContractScriptHash.toAddress()));
+            });
+
+            attributes.add(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, fromContractScriptHash.toArray()));
+            NeoGetContractState contractState;
+            try {
+                 contractState = neow3j.getContractState(fromContractScriptHash.toString()).send();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            int nrOfParams = contractState.getContractState().getContractParameters().size();
+            byte[] invocationScript = Numeric.hexStringToByteArray(Strings.zeros(nrOfParams * 2));
+            witnesses.add(new RawScript(invocationScript, fromContractScriptHash));
+        }
+
+        private List<Utxo> getUtxosForAssetAmount(String assetId, BigDecimal amount,
+                                                  Map<String, AssetBalance> balances,
+                                                  InputCalculationStrategy strategy) {
+
+            if (balances.get(assetId) == null) {
+                throw new InsufficientFundsException("Balances do not contain the asset with ID " + assetId);
+            }
+            AssetBalance balance = balances.get(assetId);
+            if (balance.getAmount().compareTo(amount) < 0) {
+                throw new InsufficientFundsException("Needed " + amount + " but only found " +
+                        balance.getAmount() + " for asset with ID " + assetId);
+            }
+            return strategy.calculateInputs(balance.getUtxos(), amount);
+        }
+
+        private Map<String, AssetBalance> getBalances(NeoGetUnspents.Unspents unspents) {
+            Map<String, AssetBalance> balances = new HashMap<>(unspents.getBalances().size());
+            unspents.getBalances().forEach(b -> {
+                List<Utxo> utxos = b.getUnspentTransactions().stream()
+                        .map(utxo -> new Utxo(utxo.getTxId(), utxo.getIndex(), utxo.getValue()))
+                        .collect(Collectors.toList());
+                balances.put(b.getAssetHash(), new AssetBalance(utxos));
+            });
+            return balances;
         }
 
         private ContractTransaction buildTransaction() {
@@ -265,7 +337,7 @@ public class AssetTransfer {
         }
 
         private void throwIfSingleOutputIsUsed() {
-            if (amount != null || toAddress != null || assetId != null)  {
+            if (amount != null || toAddress != null || assetId != null) {
                 throw new IllegalStateException("Don't set transaction outputs and use the " +
                         "single output methods `asset()`, `toAddress()` and `amount()` " +
                         "simultaneously");
