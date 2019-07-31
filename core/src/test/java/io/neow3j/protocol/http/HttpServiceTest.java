@@ -196,7 +196,6 @@ public class HttpServiceTest {
         @NotNull
         @Override
         public Future<?> submit(@NotNull Runnable task) {
-            System.out.println("aaaaaaa");
             return null;
         }
 

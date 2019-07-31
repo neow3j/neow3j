@@ -59,12 +59,16 @@ public class HttpService extends Service {
         this(DEFAULT_URL, httpClient, includeRawResponses);
     }
 
-    private HttpService(String url, OkHttpClient httpClient, ExecutorService executorService) {
+    public HttpService(String url, OkHttpClient httpClient, ExecutorService executorService) {
         this(url, httpClient, executorService, false);
     }
 
-    private HttpService(String url, OkHttpClient httpClient) {
+    public HttpService(String url, OkHttpClient httpClient) {
         this(url, httpClient, false);
+    }
+
+    public HttpService(String url, ExecutorService executorService) {
+        this(url, createOkHttpClient(), executorService);
     }
 
     public HttpService(String url) {
