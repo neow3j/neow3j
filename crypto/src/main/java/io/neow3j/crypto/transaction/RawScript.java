@@ -6,7 +6,6 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,8 +74,7 @@ public class RawScript extends NeoSerializable {
      */
     @Deprecated
     public RawScript(byte[] invocationScript, String scriptHash) {
-       this.invocationScript = new RawInvocationScript(invocationScript);
-       this.scriptHash = new ScriptHash(scriptHash);
+        this(invocationScript, new ScriptHash(scriptHash));
     }
 
     /**
@@ -88,12 +86,14 @@ public class RawScript extends NeoSerializable {
      */
     public RawScript(byte[] invocationScript, ScriptHash scriptHash) {
         this.invocationScript = new RawInvocationScript(invocationScript);
+        this.verificationScript = new RawVerificationScript();
         this.scriptHash = scriptHash;
     }
 
     /**
      * Creates a witness (invocation and verification scripts) from the given message, using the
      * given keys for signing the message.
+     *
      * @param messageToSign The message from which the signature is added to the invocation script.
      * @param keyPair       The key pair which is used for signing. The verification script is created
      *                      from the public key.
@@ -135,8 +135,8 @@ public class RawScript extends NeoSerializable {
     }
 
     public static RawScript createMultiSigWitness(int signingThreshold,
-                                                   List<SignatureData> signatures,
-                                                   RawVerificationScript verificationScript) {
+                                                  List<SignatureData> signatures,
+                                                  RawVerificationScript verificationScript) {
 
         if (signatures.size() < signingThreshold) {
             throw new IllegalArgumentException("Not enough signatures provided for the required " +

@@ -1,5 +1,6 @@
 package io.neow3j.crypto.transaction;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.SampleKeys;
@@ -23,6 +24,7 @@ import static io.neow3j.constants.OpCode.CHECKSIG;
 import static io.neow3j.constants.OpCode.PUSHBYTES33;
 import static io.neow3j.constants.OpCode.PUSHBYTES64;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class RawScriptTest {
 
@@ -83,34 +85,34 @@ public class RawScriptTest {
         byte[] expectedScript = Numeric.hexStringToByteArray(
                 // 130 (0x82) bytes follow
                 "82" +
-                // PUSHBYTES64
-                "40" +
-                // Signature with key 1
-                Numeric.toHexStringNoPrefix(signatures.get(0).getConcatenated()) +
-                // PUSHBYTES64
-                "40" +
-                // Signature with key 2
-                Numeric.toHexStringNoPrefix(signatures.get(1).getConcatenated()) +
-                // 105 (0x69) bytes follow
-                "69" +
-                // PUSH2 (the signing threshold)
-                "52" +
-                // PUSHBYTES33
-                "21" +
-                // public key 1
-                Numeric.toHexStringNoPrefix(publicKeys.get(0).toByteArray()) +
-                // PUSHBYTES33
-                "21" +
-                // public key 2
-                Numeric.toHexStringNoPrefix(publicKeys.get(1).toByteArray()) +
-                // PUSHBYTES33
-                "21" +
-                // public key 3
-                Numeric.toHexStringNoPrefix(publicKeys.get(2).toByteArray()) +
-                // PUSH3 (the total number of involved addresses)
-                "53" +
-                // CHECKMULTISIG
-                "ae"
+                        // PUSHBYTES64
+                        "40" +
+                        // Signature with key 1
+                        Numeric.toHexStringNoPrefix(signatures.get(0).getConcatenated()) +
+                        // PUSHBYTES64
+                        "40" +
+                        // Signature with key 2
+                        Numeric.toHexStringNoPrefix(signatures.get(1).getConcatenated()) +
+                        // 105 (0x69) bytes follow
+                        "69" +
+                        // PUSH2 (the signing threshold)
+                        "52" +
+                        // PUSHBYTES33
+                        "21" +
+                        // public key 1
+                        Numeric.toHexStringNoPrefix(publicKeys.get(0).toByteArray()) +
+                        // PUSHBYTES33
+                        "21" +
+                        // public key 2
+                        Numeric.toHexStringNoPrefix(publicKeys.get(1).toByteArray()) +
+                        // PUSHBYTES33
+                        "21" +
+                        // public key 3
+                        Numeric.toHexStringNoPrefix(publicKeys.get(2).toByteArray()) +
+                        // PUSH3 (the total number of involved addresses)
+                        "53" +
+                        // CHECKMULTISIG
+                        "ae"
         );
 
 
@@ -145,10 +147,10 @@ public class RawScriptTest {
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
 
         ByteBuffer buf = ByteBuffer.allocate(1 + 1 + 64 + 1 + 1 + 33 + 1);
-        buf.put((byte)65);
+        buf.put((byte) 65);
         buf.put(PUSHBYTES64.getValue());
         buf.put(Sign.signMessage(message, keyPair).getConcatenated());
-        buf.put((byte)35);
+        buf.put((byte) 35);
         buf.put(PUSHBYTES33.getValue());
         buf.put(keyPair.getPublicKey().toByteArray());
         buf.put(CHECKSIG.getValue());
@@ -191,4 +193,16 @@ public class RawScriptTest {
                 script.getScriptHash().toArray()
         );
     }
+
+    @Test
+    public void createWithoutVerificationScript() {
+        byte[] invocationScript = Numeric.hexStringToByteArray("0000");
+        ScriptHash sh = new ScriptHash("1a70eac53f5882e40dd90f55463cce31a9f72cd4");
+        RawScript s = new RawScript(invocationScript, sh);
+        // 02: two bytes of invocation script;
+        // 0000: invocation script;
+        // 00: zero bytes of verification script
+        assertEquals("02000000", Numeric.toHexStringNoPrefix(s.toArray()));
+    }
+
 }
