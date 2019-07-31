@@ -68,7 +68,7 @@ Java 8 & Android (min. API 24):
 ### Development Snapshots
 
 If you would like to test `SNAPSHOT` versions (which are unstable and not ready for production),
-use the following repositories
+use the following repositories.
 
 Gradle:
 
