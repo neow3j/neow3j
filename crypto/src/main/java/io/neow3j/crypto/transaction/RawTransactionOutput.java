@@ -1,5 +1,6 @@
 package io.neow3j.crypto.transaction;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
@@ -73,13 +74,13 @@ public class RawTransactionOutput extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws IOException {
         this.assetId = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
         this.value = Numeric.fromFixed8ToDecimal(reader.readBytes(8)).toPlainString();
-        this.address = Keys.toAddress(reader.readBytes(20));
+        this.address = new ScriptHash(reader.readBytes(20)).toAddress();
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(assetId)));
         writer.write(Numeric.fromDecimalToFixed8ByteArray(new BigDecimal(this.value)));
-        writer.write(Keys.toScriptHash(this.address));
+        writer.write(ScriptHash.fromAddress(this.address).toArray());
     }
 }

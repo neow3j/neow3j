@@ -1,8 +1,8 @@
 package io.neow3j.wallet;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.utils.Keys;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.Sign;
@@ -16,6 +16,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Balances.AssetBalance;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
@@ -69,8 +70,8 @@ public class Account {
         return address;
     }
 
-    public byte[] getScriptHash() {
-        return Keys.toScriptHash(address);
+    public ScriptHash getScriptHash() {
+        return ScriptHash.fromAddress(address);
     }
 
     public ECKeyPair getECKeyPair() {
@@ -155,6 +156,9 @@ public class Account {
      *
      * @param password     The passphrase used to decrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for decryption.
+     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       throws if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
      */
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
@@ -175,6 +179,7 @@ public class Account {
      *
      * @param password     The passphrase used to encrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for encryption.
+     * @throws CipherException throws if failed encrypt the created wallet.
      */
     public void encryptPrivateKey(String password, ScryptParams scryptParams) throws CipherException {
 

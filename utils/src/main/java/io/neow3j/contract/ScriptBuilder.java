@@ -1,10 +1,8 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
-import io.neow3j.utils.Numeric;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -47,7 +45,7 @@ public class ScriptBuilder {
      * @param params     The parameters that will be used in the app call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder appCall(byte[] scriptHash, String operation,
+    public ScriptBuilder appCall(ScriptHash scriptHash, String operation,
                                  List<ContractParameter> params) {
 
         if (params == null || params.isEmpty()) {
@@ -73,11 +71,11 @@ public class ScriptBuilder {
     /**
      * Appends an app call to the script.
      *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param scriptHash The script hash of the contract to call.
      * @param params     The parameters that will be used in the app call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder appCall(byte[] scriptHash, List<ContractParameter> params) {
+    private ScriptBuilder appCall(ScriptHash scriptHash, List<ContractParameter> params) {
         for (int i = params.size() - 1; i >= 0; i--) {
             pushParam(params.get(i));
         }
@@ -88,14 +86,63 @@ public class ScriptBuilder {
     /**
      * Appends an app call to the script.
      *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param scriptHash The script hash of the contract to call.
      * @param operation  The operation to call.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder appCall(byte[] scriptHash, String operation) {
+    private ScriptBuilder appCall(ScriptHash scriptHash, String operation) {
         pushBoolean(false);
         pushData(operation);
         appCall(scriptHash);
+        return this;
+    }
+
+    private ScriptBuilder appCall(ScriptHash scriptHash) {
+        return call(scriptHash, OpCode.APPCALL);
+    }
+
+    /**
+     * Appends an app call to the script.
+     *
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param operation  The operation to call.
+     * @param params     The parameters that will be used in the app call. Need to be in correct order.
+     * @return this ScriptBuilder object.
+     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, String, List)} instead.
+     */
+    @Deprecated
+    public ScriptBuilder appCall(byte[] scriptHash, String operation,
+                                 List<ContractParameter> params) {
+
+        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), operation, params);
+        return this;
+    }
+
+    /**
+     * Appends an app call to the script.
+     *
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param params     The parameters that will be used in the app call. Need to be in correct order.
+     * @return this ScriptBuilder object.
+     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, List)} instead.
+     */
+    @Deprecated
+    public ScriptBuilder appCall(byte[] scriptHash, List<ContractParameter> params) {
+        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), params);
+        return this;
+    }
+
+    /**
+     * Appends an app call to the script.
+     *
+     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param operation  The operation to call.
+     * @return this ScriptBuilder object.
+     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, String)} instead.
+     */
+    @Deprecated
+    public ScriptBuilder appCall(byte[] scriptHash, String operation) {
+        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), operation);
         return this;
     }
 
@@ -104,9 +151,11 @@ public class ScriptBuilder {
      *
      * @param scriptHash The script hash of the contract to call in big-endian order.
      * @return this ScriptBuilder object.
+     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash)} instead.
      */
+    @Deprecated
     public ScriptBuilder appCall(byte[] scriptHash) {
-        return call(scriptHash, OpCode.APPCALL);
+        return call(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), OpCode.APPCALL);
     }
 
     /**
@@ -114,18 +163,26 @@ public class ScriptBuilder {
      *
      * @param scriptHash The script hash of the contract to call in big-endian order.
      * @return this ScriptBuilder object.
+     * @deprecated User {@link ScriptBuilder#tailCall(ScriptHash)} instead.
      */
+    @Deprecated
     public ScriptBuilder tailCall(byte[] scriptHash) {
+        return tailCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)));
+    }
+
+    /**
+     * Appends a tail call to the script.
+     *
+     * @param scriptHash The script hash of the contract to call.
+     * @return this ScriptBuilder object.
+     */
+    public ScriptBuilder tailCall(ScriptHash scriptHash) {
         return call(scriptHash, OpCode.TAILCALL);
     }
 
-    private ScriptBuilder call(byte[] scriptHash, OpCode opCode) {
-        if (scriptHash.length != NeoConstants.SCRIPTHASH_LENGHT_BYTES) {
-            throw new IllegalArgumentException("Script hash must be 160 bits long.");
-        }
+    private ScriptBuilder call(ScriptHash scriptHash, OpCode opCode) {
         writeByte(opCode.getValue());
-        // Needs to be written in little-endian order
-        writeReversed(scriptHash);
+        write(scriptHash.toArray());
         return this;
     }
 
@@ -147,40 +204,31 @@ public class ScriptBuilder {
     public ScriptBuilder pushParam(ContractParameter param) {
         Object value = param.getValue();
         switch (param.getParamType()) {
-            case SIGNATURE:
-                pushData(Numeric.hexStringToByteArray((String) value));
             case BYTE_ARRAY:
-                String valueString = (String) value;
-                if (Numeric.isValidHexString(valueString)) {
-                    pushData(Numeric.hexStringToByteArray((String) value));
-                } else {
-                    pushData(valueString);
-                }
+            case SIGNATURE:
+                pushData((byte[]) value);
                 break;
             case BOOLEAN:
                 pushBoolean((boolean) value);
                 break;
             case INTEGER:
-                pushInteger(new BigInteger((String) value));
+                pushInteger((BigInteger) value);
                 break;
             case HASH160:
             case HASH256:
-                byte[] bytes = Numeric.hexStringToByteArray((String) value);
-                // Needs to be added in little-endian order.
-                pushData(ArrayUtils.reverseArray(bytes));
+                pushData(((ScriptHash) value).toArray());
                 break;
-            case PUBLIC_KEY:
-                // TODO 10.07.19 claude: Implement
-                throw new UnsupportedOperationException();
             case STRING:
                 pushData((String) value);
                 break;
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
+            case PUBLIC_KEY:
+                // TODO 10.07.19 claude: Implement public key push operation.
             default:
-                throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
-                        "' not supported.");
+                throw new IllegalArgumentException("Parameter type \'" + param.getParamType() +
+                        "\' not supported.");
         }
         return this;
     }
