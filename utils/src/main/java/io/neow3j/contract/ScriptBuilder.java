@@ -190,7 +190,6 @@ public class ScriptBuilder {
         if (operation.length() == 0)
             throw new IllegalArgumentException("Provided operation string is empty.");
 
-        writeByte(OpCode.SYSCALL.getValue());
         byte[] operationBytes = operation.getBytes(UTF_8);
         if (operationBytes.length > 252)
             throw new IllegalArgumentException("Provided operation is too long.");
