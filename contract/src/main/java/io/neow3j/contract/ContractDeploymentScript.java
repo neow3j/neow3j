@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ public class ContractDeploymentScript extends NeoSerializable {
 
     private ContractFunctionProperties functionProperties;
 
-    private byte[] scriptHash;
+    private ScriptHash contractScriptHash;
 
     public ContractDeploymentScript() {
     }
@@ -31,7 +30,7 @@ public class ContractDeploymentScript extends NeoSerializable {
         this.scriptBinary = scriptBinary;
         this.functionProperties = functionProperties;
         this.descriptionProperties = descriptionProperties;
-        this.scriptHash = getScriptHash(scriptBinary);
+        this.contractScriptHash = new ScriptHash(computeContractScriptHash(scriptBinary));
     }
 
     public byte[] getScriptBinary() {
@@ -47,14 +46,14 @@ public class ContractDeploymentScript extends NeoSerializable {
     }
 
     public String getScriptHashHexNoPrefix() {
-        return Numeric.toHexStringNoPrefix(scriptHash);
+        return Numeric.toHexStringNoPrefix(contractScriptHash.toArray());
     }
 
-    public byte[] getScriptHash() {
-        return scriptHash;
+    public ScriptHash getContractScriptHash() {
+        return contractScriptHash;
     }
 
-    private byte[] getScriptHash(byte[] script) {
+    private byte[] computeContractScriptHash(byte[] script) {
         return sha256AndThenRipemd160(script);
     }
 
@@ -64,7 +63,9 @@ public class ContractDeploymentScript extends NeoSerializable {
             this.descriptionProperties = reader.readSerializable(ContractDescriptionProperties.class);
             this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
             this.scriptBinary = reader.readPushData();
-            this.scriptHash = ArrayUtils.reverseArray(getScriptHash(this.scriptBinary));
+            this.contractScriptHash = new ScriptHash(computeContractScriptHash(this.scriptBinary));
+            // TODO: 2019-08-01 Guil:
+            // Should we read the syscall?
         } catch (IllegalAccessException e) {
             LOG.error("Can't access the specified object.", e);
         } catch (InstantiationException e) {
@@ -83,6 +84,10 @@ public class ContractDeploymentScript extends NeoSerializable {
         // script binary (.avm)
         writer.write(new ScriptBuilder()
                 .pushData(this.scriptBinary)
+                .toArray());
+        // syscall "Neo.Contract.Create"
+        writer.write(new ScriptBuilder()
+                .sysCall("Neo.Contract.Create")
                 .toArray());
     }
 

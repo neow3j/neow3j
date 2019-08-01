@@ -22,12 +22,12 @@ public class Contract {
 
     public Contract(ContractDeploymentScript deploymentScript) {
         this.deploymentScript = deploymentScript;
-        this.contractScriptHash = new ScriptHash(deploymentScript.getScriptHash());
+        this.contractScriptHash = deploymentScript.getContractScriptHash();
     }
 
     public Contract(ContractDeploymentScript deploymentScript, NeoContractInterface abi) {
         this.deploymentScript = deploymentScript;
-        this.contractScriptHash = new ScriptHash(deploymentScript.getScriptHash());
+        this.contractScriptHash = deploymentScript.getContractScriptHash();
         this.abi = abi;
     }
 
