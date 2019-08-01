@@ -5,7 +5,6 @@ import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
@@ -238,10 +237,15 @@ public class AssetTransfer {
                         new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), fromContractScriptHash.toAddress()));
             });
 
-            attributes.add(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, fromContractScriptHash.toArray()));
+            // Because in a transaction that withdraws from a contract address the transaction
+            // inputs are coming from the contract, there are now inputs from the account that
+            // initiates the transfer. Therefore it needs to be mentioned in an script attribute.
+            attributes.add(new RawTransactionAttribute(
+                    TransactionAttributeUsageType.SCRIPT, account.getScriptHash().toArray()));
+
             NeoGetContractState contractState;
             try {
-                 contractState = neow3j.getContractState(fromContractScriptHash.toString()).send();
+                contractState = neow3j.getContractState(fromContractScriptHash.toString()).send();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
