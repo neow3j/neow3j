@@ -1,7 +1,10 @@
 package io.neow3j.protocol.http;
 
 import io.neow3j.protocol.Service;
+import io.neow3j.protocol.core.Request;
+import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.exceptions.ClientConnectionException;
+import io.neow3j.utils.Async;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -25,78 +28,219 @@ import java.util.concurrent.ExecutorService;
  */
 public class HttpService extends Service {
 
-    public static final MediaType JSON_MEDIA_TYPE
-            = MediaType.parse("application/json; charset=utf-8");
+    public static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     public static final String DEFAULT_URL = "http://localhost:10333/";
 
     private static final Logger log = LoggerFactory.getLogger(HttpService.class);
-
-    private OkHttpClient httpClient;
-
     private final String url;
-
-    private final boolean includeRawResponse;
-
+    private final boolean includeRawResponses;
+    private OkHttpClient httpClient;
     private HashMap<String, String> headers = new HashMap<>();
 
-    public HttpService(String url, OkHttpClient httpClient, ExecutorService executorService, boolean includeRawResponses) {
+    /**
+     * Create an {@link HttpService} instance.
+     *
+     * @param url                 the URL to the HTTP service (JSON-RPC).
+     * @param httpClient          the HTTP client instance.
+     * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
+    public HttpService(String url, OkHttpClient httpClient,
+                       ExecutorService executorService,
+                       boolean includeRawResponses) {
         super(executorService, includeRawResponses);
         this.url = url;
         this.httpClient = httpClient;
-        this.includeRawResponse = includeRawResponses;
+        this.includeRawResponses = includeRawResponses;
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
+     * defined by {@link Async#defaultExecutorService()}.</p>
+     *
+     * @param url                 the URL to the HTTP service (JSON-RPC).
+     * @param httpClient          the HTTP client instance.
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
     public HttpService(String url, OkHttpClient httpClient, boolean includeRawResponses) {
         this(url, httpClient, null, includeRawResponses);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     *
+     * @param httpClient          the HTTP client instance.
+     * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
     public HttpService(OkHttpClient httpClient, ExecutorService executorService, boolean includeRawResponses) {
         this(DEFAULT_URL, httpClient, executorService, includeRawResponses);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     * <br>
+     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
+     * defined by {@link Async#defaultExecutorService()}.</p>
+     *
+     * @param httpClient          the HTTP client instance.
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
     public HttpService(OkHttpClient httpClient, boolean includeRawResponses) {
         this(DEFAULT_URL, httpClient, includeRawResponses);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>The {@link #includeRawResponses} is set to false.</p>
+     *
+     * @param url             the URL to the HTTP service (JSON-RPC).
+     * @param httpClient      the HTTP client instance.
+     * @param executorService an external ExecutorService where asynchronous {@link Request} calls should run.
+     */
     public HttpService(String url, OkHttpClient httpClient, ExecutorService executorService) {
         this(url, httpClient, executorService, false);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
+     * defined by {@link Async#defaultExecutorService()}.</p>
+     * <br>
+     * <p>The {@link #includeRawResponses} is set to false.</p>
+     *
+     * @param url        the URL to the HTTP service (JSON-RPC).
+     * @param httpClient the HTTP client instance.
+     */
     public HttpService(String url, OkHttpClient httpClient) {
         this(url, httpClient, false);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     * <br>
+     * <p>The {@link #includeRawResponses} is set to false.</p>
+     *
+     * @param url             the URL to the HTTP service (JSON-RPC).
+     * @param executorService an external ExecutorService where asynchronous {@link Request} calls should run.
+     */
     public HttpService(String url, ExecutorService executorService) {
         this(url, createOkHttpClient(), executorService);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
+     * defined by {@link Async#defaultExecutorService()}.</p>
+     * <br>
+     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     * <br>
+     * <p>The {@link #includeRawResponses} is set to false.</p>
+     *
+     * @param url the URL to the HTTP service (JSON-RPC).
+     */
     public HttpService(String url) {
         this(url, createOkHttpClient());
     }
 
-    public HttpService(String url, ExecutorService executorService, boolean includeRawResponse) {
-        this(url, createOkHttpClient(), executorService, includeRawResponse);
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     *
+     * @param url                 the URL to the HTTP service (JSON-RPC).
+     * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
+    public HttpService(String url, ExecutorService executorService, boolean includeRawResponses) {
+        this(url, createOkHttpClient(), executorService, includeRawResponses);
     }
 
-    public HttpService(String url, boolean includeRawResponse) {
-        this(url, createOkHttpClient(), includeRawResponse);
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
+     * defined by {@link Async#defaultExecutorService()}.</p>
+     * <br>
+     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     *
+     * @param url                 the URL to the HTTP service (JSON-RPC).
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
+    public HttpService(String url, boolean includeRawResponses) {
+        this(url, createOkHttpClient(), includeRawResponses);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     * <br>
+     * <p>The {@link #includeRawResponses} is set to false.</p>
+     *
+     * @param httpClient      the HTTP client instance.
+     * @param executorService an external ExecutorService where asynchronous {@link Request} calls should run.
+     */
     public HttpService(OkHttpClient httpClient, ExecutorService executorService) {
         this(DEFAULT_URL, httpClient, executorService);
     }
 
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
+     * defined by {@link Async#defaultExecutorService()}.</p>
+     * <br>
+     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     * <br>
+     * <p>The {@link #includeRawResponses} is set to false.</p>
+     *
+     * @param httpClient the HTTP client instance.
+     */
     public HttpService(OkHttpClient httpClient) {
         this(DEFAULT_URL, httpClient);
     }
 
-    public HttpService(ExecutorService executorService, boolean includeRawResponse) {
-        this(DEFAULT_URL, executorService, includeRawResponse);
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     * <br>
+     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     *
+     * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
+    public HttpService(ExecutorService executorService, boolean includeRawResponses) {
+        this(DEFAULT_URL, executorService, includeRawResponses);
     }
 
-    public HttpService(boolean includeRawResponse) {
-        this(DEFAULT_URL, includeRawResponse);
+    /**
+     * <p>Create an {@link HttpService} instance.</p>
+     * <br>
+     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
+     * defined by {@link Async#defaultExecutorService()}.</p>
+     * <br>
+     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     * <br>
+     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     *
+     * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
+     */
+    public HttpService(boolean includeRawResponses) {
+        this(DEFAULT_URL, includeRawResponses);
     }
 
     public HttpService() {
@@ -148,7 +292,7 @@ public class HttpService extends Service {
     private InputStream buildInputStream(ResponseBody responseBody) throws IOException {
         InputStream inputStream = responseBody.byteStream();
 
-        if (includeRawResponse) {
+        if (includeRawResponses) {
             // we have to buffer the entire input payload, so that after processing
             // it can be re-read and used to populate the rawResponse field.
 
@@ -158,13 +302,11 @@ public class HttpService extends Service {
 
             long size = buffer.size();
             if (size > Integer.MAX_VALUE) {
-                throw new UnsupportedOperationException(
-                        "Non-integer input buffer size specified: " + size);
+                throw new UnsupportedOperationException("Non-integer input buffer size specified: " + size);
             }
 
             int bufferSize = (int) size;
-            BufferedInputStream bufferedinputStream =
-                    new BufferedInputStream(inputStream, bufferSize);
+            BufferedInputStream bufferedinputStream = new BufferedInputStream(inputStream, bufferSize);
 
             bufferedinputStream.mark(inputStream.available());
             return bufferedinputStream;
@@ -178,20 +320,39 @@ public class HttpService extends Service {
         return Headers.of(headers);
     }
 
+    /**
+     * Adds an HTTP header to all {@link Request}
+     * calls used by this service.
+     *
+     * @param key   the header name (e.g., "Authorization").
+     * @param value the header value (e.g., "Bearer secretBearer").
+     */
     public void addHeader(String key, String value) {
         headers.put(key, value);
     }
 
+    /**
+     * Adds multiple HTTP headers to all {@link Request}
+     * calls used by this service.
+     *
+     * @param headersToAdd a key-value map containing keys (e.g., "Authorization")
+     *                     and values (e.g., "Bearer secretBearer").
+     */
     public void addHeaders(Map<String, String> headersToAdd) {
         headers.putAll(headersToAdd);
     }
 
+    /**
+     * Get all custom headers set to this service.
+     *
+     * @return the map containing custom headers set.
+     */
     public HashMap<String, String> getHeaders() {
         return headers;
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
 
     }
 }

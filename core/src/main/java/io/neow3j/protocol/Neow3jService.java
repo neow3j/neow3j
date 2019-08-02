@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 public interface Neow3jService {
 
     /**
-     * Perform a synchronous JSON-RPC request.
+     * Performs a synchronous JSON-RPC request.
      *
      * @param request      request to perform
      * @param responseType class of a data item returned by the request
