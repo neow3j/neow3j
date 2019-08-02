@@ -32,6 +32,7 @@ public class ContractTest {
         // TODO: 2019-07-03 Guil: to be implemented
     }
 
+    @Ignore
     @Test
     public void deploy() throws IOException {
         Contract c1 = new ContractDeployment.Builder(this.neow3j)
@@ -73,6 +74,7 @@ public class ContractTest {
         // TODO: 2019-07-03 Guil: to be implemented
     }
 
+    @Ignore
     @Test
     public void invoke() throws IOException, ErrorResponseException {
 
