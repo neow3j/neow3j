@@ -132,6 +132,21 @@ public class Account {
         balances.updateTokenBalances(response.getBalances());
     }
 
+    /**
+     * <p>Fetches a set of UTXOs from this account that fulfill the required asset amount.</p>
+     * <br>
+     * <p>Usually the UTXOs will not cover the amount exactly but cover a larger amount. Therefore
+     * it is important to calculate the necessary change before using the UTXOs in a transaction.</p>
+     *
+     * @param assetId  The asset needed.
+     * @param amount   The amount needed.
+     * @param strategy The strategy with which to choose the UTXOs available on this account.
+     * @return the list of UTXOs covering the required amount.
+     * @throws IllegalStateException      if this account does not have any balances, e.g. because they
+     *                                    have not been updated before.
+     * @throws InsufficientFundsException if this account does does not possess enough UTXOs to
+     *                                    fulfill the required amount.
+     */
     public List<Utxo> getUtxosForAssetAmount(String assetId, BigDecimal amount,
                                              InputCalculationStrategy strategy) {
 
