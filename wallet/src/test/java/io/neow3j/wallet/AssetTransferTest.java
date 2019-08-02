@@ -54,7 +54,7 @@ public class AssetTransferTest {
     private Account acct;
 
     @Before
-    public void setup() {
+    public void setUp() {
         acct = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
     }
 
@@ -112,7 +112,6 @@ public class AssetTransferTest {
         Neow3j neow3j = ResponseInterceptor.createNeow3jWithInceptor(address);
         acct.updateAssetBalances(neow3j);
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", ALT_ADDR);
-        BigDecimal fee = BigDecimal.ONE;
         AssetTransfer at = new AssetTransfer.Builder(neow3j).account(acct).output(output).networkFee(1).build().sign();
         RawTransaction tx = at.getTransaction();
 
@@ -335,7 +334,7 @@ public class AssetTransferTest {
      * only need the number of input parameters.
      */
     @Test
-    public void transfer_from_contract() throws IOException {
+    public void transferFromContract() throws IOException {
         ScriptHash contractScriptHash = new ScriptHash("d994605e4f3960ba8d7422c4c8b1e94d48960a8d");
         Account contractAccount = Account.fromAddress(contractScriptHash.toAddress()).build();
 
