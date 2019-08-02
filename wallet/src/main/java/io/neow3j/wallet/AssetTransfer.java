@@ -196,7 +196,7 @@ public class AssetTransfer {
 
         /**
          * <p>Adds a network fee to the transfer.</p>
-         * <br/>
+         * <br>
          * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
          * GAS will be taken from the account used in the asset transfer.</p>
          *
@@ -212,7 +212,7 @@ public class AssetTransfer {
 
         /**
          * <p>Adds a network fee to the transfer.</p>
-         * <br/>
+         * <br>
          * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
          * GAS will be taken from the account used in the asset transfer.</p>
          *

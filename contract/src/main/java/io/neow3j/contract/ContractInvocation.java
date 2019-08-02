@@ -401,7 +401,7 @@ public class ContractInvocation {
 
         /**
          * <p>Adds a system fee.</p>
-         * <br/>
+         * <br>
          * <p>The system fee is required for successfully executing the invocation. But, if the
          * invocation consumes less than 10 GAS, no system fee needs to be paid. If you know that
          * the invocation consumes more than 10 GAS, then add only the additional amount here.</p>
@@ -419,7 +419,7 @@ public class ContractInvocation {
 
         /**
          * <p>Adds a system fee.</p>
-         * <br/>
+         * <br>
          * <p>The system fee is required for successfully executing the invocation. But, if the
          * invocation consumes less than 10 GAS no system fee needs to be paid. If you know that the
          * invocation consumes more than 10 GAS, then add here only the additional amount.</p>
