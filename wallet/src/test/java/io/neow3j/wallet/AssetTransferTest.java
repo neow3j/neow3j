@@ -13,6 +13,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -82,8 +83,7 @@ public class AssetTransferTest {
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
         a.updateAssetBalances(neow3j);
         RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "1", "AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3");
-        BigDecimal fee = BigDecimal.ONE;
-        AssetTransfer at = new AssetTransfer.Builder(neow3j).account(a).output(output).networkFee(fee).build().sign();
+        AssetTransfer at = new AssetTransfer.Builder(neow3j).account(a).output(output).networkFee(1).build().sign();
         RawTransaction tx = at.getTransaction();
 
         RawTransactionOutput expectedChangeNeo = new RawTransactionOutput(NEOAsset.HASH_ID, "99999999", a.getAddress());
@@ -128,7 +128,7 @@ public class AssetTransferTest {
         assertEquals(output.getAssetId(), o.getAssetId());
         o = tx.getOutputs().get(1);
         assertEquals(expectedChangeGas.getAddress(), o.getAddress());
-        assertEquals(expectedChangeGas.getValue(), o.getValue());
+        assertEquals(new BigDecimal(expectedChangeGas.getValue()).compareTo(new BigDecimal(o.getValue())), 0);
         assertEquals(expectedChangeGas.getAssetId(), o.getAssetId());
         o = tx.getOutputs().get(2);
         assertEquals(expectedChangeNeo.getAddress(), o.getAddress());
@@ -145,7 +145,7 @@ public class AssetTransferTest {
         AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .asset(NEOAsset.HASH_ID)
-                .amount(BigDecimal.ONE)
+                .amount(1)
                 .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
                 .build()
                 .sign();
@@ -183,11 +183,11 @@ public class AssetTransferTest {
         assertEquals(2, tx.getOutputs().size());
         // Intended output
         assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(0).getAssetId());
-        assertEquals("1", tx.getOutputs().get(0).getValue());
+        assertEquals(BigDecimal.ONE.compareTo(new BigDecimal(tx.getOutputs().get(0).getValue())), 0);
         assertEquals("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3", tx.getOutputs().get(0).getAddress());
         // Change
         assertEquals(NEOAsset.HASH_ID, tx.getOutputs().get(1).getAssetId());
-        assertEquals("99999999", tx.getOutputs().get(1).getValue());
+        assertEquals(new BigDecimal("99999999").compareTo(new BigDecimal(tx.getOutputs().get(1).getValue())), 0);
         assertEquals("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", tx.getOutputs().get(1).getAddress());
     }
 
@@ -230,7 +230,7 @@ public class AssetTransferTest {
         AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .asset(NEOAsset.HASH_ID)
-                .amount(BigDecimal.ONE)
+                .amount("1")
                 .build();
     }
 
@@ -253,7 +253,7 @@ public class AssetTransferTest {
 
         AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
-                .amount(BigDecimal.ONE)
+                .amount(1)
                 .toAddress("AJQ6FoaSXDFzA6wLnyZ1nFN7SGSN2oNTc3")
                 .build();
     }
@@ -280,7 +280,7 @@ public class AssetTransferTest {
         AssetTransfer at = new AssetTransfer.Builder(neow3j)
                 .account(a)
                 .output(output)
-                .amount(BigDecimal.ONE)
+                .amount("1")
                 .build();
     }
 

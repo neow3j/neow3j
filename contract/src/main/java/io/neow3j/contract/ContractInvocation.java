@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
@@ -15,7 +14,6 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.InvocationTransaction;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
@@ -363,19 +361,65 @@ public class ContractInvocation {
          * <p>Adds a network fee.</p>
          * <br>
          * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
-         * GAS will be taken from the account used in contract invocation.</p>
+         * GAS will be taken from the account used in this contract invocation.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.
+         * @deprecated Use {@link Builder#networkFee(double)} and {@link Builder#networkFee(String)}
+         * instead.
          */
+        @Deprecated
         public Builder networkFee(BigDecimal networkFee) {
             this.networkFee = networkFee;
             return this;
         }
 
         /**
-         * <p>Adds a system fee.</p>
+         * <p>Adds a network fee.</p>
          * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in this contract invocation.</p>
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         */
+        public Builder networkFee(String networkFee) {
+            this.networkFee = new BigDecimal(networkFee);
+            return this;
+        }
+
+        /**
+         * Adds a network fee.
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         * @see Builder#networkFee(String)
+         */
+        public Builder networkFee(double networkFee) {
+            return networkFee(Double.toString(networkFee));
+        }
+
+        /**
+         * <p>Adds a system fee.</p>
+         * <br/>
+         * <p>The system fee is required for successfully executing the invocation. But, if the
+         * invocation consumes less than 10 GAS, no system fee needs to be paid. If you know that
+         * the invocation consumes more than 10 GAS, then add only the additional amount here.</p>
+         *
+         * @param systemFee The fee amount to add.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#systemFee(double)} and {@link Builder#systemFee(String)}
+         * instead.
+         */
+        @Deprecated
+        public Builder systemFee(BigDecimal systemFee) {
+            this.systemFee = systemFee;
+            return this;
+        }
+
+        /**
+         * <p>Adds a system fee.</p>
+         * <br/>
          * <p>The system fee is required for successfully executing the invocation. But, if the
          * invocation consumes less than 10 GAS no system fee needs to be paid. If you know that the
          * invocation consumes more than 10 GAS, then add here only the additional amount.</p>
@@ -383,14 +427,24 @@ public class ContractInvocation {
          * @param systemFee The fee amount to add.
          * @return this Builder object.
          */
-        public Builder systemFee(BigDecimal systemFee) {
-            this.systemFee = systemFee;
+        public Builder systemFee(String systemFee) {
+            this.systemFee = new BigDecimal(systemFee);
             return this;
         }
 
         /**
-         * Add the strategy used to calculate which unspent transaction outputs from the involved
-         * account should be use to pay for any outputs.
+         * Adds a system fee.
+         *
+         * @param systemFee The fee amount to add.
+         * @return this Builder object.
+         * @see Builder#systemFee(String)
+         */
+        public Builder systemFee(double systemFee) {
+            return systemFee(Double.toString(systemFee));
+        }
+
+        /**
+         * Adds the strategy that will be used to calculate the UTXOs used as transaction inputs.
          *
          * @param strategy The strategy to use.
          * @return this Builder object.
