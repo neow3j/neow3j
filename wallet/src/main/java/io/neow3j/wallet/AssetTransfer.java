@@ -9,14 +9,11 @@ import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.utils.Strings;
-import io.neow3j.wallet.Balances.AssetBalance;
-import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -210,10 +207,10 @@ public class AssetTransfer {
             intents.addAll(createOutputsFromFees(networkFee));
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
-            if (fromContractScriptHash != null) {
-                handleTransferFromContract(requiredAssets);
+            if (fromContractScriptHash == null) {
+                handleNormalTransfer(requiredAssets);
             } else {
-                calculateInputsAndChange(requiredAssets);
+                handleTransferFromContract(requiredAssets);
             }
 
             this.tx = buildTransaction();
@@ -221,22 +218,19 @@ public class AssetTransfer {
             return new AssetTransfer(this);
         }
 
-        private void handleTransferFromContract(Map<String, BigDecimal> requiredAssets) {
-            NeoGetUnspents unspents = null;
-            try {
-                unspents = neow3j.getUnspents(fromContractScriptHash.toAddress()).send();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            Map<String, AssetBalance> balances = getBalances(unspents.getUnspents());
-            requiredAssets.forEach((reqAssetId, reqValue) -> {
-                List<Utxo> utxos = getUtxosForAssetAmount(reqAssetId, reqValue, balances, inputCalculationStrategy);
-                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                BigDecimal changeAmount = calculateChange(utxos, reqValue);
-                if (changeAmount != null) outputs.add(
-                        new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), fromContractScriptHash.toAddress()));
-            });
+        private void handleNormalTransfer(Map<String, BigDecimal> requiredAssets) {
+            calculateInputsAndChange(requiredAssets, this.account);
+        }
 
+        private void handleTransferFromContract(Map<String, BigDecimal> requiredAssets) {
+            Account contractAcct = Account.fromAddress(fromContractScriptHash.toAddress()).build();
+            try {
+                contractAcct.updateAssetBalances(neow3j);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch UTXOs for the contract with " +
+                        "script hash " + fromContractScriptHash.toString());
+            }
+            calculateInputsAndChange(requiredAssets, contractAcct);
             // Because in a transaction that withdraws from a contract address the transaction
             // inputs are coming from the contract, there are now inputs from the account that
             // initiates the transfer. Therefore it needs to be mentioned in an script attribute.
@@ -254,34 +248,28 @@ public class AssetTransfer {
             witnesses.add(new RawScript(invocationScript, fromContractScriptHash));
         }
 
-        private List<Utxo> getUtxosForAssetAmount(String assetId, BigDecimal amount,
-                                                  Map<String, AssetBalance> balances,
-                                                  InputCalculationStrategy strategy) {
-
-            if (balances.get(assetId) == null) {
-                throw new InsufficientFundsException("Balances do not contain the asset with ID " + assetId);
-            }
-            AssetBalance balance = balances.get(assetId);
-            if (balance.getAmount().compareTo(amount) < 0) {
-                throw new InsufficientFundsException("Needed " + amount + " but only found " +
-                        balance.getAmount() + " for asset with ID " + assetId);
-            }
-            return strategy.calculateInputs(balance.getUtxos(), amount);
+        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets, Account acct) {
+            requiredAssets.forEach((assetId, value) -> {
+                List<Utxo> utxos = acct.getUtxosForAssetAmount(assetId, value, inputCalculationStrategy);
+                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
+                outputs.add(getChangeTransactionOutput(utxos, value, assetId, acct.getAddress()));
+            });
         }
 
-        private Map<String, AssetBalance> getBalances(NeoGetUnspents.Unspents unspents) {
-            Map<String, AssetBalance> balances = new HashMap<>(unspents.getBalances().size());
-            unspents.getBalances().forEach(b -> {
-                List<Utxo> utxos = b.getUnspentTransactions().stream()
-                        .map(utxo -> new Utxo(utxo.getTxId(), utxo.getIndex(), utxo.getValue()))
-                        .collect(Collectors.toList());
-                balances.put(b.getAssetHash(), new AssetBalance(utxos));
-            });
-            return balances;
+        private RawTransactionOutput getChangeTransactionOutput(List<Utxo> utxos,
+                                                                BigDecimal requiredValue,
+                                                                String assetId,
+                                                                String changeAddress) {
+
+            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
+            if (inputAmount.compareTo(requiredValue) <= 0) {
+                return null;
+            }
+            BigDecimal change = inputAmount.subtract(requiredValue);
+            return new RawTransactionOutput(assetId, change.toPlainString(), changeAddress);
         }
 
         private ContractTransaction buildTransaction() {
-
             return new ContractTransaction.Builder()
                     .outputs(this.outputs)
                     .inputs(this.inputs)
@@ -312,24 +300,6 @@ public class AssetTransfer {
                 assets.put(output.getAssetId(), value);
             });
             return assets;
-        }
-
-        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets) {
-            requiredAssets.forEach((reqAssetId, reqValue) -> {
-                List<Utxo> utxos = account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
-                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                BigDecimal changeAmount = calculateChange(utxos, reqValue);
-                if (changeAmount != null) outputs.add(
-                        new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), account.getAddress()));
-            });
-        }
-
-        private BigDecimal calculateChange(List<Utxo> utxos, BigDecimal reqValue) {
-            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
-            if (inputAmount.compareTo(reqValue) > 0) {
-                return inputAmount.subtract(reqValue);
-            }
-            return null;
         }
 
         private void throwIfOutputsAreSet() {
