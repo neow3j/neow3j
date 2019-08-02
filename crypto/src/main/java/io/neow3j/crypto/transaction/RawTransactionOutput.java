@@ -6,7 +6,6 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
@@ -17,17 +16,35 @@ public class RawTransactionOutput extends NeoSerializable {
 
     private String assetId;
 
-    private String value;
+    private BigDecimal value;
 
     private String address;
 
     public RawTransactionOutput() {
     }
 
-    public RawTransactionOutput(String assetId, String value, String address) {
+    /**
+     * Constructs a new transaction output with the given address as the recipient.
+     *
+     * @param assetId The asset.
+     * @param amount  The asset amount.
+     * @param address The receiving address.
+     */
+    public RawTransactionOutput(String assetId, String amount, String address) {
         this.assetId = assetId;
-        this.value = value;
+        this.value = new BigDecimal(amount);
         this.address = address;
+    }
+
+    /**
+     * Constructs a new transaction output with the given address as the recipient
+     *
+     * @param assetId The asset.
+     * @param amount  The asset amount.
+     * @param address The receiving address.
+     */
+    public RawTransactionOutput(String assetId, double amount, String address) {
+        this(assetId, Double.toString(amount), address);
     }
 
     public String getAssetId() {
@@ -35,7 +52,7 @@ public class RawTransactionOutput extends NeoSerializable {
     }
 
     public String getValue() {
-        return value;
+        return value.toPlainString();
     }
 
     public String getAddress() {
@@ -52,7 +69,7 @@ public class RawTransactionOutput extends NeoSerializable {
         if (!(o instanceof RawTransactionOutput)) return false;
         RawTransactionOutput that = (RawTransactionOutput) o;
         return Objects.equals(getAssetId(), that.getAssetId()) &&
-                Objects.equals(getValue(), that.getValue()) &&
+                this.value.compareTo(that.value) == 0 &&
                 Objects.equals(getAddress(), that.getAddress());
     }
 
@@ -73,14 +90,14 @@ public class RawTransactionOutput extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.assetId = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
-        this.value = Numeric.fromFixed8ToDecimal(reader.readBytes(8)).toPlainString();
+        this.value = Numeric.fromFixed8ToDecimal(reader.readBytes(8));
         this.address = new ScriptHash(reader.readBytes(20)).toAddress();
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(assetId)));
-        writer.write(Numeric.fromDecimalToFixed8ByteArray(new BigDecimal(this.value)));
+        writer.write(Numeric.fromDecimalToFixed8ByteArray(this.value));
         writer.write(ScriptHash.fromAddress(this.address).toArray());
     }
 }

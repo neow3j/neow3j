@@ -39,6 +39,15 @@ public class Async {
         return run(callable, DEFAULT_EXECUTOR);
     }
 
+    /**
+     * Get the default {@link ExecutorService} used on asynchronous calls.
+     *
+     * @return the default instance of {@link ExecutorService}.
+     */
+    public static ExecutorService getDefaultExecutor() {
+        return DEFAULT_EXECUTOR;
+    }
+
     private static int getCpuCount() {
         return Runtime.getRuntime().availableProcessors();
     }
