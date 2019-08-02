@@ -364,7 +364,7 @@ public class AssetTransferTest {
 
         AssetTransfer at = new AssetTransfer.Builder(neow3jSpy)
                 .account(acct)
-                .amount(new BigDecimal("1"))
+                .amount("1")
                 .asset(NEOAsset.HASH_ID)
                 .toAddress(acct.getAddress())
                 .fromContract(contractScriptHash)
