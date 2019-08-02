@@ -313,16 +313,16 @@ public class AssetTransfer {
         }
 
         private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets, Account acct) {
-            requiredAssets.forEach((assetId, value) -> {
-                List<Utxo> utxos = acct.getUtxosForAssetAmount(assetId, value, inputCalculationStrategy);
+            requiredAssets.forEach((assetId, requiredValue) -> {
+                List<Utxo> utxos = acct.getUtxosForAssetAmount(assetId, requiredValue, inputCalculationStrategy);
                 inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                outputs.add(getChangeTransactionOutput(utxos, value, assetId, acct.getAddress()));
+                outputs.add(getChangeTransactionOutput(assetId, requiredValue, utxos, acct.getAddress()));
             });
         }
 
-        private RawTransactionOutput getChangeTransactionOutput(List<Utxo> utxos,
+        private RawTransactionOutput getChangeTransactionOutput(String assetId,
                                                                 BigDecimal requiredValue,
-                                                                String assetId,
+                                                                List<Utxo> utxos,
                                                                 String changeAddress) {
 
             BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
