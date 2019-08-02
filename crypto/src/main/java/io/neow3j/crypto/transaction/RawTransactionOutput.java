@@ -6,7 +6,6 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;

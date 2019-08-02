@@ -32,10 +32,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 public class AssetTransferTest {
