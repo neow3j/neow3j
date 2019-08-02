@@ -292,7 +292,7 @@ public class AssetTransfer {
                 contractAcct.updateAssetBalances(neow3j);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to fetch UTXOs for the contract with " +
-                        "script hash " + fromContractScriptHash.toString());
+                        "script hash " + fromContractScriptHash.toString(), e);
             }
             calculateInputsAndChange(requiredAssets, contractAcct);
             // Because in a transaction that withdraws from a contract address the transaction
@@ -304,8 +304,10 @@ public class AssetTransfer {
             NeoGetContractState contractState;
             try {
                 contractState = neow3j.getContractState(fromContractScriptHash.toString()).send();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                contractState.throwOnError();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch contract information for the " +
+                        "contract with script hash " + fromContractScriptHash.toString(), e);
             }
             int nrOfParams = contractState.getContractState().getContractParameters().size();
             byte[] invocationScript = Numeric.hexStringToByteArray(Strings.zeros(nrOfParams * 2));
