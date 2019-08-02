@@ -1,15 +1,19 @@
 package io.neow3j.wallet;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
+import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.Strings;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -88,6 +92,7 @@ public class AssetTransfer {
         private String assetId;
         private String toAddress;
         private BigDecimal amount;
+        private ScriptHash fromContractScriptHash;
 
         public Builder(Neow3j neow3j) {
             this.neow3j = neow3j;
@@ -101,6 +106,11 @@ public class AssetTransfer {
 
         public Builder account(Account account) {
             this.account = account;
+            return this;
+        }
+
+        public Builder fromContract(ScriptHash contractScriptHash) {
+            this.fromContractScriptHash = contractScriptHash;
             return this;
         }
 
@@ -261,15 +271,71 @@ public class AssetTransfer {
             intents.addAll(createOutputsFromFees(networkFee));
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
-            calculateInputsAndChange(requiredAssets);
+            if (fromContractScriptHash == null) {
+                handleNormalTransfer(requiredAssets);
+            } else {
+                handleTransferFromContract(requiredAssets);
+            }
 
             this.tx = buildTransaction();
 
             return new AssetTransfer(this);
         }
 
-        private ContractTransaction buildTransaction() {
+        private void handleNormalTransfer(Map<String, BigDecimal> requiredAssets) {
+            calculateInputsAndChange(requiredAssets, this.account);
+        }
 
+        private void handleTransferFromContract(Map<String, BigDecimal> requiredAssets) {
+            Account contractAcct = Account.fromAddress(fromContractScriptHash.toAddress()).build();
+            try {
+                contractAcct.updateAssetBalances(neow3j);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch UTXOs for the contract with " +
+                        "script hash " + fromContractScriptHash.toString(), e);
+            }
+            calculateInputsAndChange(requiredAssets, contractAcct);
+            // Because in a transaction that withdraws from a contract address the transaction
+            // inputs are coming from the contract, there are now inputs from the account that
+            // initiates the transfer. Therefore it needs to be mentioned in an script attribute.
+            attributes.add(new RawTransactionAttribute(
+                    TransactionAttributeUsageType.SCRIPT, account.getScriptHash().toArray()));
+
+            NeoGetContractState contractState;
+            try {
+                contractState = neow3j.getContractState(fromContractScriptHash.toString()).send();
+                contractState.throwOnError();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch contract information for the " +
+                        "contract with script hash " + fromContractScriptHash.toString(), e);
+            }
+            int nrOfParams = contractState.getContractState().getContractParameters().size();
+            byte[] invocationScript = Numeric.hexStringToByteArray(Strings.zeros(nrOfParams * 2));
+            witnesses.add(new RawScript(invocationScript, fromContractScriptHash));
+        }
+
+        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets, Account acct) {
+            requiredAssets.forEach((assetId, requiredValue) -> {
+                List<Utxo> utxos = acct.getUtxosForAssetAmount(assetId, requiredValue, inputCalculationStrategy);
+                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
+                outputs.add(getChangeTransactionOutput(assetId, requiredValue, utxos, acct.getAddress()));
+            });
+        }
+
+        private RawTransactionOutput getChangeTransactionOutput(String assetId,
+                                                                BigDecimal requiredValue,
+                                                                List<Utxo> utxos,
+                                                                String changeAddress) {
+
+            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
+            if (inputAmount.compareTo(requiredValue) <= 0) {
+                return null;
+            }
+            BigDecimal change = inputAmount.subtract(requiredValue);
+            return new RawTransactionOutput(assetId, change.toPlainString(), changeAddress);
+        }
+
+        private ContractTransaction buildTransaction() {
             return new ContractTransaction.Builder()
                     .outputs(this.outputs)
                     .inputs(this.inputs)
@@ -300,24 +366,6 @@ public class AssetTransfer {
                 assets.put(output.getAssetId(), value);
             });
             return assets;
-        }
-
-        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets) {
-            requiredAssets.forEach((reqAssetId, reqValue) -> {
-                List<Utxo> utxos = account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
-                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                BigDecimal changeAmount = calculateChange(utxos, reqValue);
-                if (changeAmount != null) outputs.add(
-                        new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), account.getAddress()));
-            });
-        }
-
-        private BigDecimal calculateChange(List<Utxo> utxos, BigDecimal reqValue) {
-            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
-            if (inputAmount.compareTo(reqValue) > 0) {
-                return inputAmount.subtract(reqValue);
-            }
-            return null;
         }
 
         private void throwIfOutputsAreSet() {
