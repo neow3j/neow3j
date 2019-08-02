@@ -148,8 +148,9 @@ public class Sign {
     }
 
     /**
-     * Decompress a compressed public key (x co-ord and low-bit of y-coord).<br/>
-     * Based on: https://tools.ietf.org/html/rfc5480#section-2.2
+     * <p>Decompress a compressed public key (x co-ord and low-bit of y-coord).</p>
+     * <br>
+     * <p>Based on: https://tools.ietf.org/html/rfc5480#section-2.2</p>
      */
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
         X9IntegerConverter x9 = new X9IntegerConverter();

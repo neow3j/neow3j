@@ -157,10 +157,41 @@ public class AssetTransfer {
             return this;
         }
 
+        /**
+         * Specifies the asset amount to spend in the transfer.
+         *
+         * @param amount The amount to transfer.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#amount(double)} or {@link Builder#amount(String)}
+         * instead.
+         */
+        @Deprecated
         public Builder amount(BigDecimal amount) {
             throwIfOutputsAreSet();
             this.amount = amount;
             return this;
+        }
+
+        /**
+         * Specifies the asset amount to spend in the transfer.
+         *
+         * @param amount The amount to transfer.
+         * @return this Builder object.
+         */
+        public Builder amount(String amount) {
+            throwIfOutputsAreSet();
+            this.amount = new BigDecimal(amount);
+            return this;
+        }
+
+        /**
+         * Specifies the asset amount to spend in the transfer.
+         *
+         * @param amount The amount to transfer.
+         * @return this Builder object.
+         */
+        public Builder amount(double amount) {
+            return amount(Double.toString(amount));
         }
 
         public Builder attribute(RawTransactionAttribute attribute) {
@@ -174,7 +205,23 @@ public class AssetTransfer {
         }
 
         /**
-         * <p>Adds a network fee.</p>
+         * <p>Adds a network fee to the transfer.</p>
+         * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in the asset transfer.</p>
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#amount(String)} or {@link Builder#amount(double)} instead.
+         */
+        @Deprecated
+        public Builder networkFee(BigDecimal networkFee) {
+            this.networkFee = networkFee;
+            return this;
+        }
+
+        /**
+         * <p>Adds a network fee to the transfer.</p>
          * <br>
          * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
          * GAS will be taken from the account used in the asset transfer.</p>
@@ -182,11 +229,28 @@ public class AssetTransfer {
          * @param networkFee The fee amount to add.
          * @return this Builder object.
          */
-        public Builder networkFee(BigDecimal networkFee) {
-            this.networkFee = networkFee;
+        public Builder networkFee(String networkFee) {
+            this.networkFee = new BigDecimal(networkFee);
             return this;
         }
 
+        /**
+         * Adds a network fee to the transfer.
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         * @see Builder#networkFee(String)
+         */
+        public Builder networkFee(double networkFee) {
+            return networkFee(Double.toString(networkFee));
+        }
+
+        /**
+         * Add the strategy that will be used to calculate the UTXOs used as transaction inputs.
+         *
+         * @param strategy The strategy to use.
+         * @return this Builder object.
+         */
         public Builder inputCalculationStrategy(InputCalculationStrategy strategy) {
             this.inputCalculationStrategy = strategy;
             return this;

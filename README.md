@@ -65,6 +65,40 @@ Java 8 & Android (min. API 24):
 </dependency>
 ```
 
+### Development Snapshots
+
+If you would like to test `SNAPSHOT` versions (which are unstable and not ready for production),
+use the following repositories.
+
+Gradle:
+
+```groovy
+repositories {
+    maven {
+        url 'http://oss.sonatype.org/content/repositories/snapshots'
+    }
+    mavenCentral()
+}
+```
+
+Maven:
+
+```xml
+<repositories>
+    <repository>
+        <id>sonatype-snapshots</id>
+        <name>OSS Sonatype Snapshots</name>
+        <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
+
 ## Examples
 
 * Initialize Neow3j providing the JSON-RPC's endpoint of a NEO node/client:
@@ -161,7 +195,7 @@ ContractInvocation invoc = new ContractInvocation.Builder(neow3j)
         .account(acct)
         .parameter(ContractParameter.string("register"))
         .parameter(ContractParameter.array(
-                ContractParameter.string("neow3j.com"),
+                ContractParameter.string("neow3j.io"),
                 ContractParameter.byteArrayFromAddress(acct.getAddress())))
         .networkFee(new BigDecimal("0.1"))
         .build()

@@ -75,15 +75,14 @@ public class ContractInvocationTest {
      */
     @Test
     public void invocation_with_network_fee() {
-        BigDecimal fee = BigDecimal.ONE;
         Account spyAcct = spy(ACCT);
         Utxo utxo = new Utxo("9f1b9a6f3593ff546a9dab147ba8ad520f7b6233bb0f8e75e05ad23d57ebd76e", 0, BigDecimal.valueOf(96));
-        doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(GASAsset.HASH_ID, fee, InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY);
+        doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("1"), InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY);
 
         InvocationTransaction tx = new ContractInvocation.Builder(EMPTY_NEOW3J)
                 .contractScriptHash(NS_SC_SCRIPT_HASH)
                 .account(spyAcct)
-                .networkFee(fee)
+                .networkFee("1")
                 .parameter(REGISTER)
                 .parameter(ARGUMENTS)
                 .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray()))
@@ -242,7 +241,7 @@ public class ContractInvocationTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void not_adding_rquired_neow3j() {
+    public void not_adding_required_neow3j() {
         new ContractInvocation.Builder(null)
                 .account(ACCT)
                 .contractScriptHash(NS_SC_SCRIPT_HASH)
