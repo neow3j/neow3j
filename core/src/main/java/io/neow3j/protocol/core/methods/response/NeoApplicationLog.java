@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.utils.Keys;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog.EventParameter.EventParameterDeserializer;
+import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
@@ -141,11 +144,20 @@ public class NeoApplicationLog {
         }
     }
 
+    @JsonDeserialize(using = EventParameterDeserializer.class)
     public static class EventParameter extends ContractParameter {
+
+        protected EventParameter(String name, ContractParameterType type, Object value) {
+            super(name, type, value);
+        }
 
         public String getAsAddress() {
             if (this.value instanceof String) {
-                return Keys.scriptHashToAddress((String) this.value);
+                // The value, a script hash in this case, is expected to be in little-endian order.
+                return new ScriptHash(Numeric.hexStringToByteArray((String) this.value)).toAddress();
+            }
+            if (this.value instanceof byte[]) {
+                return new ScriptHash((byte[]) this.value).toAddress();
             }
             return null;
         }
@@ -154,16 +166,30 @@ public class NeoApplicationLog {
             if (this.value instanceof String) {
                 return Numeric.hexToString((String) this.value);
             }
+            if (this.value instanceof byte[]) {
+                return Numeric.hexToString(Numeric.toHexStringNoPrefix((byte[]) this.value));
+            }
             return null;
         }
 
         public BigInteger getAsNumber() {
             if (this.value instanceof String) {
-                return Numeric.hexToInteger((String) this.value);
+                return BigIntegers.fromLittleEndianByteArray(
+                        Numeric.hexStringToByteArray((String) this.value));
+            }
+            if (this.value instanceof byte[]) {
+                return BigIntegers.fromLittleEndianByteArray((byte[]) this.value);
             }
             return null;
         }
 
+        protected static class EventParameterDeserializer extends ParameterDeserializer<EventParameter> {
+
+            @Override
+            public EventParameter newInstance(String name, ContractParameterType type, Object value) {
+                return new EventParameter(name, type, value);
+            }
+        }
     }
 
     public String getTransactionId() {
