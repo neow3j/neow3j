@@ -1,13 +1,14 @@
 package io.neow3j.contract;
 
+import static io.neow3j.utils.Strings.isEmpty;
+
 import io.neow3j.contract.abi.model.NeoContractEvent;
 import io.neow3j.contract.abi.model.NeoContractFunction;
 import io.neow3j.contract.abi.model.NeoContractInterface;
 import io.neow3j.model.types.ContractParameterType;
-
+import java.util.Collections;
 import java.util.List;
-
-import static io.neow3j.utils.Strings.isEmpty;
+import java.util.Optional;
 
 public class Contract {
 
@@ -46,7 +47,7 @@ public class Contract {
      * Creates a new contract with the given script hash and ABI.
      *
      * @param contractScriptHash Contract script hash in little-endian order.
-     * @param abi                The contract's ABI.
+     * @param abi The contract's ABI.
      * @deprecated
      */
     @Deprecated
@@ -68,7 +69,7 @@ public class Contract {
      * Creates a new contract with the given script hash and ABI.
      *
      * @param contractScriptHash Contract script hash in little-endian order.
-     * @param abi                The contract's ABI.
+     * @param abi The contract's ABI.
      */
     public Contract(ScriptHash contractScriptHash, NeoContractInterface abi) {
         this(contractScriptHash);
@@ -92,6 +93,10 @@ public class Contract {
         return this;
     }
 
+    public Optional<NeoContractFunction> getEntryPoint() {
+        return getFunction(abi.getEntryPoint());
+    }
+
     public List<ContractParameter> getEntryPointParameters() {
         return getFunctionParameters(abi.getEntryPoint());
     }
@@ -111,34 +116,47 @@ public class Contract {
     public List<ContractParameter> getFunctionParameters(final String functionName) {
         throwIfABINotSet();
         return abi.getFunctions()
-                .stream()
-                .filter(f -> isEmpty(f.getName()))
-                .filter(f -> f.getName().equals(functionName))
-                .findFirst()
-                .map(NeoContractFunction::getParameters)
-                .orElseThrow(() -> new IllegalArgumentException("No parameters found for the function (" + functionName + ")."));
+            .stream()
+            .filter(f -> !isEmpty(f.getName()))
+            .filter(f -> f.getName().equals(functionName))
+            .findFirst()
+            .map(NeoContractFunction::getParameters)
+            .orElse(Collections.EMPTY_LIST);
+    }
+
+    public Optional<NeoContractFunction> getFunction(final String functionName) {
+        return abi.getFunctions()
+            .stream()
+            .filter(f -> !isEmpty(f.getName()))
+            .filter(f -> f.getName().equals(functionName))
+            .findFirst();
     }
 
     public ContractParameterType getFunctionReturnType(final String functionName) {
         throwIfABINotSet();
         return abi.getFunctions()
-                .stream()
-                .filter(f -> isEmpty(f.getName()))
-                .filter(f -> f.getName().equals(functionName))
-                .findFirst()
-                .map(NeoContractFunction::getReturnType)
-                .orElseThrow(() -> new IllegalArgumentException("No returnType found for the function (" + functionName + ")."));
+            .stream()
+            .filter(f -> !isEmpty(f.getName()))
+            .filter(f -> f.getName().equals(functionName))
+            .findFirst()
+            .map(NeoContractFunction::getReturnType)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "No returnType found for the function (" + functionName + ")."));
+    }
+
+    public Optional<NeoContractEvent> getEvent(final String eventName) {
+        return abi.getEvents()
+            .stream()
+            .filter(f -> !isEmpty(f.getName()))
+            .filter(f -> f.getName().equals(eventName))
+            .findFirst();
     }
 
     public List<ContractParameter> getEventParameters(final String eventName) {
         throwIfABINotSet();
-        return abi.getEvents()
-                .stream()
-                .filter(e -> isEmpty((e.getName())))
-                .filter(e -> e.getName().equals(eventName))
-                .findFirst()
-                .map(NeoContractEvent::getParameters)
-                .orElseThrow(() -> new IllegalArgumentException("No parameters found for the event (" + eventName + ")."));
+        return getEvent(eventName)
+            .map(NeoContractEvent::getParameters)
+            .orElse(Collections.EMPTY_LIST);
     }
 
     private void throwIfABINotSet() {

@@ -4,12 +4,9 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.utils.Numeric;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-
-import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 
 public class ContractDeploymentScript extends NeoSerializable {
 
@@ -30,7 +27,7 @@ public class ContractDeploymentScript extends NeoSerializable {
         this.scriptBinary = scriptBinary;
         this.functionProperties = functionProperties;
         this.descriptionProperties = descriptionProperties;
-        this.contractScriptHash = new ScriptHash(computeContractScriptHash(scriptBinary));
+        this.contractScriptHash = ScriptHash.fromScript(scriptBinary);
     }
 
     public byte[] getScriptBinary() {
@@ -53,17 +50,13 @@ public class ContractDeploymentScript extends NeoSerializable {
         return contractScriptHash;
     }
 
-    private byte[] computeContractScriptHash(byte[] script) {
-        return sha256AndThenRipemd160(script);
-    }
-
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         try {
             this.descriptionProperties = reader.readSerializable(ContractDescriptionProperties.class);
             this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
             this.scriptBinary = reader.readPushData();
-            this.contractScriptHash = new ScriptHash(computeContractScriptHash(this.scriptBinary));
+            this.contractScriptHash = ScriptHash.fromScript(this.scriptBinary);;
             // TODO: 2019-08-01 Guil:
             // Should we read the syscall?
         } catch (IllegalAccessException e) {

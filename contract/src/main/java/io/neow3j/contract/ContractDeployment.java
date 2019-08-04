@@ -5,6 +5,7 @@ import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.wallet.Account;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +21,13 @@ public class ContractDeployment {
     private static final Logger LOG = LoggerFactory.getLogger(ContractDeployment.class);
 
     private Neow3j neow3j;
+    private Account account;
     private NeoContractInterface abi;
     private ContractDeploymentScript deploymentScript;
 
     private ContractDeployment(final Builder builder) {
         this.neow3j = builder.neow3j;
+        this.account = builder.account;
         this.deploymentScript = builder.deploymentScript;
         this.abi = builder.abi;
     }
@@ -38,6 +41,7 @@ public class ContractDeployment {
     public static class Builder {
 
         private Neow3j neow3j;
+        private Account account;
         private String name;
         private String version;
         private String author;
@@ -55,6 +59,11 @@ public class ContractDeployment {
         public Builder(final Neow3j neow3j) {
             this.neow3j = neow3j;
             this.parameters = new ArrayList<>();
+        }
+
+        public Builder account(Account account) {
+            this.account = account;
+            return this;
         }
 
         public Builder loadAVMFile(String absoluteFileName) throws IOException {
@@ -159,6 +168,12 @@ public class ContractDeployment {
         }
 
         public ContractDeployment build() {
+            if (this.neow3j == null) {
+                throw new IllegalStateException("Neow3j not set.");
+            }
+            if (this.account == null) {
+                throw new IllegalStateException("Account not set.");
+            }
             ContractDescriptionProperties cdp = new ContractDescriptionProperties(
                     this.name, this.version, this.author, this.email, this.description);
             ContractFunctionProperties cfp = new ContractFunctionProperties(
