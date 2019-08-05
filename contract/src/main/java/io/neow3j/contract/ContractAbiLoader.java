@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
-import io.neow3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +12,7 @@ public class ContractAbiLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContractAbiLoader.class);
 
-    private byte[] contractScriptHash;
+    private ScriptHash contractScriptHash;
     private NeoContractInterface abi;
 
     private ContractAbiLoader(final Builder builder) {
@@ -28,20 +27,39 @@ public class ContractAbiLoader {
 
     public static class Builder {
 
-        private byte[] contractScriptHash;
+        private ScriptHash contractScriptHash;
         private NeoContractInterface abi;
 
         public Builder() {
 
         }
 
+        /**
+         * Adds the given script hash to this ABI loader.
+         *
+         * @param contractScriptHash the script hash in big-endian order.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#contractScriptHash(ScriptHash)} instead.
+         */
+        @Deprecated
         public Builder contractScriptHash(String contractScriptHash) {
-            this.contractScriptHash = Numeric.hexStringToByteArray(contractScriptHash);
+            this.contractScriptHash = new ScriptHash(contractScriptHash);
+            return this;
+        }
+
+        /**
+         * Adds the given script hash to this ABI loader.
+         *
+         * @param contractScriptHash the script hash.
+         * @return this Builder object.
+         */
+        public Builder contractScriptHash(ScriptHash contractScriptHash) {
+            this.contractScriptHash = contractScriptHash;
             return this;
         }
 
         public Builder address(String address) {
-            contractScriptHash(address);
+            this.contractScriptHash = ScriptHash.fromAddress(address);
             return this;
         }
 

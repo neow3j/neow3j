@@ -32,9 +32,11 @@ public class RawInvocationScript extends NeoSerializable {
      * Creates an invocation script with the given script.
      * If the script represents a signature make sure that it starts with the {@link
      * io.neow3j.constants.OpCode#PUSHBYTES64}. The opcode is not added automatically. Better even,
-     * use {@link RawInvocationScript#fromSignature(SignatureData)} or {@link
-     * RawInvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need a signature
-     * invocation script.
+     * use {@link RawInvocationScript#fromSignature(Sign.SignatureData)} or {@link
+     * RawInvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need
+     * a signature invocation script.
+     *
+     * @param script The script in an array of bytes.
      */
     public RawInvocationScript(byte[] script) {
         this.script = script;
@@ -47,6 +49,7 @@ public class RawInvocationScript extends NeoSerializable {
 
     /**
      * Creates an invocation script from the given signature.
+     *
      * @param signature The signature to use in the script.
      * @return the constructed invocation script.
      */
@@ -58,6 +61,7 @@ public class RawInvocationScript extends NeoSerializable {
     /**
      * Creates an invocation script constructed from the signature of the given message, signed with
      * the given key pair.
+     *
      * @param message Message to sign.
      * @param keyPair Key pair to use for signing
      * @return the constructed invocation script.

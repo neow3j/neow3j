@@ -20,7 +20,7 @@ public class ContractDeployment {
 
     public Contract deploy() {
         // TODO: 2019-07-03 Guil: to be implemented
-        return new Contract(null, null);
+        return new Contract(new ScriptHash("1a70eac53f5882e40dd90f55463cce31a9f72cd4"));
     }
 
     public static class Builder {

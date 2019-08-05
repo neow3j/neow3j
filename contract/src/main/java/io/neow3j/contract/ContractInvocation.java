@@ -1,9 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.NeoConstants;
-import io.neow3j.protocol.core.Response;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
@@ -12,10 +8,12 @@ import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.InvocationTransaction;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
@@ -39,13 +37,14 @@ public class ContractInvocation {
     private static final Logger LOG = LoggerFactory.getLogger(ContractInvocation.class);
 
     private Neow3j neow3j;
-    private String scriptHash;
+    private ScriptHash scriptHash;
     private String function;
     private List<ContractParameter> params;
     private Account account;
     private InvocationTransaction tx;
 
-    private ContractInvocation() {}
+    private ContractInvocation() {
+    }
 
     private ContractInvocation(final Builder builder) {
         this.neow3j = builder.neow3j;
@@ -60,22 +59,23 @@ public class ContractInvocation {
      * Gets the transaction object that will be serialized and sent to the RPC node when
      * {@link ContractInvocation#invoke()} is called.
      *
+     * @return this invocation transaction.
      */
     public InvocationTransaction getTransaction() {
         return tx;
     }
 
     /**
-     * Sends the serialized invocation transaction to the RPC node (synchronous).
-     * <br><br>
-     * Before calling this method you should make sure that the transaction is signed either by
+     * <p>Sends the serialized invocation transaction to the RPC node (synchronous).</p>
+     * <br>
+     * <p>Before calling this method you should make sure that the transaction is signed either by
      * calling {@link ContractInvocation#sign()}} to automatically sign or by adding a custom
-     * witness with {@link ContractInvocation#addWitness(RawScript)}.
+     * witness with {@link ContractInvocation#addWitness(RawScript)}.</p>
      *
      * @return this contract invocation object.
-     * @throws IOException if a connection problem with the RPC node arises.
+     * @throws IOException            if a connection problem with the RPC node arises.
      * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
-     * node.
+     *                                node.
      */
     public ContractInvocation invoke() throws IOException, ErrorResponseException {
         String rawTx = Numeric.toHexStringNoPrefix(tx.toArray());
@@ -85,14 +85,14 @@ public class ContractInvocation {
     }
 
     /**
-     * Tests the contract invocation by calling the invoke/invokescript method of the RPC node.
-     * <br><br>
-     * Doing this does not affect the blockchain's state. It can be used to see what result the
+     * <p>Tests the contract invocation by calling the invoke/invokescript method of the RPC node.</p>
+     * <br>
+     * <p>Doing this does not affect the blockchain's state. It can be used to see what result the
      * invocation will create. But, with NEO 2 nodes this invoke will probably fail if the
-     * invocation runs thorugh a `CheckWitness()` statement in the smart contract code.
+     * invocation runs thorugh a `CheckWitness()` statement in the smart contract code.</p>
      *
      * @return the result of the invocation.
-     * @throws IOException if a connection problem with the RPC node arises.
+     * @throws IOException            if a connection problem with the RPC node arises.
      * @throws ErrorResponseException if the call to the node lead to an error. Not due to the
      *                                contract invocation itself but due to the call in general.
      */
@@ -100,12 +100,12 @@ public class ContractInvocation {
         Response<InvocationResult> response;
         if (function != null) {
             if (params.isEmpty()) {
-                response = neow3j.invokeFunction(scriptHash, function).send();
+                response = neow3j.invokeFunction(scriptHash.toString(), function).send();
             } else {
-                response = neow3j.invokeFunction(scriptHash, function, params).send();
+                response = neow3j.invokeFunction(scriptHash.toString(), function, params).send();
             }
         } else {
-            response = neow3j.invoke(scriptHash, params).send();
+            response = neow3j.invoke(scriptHash.toString(), params).send();
         }
         response.throwOnError();
         return response.getResult();
@@ -118,6 +118,10 @@ public class ContractInvocation {
      * @return this invocation object, updated with a witness.
      */
     public ContractInvocation sign() {
+        if (account == null) {
+            throw new IllegalStateException("No account provided. Can't automatically sign " +
+                    "transaction without account.");
+        }
         if (account.getPrivateKey() == null) {
             throw new IllegalStateException("Account does not hold a decrypted private key for " +
                     "signing the transaction. Decrypt the private key before attempting to sign " +
@@ -128,16 +132,16 @@ public class ContractInvocation {
     }
 
     /**
-     * Adds the given witness to the invocation transaction's witnesses.
-     * <br><br>
-     * Use this method for adding a custom witness to the invocation transaction.
+     * <p>Adds the given witness to the invocation transaction's witnesses.</p>
+     * <br>
+     * <p>Use this method for adding a custom witness to the invocation transaction.
      * This does the same as the method {@link Builder#witness(RawScript)}, namely just add the
      * provided witness. But here it allows to add a witness from the created invocation
      * transaction object ({@link ContractInvocation#getTransaction()}) which is not possible in the
-     * builder.
+     * builder.</p>
      *
-     * @param witness   The witness to be added.
-     * @return          this invocation object.
+     * @param witness The witness to be added.
+     * @return this invocation object.
      */
     public ContractInvocation addWitness(RawScript witness) {
         tx.addScript(witness);
@@ -192,7 +196,7 @@ public class ContractInvocation {
     public static class Builder {
 
         private Neow3j neow3j;
-        private String scriptHash;
+        private ScriptHash scriptHash;
         private String function;
         private List<RawScript> witnesses;
         private List<ContractParameter> params;
@@ -217,11 +221,28 @@ public class ContractInvocation {
             this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY;
         }
 
+        /**
+         * <p>Adds the given list of parameters to this invocation.</p>
+         * <br>
+         * <p>The order in which parameters are added is important. The ordering they have in the given
+         * list is preserved.</p>
+         *
+         * @param params The parameters to add.
+         * @return this Builder object.
+         */
         public Builder parameters(List<ContractParameter> params) {
             params.addAll(params);
             return this;
         }
 
+        /**
+         * <p>Adds the given parameter to this invocation.</p>
+         * <br>
+         * <p>The order in which parameters are added is important.</p>
+         *
+         * @param param The parameter to add.
+         * @return this Builder object.
+         */
         public Builder parameter(ContractParameter param) {
             params.add(param);
             return this;
@@ -231,32 +252,88 @@ public class ContractInvocation {
             return contractScriptHash(contract.getContractScriptHash());
         }
 
+        /**
+         * Adds the given script hash to this invocation. The script hash specifies the contract
+         * to call in this invocation.
+         *
+         * @param scriptHash The contract script hash in big-endian order.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#contractScriptHash(ScriptHash)} instead.
+         */
+        @Deprecated
         public Builder contractScriptHash(String scriptHash) {
-            if (scriptHash == null) {
-                throw new IllegalArgumentException("Script hash must not be null");
-            }
-            if (scriptHash.length() != NeoConstants.SCRIPTHASH_LENGHT_HEXSTRING) {
-                throw new IllegalArgumentException("Script hash must be 20 bytes long but was " +
-                        scriptHash.length()/2 + " bytes long.");
-            }
+            this.scriptHash = new ScriptHash(scriptHash);
+            return this;
+        }
+
+        /**
+         * Adds the given script hash to this invocation. The script hash specifies the contract
+         * to call in this invocation.
+         *
+         * @param scriptHash The contract script hash in little-endian order.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#contractScriptHash(ScriptHash)} instead.
+         */
+        @Deprecated
+        public Builder contractScriptHash(byte[] scriptHash) {
+            this.scriptHash = new ScriptHash(scriptHash);
+            return this;
+        }
+
+        /**
+         * Adds the given script hash to this invocation. The script hash specifies the contract
+         * to call in this invocation.
+         *
+         * @param scriptHash The contract script hash.
+         * @return this Builder object.
+         */
+        public Builder contractScriptHash(ScriptHash scriptHash) {
             this.scriptHash = scriptHash;
             return this;
         }
 
-        public Builder contractScriptHash(byte[] scriptHash) {
-            return contractScriptHash(Numeric.toHexStringNoPrefix(scriptHash));
-        }
-
+        /**
+         * Adds the given function name to this invocation. Use this if you want to call a specific
+         * function of the contract and not the main method.
+         *
+         * @param function The function name.
+         * @return this Builder object.
+         * @see <a href="https://docs.neo.org/docs/en-us/reference/rpc/latest-version/api/invokefunction.html">
+         * invokefunction in NEO API reference</a>
+         */
         public Builder function(String function) {
             this.function = function;
             return this;
         }
 
-        public Builder witness(RawScript script) {
-            this.witnesses.add(script);
+        /**
+         * <p>Adds the given witness to this invocation.</p>
+         * <br>
+         * <p>A witness can also be added later after the transaction has been constructed. E.g. for
+         * creating a signature.</p>
+         *
+         * @param witness The witness to add.
+         * @return this Builder object.
+         */
+        public Builder witness(RawScript witness) {
+            this.witnesses.add(witness);
             return this;
         }
 
+        /**
+         * <p>Adds the given account to this invocation. It will be used to fetch inputs if there are
+         * fees or other outputs attached to this invocation. It is also used for creating a
+         * signature when {@link ContractInvocation#sign()} is called.</p>
+         * <br>
+         * <p>If you don't add an account, the invocation cannot have any fees or outputs attached, and
+         * automatically signing the transaction with {@link ContractInvocation#sign()} will not
+         * work. Additionally, you will have to manually add an attribute of type script with the
+         * script hash of some address in order that it is clear which address should be used for
+         * verifying the transaction.</p>
+         *
+         * @param account The account to add.
+         * @return this Builder object.
+         */
         public Builder account(Account account) {
             if (this.account != null) {
                 throw new IllegalStateException("Account already set.");
@@ -265,6 +342,13 @@ public class ContractInvocation {
             return this;
         }
 
+        /**
+         * Adds the default account of the given wallet to this invocation.
+         *
+         * @param wallet the wallet to use the default account from.
+         * @return this Builder object.
+         * @see Builder#account(Account)
+         */
         public Builder wallet(Wallet wallet) {
             if (this.account != null) {
                 throw new IllegalStateException("Account already set.");
@@ -274,39 +358,95 @@ public class ContractInvocation {
         }
 
         /**
-         * Adds a network fee.
-         * <br><br>
-         * Network fees add priority to a transaction and are paid in GAS. If a fee is added the
-         * GAS will be taken from the account used in contract invocation.
+         * <p>Adds a network fee.</p>
+         * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in this contract invocation.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.
+         * @deprecated Use {@link Builder#networkFee(double)} and {@link Builder#networkFee(String)}
+         * instead.
          */
+        @Deprecated
         public Builder networkFee(BigDecimal networkFee) {
             this.networkFee = networkFee;
             return this;
         }
 
         /**
-         * Adds a system fee.
-         * <br><br>
-         * The system fee is required for successfully executing the invocation. But, if the
-         * invocation consumes less than 10 GAS no system fee needs to be paid. If you know that the
-         * invocation consumes more than 10 GAS, then add here only the additional amount.
+         * <p>Adds a network fee.</p>
+         * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in this contract invocation.</p>
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         */
+        public Builder networkFee(String networkFee) {
+            this.networkFee = new BigDecimal(networkFee);
+            return this;
+        }
+
+        /**
+         * Adds a network fee.
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         * @see Builder#networkFee(String)
+         */
+        public Builder networkFee(double networkFee) {
+            return networkFee(Double.toString(networkFee));
+        }
+
+        /**
+         * <p>Adds a system fee.</p>
+         * <br>
+         * <p>The system fee is required for successfully executing the invocation. But, if the
+         * invocation consumes less than 10 GAS, no system fee needs to be paid. If you know that
+         * the invocation consumes more than 10 GAS, then add only the additional amount here.</p>
          *
          * @param systemFee The fee amount to add.
          * @return this Builder object.
+         * @deprecated Use {@link Builder#systemFee(double)} and {@link Builder#systemFee(String)}
+         * instead.
          */
+        @Deprecated
         public Builder systemFee(BigDecimal systemFee) {
             this.systemFee = systemFee;
             return this;
         }
 
         /**
-         * Add the strategy used to calculate which unspent transaction outputs from the involved
-         * account should be use to pay for any outputs.
+         * <p>Adds a system fee.</p>
+         * <br>
+         * <p>The system fee is required for successfully executing the invocation. But, if the
+         * invocation consumes less than 10 GAS no system fee needs to be paid. If you know that the
+         * invocation consumes more than 10 GAS, then add here only the additional amount.</p>
          *
-         * @param strategy the strategy to use.
+         * @param systemFee The fee amount to add.
+         * @return this Builder object.
+         */
+        public Builder systemFee(String systemFee) {
+            this.systemFee = new BigDecimal(systemFee);
+            return this;
+        }
+
+        /**
+         * Adds a system fee.
+         *
+         * @param systemFee The fee amount to add.
+         * @return this Builder object.
+         * @see Builder#systemFee(String)
+         */
+        public Builder systemFee(double systemFee) {
+            return systemFee(Double.toString(systemFee));
+        }
+
+        /**
+         * Adds the strategy that will be used to calculate the UTXOs used as transaction inputs.
+         *
+         * @param strategy The strategy to use.
          * @return this Builder object.
          */
         public Builder inputCalculationStrategy(InputCalculationStrategy strategy) {
@@ -314,11 +454,23 @@ public class ContractInvocation {
             return this;
         }
 
+        /**
+         * Adds the given attribute to this invocation.
+         *
+         * @param attribute The attribute to add.
+         * @return this Builder object.
+         */
         public Builder attribute(RawTransactionAttribute attribute) {
             this.attributes.add(attribute);
             return this;
         }
 
+        /**
+         * Adds the given attributes to this invocation.
+         *
+         * @param attributes The attributes to add.
+         * @return this Builder object.
+         */
         public Builder attributes(List<RawTransactionAttribute> attributes) {
             this.attributes.addAll(attributes);
             return this;
@@ -337,26 +489,55 @@ public class ContractInvocation {
 
         }
 
+        /**
+         * Adds the given outputs to this invocation. The outputs are sent in the same transaction
+         * with the invocation.
+         *
+         * @param outputs The outputs to add.
+         * @return this Builder object.
+         */
         public Builder outputs(List<RawTransactionOutput> outputs) {
             this.outputs.addAll(outputs);
             return this;
         }
 
+        /**
+         * Adds the given output to this invocation. The output are sent in the same transaction
+         * with the invocation.
+         *
+         * @param output The output to add.
+         * @return this Builder object.
+         */
         public Builder output(RawTransactionOutput output) {
             this.outputs.add(output);
             return this;
         }
 
+        /**
+         * <p>Builds the contract invocation object ready for signing and invoking.</p>
+         * <br>
+         * <p>In more detail:</p>
+         * <ul>
+         * <li>Collects the necessary inputs, if this invocation has fees or other outputs attached.</li>
+         * <li>Adds necessary attributes if the invocation does not have any fees and outputs.</li>
+         * <li>Constructs an {@link InvocationTransaction} object.</li>
+         * </ul>
+         *
+         * @return the constructed contract invocation object.
+         */
         public ContractInvocation build() {
             if (neow3j == null) throw new IllegalStateException("Neow3j not set");
-            if (account == null) throw new IllegalStateException("No account set");
             if (scriptHash == null) throw new IllegalStateException("Contract script hash not set");
 
             List<RawTransactionOutput> intents = new ArrayList<>(outputs);
             intents.addAll(createOutputsFromFees(networkFee, systemFee));
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
-            calculateInputsAndChange(requiredAssets);
+            if (!requiredAssets.isEmpty()) {
+                if (account == null) throw new IllegalStateException("No account set but needed " +
+                        "for fetching transaction inputs.");
+                calculateInputsAndChange(requiredAssets);
+            }
 
             addAttributesIfTransactionIsEmpty();
 
@@ -368,7 +549,7 @@ public class ContractInvocation {
         private InvocationTransaction buildTransaction() {
 
             byte[] script = new ScriptBuilder()
-                    .appCall(Numeric.hexStringToByteArray(scriptHash), function, params)
+                    .appCall(scriptHash, function, params)
                     .toArray();
 
             return new InvocationTransaction.Builder()
@@ -387,14 +568,16 @@ public class ContractInvocation {
          */
         private void addAttributesIfTransactionIsEmpty() {
             if (outputs.isEmpty() && inputs.isEmpty()) {
-                RawTransactionAttribute scriptAttr =  new RawTransactionAttribute(
-                        TransactionAttributeUsageType.SCRIPT,
-                        Keys.toScriptHash(account.getAddress()));
+                if (account != null) {
+                    RawTransactionAttribute scriptAttr = new RawTransactionAttribute(
+                            TransactionAttributeUsageType.SCRIPT,
+                            account.getScriptHash().toArray());
+                    this.attributes.add(scriptAttr);
+                }
 
-                RawTransactionAttribute remarkAttr =  new RawTransactionAttribute(
+                RawTransactionAttribute remarkAttr = new RawTransactionAttribute(
                         TransactionAttributeUsageType.REMARK, createRandomRemark());
 
-                this.attributes.add(scriptAttr);
                 this.attributes.add(remarkAttr);
             }
         }

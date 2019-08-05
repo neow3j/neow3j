@@ -3,7 +3,6 @@ package io.neow3j.crypto;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -18,8 +17,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
 
-import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
+import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.getLastNBytes;
@@ -45,9 +44,13 @@ public class NEP2 {
     /**
      * Decrypts the given encrypted private key in NEP-2 format with the given password and standard
      * scrypt parameters.
-     * @param password  The passphrase used for decryption.
+     *
+     * @param password   The passphrase used for decryption.
      * @param nep2String The NEP-2 ecnrypted private key.
      * @return an EC key pair constructed form the decrypted private key.
+     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       throws if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
      */
     public static ECKeyPair decrypt(String password, String nep2String)
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
@@ -58,10 +61,13 @@ public class NEP2 {
      * Decrypts the given encrypted private key in NEP-2 format with the given password and scrypt
      * parameters.
      *
-     * @param password  The passphrase used for decryption.
-     * @param nep2String The NEP-2 ecnrypted private key.
+     * @param password     The passphrase used for decryption.
+     * @param nep2String   The NEP-2 ecnrypted private key.
      * @param scryptParams The scrypt parameters used for encryption.
      * @return an EC key pair constructed form the decrypted private key.
+     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       throws if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
      */
     public static ECKeyPair decrypt(String password, String nep2String, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
@@ -89,7 +95,6 @@ public class NEP2 {
 
         byte[] plainPrivateKey = xor(decrypted, derivedKeyHalf1);
 
-//        Credentials credentials = new Credentials(ECKeyPair.create(plainPrivateKey));
         ECKeyPair ecKeyPair = ECKeyPair.create(plainPrivateKey);
         byte[] calculatedAddressHash = getAddressHash(ecKeyPair);
 
@@ -103,7 +108,11 @@ public class NEP2 {
     /**
      * Encrypts the private key of the given key pair with the given password using standard Scrypt
      * parameters.
+     *
+     * @param password  The passphrase used for encryption.
+     * @param ecKeyPair the {@link ECKeyPair} to be encrypted
      * @return The NEP-2 encrypted password.
+     * @throws CipherException throws if the key pair cannot be encrypted.
      */
     public static String encrypt(String password, ECKeyPair ecKeyPair) throws CipherException {
         return encrypt(password, ecKeyPair, N_STANDARD, P_STANDARD, R_STANDARD);
@@ -112,8 +121,8 @@ public class NEP2 {
     /**
      * Encrypts the private key of the given EC key pair following the NEP-2 standard.
      *
-     * @param password  the passphrase to be used to encrypt
-     * @param ecKeyPair the {@link ECKeyPair} to be encrypted
+     * @param password     the passphrase to be used to encrypt
+     * @param ecKeyPair    the {@link ECKeyPair} to be encrypted
      * @param scryptParams the scrypt parameters used for encryption.
      * @return encrypted private key as described on NEP-2.
      * @throws CipherException thrown when the AES/ECB/NoPadding cipher operation fails
@@ -123,6 +132,7 @@ public class NEP2 {
 
         return encrypt(password, ecKeyPair, scryptParams.getN(), scryptParams.getP(), scryptParams.getR());
     }
+
     /**
      * Encrypts the private key of the given EC key pair following the NEP-2 standard.
      *
