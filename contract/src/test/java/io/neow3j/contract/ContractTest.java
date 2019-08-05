@@ -169,53 +169,6 @@ public class ContractTest {
 
     @Ignore
     @Test
-    public void deploy() throws IOException {
-
-        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
-
-        Contract c1 = new ContractDeployment.Builder(this.neow3j)
-            .account(a)
-            .loadAVMFile("file.avm")
-            .needsStorage()
-            .needsDynamicInvoke()
-            .isPayable()
-            .parameters(
-                Arrays.asList(
-                    ContractParameterType.STRING,
-                    ContractParameterType.ARRAY
-                )
-            )
-            .returnType(ContractParameterType.ARRAY)
-            .name("ContractName")
-            .version("1.0.0")
-            .author("Author")
-            .email("email@email.com")
-            .description("ContractDescription")
-            .build()
-            .deploy();
-
-        Contract c2 = new ContractDeployment.Builder(this.neow3j)
-            .account(a)
-            .loadAVMFile("file.avm")
-            .needsStorage()
-            .needsDynamicInvoke()
-            .isPayable()
-            .parameter(ContractParameterType.STRING)
-            .parameter(ContractParameterType.ARRAY)
-            .returnType(ContractParameterType.BYTE_ARRAY)
-            .name("ContractName")
-            .version("1.0.0")
-            .author("Author")
-            .email("email@email.com")
-            .description("ContractDescription")
-            .build()
-            .deploy();
-
-        // TODO: 2019-07-03 Guil: to be implemented
-    }
-
-    @Ignore
-    @Test
     public void invoke() throws IOException, ErrorResponseException {
 
         Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();

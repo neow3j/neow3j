@@ -1,10 +1,13 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
+import java.math.BigDecimal;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +51,18 @@ public class ContractDeploymentScript extends NeoSerializable {
 
     public ScriptHash getContractScriptHash() {
         return contractScriptHash;
+    }
+
+    public BigDecimal getDeploymentSystemFee() {
+        int fee = NeoConstants.CONTRACT_DEPLOY_BASIC_FEE;
+        if (functionProperties.getNeedsStorage()) {
+            fee += NeoConstants.CONTRACT_DEPLOY_STORAGE_FEE;
+        }
+        if (functionProperties.getNeedsDynamicInvoke()) {
+            fee += NeoConstants.CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE;
+        }
+        fee -= NeoConstants.FREE_OF_CHARGE_EXECUTION_COST;
+        return new BigDecimal(Math.max(fee, 0));
     }
 
     @Override

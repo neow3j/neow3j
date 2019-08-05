@@ -1,20 +1,37 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.NeoConstants;
+import io.neow3j.contract.ContractInvocation.Builder;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
+import io.neow3j.crypto.transaction.RawScript;
+import io.neow3j.crypto.transaction.RawTransactionInput;
+import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.transaction.InvocationTransaction;
+import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
+import io.neow3j.wallet.InputCalculationStrategy;
+import io.neow3j.wallet.Utxo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ContractDeployment {
 
@@ -23,6 +40,7 @@ public class ContractDeployment {
     private Neow3j neow3j;
     private Account account;
     private NeoContractInterface abi;
+    private InvocationTransaction tx;
     private ContractDeploymentScript deploymentScript;
 
     private ContractDeployment(final Builder builder) {
@@ -30,12 +48,52 @@ public class ContractDeployment {
         this.account = builder.account;
         this.deploymentScript = builder.deploymentScript;
         this.abi = builder.abi;
+        this.tx = builder.tx;
     }
 
-    public Contract deploy() {
-        // TODO: 2019-07-24 Guil:
-        // Here we need to send the transaction!
+    /**
+     * Signs the transaction in its current state with the private key of the account that was
+     * added.
+     *
+     * @return this invocation object, updated with a witness.
+     * @throws IllegalStateException If this ContractDeployment was constructed without an account
+     *                               or if the account does not provide a decrypted private key.
+     */
+    public ContractDeployment sign() {
+        if (account == null) {
+            throw new IllegalStateException("No account provided. Can't automatically sign " +
+                    "transaction without account.");
+        }
+        if (account.getPrivateKey() == null) {
+            throw new IllegalStateException("Account does not hold a decrypted private key for " +
+                    "signing the transaction. Decrypt the private key before attempting to sign " +
+                    "with it.");
+        }
+        tx.addScript(RawScript.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
+        return this;
+    }
+
+    /**
+     * <p>Sends the serialized transaction to the RPC node (synchronous).</p>
+     * <br>
+     * <p>Before calling this method you should make sure that the transaction is signed either by
+     * calling {@link ContractDeployment#sign()}} to automatically sign or by adding a custom
+     * witness with {@link ContractDeployment##addWitness(RawScript)}.</p>
+     *
+     * @return the contract that has been deployed.
+     * @throws IOException            if a connection problem with the RPC node arises.
+     * @throws ErrorResponseException if the execution of the deployment lead to an error on the RPC
+     *                                node.
+     */
+    public Contract deploy() throws IOException, ErrorResponseException {
+        String rawTx = Numeric.toHexStringNoPrefix(tx.toArray());
+        NeoSendRawTransaction response = neow3j.sendRawTransaction(rawTx).send();
+        response.throwOnError();
         return new Contract(this.deploymentScript, this.abi);
+    }
+
+    public InvocationTransaction getTransaction() {
+        return this.tx;
     }
 
     public static class Builder {
@@ -54,11 +112,21 @@ public class ContractDeployment {
         private boolean isPayable;
         private byte[] scriptBinary;
         private NeoContractInterface abi;
+        private InputCalculationStrategy inputCalculationStrategy;
+        private BigDecimal networkFee;
         private ContractDeploymentScript deploymentScript;
+        private InvocationTransaction tx;
 
         public Builder(final Neow3j neow3j) {
             this.neow3j = neow3j;
             this.parameters = new ArrayList<>();
+            this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_STRATEGY;
+            this.networkFee = BigDecimal.ZERO;
+            this.name = "";
+            this.version = "";
+            this.author = "";
+            this.email = "";
+            this.description = "";
         }
 
         public Builder account(Account account) {
@@ -137,6 +205,11 @@ public class ContractDeployment {
             return this;
         }
 
+        public Builder parameters(ContractParameterType... parameters) {
+            this.parameters = Arrays.asList(parameters);
+            return this;
+        }
+
         public Builder returnType(ContractParameterType returnType) {
             this.returnType = returnType;
             return this;
@@ -167,6 +240,46 @@ public class ContractDeployment {
             return this;
         }
 
+        /**
+         * Adds the strategy that will be used to determine which UTXOs should be used as
+         * transaction inputs.
+         *
+         * @param strategy The strategy to use.
+         * @return this Builder object.
+         */
+        public Builder inputCalculationStrategy(InputCalculationStrategy strategy) {
+            this.inputCalculationStrategy = strategy;
+            return this;
+        }
+
+        // TODO 2019-08-05 claude:
+        // Reference the method for calculating the network fee from the transaction size once it is
+        // implemented in a publicly.
+        /**
+         * <p>Adds a network fee.</p>
+         * <br>
+         * <p>The network fee (measured in GAS) can be used to add priority to a transaction. It is
+         * required for a successful transaction if the transaction is larger than 1024 bytes.</p>
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         */
+        public Builder networkFee(String networkFee) {
+            this.networkFee = new BigDecimal(networkFee);
+            return this;
+        }
+
+        /**
+         * Adds a network fee.
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         * @see ContractDeployment.Builder#networkFee(String)
+         */
+        public Builder networkFee(double networkFee) {
+            return networkFee(Double.toString(networkFee));
+        }
+
         public ContractDeployment build() {
             if (this.neow3j == null) {
                 throw new IllegalStateException("Neow3j not set.");
@@ -179,9 +292,90 @@ public class ContractDeployment {
             ContractFunctionProperties cfp = new ContractFunctionProperties(
                     this.parameters, this.returnType, this.needsStorage, this.needsDynamicInvoke, this.isPayable);
             this.deploymentScript = new ContractDeploymentScript(this.scriptBinary, cfp, cdp);
+
+            BigDecimal systemFee = this.deploymentScript.getDeploymentSystemFee();
+
+            Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(null, systemFee, networkFee);
+
+            List<RawTransactionInput> inputs = new ArrayList<>();
+            List<RawTransactionOutput> outputs = new ArrayList<>();
+
+            if (!requiredAssets.isEmpty()) {
+                if (account == null) throw new IllegalStateException("No account set but needed " +
+                        "for fetching transaction inputs.");
+
+                requiredAssets.forEach((reqAssetId, reqValue) -> {
+                    List<Utxo> utxos = account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
+                    inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
+                    BigDecimal changeAmount = calculateChange(utxos, reqValue);
+                    if (changeAmount != null) outputs.add(
+                            new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), account.getAddress()));
+                });
+            }
+
+            this.tx = new InvocationTransaction.Builder()
+                    .outputs(outputs)
+                    .inputs(inputs)
+                    .systemFee(systemFee)
+                    .contractScript(deploymentScript.toArray())
+                    .build();
+
+            calculateAndCheckNetworkFee();
             return new ContractDeployment(this);
         }
 
+        // TODO 2019-08-05 claude:
+        // The calculation of the required network fee should be a utility method available for the
+        // library user too.
+        private void calculateAndCheckNetworkFee() {
+            int txByteSize = tx.getSize();
+            if (txByteSize > NeoConstants.MAX_FREE_TRANSACTION_SIZE) {
+                int chargeableSize = txByteSize - NeoConstants.MAX_FREE_TRANSACTION_SIZE;
+                BigDecimal requiredFee = NeoConstants.FEE_PER_EXTRA_BYTE
+                        .multiply(new BigDecimal(chargeableSize))
+                        .add(NeoConstants.PRIORITY_THRESHOLD_FEE);
+                if (requiredFee.compareTo(this.networkFee) > 0) {
+                    throw new IllegalStateException("The transaction size (" + txByteSize + ") " +
+                            "exceeds the free transaction size (" +
+                            NeoConstants.MAX_FREE_TRANSACTION_SIZE + "). A network fee of at least" +
+                            requiredFee.toPlainString() + " GAS is required.");
+                }
+            }
+        }
+
+        private Map<String, BigDecimal> calculateRequiredAssetsForIntents(
+                List<RawTransactionOutput> outputs, BigDecimal... fees) {
+
+            List<RawTransactionOutput> intents = outputs == null ? new ArrayList<>() : new ArrayList<>(outputs);
+            intents.addAll(createOutputsFromFees(fees));
+            Map<String, BigDecimal> assets = new HashMap<>();
+            intents.forEach(output -> {
+                BigDecimal value = new BigDecimal(output.getValue());
+                if (assets.containsKey(output.getAssetId())) {
+                    value = assets.get(output.getAssetId()).add(value);
+                }
+                assets.put(output.getAssetId(), value);
+            });
+            return assets;
+        }
+
+        private List<RawTransactionOutput> createOutputsFromFees(BigDecimal... fees) {
+            List<RawTransactionOutput> outputs = new ArrayList<>(fees.length);
+            for (BigDecimal fee : fees) {
+                if (fee.compareTo(BigDecimal.ZERO) > 0) {
+                    outputs.add(new RawTransactionOutput(GASAsset.HASH_ID, fee.toPlainString(), null));
+                }
+            }
+            return outputs;
+        }
+
+        private static BigDecimal calculateChange(List<Utxo> utxos, BigDecimal reqValue) {
+            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
+            if (inputAmount.compareTo(reqValue) > 0) {
+                return inputAmount.subtract(reqValue);
+            }
+            return null;
+        }
     }
 
 }

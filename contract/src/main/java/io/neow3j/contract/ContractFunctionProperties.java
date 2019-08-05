@@ -18,6 +18,10 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContractFunctionProperties.class);
 
+    // TODO 05.08.19 claude:
+    // The parameter types could be stored in their enum representation (ContractParameterType)
+    // instead of the serializable object. In the deserialize and serialize methods they are anyway
+    // converted back and forth.
     private List<ContractParameterTypeSerializable> parameterTypes;
 
     private ContractParameterTypeSerializable returnType;
