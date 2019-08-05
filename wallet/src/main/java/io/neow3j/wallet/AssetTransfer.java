@@ -1,15 +1,19 @@
 package io.neow3j.wallet;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionAttribute;
 import io.neow3j.crypto.transaction.RawTransactionInput;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
+import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.Strings;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -36,15 +40,15 @@ public class AssetTransfer {
     }
 
     /**
-     * Adds the given witness to the transaction's witnesses.
-     * <br><br>
-     * Use this method for adding a custom witness to the transaction.
+     * <p>Adds the given witness to the transaction's witnesses.</p>
+     * <br>
+     * <p>Use this method for adding a custom witness to the transaction.
      * This does the same as the method {@link Builder#witness(RawScript)}, namely just adds the
      * provided witness. But here it allows to add a witness from the created transaction object
-     * ({@link AssetTransfer#getTransaction()}) which is not possible in the builder.
+     * ({@link AssetTransfer#getTransaction()}) which is not possible in the builder.</p>
      *
-     * @param witness   The witness to be added.
-     * @return          this asset transfer object.
+     * @param witness The witness to be added.
+     * @return this asset transfer object.
      */
     public AssetTransfer addWitness(RawScript witness) {
         tx.addScript(witness);
@@ -88,6 +92,7 @@ public class AssetTransfer {
         private String assetId;
         private String toAddress;
         private BigDecimal amount;
+        private ScriptHash fromContractScriptHash;
 
         public Builder(Neow3j neow3j) {
             this.neow3j = neow3j;
@@ -101,6 +106,11 @@ public class AssetTransfer {
 
         public Builder account(Account account) {
             this.account = account;
+            return this;
+        }
+
+        public Builder fromContract(ScriptHash contractScriptHash) {
+            this.fromContractScriptHash = contractScriptHash;
             return this;
         }
 
@@ -141,16 +151,47 @@ public class AssetTransfer {
             return this;
         }
 
-        public Builder toAddress(String address){
+        public Builder toAddress(String address) {
             throwIfOutputsAreSet();
             this.toAddress = address;
             return this;
         }
 
-        public Builder amount(BigDecimal amount){
+        /**
+         * Specifies the asset amount to spend in the transfer.
+         *
+         * @param amount The amount to transfer.
+         * @return this Builder object.
+         * @deprecated Use {@link Builder#amount(double)} or {@link Builder#amount(String)}
+         * instead.
+         */
+        @Deprecated
+        public Builder amount(BigDecimal amount) {
             throwIfOutputsAreSet();
             this.amount = amount;
             return this;
+        }
+
+        /**
+         * Specifies the asset amount to spend in the transfer.
+         *
+         * @param amount The amount to transfer.
+         * @return this Builder object.
+         */
+        public Builder amount(String amount) {
+            throwIfOutputsAreSet();
+            this.amount = new BigDecimal(amount);
+            return this;
+        }
+
+        /**
+         * Specifies the asset amount to spend in the transfer.
+         *
+         * @param amount The amount to transfer.
+         * @return this Builder object.
+         */
+        public Builder amount(double amount) {
+            return amount(Double.toString(amount));
         }
 
         public Builder attribute(RawTransactionAttribute attribute) {
@@ -164,19 +205,52 @@ public class AssetTransfer {
         }
 
         /**
-         * Adds a network fee.
-         * <br><br>
-         * Network fees add priority to a transaction and are paid in GAS. If a fee is added the
-         * GAS will be taken from the account used in the asset transfer.
+         * <p>Adds a network fee to the transfer.</p>
+         * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in the asset transfer.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.
+         * @deprecated Use {@link Builder#amount(String)} or {@link Builder#amount(double)} instead.
          */
+        @Deprecated
         public Builder networkFee(BigDecimal networkFee) {
             this.networkFee = networkFee;
             return this;
         }
 
+        /**
+         * <p>Adds a network fee to the transfer.</p>
+         * <br>
+         * <p>Network fees add priority to a transaction and are paid in GAS. If a fee is added the
+         * GAS will be taken from the account used in the asset transfer.</p>
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         */
+        public Builder networkFee(String networkFee) {
+            this.networkFee = new BigDecimal(networkFee);
+            return this;
+        }
+
+        /**
+         * Adds a network fee to the transfer.
+         *
+         * @param networkFee The fee amount to add.
+         * @return this Builder object.
+         * @see Builder#networkFee(String)
+         */
+        public Builder networkFee(double networkFee) {
+            return networkFee(Double.toString(networkFee));
+        }
+
+        /**
+         * Add the strategy that will be used to calculate the UTXOs used as transaction inputs.
+         *
+         * @param strategy The strategy to use.
+         * @return this Builder object.
+         */
         public Builder inputCalculationStrategy(InputCalculationStrategy strategy) {
             this.inputCalculationStrategy = strategy;
             return this;
@@ -197,15 +271,71 @@ public class AssetTransfer {
             intents.addAll(createOutputsFromFees(networkFee));
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
-            calculateInputsAndChange(requiredAssets);
+            if (fromContractScriptHash == null) {
+                handleNormalTransfer(requiredAssets);
+            } else {
+                handleTransferFromContract(requiredAssets);
+            }
 
             this.tx = buildTransaction();
 
             return new AssetTransfer(this);
         }
 
-        private ContractTransaction buildTransaction() {
+        private void handleNormalTransfer(Map<String, BigDecimal> requiredAssets) {
+            calculateInputsAndChange(requiredAssets, this.account);
+        }
 
+        private void handleTransferFromContract(Map<String, BigDecimal> requiredAssets) {
+            Account contractAcct = Account.fromAddress(fromContractScriptHash.toAddress()).build();
+            try {
+                contractAcct.updateAssetBalances(neow3j);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch UTXOs for the contract with " +
+                        "script hash " + fromContractScriptHash.toString(), e);
+            }
+            calculateInputsAndChange(requiredAssets, contractAcct);
+            // Because in a transaction that withdraws from a contract address the transaction
+            // inputs are coming from the contract, there are now inputs from the account that
+            // initiates the transfer. Therefore it needs to be mentioned in an script attribute.
+            attributes.add(new RawTransactionAttribute(
+                    TransactionAttributeUsageType.SCRIPT, account.getScriptHash().toArray()));
+
+            NeoGetContractState contractState;
+            try {
+                contractState = neow3j.getContractState(fromContractScriptHash.toString()).send();
+                contractState.throwOnError();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch contract information for the " +
+                        "contract with script hash " + fromContractScriptHash.toString(), e);
+            }
+            int nrOfParams = contractState.getContractState().getContractParameters().size();
+            byte[] invocationScript = Numeric.hexStringToByteArray(Strings.zeros(nrOfParams * 2));
+            witnesses.add(new RawScript(invocationScript, fromContractScriptHash));
+        }
+
+        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets, Account acct) {
+            requiredAssets.forEach((assetId, requiredValue) -> {
+                List<Utxo> utxos = acct.getUtxosForAssetAmount(assetId, requiredValue, inputCalculationStrategy);
+                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
+                outputs.add(getChangeTransactionOutput(assetId, requiredValue, utxos, acct.getAddress()));
+            });
+        }
+
+        private RawTransactionOutput getChangeTransactionOutput(String assetId,
+                                                                BigDecimal requiredValue,
+                                                                List<Utxo> utxos,
+                                                                String changeAddress) {
+
+            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
+            if (inputAmount.compareTo(requiredValue) <= 0) {
+                return null;
+            }
+            BigDecimal change = inputAmount.subtract(requiredValue);
+            return new RawTransactionOutput(assetId, change.toPlainString(), changeAddress);
+        }
+
+        private ContractTransaction buildTransaction() {
             return new ContractTransaction.Builder()
                     .outputs(this.outputs)
                     .inputs(this.inputs)
@@ -238,24 +368,6 @@ public class AssetTransfer {
             return assets;
         }
 
-        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets) {
-            requiredAssets.forEach((reqAssetId, reqValue) -> {
-                List<Utxo> utxos = account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
-                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                BigDecimal changeAmount = calculateChange(utxos, reqValue);
-                if (changeAmount != null) outputs.add(
-                        new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), account.getAddress()));
-            });
-        }
-
-        private BigDecimal calculateChange(List<Utxo> utxos, BigDecimal reqValue) {
-            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
-            if (inputAmount.compareTo(reqValue) > 0) {
-                return inputAmount.subtract(reqValue);
-            }
-            return null;
-        }
-
         private void throwIfOutputsAreSet() {
             if (!outputs.isEmpty()) {
                 throw new IllegalStateException("Don't set transaction outputs and use the " +
@@ -265,7 +377,7 @@ public class AssetTransfer {
         }
 
         private void throwIfSingleOutputIsUsed() {
-            if (amount != null || toAddress != null || assetId != null)  {
+            if (amount != null || toAddress != null || assetId != null) {
                 throw new IllegalStateException("Don't set transaction outputs and use the " +
                         "single output methods `asset()`, `toAddress()` and `amount()` " +
                         "simultaneously");

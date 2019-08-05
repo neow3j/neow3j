@@ -7,18 +7,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * Async task facilitation.
  */
 public class Async {
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private static final ExecutorService DEFAULT_EXECUTOR = Executors.newCachedThreadPool();
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(executor)));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(DEFAULT_EXECUTOR)));
     }
 
-    public static <T> CompletableFuture<T> run(Callable<T> callable) {
+    public static <T> CompletableFuture<T> run(Callable<T> callable, ExecutorService executor) {
+        ExecutorService executorService = ofNullable(executor).orElse(DEFAULT_EXECUTOR);
         CompletableFuture<T> result = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
             // we need to explicitly catch any exceptions,
@@ -28,8 +31,21 @@ public class Async {
             } catch (Throwable e) {
                 result.completeExceptionally(e);
             }
-        }, executor);
+        }, executorService);
         return result;
+    }
+
+    public static <T> CompletableFuture<T> run(Callable<T> callable) {
+        return run(callable, DEFAULT_EXECUTOR);
+    }
+
+    /**
+     * Get the default {@link ExecutorService} used on asynchronous calls.
+     *
+     * @return the default instance of {@link ExecutorService}.
+     */
+    public static ExecutorService getDefaultExecutor() {
+        return DEFAULT_EXECUTOR;
     }
 
     private static int getCpuCount() {

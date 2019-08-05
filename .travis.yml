@@ -9,7 +9,7 @@ cache:
   directories:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
-script: "./gradlew --info check jacocoRootTestReport"
+script: "./gradlew --info --warning-mode=all check jacocoRootTestReport"
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 deploy:

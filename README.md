@@ -50,7 +50,7 @@ For most use cases you will want to depend on the `contract` artifact which brin
 Java 8 & Android (min. API 24):
 
 ```groovy
-compile 'io.neow3j:contract:2.0.0'
+compile 'io.neow3j:contract:2.+'
 ```
 
 ### Maven
@@ -61,8 +61,42 @@ Java 8 & Android (min. API 24):
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>2.0.0</version>
+    <version>[2.0.0,3.0.0)</version>
 </dependency>
+```
+
+### Development Snapshots
+
+If you would like to test `SNAPSHOT` versions (which are unstable and not ready for production),
+use the following repositories.
+
+Gradle:
+
+```groovy
+repositories {
+    maven {
+        url 'http://oss.sonatype.org/content/repositories/snapshots'
+    }
+    mavenCentral()
+}
+```
+
+Maven:
+
+```xml
+<repositories>
+    <repository>
+        <id>sonatype-snapshots</id>
+        <name>OSS Sonatype Snapshots</name>
+        <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
 ```
 
 ## Examples
@@ -161,7 +195,7 @@ ContractInvocation invoc = new ContractInvocation.Builder(neow3j)
         .account(acct)
         .parameter(ContractParameter.string("register"))
         .parameter(ContractParameter.array(
-                ContractParameter.string("neow3j.com"),
+                ContractParameter.string("neow3j.io"),
                 ContractParameter.byteArrayFromAddress(acct.getAddress())))
         .networkFee(new BigDecimal("0.1"))
         .build()
@@ -215,8 +249,8 @@ Well... then, it was simply natural to imagine [Bongo Cat](https://knowyourmeme.
 
 ## Thanks and Credits
 
+* [NEO Foundation](https://neo.org/team) & [NEO Global Development (NGD)](https://neo.org/team)
 * This project was strongly based on [web3j](https://web3j.io),
 a library originally developed by [Conor Svensson](http://conorsvensson.com), latest on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254).
 We are really thankful for it. :-)
-* [NEO Global Development (NGD)](https://neo.org/team)
 

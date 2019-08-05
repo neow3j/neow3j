@@ -38,9 +38,16 @@ public class ContractInvocationTest {
     /**
      * Script hash from name service smart contract (NS SC) at
      * https://github.com/CityOfZion/python-smart-contract-workshop/blob/master/4-domain.py.
-     * Compiled with Neo EcoLab compiler.
+     * Compiled with Neo EcoLab compiler. The hash is in big-endian order.
      */
-    private static final String NS_SC_SCRIPT_HASH = "1a70eac53f5882e40dd90f55463cce31a9f72cd4";
+    private static final ScriptHash NS_SC_SCRIPT_HASH = new ScriptHash("1a70eac53f5882e40dd90f55463cce31a9f72cd4");
+
+    /**
+     * Script hash from number incrementing smart contract at
+     * https://github.com/CityOfZion/python-smart-contract-workshop/blob/master/3-storage.py
+     * Compiled with Neo EcoLab compiler. The hash is in big-endian order.
+     */
+    private static final ScriptHash NUMBER_INCREMENT_SC_SCRIPT_HASH = new ScriptHash("bff561a41a780fa0a4771d03bcc924e90c04fc8e");
 
     /**
      * First parameter to the name service smart contract, used for registering a name.
@@ -56,30 +63,29 @@ public class ContractInvocationTest {
             ContractParameter.byteArrayFromAddress(ACCT.getAddress()));
 
     /**
-     * This tests the raw transaction array built by the ContractInvocation for a invocation made
+     * <p>This tests the raw transaction array built by the ContractInvocation for a invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
      * executed on the Neo EcoLab private network. The only GAS input that was used for paying the
-     * network fee is mocked in the test. <br><br>
-     *
-     * The EcoLab always attaches an attribute to the transaction that holds the script hash of the
+     * network fee is mocked in the test.</p>
+     * <br>
+     * <p>The EcoLab always attaches an attribute to the transaction that holds the script hash of the
      * invoking account. We only do this in case the inputs and outputs of the transaction are
      * empty, i.e. if no fee is attached. Because this is not the case in this test, the script hash
-     * attribute is added manually in the builder.
+     * attribute is added manually in the builder.</p>
      */
     @Test
     public void invocation_with_network_fee() {
-        BigDecimal fee = BigDecimal.ONE;
         Account spyAcct = spy(ACCT);
         Utxo utxo = new Utxo("9f1b9a6f3593ff546a9dab147ba8ad520f7b6233bb0f8e75e05ad23d57ebd76e", 0, BigDecimal.valueOf(96));
-        doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(GASAsset.HASH_ID, fee, InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY);
+        doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("1"), InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY);
 
         InvocationTransaction tx = new ContractInvocation.Builder(EMPTY_NEOW3J)
                 .contractScriptHash(NS_SC_SCRIPT_HASH)
                 .account(spyAcct)
-                .networkFee(fee)
+                .networkFee("1")
                 .parameter(REGISTER)
                 .parameter(ARGUMENTS)
-                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash()))
+                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray()))
                 .build()
                 .sign()
                 .getTransaction();
@@ -96,14 +102,14 @@ public class ContractInvocationTest {
     }
 
     /**
-     * This tests the raw transaction array built by the ContractInvocation for an invocation made
+     * <p>This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
-     * executed on the Neo EcoLab private network. <br><br>
-     *
-     * No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
+     * executed on the Neo EcoLab private network.</p>
+     * <br>
+     * <p>No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
      * to attach a random remark which is usually based on some randomness and the current time.
      * This value was extracted from the transaction executed on the private net to mock the random
-     * remark.
+     * remark.</p>
      */
     @Test
     public void invocation_without_fee() {
@@ -131,17 +137,17 @@ public class ContractInvocationTest {
     }
 
     /**
-     * This tests the raw transaction array built by the ContractInvocation for an invocation made
+     * <p>This tests the raw transaction array built by the ContractInvocation for an invocation made
      * to the name service smart contract with the 'register' operation. The transaction was
-     * executed on the Neo EcoLab private network. <br><br>
-     *
-     * This time the transaction was extended with a NEO output to some other address then the one
+     * executed on the Neo EcoLab private network.</p>
+     * <br>
+     * <p>This time the transaction was extended with a NEO output to some other address then the one
      * doing the invocation. The required inputs for that output where mocked according to the Utxo
-     * that was available when running the transaction on the EcoLab private net.
-     *
-     * The EcoLab always attaches an attribute to the transaction that holds the script hash of the
+     * that was available when running the transaction on the EcoLab private net.</p>
+     * <br>
+     * <p>The EcoLab always attaches an attribute to the transaction that holds the script hash of the
      * invoking account. Therefore, in this test, the script hash attribute is added manually in the
-     * builder.
+     * builder.</p>
      */
     @Test
     public void invocation_with_additional_outputs_no_fee() {
@@ -157,7 +163,7 @@ public class ContractInvocationTest {
                 .account(spyAcct)
                 .parameter(REGISTER)
                 .parameter(ARGUMENTS)
-                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash()))
+                .attribute(new RawTransactionAttribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray()))
                 .output(RawTransactionOutput.createNeoTransactionOutput(neoOut.toPlainString(), toAddress))
                 .build()
                 .sign()
@@ -176,6 +182,38 @@ public class ContractInvocationTest {
         assertEquals(expextedTxHex, txHex);
     }
 
+    /**
+     * <p>This tests the raw transaction array built by the ContractInvocation for an invocation made
+     * to the number incrementing smart contract. The contract takes no parameters. The transaction
+     * was executed on the Neo EcoLab private network.</p>
+     * <br>
+     * <p>No fees are attached and therefore no inputs or outputs required. Therefore it is necessary
+     * to attach a random remark which has to be mocked. The mock value was extracted from the
+     * transaction executed on the private net.</p>
+     */
+    @Test
+    public void invocation_without_parameters() {
+
+        ContractInvocation.Builder builder = new ContractInvocation.Builder(EMPTY_NEOW3J);
+        builder = spy(builder);
+        byte[] randomRemark = Numeric.hexStringToByteArray("313536333839373239313436343632313664663666");
+        doReturn(randomRemark).when(builder).createRandomRemark();
+        InvocationTransaction tx = builder
+                .contractScriptHash(NUMBER_INCREMENT_SC_SCRIPT_HASH)
+                .account(ACCT)
+                .build()
+                .sign()
+                .getTransaction();
+
+        String txHex = Numeric.toHexStringNoPrefix(tx.toArray());
+        // Transaction hex string produced from a valid transaction executed on the EcoLab private net.
+        String expextedTxHex = "d10115678efc040ce924c9bc031d77a4a00f781aa461f5bf0000000000000000022023ba2703c53263e8d" +
+                "6e522dc32203339dcd8eee9f01531353633383937323931343634363231366466366600000141408a9de1564fbdd53315f41" +
+                "1237a9865e5976d362e39f60f1045dce03cd95eb16846cd69443e6dc3ddbf2c53e5eabc863cf5ce588d2e6eef60cfd7e84ec" +
+                "de879cb2321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac";
+        assertEquals(expextedTxHex, txHex);
+    }
+
     @Test
     public void random_remark() {
         ContractInvocation i = new ContractInvocation.Builder(EMPTY_NEOW3J)
@@ -187,54 +225,12 @@ public class ContractInvocationTest {
 
         RawTransactionAttribute attr = i.getTransaction().getAttributes().get(0);
         assertEquals(TransactionAttributeUsageType.SCRIPT, attr.getUsage());
-        assertArrayEquals(ACCT.getScriptHash(), attr.getDataAsBytes());
+        assertArrayEquals(ACCT.getScriptHash().toArray(), attr.getDataAsBytes());
 
         attr = i.getTransaction().getAttributes().get(1);
         assertEquals(TransactionAttributeUsageType.REMARK, attr.getUsage());
         assertEquals(12, attr.getDataAsBytes().length);
         // Can't test the contents of the remark because they are random.
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_big_script_hash_bytes() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(Numeric.hexStringToByteArray(NS_SC_SCRIPT_HASH + "4"))
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_big_script_hash_string() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(NS_SC_SCRIPT_HASH + "4")
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_small_script_hash_bytes() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(new byte[]{0x1a, 0x38, 0x3b, 0x0d})
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_too_small_script_hash_string() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash("a0c882d")
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_empty_script_hash_string() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash("")
-                .build();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void add_empty_script_hash_bytes() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(new byte[]{})
-                .build();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -245,14 +241,7 @@ public class ContractInvocationTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void not_adding_required_account() {
-        new ContractInvocation.Builder(EMPTY_NEOW3J)
-                .contractScriptHash(NS_SC_SCRIPT_HASH)
-                .build();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void not_adding_rquired_neow3j() {
+    public void not_adding_required_neow3j() {
         new ContractInvocation.Builder(null)
                 .account(ACCT)
                 .contractScriptHash(NS_SC_SCRIPT_HASH)
