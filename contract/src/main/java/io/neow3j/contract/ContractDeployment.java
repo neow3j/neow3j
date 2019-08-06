@@ -1,7 +1,6 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ContractInvocation.Builder;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
@@ -266,6 +265,7 @@ public class ContractDeployment {
         // TODO 2019-08-05 claude:
         // Reference the method for calculating the network fee from the transaction size once it is
         // implemented in a publicly.
+
         /**
          * <p>Adds a network fee.</p>
          * <br>
@@ -297,6 +297,9 @@ public class ContractDeployment {
             }
             if (this.account == null) {
                 throw new IllegalStateException("Account not set.");
+            }
+            if (this.scriptBinary == null) {
+                throw new IllegalStateException("AVM script binary not set.");
             }
             ContractDescriptionProperties cdp = new ContractDescriptionProperties(
                     this.name, this.version, this.author, this.email, this.description);
