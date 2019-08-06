@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -14,15 +13,16 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
 public class ContractDeploymentTest {
+
+    private static final String ICO_CONTRACT_AVM_FILENAME = "/contracts/ico-test1.avm";
 
     private Neow3j neow3j;
     private Account acct;
@@ -34,7 +34,7 @@ public class ContractDeploymentTest {
     }
 
     @Test
-    public void testDeploy1() throws IOException {
+    public void deployment1() throws IOException, URISyntaxException {
         Account spyAcct = spy(acct);
         Utxo utxo1 = new Utxo("803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, new BigDecimal(40));
         Utxo utxo2 = new Utxo("178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, new BigDecimal(16000));
@@ -43,7 +43,7 @@ public class ContractDeploymentTest {
 
         ContractDeployment cd = new ContractDeployment.Builder(neow3j)
                 .account(spyAcct)
-                .loadAVMFile("/Users/claude/Repos/neo/neow3j/contract/src/test/resources/contracts/ico-test1.avm")
+                .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
                 .needsStorage()
                 .parameters(ContractParameterType.STRING, ContractParameterType.ARRAY)
                 .returnType(ContractParameterType.BYTE_ARRAY)
@@ -60,4 +60,7 @@ public class ContractDeploymentTest {
         assertEquals(expectedTxHex, Numeric.toHexStringNoPrefix(cd.getTransaction().toArray()));
     }
 
+    private String getTestAbsoluteFileName(String fileName) {
+        return this.getClass().getResource(fileName).getFile();
+    }
 }
