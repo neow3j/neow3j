@@ -78,7 +78,7 @@ public class ContractDeployment {
      * <br>
      * <p>Before calling this method you should make sure that the transaction is signed either by
      * calling {@link ContractDeployment#sign()}} to automatically sign or by adding a custom
-     * witness with {@link ContractDeployment##addWitness(RawScript)}.</p>
+     * witness with {@link ContractDeployment#addWitness(RawScript)}.</p>
      *
      * @return the contract that has been deployed.
      * @throws IOException            if a connection problem with the RPC node arises.
@@ -90,6 +90,17 @@ public class ContractDeployment {
         NeoSendRawTransaction response = neow3j.sendRawTransaction(rawTx).send();
         response.throwOnError();
         return new Contract(this.deploymentScript, this.abi);
+    }
+
+    /**
+     * Adds the given witness to the transaction.
+     *
+     * @param witness The witness to be added.
+     * @return this.
+     */
+    public ContractDeployment addWitness(RawScript witness) {
+        tx.addScript(witness);
+        return this;
     }
 
     public InvocationTransaction getTransaction() {
