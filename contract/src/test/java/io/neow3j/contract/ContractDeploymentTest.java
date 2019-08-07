@@ -7,6 +7,7 @@ import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
+import io.neow3j.model.types.NEOAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
@@ -40,8 +41,8 @@ public class ContractDeploymentTest {
     @Test
     public void deployment1() throws IOException {
         Account spyAcct = spy(acct);
-        Utxo utxo1 = new Utxo("803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, new BigDecimal(40));
-        Utxo utxo2 = new Utxo("178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, new BigDecimal(16000));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, new BigDecimal(40));
+        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, new BigDecimal(16000));
         doReturn(Arrays.asList(utxo1, utxo2)).when(spyAcct)
                 .getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("490.11916"), InputCalculationStrategy.DEFAULT_STRATEGY);
 
@@ -67,8 +68,8 @@ public class ContractDeploymentTest {
     @Test
     public void deployment2() throws IOException {
         Account spyAcct = spy(acct);
-        Utxo utxo1 = new Utxo("803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, new BigDecimal(40));
-        Utxo utxo2 = new Utxo("178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, new BigDecimal(16000));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, new BigDecimal(40));
+        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, new BigDecimal(16000));
         doReturn(Arrays.asList(utxo1, utxo2)).when(spyAcct)
                 .getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("990.11916"), InputCalculationStrategy.DEFAULT_STRATEGY);
 
@@ -96,8 +97,8 @@ public class ContractDeploymentTest {
     @Test
     public void deployment3() throws IOException {
         Account spyAcct = spy(acct);
-        Utxo utxo1 = new Utxo("803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, new BigDecimal(40));
-        Utxo utxo2 = new Utxo("178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, new BigDecimal(16000));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, new BigDecimal(40));
+        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, new BigDecimal(16000));
         doReturn(Arrays.asList(utxo1, utxo2)).when(spyAcct)
                 .getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("990.11916"), InputCalculationStrategy.DEFAULT_STRATEGY);
 
