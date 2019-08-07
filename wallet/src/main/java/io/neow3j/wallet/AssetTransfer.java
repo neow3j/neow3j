@@ -14,13 +14,16 @@ import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.utils.Strings;
+import io.neow3j.wallet.Balances.AssetBalance;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AssetTransfer {
@@ -85,6 +88,7 @@ public class AssetTransfer {
         private BigDecimal networkFee;
         private List<RawTransactionOutput> outputs;
         private List<RawTransactionInput> inputs;
+        private Map<String, List<Utxo>> utxos;
         private List<RawScript> witnesses;
         private List<RawTransactionAttribute> attributes;
         private InputCalculationStrategy inputCalculationStrategy;
@@ -98,6 +102,7 @@ public class AssetTransfer {
             this.neow3j = neow3j;
             this.outputs = new ArrayList<>();
             this.inputs = new ArrayList<>();
+            this.utxos = new HashMap<>();
             this.attributes = new ArrayList<>();
             this.witnesses = new ArrayList<>();
             this.networkFee = BigDecimal.ZERO;
@@ -114,30 +119,82 @@ public class AssetTransfer {
             return this;
         }
 
+        /**
+         * Adds the given transaction output.
+         *
+         * @param output The transaction output to add.
+         * @return this.
+         */
         public Builder output(RawTransactionOutput output) {
             throwIfSingleOutputIsUsed();
             this.outputs.add(output);
             return this;
         }
 
+        /**
+         * Adds the given transaction outputs.
+         *
+         * @param outputs The transaction outputs to add.
+         * @return this.
+         */
         public Builder outputs(List<RawTransactionOutput> outputs) {
             throwIfSingleOutputIsUsed();
             this.outputs.addAll(outputs);
             return this;
         }
 
-        public Builder inputs(List<RawTransactionInput> inputs) {
-            // TODO Claude 19.06.19:
-            // Remove exception when inputs are handled correctly in transaction building.
-            throw new UnsupportedOperationException();
-            // this.inputs.addAll(inputs); return this;
+        /**
+         * Adds the given asset id, amount and receiver address as a transaction output.
+         *
+         * @param assetId The asset id of the output.
+         * @param amount  The amount of the output.
+         * @param address The receiving address of the output
+         * @return this.
+         */
+        public Builder output(String assetId, String amount, String address) {
+            return output(new RawTransactionOutput(assetId, amount, address));
         }
 
-        public Builder input(RawTransactionInput input) {
-            // TODO Claude 19.06.19:
-            // Remove exception when inputs are handled correctly in transaction building.
-            throw new UnsupportedOperationException();
-            // this.inputs.add(input); return this;
+        /**
+         * Adds the given asset id, amount and receiver address as a transaction output.
+         *
+         * @param assetId The asset id of the output.
+         * @param amount  The amount of the output.
+         * @param address The receiving address of the output
+         * @return this.
+         */
+        public Builder output(String assetId, double amount, String address) {
+            return output(new RawTransactionOutput(assetId, amount, address));
+        }
+
+        /**
+         * Adds the given unspent transaction outputs (UTXOs) as inputs. They will be used for
+         * covering outputs.
+         *
+         * @param utxos The UTXOs.
+         * @return this.
+         */
+        public Builder utxos(Utxo... utxos) {
+            Arrays.stream(utxos).forEach(utxo -> {
+                List<Utxo> assetUtxos = this.utxos.computeIfAbsent(utxo.getAssetId(),
+                        k -> new ArrayList<Utxo>());
+                assetUtxos.add(utxo);
+            });
+            return this;
+        }
+
+        /**
+         * Adds the given unspent transaction output as an input which will be used for covering
+         * outputs.
+         *
+         * @param assetId         The asset of the unspent output.
+         * @param transactionHash The hash of the transaction in which the unspent output resides.
+         * @param index           The index of the unspent output.
+         * @param value           The value of the unspent output.
+         * @return this.
+         */
+        public Builder utxo(String assetId, String transactionHash, int index, BigDecimal value) {
+            return utxos(new Utxo(assetId, transactionHash, index, value));
         }
 
         public Builder witness(RawScript script) {
@@ -145,12 +202,34 @@ public class AssetTransfer {
             return this;
         }
 
+        /**
+         * <p>Adds the given asset id. This defines which asset should be transferred.</p>
+         * <br>
+         * <p>Use this in combination with {@link Builder#toAddress(String)} and
+         * {@link Builder#amount(double)} to specify a complete transaction output. Alternatively,
+         * you can use {@link Builder#output(String, String, String) output(...)} which allows you
+         * to add all three arguments at the same time.</p>
+         *
+         * @param assetId The asset id.
+         * @return this.
+         */
         public Builder asset(String assetId) {
             throwIfOutputsAreSet();
             this.assetId = assetId;
             return this;
         }
 
+        /**
+         * <p>Adds the given address which is used as the receiving address in the transfer.</p>
+         * <br>
+         * <p>Use this in combination with {@link Builder#asset(String)} and
+         * {@link Builder#amount(double)} to specify a complete transaction output. Alternatively,
+         * you can use {@link Builder#output(String, String, String) output(...)} which allows you
+         * to add all three arguments at the same time.</p>
+         *
+         * @param address the receiver's address.
+         * @return this.
+         */
         public Builder toAddress(String address) {
             throwIfOutputsAreSet();
             this.toAddress = address;
@@ -173,7 +252,12 @@ public class AssetTransfer {
         }
 
         /**
-         * Specifies the asset amount to spend in the transfer.
+         * <p>Specifies the asset amount to spend in the transfer.</p>
+         * <br>
+         * <p>Use this in combination with {@link Builder#asset(String)} and
+         * {@link Builder#toAddress(String)} to specify a complete transaction output. Alternatively,
+         * you can use {@link Builder#output(String, String, String) output(...)} which allows you
+         * to add all three arguments at the same time.</p>
          *
          * @param amount The amount to transfer.
          * @return this Builder object.
@@ -189,9 +273,18 @@ public class AssetTransfer {
          *
          * @param amount The amount to transfer.
          * @return this Builder object.
+         * @see #amount(String)
          */
         public Builder amount(double amount) {
             return amount(Double.toString(amount));
+        }
+
+        public Builder attribute(TransactionAttributeUsageType type, byte[] value) {
+            return attribute(new RawTransactionAttribute(type, value));
+        }
+
+        public Builder attribute(TransactionAttributeUsageType type, String value) {
+            return attribute(new RawTransactionAttribute(type, value));
         }
 
         public Builder attribute(RawTransactionAttribute attribute) {
@@ -267,7 +360,8 @@ public class AssetTransfer {
                 }
             }
 
-            List<RawTransactionOutput> intents = new ArrayList<>(outputs);
+            List<RawTransactionOutput> intents = new ArrayList<>();
+            intents.addAll(outputs);
             intents.addAll(createOutputsFromFees(networkFee));
             Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(intents);
 
@@ -283,7 +377,18 @@ public class AssetTransfer {
         }
 
         private void handleNormalTransfer(Map<String, BigDecimal> requiredAssets) {
+            if (this.utxos.isEmpty()) {
+                fetchUtxosFromAccount(this.account, requiredAssets.keySet());
+            }
             calculateInputsAndChange(requiredAssets, this.account);
+        }
+
+        private void fetchUtxosFromAccount(Account acct, Set<String> requiredAssets) {
+            requiredAssets.forEach(assetId -> {
+                AssetBalance balance = acct.getAssetBalance(assetId);
+                List<Utxo> assetUtxos = this.utxos.computeIfAbsent(assetId, k -> new ArrayList<>());
+                assetUtxos.addAll(balance.getUtxos());
+            });
         }
 
         private void handleTransferFromContract(Map<String, BigDecimal> requiredAssets) {
@@ -293,6 +398,9 @@ public class AssetTransfer {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to fetch UTXOs for the contract with " +
                         "script hash " + fromContractScriptHash.toString(), e);
+            }
+            if (this.utxos.isEmpty()) {
+                fetchUtxosFromAccount(contractAcct, requiredAssets.keySet());
             }
             calculateInputsAndChange(requiredAssets, contractAcct);
             // Because in a transaction that withdraws from a contract address the transaction
@@ -314,11 +422,19 @@ public class AssetTransfer {
             witnesses.add(new RawScript(invocationScript, fromContractScriptHash));
         }
 
-        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets, Account acct) {
-            requiredAssets.forEach((assetId, requiredValue) -> {
-                List<Utxo> utxos = acct.getUtxosForAssetAmount(assetId, requiredValue, inputCalculationStrategy);
-                inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                outputs.add(getChangeTransactionOutput(assetId, requiredValue, utxos, acct.getAddress()));
+        private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets,
+                                              Account changeAcct) {
+
+            requiredAssets.forEach((assetId, requiredAmount) -> {
+                List<Utxo> selectedUtxos = this.inputCalculationStrategy.calculateInputs(
+                        this.utxos.get(assetId), requiredAmount);
+
+                this.inputs.addAll(selectedUtxos.stream()
+                        .map(Utxo::toTransactionInput)
+                        .collect(Collectors.toList()));
+
+                this.outputs.add(getChangeTransactionOutput(assetId, requiredAmount,
+                        selectedUtxos, changeAcct.getAddress()));
             });
         }
 
