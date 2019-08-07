@@ -359,20 +359,6 @@ public class AssetTransferTest {
                 .build();
     }
 
-    @Test
-    public void test_transfer_from_multisig_account() {
-        // TODO Claude 18.06.19: Implement
-    }
-
-    @Test
-    public void test() throws IllegalAccessException, InstantiationException {
-        String expectedTxHex = "8000012023ba2703c53263e8d6e522dc32203339dcd8eee902ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000cc7919a9e78e7aad73642161b5afde56f51be6a99347915cec7ddb9d1bc83e800000039b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500e1f505000000001cc9c05cefffe6cdd7b182816a9152ec218d2ec09b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001fcb69f286230023ba2703c53263e8d6e522dc32203339dcd8eee9e72d286979ee6cb1b7e65dfddfb2e384100b8d148e7758de42e4168b71792c608091d2ed0000000023ba2703c53263e8d6e522dc32203339dcd8eee9014140b41167ba63a1bab6e1570eb5d6a234bf7832930c8179d2e6b91b0a7c3265e021618a3de0355df62f8b09a8e14ee2633b77a8db25fa63a849101fc4bbfcfe92672321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac";
-
-        ContractTransaction ct = NeoSerializableInterface.from(
-                Numeric.hexStringToByteArray(expectedTxHex), ContractTransaction.class);
-        System.out.println(ct.toString());
-    }
-
     private Account mockAccountBalances(Account acct, Utxo... utxos) {
         List<Utxo> gasUtxos = Arrays.stream(utxos)
                 .filter(u -> u.getAssetId().equals(GASAsset.HASH_ID))
