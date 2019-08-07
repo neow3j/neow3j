@@ -1,5 +1,9 @@
 package io.neow3j.contract;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.transaction.RawInvocationScript;
@@ -14,16 +18,11 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
 import io.neow3j.wallet.Utxo;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ContractDeploymentTest {
 
@@ -33,7 +32,7 @@ public class ContractDeploymentTest {
     private Account acct;
 
     @Before
-    public void setup() {
+    public void setUp() throws IOException {
         this.neow3j = Neow3j.build(new HttpService(""));
         this.acct = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
     }
@@ -129,21 +128,21 @@ public class ContractDeploymentTest {
 
     @Test(expected = IllegalStateException.class)
     public void failWithoutAVMFile() {
-        ContractDeployment cd = new ContractDeployment.Builder(neow3j)
+        new ContractDeployment.Builder(neow3j)
                 .account(acct)
                 .build();
     }
 
     @Test(expected = IllegalStateException.class)
     public void failWithoutAccount() throws IOException {
-        ContractDeployment cd = new ContractDeployment.Builder(neow3j)
+        new ContractDeployment.Builder(neow3j)
                 .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
                 .build();
     }
 
     @Test(expected = IllegalStateException.class)
     public void failWithoutNeow3j() throws IOException {
-        ContractDeployment cd = new ContractDeployment.Builder(null)
+        new ContractDeployment.Builder(null)
                 .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
                 .account(acct)
                 .build();

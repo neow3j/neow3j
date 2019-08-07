@@ -147,7 +147,6 @@ size of the syscall name = 0x13 (19 in decimal):
 SysCall (Neo.Contract.Create)"
 `4e656f2e436f6e74726163742e437265617465`
 
-
 ## ContractDeploymentTest
 
 ### deployment1()
@@ -171,10 +170,10 @@ Contract Script Hash: `0x746d6cc63dacd7b275bb3a3a06d54859661591a6`
 The deployment was made on a clean instance of the `axlabs/neo-privatenet-openwallet-docker` docker 
 container. The two GAS UTXOs, needed to pay for the system fee, where mocked.
 
-
 ### deployment2()
 
 Just as `deployment1()`, with the difference in the deployment parameters, which where:
+
 ```
 sc deploy ico-test1.avm True True True 0710 05 --fee=0.1
 ```
