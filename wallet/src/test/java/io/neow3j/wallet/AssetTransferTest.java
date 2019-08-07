@@ -2,7 +2,6 @@ package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
@@ -17,7 +16,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetUnspents.UnspentTransactio
 import io.neow3j.protocol.core.methods.response.NeoGetUnspents.Unspents;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.ContractTransaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Balances.AssetBalance;
 import org.junit.Before;
