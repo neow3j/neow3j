@@ -1,201 +1,336 @@
 package io.neow3j.contract;
 
-import static java.util.Optional.of;
+import static java.util.Optional.empty;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import io.neow3j.contract.abi.model.NeoContractEvent;
 import io.neow3j.contract.abi.model.NeoContractFunction;
+import io.neow3j.contract.abi.model.NeoContractInterface;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.wallet.Account;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ContractTest {
 
-    private static final String TEST1_SMARTCONTRACT_ABI_FILENAME = "/test1-smartcontract.abi.json";
-    private static final String TEST2_SMARTCONTRACT_ABI_FILENAME = "/test2-smartcontract.abi.json";
+    @Test
+    public void testNewContract_OneParam() {
+        ContractDeploymentScript ds = mock(ContractDeploymentScript.class);
+        when(ds.getContractScriptHash())
+            .thenReturn(new ScriptHash("746d6cc63dacd7b275bb3a3a06d54859661591a6"));
 
+        Contract contract = new Contract(ds);
 
-    private Neow3j neow3j;
+        assertThat(contract.getDeploymentScript(), is(ds));
+        assertThat(contract.getAbi(), nullValue());
+        assertThat(
+            contract.getContractScriptHash(),
+            is(new ScriptHash("746d6cc63dacd7b275bb3a3a06d54859661591a6"))
+        );
+    }
 
-    @Before
-    public void setup() {
-        this.neow3j = Neow3j.build(new HttpService("http://localhost:30333"));
+    @Test
+    public void testNewContract_TwoParam() {
+        ContractDeploymentScript ds = mock(ContractDeploymentScript.class);
+        when(ds.getContractScriptHash())
+            .thenReturn(new ScriptHash("746d6cc63dacd7b275bb3a3a06d54859661591a6"));
+        NeoContractInterface abi = mock(NeoContractInterface.class);
+
+        Contract contract = new Contract(ds, abi);
+
+        assertThat(contract.getDeploymentScript(), is(ds));
+        assertThat(contract.getAbi(), is(abi));
+        assertThat(
+            contract.getContractScriptHash(),
+            is(new ScriptHash("746d6cc63dacd7b275bb3a3a06d54859661591a6"))
+        );
+    }
+
+    @Test
+    public void testNewContract_ScriptHash() {
+        ScriptHash sh = mock(ScriptHash.class);
+
+        Contract contract = new Contract(sh);
+
+        assertThat(contract.getDeploymentScript(), nullValue());
+        assertThat(contract.getAbi(), nullValue());
+        assertThat(
+            contract.getContractScriptHash(),
+            is(sh)
+        );
+    }
+
+    @Test
+    public void testNewContract_ScriptHash_and_ABI() {
+        ScriptHash sh = mock(ScriptHash.class);
+        NeoContractInterface abi = mock(NeoContractInterface.class);
+
+        Contract contract = new Contract(sh, abi);
+
+        assertThat(contract.getDeploymentScript(), nullValue());
+        assertThat(contract.getAbi(), is(abi));
+        assertThat(
+            contract.getContractScriptHash(),
+            is(sh)
+        );
+    }
+
+    @Test
+    public void testGetEntryPoint() {
+        NeoContractInterface mockABI = spy(NeoContractInterface.class);
+
+        when(mockABI.getEntryPoint()).thenReturn("Main");
+        when(mockABI.getFunctions()).thenReturn(
+            Arrays.asList(
+                new NeoContractFunction("Main", null, null),
+                new NeoContractFunction("AnythingElse", null, null)
+            )
+        );
+
+        Contract contract = new Contract(new ContractDeploymentScript(), mockABI);
+
+        assertThat(contract.getEntryPoint().isPresent(), is(true));
+
+        assertThat(contract.getEntryPoint().get(),
+            is(new NeoContractFunction("Main",
+                Collections.emptyList(), null)));
+        assertThat(contract.getFunction("Main").get(),
+            is(new NeoContractFunction("Main",
+                Collections.emptyList(), null)));
+
+        when(mockABI.getFunctions()).thenReturn(
+            Arrays.asList(
+                new NeoContractFunction("AnythingElse", null, null)
+            )
+        );
+
+        assertThat(contract.getEntryPoint().isPresent(), is(false));
+
+    }
+
+    @Test
+    public void testGetEntryPointParameters() {
+        NeoContractInterface mockABI = spy(NeoContractInterface.class);
+
+        when(mockABI.getEntryPoint()).thenReturn("Main");
+        when(mockABI.getFunctions()).thenReturn(
+            Arrays.asList(
+                new NeoContractFunction(
+                    "Main",
+                    Arrays.asList(
+                        new ContractParameter("param1", ContractParameterType.STRING),
+                        new ContractParameter("param2", ContractParameterType.ARRAY)
+                    ),
+                    null
+                )
+            )
+        );
+
+        Contract contract = new Contract(new ContractDeploymentScript(), mockABI);
+
+        assertThat(
+            contract.getEntryPointParameters(),
+            hasItems(
+                new ContractParameter("param1", ContractParameterType.STRING),
+                new ContractParameter("param2", ContractParameterType.ARRAY)
+            )
+        );
+
+        when(mockABI.getFunctions()).thenReturn(
+            Arrays.asList(
+                new NeoContractFunction(
+                    "Main",
+                    Arrays.asList(),
+                    null
+                )
+            )
+        );
+
+        assertThat(
+            contract.getEntryPointParameters(),
+            hasSize(0)
+        );
+
     }
 
 
     @Test
-    public void abiWithoutAddress_test1() {
-        Contract c1 = new ContractAbiLoader.Builder()
-            .loadABIFile(getTestAbsoluteFileName(TEST1_SMARTCONTRACT_ABI_FILENAME))
-            .build()
-            .load();
+    public void testGetEntryPointReturnType() {
+        NeoContractInterface mockABI = spy(NeoContractInterface.class);
 
-        assertThat(c1.getContractScriptHash(),
-            is(new ScriptHash("5944fc67643207920ec129d13181297fed10350c")));
-        assertThat(c1.getFunctions(), hasSize(3));
-        assertThat(
-            c1.getFunction("Name"),
-            is(of(new NeoContractFunction("Name", Collections.EMPTY_LIST,
-                ContractParameterType.STRING)))
-        );
-        assertThat(c1.getEvents(), hasSize(0));
-        assertThat(c1.getDeploymentScript(), nullValue());
-        assertThat(c1.getAbi(), notNullValue());
-        assertThat(
-            c1.getEntryPoint().get(),
-            is(
-                new NeoContractFunction("Main",
-                    Arrays.asList(
-                        new ContractParameter("operation", ContractParameterType.STRING),
-                        new ContractParameter("args", ContractParameterType.ARRAY)
-                    ),
-                    ContractParameterType.BYTE_ARRAY)
+        when(mockABI.getEntryPoint()).thenReturn("Main");
+        when(mockABI.getFunctions()).thenReturn(
+            Arrays.asList(
+                new NeoContractFunction(
+                    "Main",
+                    null,
+                    ContractParameterType.BYTE_ARRAY
+                )
             )
         );
-        assertThat(c1.getEntryPointParameters(), hasSize(2));
-        assertThat(c1.getEntryPointReturnType(), is(ContractParameterType.BYTE_ARRAY));
+
+        Contract contract = new Contract(new ContractDeploymentScript(), mockABI);
+
+        assertThat(
+            contract.getEntryPointReturnType().get(),
+            is(ContractParameterType.BYTE_ARRAY)
+        );
+
+        when(mockABI.getFunctions()).thenReturn(
+            Arrays.asList(
+                new NeoContractFunction(
+                    "Main",
+                    null,
+                    null
+                )
+            )
+        );
+
+        assertThat(
+            contract.getEntryPointReturnType(),
+            is(empty())
+        );
+
     }
 
     @Test
-    public void abiWithoutAddress_test2() {
-        Contract c1 = new ContractAbiLoader.Builder()
-            .loadABIFile(getTestAbsoluteFileName(TEST2_SMARTCONTRACT_ABI_FILENAME))
-            .build()
-            .load();
+    public void testGetFunctions() {
+        NeoContractInterface mockABI = spy(NeoContractInterface.class);
 
-        assertThat(c1.getContractScriptHash(),
-            is(new ScriptHash("5944fc67643207920ec129d13181297fed10350c")));
-        assertThat(c1.getFunctions(), hasSize(3));
+        NeoContractFunction f1 = new NeoContractFunction(
+            "Main",
+            Arrays.asList(
+                new ContractParameter("param1", ContractParameterType.INTEGER),
+                new ContractParameter("param2", ContractParameterType.STRING)
+            ),
+            ContractParameterType.BYTE_ARRAY
+        );
+
+        NeoContractFunction f2 = new NeoContractFunction(
+            "Function1",
+            Arrays.asList(
+                new ContractParameter("param1", ContractParameterType.INTEGER),
+                new ContractParameter("param2", ContractParameterType.STRING)
+            ),
+            ContractParameterType.BYTE_ARRAY
+        );
+
+        when(mockABI.getFunctions()).thenReturn(
+            Arrays.asList(f1, f2)
+        );
+
+        Contract contract = new Contract(new ContractDeploymentScript(), mockABI);
+
         assertThat(
-            c1.getFunction("Name"),
-            is(
-                of(
-                    new NeoContractFunction("Name", Arrays.asList(
-                        new ContractParameter("nameParam1", ContractParameterType.INTEGER)
-                    ), ContractParameterType.ARRAY)
-                )
+            contract.getFunctions(),
+            hasItems(f1, f2)
+        );
+
+        assertThat(
+            contract.getFunctionReturnType("Main").get(),
+            is(ContractParameterType.BYTE_ARRAY)
+        );
+
+        assertThat(
+            contract.getFunctionReturnType("Function1").get(),
+            is(ContractParameterType.BYTE_ARRAY)
+        );
+
+        assertThat(
+            contract.getFunction("Main").get(),
+            is(f1)
+        );
+
+        assertThat(
+            contract.getFunction("Function1").get(),
+            is(f2)
+        );
+
+        when(mockABI.getFunctions()).thenReturn(Arrays.asList());
+
+        assertThat(
+            contract.getFunctions(),
+            hasSize(0)
+        );
+    }
+
+    @Test
+    public void testGetEvents() {
+        NeoContractInterface mockABI = spy(NeoContractInterface.class);
+
+        NeoContractEvent e1 = new NeoContractEvent(
+            "Event1",
+            Arrays.asList(
+                new ContractParameter("param1", ContractParameterType.INTEGER),
+                new ContractParameter("param2", ContractParameterType.STRING)
             )
         );
-        assertThat(
-            c1.getFunction("Description"),
-            is(
-                of(
-                    new NeoContractFunction("Description", Arrays.asList(
-                        new ContractParameter("descriptionParam1", ContractParameterType.STRING)
-                    ), ContractParameterType.STRING)
-                )
+
+        NeoContractEvent e2 = new NeoContractEvent(
+            "Event2",
+            Arrays.asList(
+                new ContractParameter("param1", ContractParameterType.INTEGER),
+                new ContractParameter("param2", ContractParameterType.STRING)
             )
         );
-        assertThat(c1.getEvents(), hasSize(2));
+
+        when(mockABI.getEvents()).thenReturn(Arrays.asList(e1, e2));
+
+        Contract contract = new Contract(new ContractDeploymentScript(), mockABI);
+
         assertThat(
-            c1.getEvent("event1"),
-            is(
-                of(
-                    new NeoContractEvent("event1",
-                        Arrays.asList(
-                            new ContractParameter("event1Param1", ContractParameterType.STRING),
-                            new ContractParameter("event1Param2", ContractParameterType.ARRAY)
-                        )
-                    )
-                )
+            contract.getEvents(),
+            hasItems(e1, e2)
+        );
+
+        assertThat(
+            contract.getEventParameters("Event1"),
+            hasItems(
+                new ContractParameter("param1", ContractParameterType.INTEGER),
+                new ContractParameter("param2", ContractParameterType.STRING)
             )
         );
+
         assertThat(
-            c1.getEvent("event2"),
-            is(
-                of(
-                    new NeoContractEvent("event2",
-                        Arrays.asList(
-                            new ContractParameter("event2Param1", ContractParameterType.INTEGER),
-                            new ContractParameter("event2Param2", ContractParameterType.ARRAY)
-                        )
-                    )
-                )
+            contract.getEventParameters("Event2"),
+            hasItems(
+                new ContractParameter("param1", ContractParameterType.INTEGER),
+                new ContractParameter("param2", ContractParameterType.STRING)
             )
         );
-        assertThat(c1.getDeploymentScript(), nullValue());
-        assertThat(c1.getAbi(), notNullValue());
+
         assertThat(
-            c1.getEntryPoint().get(),
-            is(
-                new NeoContractFunction("Main",
-                    Arrays.asList(
-                        new ContractParameter("operation", ContractParameterType.STRING),
-                        new ContractParameter("args", ContractParameterType.ARRAY)
-                    ),
-                    ContractParameterType.BYTE_ARRAY)
-            )
+            contract.getEvent("Event1").get(),
+            is(e1)
         );
-        assertThat(c1.getEntryPointParameters(), hasSize(2));
-        assertThat(c1.getEntryPointReturnType(), is(ContractParameterType.BYTE_ARRAY));
+
+        assertThat(
+            contract.getEvent("Event2").get(),
+            is(e2)
+        );
+
+        when(mockABI.getEvents()).thenReturn(Arrays.asList());
+
+        when(mockABI.getEvents()).thenReturn(Arrays.asList());
+
+        assertThat(
+            contract.getEvents(),
+            hasSize(0)
+        );
+
     }
 
     @Test(expected = IllegalStateException.class)
-    public void abiWithoutEitherABIFileOrContractScriptHash() {
-        new ContractAbiLoader.Builder()
-            .build()
-            .load();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void abiWithContractScriptHashMismatch() {
-        new ContractAbiLoader.Builder()
-            .address("0x746d6cc63dacd7b275bb3a3a06d54859661591a6")
-            .loadABIFile(getTestAbsoluteFileName(TEST1_SMARTCONTRACT_ABI_FILENAME))
-            .build()
-            .load();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void abiWithInvalidAddress() {
-        new ContractAbiLoader.Builder()
-            .address("anything")
-            .loadABIFile(getTestAbsoluteFileName(TEST1_SMARTCONTRACT_ABI_FILENAME))
-            .build()
-            .load();
-    }
-
-    @Ignore
-    @Test
-    public void invoke() throws IOException, ErrorResponseException {
-
-        Account a = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
-
-        Contract contract = new ContractDeployment.Builder(this.neow3j)
-            .account(a)
-            .loadAVMFile("file.avm")
-            .needsStorage()
-            .needsDynamicInvoke()
-            .isPayable()
-            .parameter(ContractParameterType.STRING)
-            .parameter(ContractParameterType.ARRAY)
-            .returnType(ContractParameterType.BYTE_ARRAY)
-            .name("ContractName")
-            .version("1.0.0")
-            .author("Author")
-            .email("email@email.com")
-            .description("ContractDescription")
-            .build()
-            .deploy();
-
-        // TODO: 2019-07-03 Guil: to be implemented
-
-    }
-
-    private String getTestAbsoluteFileName(String fileName) {
-        return this.getClass().getResource(fileName).getFile();
+    public void testGetEventParameters_NoAbiSet() {
+        Contract contract = new Contract(new ContractDeploymentScript());
+        contract.getEventParameters("anyEvent");
     }
 
 }
