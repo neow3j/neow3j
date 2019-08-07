@@ -120,6 +120,20 @@ public class Account {
         return balances;
     }
 
+    /**
+     * <p>Gets the balance (the amount and a set of UTXOs) for the given asset id.</p>
+     * <br>
+     * <p>Note that updating the balance information via a call to a RPC node is left to the library
+     * user. Call {@link Account#updateAssetBalances(Neow3j)} to have the most recent balance
+     * information</p>
+     *
+     * @param assetId The id/hash of the asset.
+     * @return the asset balance of this account.
+     */
+    public AssetBalance getAssetBalance(String assetId) {
+        return this.balances.getAssetBalance(assetId);
+    }
+
     public void updateAssetBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
         NeoGetUnspents response = neow3j.getUnspents(getAddress()).send();
         response.throwOnError();
