@@ -72,8 +72,6 @@ public class ContractDeploymentScript extends NeoSerializable {
             this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
             this.scriptBinary = reader.readPushData();
             this.contractScriptHash = ScriptHash.fromScript(this.scriptBinary);
-            // TODO: 2019-08-01 Guil:
-            // Should we read the syscall?
         } catch (IllegalAccessException e) {
             LOG.error("Can't access the specified object.", e);
         } catch (InstantiationException e) {
