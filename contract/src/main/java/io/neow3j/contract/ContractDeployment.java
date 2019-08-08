@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -145,13 +147,11 @@ public class ContractDeployment {
         }
 
         public Builder loadAVMFile(String absoluteFileName) throws IOException {
-            loadAVMFile(new File(absoluteFileName));
-            return this;
+            return loadAVMFile(new File(absoluteFileName));
         }
 
         public Builder loadAVMFile(File source) throws IOException {
-            this.scriptBinary = Files.readAllBytes(source.toPath());
-            return this;
+            return loadAVMFile(new FileInputStream(source));
         }
 
         public Builder loadAVMFile(InputStream source) throws IOException {
@@ -160,14 +160,12 @@ public class ContractDeployment {
             return this;
         }
 
-        public Builder loadABIFile(String absoluteFileName) throws NEP3Exception {
-            this.abi = NeoABIUtils.loadABIFile(absoluteFileName);
-            return this;
+        public Builder loadABIFile(String absoluteFileName) throws NEP3Exception, IOException {
+            return loadABIFile(new File(absoluteFileName));
         }
 
-        public Builder loadABIFile(File source) throws NEP3Exception {
-            this.abi = NeoABIUtils.loadABIFile(source);
-            return this;
+        public Builder loadABIFile(File source) throws NEP3Exception, IOException {
+            return loadABIFile(new FileInputStream(source));
         }
 
         public Builder loadABIFile(InputStream source) throws NEP3Exception {
@@ -181,8 +179,7 @@ public class ContractDeployment {
         }
 
         public Builder needsStorage() {
-            this.needsStorage = true;
-            return this;
+            return needsStorage(true);
         }
 
         public Builder needsDynamicInvoke(boolean needsDynamicInvoke) {
@@ -191,8 +188,7 @@ public class ContractDeployment {
         }
 
         public Builder needsDynamicInvoke() {
-            this.needsDynamicInvoke = true;
-            return this;
+            return needsDynamicInvoke(true);
         }
 
         public Builder isPayable(boolean isPayable) {
@@ -201,13 +197,11 @@ public class ContractDeployment {
         }
 
         public Builder isPayable() {
-            this.isPayable = true;
-            return this;
+            return isPayable(true);
         }
 
         public Builder parameter(ContractParameterType parameterType) {
-            this.parameters.add(parameterType);
-            return this;
+            return parameters(parameterType);
         }
 
         public Builder parameters(List<ContractParameterType> parameters) {
@@ -216,8 +210,7 @@ public class ContractDeployment {
         }
 
         public Builder parameters(ContractParameterType... parameters) {
-            this.parameters = Arrays.asList(parameters);
-            return this;
+            return parameters(Arrays.asList(parameters));
         }
 
         public Builder returnType(ContractParameterType returnType) {
