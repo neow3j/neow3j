@@ -80,7 +80,7 @@ public class ContractDeploymentScriptTest {
 
         ContractDeploymentScript cds = NeoSerializableInterface.from(Numeric.hexStringToByteArray(contractDeploymentScript), ContractDeploymentScript.class);
 
-        assertThat(cds.getScriptHashHexNoPrefix(), is("a69115665948d5063a3abb75b2d7ac3dc66c6d74"));
+        assertThat(Numeric.toHexStringNoPrefix(cds.getContractScriptHash().toArray()), is("a69115665948d5063a3abb75b2d7ac3dc66c6d74"));
         assertThat(cds.getContractScriptHash(), is(new ScriptHash("746d6cc63dacd7b275bb3a3a06d54859661591a6")));
         assertThat(cds.getDescriptionProperties(), is(dp));
         assertThat(cds.getFunctionProperties(), is(fp));

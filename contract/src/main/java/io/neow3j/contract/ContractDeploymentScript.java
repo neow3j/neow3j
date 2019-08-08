@@ -45,10 +45,6 @@ public class ContractDeploymentScript extends NeoSerializable {
         return functionProperties;
     }
 
-    public String getScriptHashHexNoPrefix() {
-        return Numeric.toHexStringNoPrefix(contractScriptHash.toArray());
-    }
-
     public ScriptHash getContractScriptHash() {
         return contractScriptHash;
     }
