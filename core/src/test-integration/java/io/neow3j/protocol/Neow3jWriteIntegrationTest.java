@@ -86,8 +86,7 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testSendToAddress_Fee() throws IOException, InterruptedException {
-        getCurrentNeoBalance();
+    public void testSendToAddress_Fee() throws IOException {
         NeoSendToAddress neoSendToAddress = getNeow3j()
                 .sendToAddress(NEOAsset.HASH_ID, ADDRESS_4, "10", "0.1")
                 .send();
@@ -106,8 +105,7 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testSendToAddress_Fee_And_ChangeAddress() throws IOException, InterruptedException {
-        getCurrentNeoBalance();
+    public void testSendToAddress_Fee_And_ChangeAddress() throws IOException {
         NeoGetNewAddress neoGetNewAddress = getNeow3j().getNewAddress().send();
         String newChangeAddress = neoGetNewAddress.getAddress();
         NeoSendToAddress neoSendToAddress = getNeow3j()
@@ -228,7 +226,7 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         );
     }
 
-    private int getCurrentNeoBalance() throws IOException, InterruptedException {
+    private int getCurrentNeoBalance() throws IOException {
         NeoGetBalance.Balance b = getNeow3j().getBalance(NEOAsset.HASH_ID).send().getBalance();
         return Integer.parseInt(b.getBalance());
     }
