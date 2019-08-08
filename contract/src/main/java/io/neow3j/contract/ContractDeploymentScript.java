@@ -4,12 +4,11 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.utils.Numeric;
-import java.io.IOException;
-import java.math.BigDecimal;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.math.BigDecimal;
 
 public class ContractDeploymentScript extends NeoSerializable {
 

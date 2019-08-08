@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -114,25 +115,15 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
-        try {
-            int functionProperties = reader.readPushInteger();
-            this.needsStorage = unpackNeedsStorage(functionProperties);
-            this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
-            this.isPayable = unpackIsPayable(functionProperties);
-            int returnTypeInt = reader.readPushInteger();
-            this.returnType = ContractParameterType.valueOf((byte) returnTypeInt);
-            // TODO: 2019-06-04 Guil:
-            // Maybe, we should use readPushData() instead of readVarInt?!
-            // Tests are required for parameters with the size larger than 22
-            this.parameterTypes = reader.readSerializableList(ContractParameterTypeSerializable.class)
-                    .stream()
-                    .map(ContractParameterTypeSerializable::getContractParameterType)
-                    .collect(Collectors.toList());
-
-        } catch (IllegalAccessException e) {
-            LOG.error("Can't access the specified object.", e);
-        } catch (InstantiationException e) {
-            LOG.error("Can't instantiate the specified object type.", e);
+        int functionProperties = reader.readPushInteger();
+        this.needsStorage = unpackNeedsStorage(functionProperties);
+        this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
+        this.isPayable = unpackIsPayable(functionProperties);
+        this.returnType = ContractParameterType.valueOf((byte) reader.readPushInteger());
+        byte[] parameters = reader.readPushData();
+        this.parameterTypes = new ArrayList<>();
+        for (byte parameter : parameters) {
+            parameterTypes.add(ContractParameterType.valueOf(parameter));
         }
     }
 
@@ -148,7 +139,7 @@ public class ContractFunctionProperties extends NeoSerializable {
 
         writer.write(new ScriptBuilder()
                 .pushInteger(packFlagsValue())
-                .pushInteger(this.returnType.byteValue())
+                .pushInteger(this.returnType.byteValue() & 0xff)
                 .pushData(bytesPrimitive)
                 .toArray());
     }
