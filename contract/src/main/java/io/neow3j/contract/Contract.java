@@ -12,24 +12,11 @@ import java.util.Optional;
 
 public class Contract {
 
-    // TODO: 2019-07-24 Guil:
-    // Apply the build pattern here?
-
     private final ScriptHash contractScriptHash;
 
     private ContractDeploymentScript deploymentScript;
 
     private NeoContractInterface abi;
-
-    /**
-     * Creates a new contract with the set deployment script.
-     *
-     * @param deploymentScript Deployment script instance.
-     */
-    public Contract(ContractDeploymentScript deploymentScript) {
-        this.deploymentScript = deploymentScript;
-        this.contractScriptHash = deploymentScript.getContractScriptHash();
-    }
 
     /**
      * Creates a new contract with the set deployment script.
