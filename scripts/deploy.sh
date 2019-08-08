@@ -27,8 +27,8 @@ if [ "${SNAPSHOT}" == "${TRAVIS_TAG}" ] || [ "${RELEASE}" == "${TRAVIS_TAG}" ]; 
         # re-creating the .gpg file
         openssl aes-256-cbc -K $encrypted_f2caa0a2639d_key -iv $encrypted_f2caa0a2639d_iv -in ${GPG_ENC_FILE} -out ${GPG_FILE} -d
 
-        # uploadArchives all modules
-        ./gradlew uploadArchives -PnexusUsername=${SONATYPE_USERNAME} -PnexusPassword=${SONATYPE_PASSWORD} -Psigning.keyId=${GPG_KEY_ID} -Psigning.password=${GPG_KEY_PASSPHRASE} -Psigning.secretKeyRingFile=${GPG_FILE} ${PARAMS}
+        # publish all modules
+        ./gradlew publish -PnexusUsername=${SONATYPE_USERNAME} -PnexusPassword=${SONATYPE_PASSWORD} -Psigning.keyId=${GPG_KEY_ID} -Psigning.password=${GPG_KEY_PASSPHRASE} -Psigning.secretKeyRingFile=${GPG_FILE} ${PARAMS}
 
         if [ $? -eq 0 ] && [ "${RELEASE}" == "${TRAVIS_TAG}" ]; then
             # After releasing (uploadArchives) to nexus,

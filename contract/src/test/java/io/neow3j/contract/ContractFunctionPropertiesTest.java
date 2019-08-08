@@ -204,4 +204,33 @@ public class ContractFunctionPropertiesTest {
         );
     }
 
+    @Test
+    public void testSerializeAndDeserialize1() throws IllegalAccessException, InstantiationException {
+        ContractFunctionProperties properties = new ContractFunctionProperties(
+                Arrays.asList(ContractParameterType.STRING),
+                ContractParameterType.INTEROP_INTERFACE,
+                true, true, true);
+
+        byte[] rawProperties = properties.toArray();
+        assertThat(rawProperties, is(Numeric.hexStringToByteArray("5702f0000107")));
+
+        ContractFunctionProperties deserializedProps = NeoSerializableInterface.from(rawProperties,
+                ContractFunctionProperties.class);
+        assertThat(deserializedProps, is(properties));
+    }
+
+    @Test
+    public void testSerializeAndDeserialize2() throws IllegalAccessException, InstantiationException {
+        ContractFunctionProperties properties = new ContractFunctionProperties(
+                Arrays.asList(ContractParameterType.INTEROP_INTERFACE),
+                ContractParameterType.VOID,
+                true, true, true);
+
+        byte[] rawProperties = properties.toArray();
+        assertThat(rawProperties, is(Numeric.hexStringToByteArray("5702ff0001f0")));
+
+        ContractFunctionProperties deserializedProps = NeoSerializableInterface.from(rawProperties,
+                ContractFunctionProperties.class);
+        assertThat(deserializedProps, is(properties));
+    }
 }

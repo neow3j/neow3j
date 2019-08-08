@@ -46,7 +46,7 @@ allprojects {
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '2.1.0'
+    version '2.2.0'
     archivesBaseName = "${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -110,11 +110,8 @@ subprojects {
 }
 
 configure(subprojects.findAll()) {
-    // Required for Maven Nexus repository
-    apply plugin: 'maven'
+    
     apply plugin: 'signing'
-
-    // Required for JFrog Artifactory repository
     apply plugin: 'maven-publish'
 
     task javadocJar(type: Jar) {
@@ -142,6 +139,18 @@ configure(subprojects.findAll()) {
     }
 
     publishing {
+        repositories {
+            maven {
+                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+                url = project.hasProperty('snapshot') ? snapshotsRepoUrl : releasesRepoUrl
+
+                credentials {
+                    username nexusUsername
+                    password nexusPassword
+                }
+            }
+        }
         publications {
             mavenJava(MavenPublication) {
 
@@ -150,79 +159,104 @@ configure(subprojects.findAll()) {
                 from components.java
 
                 artifact sourcesJar {
-                    classifier 'sources'
+                    classifier = 'sources'
+                }
+
+                artifact javadocJar {
+                    classifier = 'javadoc'
                 }
 
                 artifact testJar {
-                    classifier 'tests'
-                }
-            }
-        }
-    }
-
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                def repoUrl = project.hasProperty('snapshot') ? snapshotsRepoUrl : releasesRepoUrl
-                
-                repository(url: repoUrl) {
-                    authentication(
-                            userName: nexusUsername,
-                            password: nexusPassword
-                    )
+                    classifier = 'tests'
                 }
 
-                pom.project {
-                    name 'Neow3j'
+                pom {
+                    name = 'Neow3j'
                     packaging 'jar'
-                    description project.description
-                    url 'https://github.com/neow3j'
+                    description = project.description
+                    url = 'https://github.com/neow3j'
 
                     scm {
-                        url 'https://github.com/neow3j/neow3j'
-                        connection 'scm:https://github.com/neow3j/neow3j.git'
-                        developerConnection 'scm:https://github.com/neow3j/neow3j.git'
+                        url = 'https://github.com/neow3j/neow3j'
+                        connection = 'scm:https://github.com/neow3j/neow3j.git'
+                        developerConnection = 'scm:https://github.com/neow3j/neow3j.git'
                     }
 
                     licenses {
                         license {
-                            name 'The Apache License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            distribution 'repo'
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
                         }
                     }
 
                     developers {
                         developer {
-                            id 'gsmachado'
-                            name 'Guilherme Sperb Machado'
-                            email 'guil@axlabs.com'
+                            id = 'gsmachado'
+                            name = 'Guilherme Sperb Machado'
+                            email = 'guil@axlabs.com'
                         }
                         developer {
-                            id 'claudemiller'
-                            name 'Claude Müller'
-                            email 'claude@axlabs.com'
+                            id = 'claudemiller'
+                            name = 'Claude Müller'
+                            email = 'claude@axlabs.com'
                         }
+                    }
+                }
+
+                // The code below was based on:
+                // https://medium.com/@nmauti/sign-and-publish-on-maven-central-a-project-with-the-new-maven-publish-gradle-plugin-22a72a4bfd4b
+                
+                // create the sign pom artifact
+                pom.withXml {
+                    def pomFile = file("${project.buildDir}/generated-pom.xml")
+                    writeTo(pomFile)
+                    def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                    artifact(pomAscFile) {
+                        classifier = null
+                        extension = 'pom.asc'
+                    }
+                }
+
+                // create the signed artifacts
+                project.tasks.signArchives.signatureFiles.each {
+                    artifact(it) {
+                        println it.file
+                        def matcher = it.file =~ /-(sources|javadoc|tests)\.jar\.asc$/
+                        if (matcher.find()) {
+                            classifier = matcher.group(1)
+                        } else {
+                            classifier = null
+                        }
+                        extension = 'jar.asc'
                     }
                 }
             }
         }
     }
 
+    model {
+        tasks.generatePomFileForMavenJavaPublication {
+            destination = file("$buildDir/generated-pom.xml")
+        }
+        tasks.publishMavenJavaPublicationToMavenLocal {
+            dependsOn project.tasks.signArchives
+        }
+        tasks.publishMavenJavaPublicationToMavenRepository {
+            dependsOn project.tasks.signArchives
+        }
+    }
+
     signing {
-        required { gradle.taskGraph.hasTask('uploadArchives') }  // only execute as part of this task
+        required { gradle.taskGraph.hasTask('publish') }  // only execute as part of this task
         sign configurations.archives
     }
 
     task release {
         dependsOn 'build'
-        dependsOn 'uploadArchives'
+        dependsOn 'publish'
         
-        tasks.findByName('uploadArchives').mustRunAfter 'build'
+        tasks.findByName('publish').mustRunAfter 'build'
     }
 }
 

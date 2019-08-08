@@ -36,7 +36,7 @@ public class Balances {
         assetBalances = new HashMap<>(unspents.getBalances().size());
         unspents.getBalances().forEach(b -> {
             List<Utxo> utxos = b.getUnspentTransactions().stream()
-                    .map(utxo -> new Utxo(utxo.getTxId(), utxo.getIndex(), utxo.getValue()))
+                    .map(utxo -> new Utxo(b.getAssetHash(), utxo.getTxId(), utxo.getIndex(), utxo.getValue()))
                     .collect(Collectors.toList());
             assetBalances.put(b.getAssetHash(), new AssetBalance(utxos));
         });

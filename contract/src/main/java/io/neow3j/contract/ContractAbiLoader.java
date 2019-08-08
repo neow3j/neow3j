@@ -3,10 +3,10 @@ package io.neow3j.contract;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
+import io.neow3j.utils.Numeric;
+import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 public class ContractAbiLoader {
 
@@ -21,7 +21,24 @@ public class ContractAbiLoader {
     }
 
     public Contract load() {
-        // TODO: 2019-07-03 Guil: to be implemented
+        if (this.contractScriptHash == null) {
+            if (this.abi == null) {
+                throw new IllegalStateException(
+                    "Either contract script hash or ABI should be set.");
+            } else {
+                String contractScriptHashNoPrefix = Numeric.cleanHexPrefix(this.abi.getHash());
+                this.contractScriptHash = new ScriptHash(contractScriptHashNoPrefix);
+            }
+        } else {
+            if (this.abi != null) {
+                String abiContractScriptHashNoPrefix = Numeric.cleanHexPrefix(this.abi.getHash());
+                if (!abiContractScriptHashNoPrefix.equals(this.contractScriptHash)) {
+                    throw new IllegalStateException(
+                        "Mismatch between the contract script hash provided "
+                            + "and the contract script hash found in the specified ABI file.");
+                }
+            }
+        }
         return new Contract(this.contractScriptHash, this.abi);
     }
 
@@ -37,29 +54,11 @@ public class ContractAbiLoader {
         /**
          * Adds the given script hash to this ABI loader.
          *
-         * @param contractScriptHash the script hash in big-endian order.
-         * @return this Builder object.
-         * @deprecated Use {@link Builder#contractScriptHash(ScriptHash)} instead.
-         */
-        @Deprecated
-        public Builder contractScriptHash(String contractScriptHash) {
-            this.contractScriptHash = new ScriptHash(contractScriptHash);
-            return this;
-        }
-
-        /**
-         * Adds the given script hash to this ABI loader.
-         *
          * @param contractScriptHash the script hash.
          * @return this Builder object.
          */
         public Builder contractScriptHash(ScriptHash contractScriptHash) {
             this.contractScriptHash = contractScriptHash;
-            return this;
-        }
-
-        public Builder address(String address) {
-            this.contractScriptHash = ScriptHash.fromAddress(address);
             return this;
         }
 

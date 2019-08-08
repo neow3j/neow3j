@@ -2,7 +2,9 @@ package io.neow3j.contract.abi;
 
 import io.neow3j.contract.abi.exceptions.NEP3ParsingException;
 import io.neow3j.contract.abi.model.NeoContractEvent;
+import io.neow3j.contract.abi.model.NeoContractFunction;
 import io.neow3j.contract.abi.model.NeoContractInterface;
+import java.util.Arrays;
 import org.bouncycastle.util.Strings;
 import org.junit.After;
 import org.junit.Before;
@@ -27,6 +29,7 @@ public class NeoABIUtilsTest {
     private static final String TEST2_SMARTCONTRACT_ABI_FILENAME = "/test2-smartcontract.abi.json";
     private static final String TEST3_SMARTCONTRACT_ABI_FILENAME = "/test3-smartcontract.abi.json";
     private static final String TEST4_SMARTCONTRACT_ABI_FILENAME = "/test4-smartcontract.abi.json";
+    private static final String TEST5_SMARTCONTRACT_ABI_FILENAME = "/test5-smartcontract.abi.json";
 
     private File tempDir;
 
@@ -89,6 +92,36 @@ public class NeoABIUtilsTest {
         assertThat(neoContractABI, notNullValue());
         assertThat(neoContractABI.getHash(), is("0x5944fc67643207920ec129d13181297fed10350c"));
         assertThat(neoContractABI.getEntryPoint(), nullValue());
+    }
+
+    @Test
+    public void testLoadCredentialsFromStream_SmartContract4() throws Exception {
+        NeoContractInterface neoContractABI = NeoABIUtils.loadABIFile(
+                NeoABIUtilsTest.class.getResourceAsStream(
+                        TEST4_SMARTCONTRACT_ABI_FILENAME)
+        );
+
+        assertThat(neoContractABI, notNullValue());
+        assertThat(neoContractABI.getHash(), is("0x5944fc67643207920ec129d13181297fed10350c"));
+        assertThat(neoContractABI.getEntryPoint(), nullValue());
+    }
+
+    @Test
+    public void testLoadCredentialsFromStream_SmartContract5() throws Exception {
+        NeoContractInterface neoContractABI = NeoABIUtils.loadABIFile(
+            NeoABIUtilsTest.class.getResourceAsStream(
+                TEST5_SMARTCONTRACT_ABI_FILENAME)
+        );
+
+        assertThat(neoContractABI, notNullValue());
+        assertThat(neoContractABI.getHash(), is("0x5944fc67643207920ec129d13181297fed10350c"));
+        assertThat(neoContractABI.getEntryPoint(), is("Main"));
+        assertThat(
+            neoContractABI.getFunctions().stream()
+                .filter(f -> f.getName().equals(neoContractABI.getEntryPoint()))
+                .findFirst()
+                .get(),
+            is(new NeoContractFunction("Main", Arrays.asList(), null)));
     }
 
     @Test

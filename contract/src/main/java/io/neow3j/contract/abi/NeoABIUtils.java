@@ -14,6 +14,7 @@ import io.neow3j.utils.Strings;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -41,6 +42,14 @@ public class NeoABIUtils {
     }
 
     public static NeoContractInterface loadABIFile(File source) throws NEP3Exception {
+        try {
+            return objectMapper.readValue(source, NeoContractInterface.class);
+        } catch (Exception e) {
+            throw new NEP3ParsingException("Could not load the ABI file in the parsing process.", e);
+        }
+    }
+
+    public static NeoContractInterface loadABIFile(InputStream source) throws NEP3Exception {
         try {
             return objectMapper.readValue(source, NeoContractInterface.class);
         } catch (Exception e) {

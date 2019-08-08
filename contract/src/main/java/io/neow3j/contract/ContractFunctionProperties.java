@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -18,9 +18,9 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContractFunctionProperties.class);
 
-    private List<ContractParameterTypeSerializable> parameterTypes;
+    private List<ContractParameterType> parameterTypes;
 
-    private ContractParameterTypeSerializable returnType;
+    private ContractParameterType returnType;
 
     private boolean needsStorage;
 
@@ -32,19 +32,19 @@ public class ContractFunctionProperties extends NeoSerializable {
     }
 
     public ContractFunctionProperties(List<ContractParameterType> parameterTypes, ContractParameterType returnType, boolean needsStorage, boolean needsDynamicInvoke, boolean isPayable) {
-        this.parameterTypes = toSerializable(parameterTypes);
-        this.returnType = toSerializable(returnType);
+        this.parameterTypes = parameterTypes;
+        this.returnType = returnType;
         this.needsStorage = needsStorage;
         this.needsDynamicInvoke = needsDynamicInvoke;
         this.isPayable = isPayable;
     }
 
     public List<ContractParameterType> getParameterTypes() {
-        return fromSerializable(this.parameterTypes);
+        return this.parameterTypes;
     }
 
     public ContractParameterType getReturnType() {
-        return fromSerializable(this.returnType);
+        return this.returnType;
     }
 
     public boolean getNeedsStorage() {
@@ -57,38 +57,6 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     public boolean getPayable() {
         return isPayable;
-    }
-
-    private List<ContractParameterTypeSerializable> toSerializable(List<ContractParameterType> parameterTypes) {
-        if (parameterTypes == null) {
-            return Arrays.asList();
-        }
-        return parameterTypes.stream()
-                .map((paramTypeEnum) -> toSerializable(paramTypeEnum))
-                .collect(Collectors.toList());
-    }
-
-    private ContractParameterTypeSerializable toSerializable(ContractParameterType parameterType) {
-        if (parameterType == null) {
-            return null;
-        }
-        return new ContractParameterTypeSerializable(parameterType);
-    }
-
-    private List<ContractParameterType> fromSerializable(List<ContractParameterTypeSerializable> parameterTypes) {
-        if (parameterTypes == null) {
-            return Arrays.asList();
-        }
-        return parameterTypes.stream()
-                .map((paramTypeSerialized) -> fromSerializable(paramTypeSerialized))
-                .collect(Collectors.toList());
-    }
-
-    private ContractParameterType fromSerializable(ContractParameterTypeSerializable parameterType) {
-        if (parameterType == null) {
-            return null;
-        }
-        return parameterType.getContractParameterType();
     }
 
     protected int packFlagsValue() {
@@ -147,30 +115,22 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
-        try {
-            int functionProperties = reader.readPushInteger();
-            this.needsStorage = unpackNeedsStorage(functionProperties);
-            this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
-            this.isPayable = unpackIsPayable(functionProperties);
-            int returnTypeInt = reader.readPushInteger();
-            this.returnType = toSerializable(ContractParameterType.valueOf((byte) returnTypeInt));
-
-            // TODO: 2019-06-04 Guil:
-            // Maybe, we should use readPushData() instead of readVarInt?!
-            // Tests are required for parameters with the size larger than 22
-            this.parameterTypes = reader.readSerializableList(ContractParameterTypeSerializable.class);
-
-        } catch (IllegalAccessException e) {
-            LOG.error("Can't access the specified object.", e);
-        } catch (InstantiationException e) {
-            LOG.error("Can't instantiate the specified object type.", e);
+        int functionProperties = reader.readPushInteger();
+        this.needsStorage = unpackNeedsStorage(functionProperties);
+        this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
+        this.isPayable = unpackIsPayable(functionProperties);
+        this.returnType = ContractParameterType.valueOf((byte) reader.readPushInteger());
+        byte[] parameters = reader.readPushData();
+        this.parameterTypes = new ArrayList<>();
+        for (byte parameter : parameters) {
+            parameterTypes.add(ContractParameterType.valueOf(parameter));
         }
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         Byte[] parameterTypesArray = new Byte[this.parameterTypes.size()];
-        Byte[] bytes = fromSerializable(this.parameterTypes)
+        Byte[] bytes = this.parameterTypes
                 .stream()
                 .map(ContractParameterType::byteValue)
                 .collect(Collectors.toList())
@@ -179,7 +139,7 @@ public class ContractFunctionProperties extends NeoSerializable {
 
         writer.write(new ScriptBuilder()
                 .pushInteger(packFlagsValue())
-                .pushInteger((int) getReturnType().byteValue())
+                .pushInteger(this.returnType.byteValue() & 0xff)
                 .pushData(bytesPrimitive)
                 .toArray());
     }
