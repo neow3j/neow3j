@@ -139,21 +139,20 @@ public class AssetTransferTest {
     }
 
     /*
-     * This test uses a raw transaction string generated with neo-python. The UTXO used as input has
-     * to be mocked.
+     * This test uses a raw transaction string generated with neo-python. The UTXOs used for input
+     * are manually added. The attribute that is added is not really necessary but neo-python adds
+     * it automatically and so we need to do it here as well, to arrive at the same transaction byte
+     * array.
      */
     @Test
     public void transferNeoWithoutFeesWithManuallyAddedUtxo() {
-        // Mock the accounts NEO balance
-        Utxo utxo = new Utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000));
-        Account spyAcct = mockAccountBalances(this.acct, utxo);
-
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
-                .account(spyAcct)
+                .account(this.acct)
                 .output(NEOAsset.HASH_ID, "1", ALT_ADDR)
+                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000))
                 // This attribute is automatically added by neo-python, so we need to add it as well
                 // to get a matching transaction.
-                .attribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray())
+                .attribute(TransactionAttributeUsageType.SCRIPT, this.acct.getScriptHash().toArray())
                 .build()
                 .sign();
 
@@ -170,11 +169,12 @@ public class AssetTransferTest {
 
         // Test the same transaction with alternative builder methods.
         at = new AssetTransfer.Builder(this.neow3j)
-                .account(spyAcct)
+                .account(this.acct)
                 .toAddress(ALT_ADDR)
                 .amount(1)
                 .asset(NEOAsset.HASH_ID)
-                .attribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray())
+                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000))
+                .attribute(TransactionAttributeUsageType.SCRIPT, this.acct.getScriptHash().toArray())
                 .build()
                 .sign();
 
