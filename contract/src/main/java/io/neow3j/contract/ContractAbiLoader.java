@@ -54,29 +54,11 @@ public class ContractAbiLoader {
         /**
          * Adds the given script hash to this ABI loader.
          *
-         * @param contractScriptHash the script hash in big-endian order.
-         * @return this Builder object.
-         * @deprecated Use {@link Builder#contractScriptHash(ScriptHash)} instead.
-         */
-        @Deprecated
-        public Builder contractScriptHash(String contractScriptHash) {
-            this.contractScriptHash = new ScriptHash(Numeric.cleanHexPrefix(contractScriptHash));
-            return this;
-        }
-
-        /**
-         * Adds the given script hash to this ABI loader.
-         *
          * @param contractScriptHash the script hash.
          * @return this Builder object.
          */
         public Builder contractScriptHash(ScriptHash contractScriptHash) {
             this.contractScriptHash = contractScriptHash;
-            return this;
-        }
-
-        public Builder address(String contractScriptHash) {
-            this.contractScriptHash = new ScriptHash(Numeric.cleanHexPrefix(contractScriptHash));
             return this;
         }
 

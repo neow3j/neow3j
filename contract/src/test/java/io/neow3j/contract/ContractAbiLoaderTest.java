@@ -136,7 +136,7 @@ public class ContractAbiLoaderTest {
     @Test(expected = IllegalStateException.class)
     public void abiWithContractScriptHashMismatch() {
         new ContractAbiLoader.Builder()
-            .address("0x746d6cc63dacd7b275bb3a3a06d54859661591a6")
+            .contractScriptHash(new ScriptHash("0x746d6cc63dacd7b275bb3a3a06d54859661591a6"))
             .loadABIFile(getTestAbsoluteFileName(TEST1_SMARTCONTRACT_ABI_FILENAME))
             .build()
             .load();
@@ -145,7 +145,7 @@ public class ContractAbiLoaderTest {
     @Test(expected = IllegalArgumentException.class)
     public void abiWithInvalidAddress() {
         new ContractAbiLoader.Builder()
-            .address("anything")
+            .contractScriptHash(new ScriptHash("anything"))
             .loadABIFile(getTestAbsoluteFileName(TEST1_SMARTCONTRACT_ABI_FILENAME))
             .build()
             .load();
