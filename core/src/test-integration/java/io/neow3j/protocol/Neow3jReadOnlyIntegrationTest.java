@@ -507,7 +507,8 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetNep5Balances() throws IOException {
-        NeoGetNep5Balances response = getNeow3j().getNep5Balances(ADDRESS_1).send();
+        // TODO 2019-08-08 claude:
+        // Implement
     }
 
     @Test

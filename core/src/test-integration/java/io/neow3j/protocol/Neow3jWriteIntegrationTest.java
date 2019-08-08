@@ -42,7 +42,7 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
             .waitingFor(Wait.forListeningPort());
 
     @Override
-    GenericContainer getPrivateNetContainer() {
+    protected GenericContainer getPrivateNetContainer() {
         return privateNetContainer;
     }
 
