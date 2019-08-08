@@ -93,6 +93,13 @@ public abstract class RawTransaction extends NeoSerializable {
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 
+    public int getSize() {
+        // TODO 2019-08-05 claude:
+        // Implement more efficiently, e.g. with fixed byte values and calls to the getSize() of
+        // the transaction components.
+        return toArray().length;
+    }
+
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
         this.transactionType = TransactionType.valueOf(reader.readByte());

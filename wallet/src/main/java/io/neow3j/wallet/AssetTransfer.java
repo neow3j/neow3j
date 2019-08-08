@@ -106,7 +106,7 @@ public class AssetTransfer {
             this.attributes = new ArrayList<>();
             this.witnesses = new ArrayList<>();
             this.networkFee = BigDecimal.ZERO;
-            this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY;
+            this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_STRATEGY;
         }
 
         public Builder account(Account account) {

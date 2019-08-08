@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.constants.OpCode;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
-import io.neow3j.utils.Numeric;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -38,12 +37,11 @@ public class ScriptBuilder {
         return this;
     }
 
-
     /**
      * Appends an app call to the script.
      *
      * @param scriptHash The script hash of the contract to call.
-     * @param operation  The operation to call
+     * @param operation  The operation to call.
      * @param params     The parameters that will be used in the app call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
@@ -192,7 +190,6 @@ public class ScriptBuilder {
         if (operation.length() == 0)
             throw new IllegalArgumentException("Provided operation string is empty.");
 
-        writeByte(OpCode.SYSCALL.getValue());
         byte[] operationBytes = operation.getBytes(UTF_8);
         if (operationBytes.length > 252)
             throw new IllegalArgumentException("Provided operation is too long.");

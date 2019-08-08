@@ -218,7 +218,7 @@ public class ContractInvocation {
             this.inputs = new ArrayList<>();
             this.networkFee = BigDecimal.ZERO;
             this.systemFee = BigDecimal.ZERO;
-            this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_INPUT_CALCULATION_STRATEGY;
+            this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_STRATEGY;
         }
 
         /**

@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
@@ -443,8 +444,8 @@ public class RequestTest extends RequestTester {
                         ContractParameter.signature("53c874d7c434b9912b9ee38b958ec78c1c4b0a3c4b5753bada198a1e49649f13bf5def112ee8d31133799759d3d88dd3c1650a4d6fa36f29493ffbc8068600ed"),
                         ContractParameter.bool(false),
                         ContractParameter.integer(8),
-                        ContractParameter.hash160("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f"),
-                        ContractParameter.hash256("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf"),
+                        ContractParameter.hash160(new ScriptHash("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f")),
+                        ContractParameter.hash256(new ScriptHash("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf")),
                         ContractParameter.byteArray("4e45503520474153"),
                         ContractParameter.string("name"),
                         ContractParameter.array(
@@ -513,7 +514,7 @@ public class RequestTest extends RequestTester {
                 "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
                 "balanceOf",
                 Arrays.asList(
-                        ContractParameter.hash160("91b83e96f2a7c4fdf0c1688441ec61986c7cae26")
+                        ContractParameter.hash160(new ScriptHash("91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 )
         ).send();
 

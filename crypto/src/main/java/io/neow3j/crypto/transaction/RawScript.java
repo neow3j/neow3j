@@ -31,7 +31,12 @@ public class RawScript extends NeoSerializable {
     }
 
     /**
-     * Creates a new script from the given invocation and verification script.
+     * <p>Creates a new script from the given invocation and verification script.</p>
+     * <br>
+     * <p>Make sure that the scripts are proper NEO VM scripts. E.g. the invocation script byte
+     * array must not only contain the serialized signature data but it also needs the prefix 40
+     * which signifies that 64 bytes follow. It is safer to use the static creation methods from
+     * {@link RawInvocationScript} and {@link RawVerificationScript} to create valid scripts.</p>
      *
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script

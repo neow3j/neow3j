@@ -52,9 +52,12 @@ public class ContractParameter {
         this.value = value;
     }
 
+    protected ContractParameter(String name, ContractParameterType paramType) {
+        this(name, paramType, null);
+    }
+
     private ContractParameter(ContractParameterType paramType, Object value) {
-        this.paramType = paramType;
-        this.value = value;
+        this(null, paramType, value);
     }
 
     public static ContractParameter string(String value) {
