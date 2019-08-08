@@ -40,7 +40,7 @@ public class ScriptBuilder {
     /**
      * Appends an app call to the script.
      *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
+     * @param scriptHash The script hash of the contract to call.
      * @param operation  The operation to call.
      * @param params     The parameters that will be used in the app call. Need to be in correct order.
      * @return this ScriptBuilder object.
