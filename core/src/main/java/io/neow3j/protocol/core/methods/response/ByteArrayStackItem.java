@@ -1,36 +1,71 @@
 package io.neow3j.protocol.core.methods.response;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.core.StackItemParser;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.BigIntegers;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Objects;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ByteArrayStackItem extends StackItem {
 
-    public ByteArrayStackItem() {
-        super(StackItemType.BYTE_ARRAY);
-    }
-
-    public ByteArrayStackItem(String value) {
+    public ByteArrayStackItem(byte[] value) {
         super(StackItemType.BYTE_ARRAY, value);
     }
 
     @Override
-    @SuppressWarnings(value = "unchecked")
-    public String getValue() {
-        return (String) this.value;
+    public byte[] getValue() {
+        return (byte[]) this.value;
     }
 
+    /**
+     * Gets this byte array's value as an address.
+     * Expects the byte array to be in big-endian order.
+     *
+     * @return the address represented byt this byte array.
+     */
     public String getAsAddress() {
-        return StackItemParser.readAddress(this);
+        return new ScriptHash(ArrayUtils.reverseArray(getValue())).toAddress();
     }
 
+    /**
+     * Gets this byte array's value as string.
+     * Expects the byte array to encode a string in UTF-8.
+     *
+     * @return the string represented by the byte array.
+     */
     public String getAsString() {
-        return StackItemParser.readString(this);
+        return new String(getValue(), UTF_8);
     }
 
+    /**
+     * Gets this byte array's value as an integer. Expects the byte array to be in little-endian
+     * order.
+     *
+     * @return the integer represented by the byte array.
+     */
     public BigInteger getAsNumber() {
-        return StackItemParser.readNumber(this);
+        if (getValue().length == 0) {
+            return BigInteger.ZERO;
+        }
+        return BigIntegers.fromLittleEndianByteArray(getValue());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        ByteArrayStackItem other = (ByteArrayStackItem) o;
+        return this.type == other.type && Arrays.equals(this.getValue(), other.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, Arrays.hashCode(getValue()));
     }
 
 }
