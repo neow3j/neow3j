@@ -2,16 +2,13 @@ package io.neow3j.protocol.core.methods.response;
 
 import io.neow3j.model.types.StackItemType;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Holds a map in which keys and values are StackItems.
+ */
 public class MapStackItem extends StackItem {
-
-    public MapStackItem() {
-        super(StackItemType.MAP);
-    }
 
     public MapStackItem(Map<StackItem, StackItem> value) {
         super(StackItemType.MAP, value);
@@ -23,6 +20,16 @@ public class MapStackItem extends StackItem {
         return (Map<StackItem, StackItem>) this.value;
     }
 
+    /**
+     * <p>Gets the item that corresponds to the given key.</p>
+     * <br>
+     * <p>This method only checks map entries which have a key of type {@link ByteArrayStackItem}
+     * because this is the usual type of the keys in a map stack item.</p>
+     *
+     * @param key the key whose associated value is to be returned.
+     * @return the value to which the given key is mapped, or null if this map stack item
+     * contains no mapping for the key.
+     */
     public StackItem get(String key) {
         for (Entry<StackItem, StackItem> e : getValue().entrySet()) {
             if (e.getKey() instanceof ByteArrayStackItem) {
@@ -32,5 +39,24 @@ public class MapStackItem extends StackItem {
             }
         }
         return null;
+    }
+
+    /**
+     * Gets the item that corresponds to the given key.
+     *
+     * @param key the key whose associated value is to be returned.
+     * @return the value to which the given key is mapped, or null if this map stack item
+     * contains no mapping for the key.
+     */
+    public StackItem get(StackItem key) {
+        return getValue().get(key);
+    }
+
+    public int size() {
+        return getValue().size();
+    }
+
+    public boolean isEmpty() {
+        return getValue().isEmpty();
     }
 }
