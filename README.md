@@ -22,7 +22,8 @@ You can now focus on building Java/Android applications that use the [functions]
 * Support for NEO RPC [API version 2.10.2](https://docs.neo.org/docs/en-us/reference/rpc/latest-version/api.html)
 * Observable pattern to get info about past and upcoming NEO blocks
 * Asset transfers
-* Contract invocations
+* Smart contract invocations
+* Smart contract deployments
 * Passphrase-protected private keys (NEP-2)
 * Wallet and Account model supporting NEP-6
 * NEO-compatible Mnemonic utilities (BIP-39)
@@ -209,7 +210,7 @@ invoc.invoke();
 
 ```java
 Neow3j neow3j = Neow3j.build(new HttpService("https://node2.neocompiler.io"));
-Account acct = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();;
+Account acct = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 acct.updateAssetBalances(neow3j);
 String toAddress = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
 RawTransactionOutput output = new RawTransactionOutput(NEOAsset.HASH_ID, "10", toAddress);
@@ -222,6 +223,27 @@ AssetTransfer transfer = new AssetTransfer.Builder(neow3j)
         .send();
 ```
 
+* Smart contract deployment
+
+```java
+Neow3j neow3j = Neow3j.build(new HttpService("https://node2.neocompiler.io"));
+Account acct = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
+acct.updateAssetBalances(neow3j);
+ContractDeployment cd = new ContractDeployment.Builder(neow3j)
+        .account(acct)
+        .loadAVMFile("path/to/contract.avm")
+        .needsStorage()
+        .parameters(ContractParameterType.STRING, ContractParameterType.ARRAY)
+        .returnType(ContractParameterType.BYTE_ARRAY)
+        .name("my smart contract")
+        .version("1.0.0")
+        .author("author")
+        .email("email@email.com")
+        .description("description")
+        .networkFee("0.1")
+        .build()
+        .sign();
+```
 
 For more code snippets and examples, check the [neow3j-examples](https://github.com/neow3j/neow3j-examples) repository.
 
