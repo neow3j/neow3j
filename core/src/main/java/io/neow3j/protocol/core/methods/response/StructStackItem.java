@@ -17,7 +17,7 @@ public class StructStackItem extends StackItem {
     }
 
     /**
-     * Gets the stack item at position i in this struct stack item.
+     * Gets the stack item at the given position in this struct stack item.
      *
      * @param i the position of the desired stack item in this struct
      * @return the stack item at the given position.

@@ -17,7 +17,7 @@ public class ArrayStackItem extends StackItem {
     }
 
     /**
-     * Gets the stack item at index i of this stack item array.
+     * Gets the stack item at the given index of this stack item array.
      *
      * @param i index of the stack item to return
      * @return the stack item at the given index

@@ -2096,7 +2096,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
         assertTrue(notifications.get(0).getState() instanceof ArrayStackItem);
 
-        ArrayStackItem array = (ArrayStackItem) notifications.get(0).getState();
+        ArrayStackItem array = notifications.get(0).getState().asArray();
 
         String eventName = array.get(0).asByteArray().getAsString();
         String address = array.get(1).asByteArray().getAsAddress();
@@ -2110,7 +2110,7 @@ public class ResponseTest extends ResponseTester {
         assertTrue(notifications.get(1).getState() instanceof MapStackItem);
         assertThat(notifications.get(1).getState().getType(), is(StackItemType.MAP));
         MapStackItem map = notifications.get(1).getState().asMap();
-        assertThat(map.getValue().size(), is(2));
+        assertThat(map.size(), is(2));
 
         String textValue = map.get("test_key_a").asByteArray().getAsString();
         BigInteger intValue = map.get("test_key_b").asInteger().getValue();

@@ -32,17 +32,16 @@ public class MapStackItem extends StackItem {
      */
     public StackItem get(String key) {
         for (Entry<StackItem, StackItem> e : getValue().entrySet()) {
-            if (e.getKey() instanceof ByteArrayStackItem) {
-                if (((ByteArrayStackItem) e.getKey()).getAsString().equals(key)) {
-                    return e.getValue();
-                }
+            if (e.getKey() instanceof ByteArrayStackItem &&
+                    e.getKey().asByteArray().getAsString().equals(key)) {
+                return e.getValue();
             }
         }
         return null;
     }
 
     /**
-     * Gets the item that corresponds to the given key.
+     * Gets the stack item that corresponds to the given key.
      *
      * @param key the key whose associated value is to be returned.
      * @return the value to which the given key is mapped, or null if this map stack item

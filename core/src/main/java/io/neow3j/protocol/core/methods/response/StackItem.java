@@ -47,21 +47,20 @@ public class StackItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        StackItem stackItem = (StackItem) o;
-        return type == stackItem.type &&
-                Objects.equals(value, stackItem.value);
+        StackItem other = (StackItem) o;
+        return this.type == other.type && Objects.equals(this.value, other.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, getValue());
+        return Objects.hash(this.type, this.value);
     }
 
     @Override
     public String toString() {
         return "StackItem{" +
-                "type=" + type +
-                ", value=" + getValue() +
+                "type=" + this.type +
+                ", value=" + this.value +
                 '}';
     }
 
