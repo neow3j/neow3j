@@ -20,9 +20,9 @@ import static org.junit.Assert.assertTrue;
 
 public class StackItemTest extends ResponseTester {
 
-    final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    final static String BYTEARRAY_JSON = ""
+    private final static String BYTEARRAY_JSON = ""
             + " {"
             + "   \"type\": \"ByteArray\",\n"
             + "   \"value\": \"576f6f6c6f6e67\"\n"
