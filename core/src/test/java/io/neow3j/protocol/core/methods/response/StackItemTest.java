@@ -22,21 +22,58 @@ public class StackItemTest extends ResponseTester {
 
     final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    final static String BYTEARRAY_JSON = ""
+            + " {"
+            + "   \"type\": \"ByteArray\",\n"
+            + "   \"value\": \"576f6f6c6f6e67\"\n"
+            + " }";
+
+    @Test(expected=IllegalStateException.class)
+    public void testThrowOnWrongCastByteArray() throws IOException {
+        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
+                StackItem.class);
+        rawItem.asByteArray();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testThrowOnWrongCastInteger() throws IOException {
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        rawItem.asInteger();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testThrowOnWrongCastBoolean() throws IOException {
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        rawItem.asBoolean();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testThrowOnWrongCastArray() throws IOException {
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        rawItem.asArray();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testThrowOnWrongCastMap() throws IOException {
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        rawItem.asMap();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testThrowOnWrongCastStruct() throws IOException {
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        rawItem.asStruct();
+    }
+
     @Test
     public void testDeserializeByteArrayStackItem() throws IOException {
-        String json = ""
-                + " {"
-                + "   \"type\": \"ByteArray\",\n"
-                + "   \"value\": \"576f6f6c6f6e67\"\n"
-                + " }";
-
-        StackItem rawItem = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
         assertEquals(StackItemType.BYTE_ARRAY, rawItem.getType());
         ByteArrayStackItem item = rawItem.asByteArray();
         assertArrayEquals(Numeric.hexStringToByteArray("576f6f6c6f6e67"), item.getValue());
         assertEquals("Woolong", item.getAsString());
 
-        json = ""
+        String json = ""
                 + " {"
                 + "   \"type\": \"ByteArray\",\n"
                 + "   \"value\": \"6964\"\n"
