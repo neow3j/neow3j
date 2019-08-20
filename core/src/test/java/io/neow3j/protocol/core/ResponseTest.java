@@ -1,13 +1,17 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.model.types.AssetType;
-import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.NodePluginType;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.ResponseTester;
+import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.ByteArrayStackItem;
+import io.neow3j.protocol.core.methods.response.IntegerStackItem;
+import io.neow3j.protocol.core.methods.response.MapStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
@@ -47,6 +51,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.Script;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
@@ -57,7 +62,9 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.neow3j.utils.Numeric.prependHexPrefix;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -1538,7 +1545,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invoke.getInvocationResult().getStack(),
                 hasItems(
-                        ContractParameter.byteArray("576f6f6c6f6e67")
+                        new ByteArrayStackItem("576f6f6c6f6e67")
                 )
         );
         assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
@@ -1583,6 +1590,21 @@ public class ResponseTest extends ResponseTester {
                         + "           {"
                         + "               \"type\": \"ByteArray\",\n"
                         + "               \"value\": \"576f6f6c6f6e67\"\n"
+                        + "           },"
+                        + "           {"
+                        + "               \"type\": \"Map\",\n"
+                        + "               \"value\": ["
+                        + "                   {"
+                        + "                     \"key\": {"
+                        + "                         \"type\": \"ByteArray\",\n"
+                        + "                         \"value\": \"6964\"\n"
+                        + "                     },"
+                        + "                     \"value\": {"
+                        + "                         \"type\": \"Integer\",\n"
+                        + "                         \"value\": \"1\"\n"
+                        + "                     }"
+                        + "                   }"
+                        + "               ]"
                         + "           }"
                         + "      ],\n"
                         + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
@@ -1595,13 +1617,17 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
         assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
-        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(1));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
+        Map<StackItem, StackItem> stackMap = new HashMap<>();
+        stackMap.put(new ByteArrayStackItem("6964"), new IntegerStackItem(new BigInteger("1")));
         assertThat(
                 invokeFunction.getInvocationResult().getStack(),
                 hasItems(
-                        ContractParameter.byteArray("576f6f6c6f6e67")
+                        new ByteArrayStackItem("576f6f6c6f6e67"),
+                        new MapStackItem(stackMap)
                 )
         );
+
         assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
     }
 
@@ -1660,7 +1686,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invokeScript.getInvocationResult().getStack(),
                 hasItems(
-                        ContractParameter.byteArray("4e45503520474153")
+                        new ByteArrayStackItem("4e45503520474153")
                 )
         );
         assertThat(invokeScript.getInvocationResult().getTx(), is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
@@ -2014,7 +2040,35 @@ public class ResponseTest extends ResponseTester {
                         "                }\n" +
                         "              ]\n" +
                         "            }\n" +
-                        "          }\n" +
+                        "          },\n" +
+                        "          {\n" +
+                        "             \"contract\": \"0xef182f4977544adb207507b0c8c6c3ec1749c7df\",\n" +
+                        "             \"state\": {\n" +
+                        "               \"type\": \"Map\",\n" +
+                        "               \"value\": [\n" +
+                        "                 {\n" +
+                        "                   \"key\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"746573745f6b65795f61\"\n" +
+                        "                   },\n" +
+                        "                   \"value\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"54657374206d657373616765\"\n" +
+                        "                   }\n" +
+                        "                 },\n" +
+                        "                 {\n" +
+                        "                   \"key\": {\n" +
+                        "                     \"type\": \"ByteArray\",\n" +
+                        "                     \"value\": \"746573745f6b65795f62\"\n" +
+                        "                   },\n" +
+                        "                   \"value\": {\n" +
+                        "                     \"type\": \"Integer\",\n" +
+                        "                     \"value\": \"12345\"\n" +
+                        "                   }\n" +
+                        "                 }\n" +
+                        "               ]\n" +
+                        "             }\n" +
+                        "           }" +
                         "        ]\n" +
                         "      }\n" +
                         "    ]\n" +
@@ -2033,22 +2087,35 @@ public class ResponseTest extends ResponseTester {
         assertThat(execution.getState(), is("HALT, BREAK"));
         assertThat(execution.getGasConsumed(), is("0.173"));
         assertThat(execution.getStack(), hasSize(1));
-        assertThat(execution.getNotifications(), hasSize(1));
+        assertThat(execution.getNotifications(), hasSize(2));
 
         List<NeoApplicationLog.Notification> notifications = execution.getNotifications();
+
         assertThat(notifications.get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
-        assertThat(notifications.get(0).getState().getType(), is(ContractParameterType.ARRAY));
-        assertThat(notifications.get(0).getState().getValue(), hasSize(3));
+        assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
+        assertTrue(notifications.get(0).getState() instanceof ArrayStackItem);
 
-        List<NeoApplicationLog.EventParameter> values = notifications.get(0).getState().getValue();
+        ArrayStackItem array = (ArrayStackItem) notifications.get(0).getState();
 
-        String eventName = values.get(0).getAsString();
-        String address = values.get(1).getAsAddress();
-        BigInteger amount = values.get(2).getAsNumber();
+        String eventName = ((ByteArrayStackItem) array.getValue().get(0)).getAsString();
+        String address = ((ByteArrayStackItem) array.getValue().get(1)).getAsAddress();
+        BigInteger amount = ((ByteArrayStackItem) array.getValue().get(2)).getAsNumber();
 
         assertThat(eventName, is("read"));
         assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
         assertThat(amount, is(BigInteger.valueOf(177)));
+
+        assertThat(notifications.get(1).getContract(), is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
+        assertTrue(notifications.get(1).getState() instanceof MapStackItem);
+        assertThat(notifications.get(1).getState().getType(), is(StackItemType.MAP));
+        MapStackItem map = (MapStackItem) notifications.get(1).getState();
+        assertThat(map.getValue().size(), is(2));
+
+        String textValue = ((ByteArrayStackItem) map.get("test_key_a")).getAsString();
+        BigInteger intValue = ((IntegerStackItem) map.get("test_key_b")).getValue();
+
+        assertThat(textValue, is("Test message"));
+        assertThat(intValue, is(BigInteger.valueOf(12345)));
     }
 
     @Test
