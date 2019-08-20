@@ -56,6 +56,7 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.utils.Numeric;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -1545,7 +1546,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invoke.getInvocationResult().getStack(),
                 hasItems(
-                        new ByteArrayStackItem("576f6f6c6f6e67")
+                        new ByteArrayStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67"))
                 )
         );
         assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
@@ -1619,11 +1620,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
         Map<StackItem, StackItem> stackMap = new HashMap<>();
-        stackMap.put(new ByteArrayStackItem("6964"), new IntegerStackItem(new BigInteger("1")));
+        stackMap.put(new ByteArrayStackItem(Numeric.hexStringToByteArray("6964")), new IntegerStackItem(new BigInteger("1")));
         assertThat(
                 invokeFunction.getInvocationResult().getStack(),
                 hasItems(
-                        new ByteArrayStackItem("576f6f6c6f6e67"),
+                        new ByteArrayStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67")),
                         new MapStackItem(stackMap)
                 )
         );
@@ -1686,7 +1687,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 invokeScript.getInvocationResult().getStack(),
                 hasItems(
-                        new ByteArrayStackItem("4e45503520474153")
+                        new ByteArrayStackItem(Numeric.hexStringToByteArray("4e45503520474153"))
                 )
         );
         assertThat(invokeScript.getInvocationResult().getTx(), is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
@@ -2097,22 +2098,22 @@ public class ResponseTest extends ResponseTester {
 
         ArrayStackItem array = (ArrayStackItem) notifications.get(0).getState();
 
-        String eventName = ((ByteArrayStackItem) array.getValue().get(0)).getAsString();
-        String address = ((ByteArrayStackItem) array.getValue().get(1)).getAsAddress();
-        BigInteger amount = ((ByteArrayStackItem) array.getValue().get(2)).getAsNumber();
+        String eventName = array.get(0).asByteArray().getAsString();
+        String address = array.get(1).asByteArray().getAsAddress();
+        BigInteger amount = array.get(2).asByteArray().getAsNumber();
 
         assertThat(eventName, is("read"));
-        assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
+        assertThat(address, is("AVRGsDE4NTexcEn9xthDNM557t3nwxnj8A"));
         assertThat(amount, is(BigInteger.valueOf(177)));
 
         assertThat(notifications.get(1).getContract(), is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
         assertTrue(notifications.get(1).getState() instanceof MapStackItem);
         assertThat(notifications.get(1).getState().getType(), is(StackItemType.MAP));
-        MapStackItem map = (MapStackItem) notifications.get(1).getState();
+        MapStackItem map = notifications.get(1).getState().asMap();
         assertThat(map.getValue().size(), is(2));
 
-        String textValue = ((ByteArrayStackItem) map.get("test_key_a")).getAsString();
-        BigInteger intValue = ((IntegerStackItem) map.get("test_key_b")).getValue();
+        String textValue = map.get("test_key_a").asByteArray().getAsString();
+        BigInteger intValue = map.get("test_key_b").asInteger().getValue();
 
         assertThat(textValue, is("Test message"));
         assertThat(intValue, is(BigInteger.valueOf(12345)));
