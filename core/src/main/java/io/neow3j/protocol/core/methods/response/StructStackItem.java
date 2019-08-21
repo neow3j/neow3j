@@ -26,4 +26,12 @@ public class StructStackItem extends StackItem {
         return getValue().get(i);
     }
 
+    /**
+     * Returns the number of elements that this struct stack item contains.
+     *
+     * @return the number of elements that this struct stack item contains.
+     */
+    public int size() {
+        return getValue().size();
+    }
 }

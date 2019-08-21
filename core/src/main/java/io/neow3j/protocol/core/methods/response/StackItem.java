@@ -30,12 +30,17 @@ public class StackItem {
         this.value = value;
     }
 
+    /**
+     * Returns the type of this stack item.
+     *
+     * @return the type of this stack item.
+     */
     public StackItemType getType() {
         return type;
     }
 
     /**
-     * Gets the value of this stack item.
+     * Returns the value of this stack item.
      *
      * @return the value of this stack item.
      */
@@ -64,6 +69,13 @@ public class StackItem {
                 '}';
     }
 
+    /**
+     * Casts this stack item to a {@link ByteArrayStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link ByteArrayStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link ByteArrayStackItem}.
+     */
     public ByteArrayStackItem asByteArray() {
         if (this instanceof ByteArrayStackItem) {
             return (ByteArrayStackItem) this;
@@ -72,6 +84,13 @@ public class StackItem {
                 StackItemType.BYTE_ARRAY.jsonValue() + " but of " + this.type.jsonValue());
     }
 
+    /**
+     * Casts this stack item to a {@link BooleanStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link BooleanStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link BooleanStackItem}.
+     */
     public BooleanStackItem asBoolean() {
         if (this instanceof BooleanStackItem) {
             return (BooleanStackItem) this;
@@ -80,6 +99,13 @@ public class StackItem {
                 StackItemType.BOOLEAN.jsonValue() + " but of " + this.type.jsonValue());
     }
 
+    /**
+     * Casts this stack item to a {@link IntegerStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link IntegerStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link IntegerStackItem}.
+     */
     public IntegerStackItem asInteger() {
         if (this instanceof IntegerStackItem) {
             return (IntegerStackItem) this;
@@ -88,6 +114,13 @@ public class StackItem {
                 StackItemType.INTEGER.jsonValue() + " but of " + this.type.jsonValue());
     }
 
+    /**
+     * Casts this stack item to a {@link ArrayStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link ArrayStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link ArrayStackItem}.
+     */
     public ArrayStackItem asArray() {
         if (this instanceof ArrayStackItem) {
             return (ArrayStackItem) this;
@@ -96,6 +129,13 @@ public class StackItem {
                 StackItemType.ARRAY.jsonValue() + " but of " + this.type.jsonValue());
     }
 
+    /**
+     * Casts this stack item to a {@link MapStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link MapStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link MapStackItem}.
+     */
     public MapStackItem asMap() {
         if (this instanceof MapStackItem) {
             return (MapStackItem) this;
@@ -104,6 +144,13 @@ public class StackItem {
                 StackItemType.MAP.jsonValue() + " but of " + this.type.jsonValue());
     }
 
+    /**
+     * Casts this stack item to a {@link StructStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link StructStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link StructStackItem}.
+     */
     public StructStackItem asStruct() {
         if (this instanceof StructStackItem) {
             return (StructStackItem) this;

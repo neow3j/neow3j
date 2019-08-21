@@ -28,38 +28,38 @@ public class StackItemTest extends ResponseTester {
             + "   \"value\": \"576f6f6c6f6e67\"\n"
             + " }";
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastByteArray() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
         rawItem.asByteArray();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastInteger() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
         rawItem.asInteger();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastBoolean() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
         rawItem.asBoolean();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastArray() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
         rawItem.asArray();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastMap() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
         rawItem.asMap();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastStruct() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
         rawItem.asStruct();
@@ -286,6 +286,7 @@ public class StackItemTest extends ResponseTester {
         StackItem rawItem = OBJECT_MAPPER.readValue(json, StackItem.class);
         assertEquals(StackItemType.STRUCT, rawItem.getType());
         StructStackItem item = rawItem.asStruct();
+        assertEquals(2, item.size());
         assertEquals(StackItemType.BOOLEAN, item.get(0).getType());
         assertEquals(StackItemType.INTEGER, item.get(1).getType());
 

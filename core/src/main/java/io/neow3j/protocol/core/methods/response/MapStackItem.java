@@ -51,10 +51,20 @@ public class MapStackItem extends StackItem {
         return getValue().get(key);
     }
 
+    /**
+     * Returns the number of key-value pairs in this map stack item.
+     *
+     * @return the number of key-value pairs in this map stack item.
+     */
     public int size() {
         return getValue().size();
     }
 
+    /**
+     * Returns true if this map contains no entries.
+     *
+     * @return true if this map contains no entries. False, otherwise.
+     */
     public boolean isEmpty() {
         return getValue().isEmpty();
     }

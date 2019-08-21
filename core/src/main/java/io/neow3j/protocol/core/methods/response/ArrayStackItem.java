@@ -26,13 +26,22 @@ public class ArrayStackItem extends StackItem {
         return getValue().get(i);
     }
 
+    /**
+     * Returns the number of elements in this array stack item.
+     *
+     * @return the number of elements in this array stack item.
+     */
     public int size() {
         return getValue().size();
     }
 
+    /**
+     * Returns true if this array stack item contains no elements.
+     *
+     * @return true if this array stack item contains no elements. False, otherwise.
+     */
     public boolean isEmpty() {
         return getValue().isEmpty();
     }
-
 
 }
