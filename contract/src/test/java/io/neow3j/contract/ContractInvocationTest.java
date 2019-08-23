@@ -76,7 +76,7 @@ public class ContractInvocationTest {
     @Test
     public void invocation_with_network_fee() {
         Account spyAcct = spy(ACCT);
-        Utxo utxo = new Utxo(GASAsset.HASH_ID, "9f1b9a6f3593ff546a9dab147ba8ad520f7b6233bb0f8e75e05ad23d57ebd76e", 0, BigDecimal.valueOf(96));
+        Utxo utxo = new Utxo(GASAsset.HASH_ID, "9f1b9a6f3593ff546a9dab147ba8ad520f7b6233bb0f8e75e05ad23d57ebd76e", 0, 96);
         doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("1"), InputCalculationStrategy.DEFAULT_STRATEGY);
 
         InvocationTransaction tx = new ContractInvocation.Builder(EMPTY_NEOW3J)
@@ -99,6 +99,7 @@ public class ContractInvocationTest {
                 "037298f37fa7360a36cfec1afabcadd30cc69bfd1dfb3f396c25515d5f6831a875c6eb26928706c19f796333ddfce26f3fc8" +
                 "fd2ce0942753556153118c54a82f52321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac";
         assertEquals(expextedTxHex, txHex);
+
     }
 
     /**
@@ -155,7 +156,7 @@ public class ContractInvocationTest {
         BigDecimal neoOut = BigDecimal.ONE;
 
         Account spyAcct = spy(ACCT);
-        Utxo utxo = new Utxo(NEOAsset.HASH_ID, "f37ad4968c0554e9c4b2ccc943b917e5f2e04a85254fc650ef3d9b3fe3c74105", 1, BigDecimal.valueOf(99999999));
+        Utxo utxo = new Utxo(NEOAsset.HASH_ID, "f37ad4968c0554e9c4b2ccc943b917e5f2e04a85254fc650ef3d9b3fe3c74105", 1, 99999999);
         doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(NEOAsset.HASH_ID, neoOut, InputCalculationStrategy.DEFAULT_STRATEGY);
 
         InvocationTransaction tx = new ContractInvocation.Builder(EMPTY_NEOW3J)

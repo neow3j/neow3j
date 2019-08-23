@@ -184,7 +184,24 @@ public class AssetTransfer {
         }
 
         /**
-         * Adds the given unspent transaction output as an input which will be used for covering
+         * Adds the given unspent transaction output as an input, which will be used for covering
+         * outputs.
+         *
+         * @param assetId         The asset of the unspent output.
+         * @param transactionHash The hash of the transaction in which the unspent output resides.
+         * @param index           The index of the unspent output.
+         * @param value           The value of the unspent output.
+         * @return this.
+         * @deprecated Use {@link Builder#utxo(String, String, int, double)} or
+         * {@link Builder#utxo(String, String, int, String)} instead.
+         */
+        @Deprecated
+        public Builder utxo(String assetId, String transactionHash, int index, BigDecimal value) {
+            return utxos(new Utxo(assetId, transactionHash, index, value));
+        }
+
+        /**
+         * Adds the given unspent transaction output as an input, which will be used for covering
          * outputs.
          *
          * @param assetId         The asset of the unspent output.
@@ -193,7 +210,21 @@ public class AssetTransfer {
          * @param value           The value of the unspent output.
          * @return this.
          */
-        public Builder utxo(String assetId, String transactionHash, int index, BigDecimal value) {
+        public Builder utxo(String assetId, String transactionHash, int index, double value) {
+            return utxos(new Utxo(assetId, transactionHash, index, value));
+        }
+
+        /**
+         * Adds the given unspent transaction output as an input, which will be used for covering
+         * outputs.
+         *
+         * @param assetId         The asset of the unspent output.
+         * @param transactionHash The hash of the transaction in which the unspent output resides.
+         * @param index           The index of the unspent output.
+         * @param value           The value of the unspent output.
+         * @return this.
+         */
+        public Builder utxo(String assetId, String transactionHash, int index, String value) {
             return utxos(new Utxo(assetId, transactionHash, index, value));
         }
 
@@ -393,13 +424,13 @@ public class AssetTransfer {
 
         private void handleTransferFromContract(Map<String, BigDecimal> requiredAssets) {
             Account contractAcct = Account.fromAddress(fromContractScriptHash.toAddress()).build();
-            try {
-                contractAcct.updateAssetBalances(neow3j);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to fetch UTXOs for the contract with " +
-                        "script hash " + fromContractScriptHash.toString(), e);
-            }
             if (this.utxos.isEmpty()) {
+                try {
+                    contractAcct.updateAssetBalances(neow3j);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to fetch UTXOs for the contract with " +
+                            "script hash " + fromContractScriptHash.toString(), e);
+                }
                 fetchUtxosFromAccount(contractAcct, requiredAssets.keySet());
             }
             calculateInputsAndChange(requiredAssets, contractAcct);

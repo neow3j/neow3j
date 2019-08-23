@@ -95,8 +95,8 @@ public class AssetTransferTest {
      */
     @Test
     public void transferNeoWithGasFee() throws IOException, ErrorResponseException {
-        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000));
-        Utxo utxo2 = new Utxo(GASAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, BigDecimal.valueOf(40));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, 100000000);
+        Utxo utxo2 = new Utxo(GASAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, 40);
         Account spyAcct = mockAccountBalances(this.acct, utxo1, utxo2);
 
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
@@ -120,9 +120,9 @@ public class AssetTransferTest {
         // Account with address APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL
         Account acct = Account.fromWIF("L56SWKLsdynnXTHScMdNjsJRgbtqcf9p5TUgSAHq242L2yD8NyrA").build();
 
-        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, BigDecimal.valueOf(10));
-        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, BigDecimal.valueOf(10));
-        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, BigDecimal.valueOf(10));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, 10);
+        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, 10);
+        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, 10);
         Account spyAcct = mockAccountBalances(acct, utxo1, utxo2, utxo3);
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
                 .account(spyAcct)
@@ -149,7 +149,7 @@ public class AssetTransferTest {
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
                 .account(this.acct)
                 .output(NEOAsset.HASH_ID, "1", ALT_ADDR)
-                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000))
+                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, 100000000)
                 // This attribute is automatically added by neo-python, so we need to add it as well
                 // to get a matching transaction.
                 .attribute(TransactionAttributeUsageType.SCRIPT, this.acct.getScriptHash().toArray())
@@ -173,7 +173,7 @@ public class AssetTransferTest {
                 .toAddress(ALT_ADDR)
                 .amount(1)
                 .asset(NEOAsset.HASH_ID)
-                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000))
+                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, 100000000)
                 .attribute(TransactionAttributeUsageType.SCRIPT, this.acct.getScriptHash().toArray())
                 .build()
                 .sign();
@@ -192,9 +192,9 @@ public class AssetTransferTest {
         // Account with address APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL
         Account acct = Account.fromWIF("L56SWKLsdynnXTHScMdNjsJRgbtqcf9p5TUgSAHq242L2yD8NyrA").build();
 
-        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, BigDecimal.valueOf(10));
-        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, BigDecimal.valueOf(10));
-        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, BigDecimal.valueOf(10));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, 10);
+        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, 10);
+        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, 10);
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
                 .account(acct)
                 .output(NEOAsset.HASH_ID, "25", ALT_ADDR)
