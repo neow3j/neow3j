@@ -1,6 +1,9 @@
 package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.Sign;
+import io.neow3j.crypto.Sign.SignatureData;
+import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
@@ -23,6 +26,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -262,6 +266,31 @@ public class AssetTransferTest {
                 "7fc2b7548ca2a46c4fcf4aac";
 
         assertEquals(expectedTx, Numeric.toHexStringNoPrefix(txBytes));
+    }
+
+    @Test
+    public void transferFromMultiSigAddress() throws IOException, ErrorResponseException {
+        Neow3j neow3j = Neow3j.build(new HttpService("http://nucbox.axlabs.com:30333"));
+        List<BigInteger> keys = Arrays.asList(SampleKeys.PUBLIC_KEY_1, SampleKeys.PUBLIC_KEY_2);
+        // This account has the address "ATcWffQV1A7NMEsqQ1RmKfS7AbSqcAp2hd"
+        Account multiSigAcct = Account.fromMultiSigKeys(keys, 2).build();
+        // The account could also be instantiated from the address directly
+        // Account multiSigAcct = Account.fromAddress("ATcWffQV1A7NMEsqQ1RmKfS7AbSqcAp2hd").build();
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "3f39ecb7d1583b563e5764a80b6089f8100d6101596b8a8ec08ef6864155d3c9", 0, 100);
+        Account spyAcct = mockAccountBalances(multiSigAcct, utxo1);
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
+                .account(spyAcct)
+                .output(NEOAsset.HASH_ID, 1, "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                .build();
+
+        byte[] unsignedTxHex = at.getTransaction().toArrayWithoutScripts();
+        SignatureData sig1 = Sign.signMessage(unsignedTxHex, SampleKeys.KEY_PAIR_1);
+        SignatureData sig2 = Sign.signMessage(unsignedTxHex, SampleKeys.KEY_PAIR_2);
+        RawScript witness = RawScript.createMultiSigWitness(2, Arrays.asList(sig1, sig2), keys);
+        at.addWitness(witness);
+
+        String expectedTxHex = "80000001c9d3554186f68ec08e8a6b5901610d10f889600ba864573e563b58d1b7ec393f0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500e1f5050000000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc50003164e0200000081dc40aa001a388671254601a0593197d7474bc6018240cb10f5cda6cf3adcfa35f67e29d0fec3b96dbfdac079912cd554175b80d923c2decbd47ecb410bc1806eabd4285eea54608a0f18b8c7fef6cb6f2eb39c24aa14408174af3c64a304a1e586694493e448b3c435c1c5391ef7bed9b768a92fddc8e23419b04eee404e656503fa30a057b35befcb200c162a70a5dc78178f75d285734752210265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d621025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d4352ae";
+        assertEquals(expectedTxHex, Numeric.toHexStringNoPrefix(at.getTransaction().toArray()));
     }
 
     @Test(expected = IllegalStateException.class)
