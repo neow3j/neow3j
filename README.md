@@ -32,7 +32,7 @@ You can now focus on building Java/Android applications that use the [functions]
 * Sync and async interface
 * Retry on node errors
 * Integration tests with the dotnet NEO VM
-* Android support from API 24, which covers [~49%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1 billion devices](https://www.youtube.com/watch?v=vWLcyFtni6U#t=2m46s))
+* Android support from API 24, which covers [~58%](https://developer.android.com/about/dashboards/) of **all active** Android devices ([~1.45 billion devices](https://www.youtube.com/watch?v=TQSaPsKHPqs&t=54m50s))
 
 ## Upcoming Features/Enhancements
 
