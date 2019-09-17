@@ -23,18 +23,20 @@ public class ByteArrayStackItem extends StackItem {
     }
 
     /**
-     * Gets this byte array's value as an address.
-     * Expects the byte array to be in big-endian order.
+     * <p>Gets this byte array's value as an address.</p>
+     * <br>
+     * <p>Expects the byte array to be a script hash in little-endian order.</p>
      *
-     * @return the address represented byt this byte array.
+     * @return the address represented by this byte array.
      */
     public String getAsAddress() {
-        return new ScriptHash(ArrayUtils.reverseArray(getValue())).toAddress();
+        return new ScriptHash(getValue()).toAddress();
     }
 
     /**
-     * Gets this byte array's value as string.
-     * Expects the byte array to encode a string in UTF-8.
+     * <p>Gets this byte array's value as string.</p>
+     * <br>
+     * <p>Expects the byte array to encode a string in UTF-8.</p>
      *
      * @return the string represented by the byte array.
      */

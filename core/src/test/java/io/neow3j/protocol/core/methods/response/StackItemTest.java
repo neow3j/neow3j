@@ -86,19 +86,19 @@ public class StackItemTest extends ResponseTester {
         json = ""
                 + " {"
                 + "   \"type\": \"ByteArray\",\n"
-                + "   \"value\": \"1a70eac53f5882e40dd90f55463cce31a9f72cd4\"\n"
+                // The script hash hex string in littel-endian format
+                + "   \"value\": \"d42cf7a931ce3c46550fd90de482583fc5ea701a\"\n"
                 + " }";
-
 
         item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteArray();
         assertArrayEquals(
-                Numeric.hexStringToByteArray("1a70eac53f5882e40dd90f55463cce31a9f72cd4"),
+                Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a"),
                 item.getValue()
         );
         assertEquals("Ab7kmZJw2yJDNREnyBByt1QEZGbzj9uBf1", item.getAsAddress());
 
         ByteArrayStackItem other = new ByteArrayStackItem(
-                Numeric.hexStringToByteArray("1a70eac53f5882e40dd90f55463cce31a9f72cd4"));
+                Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
     }

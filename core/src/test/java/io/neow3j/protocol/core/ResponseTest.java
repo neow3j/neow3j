@@ -2103,7 +2103,7 @@ public class ResponseTest extends ResponseTester {
         BigInteger amount = array.get(2).asByteArray().getAsNumber();
 
         assertThat(eventName, is("read"));
-        assertThat(address, is("AVRGsDE4NTexcEn9xthDNM557t3nwxnj8A"));
+        assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
         assertThat(amount, is(BigInteger.valueOf(177)));
 
         assertThat(notifications.get(1).getContract(), is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
