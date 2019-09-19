@@ -14,6 +14,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.InvocationTransaction;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.TransactionUtils;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
 import io.neow3j.wallet.Utxo;
@@ -306,15 +307,16 @@ public class ContractDeployment {
             List<RawTransactionOutput> outputs = new ArrayList<>();
 
             if (!requiredAssets.isEmpty()) {
-                if (account == null) throw new IllegalStateException("No account set but needed " +
-                        "for fetching transaction inputs.");
+                if (this.account == null)
+                    throw new IllegalStateException("No account set but needed " +
+                            "for fetching transaction inputs.");
 
                 requiredAssets.forEach((reqAssetId, reqValue) -> {
-                    List<Utxo> utxos = account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
+                    List<Utxo> utxos = this.account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
                     inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
                     BigDecimal changeAmount = calculateChange(utxos, reqValue);
                     if (changeAmount != null) outputs.add(
-                            new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), account.getAddress()));
+                            new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), this.account.getAddress()));
                 });
             }
 
@@ -325,26 +327,17 @@ public class ContractDeployment {
                     .contractScript(deploymentScript.toArray())
                     .build();
 
-            calculateAndCheckNetworkFee();
+            checkAndThrowNetworkFee();
             return new ContractDeployment(this);
         }
 
-        // TODO 2019-08-05 claude:
-        // The calculation of the required network fee should be a utility method available for the
-        // library user too.
-        private void calculateAndCheckNetworkFee() {
-            int txByteSize = tx.getSize();
-            if (txByteSize > NeoConstants.MAX_FREE_TRANSACTION_SIZE) {
-                int chargeableSize = txByteSize - NeoConstants.MAX_FREE_TRANSACTION_SIZE;
-                BigDecimal requiredFee = NeoConstants.FEE_PER_EXTRA_BYTE
-                        .multiply(new BigDecimal(chargeableSize))
-                        .add(NeoConstants.PRIORITY_THRESHOLD_FEE);
-                if (requiredFee.compareTo(this.networkFee) > 0) {
-                    throw new IllegalStateException("The transaction size (" + txByteSize + ") " +
-                            "exceeds the free transaction size (" +
-                            NeoConstants.MAX_FREE_TRANSACTION_SIZE + "). A network fee of at least" +
-                            requiredFee.toPlainString() + " GAS is required.");
-                }
+        private void checkAndThrowNetworkFee() {
+            BigDecimal requiredFee = TransactionUtils.calcNecessaryNetworkFee(this.tx.getSize());
+            if (requiredFee.compareTo(this.networkFee) > 0) {
+                throw new IllegalStateException("The transaction size (" + this.tx.getSize() +
+                        ") exceeds the free transaction size (" +
+                        NeoConstants.MAX_FREE_TRANSACTION_SIZE + "). A network fee of at least" +
+                        requiredFee.toPlainString() + " GAS is required.");
             }
         }
 

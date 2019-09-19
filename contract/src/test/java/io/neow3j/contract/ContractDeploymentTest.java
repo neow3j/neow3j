@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -127,29 +128,79 @@ public class ContractDeploymentTest {
         assertEquals(expectedTxHex, Numeric.toHexStringNoPrefix(cd.getTransaction().toArray()));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void failWithoutAVMFile() {
-        new ContractDeployment.Builder(neow3j)
-                .account(acct)
-                .build();
+        try {
+            new ContractDeployment.Builder(neow3j)
+                    .account(acct)
+                    .build();
+        } catch (IllegalStateException e) {
+            if (e.getMessage().equals("AVM script binary not set.")) {
+                return;
+            }
+        }
+        fail();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void failWithoutAccount() throws IOException {
-        new ContractDeployment.Builder(neow3j)
-                .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
-                .build();
+        try {
+            new ContractDeployment.Builder(neow3j)
+                    .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
+                    .build();
+        } catch (IllegalStateException e) {
+            if (e.getMessage().equals("Account not set.")) {
+                return;
+            }
+        }
+        fail();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void failWithoutNeow3j() throws IOException {
-        new ContractDeployment.Builder(null)
-                .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
-                .account(acct)
-                .build();
+        try {
+            new ContractDeployment.Builder(null)
+                    .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
+                    .account(acct)
+                    .build();
+        } catch (IllegalStateException e) {
+            if (e.getMessage().equals("Neow3j not set.")) {
+                return;
+            }
+        }
+        fail();
+    }
+
+    @Test
+    public void failInsufficientNetworkFee() throws IOException {
+        Account spyAcct = spy(acct);
+        Utxo utxo1 = new Utxo(GASAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, 40);
+        Utxo utxo2 = new Utxo(GASAsset.HASH_ID, "178ce6191f3b48a3e1cf16b6de526a74f16bbb9f0294ca57e3fe3173cda90d31", 0, 16000);
+        doReturn(Arrays.asList(utxo1, utxo2)).when(spyAcct)
+                .getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("90"), InputCalculationStrategy.DEFAULT_STRATEGY);
+
+        try {
+            ContractDeployment cd = new ContractDeployment.Builder(neow3j)
+                    .account(spyAcct)
+                    .loadAVMFile(getTestAbsoluteFileName(ICO_CONTRACT_AVM_FILENAME))
+                    .parameters(ContractParameterType.STRING, ContractParameterType.ARRAY)
+                    .returnType(ContractParameterType.BYTE_ARRAY)
+                    .name("ico")
+                    .version("1")
+                    .author("author")
+                    .email("email")
+                    .description("description")
+                    .build();
+        } catch (IllegalStateException e) {
+            if (e.getMessage().contains("network fee")) {
+                return;
+            }
+        }
+        fail();
     }
 
     private String getTestAbsoluteFileName(String fileName) {
         return this.getClass().getResource(fileName).getFile();
     }
+
 }

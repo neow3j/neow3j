@@ -172,7 +172,7 @@ public class ContractInvocationTest {
 
         String txHex = Numeric.toHexStringNoPrefix(tx.toArray());
         // Transaction hex string produced from a valid transaction executed on the EcoLab private net.
-        String expextedTxHex = "d1013d1423ba2703c53263e8d6e522dc32203339dcd8eee9076e656f2e636f6d52c108726567697374657" +
+        String expectedTxHex = "d1013d1423ba2703c53263e8d6e522dc32203339dcd8eee9076e656f2e636f6d52c108726567697374657" +
                 "267d42cf7a931ce3c46550fd90de482583fc5ea701a0000000000000000012023ba2703c53263e8d6e522dc32203339dcd8e" +
                 "ee9010541c7e33f9b3def50c64f25854ae0f2e517b943c9ccb2c4e954058c96d47af30100029b7cffdaa674beae0f930ebe6" +
                 "085af9093e5fe56b34a5c220ccdcf6efc336fc500e1f50500000000d42cf7a931ce3c46550fd90de482583fc5ea701a9b7cf" +
@@ -180,7 +180,7 @@ public class ContractInvocationTest {
                 "2203339dcd8eee90141400131b26785f2b522ea420e6f432611ffdb1bf0b2e1f7473eef17124faf227f27693bffef0765467" +
                 "7025bae09b90e8e5a3c0918c35a3c8ec6ab97090541687bd22321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc" +
                 "2b7548ca2a46c4fcf4aac";
-        assertEquals(expextedTxHex, txHex);
+        assertEquals(expectedTxHex, txHex);
     }
 
     /**
