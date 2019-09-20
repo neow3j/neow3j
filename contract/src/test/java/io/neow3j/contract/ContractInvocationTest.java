@@ -76,7 +76,7 @@ public class ContractInvocationTest {
     @Test
     public void invocation_with_network_fee() {
         Account spyAcct = spy(ACCT);
-        Utxo utxo = new Utxo(GASAsset.HASH_ID, "9f1b9a6f3593ff546a9dab147ba8ad520f7b6233bb0f8e75e05ad23d57ebd76e", 0, BigDecimal.valueOf(96));
+        Utxo utxo = new Utxo(GASAsset.HASH_ID, "9f1b9a6f3593ff546a9dab147ba8ad520f7b6233bb0f8e75e05ad23d57ebd76e", 0, 96);
         doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(GASAsset.HASH_ID, new BigDecimal("1"), InputCalculationStrategy.DEFAULT_STRATEGY);
 
         InvocationTransaction tx = new ContractInvocation.Builder(EMPTY_NEOW3J)
@@ -99,6 +99,7 @@ public class ContractInvocationTest {
                 "037298f37fa7360a36cfec1afabcadd30cc69bfd1dfb3f396c25515d5f6831a875c6eb26928706c19f796333ddfce26f3fc8" +
                 "fd2ce0942753556153118c54a82f52321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac";
         assertEquals(expextedTxHex, txHex);
+
     }
 
     /**
@@ -155,7 +156,7 @@ public class ContractInvocationTest {
         BigDecimal neoOut = BigDecimal.ONE;
 
         Account spyAcct = spy(ACCT);
-        Utxo utxo = new Utxo(NEOAsset.HASH_ID, "f37ad4968c0554e9c4b2ccc943b917e5f2e04a85254fc650ef3d9b3fe3c74105", 1, BigDecimal.valueOf(99999999));
+        Utxo utxo = new Utxo(NEOAsset.HASH_ID, "f37ad4968c0554e9c4b2ccc943b917e5f2e04a85254fc650ef3d9b3fe3c74105", 1, 99999999);
         doReturn(Arrays.asList(utxo)).when(spyAcct).getUtxosForAssetAmount(NEOAsset.HASH_ID, neoOut, InputCalculationStrategy.DEFAULT_STRATEGY);
 
         InvocationTransaction tx = new ContractInvocation.Builder(EMPTY_NEOW3J)
@@ -171,7 +172,7 @@ public class ContractInvocationTest {
 
         String txHex = Numeric.toHexStringNoPrefix(tx.toArray());
         // Transaction hex string produced from a valid transaction executed on the EcoLab private net.
-        String expextedTxHex = "d1013d1423ba2703c53263e8d6e522dc32203339dcd8eee9076e656f2e636f6d52c108726567697374657" +
+        String expectedTxHex = "d1013d1423ba2703c53263e8d6e522dc32203339dcd8eee9076e656f2e636f6d52c108726567697374657" +
                 "267d42cf7a931ce3c46550fd90de482583fc5ea701a0000000000000000012023ba2703c53263e8d6e522dc32203339dcd8e" +
                 "ee9010541c7e33f9b3def50c64f25854ae0f2e517b943c9ccb2c4e954058c96d47af30100029b7cffdaa674beae0f930ebe6" +
                 "085af9093e5fe56b34a5c220ccdcf6efc336fc500e1f50500000000d42cf7a931ce3c46550fd90de482583fc5ea701a9b7cf" +
@@ -179,7 +180,7 @@ public class ContractInvocationTest {
                 "2203339dcd8eee90141400131b26785f2b522ea420e6f432611ffdb1bf0b2e1f7473eef17124faf227f27693bffef0765467" +
                 "7025bae09b90e8e5a3c0918c35a3c8ec6ab97090541687bd22321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc" +
                 "2b7548ca2a46c4fcf4aac";
-        assertEquals(expextedTxHex, txHex);
+        assertEquals(expectedTxHex, txHex);
     }
 
     /**

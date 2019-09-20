@@ -1,6 +1,9 @@
 package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.Sign;
+import io.neow3j.crypto.Sign.SignatureData;
+import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransactionOutput;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
@@ -23,6 +26,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -95,8 +99,8 @@ public class AssetTransferTest {
      */
     @Test
     public void transferNeoWithGasFee() throws IOException, ErrorResponseException {
-        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000));
-        Utxo utxo2 = new Utxo(GASAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, BigDecimal.valueOf(40));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, 100000000);
+        Utxo utxo2 = new Utxo(GASAsset.HASH_ID, "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc", 0, 40);
         Account spyAcct = mockAccountBalances(this.acct, utxo1, utxo2);
 
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
@@ -120,9 +124,9 @@ public class AssetTransferTest {
         // Account with address APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL
         Account acct = Account.fromWIF("L56SWKLsdynnXTHScMdNjsJRgbtqcf9p5TUgSAHq242L2yD8NyrA").build();
 
-        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, BigDecimal.valueOf(10));
-        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, BigDecimal.valueOf(10));
-        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, BigDecimal.valueOf(10));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, 10);
+        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, 10);
+        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, 10);
         Account spyAcct = mockAccountBalances(acct, utxo1, utxo2, utxo3);
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
                 .account(spyAcct)
@@ -139,21 +143,20 @@ public class AssetTransferTest {
     }
 
     /*
-     * This test uses a raw transaction string generated with neo-python. The UTXO used as input has
-     * to be mocked.
+     * This test uses a raw transaction string generated with neo-python. The UTXOs used for input
+     * are manually added. The attribute that is added is not really necessary but neo-python adds
+     * it automatically and so we need to do it here as well, to arrive at the same transaction byte
+     * array.
      */
     @Test
     public void transferNeoWithoutFeesWithManuallyAddedUtxo() {
-        // Mock the accounts NEO balance
-        Utxo utxo = new Utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, BigDecimal.valueOf(100000000));
-        Account spyAcct = mockAccountBalances(this.acct, utxo);
-
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
-                .account(spyAcct)
+                .account(this.acct)
                 .output(NEOAsset.HASH_ID, "1", ALT_ADDR)
+                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, 100000000)
                 // This attribute is automatically added by neo-python, so we need to add it as well
                 // to get a matching transaction.
-                .attribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray())
+                .attribute(TransactionAttributeUsageType.SCRIPT, this.acct.getScriptHash().toArray())
                 .build()
                 .sign();
 
@@ -170,11 +173,12 @@ public class AssetTransferTest {
 
         // Test the same transaction with alternative builder methods.
         at = new AssetTransfer.Builder(this.neow3j)
-                .account(spyAcct)
+                .account(this.acct)
                 .toAddress(ALT_ADDR)
                 .amount(1)
                 .asset(NEOAsset.HASH_ID)
-                .attribute(TransactionAttributeUsageType.SCRIPT, spyAcct.getScriptHash().toArray())
+                .utxo(NEOAsset.HASH_ID, "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0, 100000000)
+                .attribute(TransactionAttributeUsageType.SCRIPT, this.acct.getScriptHash().toArray())
                 .build()
                 .sign();
 
@@ -192,9 +196,9 @@ public class AssetTransferTest {
         // Account with address APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL
         Account acct = Account.fromWIF("L56SWKLsdynnXTHScMdNjsJRgbtqcf9p5TUgSAHq242L2yD8NyrA").build();
 
-        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, BigDecimal.valueOf(10));
-        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, BigDecimal.valueOf(10));
-        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, BigDecimal.valueOf(10));
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "ea8f4ea77370f317c3ea1529e10c60869d7ac9193b953e903a91e3dbeb188ac5", 0, 10);
+        Utxo utxo2 = new Utxo(NEOAsset.HASH_ID, "fdd33c5ee319101311dd0485950a902eb286eff4d3cd164c13337e0be154e268", 0, 10);
+        Utxo utxo3 = new Utxo(NEOAsset.HASH_ID, "3d0f63349fb23387652d639bfdc9d1a247f6c7ada46a87722d9938e4ef5c45dc", 0, 10);
         AssetTransfer at = new AssetTransfer.Builder(this.neow3j)
                 .account(acct)
                 .output(NEOAsset.HASH_ID, "25", ALT_ADDR)
@@ -262,6 +266,31 @@ public class AssetTransferTest {
                 "7fc2b7548ca2a46c4fcf4aac";
 
         assertEquals(expectedTx, Numeric.toHexStringNoPrefix(txBytes));
+    }
+
+    @Test
+    public void transferFromMultiSigAddress() throws IOException, ErrorResponseException {
+        Neow3j neow3j = Neow3j.build(new HttpService("http://nucbox.axlabs.com:30333"));
+        List<BigInteger> keys = Arrays.asList(SampleKeys.PUBLIC_KEY_1, SampleKeys.PUBLIC_KEY_2);
+        // This account has the address "ATcWffQV1A7NMEsqQ1RmKfS7AbSqcAp2hd"
+        Account multiSigAcct = Account.fromMultiSigKeys(keys, 2).build();
+        // The account could also be instantiated from the address directly
+        // Account multiSigAcct = Account.fromAddress("ATcWffQV1A7NMEsqQ1RmKfS7AbSqcAp2hd").build();
+        Utxo utxo1 = new Utxo(NEOAsset.HASH_ID, "3f39ecb7d1583b563e5764a80b6089f8100d6101596b8a8ec08ef6864155d3c9", 0, 100);
+        Account spyAcct = mockAccountBalances(multiSigAcct, utxo1);
+        AssetTransfer at = new AssetTransfer.Builder(neow3j)
+                .account(spyAcct)
+                .output(NEOAsset.HASH_ID, 1, "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                .build();
+
+        byte[] unsignedTxHex = at.getTransaction().toArrayWithoutScripts();
+        SignatureData sig1 = Sign.signMessage(unsignedTxHex, SampleKeys.KEY_PAIR_1);
+        SignatureData sig2 = Sign.signMessage(unsignedTxHex, SampleKeys.KEY_PAIR_2);
+        RawScript witness = RawScript.createMultiSigWitness(2, Arrays.asList(sig1, sig2), keys);
+        at.addWitness(witness);
+
+        String expectedTxHex = "80000001c9d3554186f68ec08e8a6b5901610d10f889600ba864573e563b58d1b7ec393f0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500e1f5050000000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc50003164e0200000081dc40aa001a388671254601a0593197d7474bc6018240cb10f5cda6cf3adcfa35f67e29d0fec3b96dbfdac079912cd554175b80d923c2decbd47ecb410bc1806eabd4285eea54608a0f18b8c7fef6cb6f2eb39c24aa14408174af3c64a304a1e586694493e448b3c435c1c5391ef7bed9b768a92fddc8e23419b04eee404e656503fa30a057b35befcb200c162a70a5dc78178f75d285734752210265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d621025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d4352ae";
+        assertEquals(expectedTxHex, Numeric.toHexStringNoPrefix(at.getTransaction().toArray()));
     }
 
     @Test(expected = IllegalStateException.class)

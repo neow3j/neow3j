@@ -24,6 +24,14 @@ public class Utxo {
         this.value = value;
     }
 
+    public Utxo(String assetId, String txId, Integer index, String value) {
+        this(assetId, txId, index, new BigDecimal(value));
+    }
+
+    public Utxo(String assetId, String txId, Integer index, double value) {
+        this(assetId, txId, index, Double.toString(value));
+    }
+
     public String getAssetId() {
         return assetId;
     }

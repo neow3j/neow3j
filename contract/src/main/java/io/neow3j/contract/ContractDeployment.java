@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
@@ -14,6 +13,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.InvocationTransaction;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.TransactionUtils;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.InputCalculationStrategy;
 import io.neow3j.wallet.Utxo;
@@ -253,15 +253,13 @@ public class ContractDeployment {
             return this;
         }
 
-        // TODO 2019-08-05 claude:
-        // Reference the method for calculating the network fee from the transaction size once it is
-        // implemented in a publicly.
-
         /**
          * <p>Adds a network fee.</p>
          * <br>
          * <p>The network fee (measured in GAS) can be used to add priority to a transaction. It is
-         * required for a successful transaction if the transaction is larger than 1024 bytes.</p>
+         * required for a successful transaction if the transaction is larger than 1024 bytes.
+         * Use {@link TransactionUtils#calcNecessaryNetworkFee(int)} to calculate the necessary
+         * network fee for large transactions.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.
@@ -306,15 +304,16 @@ public class ContractDeployment {
             List<RawTransactionOutput> outputs = new ArrayList<>();
 
             if (!requiredAssets.isEmpty()) {
-                if (account == null) throw new IllegalStateException("No account set but needed " +
-                        "for fetching transaction inputs.");
+                if (this.account == null)
+                    throw new IllegalStateException("No account set but needed " +
+                            "for fetching transaction inputs.");
 
                 requiredAssets.forEach((reqAssetId, reqValue) -> {
-                    List<Utxo> utxos = account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
+                    List<Utxo> utxos = this.account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
                     inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
                     BigDecimal changeAmount = calculateChange(utxos, reqValue);
                     if (changeAmount != null) outputs.add(
-                            new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), account.getAddress()));
+                            new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), this.account.getAddress()));
                 });
             }
 
@@ -325,27 +324,7 @@ public class ContractDeployment {
                     .contractScript(deploymentScript.toArray())
                     .build();
 
-            calculateAndCheckNetworkFee();
             return new ContractDeployment(this);
-        }
-
-        // TODO 2019-08-05 claude:
-        // The calculation of the required network fee should be a utility method available for the
-        // library user too.
-        private void calculateAndCheckNetworkFee() {
-            int txByteSize = tx.getSize();
-            if (txByteSize > NeoConstants.MAX_FREE_TRANSACTION_SIZE) {
-                int chargeableSize = txByteSize - NeoConstants.MAX_FREE_TRANSACTION_SIZE;
-                BigDecimal requiredFee = NeoConstants.FEE_PER_EXTRA_BYTE
-                        .multiply(new BigDecimal(chargeableSize))
-                        .add(NeoConstants.PRIORITY_THRESHOLD_FEE);
-                if (requiredFee.compareTo(this.networkFee) > 0) {
-                    throw new IllegalStateException("The transaction size (" + txByteSize + ") " +
-                            "exceeds the free transaction size (" +
-                            NeoConstants.MAX_FREE_TRANSACTION_SIZE + "). A network fee of at least" +
-                            requiredFee.toPlainString() + " GAS is required.");
-                }
-            }
         }
 
         private Map<String, BigDecimal> calculateRequiredAssetsForIntents(

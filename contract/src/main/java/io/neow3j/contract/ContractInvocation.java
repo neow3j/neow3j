@@ -89,7 +89,7 @@ public class ContractInvocation {
      * <br>
      * <p>Doing this does not affect the blockchain's state. It can be used to see what result the
      * invocation will create. But, with NEO 2 nodes this invoke will probably fail if the
-     * invocation runs thorugh a `CheckWitness()` statement in the smart contract code.</p>
+     * invocation runs through a `CheckWitness()` statement in the smart contract code.</p>
      *
      * @return the result of the invocation.
      * @throws IOException            if a connection problem with the RPC node arises.
@@ -231,7 +231,7 @@ public class ContractInvocation {
          * @return this Builder object.
          */
         public Builder parameters(List<ContractParameter> params) {
-            params.addAll(params);
+            this.params.addAll(params);
             return this;
         }
 
@@ -244,7 +244,7 @@ public class ContractInvocation {
          * @return this Builder object.
          */
         public Builder parameter(ContractParameter param) {
-            params.add(param);
+            this.params.add(param);
             return this;
         }
 
@@ -476,12 +476,16 @@ public class ContractInvocation {
             return this;
         }
 
+        // TODO 16.09.19 claude:
+        // This needs to be implemented with UTXOs the same way as it is in AssetTransfer.
         public Builder inputs(List<RawTransactionInput> inputs) {
             throw new UnsupportedOperationException();
 //            this.inputs.addAll(inputs);
 //            return this;
         }
 
+        // TODO 16.09.19 claude:
+        // This needs to be implemented with UTXOs the same way as it is in AssetTransfer.
         public Builder input(RawTransactionInput input) {
             throw new UnsupportedOperationException();
 //            this.inputs.add(input);
