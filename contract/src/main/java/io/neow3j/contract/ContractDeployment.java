@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
@@ -254,15 +253,13 @@ public class ContractDeployment {
             return this;
         }
 
-        // TODO 2019-08-05 claude:
-        // Reference the method for calculating the network fee from the transaction size once it is
-        // implemented in a publicly.
-
         /**
          * <p>Adds a network fee.</p>
          * <br>
          * <p>The network fee (measured in GAS) can be used to add priority to a transaction. It is
-         * required for a successful transaction if the transaction is larger than 1024 bytes.</p>
+         * required for a successful transaction if the transaction is larger than 1024 bytes.
+         * Use {@link TransactionUtils#calcNecessaryNetworkFee(int)} to calculate the necessary
+         * network fee for large transactions.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.
@@ -327,18 +324,7 @@ public class ContractDeployment {
                     .contractScript(deploymentScript.toArray())
                     .build();
 
-            checkAndThrowNetworkFee();
             return new ContractDeployment(this);
-        }
-
-        private void checkAndThrowNetworkFee() {
-            BigDecimal requiredFee = TransactionUtils.calcNecessaryNetworkFee(this.tx.getSize());
-            if (requiredFee.compareTo(this.networkFee) > 0) {
-                throw new IllegalStateException("The transaction size (" + this.tx.getSize() +
-                        ") exceeds the free transaction size (" +
-                        NeoConstants.MAX_FREE_TRANSACTION_SIZE + "). A network fee of at least" +
-                        requiredFee.toPlainString() + " GAS is required.");
-            }
         }
 
         private Map<String, BigDecimal> calculateRequiredAssetsForIntents(
