@@ -14,7 +14,7 @@ By using neow3j, you will happily play with NEO and end up neow'ing around like 
 
 You can now focus on building Java/Android applications that use the functions provided by the NEO blockchain, without being concerned about writing specific code to integrate with NEO nodes.
 
-Visit http://docs.neow3j.io for more information on neow3j and the technical documentation.
+Visit https://neow3j.io for more information on neow3j and the technical documentation.
 
 Neow3j is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
 
