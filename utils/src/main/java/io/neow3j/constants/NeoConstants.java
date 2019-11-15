@@ -9,10 +9,29 @@ import java.math.BigInteger;
 
 public class NeoConstants {
 
+    //region Cryptography
+
     public static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256r1");
     public static final ECDomainParameters CURVE = new ECDomainParameters(
             CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
     public static final BigInteger HALF_CURVE_ORDER = CURVE_PARAMS.getN().shiftRight(1);
+
+    //endregion
+
+    //region Data Types
+
+    public static final int FIXED8_SCALE = 8;
+
+    public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
+    /**
+     * Length of a Fixed8 byte array.
+     */
+
+    public static final int FIXED8_LENGTH = 8;
+
+    //endregion
+
+    //region Accounts, Addresses, Keys
 
     public static final byte COIN_VERSION = 0x17;
 
@@ -22,14 +41,6 @@ public class NeoConstants {
      * at https://github.com/neo-project/neo.
      */
     public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
-
-    public static final int FIXED8_SCALE = 8;
-    public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
-    /**
-     * Length of a Fixed8 byte array.
-     */
-    public static final int FIXED8_LENGTH = 8;
-
 
     public static final int SCRIPTHASH_LENGHT_BITS = 160;
     public static final int SCRIPTHASH_LENGHT_BYTES = SCRIPTHASH_LENGHT_BITS / 8;
@@ -41,11 +52,6 @@ public class NeoConstants {
     public static final int ASSET_ID_LENGHT_BITS = 256;
     public static final int ASSET_ID_LENGHT_BYTES = ASSET_ID_LENGHT_BITS / 8;
     public static final int ASSET_ID_LENGHT_HEXSTRING = ASSET_ID_LENGHT_BYTES * 2;
-
-    /**
-     * The amount of GAS that is free in every execution/invocation of a smart contract.
-     */
-    public static final BigDecimal FREE_GAS_AMOUNT = BigDecimal.TEN;
 
     /**
      * Size of a private key in bytes
@@ -68,6 +74,15 @@ public class NeoConstants {
      */
     public static final int SIGNATURE_SIZE_BYTES = 64;
     public static final int SIGNATURE_SIZE_HEXSTRING = SIGNATURE_SIZE_BYTES * 2;
+
+    //endregion
+
+    //region Fees
+
+    /**
+     * The amount of GAS that is free in every execution/invocation of a smart contract.
+     */
+    public static final BigDecimal FREE_GAS_AMOUNT = BigDecimal.TEN;
 
     /**
      * The basic GAS fee to be paid when deploying or migrating a contract.
@@ -107,5 +122,36 @@ public class NeoConstants {
      * A transaction with a network fee below this threshold must not be bigger than 1024 bytes.
      */
     public static final BigDecimal PRIORITY_THRESHOLD_FEE = new BigDecimal("0.001");
+
+    //endregion
+
+    //region Transactions
+
+    /**
+     * The current version used for Neo transaction.
+     */
+    public static final byte CURRENT_TX_VERSION = 0;
+
+    /**
+     * The maximum size of a transaction in bytes.
+     */
+    public static final int MAX_TRANSACTION_SIZE = 102400;
+
+    /**
+     * The maximum number of attributes that a transaction can have.
+     */
+    public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
+
+    /**
+     * The maximum number of cosigners that a transaction can have.
+     */
+    public static final int MAX_COSIGNERS = 16;
+
+    /**
+     * The maximum value for the 'validUntilBlock' transaction property.
+     */
+    public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT = 2102400;
+
+    //endregion
 
 }
