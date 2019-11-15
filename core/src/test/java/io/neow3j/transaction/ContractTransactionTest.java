@@ -33,7 +33,7 @@ public class ContractTransactionTest {
                 .inputs(Arrays.asList(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script(new RawScript(new RawInvocationScript(), RawVerificationScript.fromPublicKey(publicKey)))
+                .script(new Witness(new RawInvocationScript(), RawVerificationScript.fromPublicKey(publicKey)))
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
@@ -53,7 +53,7 @@ public class ContractTransactionTest {
                 .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script((new RawScript(new RawInvocationScript(invocationScript), RawVerificationScript.fromPublicKey(publicKey))))
+                .script((new Witness(new RawInvocationScript(invocationScript), RawVerificationScript.fromPublicKey(publicKey))))
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
@@ -75,7 +75,7 @@ public class ContractTransactionTest {
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArrayWithoutScripts();
-        tUnsigned.addScript(RawScript.createWitness(tUnsignedArray, keyPair));
+        tUnsigned.addScript(Witness.createWitness(tUnsignedArray, keyPair));
 
         assertEquals(
                 "80000001d405ab03e736a01ca277d94b1377113c7e961bb4550511fe1d408f30c77a82650000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b0000000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001a711802000000295f83f83fc439f56e6e1fb062d89c6f538263d7",
@@ -132,7 +132,7 @@ public class ContractTransactionTest {
         sigs.add(Sign.signMessage(tUnsignedArray, ecKeyPair5));
         sigs.add(Sign.signMessage(tUnsignedArray, ecKeyPair6));
         sigs.add(Sign.signMessage(tUnsignedArray, ecKeyPair7));
-        tUnsigned.addScript(RawScript.createMultiSigWitness(7, sigs, publicKeys));
+        tUnsigned.addScript(Witness.createMultiSigWitness(7, sigs, publicKeys));
 
         assertEquals(
                 "8000000154f2e634d4625010b1307c258fb920c0b74431717c81d6b51af0b04e77c4ea9f0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500e40b540200000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500046bf41400000021a0cd353225ebfe85236802beddc4e6ddcdd372",
@@ -255,7 +255,7 @@ public class ContractTransactionTest {
                 .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script((new RawScript(new RawInvocationScript(invocationScript), RawVerificationScript.fromPublicKey(publicKey))))
+                .script((new Witness(new RawInvocationScript(invocationScript), RawVerificationScript.fromPublicKey(publicKey))))
                 .build();
 
         tx = NeoSerializableInterface.from(tx.toArray(), ContractTransaction.class);

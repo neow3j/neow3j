@@ -13,18 +13,18 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class RawTransactionAttributeTest {
+public class TransactionAttributeTest {
 
     @Test
     public void createAttribute() {
         // positive case
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             if (type.fixedDataLength() != null) {
-                new RawTransactionAttribute(type, createByteArray(type.fixedDataLength(), 1));
+                new TransactionAttribute(type, createByteArray(type.fixedDataLength(), 1));
             } else if (type.maxDataLength() != null) {
-                new RawTransactionAttribute(type, createByteArray(type.maxDataLength(), 1));
+                new TransactionAttribute(type, createByteArray(type.maxDataLength(), 1));
             } else {
-                new RawTransactionAttribute(type, createByteArray(100, 1));
+                new TransactionAttribute(type, createByteArray(100, 1));
             }
         }
 
@@ -32,10 +32,10 @@ public class RawTransactionAttributeTest {
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             try {
                 if (type.fixedDataLength() != null) {
-                    new RawTransactionAttribute(type, createByteArray(type.fixedDataLength() + 1, 1));
+                    new TransactionAttribute(type, createByteArray(type.fixedDataLength() + 1, 1));
                 }
                 else if (type.maxDataLength() != null) {
-                    new RawTransactionAttribute(type, createByteArray(type.maxDataLength() + 1, 1));
+                    new TransactionAttribute(type, createByteArray(type.maxDataLength() + 1, 1));
                 } else {
                     continue;
                 }
@@ -46,7 +46,7 @@ public class RawTransactionAttributeTest {
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             try {
                 if (type.fixedDataLength() != null) {
-                    new RawTransactionAttribute(type, createByteArray(type.fixedDataLength() - 1, 1));
+                    new TransactionAttribute(type, createByteArray(type.fixedDataLength() - 1, 1));
                 } else {
                     continue;
                 }
@@ -69,7 +69,7 @@ public class RawTransactionAttributeTest {
                 data = createByteArray(dataLength, 1);
                 input = ArrayUtils.concatenate(new byte[]{usage, dataLength}, data);
             }
-            RawTransactionAttribute attr = new RawTransactionAttribute();
+            TransactionAttribute attr = new TransactionAttribute();
             attr.deserialize(new BinaryReader(new ByteArrayInputStream(input, 0, input.length)));
             assertEquals(type, attr.usage);
             assertEquals(data.length, attr.data.length);
@@ -87,7 +87,7 @@ public class RawTransactionAttributeTest {
             } else {
                 data = createByteArray(dataLength, 1);
             }
-            RawTransactionAttribute attr = new RawTransactionAttribute(type, data);
+            TransactionAttribute attr = new TransactionAttribute(type, data);
 
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             attr.serialize(new BinaryWriter(byteStream));

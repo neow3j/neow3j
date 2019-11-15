@@ -33,7 +33,7 @@ public class ClaimTransactionTest {
         ClaimTransaction signedTx = new ClaimTransaction.Builder()
                 .output(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr))
                 .claim(new RawTransactionInput(claimableTxId, idx))
-                .script(new RawScript(invocationScript, RawVerificationScript.fromPublicKey(publicKey).getScript())
+                .script(new Witness(invocationScript, RawVerificationScript.fromPublicKey(publicKey).getScript())
         ).build();
 
         byte[] signedTxArray = signedTx.toArray();
@@ -79,7 +79,7 @@ public class ClaimTransactionTest {
         ClaimTransaction tx = ClaimTransaction.fromClaimables(claimables, adr);
         byte[] unsignedTxArray = tx.toArrayWithoutScripts();
 
-        RawScript witness = RawScript.createWitness(unsignedTxArray, ecKeyPair);
+        Witness witness = Witness.createWitness(unsignedTxArray, ecKeyPair);
         tx.addScript(witness);
 
         byte[] signedTxArray = tx.toArray();

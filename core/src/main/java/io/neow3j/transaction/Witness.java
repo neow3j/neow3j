@@ -19,15 +19,15 @@ import java.util.Objects;
  * Usually, a so-called witness, i.e. a transaction signature (invocation script) and the
  * verification script derived from the signing key.
  */
-public class RawScript extends NeoSerializable {
+public class Witness extends NeoSerializable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RawScript.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Witness.class);
 
     private RawInvocationScript invocationScript;
     private RawVerificationScript verificationScript;
     private ScriptHash scriptHash;
 
-    public RawScript() {
+    public Witness() {
     }
 
     /**
@@ -40,9 +40,9 @@ public class RawScript extends NeoSerializable {
      *
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script
-     * @see RawScript#RawScript(RawInvocationScript, RawVerificationScript)
+     * @see Witness#Witness(RawInvocationScript, RawVerificationScript)
      */
-    public RawScript(byte[] invocationScript, byte[] verificationScript) {
+    public Witness(byte[] invocationScript, byte[] verificationScript) {
         this(new RawInvocationScript(invocationScript),
                 new RawVerificationScript(verificationScript));
     }
@@ -52,13 +52,13 @@ public class RawScript extends NeoSerializable {
      * <br>
      * <p>The verification script cannot be null because the script hash is derived from it. If you
      * don't have a verification script you can use the constructor
-     * {@link RawScript#RawScript(byte[], ScriptHash)} and just provide a script Hash instead of the
+     * {@link Witness#Witness(byte[], ScriptHash)} and just provide a script Hash instead of the
      * verification script.</p>
      *
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script
      */
-    public RawScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
+    public Witness(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
         this.invocationScript = invocationScript;
         this.verificationScript = verificationScript;
         if (verificationScript == null || verificationScript.getScriptHash() == null) {
@@ -75,10 +75,10 @@ public class RawScript extends NeoSerializable {
      *
      * @param invocationScript the invocation script
      * @param scriptHash       a script hash in big-endian order.
-     * @deprecated Use {@link RawScript#RawScript(byte[], ScriptHash)} instead.
+     * @deprecated Use {@link Witness#Witness(byte[], ScriptHash)} instead.
      */
     @Deprecated
-    public RawScript(byte[] invocationScript, String scriptHash) {
+    public Witness(byte[] invocationScript, String scriptHash) {
         this(invocationScript, new ScriptHash(scriptHash));
     }
 
@@ -89,7 +89,7 @@ public class RawScript extends NeoSerializable {
      * @param invocationScript the invocation script
      * @param scriptHash       a script hash instead of a verification script.
      */
-    public RawScript(byte[] invocationScript, ScriptHash scriptHash) {
+    public Witness(byte[] invocationScript, ScriptHash scriptHash) {
         this.invocationScript = new RawInvocationScript(invocationScript);
         this.verificationScript = new RawVerificationScript();
         this.scriptHash = scriptHash;
@@ -104,13 +104,13 @@ public class RawScript extends NeoSerializable {
      *                      from the public key.
      * @return the constructed witness/script.
      */
-    public static RawScript createWitness(byte[] messageToSign, ECKeyPair keyPair) {
+    public static Witness createWitness(byte[] messageToSign, ECKeyPair keyPair) {
         RawInvocationScript i = RawInvocationScript.fromMessageAndKeyPair(messageToSign, keyPair);
         RawVerificationScript v = RawVerificationScript.fromPublicKey(keyPair.getPublicKey());
-        return new RawScript(i, v);
+        return new Witness(i, v);
     }
 
-    public static RawScript createMultiSigWitness(int signingThreshold,
+    public static Witness createMultiSigWitness(int signingThreshold,
                                                   List<SignatureData> signatures,
                                                   byte[]... publicKeys) {
 
@@ -118,7 +118,7 @@ public class RawScript extends NeoSerializable {
         return createMultiSigWitness(signingThreshold, signatures, v);
     }
 
-    public static RawScript createMultiSigWitness(int signingThreshold,
+    public static Witness createMultiSigWitness(int signingThreshold,
                                                   List<SignatureData> signatures,
                                                   List<BigInteger> publicKeys) {
 
@@ -126,20 +126,20 @@ public class RawScript extends NeoSerializable {
         return createMultiSigWitness(signingThreshold, signatures, v);
     }
 
-    public static RawScript createMultiSigWitness(List<SignatureData> signatures,
+    public static Witness createMultiSigWitness(List<SignatureData> signatures,
                                                   RawVerificationScript verificationScript) {
 
         int signingThreshold = verificationScript.getSigningThreshold();
         return createMultiSigWitness(signingThreshold, signatures, verificationScript);
     }
 
-    public static RawScript createMultiSigWitness(List<SignatureData> signatures,
+    public static Witness createMultiSigWitness(List<SignatureData> signatures,
                                                   byte[] verificationScript) {
 
         return createMultiSigWitness(signatures, new RawVerificationScript(verificationScript));
     }
 
-    public static RawScript createMultiSigWitness(int signingThreshold,
+    public static Witness createMultiSigWitness(int signingThreshold,
                                                   List<SignatureData> signatures,
                                                   RawVerificationScript verificationScript) {
 
@@ -147,7 +147,7 @@ public class RawScript extends NeoSerializable {
             throw new IllegalArgumentException("Not enough signatures provided for the required " +
                     "signing threshold.");
         }
-        return new RawScript(
+        return new Witness(
                 RawInvocationScript.fromSignatures(signatures.subList(0, signingThreshold)),
                 verificationScript);
     }
@@ -170,8 +170,8 @@ public class RawScript extends NeoSerializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RawScript)) return false;
-        RawScript script = (RawScript) o;
+        if (!(o instanceof Witness)) return false;
+        Witness script = (Witness) o;
         return Objects.equals(getInvocationScript(), script.getInvocationScript()) &&
                 Objects.equals(getVerificationScript(), script.getVerificationScript());
     }

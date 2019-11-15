@@ -10,16 +10,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class RawTransactionAttribute extends NeoSerializable {
+public class TransactionAttribute extends NeoSerializable {
 
     public TransactionAttributeUsageType usage;
 
     public byte[] data;
 
-    public RawTransactionAttribute() {
+    public TransactionAttribute() {
     }
 
-    public RawTransactionAttribute(TransactionAttributeUsageType usage, byte[] data) {
+    public TransactionAttribute(TransactionAttributeUsageType usage, byte[] data) {
         this.usage = usage;
         this.data = data;
         if (usage.fixedDataLength() != null && data.length != usage.fixedDataLength()) {
@@ -32,7 +32,7 @@ public class RawTransactionAttribute extends NeoSerializable {
         }
     }
 
-    public RawTransactionAttribute(TransactionAttributeUsageType usage, String data) {
+    public TransactionAttribute(TransactionAttributeUsageType usage, String data) {
         this(usage, (data != null ? Numeric.hexStringToByteArray(data) : null));
     }
 
@@ -51,8 +51,8 @@ public class RawTransactionAttribute extends NeoSerializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RawTransactionAttribute)) return false;
-        RawTransactionAttribute that = (RawTransactionAttribute) o;
+        if (!(o instanceof TransactionAttribute)) return false;
+        TransactionAttribute that = (TransactionAttribute) o;
         return getUsage() == that.getUsage() &&
                 Arrays.equals(getDataAsBytes(), that.getDataAsBytes());
     }

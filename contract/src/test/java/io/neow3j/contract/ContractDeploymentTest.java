@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.transaction.RawInvocationScript;
-import io.neow3j.transaction.RawScript;
+import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.RawVerificationScript;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
@@ -120,7 +120,7 @@ public class ContractDeploymentTest {
                 .build();
 
         SignatureData sig = Sign.signMessage(cd.getTransaction().toArrayWithoutScripts(), acct.getECKeyPair());
-        cd.addWitness(new RawScript(
+        cd.addWitness(new Witness(
                 RawInvocationScript.fromSignature(sig),
                 RawVerificationScript.fromPublicKey(acct.getPublicKey())));
 

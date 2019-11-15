@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
-import io.neow3j.transaction.RawScript;
+import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.RawTransactionInput;
 import io.neow3j.transaction.RawTransactionOutput;
 import io.neow3j.model.types.ContractParameterType;
@@ -68,7 +68,7 @@ public class ContractDeployment {
                     "signing the transaction. Decrypt the private key before attempting to sign " +
                     "with it.");
         }
-        tx.addScript(RawScript.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
+        tx.addScript(Witness.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
         return this;
     }
 
@@ -77,7 +77,7 @@ public class ContractDeployment {
      * <br>
      * <p>Before calling this method you should make sure that the transaction is signed either by
      * calling {@link ContractDeployment#sign()}} to automatically sign or by adding a custom
-     * witness with {@link ContractDeployment#addWitness(RawScript)}.</p>
+     * witness with {@link ContractDeployment#addWitness(Witness)}.</p>
      *
      * @return the contract that has been deployed.
      * @throws IOException            if a connection problem with the RPC node arises.
@@ -97,7 +97,7 @@ public class ContractDeployment {
      * @param witness The witness to be added.
      * @return this.
      */
-    public ContractDeployment addWitness(RawScript witness) {
+    public ContractDeployment addWitness(Witness witness) {
         tx.addScript(witness);
         return this;
     }

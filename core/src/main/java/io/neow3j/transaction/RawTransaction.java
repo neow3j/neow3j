@@ -27,10 +27,10 @@ public abstract class RawTransaction extends NeoSerializable {
 
     private TransactionType transactionType;
     private byte version;
-    private List<RawTransactionAttribute> attributes;
+    private List<TransactionAttribute> attributes;
     private List<RawTransactionInput> inputs;
     private List<RawTransactionOutput> outputs;
-    private List<RawScript> scripts;
+    private List<Witness> scripts;
 
     public RawTransaction() {
     }
@@ -52,7 +52,7 @@ public abstract class RawTransaction extends NeoSerializable {
         return version;
     }
 
-    public List<RawTransactionAttribute> getAttributes() {
+    public List<TransactionAttribute> getAttributes() {
         return attributes;
     }
 
@@ -64,7 +64,7 @@ public abstract class RawTransaction extends NeoSerializable {
         return outputs;
     }
 
-    public List<RawScript> getScripts() {
+    public List<Witness> getScripts() {
         return scripts;
     }
 
@@ -76,16 +76,16 @@ public abstract class RawTransaction extends NeoSerializable {
      * @param verificationScript The verification script of the witness.
      */
     public void addScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
-        addScript(new RawScript(invocationScript, verificationScript));
+        addScript(new Witness(invocationScript, verificationScript));
     }
 
-    public void addScript(RawScript script) {
+    public void addScript(Witness script) {
         if (script.getScriptHash() == null || script.getScriptHash().length() == 0) {
             throw new IllegalArgumentException("The script hash of the given script is " +
                     "empty. Please set the script hash.");
         }
         this.scripts.add(script);
-        this.scripts.sort(Comparator.comparing(RawScript::getScriptHash));
+        this.scripts.sort(Comparator.comparing(Witness::getScriptHash));
     }
 
     public String getTxId() {
@@ -106,10 +106,10 @@ public abstract class RawTransaction extends NeoSerializable {
         this.version = reader.readByte();
         try {
             deserializeExclusive(reader);
-            this.attributes = reader.readSerializableList(RawTransactionAttribute.class);
+            this.attributes = reader.readSerializableList(TransactionAttribute.class);
             this.inputs = reader.readSerializableList(RawTransactionInput.class);
             this.outputs = reader.readSerializableList(RawTransactionOutput.class);
-            this.scripts = reader.readSerializableList(RawScript.class);
+            this.scripts = reader.readSerializableList(Witness.class);
         } catch (IllegalAccessException e) {
             LOG.error("Can't access the specified object.", e);
         } catch (InstantiationException e) {
@@ -169,10 +169,10 @@ public abstract class RawTransaction extends NeoSerializable {
 
         private TransactionType transactionType;
         private byte version;
-        private List<RawTransactionAttribute> attributes;
+        private List<TransactionAttribute> attributes;
         private List<RawTransactionInput> inputs;
         private List<RawTransactionOutput> outputs;
-        private List<RawScript> scripts;
+        private List<Witness> scripts;
 
         protected Builder() {
             this.version = TransactionType.DEFAULT_VERSION;
@@ -193,12 +193,12 @@ public abstract class RawTransaction extends NeoSerializable {
             return (T) this;
         }
 
-        public T attributes(List<RawTransactionAttribute> attributes) {
+        public T attributes(List<TransactionAttribute> attributes) {
             this.attributes.addAll(attributes);
             return (T) this;
         }
 
-        public T attribute(RawTransactionAttribute attribute) {
+        public T attribute(TransactionAttribute attribute) {
             return attributes(Arrays.asList(attribute));
         }
 
@@ -220,8 +220,8 @@ public abstract class RawTransaction extends NeoSerializable {
             return outputs(Arrays.asList(output));
         }
 
-        public T scripts(List<RawScript> scripts) {
-            for (RawScript script : scripts) {
+        public T scripts(List<Witness> scripts) {
+            for (Witness script : scripts) {
                 if (script.getScriptHash() == null || script.getScriptHash().length() == 0) {
                     throw new IllegalArgumentException("The script hash of the given script is " +
                             "empty. Please set the script hash.");
@@ -229,11 +229,11 @@ public abstract class RawTransaction extends NeoSerializable {
             }
 
             this.scripts.addAll(scripts);
-            this.scripts.sort(Comparator.comparing(RawScript::getScriptHash));
+            this.scripts.sort(Comparator.comparing(Witness::getScriptHash));
             return (T) this;
         }
 
-        public T script(RawScript script) {
+        public T script(Witness script) {
             return scripts(Arrays.asList(script));
         }
 

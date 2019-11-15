@@ -18,9 +18,9 @@ public class RawTransactionTest {
         byte[] m2 = Numeric.hexStringToByteArray("d802a401");
         // first message has script hash 226912894221247444770625744046962264064050576762 (as integer)
         byte[] m3 = Numeric.hexStringToByteArray("a7b3a191");
-        RawScript s1 = new RawScript(m1, ScriptHash.fromScript(m1));
-        RawScript s2 = new RawScript(m2, ScriptHash.fromScript(m2));
-        RawScript s3 = new RawScript(m3, ScriptHash.fromScript(m3));
+        Witness s1 = new Witness(m1, ScriptHash.fromScript(m1));
+        Witness s2 = new Witness(m2, ScriptHash.fromScript(m2));
+        Witness s3 = new Witness(m3, ScriptHash.fromScript(m3));
 
         RawTransaction tx = new ContractTransaction.Builder()
                 .script(s1)
@@ -58,9 +58,9 @@ public class RawTransactionTest {
         byte[] m2 = Numeric.hexStringToByteArray("d802a401");
         // first message has script hash 226912894221247444770625744046962264064050576762 (as integer)
         byte[] m3 = Numeric.hexStringToByteArray("a7b3a191");
-        RawScript s1 = new RawScript(m1, ScriptHash.fromScript(m1));
-        RawScript s2 = new RawScript(m2, ScriptHash.fromScript(m2));
-        RawScript s3 = new RawScript(m3, ScriptHash.fromScript(m3));
+        Witness s1 = new Witness(m1, ScriptHash.fromScript(m1));
+        Witness s2 = new Witness(m2, ScriptHash.fromScript(m2));
+        Witness s3 = new Witness(m3, ScriptHash.fromScript(m3));
 
         RawTransaction tx = new ContractTransaction.Builder()
                 .script(s1).build();
