@@ -2,9 +2,9 @@ package io.neow3j.contract;
 
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
-import io.neow3j.crypto.transaction.RawInvocationScript;
-import io.neow3j.crypto.transaction.RawScript;
-import io.neow3j.crypto.transaction.RawVerificationScript;
+import io.neow3j.transaction.RawInvocationScript;
+import io.neow3j.transaction.RawScript;
+import io.neow3j.transaction.RawVerificationScript;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;

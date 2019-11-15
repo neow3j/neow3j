@@ -4,12 +4,6 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
-import io.neow3j.crypto.transaction.RawInvocationScript;
-import io.neow3j.crypto.transaction.RawScript;
-import io.neow3j.crypto.transaction.RawTransaction;
-import io.neow3j.crypto.transaction.RawTransactionInput;
-import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.Keys;
@@ -195,7 +189,7 @@ public class ContractTransactionTest {
 
         Sign.SignatureData signatureDataTx = Sign.signMessage(unsignedTx.toArrayWithoutScripts(), ecKeyPair);
 
-        String fromAddress = Sign.recoverSigningAddress(unsignedTx, signatureDataTx);
+        String fromAddress = Sign.recoverSigningAddress(unsignedTx.toArrayWithoutScripts(), signatureDataTx);
 
         assertEquals(address, fromAddress);
     }

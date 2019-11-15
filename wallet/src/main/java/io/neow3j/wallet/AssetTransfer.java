@@ -1,10 +1,10 @@
 package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.transaction.RawScript;
-import io.neow3j.crypto.transaction.RawTransactionAttribute;
-import io.neow3j.crypto.transaction.RawTransactionInput;
-import io.neow3j.crypto.transaction.RawTransactionOutput;
+import io.neow3j.transaction.RawScript;
+import io.neow3j.transaction.RawTransactionAttribute;
+import io.neow3j.transaction.RawTransactionInput;
+import io.neow3j.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;

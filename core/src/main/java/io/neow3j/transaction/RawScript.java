@@ -1,4 +1,4 @@
-package io.neow3j.crypto.transaction;
+package io.neow3j.transaction;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;

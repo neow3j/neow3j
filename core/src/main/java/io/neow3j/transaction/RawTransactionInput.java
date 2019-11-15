@@ -1,4 +1,4 @@
-package io.neow3j.crypto.transaction;
+package io.neow3j.transaction;
 
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;

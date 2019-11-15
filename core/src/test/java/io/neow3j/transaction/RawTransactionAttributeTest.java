@@ -1,4 +1,4 @@
-package io.neow3j.crypto.transaction;
+package io.neow3j.transaction;
 
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -9,7 +9,6 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;

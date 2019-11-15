@@ -1,8 +1,8 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.ContractInvocation.Builder;
-import io.neow3j.crypto.transaction.RawTransactionAttribute;
-import io.neow3j.crypto.transaction.RawTransactionOutput;
+import io.neow3j.transaction.RawTransactionAttribute;
+import io.neow3j.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;

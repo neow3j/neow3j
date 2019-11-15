@@ -1,10 +1,8 @@
 package io.neow3j.transaction;
 
-import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.model.types.TransactionType;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
