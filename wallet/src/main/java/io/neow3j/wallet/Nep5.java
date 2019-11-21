@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Nep5 {
 
@@ -23,35 +24,35 @@ public class Nep5 {
     }
 
     public BigInteger totalSupply() throws IOException {
-        List<ContractParameter> params = Arrays.asList(
-                ContractParameter.string("totalSupply"),
-                ContractParameter.array());
-        NeoInvoke send = neow3j.invoke(this.fromContractScriptHash.toString(), params).send();
-        return send.getInvocationResult().getStack().get(1).asByteArray().getAsNumber();
+        return invokeContract("totalSupply").getInvocationResult().getStack().get(1).asByteArray().getAsNumber();
     }
 
     public String name() throws IOException {
-        List<ContractParameter> params = Arrays.asList(
-                ContractParameter.string("name"),
-                ContractParameter.array());
-        NeoInvoke send = neow3j.invoke(this.fromContractScriptHash.toString(), params).send();
-        return send.getInvocationResult().getStack().get(1).asByteArray().getAsString();
+        return invokeContract("name").getInvocationResult().getStack().get(1).asByteArray().getAsString();
     }
 
     public String symbol() throws IOException {
-        List<ContractParameter> params = Arrays.asList(
-                ContractParameter.string("symbol"),
-                ContractParameter.array());
-        NeoInvoke send = neow3j.invoke(this.fromContractScriptHash.toString(), params).send();
-        return send.getInvocationResult().getStack().get(1).asByteArray().getAsString();
+        return invokeContract("symbol").getInvocationResult().getStack().get(1).asByteArray().getAsString();
     }
 
     public BigInteger decimals() throws IOException {
-        List<ContractParameter> params = Arrays.asList(
-                ContractParameter.string("decimals"),
-                ContractParameter.array());
-        NeoInvoke send = neow3j.invoke(this.fromContractScriptHash.toString(), params).send();
-        return (BigInteger) send.getInvocationResult().getStack().get(1).getValue();
+        return (BigInteger) invokeContract("decimals").getInvocationResult().getStack().get(1).getValue();
+    }
+
+    public BigInteger balanceOf(byte[] account) throws IOException {
+        return invokeContract("balanceOf").getInvocationResult().getStack().get(1).asByteArray().getAsNumber();
+    }
+
+    public NeoInvoke invokeContract(String methodName) throws IOException {
+        List<ContractParameter> contractParameters = null;
+        if (Objects.nonNull(methodName)) {
+            contractParameters = Arrays.asList(
+                    ContractParameter.string(methodName),
+                    ContractParameter.array());
+            return neow3j.invoke(this.fromContractScriptHash.toString(), contractParameters).send();
+        } else {
+            throw new  IllegalStateException("Method name is not set");
+        }
     }
 
     public static class Builder {
@@ -60,7 +61,6 @@ public class Nep5 {
         public Builder(Neow3j neow3j) {
             this.neow3j = neow3j;
         }
-
         public Nep5.Builder fromContract(ScriptHash contractScriptHash) {
             this.fromContractScriptHash = contractScriptHash;
             return this;
@@ -72,4 +72,5 @@ public class Nep5 {
             return new Nep5(this);
         }
     }
+
 }

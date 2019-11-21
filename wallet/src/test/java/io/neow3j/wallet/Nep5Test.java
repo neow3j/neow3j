@@ -2,6 +2,7 @@ package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
 
 public class Nep5Test {
 
@@ -45,28 +45,36 @@ public class Nep5Test {
     }
 
     @Test
+    public void balanceOfTest() throws IOException {
+        Mockito.doReturn(new BigInteger("66554545")).when(nep5).balanceOf(new byte[20]);
+        assertEquals(new BigInteger("66554545"), nep5.balanceOf(new byte[20]));
+    }
+
+    @Test
     public void decimalsTest() throws IOException {
         Mockito.doReturn(new BigInteger("66554545")).when(nep5).decimals();
         assertEquals(new BigInteger("66554545"), nep5.decimals());
     }
 
     @Test
-    public void failWithoutNeow3j() {
-        try {
-            new Nep5.Builder(null).fromContract(contractScriptHash).build();
-        } catch (IllegalStateException e) {
-            if (e.getMessage().equals("Neow3j not set.")) return;
-        }
-        fail();
+    public void invokeContractTest() throws IOException {
+        NeoInvoke neoInvoke = Mockito.spy(NeoInvoke.class);
+        Mockito.doReturn(neoInvoke).when(nep5).invokeContract("symbol");
+        assertEquals(neoInvoke, nep5.invokeContract("symbol"));
     }
 
-    @Test
+    @Test (expected = IllegalStateException.class)
+    public void failWithoutNeow3j() {
+        new Nep5.Builder(null).fromContract(contractScriptHash).build();
+    }
+
+    @Test(expected = IllegalStateException.class)
     public void failWithoutContract() {
-        try {
-            new Nep5.Builder(this.neow3j).fromContract(null).build();
-        } catch (IllegalStateException e) {
-            if (e.getMessage().equals("Contract not set.")) return;
-        }
-        fail();
+        new Nep5.Builder(this.neow3j).fromContract(null).build();
+    }
+
+    @Test (expected = IllegalStateException.class)
+    public void failInvokeContract() throws IOException {
+        nep5.invokeContract(null);
     }
 }
