@@ -63,6 +63,13 @@ public class Nep5Test {
         assertEquals(neoInvoke, nep5.invokeContract("symbol"));
     }
 
+    @Test
+    public void invokeContractWithParamsTest() throws IOException {
+        NeoInvoke neoInvoke = Mockito.spy(NeoInvoke.class);
+        Mockito.doReturn(neoInvoke).when(nep5).invokeContract("balanceOf", new byte[20]);
+        assertEquals(neoInvoke, nep5.invokeContract("balanceOf", new byte[20]));
+    }
+
     @Test (expected = IllegalStateException.class)
     public void failWithoutNeow3j() {
         new Nep5.Builder(null).fromContract(contractScriptHash).build();
@@ -75,6 +82,16 @@ public class Nep5Test {
 
     @Test (expected = IllegalStateException.class)
     public void failInvokeContract() throws IOException {
-        nep5.invokeContract(null);
+        new Nep5.Builder(this.neow3j).fromContract(contractScriptHash).build().invokeContract(null);;
+    }
+
+    @Test (expected = IllegalStateException.class)
+    public void failInvokeContractForMethodName() throws IOException {
+        new Nep5.Builder(this.neow3j).fromContract(contractScriptHash).build().invokeContract(null, new byte[20]);
+    }
+
+    @Test (expected = IllegalStateException.class)
+    public void failInvokeContractForRequiredParams() throws IOException {
+        new Nep5.Builder(this.neow3j).fromContract(contractScriptHash).build().invokeContract("balanceOf", null);
     }
 }
