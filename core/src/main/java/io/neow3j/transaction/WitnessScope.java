@@ -7,17 +7,18 @@ public enum WitnessScope {
      * scopes.
      */
     GLOBAL(0x00),
+
     /**
-     * This scope limits the use of a witness to the level of the script contained in the same
-     * transaction. I.e. it is only valid in the invocations made by the script that is contained in
-     * the same transaction with the witness. In any further internal invocations the witness
-     * will expire.
+     * This scope limits the use of a witness to the level of the contract called in the
+     * transaction. I.e. it only allows the invoked contract to use the witness.
      */
     CALLED_BY_ENTRY(0x01),
+
     /**
-     * This scope allows the specification of contracts in which the witness can be used.
+     * This scope allows the specification of additional contracts in which the witness can be used.
      */
     CUSTOM_CONSTRACTS(0x10),
+
     /**
      * This scope allows the specification of contract groups in which the witness can be used.
      */
@@ -25,8 +26,21 @@ public enum WitnessScope {
 
     private byte byteValue;
 
-    private WitnessScope(int byteValue) {
+    WitnessScope(int byteValue) {
         this.byteValue = (byte) byteValue;
+    }
+
+    public byte byteValue() {
+        return this.byteValue;
+    }
+
+    public static WitnessScope valueOf(byte byteValue) {
+        for (WitnessScope e : WitnessScope.values()) {
+            if (e.byteValue == byteValue) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException();
     }
 
 }
