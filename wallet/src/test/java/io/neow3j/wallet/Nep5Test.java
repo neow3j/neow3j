@@ -82,7 +82,7 @@ public class Nep5Test {
 
     @Test (expected = IllegalStateException.class)
     public void failInvokeContract() throws IOException {
-        new Nep5.Builder(this.neow3j).fromContract(contractScriptHash).build().invokeContract(null);;
+        new Nep5.Builder(this.neow3j).fromContract(contractScriptHash).build().invokeContract(null);
     }
 
     @Test (expected = IllegalStateException.class)
