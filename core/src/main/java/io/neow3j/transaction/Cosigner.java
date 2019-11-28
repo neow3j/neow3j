@@ -180,7 +180,7 @@ public class Cosigner {
             }
             if (scopes.contains(WitnessScope.GLOBAL) && scopes.size() > 1) {
                 throw new CosignerConfigurationException("The global witness scope cannot be " +
-                        "combine with other scopes.");
+                        "combined with other scopes.");
             }
             if (scopes.contains(WitnessScope.CUSTOM_CONSTRACTS) && allowedContracts.isEmpty()) {
                 throw new CosignerConfigurationException("Set of allowed contracts must not be " +
