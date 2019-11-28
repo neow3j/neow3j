@@ -14,12 +14,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class TransactionTest {
 
@@ -46,6 +48,52 @@ public class TransactionTest {
         assertThat(t.getScript().length, is(0));
         assertThat(t.getNonce(), notNullValue());
         assertThat(t.getWitnesses(), empty());
+    }
+
+    @Test
+    public void buildTransactionWithCorrectNonce() {
+        Long nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
+        Transaction.Builder b = new Transaction.Builder()
+                .validUntilBlock(1)
+                .sender(account);
+        Transaction t = b.nonce(nonce).build();
+        assertThat(t.getNonce(), is(nonce));
+
+        nonce = 0L;
+        t = b.nonce(0L).build();
+        assertThat(t.getNonce(), is(nonce));
+
+        nonce = (long) Math.pow(2, 32) - 1;
+        t = b.nonce(nonce).build();
+        assertThat(t.getNonce(), is(nonce));
+
+        nonce = Integer.toUnsignedLong(-1);
+        t = b.nonce(nonce).build();
+        assertThat(t.getNonce(), is(nonce));
+    }
+
+    @Test
+    public void failBuildingTransactionWithIncorrectNonce() {
+        Transaction.Builder b = new Transaction.Builder()
+                .validUntilBlock(1)
+                .sender(account);
+        try {
+            Long nonce = Integer.toUnsignedLong(-1) + 1;
+            b.nonce(nonce);
+            fail();
+        } catch (TransactionConfigurationException ignored) {}
+
+        try {
+            Long nonce = (long)Math.pow(2, 32);
+            b.nonce(nonce);
+            fail();
+        } catch (TransactionConfigurationException ignored) {}
+
+        try {
+            Long nonce = -1L;
+            b.nonce(nonce);
+            fail();
+        } catch (TransactionConfigurationException ignored) {}
     }
 
     @Test(expected = TransactionConfigurationException.class)

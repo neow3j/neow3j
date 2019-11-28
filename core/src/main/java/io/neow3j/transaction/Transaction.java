@@ -16,8 +16,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class Transaction extends NeoSerializable {
@@ -25,7 +25,17 @@ public class Transaction extends NeoSerializable {
     private static final Logger LOG = LoggerFactory.getLogger(Transaction.class);
 
     private byte version;
-    private Integer nonce;
+    /**
+     * Is a random number added to the transaction to prevent replay attacks. It is an unsigned
+     * 32-bit integer in the neo C# implementation. It is represented as a integer here, but when
+     * serializing it
+     */
+    private Long nonce;
+    /**
+     * Defines up to which block this transaction remains valid. If this transaction is not added
+     * into a block up to this number it will become invalid and be dropped. It is an unsigned
+     * 32-bit integer in the neo C# implementation.
+     */
     private Integer validUntilBlock;
     private ScriptHash sender;
     private Long systemFee;
@@ -55,7 +65,7 @@ public class Transaction extends NeoSerializable {
         return version;
     }
 
-    public Integer getNonce() {
+    public Long getNonce() {
         return nonce;
     }
 
@@ -163,8 +173,7 @@ public class Transaction extends NeoSerializable {
 
     protected static class Builder {
 
-        // The nonce must be handled as an unsigned integer.
-        private Integer nonce;
+        private Long nonce;
         private byte version;
         private Integer validUntilBlock;
         private ScriptHash sender;
@@ -176,7 +185,7 @@ public class Transaction extends NeoSerializable {
         private Set<Witness> witnesses;
 
         protected Builder() {
-            this.nonce = new Random().nextInt();
+            this.nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
             this.version = NeoConstants.CURRENT_TX_VERSION;
             this.networkFee = 0L;
             this.systemFee = 0L;
@@ -200,15 +209,20 @@ public class Transaction extends NeoSerializable {
         }
 
         /**
-         * Sets the nonce for this transaction. The nonce must be a number from 0 to 2^32, so no
-         * negative number. It is treated as an unsigned integer.
+         * Sets the nonce (number used once) for this transaction. The nonce is a number in the
+         * interval [0, 2^32).
          * <p>
-         * The nonce default is a random value from 0 to 2^32.
+         * If it is not specifically set, it defaults to a random value in the given interval.
          *
-         * @param nonce The nonce (number used once) to set on the transaction.
+         * @param nonce The nonce to set on the transaction.
          * @return this builder.
+         * @throws TransactionConfigurationException if the nonce is not in [0, 2^32).
          */
-        public Builder nonce(Integer nonce) {
+        public Builder nonce(Long nonce) {
+            if (nonce < 0 || nonce >= (long) Math.pow(2, 32)) {
+                throw new TransactionConfigurationException("The value of the transaction nonce " +
+                        "must be in the interval [0, 2^32).");
+            }
             this.nonce = nonce;
             return this;
         }
@@ -313,7 +327,7 @@ public class Transaction extends NeoSerializable {
                                                 .collect(Collectors.toSet());
             boolean duplicateCosignerAccts = cosigners.size() != newAccts.size();
             Set<ScriptHash> existingAccts = this.cosigners.stream().map(Cosigner::getAccount)
-                                                  .collect(Collectors.toSet());
+                                                          .collect(Collectors.toSet());
             existingAccts.retainAll(newAccts);
             return duplicateCosignerAccts || existingAccts.size() != 0;
         }
