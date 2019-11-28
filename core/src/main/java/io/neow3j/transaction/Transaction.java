@@ -6,8 +6,7 @@ import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
-import io.neow3j.transaction.exceptions.MissingSenderAccountException;
-import io.neow3j.transaction.exceptions.MissingValidUntilBlockException;
+import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.slf4j.Logger;
@@ -292,10 +291,12 @@ public class Transaction extends NeoSerializable {
          *
          * @param cosigners The list of cosigners.
          * @return this builder.
+         * @throws TransactionConfigurationException when attempting to add more than the {@link
+         *                                           NeoConstants#MAX_COSIGNERS} Cosigners.
          */
         public Builder cosigners(List<Cosigner> cosigners) {
             if (this.cosigners.size() + cosigners.size() > NeoConstants.MAX_COSIGNERS) {
-                throw new IllegalArgumentException("Can't have more than " +
+                throw new TransactionConfigurationException("Can't have more than " +
                         NeoConstants.MAX_COSIGNERS + " cosigners on a transaction.");
             }
             this.cosigners.addAll(cosigners);
@@ -310,6 +311,8 @@ public class Transaction extends NeoSerializable {
          *
          * @param cosigners The cosigners.
          * @return this builder.
+         * @throws TransactionConfigurationException when attempting to add more than the {@link
+         *                                           NeoConstants#MAX_COSIGNERS} Cosigners.
          */
         public Builder cosigners(Cosigner... cosigners) {
             return cosigners(Arrays.asList(cosigners));
@@ -336,11 +339,14 @@ public class Transaction extends NeoSerializable {
          *
          * @param attributes The list of attributes.
          * @return this builder.
+         * @throws TransactionConfigurationException when attempting to add more than {@link
+         *                                           NeoConstants#MAX_TRANSACTION_ATTRIBUTES}
+         *                                           attributes.
          */
         public Builder attributes(List<TransactionAttribute> attributes) {
             if (this.attributes.size() + attributes.size() >
                     NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-                throw new IllegalArgumentException("Can't have more than " +
+                throw new TransactionConfigurationException("Can't have more than " +
                         NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes on a transaction.");
             }
             this.attributes.addAll(attributes);
@@ -425,20 +431,18 @@ public class Transaction extends NeoSerializable {
          * Builds the transaction.
          *
          * @return The transaction.
-         * @throws MissingSenderAccountException   if {@link Builder#sender} was not set on the
-         *                                         builder.
-         * @throws MissingValidUntilBlockException if {@link Builder#validUntilBlock} was not set on
-         *                                         the builder.
+         * @throws TransactionConfigurationException if either the sender account or the
+         *                                           "validUntilBlock" property was not set.
          */
         public Transaction build() {
-
-            if (this.validUntilBlock == null) {
-                throw new MissingSenderAccountException("The sender account must be set.");
+            if (this.sender == null) {
+                throw new TransactionConfigurationException("A transaction requires a sender " +
+                        "account.");
             }
 
             if (this.validUntilBlock == null) {
-                throw new MissingValidUntilBlockException("A block number up to which this " +
-                        "transaction is considered valid must be set.");
+                throw new TransactionConfigurationException("A transaction needs to be set up " +
+                        "with a block number up to which this it is considered valid.");
             }
             return new Transaction(this);
         }
