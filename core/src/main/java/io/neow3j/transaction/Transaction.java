@@ -14,11 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Transaction extends NeoSerializable {
 
@@ -30,10 +30,10 @@ public class Transaction extends NeoSerializable {
     private ScriptHash sender;
     private Long systemFee;
     private Long networkFee;
-    private List<TransactionAttribute> attributes;
-    private List<Cosigner> cosigners;
+    private Set<TransactionAttribute> attributes;
+    private Set<Cosigner> cosigners;
     private byte[] script;
-    private List<Witness> witnesses;
+    private Set<Witness> witnesses;
 
     public Transaction() {
     }
@@ -75,11 +75,11 @@ public class Transaction extends NeoSerializable {
         return networkFee;
     }
 
-    public List<TransactionAttribute> getAttributes() {
+    public Set<TransactionAttribute> getAttributes() {
         return attributes;
     }
 
-    public List<Cosigner> getCosigners() {
+    public Set<Cosigner> getCosigners() {
         return cosigners;
     }
 
@@ -87,7 +87,7 @@ public class Transaction extends NeoSerializable {
         return script;
     }
 
-    public List<Witness> getWitnesses() {
+    public Set<Witness> getWitnesses() {
         return witnesses;
     }
 
@@ -97,7 +97,6 @@ public class Transaction extends NeoSerializable {
                     "empty. Please set the script hash.");
         }
         this.witnesses.add(witness);
-        this.witnesses.sort(Comparator.comparing(Witness::getScriptHash));
     }
 
     public String getTxId() {
@@ -111,26 +110,26 @@ public class Transaction extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws IOException {
-        this.version = reader.readByte();
-        try {
-            this.attributes = reader.readSerializableList(TransactionAttribute.class);
-            this.witnesses = reader.readSerializableList(Witness.class);
-        } catch (IllegalAccessException e) {
-            LOG.error("Can't access the specified object.", e);
-        } catch (InstantiationException e) {
-            LOG.error("Can't instantiate the specified object type.", e);
-        }
+        //        this.version = reader.readByte();
+        //        try {
+        //            this.attributes = reader.readSerializableList(TransactionAttribute.class);
+        //            this.witnesses = reader.readSerializableList(Witness.class);
+        //        } catch (IllegalAccessException e) {
+        //            LOG.error("Can't access the specified object.", e);
+        //        } catch (InstantiationException e) {
+        //            LOG.error("Can't instantiate the specified object type.", e);
+        //        }
     }
 
     private void serializeWithoutWitnesses(BinaryWriter writer) throws IOException {
-        writer.writeByte(this.version);
-        writer.writeSerializableVariable(this.attributes);
+        //        writer.writeByte(this.version);
+        //        writer.writeSerializableVariable(this.attributes);
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        serializeWithoutWitnesses(writer);
-        writer.writeSerializableVariable(this.witnesses);
+        //        serializeWithoutWitnesses(writer);
+        //        writer.writeSerializableVariable(this.witnesses);
     }
 
     /**
@@ -171,19 +170,19 @@ public class Transaction extends NeoSerializable {
         private ScriptHash sender;
         private Long systemFee;
         private Long networkFee;
-        private List<Cosigner> cosigners;
+        private Set<Cosigner> cosigners;
         private byte[] script;
-        private List<TransactionAttribute> attributes;
-        private List<Witness> witnesses;
+        private Set<TransactionAttribute> attributes;
+        private Set<Witness> witnesses;
 
         protected Builder() {
             this.nonce = new Random().nextInt();
             this.version = NeoConstants.CURRENT_TX_VERSION;
             this.networkFee = 0L;
             this.systemFee = 0L;
-            this.cosigners = new ArrayList<>();
-            this.attributes = new ArrayList<>();
-            this.witnesses = new ArrayList<>();
+            this.cosigners = new HashSet<>();
+            this.attributes = new HashSet<>();
+            this.witnesses = new HashSet<>();
             this.script = new byte[]{};
         }
 
@@ -289,18 +288,34 @@ public class Transaction extends NeoSerializable {
          * The maximum number of cosigners on a transaction is given in {@link
          * NeoConstants#MAX_COSIGNERS}.
          *
-         * @param cosigners The list of cosigners.
+         * @param cosigners The cosigners.
          * @return this builder.
          * @throws TransactionConfigurationException when attempting to add more than the {@link
-         *                                           NeoConstants#MAX_COSIGNERS} Cosigners.
+         *                                           NeoConstants#MAX_COSIGNERS} Cosigners or
+         *                                           multiple Cosigners concerning the same
+         *                                           account.
          */
-        public Builder cosigners(List<Cosigner> cosigners) {
+        public Builder cosigners(Set<Cosigner> cosigners) {
             if (this.cosigners.size() + cosigners.size() > NeoConstants.MAX_COSIGNERS) {
                 throw new TransactionConfigurationException("Can't have more than " +
                         NeoConstants.MAX_COSIGNERS + " cosigners on a transaction.");
             }
+            if (hasDuplicateCosignerAccounts(cosigners)) {
+                throw new TransactionConfigurationException("Can't add multiple cosigners" +
+                        " concerning the same account.");
+            }
             this.cosigners.addAll(cosigners);
             return this;
+        }
+
+        private boolean hasDuplicateCosignerAccounts(Set<Cosigner> cosigners) {
+            Set<ScriptHash> newAccts = cosigners.stream().map(Cosigner::getAccount)
+                                                .collect(Collectors.toSet());
+            boolean duplicateCosignerAccts = cosigners.size() != newAccts.size();
+            Set<ScriptHash> existingAccts = this.cosigners.stream().map(Cosigner::getAccount)
+                                                  .collect(Collectors.toSet());
+            existingAccts.retainAll(newAccts);
+            return duplicateCosignerAccts || existingAccts.size() != 0;
         }
 
         /**
@@ -315,20 +330,7 @@ public class Transaction extends NeoSerializable {
          *                                           NeoConstants#MAX_COSIGNERS} Cosigners.
          */
         public Builder cosigners(Cosigner... cosigners) {
-            return cosigners(Arrays.asList(cosigners));
-        }
-
-        /**
-         * Adds the given cosigner to this transaction.
-         * <p>
-         * The maximum number of cosigners on a transaction is given in {@link
-         * NeoConstants#MAX_COSIGNERS}.
-         *
-         * @param cosigner The cosigner to add.
-         * @return this builder.
-         */
-        public Builder cosigner(Cosigner cosigner) {
-            return cosigners(Arrays.asList(cosigner));
+            return cosigners(new HashSet<>(Arrays.asList(cosigners)));
         }
 
         /**
@@ -337,13 +339,13 @@ public class Transaction extends NeoSerializable {
          * The maximum number of attributes on a transaction is given in {@link
          * NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
          *
-         * @param attributes The list of attributes.
+         * @param attributes The attributes.
          * @return this builder.
          * @throws TransactionConfigurationException when attempting to add more than {@link
          *                                           NeoConstants#MAX_TRANSACTION_ATTRIBUTES}
          *                                           attributes.
          */
-        public Builder attributes(List<TransactionAttribute> attributes) {
+        public Builder attributes(Set<TransactionAttribute> attributes) {
             if (this.attributes.size() + attributes.size() >
                     NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
                 throw new TransactionConfigurationException("Can't have more than " +
@@ -363,20 +365,7 @@ public class Transaction extends NeoSerializable {
          * @return this builder.
          */
         public Builder attributes(TransactionAttribute... attributes) {
-            return attributes(Arrays.asList(attributes));
-        }
-
-        /**
-         * Adds the given attribute to this transaction.
-         * <p>
-         * The maximum number of attributes on a transaction is given in {@link
-         * NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
-         *
-         * @param attribute The attribute to add.
-         * @return this builder.
-         */
-        public Builder attribute(TransactionAttribute attribute) {
-            return attributes(Arrays.asList(attribute));
+            return attributes(new HashSet<>(Arrays.asList(attributes)));
         }
 
         /**
@@ -388,7 +377,7 @@ public class Transaction extends NeoSerializable {
          * @param witnesses The witnesses to add.
          * @return this builder.
          */
-        public Builder witnesses(List<Witness> witnesses) {
+        public Builder witnesses(Set<Witness> witnesses) {
             for (Witness witness : witnesses) {
                 if (witness.getScriptHash() == null || witness.getScriptHash().length() == 0) {
                     throw new IllegalArgumentException("The script hash of the given script is " +
@@ -397,7 +386,6 @@ public class Transaction extends NeoSerializable {
             }
 
             this.witnesses.addAll(witnesses);
-            this.witnesses.sort(Comparator.comparing(Witness::getScriptHash));
             return this;
         }
 
@@ -411,20 +399,7 @@ public class Transaction extends NeoSerializable {
          * @return this builder.
          */
         public Builder witnesses(Witness... witnesses) {
-            return witnesses(Arrays.asList(witnesses));
-        }
-
-        /**
-         * Adds the given witness to this transaction.
-         * <p>
-         * Witness data is used to check the transaction validity. It usually consists of the
-         * signature generated by the transacting account but can also be other validating data.
-         *
-         * @param witness The witness to add.
-         * @return this builder.
-         */
-        public Builder witness(Witness witness) {
-            return witnesses(Arrays.asList(witness));
+            return witnesses(new HashSet<>(Arrays.asList(witnesses)));
         }
 
         /**

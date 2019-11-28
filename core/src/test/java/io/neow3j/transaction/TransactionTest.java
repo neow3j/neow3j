@@ -2,20 +2,23 @@ package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.Numeric;
+import io.neow3j.utils.Keys;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class TransactionTest {
@@ -59,109 +62,69 @@ public class TransactionTest {
                 .build();
     }
 
+    @Test
+    public void buildTxWithUpToMaxCosigners() throws InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException {
+
+        Transaction.Builder b = new Transaction.Builder()
+                .sender(account)
+                .validUntilBlock(1);
+
+        // Add two cosigners via varargs method.
+        ScriptHash account1 = ScriptHash.fromPublicKey(
+                Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+        ScriptHash account2 = ScriptHash.fromPublicKey(
+                Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+        b.cosigners(Cosigner.calledByEntry(account1), Cosigner.global(account2));
+
+        // Add the rest of cosigners via method taking a set argument.
+        Set<Cosigner> cosigners = new HashSet<>();
+        for (int i = 3; i <= NeoConstants.MAX_COSIGNERS; i++) {
+            ScriptHash account = ScriptHash.fromPublicKey(
+                    Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+            cosigners.add(Cosigner.global(account));
+        }
+        Transaction tx = b.cosigners(cosigners).build();
+        assertThat(tx.getCosigners(), hasSize(NeoConstants.MAX_COSIGNERS));
+    }
+
     @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMoreThanMaxCosignersToTxBuilder() {
-        List<Cosigner> cosigners = new ArrayList<>();
-        IntStream.range(0, NeoConstants.MAX_COSIGNERS + 1).forEach(
-                i -> cosigners.add(Cosigner.calledByEntry(account)));
-        // Use m
-        new Transaction.Builder().cosigners(cosigners);
+    public void failAddingMultipleCosignersConcerningTheSameAccount1() {
+        Transaction.Builder b = new Transaction.Builder();
+        b.cosigners(Cosigner.global(account), Cosigner.calledByEntry(account));
+    }
+
+    @Test(expected = TransactionConfigurationException.class)
+    public void failAddingMultipleCosignersConcerningTheSameAccount2() {
+        Transaction.Builder b = new Transaction.Builder();
+        b.cosigners(Cosigner.global(account));
+        b.cosigners(Cosigner.calledByEntry(account));
+    }
+
+    @Test(expected = TransactionConfigurationException.class)
+    public void failAddingMoreThanMaxCosignersToTxBuilder() throws
+            InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+        Set<Cosigner> cosigners = new HashSet<>();
+        // Create one too many cosigners
+        for (int i = 0; i <= NeoConstants.MAX_COSIGNERS; i++) {
+            ScriptHash account = ScriptHash.fromPublicKey(
+                    Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+            cosigners.add(Cosigner.global(account));
+        }
+        Transaction.Builder tx = new Transaction.Builder()
+                .sender(account)
+                .validUntilBlock(1)
+                .cosigners(cosigners);
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMoreThanMaxAttributesToTxBuilder() {
-        List<TransactionAttribute> attrs = new ArrayList<>();
+        Set<TransactionAttribute> attrs = new HashSet<>();
         // Create one too many attributes.
-        IntStream.range(0, NeoConstants.MAX_TRANSACTION_ATTRIBUTES + 1).forEach(
-                i -> attrs.add(new TransactionAttribute()));
+        for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
+            attrs.add(new TransactionAttribute(TransactionAttributeUsageType.DESCRIPTION, "" + i));
+        }
         new Transaction.Builder().attributes(attrs);
-    }
-
-    @Test
-    public void addWitnessesInBuilderAndCheckOrdering() {
-        // first message has script hash 159759880646822985762674987218710759559479736571 (as
-        // integer)
-        byte[] m1 = Numeric.hexStringToByteArray("01a402d8");
-        // first message has script hash 776468865644545852461964229176363821261390671687 (as
-        // integer)
-        byte[] m2 = Numeric.hexStringToByteArray("d802a401");
-        // first message has script hash 226912894221247444770625744046962264064050576762 (as
-        // integer)
-        byte[] m3 = Numeric.hexStringToByteArray("a7b3a191");
-        Witness s1 = new Witness(m1, ScriptHash.fromScript(m1));
-        Witness s2 = new Witness(m2, ScriptHash.fromScript(m2));
-        Witness s3 = new Witness(m3, ScriptHash.fromScript(m3));
-
-        Transaction tx = new Transaction.Builder()
-                .sender(account)
-                .validUntilBlock(1)
-                .witness(s1)
-                .witness(s2)
-                .witness(s3)
-                .build();
-        assertEquals(tx.getWitnesses().get(0).getScriptHash(), s1.getScriptHash());
-        assertEquals(tx.getWitnesses().get(1).getScriptHash(), s3.getScriptHash());
-        assertEquals(tx.getWitnesses().get(2).getScriptHash(), s2.getScriptHash());
-
-        // Add in reverse order
-        tx = new Transaction.Builder()
-                .sender(account)
-                .validUntilBlock(1)
-                .witness(s3)
-                .witness(s2)
-                .witness(s1)
-                .build();
-        assertEquals(tx.getWitnesses().get(0).getScriptHash(), s1.getScriptHash());
-        assertEquals(tx.getWitnesses().get(1).getScriptHash(), s3.getScriptHash());
-        assertEquals(tx.getWitnesses().get(2).getScriptHash(), s2.getScriptHash());
-
-        // Add all together
-        tx = new Transaction.Builder()
-                .sender(account)
-                .validUntilBlock(1)
-                .witnesses(Arrays.asList(s3, s1, s2))
-                .build();
-        assertEquals(tx.getWitnesses().get(0).getScriptHash(), s1.getScriptHash());
-        assertEquals(tx.getWitnesses().get(1).getScriptHash(), s3.getScriptHash());
-        assertEquals(tx.getWitnesses().get(2).getScriptHash(), s2.getScriptHash());
-    }
-
-    @Test
-    public void addWitnessesInTxAndCheckOrdering() {
-        // first message has script hash 159759880646822985762674987218710759559479736571 (as
-        // integer)
-        byte[] m1 = Numeric.hexStringToByteArray("01a402d8");
-        // first message has script hash 776468865644545852461964229176363821261390671687 (as
-        // integer)
-        byte[] m2 = Numeric.hexStringToByteArray("d802a401");
-        // first message has script hash 226912894221247444770625744046962264064050576762 (as
-        // integer)
-        byte[] m3 = Numeric.hexStringToByteArray("a7b3a191");
-        Witness s1 = new Witness(m1, ScriptHash.fromScript(m1));
-        Witness s2 = new Witness(m2, ScriptHash.fromScript(m2));
-        Witness s3 = new Witness(m3, ScriptHash.fromScript(m3));
-
-        Transaction tx = new Transaction.Builder()
-                .sender(account)
-                .validUntilBlock(1)
-                .witness(s1).build();
-        tx.addWitness(s2);
-        tx.addWitness(s3);
-        assertEquals(tx.getWitnesses().get(0).getScriptHash(), s1.getScriptHash());
-        assertEquals(tx.getWitnesses().get(1).getScriptHash(), s3.getScriptHash());
-        assertEquals(tx.getWitnesses().get(2).getScriptHash(), s2.getScriptHash());
-
-        // Add in different order
-        tx = new Transaction.Builder()
-                .sender(account)
-                .validUntilBlock(1)
-                .build();
-        tx.addWitness(s2);
-        tx.addWitness(s1);
-        tx.addWitness(s3);
-        assertEquals(tx.getWitnesses().get(0).getScriptHash(), s1.getScriptHash());
-        assertEquals(tx.getWitnesses().get(1).getScriptHash(), s3.getScriptHash());
-        assertEquals(tx.getWitnesses().get(2).getScriptHash(), s2.getScriptHash());
     }
 
 }
