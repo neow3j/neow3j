@@ -153,6 +153,22 @@ public class Cosigner {
             return this;
         }
 
+        /**
+         * Builds the cosigner.
+         *
+         * @return the cosigner.
+         * @throws CosignerConfigurationException if either
+         *                                        <ul>
+         *                                          <li>no account has been set</li>
+         *                                          <li>no scope has been set</li>
+         *                                          <li>the global scope is mixed with other
+         *                                          scopes</li>
+         *                                          <li>the custom contracts scope is set but
+         *                                          no contracts are specified</li>
+         *                                          <li>the custom groups scope is set but
+         *                                          no groups are specified</li>
+         *                                        </ul>
+         */
         public Cosigner build() {
             if (account == null) {
                 throw new CosignerConfigurationException("No account has been set. A cosigner" +
@@ -175,7 +191,6 @@ public class Cosigner {
                         "empty for a cosigner with the custom groups scope.");
             }
             return new Cosigner(this);
-
         }
 
     }
