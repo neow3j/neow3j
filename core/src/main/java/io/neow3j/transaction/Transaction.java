@@ -16,7 +16,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -35,8 +37,8 @@ public class Transaction extends NeoSerializable {
     /**
      * Defines up to which block this transaction remains valid. If this transaction is not added
      * into a block up to this number it will become invalid and be dropped. It is an unsigned
-     * 32-bit integer in the neo C# implementation. Here it is represented as a signed
-     * 32-bit integer which offers a smaller but still large enough range.
+     * 32-bit integer in the neo C# implementation. Here it is represented as a signed 32-bit
+     * integer which offers a smaller but still large enough range.
      */
     private int validUntilBlock;
     private ScriptHash sender;
@@ -148,7 +150,13 @@ public class Transaction extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         serializeWithoutWitnesses(writer);
-        writer.writeSerializableVariable(new ArrayList<>(this.witnesses));
+        writer.writeSerializableVariable(getWitnessesSortedByScriptHash());
+    }
+
+    private List<Witness> getWitnessesSortedByScriptHash() {
+        List<Witness> list = new ArrayList<>(this.witnesses);
+        list.sort(Comparator.comparing(Witness::getScriptHash));
+        return list;
     }
 
     /**
