@@ -1,8 +1,12 @@
 package io.neow3j.transaction;
 
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.io.BinaryReader;
+import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.NeoSerializable;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 
+import java.io.IOException;
 import java.security.spec.ECPoint;
 
 import java.util.Arrays;
@@ -14,7 +18,7 @@ import java.util.Set;
  * A Cosigner instance models witness scoping. It is part of a transaction and defines in which
  * scopes a specific witness can be used.
  */
-public class Cosigner {
+public class Cosigner extends NeoSerializable {
 
     /**
      * The script hash of the witness originator. I.e. the account that created the witness.
@@ -83,6 +87,21 @@ public class Cosigner {
 
     public Set<ECPoint> getAllowedGroups() {
         return allowedGroups;
+    }
+
+    @Override
+    public void deserialize(BinaryReader reader) throws IOException {
+
+    }
+
+    @Override
+    public void serialize(BinaryWriter writer) throws IOException {
+
+    }
+
+    @Override
+    public byte[] toArray() {
+        return new byte[0];
     }
 
     public static class Builder {

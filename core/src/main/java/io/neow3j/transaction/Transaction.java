@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,16 +31,17 @@ public class Transaction extends NeoSerializable {
      * 32-bit integer in the neo C# implementation. It is represented as a integer here, but when
      * serializing it
      */
-    private Long nonce;
+    private long nonce;
     /**
      * Defines up to which block this transaction remains valid. If this transaction is not added
      * into a block up to this number it will become invalid and be dropped. It is an unsigned
-     * 32-bit integer in the neo C# implementation.
+     * 32-bit integer in the neo C# implementation. Here it is represented as a signed
+     * 32-bit integer which offers a smaller but still large enough range.
      */
-    private Integer validUntilBlock;
+    private int validUntilBlock;
     private ScriptHash sender;
-    private Long systemFee;
-    private Long networkFee;
+    private long systemFee;
+    private long networkFee;
     private Set<TransactionAttribute> attributes;
     private Set<Cosigner> cosigners;
     private byte[] script;
@@ -65,11 +67,11 @@ public class Transaction extends NeoSerializable {
         return version;
     }
 
-    public Long getNonce() {
+    public long getNonce() {
         return nonce;
     }
 
-    public Integer getValidUntilBlock() {
+    public long getValidUntilBlock() {
         return validUntilBlock;
     }
 
@@ -77,11 +79,11 @@ public class Transaction extends NeoSerializable {
         return sender;
     }
 
-    public Long getSystemFee() {
+    public long getSystemFee() {
         return systemFee;
     }
 
-    public Long getNetworkFee() {
+    public long getNetworkFee() {
         return networkFee;
     }
 
@@ -132,14 +134,21 @@ public class Transaction extends NeoSerializable {
     }
 
     private void serializeWithoutWitnesses(BinaryWriter writer) throws IOException {
-        //        writer.writeByte(this.version);
-        //        writer.writeSerializableVariable(this.attributes);
+        writer.writeByte(this.version);
+        writer.writeUInt32(this.nonce);
+        writer.write(this.sender.toArray());
+        writer.writeInt64(this.systemFee);
+        writer.writeInt64(this.networkFee);
+        writer.writeUInt32(this.validUntilBlock);
+        writer.writeSerializableVariable(new ArrayList<>(this.attributes));
+        writer.writeSerializableVariable(new ArrayList<>(this.cosigners));
+        writer.writeVarBytes(this.script);
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        //        serializeWithoutWitnesses(writer);
-        //        writer.writeSerializableVariable(this.witnesses);
+        serializeWithoutWitnesses(writer);
+        writer.writeSerializableVariable(new ArrayList<>(this.witnesses));
     }
 
     /**
@@ -173,12 +182,12 @@ public class Transaction extends NeoSerializable {
 
     protected static class Builder {
 
-        private Long nonce;
+        private long nonce;
         private byte version;
         private Integer validUntilBlock;
         private ScriptHash sender;
-        private Long systemFee;
-        private Long networkFee;
+        private long systemFee;
+        private long networkFee;
         private Set<Cosigner> cosigners;
         private byte[] script;
         private Set<TransactionAttribute> attributes;
@@ -231,12 +240,19 @@ public class Transaction extends NeoSerializable {
          * Sets the number of the block up to which this transaction can be included.
          * <p>
          * If that block number is reached in the network and this transaction is not yet included
-         * in a block, it becomes invalid.
+         * in a block, it becomes invalid. Note that the given block number must not be higher than
+         * the current chain height plus the increment specified in {@link
+         * NeoConstants#MAX_VALID_UNTIL_BLOCK_INCREMENT}.
          *
          * @param blockNr The block number until this transaction is valid.
          * @return this builder.
+         * @throws TransactionConfigurationException if the block number is less than 0.
          */
-        public Builder validUntilBlock(Integer blockNr) {
+        public Builder validUntilBlock(int blockNr) {
+            if (blockNr < 0) {
+                throw new TransactionConfigurationException("The block number up to which this " +
+                        "transaction can be included cannot be less than zero.");
+            }
             this.validUntilBlock = blockNr;
             return this;
         }

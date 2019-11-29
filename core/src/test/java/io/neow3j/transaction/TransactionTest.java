@@ -84,7 +84,7 @@ public class TransactionTest {
         } catch (TransactionConfigurationException ignored) {}
 
         try {
-            Long nonce = (long)Math.pow(2, 32);
+            Long nonce = (long) Math.pow(2, 32);
             b.nonce(nonce);
             fail();
         } catch (TransactionConfigurationException ignored) {}
@@ -94,6 +94,11 @@ public class TransactionTest {
             b.nonce(nonce);
             fail();
         } catch (TransactionConfigurationException ignored) {}
+    }
+
+    @Test(expected = TransactionConfigurationException.class)
+    public void failBuildingTransactionWithIncorrectValidUntilBlockNumber() {
+        Transaction.Builder b = new Transaction.Builder().validUntilBlock(-1);
     }
 
     @Test(expected = TransactionConfigurationException.class)
