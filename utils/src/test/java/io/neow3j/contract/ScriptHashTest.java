@@ -1,16 +1,33 @@
 package io.neow3j.contract;
 
 import io.neow3j.crypto.Hash;
-import io.neow3j.utils.ArrayUtils;
+import io.neow3j.io.BinaryWriter;
 import io.neow3j.utils.Numeric;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ScriptHashTest {
+
+    private String testHash;
+    private byte[] testHashBytes;
+
+    @Before
+    public void setUp() {
+        testHash = "23ba2703c53263e8d6e522dc32203339dcd8eee9";
+        testHashBytes = new byte[]{(byte) 0xe9, (byte) 0xee, (byte) 0xd8, (byte) 0xdc,
+                (byte) 0x39, (byte) 0x33, (byte) 0x20, (byte) 0x32, (byte) 0xdc, (byte) 0x22,
+                (byte) 0xe5, (byte) 0xd6, (byte) 0xe8, (byte) 0x63, (byte) 0x32, (byte) 0xc5,
+                (byte) 0x03, (byte) 0x27, (byte) 0xba, (byte) 0x23};
+    }
 
     @Test
     public void testLength() {
@@ -52,7 +69,16 @@ public class ScriptHashTest {
         String hashHex = "23ba2703c53263e8d6e522dc32203339dcd8eee9";
         ScriptHash sh = new ScriptHash(hashHex);
 
-        assertThat(sh.toArray(), is(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(hashHex))));
+        assertThat(sh.toArray(), is(testHashBytes));
+    }
+
+    @Test
+    public void serialize() throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        BinaryWriter writer = new BinaryWriter(outStream);
+        new ScriptHash(testHash).serialize(writer);
+        byte[] bytes = outStream.toByteArray();
+        assertArrayEquals(this.testHashBytes, bytes);
     }
 
     @Test
@@ -70,7 +96,8 @@ public class ScriptHashTest {
 
     @Test
     public void fromValidAddress() {
-        byte[] expectedHash = Numeric.hexStringToByteArray("23ba2703c53263e8d6e522dc32203339dcd8eee9");
+        byte[] expectedHash = Numeric.hexStringToByteArray(
+                "23ba2703c53263e8d6e522dc32203339dcd8eee9");
         ScriptHash hash = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
         assertThat(hash.toArray(), is(expectedHash));
     }
@@ -93,8 +120,10 @@ public class ScriptHashTest {
     public void fromPublicKeyByteArrays() {
         String keyHex1 = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
         String keyHex2 = "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43";
-        byte[] key1 = Numeric.hexStringToByteArray("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
-        byte[] key2 = Numeric.hexStringToByteArray("025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43");
+        byte[] key1 = Numeric.hexStringToByteArray(
+                "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        byte[] key2 = Numeric.hexStringToByteArray(
+                "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43");
         ScriptHash sh = ScriptHash.fromPublicKeys(2, key1, key2);
 
         String verificationScriptHex = "5221" + keyHex1 + "21" + keyHex2 + "52ae";

@@ -138,7 +138,7 @@ public class Transaction extends NeoSerializable {
     private void serializeWithoutWitnesses(BinaryWriter writer) throws IOException {
         writer.writeByte(this.version);
         writer.writeUInt32(this.nonce);
-        writer.write(this.sender.toArray());
+        writer.writeSerializableFixed(this.sender);
         writer.writeInt64(this.systemFee);
         writer.writeInt64(this.networkFee);
         writer.writeUInt32(this.validUntilBlock);
