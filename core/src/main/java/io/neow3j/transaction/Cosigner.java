@@ -10,8 +10,7 @@ import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 
 /**
@@ -28,17 +27,17 @@ public class Cosigner extends NeoSerializable {
     /**
      * The scopes in which a transaction witness can be used. Multiple scopes can be combined.
      */
-    private Set<WitnessScope> scopes;
+    private List<WitnessScope> scopes;
 
     /**
      * The script hashes of contracts that are allowed to use the witness.
      */
-    private Set<ScriptHash> allowedContracts;
+    private List<ScriptHash> allowedContracts;
 
     /**
      * The group hashes of contracts that are allowed to use the witness.
      */
-    private Set<ECKeyPair.ECPublicKey> allowedGroups;
+    private List<ECKeyPair.ECPublicKey> allowedGroups;
 
     private Cosigner(Builder builder) {
         this.account = builder.account;
@@ -77,15 +76,15 @@ public class Cosigner extends NeoSerializable {
         return account;
     }
 
-    public Set<WitnessScope> getScopes() {
+    public List<WitnessScope> getScopes() {
         return scopes;
     }
 
-    public Set<ScriptHash> getAllowedContracts() {
+    public List<ScriptHash> getAllowedContracts() {
         return allowedContracts;
     }
 
-    public Set<ECKeyPair.ECPublicKey> getAllowedGroups() {
+    public List<ECKeyPair.ECPublicKey> getAllowedGroups() {
         return allowedGroups;
     }
 
@@ -99,24 +98,24 @@ public class Cosigner extends NeoSerializable {
         writer.write(account.toArray());
         writer.writeByte(WitnessScope.getCombinedScope(this.scopes));
         if (scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
-            writer.writeSerializableVariable(new ArrayList<>(this.allowedContracts));
+            writer.writeSerializableVariable(this.allowedContracts);
         }
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
-            writer.writeSerializableVariable(new ArrayList<>(this.allowedGroups));
+            writer.writeSerializableVariable(this.allowedGroups);
         }
     }
 
     public static class Builder {
 
         private ScriptHash account;
-        private Set<WitnessScope> scopes;
-        private Set<ScriptHash> allowedContracts;
-        private Set<ECKeyPair.ECPublicKey> allowedGroups;
+        private List<WitnessScope> scopes;
+        private List<ScriptHash> allowedContracts;
+        private List<ECKeyPair.ECPublicKey> allowedGroups;
 
         public Builder() {
-            this.scopes = new HashSet<>();
-            this.allowedContracts = new HashSet<>();
-            this.allowedGroups = new HashSet<>();
+            this.scopes = new ArrayList<>();
+            this.allowedContracts = new ArrayList<>();
+            this.allowedGroups = new ArrayList<>();
         }
 
         /**
@@ -154,7 +153,9 @@ public class Cosigner extends NeoSerializable {
          * @return this builder.
          */
         public Builder allowedContracts(ScriptHash... contracts) {
-            this.scopes.add(WitnessScope.CUSTOM_CONSTRACTS);
+            if (!this.scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
+                this.scopes.add(WitnessScope.CUSTOM_CONSTRACTS);
+            }
             this.allowedContracts.addAll(Arrays.asList(contracts));
             return this;
         }
@@ -169,7 +170,9 @@ public class Cosigner extends NeoSerializable {
          * @return this builder.
          */
         public Builder allowedGroups(ECKeyPair.ECPublicKey... groups) {
-            this.scopes.add(WitnessScope.CUSTOM_GROUPS);
+            if (!this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
+                this.scopes.add(WitnessScope.CUSTOM_GROUPS);
+            }
             this.allowedGroups.addAll(Arrays.asList(groups));
             return this;
         }
