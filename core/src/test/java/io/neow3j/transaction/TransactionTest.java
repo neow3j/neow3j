@@ -12,8 +12,8 @@ import org.junit.Test;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.Matchers.empty;
@@ -131,7 +131,7 @@ public class TransactionTest {
         b.cosigners(Cosigner.calledByEntry(account1), Cosigner.global(account2));
 
         // Add the rest of cosigners via method taking a set argument.
-        Set<Cosigner> cosigners = new HashSet<>();
+        List<Cosigner> cosigners = new ArrayList<>();
         for (int i = 3; i <= NeoConstants.MAX_COSIGNERS; i++) {
             ScriptHash account = ScriptHash.fromPublicKey(
                     Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
@@ -157,7 +157,7 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMoreThanMaxCosignersToTxBuilder() throws
             InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        Set<Cosigner> cosigners = new HashSet<>();
+        List<Cosigner> cosigners = new ArrayList<>();
         // Create one too many cosigners
         for (int i = 0; i <= NeoConstants.MAX_COSIGNERS; i++) {
             ScriptHash account = ScriptHash.fromPublicKey(
@@ -172,7 +172,7 @@ public class TransactionTest {
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMoreThanMaxAttributesToTxBuilder() {
-        Set<TransactionAttribute> attrs = new HashSet<>();
+        List<TransactionAttribute> attrs = new ArrayList<>();
         // Create one too many attributes.
         for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
             attrs.add(new TransactionAttribute(TransactionAttributeUsageType.DESCRIPTION, "" + i));
