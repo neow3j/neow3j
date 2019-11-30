@@ -8,7 +8,7 @@ import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 
 import java.io.IOException;
 import java.security.spec.ECPoint;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -96,12 +96,14 @@ public class Cosigner extends NeoSerializable {
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-
-    }
-
-    @Override
-    public byte[] toArray() {
-        return new byte[0];
+        writer.write(account.toArray());
+        writer.writeByte(WitnessScope.getCombinedScope(this.scopes));
+        if (scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
+            writer.writeSerializableVariable(new ArrayList<>(this.allowedContracts));
+        }
+        if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
+            // TODO 30.11.19 claude: serialize group public keys
+        }
     }
 
     public static class Builder {

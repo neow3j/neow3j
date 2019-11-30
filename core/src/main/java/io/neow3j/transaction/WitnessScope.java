@@ -1,5 +1,7 @@
 package io.neow3j.transaction;
 
+import java.util.Set;
+
 public enum WitnessScope {
 
     /**
@@ -41,6 +43,14 @@ public enum WitnessScope {
             }
         }
         throw new IllegalArgumentException();
+    }
+
+    public static byte getCombinedScope(Set<WitnessScope> scopes) {
+        byte combined = 0;
+        for (WitnessScope s : scopes) {
+            combined |= s.byteValue();
+        }
+        return combined;
     }
 
 }
