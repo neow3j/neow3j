@@ -1,13 +1,13 @@
 package io.neow3j.transaction;
 
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 
 import java.io.IOException;
-import java.security.spec.ECPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -38,7 +38,7 @@ public class Cosigner extends NeoSerializable {
     /**
      * The group hashes of contracts that are allowed to use the witness.
      */
-    private Set<ECPoint> allowedGroups;
+    private Set<ECKeyPair.ECPublicKey> allowedGroups;
 
     private Cosigner(Builder builder) {
         this.account = builder.account;
@@ -85,7 +85,7 @@ public class Cosigner extends NeoSerializable {
         return allowedContracts;
     }
 
-    public Set<ECPoint> getAllowedGroups() {
+    public Set<ECKeyPair.ECPublicKey> getAllowedGroups() {
         return allowedGroups;
     }
 
@@ -102,7 +102,7 @@ public class Cosigner extends NeoSerializable {
             writer.writeSerializableVariable(new ArrayList<>(this.allowedContracts));
         }
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
-            // TODO 30.11.19 claude: serialize group public keys
+            writer.writeSerializableVariable(new ArrayList<>(this.allowedGroups));
         }
     }
 
@@ -111,7 +111,7 @@ public class Cosigner extends NeoSerializable {
         private ScriptHash account;
         private Set<WitnessScope> scopes;
         private Set<ScriptHash> allowedContracts;
-        private Set<ECPoint> allowedGroups;
+        private Set<ECKeyPair.ECPublicKey> allowedGroups;
 
         public Builder() {
             this.scopes = new HashSet<>();
@@ -168,7 +168,7 @@ public class Cosigner extends NeoSerializable {
          * @param groups one or more group public keys as elliptic curve points.
          * @return this builder.
          */
-        public Builder allowedGroups(ECPoint... groups) {
+        public Builder allowedGroups(ECKeyPair.ECPublicKey... groups) {
             this.scopes.add(WitnessScope.CUSTOM_GROUPS);
             this.allowedGroups.addAll(Arrays.asList(groups));
             return this;
