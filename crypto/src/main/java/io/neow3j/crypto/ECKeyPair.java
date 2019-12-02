@@ -15,6 +15,7 @@ import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.BigIntegers;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
 import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
@@ -217,7 +219,10 @@ public class ECKeyPair {
 
     public static class ECPublicKey extends NeoSerializable {
 
-        private org.bouncycastle.math.ec.ECPoint ecPoint;
+        private ECPoint ecPoint;
+
+        public ECPublicKey() {
+        }
 
         /**
          * Creates a new instance from the given encoded public key. The public key must be encoded
@@ -227,7 +232,7 @@ public class ECKeyPair {
          * @param publicKey The public key.
          */
         public ECPublicKey(byte[] publicKey) {
-            this.ecPoint = NeoConstants.CURVE.getCurve().decodePoint(publicKey);
+            this.ecPoint = decodePoint(publicKey);
         }
 
         /**
@@ -241,14 +246,37 @@ public class ECKeyPair {
             return ecPoint.getEncoded(compressed);
         }
 
+        public java.security.spec.ECPoint getECPoint() {
+            ECPoint normPoint = this.ecPoint.normalize();
+            return new java.security.spec.ECPoint(
+                    normPoint.getAffineXCoord().toBigInteger(),
+                    normPoint.getAffineYCoord().toBigInteger());
+        }
+
         @Override
         public void deserialize(BinaryReader reader) throws DeserializationException {
-            // TODO 30.11.19 claude: Implement ECPublicKey deserialization.
+            try {
+                ecPoint = decodePoint(reader.readBytes(PUBLIC_KEY_SIZE));
+            } catch (IOException e) {
+                throw new DeserializationException();
+            }
         }
 
         @Override
         public void serialize(BinaryWriter writer) throws IOException {
             writer.write(getEncoded(true));
+        }
+
+        private ECPoint decodePoint(byte[] encodedPoint) {
+            return NeoConstants.CURVE.getCurve().decodePoint(encodedPoint);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ECPublicKey that = (ECPublicKey) o;
+            return Objects.equals(ecPoint, that.ecPoint);
         }
     }
 }

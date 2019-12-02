@@ -23,6 +23,13 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     private byte[] scriptHash;
 
     /**
+     * Constructs a new script hash with 20 zero bytes.
+     */
+    public ScriptHash() {
+        this.scriptHash = new byte[NeoConstants.SCRIPTHASH_LENGHT_BYTES];
+    }
+
+    /**
      * Constructs a new script hash from the given byte array. The array must represent the script
      * hash in little-endian order and can be 160 (contract script hash) or 256 (global asset id)
      * bits long.
@@ -61,7 +68,11 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
-        // TODO 30.11.19 claude: Implement ScriptHash deserialization.
+        try {
+            this.scriptHash = reader.readBytes(NeoConstants.SCRIPTHASH_LENGHT_BYTES);
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

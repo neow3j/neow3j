@@ -3,6 +3,8 @@ package io.neow3j.transaction;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 import io.neow3j.utils.Numeric;
 import org.junit.Before;
@@ -238,7 +240,7 @@ public class CosignerTest {
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
                 + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
-                + "31" // custom groups scope
+                + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
                 + "47efccbc2c12df2935b39044b507eae270110288" // contract 1 script hash LE
                 + "3ab0be8672e25cf475219d018ded961ec684ca88" // contract 2 script hash LE
@@ -247,5 +249,27 @@ public class CosignerTest {
                 + "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60"); // group 2
         assertArrayEquals(expected, actual);
     }
+
+    @Test
+    public void deserialize() throws DeserializationException {
+        byte[] data = Numeric.hexStringToByteArray(""
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
+                + "31" // calledByEntry, custom contracts and custom groups scope
+                + "02" // array length 2
+                + "47efccbc2c12df2935b39044b507eae270110288" // contract 1 script hash LE
+                + "3ab0be8672e25cf475219d018ded961ec684ca88" // contract 2 script hash LE
+                + "02" // array length 2
+                + "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7" // group 1
+                + "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60"); // group 2
+        Cosigner c = NeoSerializableInterface.from(data, Cosigner.class);
+        assertThat(c.getAccount(), is(acctScriptHash));
+        assertThat(c.getScopes(), containsInAnyOrder(
+                WitnessScope.CUSTOM_CONSTRACTS,
+                WitnessScope.CALLED_BY_ENTRY,
+                WitnessScope.CUSTOM_GROUPS));
+        assertThat(c.getAllowedContracts(), containsInAnyOrder(contract1, contract2));
+        assertThat(c.getAllowedGroups(), containsInAnyOrder(groupPubKey1, groupPubKey2));
+    }
+
 
 }

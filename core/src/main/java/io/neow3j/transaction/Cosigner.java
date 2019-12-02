@@ -40,6 +40,9 @@ public class Cosigner extends NeoSerializable {
      */
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
+    public Cosigner() {
+    }
+
     private Cosigner(Builder builder) {
         this.account = builder.account;
         this.scopes = builder.scopes;
@@ -93,7 +96,13 @@ public class Cosigner extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             this.account = reader.readSerializable(ScriptHash.class);
-            reader.readByte();
+            this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
+            if (this.scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
+                this.allowedContracts = reader.readSerializableList(ScriptHash.class);
+            }
+            if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
+                this.allowedGroups = reader.readSerializableList(ECKeyPair.ECPublicKey.class);
+            }
         } catch (IllegalAccessException | InstantiationException | IOException e) {
             throw new DeserializationException(e);
         }
@@ -101,8 +110,8 @@ public class Cosigner extends NeoSerializable {
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        writer.write(account.toArray());
-        writer.writeByte(WitnessScope.getCombinedScope(this.scopes));
+        writer.writeSerializableFixed(account);
+        writer.writeByte(WitnessScope.combineScopes(this.scopes));
         if (scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
             writer.writeSerializableVariable(this.allowedContracts);
         }
