@@ -5,6 +5,7 @@ import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
 import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
@@ -145,7 +146,7 @@ public class ContractTransactionTest {
     }
 
     @Test
-    public void deserialize_CheckSig() throws IllegalAccessException, InstantiationException {
+    public void deserialize_CheckSig() throws DeserializationException {
         String rawTransaction = "80000001d405ab03e736a01ca277d94b1377113c7e961bb4550511fe1d408f30c77a82650000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b0000000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001a711802000000295f83f83fc439f56e6e1fb062d89c6f538263d70141403711e366fc99e77a110b6c96b5f8828ef956a6d5cfa5cb63273419149011b0f30dc5458faa59e4867d0ac7537e324c98124bb691feca5c5ddf6ed20f4adb778223210265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6ac";
         byte[] rawTransactionArray = Numeric.hexStringToByteArray(rawTransaction);
 
@@ -158,7 +159,7 @@ public class ContractTransactionTest {
     }
 
     @Test
-    public void deserialize_CheckMultiSig() throws IllegalAccessException, InstantiationException {
+    public void deserialize_CheckMultiSig() throws DeserializationException {
         String rawTransaction = "800000016f291e0c1f333d837b84fb707f2f0c91b3f25b6f8c4e397b1d20cc6758e4aed50000019b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b0000000023ba2703c53263e8d6e522dc32203339dcd8eee9018240ee9596a52a9033b1103f9a710467b1ac84575426c8a9a2a3c001cb04b2a5b08e266a19e3c216ed1ab8ae2c00b23b9e8ee8d9d8700958fb8655097d789dc990c9409060c6ce30864233dc96bbedaaf2c98fc5e12f673493b63ed0e6f83d760037e56347408cf8fae3cb2a3266a98aaccfcad10c7591a683b5701cf085e1f9c5aa4a695221036245f426b4522e8a2901be6ccc1f71e37dc376726cc6665d80c5997e240568fb210303897394935bb5418b1c1c4cf35513e276c6bd313ddd1330f113ec3dc34fbd0d2102e2baf21e36df2007189d05b9e682f4192a101dcdf07eed7d6313625a930874b453ae";
         byte[] rawTransactionArray = Numeric.hexStringToByteArray(rawTransaction);
 
@@ -167,7 +168,8 @@ public class ContractTransactionTest {
     }
 
     @Test
-    public void deserialize_CheckMultiSig_10_PublicKeys_7_Signatures() throws IllegalAccessException, InstantiationException {
+    public void deserialize_CheckMultiSig_10_PublicKeys_7_Signatures()
+            throws DeserializationException {
         String rawTransaction = "8000000154f2e634d4625010b1307c258fb920c0b74431717c81d6b51af0b04e77c4ea9f0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500e40b540200000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500046bf41400000021a0cd353225ebfe85236802beddc4e6ddcdd37201fdc7014060a221cf01a80c652663f4d29b7722fc59e256e10a9b6f2fecd7063bfa4f2220f601120d8680e0bd5515f3e9bee20c86e4e88f310dd9236062e577dab01f4afe40d1e817d8cd4e4d661318a771ace005cb935834821e979eb6f47cbb7672df5836ed282b7de0ba8df074127374c4929bbe63fb7eb39f8c9cb5713c6f2a6b672e12409573d2146a7f36374b1994fe06f7fb0896b8fe36be43deda78796930831a65749868348f74c67d2d82fe33b4ac17949fe18ad41f2a69b12bd8731671b3be33684040e2c7807e9babdad84fdd2a015c8e13c5fca79bee052050c4318c7146834b06de291b2648d0ee1e3b3d87608b4a8e4cbe4653d1096963e8fc1f73ea3492613c40569f3d90b577ab93bc8972098788f2b34349f1cbafe3c8dfe64932af0990b802a070fdbce3aad636efd1dfdd59057f61ca6ba0447aec34d823c13ee55b91d4ae405b119765d12a333e449637cbbf07db64150087c9f238cb5dcd466a9eb32ded5c80532f783f6494b61b746ce71d13ed2c46c1a2ecedf7846c5083af190644813b40a5ddacdefe707e91cbc8d07f56cc0c1cb5f97ea5c075cbf3e299bbef764021b8d3d897b14e9dd66fdc810cd045dfbf8c75bd7ca93ca80c455f4d0b9b4f6089adfd5701572102789a9e63a054711b1ce7f91bf0d56886fee3bd9166e91761a92bb0a90fcfd4422103a87b798cb30a4eb0602f3d4a3cc6a8672e4ab7df4c4716e25bfa2ee4299fc5d92103522f02afaf0c14182efc9079501b81c3f60a9568c122706ea308902e59a770e22103001ad1dd28b52453e8059e8c100134eaf8fd3719b8b562a9ab605d9e2f4de0da210243ba6483c794966d0be4642eef7ee88cf5718231bd9ed20382ccd4c0a847251421028143c5faef6c1587cae3230b5d33eed861e34b9247799dc87f508a41cc2e89582102e27a346ae6fda8ab9a63b94b7ffb817f0544c16e8436d970d54ce5a6a2b4a20f2102ba5053463b66b4968249de9854ba3c708352bb126ee2b3276aca0495b6c48dbf2103f38690c96a579df193992e839246859c4d45a38a2e9ef7e9ebbb556b713e0706210292d77b056cbd66f7d28bf031fa51dc672cf4f44692b3b8b584519776f395a3cc5aae";
         byte[] rawTransactionArray = Numeric.hexStringToByteArray(rawTransaction);
 
@@ -225,7 +227,7 @@ public class ContractTransactionTest {
     }
 
     @Test
-    public void serialize_then_deserialize_without_scripts() throws IllegalAccessException, InstantiationException {
+    public void serialize_then_deserialize_without_scripts() throws DeserializationException {
         ContractTransaction tx = new ContractTransaction.Builder()
                 .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
@@ -246,7 +248,7 @@ public class ContractTransactionTest {
     }
 
     @Test
-    public void serialize_then_deserialize_with_script() throws IllegalAccessException, InstantiationException {
+    public void serialize_then_deserialize_with_script() throws DeserializationException {
         BigInteger publicKey = Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
         byte[] invocationScript = Numeric.hexStringToByteArray("40a1c29ef0b8215d5bf8f3649ff1eae3fd5d74bf38c92007ce6ac" +
                 "eea60efa5a986ed1c3d7669f9073f572a52dbbdc7ad7908fe22c2859e85d979e405807ce3d644");

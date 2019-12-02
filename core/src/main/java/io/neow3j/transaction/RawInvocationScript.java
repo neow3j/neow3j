@@ -7,6 +7,7 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
@@ -101,8 +102,12 @@ public class RawInvocationScript extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        script = reader.readVarBytes();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            script = reader.readVarBytes();
+        } catch(IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

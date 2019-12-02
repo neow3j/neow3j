@@ -3,6 +3,7 @@ package io.neow3j.transaction;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
@@ -55,10 +56,15 @@ public class RawTransactionInput extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        this.prevHash = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
-        byte[] readBytes = reader.readBytes(2);
-        this.prevIndex = Numeric.toBigInt(ArrayUtils.reverseArray(readBytes)).intValue();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            this.prevHash = Numeric.toHexStringNoPrefix(
+                    ArrayUtils.reverseArray(reader.readBytes(32)));
+            byte[] readBytes = reader.readBytes(2);
+            this.prevIndex = Numeric.toBigInt(ArrayUtils.reverseArray(readBytes)).intValue();
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

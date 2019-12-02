@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
@@ -34,8 +35,12 @@ public class ClaimTransaction extends RawTransaction {
     }
 
     @Override
-    public void deserializeExclusive(BinaryReader reader) throws IOException, IllegalAccessException, InstantiationException {
-        claims = reader.readSerializableList(RawTransactionInput.class);
+    public void deserializeExclusive(BinaryReader reader) throws DeserializationException {
+        try {
+            claims = reader.readSerializableList(RawTransactionInput.class);
+        } catch (IllegalAccessException | IOException | InstantiationException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     public static ClaimTransaction fromClaimables(Claimables claimables, String receivingAddress) {

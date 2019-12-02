@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +14,7 @@ public class ContractInvocationScript extends NeoSerializable {
     private static final Logger LOG = LoggerFactory.getLogger(ContractInvocationScript.class);
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
+    public void deserialize(BinaryReader reader) throws DeserializationException {
         // TODO: 2019-07-03 Guil: to be implemented
     }
 

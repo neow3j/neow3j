@@ -4,6 +4,7 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,9 @@ public class ContractDeploymentScript extends NeoSerializable {
     public ContractDeploymentScript() {
     }
 
-    public ContractDeploymentScript(byte[] scriptBinary, ContractFunctionProperties functionProperties, ContractDescriptionProperties descriptionProperties) {
+    public ContractDeploymentScript(byte[] scriptBinary,
+            ContractFunctionProperties functionProperties,
+            ContractDescriptionProperties descriptionProperties) {
         this.scriptBinary = scriptBinary;
         this.functionProperties = functionProperties;
         this.descriptionProperties = descriptionProperties;
@@ -61,16 +64,15 @@ public class ContractDeploymentScript extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
+    public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            this.descriptionProperties = reader.readSerializable(ContractDescriptionProperties.class);
+            this.descriptionProperties = reader.readSerializable(
+                    ContractDescriptionProperties.class);
             this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
             this.scriptBinary = reader.readPushData();
             this.contractScriptHash = ScriptHash.fromScript(this.scriptBinary);
-        } catch (IllegalAccessException e) {
-            LOG.error("Can't access the specified object.", e);
-        } catch (InstantiationException e) {
-            LOG.error("Can't instantiate the specified object type.", e);
+        } catch (IllegalAccessException | InstantiationException | IOException e) {
+            throw new DeserializationException(e);
         }
     }
 

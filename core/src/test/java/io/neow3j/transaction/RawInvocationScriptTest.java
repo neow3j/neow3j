@@ -4,6 +4,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import org.junit.Test;
 
@@ -60,8 +61,8 @@ public class RawInvocationScriptTest {
     }
 
     @Test
-    public void testDeserialize() throws IllegalAccessException, InstantiationException,
-            InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    public void testDeserialize() throws InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException, DeserializationException {
 
         int messageSize = 32;
         byte[] message = new byte[messageSize];

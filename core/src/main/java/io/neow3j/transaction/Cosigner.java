@@ -5,6 +5,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 
 import java.io.IOException;
@@ -89,8 +90,13 @@ public class Cosigner extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            this.account = reader.readSerializable(ScriptHash.class);
+            reader.readByte();
+        } catch (IllegalAccessException | InstantiationException | IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

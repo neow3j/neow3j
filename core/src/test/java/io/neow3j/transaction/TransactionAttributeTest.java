@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.utils.ArrayUtils;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class TransactionAttributeTest {
     }
 
     @Test
-    public void deserialize() throws IOException {
+    public void deserialize() throws DeserializationException {
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             byte usage = type.byteValue();
             byte[] data;

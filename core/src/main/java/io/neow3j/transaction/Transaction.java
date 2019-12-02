@@ -6,6 +6,7 @@ import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -122,7 +123,7 @@ public class Transaction extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
+    public void deserialize(BinaryReader reader) throws DeserializationException {
         //        this.version = reader.readByte();
         //        try {
         //            this.attributes = reader.readSerializableList(TransactionAttribute.class);

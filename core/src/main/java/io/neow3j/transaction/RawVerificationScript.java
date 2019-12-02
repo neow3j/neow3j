@@ -5,6 +5,7 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
@@ -37,7 +38,8 @@ public class RawVerificationScript extends NeoSerializable {
         );
     }
 
-    public static RawVerificationScript fromPublicKeys(int signingThreshold, List<BigInteger> publicKeys) {
+    public static RawVerificationScript fromPublicKeys(int signingThreshold,
+            List<BigInteger> publicKeys) {
         return new RawVerificationScript(
                 Keys.getVerificationScriptFromPublicKeys(signingThreshold, publicKeys)
         );
@@ -103,8 +105,12 @@ public class RawVerificationScript extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        script = reader.readVarBytes();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            script = reader.readVarBytes();
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

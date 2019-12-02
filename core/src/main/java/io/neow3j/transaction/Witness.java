@@ -6,6 +6,7 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,15 +191,13 @@ public class Witness extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
+    public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             this.invocationScript = reader.readSerializable(RawInvocationScript.class);
             this.verificationScript = reader.readSerializable(RawVerificationScript.class);
             this.scriptHash = verificationScript.getScriptHash();
-        } catch (IllegalAccessException e) {
-            LOG.error("Can't access the specified object.", e);
-        } catch (InstantiationException e) {
-            LOG.error("Can't instantiate the specified object type.", e);
+        } catch (IllegalAccessException | InstantiationException e) {
+            throw new DeserializationException(e);
         }
     }
 

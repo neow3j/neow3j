@@ -26,6 +26,7 @@ package io.neow3j.io;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.BigIntegers;
 import org.bouncycastle.math.ec.ECPoint;
 
@@ -38,8 +39,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.neow3j.utils.Numeric.toBigInt;
 
 public class BinaryReader implements AutoCloseable {
 
@@ -173,13 +172,15 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getLong(0);
     }
 
-    public <T extends NeoSerializable> T readSerializable(Class<T> t) throws InstantiationException, IllegalAccessException, IOException {
+    public <T extends NeoSerializable> T readSerializable(Class<T> t) throws InstantiationException,
+            IllegalAccessException, DeserializationException {
         T obj = t.newInstance();
         obj.deserialize(this);
         return obj;
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t) throws IOException, IllegalAccessException, InstantiationException {
+    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t) throws
+            IOException, IllegalAccessException, InstantiationException, DeserializationException {
         int length = (int) readVarInt(0x10000000);
         int bytesRead = 0;
         int initialOffset = getPosition();
@@ -194,7 +195,8 @@ public class BinaryReader implements AutoCloseable {
         return list;
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t) throws IOException, IllegalAccessException, InstantiationException {
+    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t) throws IOException,
+            IllegalAccessException, InstantiationException, DeserializationException {
         int length = (int) readVarInt(0x10000000);
         List<T> list = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {

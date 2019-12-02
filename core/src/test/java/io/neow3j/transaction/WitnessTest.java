@@ -6,6 +6,7 @@ import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
@@ -138,7 +139,7 @@ public class WitnessTest {
 
     @Test
     public void testDeserializeWithWitness() throws InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, NoSuchProviderException, IllegalAccessException, InstantiationException {
+            NoSuchAlgorithmException, NoSuchProviderException, DeserializationException {
 
         int messageSize = 10;
         byte[] message = new byte[messageSize];

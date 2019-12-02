@@ -4,6 +4,7 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -88,10 +89,15 @@ public class RawTransactionOutput extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        this.assetId = Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(reader.readBytes(32)));
-        this.value = Numeric.fromFixed8ToDecimal(reader.readBytes(8));
-        this.address = new ScriptHash(reader.readBytes(20)).toAddress();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            this.assetId = Numeric.toHexStringNoPrefix(
+                    ArrayUtils.reverseArray(reader.readBytes(32)));
+            this.value = Numeric.fromFixed8ToDecimal(reader.readBytes(8));
+            this.address = new ScriptHash(reader.readBytes(20)).toAddress();
+        } catch (IOException e) {
+            throw new DeserializationException();
+        }
     }
 
     @Override

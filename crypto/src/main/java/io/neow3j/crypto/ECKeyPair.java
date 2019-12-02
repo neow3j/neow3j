@@ -4,6 +4,7 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
@@ -241,7 +242,7 @@ public class ECKeyPair {
         }
 
         @Override
-        public void deserialize(BinaryReader reader) throws IOException {
+        public void deserialize(BinaryReader reader) throws DeserializationException {
             // TODO 30.11.19 claude: Implement ECPublicKey deserialization.
         }
 

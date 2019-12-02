@@ -3,6 +3,7 @@ package io.neow3j.transaction;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.utils.Numeric;
 
@@ -73,14 +74,18 @@ public class TransactionAttribute extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        this.usage = TransactionAttributeUsageType.valueOf(reader.readByte());
-        if (usage.fixedDataLength() != null) {
-            this.data = reader.readBytes(usage.fixedDataLength());
-        } else if (usage.maxDataLength() != null){
-            this.data = reader.readVarBytes(usage.maxDataLength());
-        } else {
-            this.data = reader.readVarBytes();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            this.usage = TransactionAttributeUsageType.valueOf(reader.readByte());
+            if (usage.fixedDataLength() != null) {
+                this.data = reader.readBytes(usage.fixedDataLength());
+            } else if (usage.maxDataLength() != null) {
+                this.data = reader.readVarBytes(usage.maxDataLength());
+            } else {
+                this.data = reader.readVarBytes();
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
         }
     }
 

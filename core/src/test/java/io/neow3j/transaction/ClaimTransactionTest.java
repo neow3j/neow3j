@@ -1,6 +1,7 @@
 package io.neow3j.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Keys;
 import io.neow3j.crypto.WIF;
 import io.neow3j.io.NeoSerializableInterface;
@@ -46,7 +47,7 @@ public class ClaimTransactionTest {
 
 
     @Test
-    public void deserialize_Signed() throws IllegalAccessException, InstantiationException {
+    public void deserialize_Signed() throws DeserializationException {
 
         String receivingAdr = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
         String claimValue = "7264";

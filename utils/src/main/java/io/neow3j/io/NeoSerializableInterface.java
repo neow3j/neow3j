@@ -1,5 +1,7 @@
 package io.neow3j.io;
 
+import io.neow3j.io.exceptions.DeserializationException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,7 +9,7 @@ import java.util.List;
 
 public interface NeoSerializableInterface {
 
-    void deserialize(BinaryReader reader) throws IOException;
+    void deserialize(BinaryReader reader) throws DeserializationException;
 
     void serialize(BinaryWriter writer) throws IOException;
 
@@ -23,23 +25,27 @@ public interface NeoSerializableInterface {
         }
     }
 
-    static <T extends NeoSerializable> T from(byte[] value, Class<T> t) throws InstantiationException, IllegalAccessException {
+    static <T extends NeoSerializable> T from(byte[] value, Class<T> t)
+            throws DeserializationException {
+
         try (ByteArrayInputStream ms = new ByteArrayInputStream(value)) {
             try (BinaryReader reader = new BinaryReader(ms)) {
                 return reader.readSerializable(t);
             }
-        } catch (IOException ex) {
-            throw new IllegalArgumentException(ex);
+        } catch (IllegalAccessException | InstantiationException | IOException e) {
+            throw new DeserializationException(e);
         }
     }
 
-    static <T extends NeoSerializable> List<T> fromAsList(byte[] value, Class<T> t) throws InstantiationException, IllegalAccessException {
+    static <T extends NeoSerializable> List<T> fromAsList(byte[] value, Class<T> t)
+            throws DeserializationException {
+
         try (ByteArrayInputStream ms = new ByteArrayInputStream(value)) {
             try (BinaryReader reader = new BinaryReader(ms)) {
                 return reader.readSerializableListVarBytes(t);
             }
-        } catch (IOException ex) {
-            throw new IllegalArgumentException(ex);
+        } catch (IllegalAccessException | InstantiationException | IOException e) {
+            throw new DeserializationException(e);
         }
     }
 

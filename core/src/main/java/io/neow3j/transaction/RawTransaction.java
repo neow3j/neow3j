@@ -4,6 +4,7 @@ import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -101,19 +102,17 @@ public abstract class RawTransaction extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        this.transactionType = TransactionType.valueOf(reader.readByte());
-        this.version = reader.readByte();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
+            this.transactionType = TransactionType.valueOf(reader.readByte());
+            this.version = reader.readByte();
             deserializeExclusive(reader);
             this.attributes = reader.readSerializableList(TransactionAttribute.class);
             this.inputs = reader.readSerializableList(RawTransactionInput.class);
             this.outputs = reader.readSerializableList(RawTransactionOutput.class);
             this.scripts = reader.readSerializableList(Witness.class);
-        } catch (IllegalAccessException e) {
-            LOG.error("Can't access the specified object.", e);
-        } catch (InstantiationException e) {
-            LOG.error("Can't instantiate the specified object type.", e);
+        } catch (IllegalAccessException | InstantiationException | IOException e) {
+            throw new DeserializationException(e);
         }
     }
 
@@ -134,7 +133,7 @@ public abstract class RawTransaction extends NeoSerializable {
 
     public abstract void serializeExclusive(BinaryWriter writer) throws IOException;
 
-    public abstract void deserializeExclusive(BinaryReader reader) throws IOException, IllegalAccessException, InstantiationException;
+    public abstract void deserializeExclusive(BinaryReader reader) throws DeserializationException;
 
     /**
      * Serializes this transaction to a raw byte array without any scripts. This is required if the
