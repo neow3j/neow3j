@@ -1,14 +1,17 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.Keys;
+import io.neow3j.utils.Numeric;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -16,20 +19,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static io.neow3j.model.types.TransactionAttributeUsageType.SCRIPT;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 public class TransactionTest {
 
-    private ScriptHash account;
+    private ScriptHash account1;
+    private ScriptHash account2;
 
     @Before
     public void setUp() throws Exception {
-        account = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
+        account1 = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
+        account2 = ScriptHash.fromAddress("APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL");
     }
 
     @Test
@@ -37,7 +44,7 @@ public class TransactionTest {
         int validUntilBlock = 100;
         Transaction t = new Transaction.Builder()
                 .validUntilBlock(validUntilBlock)
-                .sender(account)
+                .sender(account1)
                 .build();
 
         assertThat(t.getVersion(), is(NeoConstants.CURRENT_TX_VERSION));
@@ -55,7 +62,7 @@ public class TransactionTest {
         Long nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
         Transaction.Builder b = new Transaction.Builder()
                 .validUntilBlock(1)
-                .sender(account);
+                .sender(account1);
         Transaction t = b.nonce(nonce).build();
         assertThat(t.getNonce(), is(nonce));
 
@@ -76,7 +83,7 @@ public class TransactionTest {
     public void failBuildingTransactionWithIncorrectNonce() {
         Transaction.Builder b = new Transaction.Builder()
                 .validUntilBlock(1)
-                .sender(account);
+                .sender(account1);
         try {
             Long nonce = Integer.toUnsignedLong(-1) + 1;
             b.nonce(nonce);
@@ -104,7 +111,7 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failBuildingTxWithoutValidUntilBlockProperty() {
         Transaction t = new Transaction.Builder()
-                .sender(account)
+                .sender(account1)
                 .build();
     }
 
@@ -120,7 +127,7 @@ public class TransactionTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Transaction.Builder b = new Transaction.Builder()
-                .sender(account)
+                .sender(account1)
                 .validUntilBlock(1);
 
         // Add two cosigners via varargs method.
@@ -144,14 +151,14 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount1() {
         Transaction.Builder b = new Transaction.Builder();
-        b.cosigners(Cosigner.global(account), Cosigner.calledByEntry(account));
+        b.cosigners(Cosigner.global(account1), Cosigner.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount2() {
         Transaction.Builder b = new Transaction.Builder();
-        b.cosigners(Cosigner.global(account));
-        b.cosigners(Cosigner.calledByEntry(account));
+        b.cosigners(Cosigner.global(account1));
+        b.cosigners(Cosigner.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
@@ -165,7 +172,7 @@ public class TransactionTest {
             cosigners.add(Cosigner.global(account));
         }
         Transaction.Builder tx = new Transaction.Builder()
-                .sender(account)
+                .sender(account1)
                 .validUntilBlock(1)
                 .cosigners(cosigners);
     }
@@ -178,6 +185,75 @@ public class TransactionTest {
             attrs.add(new TransactionAttribute(TransactionAttributeUsageType.DESCRIPTION, "" + i));
         }
         new Transaction.Builder().attributes(attrs);
+    }
+
+    @Test
+    public void serializeWithoutAttributesWitnessesAndCosigners() {
+        Transaction tx = new Transaction.Builder()
+                .sender(account1)
+                .version((byte) 0)
+                .nonce((long) 0x01020304)
+                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
+                .networkFee(1L) // 1 fraction of GAS
+                .validUntilBlock(0x01020304)
+                .script(new byte[]{OpCode.PUSH1.getValue()})
+                .build();
+
+        byte[] actual = tx.toArray();
+        byte[] expected = Numeric.hexStringToByteArray(""
+                + "00" // version
+                + "04030201"  // nonce
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash
+                + "00e1f50500000000"  // system fee (1 GAS)
+                + "0100000000000000"  // network fee (1 GAS fraction)
+                + "04030201"  // valid until block
+                + "00"  // no attributes
+                + "00"  // no cosigners
+                + "0151"  // push1 script
+                + "00"); // no witnesses
+
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void serializeWithAttributesWitnessesAndCosigners() {
+
+        Transaction tx = new Transaction.Builder()
+                .sender(account1)
+                .version((byte) 0)
+                .nonce((long) 0x01020304)
+                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
+                .networkFee(1L) // 1 fraction of GAS
+                .validUntilBlock(0x01020304)
+                .script(new byte[]{OpCode.PUSH1.getValue()})
+                .attributes(
+                        new TransactionAttribute(SCRIPT, account1.toArray()),
+                        new TransactionAttribute(SCRIPT, account2.toArray()))
+                .cosigners(
+                        Cosigner.global(account1),
+                        Cosigner.calledByEntry(account2))
+                .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
+                .build();
+
+        byte[] actual = tx.toArray();
+        byte[] expected = Numeric.hexStringToByteArray(""
+                + "00" // version
+                + "04030201"  // nonce
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash
+                + "00e1f50500000000"  // system fee (1 GAS)
+                + "0100000000000000"  // network fee (1 GAS fraction)
+                + "04030201"  // valid until block
+                + "02"  // 2 attributes
+                + "2023ba2703c53263e8d6e522dc32203339dcd8eee9" // global cosigner
+                + "2052eaab8b2aab608902c651912db34de36e7a2b0f" // calledByEntry cosigner
+                + "02"  // 2 cosigners
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
+                + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
+                + "0151"  // push1 script
+                + "01" // 1 witness
+                + "01000100" // witness
+        ); // 1 witnesses
+
     }
 
 }
