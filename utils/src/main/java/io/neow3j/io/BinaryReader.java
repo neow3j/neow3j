@@ -166,7 +166,28 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getInt(0);
     }
 
-    public long readLong() throws IOException {
+    /**
+     * Reads a 32-bit unsigned integer from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a
+     * long.
+     *
+     * @return the 32-bit unsigned integer.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readUInt32() throws IOException {
+        reader.readFully(array, 0, 4);
+        position += 4;
+        return Integer.toUnsignedLong(buffer.getInt(0));
+    }
+
+    /**
+     * Reads a 64-bit signed integer from the underlying input stream.
+     *
+     * @return the 34-bit unsigned integer represented as a long.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readInt64() throws IOException {
         reader.readFully(array, 0, 8);
         position += 8;
         return buffer.getLong(0);
@@ -258,7 +279,7 @@ public class BinaryReader implements AutoCloseable {
         } else if (fb == 0xFE) {
             value = Integer.toUnsignedLong(readInt());
         } else if (fb == 0xFF) {
-            value = readLong();
+            value = readInt64();
         } else {
             value = fb;
         }

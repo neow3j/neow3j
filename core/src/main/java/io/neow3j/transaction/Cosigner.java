@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -41,6 +42,10 @@ public class Cosigner extends NeoSerializable {
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
     public Cosigner() {
+        this.account = new ScriptHash();
+        this.scopes = new ArrayList<>();
+        this.allowedContracts = new ArrayList<>();
+        this.allowedGroups = new ArrayList<>();
     }
 
     private Cosigner(Builder builder) {
@@ -118,6 +123,22 @@ public class Cosigner extends NeoSerializable {
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
             writer.writeSerializableVariable(this.allowedGroups);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cosigner cosigner = (Cosigner) o;
+        return account.equals(cosigner.account) &&
+                scopes.equals(cosigner.scopes) &&
+                allowedContracts.equals(cosigner.allowedContracts) &&
+                allowedGroups.equals(cosigner.allowedGroups);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(account, scopes, allowedContracts, allowedGroups);
     }
 
     public static class Builder {

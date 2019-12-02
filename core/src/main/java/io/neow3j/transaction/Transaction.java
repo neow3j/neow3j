@@ -40,7 +40,7 @@ public class Transaction extends NeoSerializable {
      * 32-bit integer in the neo C# implementation. Here it is represented as a signed 32-bit
      * integer which offers a smaller but still large enough range.
      */
-    private int validUntilBlock;
+    private long validUntilBlock;
     private ScriptHash sender;
     private long systemFee;
     private long networkFee;
@@ -124,15 +124,20 @@ public class Transaction extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
-        //        this.version = reader.readByte();
-        //        try {
-        //            this.attributes = reader.readSerializableList(TransactionAttribute.class);
-        //            this.witnesses = reader.readSerializableList(Witness.class);
-        //        } catch (IllegalAccessException e) {
-        //            LOG.error("Can't access the specified object.", e);
-        //        } catch (InstantiationException e) {
-        //            LOG.error("Can't instantiate the specified object type.", e);
-        //        }
+        try {
+            this.version = reader.readByte();
+            this.nonce = reader.readUInt32();
+            this.sender = reader.readSerializable(ScriptHash.class);
+            this.systemFee = reader.readInt64();
+            this.networkFee = reader.readInt64();
+            this.validUntilBlock = reader.readUInt32();
+            this.attributes = reader.readSerializableList(TransactionAttribute.class);
+            this.cosigners = reader.readSerializableList(Cosigner.class);
+            this.script = reader.readVarBytes();
+            this.witnesses = reader.readSerializableList(Witness.class);
+        } catch (IOException | InstantiationException | IllegalAccessException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     private void serializeWithoutWitnesses(BinaryWriter writer) throws IOException {
@@ -187,7 +192,7 @@ public class Transaction extends NeoSerializable {
 
         private long nonce;
         private byte version;
-        private Integer validUntilBlock;
+        private Long validUntilBlock;
         private ScriptHash sender;
         private long systemFee;
         private long networkFee;
@@ -251,10 +256,10 @@ public class Transaction extends NeoSerializable {
          * @return this builder.
          * @throws TransactionConfigurationException if the block number is less than 0.
          */
-        public Builder validUntilBlock(int blockNr) {
-            if (blockNr < 0) {
+        public Builder validUntilBlock(long blockNr) {
+            if (blockNr < 0 || blockNr >= (long) Math.pow(2, 32)) {
                 throw new TransactionConfigurationException("The block number up to which this " +
-                        "transaction can be included cannot be less than zero.");
+                        "transaction can be included cannot be less than zero or more than 2^32.");
             }
             this.validUntilBlock = blockNr;
             return this;

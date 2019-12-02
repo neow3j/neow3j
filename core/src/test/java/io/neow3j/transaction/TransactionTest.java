@@ -4,6 +4,8 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.Keys;
@@ -16,10 +18,12 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static io.neow3j.model.types.TransactionAttributeUsageType.SCRIPT;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -41,7 +45,7 @@ public class TransactionTest {
 
     @Test
     public void buildMinimalTransaction() {
-        int validUntilBlock = 100;
+        long validUntilBlock = 100L;
         Transaction t = new Transaction.Builder()
                 .validUntilBlock(validUntilBlock)
                 .sender(account1)
@@ -61,7 +65,7 @@ public class TransactionTest {
     public void buildTransactionWithCorrectNonce() {
         Long nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
         Transaction.Builder b = new Transaction.Builder()
-                .validUntilBlock(1)
+                .validUntilBlock(1L)
                 .sender(account1);
         Transaction t = b.nonce(nonce).build();
         assertThat(t.getNonce(), is(nonce));
@@ -82,7 +86,7 @@ public class TransactionTest {
     @Test
     public void failBuildingTransactionWithIncorrectNonce() {
         Transaction.Builder b = new Transaction.Builder()
-                .validUntilBlock(1)
+                .validUntilBlock(1L)
                 .sender(account1);
         try {
             Long nonce = Integer.toUnsignedLong(-1) + 1;
@@ -104,8 +108,13 @@ public class TransactionTest {
     }
 
     @Test(expected = TransactionConfigurationException.class)
-    public void failBuildingTransactionWithIncorrectValidUntilBlockNumber() {
-        Transaction.Builder b = new Transaction.Builder().validUntilBlock(-1);
+    public void failBuildingTransactionWithNegativeValidUntilBlockNumber() {
+        Transaction.Builder b = new Transaction.Builder().validUntilBlock(-1L);
+    }
+
+    @Test(expected = TransactionConfigurationException.class)
+    public void failBuildingTransactionWithTooHighValidUntilBlockNumber() {
+        Transaction.Builder b = new Transaction.Builder().validUntilBlock((long) Math.pow(2, 32));
     }
 
     @Test(expected = TransactionConfigurationException.class)
@@ -118,7 +127,7 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failBuildingTxWithoutSenderAccount() {
         Transaction t = new Transaction.Builder()
-                .validUntilBlock(100)
+                .validUntilBlock(100L)
                 .build();
     }
 
@@ -128,7 +137,7 @@ public class TransactionTest {
 
         Transaction.Builder b = new Transaction.Builder()
                 .sender(account1)
-                .validUntilBlock(1);
+                .validUntilBlock(1L);
 
         // Add two cosigners via varargs method.
         ScriptHash account1 = ScriptHash.fromPublicKey(
@@ -173,7 +182,7 @@ public class TransactionTest {
         }
         Transaction.Builder tx = new Transaction.Builder()
                 .sender(account1)
-                .validUntilBlock(1)
+                .validUntilBlock(1L)
                 .cosigners(cosigners);
     }
 
@@ -195,7 +204,7 @@ public class TransactionTest {
                 .nonce((long) 0x01020304)
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
                 .networkFee(1L) // 1 fraction of GAS
-                .validUntilBlock(0x01020304)
+                .validUntilBlock(0x01020304L)
                 .script(new byte[]{OpCode.PUSH1.getValue()})
                 .build();
 
@@ -217,14 +226,13 @@ public class TransactionTest {
 
     @Test
     public void serializeWithAttributesWitnessesAndCosigners() {
-
         Transaction tx = new Transaction.Builder()
                 .sender(account1)
                 .version((byte) 0)
                 .nonce((long) 0x01020304)
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
                 .networkFee(1L) // 1 fraction of GAS
-                .validUntilBlock(0x01020304)
+                .validUntilBlock(0x01020304L)
                 .script(new byte[]{OpCode.PUSH1.getValue()})
                 .attributes(
                         new TransactionAttribute(SCRIPT, account1.toArray()),
@@ -244,16 +252,52 @@ public class TransactionTest {
                 + "0100000000000000"  // network fee (1 GAS fraction)
                 + "04030201"  // valid until block
                 + "02"  // 2 attributes
-                + "2023ba2703c53263e8d6e522dc32203339dcd8eee9" // global cosigner
-                + "2052eaab8b2aab608902c651912db34de36e7a2b0f" // calledByEntry cosigner
+                + "2023ba2703c53263e8d6e522dc32203339dcd8eee9" // Script attribute 1
+                + "2052eaab8b2aab608902c651912db34de36e7a2b0f" // Script attribute 2
                 + "02"  // 2 cosigners
                 + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
                 + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
                 + "0151"  // push1 script
                 + "01" // 1 witness
                 + "01000100" // witness
-        ); // 1 witnesses
+        );
+    }
 
+    @Test
+    public void deserialize() throws DeserializationException {
+        byte[] data = Numeric.hexStringToByteArray(""
+                + "00" // version
+                + "04030201"  // nonce
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash
+                + "00e1f50500000000"  // system fee (1 GAS)
+                + "0100000000000000"  // network fee (1 GAS fraction)
+                + "04030201"  // valid until block
+                + "02"  // 2 attributes
+                + "2023ba2703c53263e8d6e522dc32203339dcd8eee9" // Script attribute 1
+                + "2052eaab8b2aab608902c651912db34de36e7a2b0f" // Script attribute 2
+                + "02"  // 2 cosigners
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
+                + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
+                + "0151"  // push1 script
+                + "01" // 1 witness
+                + "01000100"); /* witness*/
+
+        Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
+        assertThat(tx.getVersion(), is((byte) 0));
+        assertThat(tx.getNonce(), is(16_909_060L));
+        assertThat(tx.getSender(), is(account1));
+        assertThat(tx.getSystemFee(), is((long) Math.pow(10,8)));
+        assertThat(tx.getNetworkFee(), is(1L));
+        assertThat(tx.getValidUntilBlock(), is(16_909_060L));
+        assertThat(tx.getAttributes(), containsInAnyOrder(
+                new TransactionAttribute(SCRIPT, account1.toArray()),
+                new TransactionAttribute(SCRIPT, account2.toArray())));
+        assertThat(tx.getCosigners(), containsInAnyOrder(
+                Cosigner.global(account1),
+                Cosigner.calledByEntry(account2)));
+        assertArrayEquals(new byte[]{OpCode.PUSH1.getValue()}, tx.getScript());
+        assertThat(tx.getWitnesses(), is(
+                Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
     }
 
 }

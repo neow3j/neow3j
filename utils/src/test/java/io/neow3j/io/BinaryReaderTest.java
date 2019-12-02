@@ -301,6 +301,64 @@ public class BinaryReaderTest extends TestBinaryUtils {
         assertThat(this.readResultString, is(new String(this.arrayBuilder.getData())));
     }
 
+    @Test
+    public void readUInt32() throws IOException {
+        // Max value
+        byte[] data = new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
+        buildBinaryReader(data);
+        long value = this.testBinaryReader.readUInt32();
+        assertThat(value, is(4_294_967_295L));
+
+        // Value 1
+        data = new byte[]{(byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readUInt32();
+        assertThat(value, is(1L));
+
+        // Min value
+        data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readUInt32();
+        assertThat(value, is(0L));
+
+        // Any value with longer input than needed. Last 0xff should be ignored.
+        data = new byte[]{(byte) 0x8c, (byte) 0xae, (byte) 0x00, (byte) 0x00, (byte) 0xff};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readUInt32();
+        assertThat(value, is(44_684L));
+    }
+
+    @Test
+    public void readInt64() throws IOException {
+        // Min value (-2^63)
+        byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x80};
+        buildBinaryReader(data);
+        long value = this.testBinaryReader.readInt64();
+        assertThat(value, is(Long.MIN_VALUE));
+
+        // Max value (2^63-1)
+        data = new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,
+                (byte) 0xff, (byte) 0xff, (byte) 0x7f};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readInt64();
+        assertThat(value, is(Long.MAX_VALUE));
+
+        // Zero value
+        data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readInt64();
+        assertThat(value, is(0L));
+
+        // Any value with longer input than needed. Last 0xff should be ignored.
+        data = new byte[]{(byte) 0x11, (byte) 0x33, (byte) 0x22, (byte) 0x8c, (byte) 0xae,
+                (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readInt64();
+        assertThat(value, is(749_675_361_041L));
+    }
+
     private void buildBinaryReader(byte[] data) {
         this.is = new ByteArrayInputStream(data);
         this.testBinaryReader = new BinaryReader(is);
