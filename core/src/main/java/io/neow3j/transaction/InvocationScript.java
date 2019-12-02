@@ -21,11 +21,11 @@ import java.util.Objects;
  * constructed from the OpCode {@link io.neow3j.constants.OpCode#PUSHBYTES64} and the transaction
  * signature.
  */
-public class RawInvocationScript extends NeoSerializable {
+public class InvocationScript extends NeoSerializable {
 
     private byte[] script;
 
-    public RawInvocationScript() {
+    public InvocationScript() {
         script = new byte[0];
     }
 
@@ -33,17 +33,17 @@ public class RawInvocationScript extends NeoSerializable {
      * Creates an invocation script with the given script.
      * If the script represents a signature make sure that it starts with the {@link
      * io.neow3j.constants.OpCode#PUSHBYTES64}. The opcode is not added automatically. Better even,
-     * use {@link RawInvocationScript#fromSignature(Sign.SignatureData)} or {@link
-     * RawInvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need
+     * use {@link InvocationScript#fromSignature(Sign.SignatureData)} or {@link
+     * InvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need
      * a signature invocation script.
      *
      * @param script The script in an array of bytes.
      */
-    public RawInvocationScript(byte[] script) {
+    public InvocationScript(byte[] script) {
         this.script = script;
     }
 
-    private RawInvocationScript(byte[] script, SignatureData signature) {
+    private InvocationScript(byte[] script, SignatureData signature) {
         this(script);
     }
 
@@ -54,9 +54,9 @@ public class RawInvocationScript extends NeoSerializable {
      * @param signature The signature to use in the script.
      * @return the constructed invocation script.
      */
-    public static RawInvocationScript fromSignature(SignatureData signature) {
+    public static InvocationScript fromSignature(SignatureData signature) {
         byte[] script = new ScriptBuilder().pushData(signature.getConcatenated()).toArray();
-        return new RawInvocationScript(script, signature);
+        return new InvocationScript(script, signature);
     }
 
     /**
@@ -67,15 +67,15 @@ public class RawInvocationScript extends NeoSerializable {
      * @param keyPair Key pair to use for signing
      * @return the constructed invocation script.
      */
-    public static RawInvocationScript fromMessageAndKeyPair(byte[] message, ECKeyPair keyPair) {
+    public static InvocationScript fromMessageAndKeyPair(byte[] message, ECKeyPair keyPair) {
         SignatureData signature = Sign.signMessage(message, keyPair);
         return fromSignature(signature);
     }
 
-    public static RawInvocationScript fromSignatures(List<SignatureData> sigs) {
+    public static InvocationScript fromSignatures(List<SignatureData> sigs) {
         ScriptBuilder builder = new ScriptBuilder();
         sigs.forEach(sig -> builder.pushData(sig.getConcatenated()));
-        return new RawInvocationScript(builder.toArray());
+        return new InvocationScript(builder.toArray());
     }
 
     public byte[] getScript() {
@@ -85,8 +85,8 @@ public class RawInvocationScript extends NeoSerializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RawInvocationScript)) return false;
-        RawInvocationScript that = (RawInvocationScript) o;
+        if (!(o instanceof InvocationScript)) return false;
+        InvocationScript that = (InvocationScript) o;
         return Arrays.equals(getScript(), that.getScript());
     }
 

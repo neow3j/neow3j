@@ -34,7 +34,7 @@ public class ClaimTransactionTest {
         ClaimTransaction signedTx = new ClaimTransaction.Builder()
                 .output(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr))
                 .claim(new RawTransactionInput(claimableTxId, idx))
-                .script(new Witness(invocationScript, RawVerificationScript.fromPublicKey(publicKey).getScript())
+                .script(new Witness(invocationScript, VerificationScript.fromPublicKey(publicKey).getScript())
         ).build();
 
         byte[] signedTxArray = signedTx.toArray();

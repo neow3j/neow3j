@@ -24,8 +24,8 @@ public class Witness extends NeoSerializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Witness.class);
 
-    private RawInvocationScript invocationScript;
-    private RawVerificationScript verificationScript;
+    private InvocationScript invocationScript;
+    private VerificationScript verificationScript;
     private ScriptHash scriptHash;
 
     public Witness() {
@@ -37,15 +37,15 @@ public class Witness extends NeoSerializable {
      * <p>Make sure that the scripts are proper NEO VM scripts. E.g. the invocation script byte
      * array must not only contain the serialized signature data but it also needs the prefix 40
      * which signifies that 64 bytes follow. It is safer to use the static creation methods from
-     * {@link RawInvocationScript} and {@link RawVerificationScript} to create valid scripts.</p>
+     * {@link InvocationScript} and {@link VerificationScript} to create valid scripts.</p>
      *
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script
-     * @see Witness#Witness(RawInvocationScript, RawVerificationScript)
+     * @see Witness#Witness(InvocationScript, VerificationScript)
      */
     public Witness(byte[] invocationScript, byte[] verificationScript) {
-        this(new RawInvocationScript(invocationScript),
-                new RawVerificationScript(verificationScript));
+        this(new InvocationScript(invocationScript),
+                new VerificationScript(verificationScript));
     }
 
     /**
@@ -59,7 +59,7 @@ public class Witness extends NeoSerializable {
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script
      */
-    public Witness(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
+    public Witness(InvocationScript invocationScript, VerificationScript verificationScript) {
         this.invocationScript = invocationScript;
         this.verificationScript = verificationScript;
         if (verificationScript == null || verificationScript.getScriptHash() == null) {
@@ -91,8 +91,8 @@ public class Witness extends NeoSerializable {
      * @param scriptHash       a script hash instead of a verification script.
      */
     public Witness(byte[] invocationScript, ScriptHash scriptHash) {
-        this.invocationScript = new RawInvocationScript(invocationScript);
-        this.verificationScript = new RawVerificationScript();
+        this.invocationScript = new InvocationScript(invocationScript);
+        this.verificationScript = new VerificationScript();
         this.scriptHash = scriptHash;
     }
 
@@ -106,8 +106,8 @@ public class Witness extends NeoSerializable {
      * @return the constructed witness/script.
      */
     public static Witness createWitness(byte[] messageToSign, ECKeyPair keyPair) {
-        RawInvocationScript i = RawInvocationScript.fromMessageAndKeyPair(messageToSign, keyPair);
-        RawVerificationScript v = RawVerificationScript.fromPublicKey(keyPair.getPublicKey());
+        InvocationScript i = InvocationScript.fromMessageAndKeyPair(messageToSign, keyPair);
+        VerificationScript v = VerificationScript.fromPublicKey(keyPair.getPublicKey());
         return new Witness(i, v);
     }
 
@@ -115,7 +115,7 @@ public class Witness extends NeoSerializable {
                                                   List<SignatureData> signatures,
                                                   byte[]... publicKeys) {
 
-        RawVerificationScript v = RawVerificationScript.fromPublicKeys(signingThreshold, publicKeys);
+        VerificationScript v = VerificationScript.fromPublicKeys(signingThreshold, publicKeys);
         return createMultiSigWitness(signingThreshold, signatures, v);
     }
 
@@ -123,12 +123,12 @@ public class Witness extends NeoSerializable {
                                                   List<SignatureData> signatures,
                                                   List<BigInteger> publicKeys) {
 
-        RawVerificationScript v = RawVerificationScript.fromPublicKeys(signingThreshold, publicKeys);
+        VerificationScript v = VerificationScript.fromPublicKeys(signingThreshold, publicKeys);
         return createMultiSigWitness(signingThreshold, signatures, v);
     }
 
     public static Witness createMultiSigWitness(List<SignatureData> signatures,
-                                                  RawVerificationScript verificationScript) {
+                                                  VerificationScript verificationScript) {
 
         int signingThreshold = verificationScript.getSigningThreshold();
         return createMultiSigWitness(signingThreshold, signatures, verificationScript);
@@ -137,27 +137,27 @@ public class Witness extends NeoSerializable {
     public static Witness createMultiSigWitness(List<SignatureData> signatures,
                                                   byte[] verificationScript) {
 
-        return createMultiSigWitness(signatures, new RawVerificationScript(verificationScript));
+        return createMultiSigWitness(signatures, new VerificationScript(verificationScript));
     }
 
     public static Witness createMultiSigWitness(int signingThreshold,
                                                   List<SignatureData> signatures,
-                                                  RawVerificationScript verificationScript) {
+                                                  VerificationScript verificationScript) {
 
         if (signatures.size() < signingThreshold) {
             throw new IllegalArgumentException("Not enough signatures provided for the required " +
                     "signing threshold.");
         }
         return new Witness(
-                RawInvocationScript.fromSignatures(signatures.subList(0, signingThreshold)),
+                InvocationScript.fromSignatures(signatures.subList(0, signingThreshold)),
                 verificationScript);
     }
 
-    public RawInvocationScript getInvocationScript() {
+    public InvocationScript getInvocationScript() {
         return invocationScript;
     }
 
-    public RawVerificationScript getVerificationScript() {
+    public VerificationScript getVerificationScript() {
         return verificationScript;
     }
 
@@ -193,8 +193,8 @@ public class Witness extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            this.invocationScript = reader.readSerializable(RawInvocationScript.class);
-            this.verificationScript = reader.readSerializable(RawVerificationScript.class);
+            this.invocationScript = reader.readSerializable(InvocationScript.class);
+            this.verificationScript = reader.readSerializable(VerificationScript.class);
             this.scriptHash = verificationScript.getScriptHash();
         } catch (IllegalAccessException | InstantiationException e) {
             throw new DeserializationException(e);

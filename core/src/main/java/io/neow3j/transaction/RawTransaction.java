@@ -76,7 +76,7 @@ public abstract class RawTransaction extends NeoSerializable {
      * @param invocationScript   The invocation script of the witness.
      * @param verificationScript The verification script of the witness.
      */
-    public void addScript(RawInvocationScript invocationScript, RawVerificationScript verificationScript) {
+    public void addScript(InvocationScript invocationScript, VerificationScript verificationScript) {
         addScript(new Witness(invocationScript, verificationScript));
     }
 

@@ -10,7 +10,7 @@ import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.transaction.RawVerificationScript;
+import io.neow3j.transaction.VerificationScript;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
@@ -248,7 +248,7 @@ public class Account {
     private void tryAddVerificationScriptContract() {
         if (contract == null || contract.getScript() == null) {
             if (publicKey != null) {
-                byte[] scriptBytes = RawVerificationScript.fromPublicKey(publicKey).getScript();
+                byte[] scriptBytes = VerificationScript.fromPublicKey(publicKey).getScript();
                 String scriptHex = Numeric.toHexStringNoPrefix(scriptBytes);
                 NEP6Parameter param = new NEP6Parameter("signature", ContractParameterType.SIGNATURE);
                 contract = new NEP6Contract(scriptHex, Collections.singletonList(param), false);
@@ -274,7 +274,7 @@ public class Account {
         b.address = Keys.getMultiSigAddress(signatureThreshold, publicKeys);
         b.label = b.address;
 
-        byte[] script = RawVerificationScript.fromPublicKeys(signatureThreshold, publicKeys).getScript();
+        byte[] script = VerificationScript.fromPublicKeys(signatureThreshold, publicKeys).getScript();
         String scriptHexString = Numeric.toHexStringNoPrefix(script);
 
         List<NEP6Parameter> parameters = new ArrayList<>();

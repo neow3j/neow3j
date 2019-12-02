@@ -55,9 +55,9 @@ public class WitnessTest {
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         Witness witness = Witness.createWitness(message, keyPair);
 
-        byte[] invScript = RawInvocationScript.fromMessageAndKeyPair(message, keyPair).getScript();
+        byte[] invScript = InvocationScript.fromMessageAndKeyPair(message, keyPair).getScript();
         byte[] invScriptLen = BigInteger.valueOf(invScript.length).toByteArray();
-        byte[] veriScript = RawVerificationScript.fromPublicKey(keyPair.getPublicKey()).getScript();
+        byte[] veriScript = VerificationScript.fromPublicKey(keyPair.getPublicKey()).getScript();
         byte[] veriScriptLen = BigInteger.valueOf(veriScript.length).toByteArray();
 
         byte[] expectedWitness = ArrayUtils.concatenate(invScriptLen, invScript, veriScriptLen, veriScript);

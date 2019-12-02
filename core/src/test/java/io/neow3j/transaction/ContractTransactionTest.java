@@ -34,7 +34,7 @@ public class ContractTransactionTest {
                 .inputs(Arrays.asList(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script(new Witness(new RawInvocationScript(), RawVerificationScript.fromPublicKey(publicKey)))
+                .script(new Witness(new InvocationScript(), VerificationScript.fromPublicKey(publicKey)))
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
@@ -54,7 +54,7 @@ public class ContractTransactionTest {
                 .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script((new Witness(new RawInvocationScript(invocationScript), RawVerificationScript.fromPublicKey(publicKey))))
+                .script((new Witness(new InvocationScript(invocationScript), VerificationScript.fromPublicKey(publicKey))))
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
@@ -257,7 +257,7 @@ public class ContractTransactionTest {
                 .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script((new Witness(new RawInvocationScript(invocationScript), RawVerificationScript.fromPublicKey(publicKey))))
+                .script((new Witness(new InvocationScript(invocationScript), VerificationScript.fromPublicKey(publicKey))))
                 .build();
 
         tx = NeoSerializableInterface.from(tx.toArray(), ContractTransaction.class);
