@@ -5,6 +5,11 @@ package io.neow3j.transaction.exceptions;
  * io.neow3j.transaction.Cosigner}.
  */
 public class CosignerConfigurationException extends RuntimeException {
+
+    public CosignerConfigurationException() {
+        super();
+    }
+
     public CosignerConfigurationException(String message) {
         super(message);
     }

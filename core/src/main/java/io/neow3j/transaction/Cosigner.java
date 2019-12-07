@@ -17,7 +17,7 @@ import java.util.Objects;
 
 /**
  * A Cosigner instance models witness scoping. It is part of a transaction and defines in which
- * scopes a specific witness can be used.
+ * scopes a transaction's witness can be used.
  */
 public class Cosigner extends NeoSerializable {
 

@@ -87,10 +87,10 @@ public class ContractDescriptionProperties extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             this.description = reader.readPushString();
-        this.email = reader.readPushString();
-        this.author = reader.readPushString();
-        this.version = reader.readPushString();
-        this.name = reader.readPushString();
+            this.email = reader.readPushString();
+            this.author = reader.readPushString();
+            this.version = reader.readPushString();
+            this.name = reader.readPushString();
         } catch (IOException e) {
             throw new DeserializationException(e);
         }

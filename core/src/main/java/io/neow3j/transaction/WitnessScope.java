@@ -39,15 +39,6 @@ public enum WitnessScope {
         return this.byteValue;
     }
 
-    public static WitnessScope valueOf(byte byteValue) {
-        for (WitnessScope e : WitnessScope.values()) {
-            if (e.byteValue == byteValue) {
-                return e;
-            }
-        }
-        throw new IllegalArgumentException();
-    }
-
     /**
      * Extracts the scopes encoded in the given byte.
      *
@@ -75,7 +66,7 @@ public enum WitnessScope {
      * Encodes the given scopes in one byte.
      *
      * @param scopes The scopes to encode.
-     * @return the byte encoding the scopes.
+     * @return the scope encoding byte.
      */
     public static byte combineScopes(List<WitnessScope> scopes) {
         byte combined = 0;

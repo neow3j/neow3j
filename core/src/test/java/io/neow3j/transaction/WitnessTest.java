@@ -171,7 +171,9 @@ public class WitnessTest {
 
     @Test
     public void testGetScriptHash() {
-        ECKeyPair keyPair = SampleKeys.CREDENTIALS_1.getEcKeyPair();
+        String sk = "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3";
+        String pk = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
+        ECKeyPair keyPair = ECKeyPair.create(Numeric.hexStringToByteArray(sk));
         int messageSize = 10;
         byte[] message = new byte[messageSize];
         Arrays.fill(message, (byte) 1);
@@ -179,7 +181,7 @@ public class WitnessTest {
 
         byte[] expectedVerificationScript = Numeric.hexStringToByteArray(
                 // PUSHBYTES33 + Public key + CHECKSIG
-                "21" + SampleKeys.PUBLIC_KEY_STRING_1 + "ac"
+                "21" + pk + "ac"
         );
         byte[] expectedHash = Hash.sha256AndThenRipemd160(expectedVerificationScript);
         assertArrayEquals(expectedHash, script.getScriptHash().toArray());
