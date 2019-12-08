@@ -28,7 +28,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.mockito.stubbing.OngoingStubbing;
 
 public class JsonRpc2_0RxTest {
@@ -203,7 +205,10 @@ public class JsonRpc2_0RxTest {
     }
 
     @Test
-    public void testCatchUpToLatestAndSubscribeToNewBlockObservable_NotContinuousBlocks() throws Exception {
+    @Ignore("Ignored due to a missing feature. "
+        + "A feature to buffer blocks that come out of order should be implemented on neow3j lib.")
+    public void testCatchUpToLatestAndSubscribeToNewBlockObservable_NotContinuousBlocks()
+        throws Exception {
 
         List<NeoGetBlock> expected = Arrays.asList(
             createBlock(0),
@@ -276,7 +281,7 @@ public class JsonRpc2_0RxTest {
 
         transactionLatch.await(15250, TimeUnit.MILLISECONDS);
         assertThat(results.size(), equalTo(expected.size()));
-        assertThat(results, equalTo(expected));
+        assertThat(results, new ReflectionEquals(expected));
 
         disposable.dispose();
 
