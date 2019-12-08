@@ -9,10 +9,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
-import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
@@ -34,8 +32,6 @@ import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.mockito.stubbing.OngoingStubbing;
 
 public class JsonRpc2_0RxTest {
-
-    private final ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
 
     private Neow3j neow3j;
 
