@@ -4,12 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.crypto.KeyUtils;
-import io.neow3j.model.types.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.Numeric;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,6 +14,7 @@ public class NeoApplicationLog {
     private String transactionId;
 
     @JsonProperty("executions")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<Execution> executions;
 
     public NeoApplicationLog() {
@@ -45,7 +41,8 @@ public class NeoApplicationLog {
         private String gasConsumed;
 
         @JsonProperty("stack")
-        private List<ContractParameter> stack;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<StackItem> stack;
 
         @JsonProperty("notifications")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -54,7 +51,7 @@ public class NeoApplicationLog {
         public Execution() {
         }
 
-        public Execution(String trigger, String contract, String state, String gasConsumed, List<ContractParameter> stack, List<Notification> notifications) {
+        public Execution(String trigger, String contract, String state, String gasConsumed, List<StackItem> stack, List<Notification> notifications) {
             this.trigger = trigger;
             this.contract = contract;
             this.state = state;
@@ -79,7 +76,7 @@ public class NeoApplicationLog {
             return gasConsumed;
         }
 
-        public List<ContractParameter> getStack() {
+        public List<StackItem> getStack() {
             return stack;
         }
 
@@ -95,75 +92,23 @@ public class NeoApplicationLog {
         private String contract;
 
         @JsonProperty("state")
-        private State state;
+        private StackItem state;
 
         public Notification() {
         }
 
-        public Notification(String contract, State state) {
+        public Notification(String contract, StackItem state) {
             this.contract = contract;
             this.state = state;
-        }
-
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class State {
-
-            @JsonProperty("type")
-            private ContractParameterType type;
-
-            @JsonProperty("value")
-            @JsonSetter(nulls = Nulls.AS_EMPTY)
-            private List<EventParameter> value;
-
-            public State() {
-            }
-
-            public State(ContractParameterType type, List<EventParameter> value) {
-                this.type = type;
-                this.value = value;
-            }
-
-            public ContractParameterType getType() {
-                return type;
-            }
-
-            public List<EventParameter> getValue() {
-                return value;
-            }
         }
 
         public String getContract() {
             return contract;
         }
 
-        public State getState() {
+        public StackItem getState() {
             return state;
         }
-    }
-
-    public static class EventParameter extends ContractParameter {
-
-        public String getAsAddress() {
-            if (this.value instanceof String) {
-                return KeyUtils.scriptHashToAddress((String) this.value);
-            }
-            return null;
-        }
-
-        public String getAsString() {
-            if (this.value instanceof String) {
-                return Numeric.hexToString((String) this.value);
-            }
-            return null;
-        }
-
-        public BigInteger getAsNumber() {
-            if (this.value instanceof String) {
-                return Numeric.hexToInteger((String) this.value);
-            }
-            return null;
-        }
-
     }
 
     public String getTransactionId() {

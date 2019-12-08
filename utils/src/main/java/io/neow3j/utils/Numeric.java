@@ -6,6 +6,10 @@ import io.neow3j.exceptions.MessageEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.regex.Pattern;
+
+import static io.neow3j.constants.NeoConstants.FIXED8_DECIMALS;
+import static io.neow3j.constants.NeoConstants.FIXED8_LENGTH;
 
 /**
  * <p>Message codec functions.</p>
@@ -15,6 +19,7 @@ import java.util.Arrays;
 public final class Numeric {
 
     private static final String HEX_PREFIX = "0x";
+    private static final Pattern HEX_PATTERN = Pattern.compile("^([0-9A-Fa-f]{2})*$");
 
     private Numeric() {
     }
@@ -79,8 +84,90 @@ public final class Numeric {
                 && input.charAt(0) == '0' && input.charAt(1) == 'x';
     }
 
-    public static BigDecimal fromFixed8ToBigDecimal(byte[] value) {
-        return new BigDecimal(toBigInt(value)).divide(BigDecimal.valueOf(100000000L));
+    /**
+     * Checks if the given string is a valid hexadecimal string. Next to the character constraint
+     * (0-f) the string also needs to have a even number of character to pass as valid.
+     *
+     * @param string The string to check.
+     * @return       true, if the string is hexadecimal or empty. False, otherwise.
+     */
+    public static boolean isValidHexString(String string) {
+        string = cleanHexPrefix(string);
+        return HEX_PATTERN.matcher(string).matches();
+    }
+
+    /**
+     * Converts the given Fixed8 number to a BigDecimal.
+     * @param value The Fixed8 value as a byte array. Must be max 8 bytes in little-endian order.
+     * @return converted BigDecimal value.
+     */
+    public static BigDecimal fromFixed8ToDecimal(byte[] value) {
+        if (value.length > FIXED8_LENGTH) {
+            throw new IllegalArgumentException("Fixed8 byte array cannot be larger than 8 bytes.");
+        }
+        return fromFixed8ToDecimal(BigIntegers.fromLittleEndianByteArray(value));
+    }
+
+    /**
+     * Converts the given Fixed8 number to a BigDecimal.
+     * @param hexString The Fixed8 value as a hex string. Must represent max 8 bytes in big-endian
+     *                  order.
+     * @return converted BigDecimal value.
+     */
+    public static BigDecimal fromFixed8ToDecimal(String hexString) {
+        checkAndThrowIsValidHexString(hexString);
+        if (hexString.length() > FIXED8_LENGTH*2) {
+            throw new IllegalArgumentException("Fixed8 number cannot be larger than 8 bytes.");
+        }
+        return fromFixed8ToDecimal(BigIntegers.fromBigEndianHexString(hexString));
+    }
+    /**
+     * Converts the given Fixed8 number to a BigDecimal.
+     * @param value The Fixed8 value as an integer.
+     * @return converted BigDecimal value.
+     */
+    public static BigDecimal fromFixed8ToDecimal(BigInteger value) {
+        return new BigDecimal(value).divide(FIXED8_DECIMALS);
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 byte array (8 bytes in little-endian order).
+     * @param value The decimal number to convert.
+     * @return the Fixed8 number.
+     */
+    public static byte[] fromDecimalToFixed8ByteArray(BigDecimal value) {
+        BigInteger fixed8Value = value.multiply(FIXED8_DECIMALS).toBigInteger();
+        return BigIntegers.toLittleEndianByteArrayZeroPadded(fixed8Value, FIXED8_LENGTH);
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 byte array (8 bytes in little-endian order).
+     * @param value The decimal number to convert.
+     * @return the Fixed8 number.
+     */
+    public static byte[] fromDecimalToFixed8ByteArray(BigInteger value) {
+        BigInteger fixed8Value = value.multiply(FIXED8_DECIMALS.toBigInteger());
+        return BigIntegers.toLittleEndianByteArrayZeroPadded(fixed8Value, FIXED8_LENGTH);
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 hexadecimal string (8 bytes in big-endian
+     * order).
+     * @param value The decimal number to convert.
+     * @return the Fixed8 number.
+     */
+    public static String fromDecimalToFixed8HexString(BigDecimal value) {
+        return toHexStringNoPrefix(ArrayUtils.reverseArray(fromDecimalToFixed8ByteArray(value)));
+    }
+
+    /**
+     * Converts the given decimal number to a Fixed8 hexadecimal string (8 bytes in big-endian
+     * order).
+     * @param value The decimal number to convert.
+     * @return the Fixed8 number.
+     */
+    public static String fromDecimalToFixed8HexString(BigInteger value) {
+        return toHexStringNoPrefix(ArrayUtils.reverseArray(fromDecimalToFixed8ByteArray(value)));
     }
 
     public static BigInteger toBigInt(byte[] value, int offset, int length) {
@@ -248,4 +335,11 @@ public final class Numeric {
                 || value.scale() <= 0
                 || value.stripTrailingZeros().scale() <= 0;
     }
+
+    private static void checkAndThrowIsValidHexString(String value) {
+        if (!isValidHexString(value)) {
+            throw new IllegalArgumentException("Given value is not a valid hexadecimal string.");
+        }
+    }
+
 }

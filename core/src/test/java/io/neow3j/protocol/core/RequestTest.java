@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.model.types.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
@@ -441,20 +441,27 @@ public class RequestTest extends RequestTester {
         neow3j.invoke(
                 "dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f",
                 Arrays.asList(
-                        new ContractParameter(ContractParameterType.SIGNATURE, "576f6f6c6f6e67"),
-                        new ContractParameter(ContractParameterType.BOOLEAN, false),
-                        new ContractParameter(ContractParameterType.INTEGER, "8"),
-                        new ContractParameter(ContractParameterType.HASH160, "576f6f6c6f6e67"),
-                        new ContractParameter(ContractParameterType.HASH256, "576f6f6c6f6e67"),
-                        new ContractParameter(ContractParameterType.BYTE_ARRAY, "4e45503520474153"),
-                        new ContractParameter(ContractParameterType.PUBLIC_KEY, "4e45503520474153"),
-                        new ContractParameter(ContractParameterType.STRING, "name"),
-                        // TODO: 2019-03-17: confirm how ARRAY type is encoded
-                        new ContractParameter(ContractParameterType.ARRAY, "array"),
-                        // TODO: 2019-03-17: confirm how INTEROP_INTERFACE type is encoded
-                        new ContractParameter(ContractParameterType.INTEROP_INTERFACE, "array"),
-                        // TODO: 2019-03-17: confirm how VOID type is encoded
-                        new ContractParameter(ContractParameterType.VOID, "")
+                        ContractParameter.signature("53c874d7c434b9912b9ee38b958ec78c1c4b0a3c4b5753bada198a1e49649f13bf5def112ee8d31133799759d3d88dd3c1650a4d6fa36f29493ffbc8068600ed"),
+                        ContractParameter.bool(false),
+                        ContractParameter.integer(8),
+                        ContractParameter.hash160(new ScriptHash("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f")),
+                        ContractParameter.hash256(new ScriptHash("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf")),
+                        ContractParameter.byteArray("4e45503520474153"),
+                        ContractParameter.string("name"),
+                        ContractParameter.array(
+                                ContractParameter.string("name"),
+                                ContractParameter.byteArray("4e45503520474153"),
+                                ContractParameter.array(
+                                        ContractParameter.string("name")
+                                )
+                        )
+                        // TODO 17.07.19 claude:
+                        // Include public key parameter when it is implemented.
+                        // ContractParameter.publicKey("4e45503520474153"),
+
+                        // INTEROP_INTERFACE and VOID are only return types and need not be tested here.
+                        // ContractParameter(ContractParameterType.INTEROP_INTERFACE, "array"),
+                        // ContractParameter(ContractParameterType.VOID, "")
                 )
         ).send();
 
@@ -462,20 +469,27 @@ public class RequestTest extends RequestTester {
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invoke\","
                         + "\"params\":[\"dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f\","
                         + "["
-                        + "{\"type\":\"Signature\",\"value\":\"576f6f6c6f6e67\"},"
-                        + "{\"type\":\"Boolean\",\"value\":false},"
-                        + "{\"type\":\"Integer\",\"value\":\"8\"},"
-                        + "{\"type\":\"Hash160\",\"value\":\"576f6f6c6f6e67\"},"
-                        + "{\"type\":\"Hash256\",\"value\":\"576f6f6c6f6e67\"},"
-                        + "{\"type\":\"ByteArray\",\"value\":\"4e45503520474153\"},"
-                        + "{\"type\":\"PublicKey\",\"value\":\"4e45503520474153\"},"
-                        + "{\"type\":\"String\",\"value\":\"name\"},"
-                        + "{\"type\":\"Array\",\"value\":\"array\"},"
-                        + "{\"type\":\"InteropInterface\",\"value\":\"array\"},"
-                        // TODO: 2019-04-11: confirm whether VOID really returns an empty value
-                        + "{\"type\":\"Void\",\"value\":\"\"}"
+                        +   "{\"type\":\"Signature\",\"value\":\"53c874d7c434b9912b9ee38b958ec78c1c4b0a3c4b5753bada198a1e49649f13bf5def112ee8d31133799759d3d88dd3c1650a4d6fa36f29493ffbc8068600ed\"},"
+                        +   "{\"type\":\"Boolean\",\"value\":false},"
+                        +   "{\"type\":\"Integer\",\"value\":\"8\"},"
+                        +   "{\"type\":\"Hash160\",\"value\":\"576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f\"},"
+                        +   "{\"type\":\"Hash256\",\"value\":\"576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf\"},"
+                        +   "{\"type\":\"ByteArray\",\"value\":\"4e45503520474153\"},"
+                        +   "{\"type\":\"String\",\"value\":\"name\"},"
+                        +   "{\"type\":\"Array\",\"value\":"
+                        +       "["
+                        +           "{\"type\":\"String\",\"value\":\"name\"},"
+                        +           "{\"type\":\"ByteArray\",\"value\":\"4e45503520474153\"},"
+                        +           "{\"type\":\"Array\",\"value\":"
+                        +               "["
+                        +                   "{\"type\":\"String\",\"value\":\"name\"}"
+                        +               "]"
+                        +           "}"
+                        +       "]"
+                        +   "}"
                         + "]"
                         + "],\"id\":1}"
+//                        + "{\"type\":\"PublicKey\",\"value\":\"4e45503520474153\"},"
         );
     }
 
@@ -500,7 +514,7 @@ public class RequestTest extends RequestTester {
                 "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
                 "balanceOf",
                 Arrays.asList(
-                        new ContractParameter(ContractParameterType.HASH160, "91b83e96f2a7c4fdf0c1688441ec61986c7cae26")
+                        ContractParameter.hash160(new ScriptHash("91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 )
         ).send();
 
@@ -578,12 +592,51 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetUnspents() throws Exception {
+        neow3j.getUnspents("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getunspents\","
+                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep5Balances() throws Exception {
+        neow3j.getNep5Balances("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5balances\","
+                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetClaimable() throws Exception {
+        neow3j.getClaimable("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getclaimable\","
+                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
+        );
+    }
+
+    @Test
     public void testGetApplicationLog() throws Exception {
         neow3j.getApplicationLog("420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getapplicationlog\","
                         + "\"params\":[\"420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\"],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testListPlugins() throws Exception {
+        neow3j.listPlugins().send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"listplugins\",\"params\":[],\"id\":1}"
         );
     }
 }

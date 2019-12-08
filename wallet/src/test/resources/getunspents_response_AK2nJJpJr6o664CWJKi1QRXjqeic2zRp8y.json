@@ -1,0 +1,40 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "balance": [
+      {
+        "unspent": [
+          {
+            "txid": "c2f7fac79531d94d406367c7feafe425f893a580fa703c7b4df9572f5944df5a",
+            "n": 0,
+            "value": 15984
+          },
+          {
+            "txid": "803ec81b9ddb7dec5c914793a9e61bf556deafb561216473ad7a8ee7a91979cc",
+            "n": 0,
+            "value": 40
+          }
+        ],
+        "asset_hash": "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7",
+        "asset": "GAS",
+        "asset_symbol": "GAS",
+        "amount": 16024
+      },
+      {
+        "unspent": [
+          {
+            "txid": "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff",
+            "n": 0,
+            "value": 100000000
+          }
+        ],
+        "asset_hash": "c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b",
+        "asset": "NEO",
+        "asset_symbol": "NEO",
+        "amount": 100000000
+      }
+    ],
+    "address": "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
+  }
+}

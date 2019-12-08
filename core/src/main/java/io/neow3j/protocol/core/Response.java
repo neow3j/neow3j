@@ -1,8 +1,9 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.protocol.deserializer.KeepAsJsonDeserialzier;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.neow3j.protocol.deserializer.KeepAsJsonDeserialzier;
+import io.neow3j.protocol.exceptions.ErrorResponseException;
 
 /**
  * JSON-RPC response type.
@@ -62,6 +63,13 @@ public class Response<T> {
 
     public void setRawResponse(String rawResponse) {
         this.rawResponse = rawResponse;
+    }
+
+    public void throwOnError() throws ErrorResponseException {
+        if (hasError()) {
+            // TODO Claude 19.06.19: Throw more differentiated exception according to error code.
+            throw new ErrorResponseException(error);
+        }
     }
 
     public static class Error {

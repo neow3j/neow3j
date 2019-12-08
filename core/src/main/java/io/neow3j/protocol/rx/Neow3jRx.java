@@ -51,12 +51,12 @@ public interface Neow3jRx {
             boolean fullTransactionObjects, boolean ascending);
 
     /**
-     * Create an Observable that emits all transactions from the blockchain starting with a
+     * <p>Create an Observable that emits all transactions from the blockchain starting with a
      * provided block number. Once it has replayed up to the most current block, the provided
-     * Observable is invoked.
+     * Observable is invoked.</p>
      * <br>
      * <p>To automatically subscribe to new blocks, use
-     * {@link #catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameter, boolean)}.
+     * {@link #catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameter, boolean)}.</p>
      *
      * @param startBlock             the block number we wish to request from
      * @param fullTransactionObjects if we require full {@link Transaction} objects to be provided
