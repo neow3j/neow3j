@@ -182,7 +182,7 @@ public class TransactionTest {
                 Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
             cosigners.add(Cosigner.global(account));
         }
-        Transaction.Builder tx = new Transaction.Builder()
+        new Transaction.Builder()
             .sender(account1)
             .validUntilBlock(1L)
             .cosigners(cosigners);
