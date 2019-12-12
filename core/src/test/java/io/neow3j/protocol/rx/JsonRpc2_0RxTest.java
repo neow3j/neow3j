@@ -1,6 +1,7 @@
 package io.neow3j.protocol.rx;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -8,6 +9,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
@@ -26,7 +28,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.mockito.stubbing.OngoingStubbing;
@@ -64,6 +65,7 @@ public class JsonRpc2_0RxTest {
         CountDownLatch completedLatch = new CountDownLatch(1);
 
         List<NeoGetBlock> results = new ArrayList<>(neoGetBlocks.size());
+
         Disposable disposable = observable.subscribe(
             result -> {
                 results.add(result);
@@ -72,13 +74,14 @@ public class JsonRpc2_0RxTest {
             throwable -> fail(throwable.getMessage()),
             () -> completedLatch.countDown());
 
-        transactionLatch.await(1, TimeUnit.SECONDS);
+        // just to be in the safe side, we add a timeout
+        completedLatch.await(5, TimeUnit.SECONDS);
         assertThat(results, equalTo(neoGetBlocks));
 
         disposable.dispose();
 
-        completedLatch.await(1, TimeUnit.SECONDS);
         assertTrue(disposable.isDisposed());
+        assertThat(transactionLatch.getCount(), is(0L));
     }
 
     @Test
@@ -111,45 +114,36 @@ public class JsonRpc2_0RxTest {
             throwable -> fail(throwable.getMessage()),
             () -> completedLatch.countDown());
 
-        transactionLatch.await(1, TimeUnit.SECONDS);
+        // just to be in the safe side, we add a timeout
+        completedLatch.await(5, TimeUnit.SECONDS);
         assertThat(results, equalTo(neoGetBlocks));
 
         disposable.dispose();
 
-        completedLatch.await(1, TimeUnit.SECONDS);
         assertTrue(disposable.isDisposed());
+        assertThat(transactionLatch.getCount(), is(0L));
     }
 
     @Test
     public void testCatchUpToLatestAndSubscribeToNewBlockObservable() throws Exception {
 
         List<NeoGetBlock> expected = Arrays.asList(
+            // past blocks:
             createBlock(0),
             createBlock(1),
             createBlock(2),
             createBlock(3),
+            // later blocks:
             createBlock(4),
             createBlock(5),
             createBlock(6)
-        );
-
-        List<NeoGetBlock> neoGetBlocks = Arrays.asList(
-            // past blocks:
-            expected.get(0),
-            expected.get(1),
-            expected.get(2),
-            expected.get(3),
-            // later blocks:
-            expected.get(4),
-            expected.get(5),
-            expected.get(6)
         );
 
         OngoingStubbing<NeoGetBlock> stubbingNeoGetBlock =
             when(neow3jService.send(any(Request.class), eq(NeoGetBlock.class)));
 
         for (int i = 0; i < 7; i++) {
-            stubbingNeoGetBlock = stubbingNeoGetBlock.thenReturn(neoGetBlocks.get(i));
+            stubbingNeoGetBlock = stubbingNeoGetBlock.thenReturn(expected.get(i));
         }
 
         OngoingStubbing<NeoBlockCount> stubbingNeoBlockCount =
@@ -190,19 +184,19 @@ public class JsonRpc2_0RxTest {
             stubbingNeoBlockCount = stubbingNeoBlockCount.thenReturn(neoBlockCount);
         }
 
-        transactionLatch.await(15250, TimeUnit.MILLISECONDS);
+        completedLatch.await(15250, TimeUnit.MILLISECONDS);
         assertThat(results.size(), equalTo(expected.size()));
         assertThat(results, equalTo(expected));
 
         disposable.dispose();
 
-        completedLatch.await(1, TimeUnit.SECONDS);
         assertTrue(disposable.isDisposed());
+        assertThat(transactionLatch.getCount(), is(0L));
     }
 
     @Test
-    @Ignore("Ignored due to a missing feature. "
-        + "A feature to buffer blocks that come out of order should be implemented on neow3j lib.")
+//    @Ignore("Ignored due to a missing feature. "
+//        + "A feature to buffer blocks that come out of order should be implemented on neow3j lib.")
     public void testCatchUpToLatestAndSubscribeToNewBlockObservable_NotContinuousBlocks()
         throws Exception {
 
@@ -226,6 +220,7 @@ public class JsonRpc2_0RxTest {
             expected.get(3),
             // later blocks:
             expected.get(4),
+            // missing expected.get(5)
             expected.get(6),
             block7
         );
