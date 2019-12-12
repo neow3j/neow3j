@@ -1,23 +1,22 @@
 package io.neow3j.transaction;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.utils.Keys;
 import io.neow3j.crypto.WIF;
 import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
+import java.math.BigInteger;
+import java.util.Arrays;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.math.BigInteger;
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class ClaimTransactionTest {
 
@@ -47,7 +46,7 @@ public class ClaimTransactionTest {
 
 
     @Test
-    public void deserialize_Signed() throws DeserializationException {
+    public void deserializeSigned() throws DeserializationException {
 
         String receivingAdr = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
         String claimValue = "7264";

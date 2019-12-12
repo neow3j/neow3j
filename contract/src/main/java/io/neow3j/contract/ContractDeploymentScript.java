@@ -5,15 +5,10 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 
 public class ContractDeploymentScript extends NeoSerializable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ContractDeploymentScript.class);
 
     private byte[] scriptBinary;
 

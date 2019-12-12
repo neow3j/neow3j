@@ -7,9 +7,6 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
@@ -21,8 +18,6 @@ import java.util.Objects;
  * verification script derived from the signing key.
  */
 public class Witness extends NeoSerializable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Witness.class);
 
     private InvocationScript invocationScript;
     private VerificationScript verificationScript;

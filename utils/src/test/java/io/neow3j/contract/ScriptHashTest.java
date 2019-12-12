@@ -1,21 +1,20 @@
 package io.neow3j.contract;
 
-import io.neow3j.crypto.Hash;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.utils.Numeric;
-import org.bouncycastle.util.Arrays;
-import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import io.neow3j.crypto.Hash;
+import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.utils.Numeric;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import org.bouncycastle.util.Arrays;
+import org.junit.Test;
 
 public class ScriptHashTest {
 
@@ -79,9 +78,6 @@ public class ScriptHashTest {
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
         ScriptHash sh = NeoSerializableInterface.from(data, ScriptHash.class);
         assertThat(sh.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));
-    }
-
-    private void buildBinaryReader(byte[] data) {
     }
 
     @Test

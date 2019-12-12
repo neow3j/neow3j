@@ -1,18 +1,19 @@
 package io.neow3j.transaction;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.utils.ArrayUtils;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class TransactionAttributeTest {
 

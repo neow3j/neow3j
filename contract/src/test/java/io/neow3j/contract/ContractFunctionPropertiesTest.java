@@ -1,18 +1,17 @@
 package io.neow3j.contract;
 
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.Numeric;
-import org.junit.Test;
-
-import java.util.Arrays;
-
 import static io.neow3j.contract.ContractFunctionProperties.unpackIsPayable;
 import static io.neow3j.contract.ContractFunctionProperties.unpackNeedsDynamicInvoke;
 import static io.neow3j.contract.ContractFunctionProperties.unpackNeedsStorage;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+
+import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.utils.Numeric;
+import java.util.Arrays;
+import org.junit.Test;
 
 public class ContractFunctionPropertiesTest {
 
@@ -130,7 +129,7 @@ public class ContractFunctionPropertiesTest {
     }
 
     @Test
-    public void test_Deserialize() throws DeserializationException {
+    public void testDeserialize() throws DeserializationException {
         ContractFunctionProperties expected = new ContractFunctionProperties(
                 Arrays.asList(ContractParameterType.STRING, ContractParameterType.ARRAY,
                         ContractParameterType.BOOLEAN, ContractParameterType.INTEGER, ContractParameterType.INTEGER),

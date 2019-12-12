@@ -10,9 +10,6 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,8 +21,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class Transaction extends NeoSerializable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Transaction.class);
 
     private byte version;
     /**
@@ -188,7 +183,7 @@ public class Transaction extends NeoSerializable {
         return super.toArray();
     }
 
-    protected static class Builder {
+    public static class Builder {
 
         private long nonce;
         private byte version;
@@ -201,7 +196,7 @@ public class Transaction extends NeoSerializable {
         private List<TransactionAttribute> attributes;
         private List<Witness> witnesses;
 
-        protected Builder() {
+        public Builder() {
             // The random value used to initialize the nonce does not need cryptographic security,
             // therefore we can use ThreadLocalRandom to generate it.
             this.nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));

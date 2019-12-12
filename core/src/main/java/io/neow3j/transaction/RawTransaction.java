@@ -8,9 +8,6 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,8 +20,6 @@ import java.util.List;
  */
 @SuppressWarnings("unchecked")
 public abstract class RawTransaction extends NeoSerializable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(RawTransaction.class);
 
     private TransactionType transactionType;
     private byte version;

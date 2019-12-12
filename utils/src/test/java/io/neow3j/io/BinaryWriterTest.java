@@ -1,13 +1,12 @@
 package io.neow3j.io;
 
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.Test;
 
 public class BinaryWriterTest {
 
@@ -15,7 +14,7 @@ public class BinaryWriterTest {
     private BinaryWriter writer;
 
     @Before
-    public void setup() {
+    public void setUp() {
         this.outStream = new ByteArrayOutputStream();
         this.writer = new BinaryWriter(outStream);
     }

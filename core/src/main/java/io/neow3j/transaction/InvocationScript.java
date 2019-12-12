@@ -43,11 +43,6 @@ public class InvocationScript extends NeoSerializable {
         this.script = script;
     }
 
-    private InvocationScript(byte[] script, SignatureData signature) {
-        this(script);
-    }
-
-
     /**
      * Creates an invocation script from the given signature.
      *
@@ -56,7 +51,7 @@ public class InvocationScript extends NeoSerializable {
      */
     public static InvocationScript fromSignature(SignatureData signature) {
         byte[] script = new ScriptBuilder().pushData(signature.getConcatenated()).toArray();
-        return new InvocationScript(script, signature);
+        return new InvocationScript(script);
     }
 
     /**
