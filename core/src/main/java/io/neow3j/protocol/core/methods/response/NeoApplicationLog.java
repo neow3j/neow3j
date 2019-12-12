@@ -14,6 +14,7 @@ public class NeoApplicationLog {
     private String transactionId;
 
     @JsonProperty("executions")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<Execution> executions;
 
     public NeoApplicationLog() {
@@ -40,6 +41,7 @@ public class NeoApplicationLog {
         private String gasConsumed;
 
         @JsonProperty("stack")
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<StackItem> stack;
 
         @JsonProperty("notifications")
