@@ -76,7 +76,7 @@ public abstract class RawTransaction extends NeoSerializable {
     }
 
     public void addScript(Witness script) {
-        if (script.getScriptHash() == null || script.getScriptHash().length() == 0) {
+        if (script.getScriptHash() == null) {
             throw new IllegalArgumentException("The script hash of the given script is " +
                     "empty. Please set the script hash.");
         }
@@ -216,7 +216,7 @@ public abstract class RawTransaction extends NeoSerializable {
 
         public T scripts(List<Witness> scripts) {
             for (Witness script : scripts) {
-                if (script.getScriptHash() == null || script.getScriptHash().length() == 0) {
+                if (script.getScriptHash() == null) {
                     throw new IllegalArgumentException("The script hash of the given script is " +
                             "empty. Please set the script hash.");
                 }

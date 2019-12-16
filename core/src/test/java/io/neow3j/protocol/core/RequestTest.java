@@ -445,7 +445,7 @@ public class RequestTest extends RequestTester {
                         ContractParameter.bool(false),
                         ContractParameter.integer(8),
                         ContractParameter.hash160(new ScriptHash("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f")),
-                        ContractParameter.hash256(new ScriptHash("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf")),
+                        ContractParameter.hash256("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf"),
                         ContractParameter.byteArray("4e45503520474153"),
                         ContractParameter.string("name"),
                         ContractParameter.array(

@@ -19,12 +19,6 @@ import org.junit.Test;
 public class ScriptHashTest {
 
     @Test
-    public void testLength() {
-        ScriptHash sh = new ScriptHash("23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        assertThat(sh.length(), is(20));
-    }
-
-    @Test
     public void createFromValidHash() {
         ScriptHash sh = new ScriptHash("0x23ba2703c53263e8d6e522dc32203339dcd8eee9");
         assertThat(sh.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));

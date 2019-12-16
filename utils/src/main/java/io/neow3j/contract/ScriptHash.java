@@ -15,6 +15,10 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+/**
+ * A script hash is as its name says the hash of a executable NeoVM script. It is always 20 bytes
+ * long and is created by hashing a script with SHA256 and then RIPEMD160
+ */
 public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash> {
 
     /**
@@ -55,15 +59,6 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
         } else {
             throw new IllegalArgumentException("String argument is not hexadecimal.");
         }
-    }
-
-    /**
-     * Gets the length of the script hash byte array.
-     *
-     * @return the length.
-     */
-    public int length() {
-        return scriptHash.length;
     }
 
     @Override
@@ -121,8 +116,12 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ScriptHash that = (ScriptHash) o;
         return Arrays.equals(scriptHash, that.scriptHash);
     }
@@ -166,7 +165,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      */
     public static ScriptHash fromPublicKeys(int signingThreshold, byte[]... publicKeys) {
         byte[] verificationScript = Keys.getVerificationScriptFromPublicKeys(signingThreshold,
-                publicKeys);
+            publicKeys);
         return fromScript(verificationScript);
     }
 
@@ -193,19 +192,16 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     }
 
     private void checkAndThrowHashLength(byte[] scriptHash) {
-        if (scriptHash.length != NeoConstants.SCRIPTHASH_LENGHT_BYTES &&
-                scriptHash.length != NeoConstants.ASSET_ID_LENGHT_BYTES) {
-
-            throw new IllegalArgumentException("Script hash must be either " +
-                    NeoConstants.SCRIPTHASH_LENGHT_BYTES + " or " +
-                    NeoConstants.ASSET_ID_LENGHT_BYTES + " bytes long, but was " +
-                    scriptHash.length);
+        if (scriptHash.length != NeoConstants.SCRIPTHASH_LENGHT_BYTES) {
+            throw new IllegalArgumentException("Script hash must be " +
+                NeoConstants.SCRIPTHASH_LENGHT_BYTES + " bytes long but was "+ scriptHash.length +
+                " bytes.");
         }
     }
 
     @Override
     public int compareTo(ScriptHash o) {
         return new BigInteger(1, ArrayUtils.reverseArray(scriptHash))
-                .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
+            .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
     }
 }

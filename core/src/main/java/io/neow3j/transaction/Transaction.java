@@ -109,7 +109,7 @@ public class Transaction extends NeoSerializable {
     }
 
     public void addWitness(Witness witness) {
-        if (witness.getScriptHash() == null || witness.getScriptHash().length() == 0) {
+        if (witness.getScriptHash() == null) {
             throw new IllegalArgumentException("The script hash of the given script is " +
                 "empty. Please set the script hash.");
         }
@@ -432,7 +432,7 @@ public class Transaction extends NeoSerializable {
          */
         public Builder witnesses(List<Witness> witnesses) {
             for (Witness witness : witnesses) {
-                if (witness.getScriptHash() == null || witness.getScriptHash().length() == 0) {
+                if (witness.getScriptHash() == null)  {
                     throw new IllegalArgumentException("The script hash of the given script is " +
                         "empty. Please set the script hash.");
                 }
