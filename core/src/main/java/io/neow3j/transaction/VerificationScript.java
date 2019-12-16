@@ -4,6 +4,7 @@ import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Keys;
@@ -116,6 +117,11 @@ public class VerificationScript extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeVarBytes(script);
+    }
+
+    @Override
+    public int getSize() {
+        return IOUtils.getSizeOfVarInt(this.script.length) + this.script.length;
     }
 
 }

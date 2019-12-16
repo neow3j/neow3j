@@ -37,4 +37,9 @@ public class ContractParameterTypeSerializable extends NeoSerializable {
         writer.writeByte(contractParameterType.byteValue());
     }
 
+    @Override
+    public int getSize() {
+        throw new UnsupportedOperationException();
+    }
+
 }

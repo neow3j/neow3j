@@ -201,4 +201,9 @@ public class Witness extends NeoSerializable {
         invocationScript.serialize(writer);
         verificationScript.serialize(writer);
     }
+
+    @Override
+    public int getSize() {
+        return this.invocationScript.getSize() + this.verificationScript.getSize();
+    }
 }

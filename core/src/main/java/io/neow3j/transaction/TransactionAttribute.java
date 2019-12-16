@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
@@ -47,6 +48,17 @@ public class TransactionAttribute extends NeoSerializable {
 
     public String getData() {
         return this.data != null ? Numeric.toHexString(data) : null;
+    }
+
+
+    @Override
+    public int getSize() {
+        int size = 1 // Type byte
+        + this.data.length; // Attribute data size
+        if (this.usage.fixedDataLength() == null) {
+            size += IOUtils.getSizeOfVarInt(this.data.length); // Data size integer
+        }
+        return size;
     }
 
     @Override

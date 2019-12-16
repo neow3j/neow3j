@@ -172,4 +172,10 @@ public class ScriptHashTest {
         assertThat(sh3.compareTo(sh2), is(-1));
     }
 
+    @Test
+    public void getSize() {
+        ScriptHash sh = new ScriptHash("23ba2703c53263e8d6e522dc32203339dcd8eee9");
+        assertThat(sh.getSize(), is(20));
+    }
+
 }

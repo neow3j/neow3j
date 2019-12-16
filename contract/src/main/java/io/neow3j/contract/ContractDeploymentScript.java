@@ -89,4 +89,9 @@ public class ContractDeploymentScript extends NeoSerializable {
                 .toArray());
     }
 
+    @Override
+    public int getSize() {
+        throw new UnsupportedOperationException();
+    }
+
 }

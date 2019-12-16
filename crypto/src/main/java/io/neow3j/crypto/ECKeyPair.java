@@ -1,5 +1,9 @@
 package io.neow3j.crypto;
 
+import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
+import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
+import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -8,16 +12,6 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
-import org.bouncycastle.crypto.signers.ECDSASigner;
-import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.util.BigIntegers;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -28,16 +22,22 @@ import java.security.NoSuchProviderException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
-import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
-import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.util.BigIntegers;
 
 
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
  */
 public class ECKeyPair {
+
     private final BigInteger privateKey;
     private final BigInteger publicKey;
 
@@ -232,6 +232,10 @@ public class ECKeyPair {
          * @param publicKey The public key.
          */
         public ECPublicKey(byte[] publicKey) {
+            if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
+                throw new IllegalArgumentException("Public key argument must be " +
+                    NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length + " bytes");
+            }
             this.ecPoint = decodePoint(publicKey);
         }
 
@@ -265,6 +269,11 @@ public class ECKeyPair {
         @Override
         public void serialize(BinaryWriter writer) throws IOException {
             writer.write(getEncoded(true));
+        }
+
+        @Override
+        public int getSize() {
+            return this.ecPoint.isInfinity() ? 1 : NeoConstants.PUBLIC_KEY_SIZE;
         }
 
         private ECPoint decodePoint(byte[] encodedPoint) {

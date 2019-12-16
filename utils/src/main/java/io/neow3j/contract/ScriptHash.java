@@ -80,6 +80,11 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
         writer.write(this.scriptHash);
     }
 
+    @Override
+    public int getSize() {
+        return NeoConstants.SCRIPTHASH_LENGHT_BYTES;
+    }
+
     /**
      * Gets the script hash as a byte array in little-endian order.
      *

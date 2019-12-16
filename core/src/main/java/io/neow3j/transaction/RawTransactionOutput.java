@@ -106,4 +106,10 @@ public class RawTransactionOutput extends NeoSerializable {
         writer.write(Numeric.fromDecimalToFixed8ByteArray(this.value));
         writer.write(ScriptHash.fromAddress(this.address).toArray());
     }
+
+    @Override
+    public int getSize() {
+        // Not relevant for Neo 3
+        throw new UnsupportedOperationException();
+    }
 }

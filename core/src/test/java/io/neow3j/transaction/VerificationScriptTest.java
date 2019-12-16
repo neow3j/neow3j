@@ -1,13 +1,21 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.constants.OpCode.CHECKMULTISIG;
+import static io.neow3j.constants.OpCode.CHECKSIG;
+import static io.neow3j.constants.OpCode.PUSH2;
+import static io.neow3j.constants.OpCode.PUSH3;
+import static io.neow3j.constants.OpCode.PUSHBYTES33;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
-
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
@@ -16,14 +24,7 @@ import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static io.neow3j.constants.OpCode.CHECKMULTISIG;
-import static io.neow3j.constants.OpCode.CHECKSIG;
-import static io.neow3j.constants.OpCode.PUSH2;
-import static io.neow3j.constants.OpCode.PUSH3;
-import static io.neow3j.constants.OpCode.PUSHBYTES33;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class VerificationScriptTest {
 
@@ -139,5 +140,14 @@ public class VerificationScriptTest {
         th = new VerificationScript(scriptBytes).getSigningThreshold();
         assertEquals(1024, th);
     }
-    
+
+    @Test
+    public void getSize() {
+        byte[] script = Numeric.hexStringToByteArray(""
+            + "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655"
+            + "523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf");
+        InvocationScript s = new InvocationScript(script);
+        assertThat(s.getSize(), is(1 + 64)); // byte for script length and actual length.
+    }
+
 }
