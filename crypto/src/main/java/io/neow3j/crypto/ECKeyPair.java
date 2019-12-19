@@ -1,6 +1,10 @@
 package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.io.BinaryReader;
+import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
@@ -11,8 +15,10 @@ import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.BigIntegers;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -21,6 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
 import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
@@ -210,4 +217,66 @@ public class ECKeyPair {
         return result;
     }
 
+    public static class ECPublicKey extends NeoSerializable {
+
+        private ECPoint ecPoint;
+
+        public ECPublicKey() {
+        }
+
+        /**
+         * Creates a new instance from the given encoded public key. The public key must be encoded
+         * as defined in section 2.3.3 of <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>. It can
+         * be in compressed or uncompressed format.
+         *
+         * @param publicKey The public key.
+         */
+        public ECPublicKey(byte[] publicKey) {
+            this.ecPoint = decodePoint(publicKey);
+        }
+
+        /**
+         * Gets this public key's elliptic curve point encoded as defined in section 2.3.3 of
+         * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
+         *
+         * @param compressed If the EC point should be encoded in compressed or uncompressed format.
+         * @return the encoded public key.
+         */
+        public byte[] getEncoded(boolean compressed) {
+            return ecPoint.getEncoded(compressed);
+        }
+
+        public java.security.spec.ECPoint getECPoint() {
+            ECPoint normPoint = this.ecPoint.normalize();
+            return new java.security.spec.ECPoint(
+                    normPoint.getAffineXCoord().toBigInteger(),
+                    normPoint.getAffineYCoord().toBigInteger());
+        }
+
+        @Override
+        public void deserialize(BinaryReader reader) throws DeserializationException {
+            try {
+                ecPoint = decodePoint(reader.readBytes(PUBLIC_KEY_SIZE));
+            } catch (IOException e) {
+                throw new DeserializationException();
+            }
+        }
+
+        @Override
+        public void serialize(BinaryWriter writer) throws IOException {
+            writer.write(getEncoded(true));
+        }
+
+        private ECPoint decodePoint(byte[] encodedPoint) {
+            return NeoConstants.CURVE.getCurve().decodePoint(encodedPoint);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ECPublicKey that = (ECPublicKey) o;
+            return Objects.equals(ecPoint, that.ecPoint);
+        }
+    }
 }

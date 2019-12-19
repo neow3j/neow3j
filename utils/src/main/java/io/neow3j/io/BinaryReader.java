@@ -26,6 +26,7 @@ package io.neow3j.io;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.BigIntegers;
 import org.bouncycastle.math.ec.ECPoint;
 
@@ -38,8 +39,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.neow3j.utils.Numeric.toBigInt;
 
 public class BinaryReader implements AutoCloseable {
 
@@ -167,19 +166,42 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getInt(0);
     }
 
-    public long readLong() throws IOException {
+    /**
+     * Reads a 32-bit unsigned integer from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a
+     * long.
+     *
+     * @return the 32-bit unsigned integer.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readUInt32() throws IOException {
+        reader.readFully(array, 0, 4);
+        position += 4;
+        return Integer.toUnsignedLong(buffer.getInt(0));
+    }
+
+    /**
+     * Reads a 64-bit signed integer from the underlying input stream.
+     *
+     * @return the 34-bit unsigned integer represented as a long.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readInt64() throws IOException {
         reader.readFully(array, 0, 8);
         position += 8;
         return buffer.getLong(0);
     }
 
-    public <T extends NeoSerializable> T readSerializable(Class<T> t) throws InstantiationException, IllegalAccessException, IOException {
+    public <T extends NeoSerializable> T readSerializable(Class<T> t) throws InstantiationException,
+            IllegalAccessException, DeserializationException {
         T obj = t.newInstance();
         obj.deserialize(this);
         return obj;
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t) throws IOException, IllegalAccessException, InstantiationException {
+    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t) throws
+            IOException, IllegalAccessException, InstantiationException, DeserializationException {
         int length = (int) readVarInt(0x10000000);
         int bytesRead = 0;
         int initialOffset = getPosition();
@@ -194,7 +216,8 @@ public class BinaryReader implements AutoCloseable {
         return list;
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t) throws IOException, IllegalAccessException, InstantiationException {
+    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t) throws IOException,
+            IllegalAccessException, InstantiationException, DeserializationException {
         int length = (int) readVarInt(0x10000000);
         List<T> list = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
@@ -256,7 +279,7 @@ public class BinaryReader implements AutoCloseable {
         } else if (fb == 0xFE) {
             value = Integer.toUnsignedLong(readInt());
         } else if (fb == 0xFF) {
-            value = readLong();
+            value = readInt64();
         } else {
             value = fb;
         }

@@ -1,8 +1,9 @@
-package io.neow3j.crypto.transaction;
+package io.neow3j.transaction;
 
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.utils.Numeric;
 
@@ -10,16 +11,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class RawTransactionAttribute extends NeoSerializable {
+public class TransactionAttribute extends NeoSerializable {
 
     public TransactionAttributeUsageType usage;
 
     public byte[] data;
 
-    public RawTransactionAttribute() {
+    public TransactionAttribute() {
     }
 
-    public RawTransactionAttribute(TransactionAttributeUsageType usage, byte[] data) {
+    public TransactionAttribute(TransactionAttributeUsageType usage, byte[] data) {
         this.usage = usage;
         this.data = data;
         if (usage.fixedDataLength() != null && data.length != usage.fixedDataLength()) {
@@ -32,7 +33,7 @@ public class RawTransactionAttribute extends NeoSerializable {
         }
     }
 
-    public RawTransactionAttribute(TransactionAttributeUsageType usage, String data) {
+    public TransactionAttribute(TransactionAttributeUsageType usage, String data) {
         this(usage, (data != null ? Numeric.hexStringToByteArray(data) : null));
     }
 
@@ -51,8 +52,8 @@ public class RawTransactionAttribute extends NeoSerializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RawTransactionAttribute)) return false;
-        RawTransactionAttribute that = (RawTransactionAttribute) o;
+        if (!(o instanceof TransactionAttribute)) return false;
+        TransactionAttribute that = (TransactionAttribute) o;
         return getUsage() == that.getUsage() &&
                 Arrays.equals(getDataAsBytes(), that.getDataAsBytes());
     }
@@ -73,14 +74,18 @@ public class RawTransactionAttribute extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        this.usage = TransactionAttributeUsageType.valueOf(reader.readByte());
-        if (usage.fixedDataLength() != null) {
-            this.data = reader.readBytes(usage.fixedDataLength());
-        } else if (usage.maxDataLength() != null){
-            this.data = reader.readVarBytes(usage.maxDataLength());
-        } else {
-            this.data = reader.readVarBytes();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            this.usage = TransactionAttributeUsageType.valueOf(reader.readByte());
+            if (usage.fixedDataLength() != null) {
+                this.data = reader.readBytes(usage.fixedDataLength());
+            } else if (usage.maxDataLength() != null) {
+                this.data = reader.readVarBytes(usage.maxDataLength());
+            } else {
+                this.data = reader.readVarBytes();
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
         }
     }
 

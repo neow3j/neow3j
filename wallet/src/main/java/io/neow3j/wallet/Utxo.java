@@ -1,6 +1,6 @@
 package io.neow3j.wallet;
 
-import io.neow3j.crypto.transaction.RawTransactionInput;
+import io.neow3j.transaction.RawTransactionInput;
 
 import java.math.BigDecimal;
 

@@ -1,10 +1,11 @@
-package io.neow3j.crypto.transaction;
+package io.neow3j.transaction;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
 
@@ -15,30 +16,31 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class RawVerificationScript extends NeoSerializable {
+public class VerificationScript extends NeoSerializable {
 
     private byte[] script;
 
-    public RawVerificationScript() {
+    public VerificationScript() {
         script = new byte[0];
     }
 
-    public RawVerificationScript(byte[] script) {
+    public VerificationScript(byte[] script) {
         this.script = script;
     }
 
-    public static RawVerificationScript fromPublicKey(BigInteger publicKey) {
-        return new RawVerificationScript(Keys.getVerificationScriptFromPublicKey(publicKey));
+    public static VerificationScript fromPublicKey(BigInteger publicKey) {
+        return new VerificationScript(Keys.getVerificationScriptFromPublicKey(publicKey));
     }
 
-    public static RawVerificationScript fromPublicKeys(int signingThreshold, byte[]... publicKeys) {
-        return new RawVerificationScript(
+    public static VerificationScript fromPublicKeys(int signingThreshold, byte[]... publicKeys) {
+        return new VerificationScript(
                 Keys.getVerificationScriptFromPublicKeys(signingThreshold, publicKeys)
         );
     }
 
-    public static RawVerificationScript fromPublicKeys(int signingThreshold, List<BigInteger> publicKeys) {
-        return new RawVerificationScript(
+    public static VerificationScript fromPublicKeys(int signingThreshold,
+            List<BigInteger> publicKeys) {
+        return new VerificationScript(
                 Keys.getVerificationScriptFromPublicKeys(signingThreshold, publicKeys)
         );
     }
@@ -86,8 +88,8 @@ public class RawVerificationScript extends NeoSerializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RawVerificationScript)) return false;
-        RawVerificationScript that = (RawVerificationScript) o;
+        if (!(o instanceof VerificationScript)) return false;
+        VerificationScript that = (VerificationScript) o;
         return Arrays.equals(getScript(), that.getScript());
     }
 
@@ -103,8 +105,12 @@ public class RawVerificationScript extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        script = reader.readVarBytes();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            script = reader.readVarBytes();
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

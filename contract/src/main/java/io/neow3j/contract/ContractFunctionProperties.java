@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.ArrayUtils;
 import org.slf4j.Logger;
@@ -114,16 +115,20 @@ public class ContractFunctionProperties extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        int functionProperties = reader.readPushInteger();
-        this.needsStorage = unpackNeedsStorage(functionProperties);
-        this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
-        this.isPayable = unpackIsPayable(functionProperties);
-        this.returnType = ContractParameterType.valueOf((byte) reader.readPushInteger());
-        byte[] parameters = reader.readPushData();
-        this.parameterTypes = new ArrayList<>();
-        for (byte parameter : parameters) {
-            parameterTypes.add(ContractParameterType.valueOf(parameter));
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            int functionProperties = reader.readPushInteger();
+            this.needsStorage = unpackNeedsStorage(functionProperties);
+            this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
+            this.isPayable = unpackIsPayable(functionProperties);
+            this.returnType = ContractParameterType.valueOf((byte) reader.readPushInteger());
+            byte[] parameters = reader.readPushData();
+            this.parameterTypes = new ArrayList<>();
+            for (byte parameter : parameters) {
+                parameterTypes.add(ContractParameterType.valueOf(parameter));
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
         }
     }
 

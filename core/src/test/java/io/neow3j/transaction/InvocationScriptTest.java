@@ -1,9 +1,10 @@
-package io.neow3j.crypto.transaction;
+package io.neow3j.transaction;
 
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ import java.util.Arrays;
 import static io.neow3j.constants.OpCode.PUSHBYTES64;
 import static org.junit.Assert.assertArrayEquals;
 
-public class RawInvocationScriptTest {
+public class InvocationScriptTest {
 
     @Test
     public void testFromMessageAndKeyPair() throws InvalidAlgorithmParameterException,
@@ -25,7 +26,7 @@ public class RawInvocationScriptTest {
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
-        RawInvocationScript invScript = RawInvocationScript.fromMessageAndKeyPair(message, keyPair);
+        InvocationScript invScript = InvocationScript.fromMessageAndKeyPair(message, keyPair);
         SignatureData expectedSignature = Sign.signMessage(message, keyPair);
         byte[] expectedScript = ArrayUtils.concatenate(PUSHBYTES64.getValue(), expectedSignature.getConcatenated());
         assertArrayEquals(expectedScript, invScript.getScript());
@@ -38,7 +39,7 @@ public class RawInvocationScriptTest {
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
-        RawInvocationScript invScript = RawInvocationScript.fromMessageAndKeyPair(message, keyPair);
+        InvocationScript invScript = InvocationScript.fromMessageAndKeyPair(message, keyPair);
         byte[] signature = Sign.signMessage(message, keyPair).getConcatenated();
 
         byte[] expectedScript = ByteBuffer.allocate(1+1+64)
@@ -54,27 +55,27 @@ public class RawInvocationScriptTest {
     public void testSerializeRandomInvocationScript() {
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 1);
-        RawInvocationScript invScript = new RawInvocationScript(message);
+        InvocationScript invScript = new InvocationScript(message);
         byte[] expectedScript = ArrayUtils.concatenate((byte)10, message);
         assertArrayEquals(expectedScript, invScript.toArray());
     }
 
     @Test
-    public void testDeserialize() throws IllegalAccessException, InstantiationException,
-            InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    public void testDeserialize() throws InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException, DeserializationException {
 
         int messageSize = 32;
         byte[] message = new byte[messageSize];
         Arrays.fill(message, (byte) 1);
         byte[] serializedScript = ArrayUtils.concatenate((byte)messageSize, message);
-        RawInvocationScript script = NeoSerializableInterface.from(serializedScript, RawInvocationScript.class);
+        InvocationScript script = NeoSerializableInterface.from(serializedScript, InvocationScript.class);
         assertArrayEquals(message, script.getScript());
 
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         byte[] signature = Sign.signMessage(message, keyPair).getConcatenated();
         byte[] expectedScript = ArrayUtils.concatenate(PUSHBYTES64.getValue(), signature);
         serializedScript = ArrayUtils.concatenate((byte)65, expectedScript);
-        script = NeoSerializableInterface.from(serializedScript, RawInvocationScript.class);
+        script = NeoSerializableInterface.from(serializedScript, InvocationScript.class);
         assertArrayEquals(expectedScript, script.getScript());
 
         messageSize = 256;
@@ -87,7 +88,7 @@ public class RawInvocationScriptTest {
         buf.put((byte)0x00);
         buf.put((byte)0x01);
         buf.put(message);
-        script = NeoSerializableInterface.from(buf.array(), RawInvocationScript.class);
+        script = NeoSerializableInterface.from(buf.array(), InvocationScript.class);
         assertArrayEquals(message, script.getScript());
     }
 

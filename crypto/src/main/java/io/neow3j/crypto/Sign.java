@@ -1,7 +1,6 @@
 package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
@@ -74,16 +73,15 @@ public class Sign {
      * <br>
      * <p>The recId is an index from 0 to 3 which indicates which of the 4 possible keys is the
      * correct one. Because the key recovery operation yields multiple potential keys, the correct
-     * key must either be stored alongside the
-     * signature, or you must be willing to try each recId in turn until you find one that outputs
-     * the key you are expecting.</p>
+     * key must either be stored alongside the signature, or you must be willing to try each recId
+     * in turn until you find one that outputs the key you are expecting.</p>
      * <br>
      * <p>If this method returns null it means recovery was not possible and recId should be
      * iterated.</p>
      * <br>
      * <p>Given the above two points, a correct usage of this method is inside a for loop from
-     * 0 to 3, and if the output is null OR a key that is not the one you expect, you try again
-     * with the next recId.</p>
+     * 0 to 3, and if the output is null OR a key that is not the one you expect, you try again with
+     * the next recId.</p>
      *
      * @param recId   Which possible key to recover.
      * @param sig     the R and S components of the signature, wrapped.
@@ -154,15 +152,16 @@ public class Sign {
      */
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
         X9IntegerConverter x9 = new X9IntegerConverter();
-        byte[] compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(NeoConstants.CURVE.getCurve()));
+        byte[] compEnc = x9.integerToBytes(xBN,
+                1 + x9.getByteLength(NeoConstants.CURVE.getCurve()));
         compEnc[0] = (byte) (yBit ? 0x03 : 0x02);
         return NeoConstants.CURVE.getCurve().decodePoint(compEnc);
     }
 
     /**
-     * Given an arbitrary piece of text and an NEO message signature encoded in bytes,
-     * returns the public key that was used to sign it. This can then be compared to the expected
-     * public key to determine if the signature was correct.
+     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the
+     * public key that was used to sign it. This can then be compared to the expected public key to
+     * determine if the signature was correct.
      *
      * @param message       encoded message.
      * @param signatureData The message signature components
@@ -225,28 +224,32 @@ public class Sign {
         if (privKey.bitLength() > NeoConstants.CURVE.getN().bitLength()) {
             privKey = privKey.mod(NeoConstants.CURVE.getN());
         }
-        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), privKey).normalize();
+        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), privKey)
+                                             .normalize();
     }
 
     /**
-     * Recovers the address that created the given signature from the given transaction.
+     * Recovers the address that created the given signature on the given message.
+     * <p>
+     * If the message is a Neo transaction, then make sure that it was serialized without the
+     * verification and invocation script attached (i.e. without the signature).
      *
      * @param signatureData The signature.
-     * @param tx            The signed transaction.
-     * @return the address that produced the siganture data from the transaction.
+     * @param message       The message for which the signature was created.
+     * @return the address that produced the signature data from the transaction.
      * @throws SignatureException throws if the signature is invalid.
      */
-    public static String recoverSigningAddress(RawTransaction tx, SignatureData signatureData)
+    public static String recoverSigningAddress(byte[] message, SignatureData signatureData)
             throws SignatureException {
 
-        byte[] encodedTransaction = tx.toArrayWithoutScripts();
         byte v = signatureData.getV();
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
         SignatureData signatureDataV = new Sign.SignatureData(getRealV(v), r, s);
-        BigInteger key = Sign.signedMessageToKey(encodedTransaction, signatureDataV);
+        BigInteger key = Sign.signedMessageToKey(message, signatureDataV);
         return Keys.getAddress(key);
     }
+
 
     private static byte getRealV(byte v) {
         if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {

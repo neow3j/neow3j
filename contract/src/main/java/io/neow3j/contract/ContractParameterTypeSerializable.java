@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.ContractParameterType;
 
 import java.io.IOException;
@@ -23,8 +24,12 @@ public class ContractParameterTypeSerializable extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        this.contractParameterType = ContractParameterType.valueOf(reader.readByte());
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            this.contractParameterType = ContractParameterType.valueOf(reader.readByte());
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

@@ -1,10 +1,10 @@
 package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.transaction.RawScript;
-import io.neow3j.crypto.transaction.RawTransactionAttribute;
-import io.neow3j.crypto.transaction.RawTransactionInput;
-import io.neow3j.crypto.transaction.RawTransactionOutput;
+import io.neow3j.transaction.Witness;
+import io.neow3j.transaction.TransactionAttribute;
+import io.neow3j.transaction.RawTransactionInput;
+import io.neow3j.transaction.RawTransactionOutput;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.protocol.Neow3j;
@@ -46,14 +46,14 @@ public class AssetTransfer {
      * <p>Adds the given witness to the transaction's witnesses.</p>
      * <br>
      * <p>Use this method for adding a custom witness to the transaction.
-     * This does the same as the method {@link Builder#witness(RawScript)}, namely just adds the
+     * This does the same as the method {@link Builder#witness(Witness)}, namely just adds the
      * provided witness. But here it allows to add a witness from the created transaction object
      * ({@link AssetTransfer#getTransaction()}) which is not possible in the builder.</p>
      *
      * @param witness The witness to be added.
      * @return this asset transfer object.
      */
-    public AssetTransfer addWitness(RawScript witness) {
+    public AssetTransfer addWitness(Witness witness) {
         tx.addScript(witness);
         return this;
     }
@@ -77,7 +77,7 @@ public class AssetTransfer {
                     "signing the transaction. Decrypt the private key before attempting to sign " +
                     "with it.");
         }
-        tx.addScript(RawScript.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
+        tx.addScript(Witness.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
         return this;
     }
 
@@ -89,8 +89,8 @@ public class AssetTransfer {
         private List<RawTransactionOutput> outputs;
         private List<RawTransactionInput> inputs;
         private Map<String, List<Utxo>> utxos;
-        private List<RawScript> witnesses;
-        private List<RawTransactionAttribute> attributes;
+        private List<Witness> witnesses;
+        private List<TransactionAttribute> attributes;
         private InputCalculationStrategy inputCalculationStrategy;
         private ContractTransaction tx;
         private String assetId;
@@ -228,7 +228,7 @@ public class AssetTransfer {
             return utxos(new Utxo(assetId, transactionHash, index, value));
         }
 
-        public Builder witness(RawScript script) {
+        public Builder witness(Witness script) {
             this.witnesses.add(script);
             return this;
         }
@@ -311,19 +311,19 @@ public class AssetTransfer {
         }
 
         public Builder attribute(TransactionAttributeUsageType type, byte[] value) {
-            return attribute(new RawTransactionAttribute(type, value));
+            return attribute(new TransactionAttribute(type, value));
         }
 
         public Builder attribute(TransactionAttributeUsageType type, String value) {
-            return attribute(new RawTransactionAttribute(type, value));
+            return attribute(new TransactionAttribute(type, value));
         }
 
-        public Builder attribute(RawTransactionAttribute attribute) {
+        public Builder attribute(TransactionAttribute attribute) {
             this.attributes.add(attribute);
             return this;
         }
 
-        public Builder attributes(List<RawTransactionAttribute> attributes) {
+        public Builder attributes(List<TransactionAttribute> attributes) {
             this.attributes.addAll(attributes);
             return this;
         }
@@ -437,7 +437,7 @@ public class AssetTransfer {
             // Because in a transaction that withdraws from a contract address the transaction
             // inputs are coming from the contract, there are now inputs from the account that
             // initiates the transfer. Therefore it needs to be mentioned in an script attribute.
-            attributes.add(new RawTransactionAttribute(
+            attributes.add(new TransactionAttribute(
                     TransactionAttributeUsageType.SCRIPT, account.getScriptHash().toArray()));
 
             NeoGetContractState contractState;
@@ -450,7 +450,7 @@ public class AssetTransfer {
             }
             int nrOfParams = contractState.getContractState().getContractParameters().size();
             byte[] invocationScript = Numeric.hexStringToByteArray(Strings.zeros(nrOfParams * 2));
-            witnesses.add(new RawScript(invocationScript, fromContractScriptHash));
+            witnesses.add(new Witness(invocationScript, fromContractScriptHash));
         }
 
         private void calculateInputsAndChange(Map<String, BigDecimal> requiredAssets,

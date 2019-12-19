@@ -1,10 +1,9 @@
 package io.neow3j.transaction;
 
-import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionType;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
@@ -30,9 +29,13 @@ public class InvocationTransaction extends RawTransaction {
     }
 
     @Override
-    public void deserializeExclusive(BinaryReader reader) throws IOException {
-        this.contractScript = reader.readVarBytes();
-        this.systemFee = Numeric.fromFixed8ToDecimal(reader.readBytes(8));
+    public void deserializeExclusive(BinaryReader reader) throws DeserializationException {
+        try {
+            this.contractScript = reader.readVarBytes();
+            this.systemFee = Numeric.fromFixed8ToDecimal(reader.readBytes(8));
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     public byte[] getContractScript() {

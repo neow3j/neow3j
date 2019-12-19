@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,12 +84,16 @@ public class ContractDescriptionProperties extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws IOException {
-        this.description = reader.readPushString();
-        this.email = reader.readPushString();
-        this.author = reader.readPushString();
-        this.version = reader.readPushString();
-        this.name = reader.readPushString();
+    public void deserialize(BinaryReader reader) throws DeserializationException {
+        try {
+            this.description = reader.readPushString();
+            this.email = reader.readPushString();
+            this.author = reader.readPushString();
+            this.version = reader.readPushString();
+            this.name = reader.readPushString();
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override

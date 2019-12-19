@@ -101,14 +101,40 @@ public class BinaryWriter implements AutoCloseable {
         writer.write(array, 0, 4);
     }
 
-    public void writeInt(int v) throws IOException {
+    public void writeInt32(int v) throws IOException {
         buffer.putInt(0, v);
         writer.write(array, 0, 4);
     }
 
-    public void writeLong(long v) throws IOException {
+    /**
+     * Writes the given long (signed 64-bit integer) to the underlying output stream in
+     * little-endian order. The long's byte representation is its two's complement.
+     *
+     * @param v the value
+     * @throws IOException if an I/O exception occurs.
+     */
+    public void writeInt64(long v) throws IOException {
         buffer.putLong(0, v);
         writer.write(array, 0, 8);
+    }
+
+    /**
+     * Writes the first (least-significant) 32 bits of the given long (signed 64-bit integer) to the
+     * underlying output stream in little-endian order. I.e. the byte output represents an unsigned
+     * 32-bit integer in the range [0, 2^32).
+     *
+     * @param v the value which needs to be in the range [0, 2^32).
+     * @throws IOException              if an I/O exception occurs.
+     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0,
+     *                                  2^32).
+     */
+    public void writeUInt32(long v) throws IOException {
+        if (v < 0 || v >= (long) Math.pow(2, 32)) {
+            throw new IllegalArgumentException("Value of 32-bit unsigned integer was not in " +
+                    "interval [0, 2^32).");
+        }
+        buffer.putLong(0, v);
+        writer.write(array, 0, 4);
     }
 
     public void writeSerializableVariableBytes(NeoSerializable v) throws IOException {
@@ -121,7 +147,8 @@ public class BinaryWriter implements AutoCloseable {
         writeSerializableFixed(v);
     }
 
-    public void writeSerializableVariableBytes(List<? extends NeoSerializable> v) throws IOException {
+    public void writeSerializableVariableBytes(List<? extends NeoSerializable> v) throws
+            IOException {
         int sumLength = 0;
         for (int i = 0; i < v.size(); i++) {
             sumLength += v.get(i).toArray().length;
@@ -161,10 +188,10 @@ public class BinaryWriter implements AutoCloseable {
             writeShort((short) v);
         } else if (v <= 0xFFFFFFFF) {
             writeByte((byte) 0xFE);
-            writeInt((int) v);
+            writeInt32((int) v);
         } else {
             writeByte((byte) 0xFF);
-            writeLong(v);
+            writeInt64(v);
         }
     }
 

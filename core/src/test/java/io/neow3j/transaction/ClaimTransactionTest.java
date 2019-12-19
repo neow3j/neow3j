@@ -1,26 +1,22 @@
 package io.neow3j.transaction;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.utils.Keys;
 import io.neow3j.crypto.WIF;
-import io.neow3j.crypto.transaction.RawScript;
-import io.neow3j.crypto.transaction.RawTransactionInput;
-import io.neow3j.crypto.transaction.RawTransactionOutput;
-import io.neow3j.crypto.transaction.RawVerificationScript;
 import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
+import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
+import java.math.BigInteger;
+import java.util.Arrays;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.math.BigInteger;
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class ClaimTransactionTest {
 
@@ -37,7 +33,7 @@ public class ClaimTransactionTest {
         ClaimTransaction signedTx = new ClaimTransaction.Builder()
                 .output(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr))
                 .claim(new RawTransactionInput(claimableTxId, idx))
-                .script(new RawScript(invocationScript, RawVerificationScript.fromPublicKey(publicKey).getScript())
+                .script(new Witness(invocationScript, VerificationScript.fromPublicKey(publicKey).getScript())
         ).build();
 
         byte[] signedTxArray = signedTx.toArray();
@@ -50,7 +46,7 @@ public class ClaimTransactionTest {
 
 
     @Test
-    public void deserialize_Signed() throws IllegalAccessException, InstantiationException {
+    public void deserializeSigned() throws DeserializationException {
 
         String receivingAdr = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
         String claimValue = "7264";
@@ -83,7 +79,7 @@ public class ClaimTransactionTest {
         ClaimTransaction tx = ClaimTransaction.fromClaimables(claimables, adr);
         byte[] unsignedTxArray = tx.toArrayWithoutScripts();
 
-        RawScript witness = RawScript.createWitness(unsignedTxArray, ecKeyPair);
+        Witness witness = Witness.createWitness(unsignedTxArray, ecKeyPair);
         tx.addScript(witness);
 
         byte[] signedTxArray = tx.toArray();

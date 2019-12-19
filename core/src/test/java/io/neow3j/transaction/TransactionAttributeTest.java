@@ -1,31 +1,32 @@
-package io.neow3j.crypto.transaction;
+package io.neow3j.transaction;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.utils.ArrayUtils;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
+import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-public class RawTransactionAttributeTest {
+public class TransactionAttributeTest {
 
     @Test
     public void createAttribute() {
         // positive case
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             if (type.fixedDataLength() != null) {
-                new RawTransactionAttribute(type, createByteArray(type.fixedDataLength(), 1));
+                new TransactionAttribute(type, createByteArray(type.fixedDataLength(), 1));
             } else if (type.maxDataLength() != null) {
-                new RawTransactionAttribute(type, createByteArray(type.maxDataLength(), 1));
+                new TransactionAttribute(type, createByteArray(type.maxDataLength(), 1));
             } else {
-                new RawTransactionAttribute(type, createByteArray(100, 1));
+                new TransactionAttribute(type, createByteArray(100, 1));
             }
         }
 
@@ -33,10 +34,10 @@ public class RawTransactionAttributeTest {
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             try {
                 if (type.fixedDataLength() != null) {
-                    new RawTransactionAttribute(type, createByteArray(type.fixedDataLength() + 1, 1));
+                    new TransactionAttribute(type, createByteArray(type.fixedDataLength() + 1, 1));
                 }
                 else if (type.maxDataLength() != null) {
-                    new RawTransactionAttribute(type, createByteArray(type.maxDataLength() + 1, 1));
+                    new TransactionAttribute(type, createByteArray(type.maxDataLength() + 1, 1));
                 } else {
                     continue;
                 }
@@ -47,7 +48,7 @@ public class RawTransactionAttributeTest {
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             try {
                 if (type.fixedDataLength() != null) {
-                    new RawTransactionAttribute(type, createByteArray(type.fixedDataLength() - 1, 1));
+                    new TransactionAttribute(type, createByteArray(type.fixedDataLength() - 1, 1));
                 } else {
                     continue;
                 }
@@ -57,7 +58,7 @@ public class RawTransactionAttributeTest {
     }
 
     @Test
-    public void deserialize() throws IOException {
+    public void deserialize() throws DeserializationException {
         for (TransactionAttributeUsageType type : TransactionAttributeUsageType.values()) {
             byte usage = type.byteValue();
             byte[] data;
@@ -70,7 +71,7 @@ public class RawTransactionAttributeTest {
                 data = createByteArray(dataLength, 1);
                 input = ArrayUtils.concatenate(new byte[]{usage, dataLength}, data);
             }
-            RawTransactionAttribute attr = new RawTransactionAttribute();
+            TransactionAttribute attr = new TransactionAttribute();
             attr.deserialize(new BinaryReader(new ByteArrayInputStream(input, 0, input.length)));
             assertEquals(type, attr.usage);
             assertEquals(data.length, attr.data.length);
@@ -88,7 +89,7 @@ public class RawTransactionAttributeTest {
             } else {
                 data = createByteArray(dataLength, 1);
             }
-            RawTransactionAttribute attr = new RawTransactionAttribute(type, data);
+            TransactionAttribute attr = new TransactionAttribute(type, data);
 
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             attr.serialize(new BinaryWriter(byteStream));
