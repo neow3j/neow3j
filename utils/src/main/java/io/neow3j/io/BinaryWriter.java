@@ -24,7 +24,7 @@
  */
 package io.neow3j.io;
 
-import org.bouncycastle.math.ec.ECPoint;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,8 +32,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.bouncycastle.math.ec.ECPoint;
 
 public class BinaryWriter implements AutoCloseable {
 
@@ -167,8 +166,22 @@ public class BinaryWriter implements AutoCloseable {
         }
     }
 
-    public void writeShort(short v) throws IOException {
-        buffer.putShort(0, v);
+    /**
+     * Writes the first (least-significant) 16 bits of the given int (signed 32-bit integer) to the
+     * underlying output stream in little-endian order. I.e. the byte output represents an unsigned
+     * 16-bit integer in the range [0, 2^16).
+     *
+     * @param v the value which needs to be in the range [0, 2^16).
+     * @throws IOException              if an I/O exception occurs.
+     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0,
+     *                                  2^16).
+     */
+    public void writeUInt16(int v) throws IOException {
+        if (v < 0 || v >= (int) Math.pow(2, 16)) {
+            throw new IllegalArgumentException("Value of 16-bit unsigned integer was not in " +
+                "interval [0, 2^16).");
+        }
+        buffer.putInt(0, v);
         writer.write(array, 0, 2);
     }
 
@@ -185,10 +198,10 @@ public class BinaryWriter implements AutoCloseable {
             writeByte((byte) v);
         } else if (v <= 0xFFFF) {
             writeByte((byte) 0xFD);
-            writeShort((short) v);
-        } else if (v <= 0xFFFFFFFF) {
+            writeUInt16((int)v);
+        } else if (v <= 0xFFFFFFFFL) {
             writeByte((byte) 0xFE);
-            writeInt32((int) v);
+            writeUInt32(v);
         } else {
             writeByte((byte) 0xFF);
             writeInt64(v);
