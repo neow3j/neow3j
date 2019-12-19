@@ -10,10 +10,10 @@ import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.bouncycastle.util.Arrays;
 import org.junit.Test;
 
 public class ScriptHashTest {
@@ -56,7 +56,7 @@ public class ScriptHashTest {
     @Test
     public void toArray() {
         ScriptHash sh = new ScriptHash("23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        byte[] expected = Arrays.reverse(Numeric.hexStringToByteArray(
+        byte[] expected = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
         assertArrayEquals(expected, sh.toArray());
     }
@@ -67,14 +67,14 @@ public class ScriptHashTest {
         BinaryWriter writer = new BinaryWriter(outStream);
         new ScriptHash("23ba2703c53263e8d6e522dc32203339dcd8eee9").serialize(writer);
         byte[] actual = outStream.toByteArray();
-        byte[] expected = Arrays.reverse(Numeric.hexStringToByteArray(
+        byte[] expected = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
         assertArrayEquals(expected, actual);
     }
 
     @Test
     public void deserialize() throws DeserializationException {
-        byte[] data = Arrays.reverse(Numeric.hexStringToByteArray(
+        byte[] data = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
         ScriptHash sh = NeoSerializableInterface.from(data, ScriptHash.class);
         assertThat(sh.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));
