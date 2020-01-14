@@ -23,9 +23,6 @@ public class SampleKeys {
 
     static final ECKeyPair KEY_PAIR_1 = new ECKeyPair(PRIVATE_KEY_1, PUBLIC_KEY_1);
 
-    public static final Credentials CREDENTIALS_1 = new Credentials(KEY_PAIR_1);
-
-
     // Account 2:
     public static final String PRIVATE_KEY_STRING_2 =
             "fbd35970456f1aa51fd8fb70b4a1f717eba072240f8a4f408f529fe3e7678ace";
@@ -40,9 +37,6 @@ public class SampleKeys {
     static final BigInteger PUBLIC_KEY_2 = Numeric.toBigIntNoPrefix(PUBLIC_KEY_STRING_2);
 
     static final ECKeyPair KEY_PAIR_2 = new ECKeyPair(PRIVATE_KEY_2, PUBLIC_KEY_2);
-
-    public static final Credentials CREDENTIALS_2 = new Credentials(KEY_PAIR_2);
-
 
     private SampleKeys() {
     }

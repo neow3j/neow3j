@@ -5,12 +5,14 @@ import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
+import io.neow3j.utils.KeyUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -39,13 +41,20 @@ import org.bouncycastle.util.BigIntegers;
 public class ECKeyPair {
 
     private final BigInteger privateKey;
-    private final BigInteger publicKey;
+    private final ECPublicKey publicKey;
 
     static {
         addBouncyCastle();
     }
 
+    // TODO: Remove as soon as private key is also its own type (ECPrivateKey).
     public ECKeyPair(BigInteger privateKey, BigInteger publicKey) {
+        this.privateKey = privateKey;
+        this.publicKey = new ECPublicKey(publicKey);
+    }
+
+    // TODO: Remove as soon as private key is also its own type (ECPrivateKey).
+    public ECKeyPair(BigInteger privateKey, ECPublicKey publicKey) {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
@@ -55,7 +64,13 @@ public class ECKeyPair {
         return privateKey;
     }
 
+    // TODO: Remove and fix all occurences
     public BigInteger getPublicKey() {
+        return Numeric.toBigInt(publicKey.getEncoded(true));
+    }
+
+    // TODO: Rename after removing the above method.
+    public ECPublicKey getPublicKey2() {
         return publicKey;
     }
 
@@ -66,7 +81,8 @@ public class ECKeyPair {
      * @return the NEO address of the public key.
      */
     public String getAddress() {
-        return Keys.getAddress(this.getPublicKey());
+        byte[] script = ScriptBuilder.buildVerificationScript(this.publicKey.getEncoded(true));
+        return ScriptHash.fromScript(script).toAddress();
     }
 
     /**
@@ -171,8 +187,8 @@ public class ECKeyPair {
     }
 
     public byte[] serialize() {
-        byte[] privateKey = Keys.privateKeyIntegerToByteArray(this.getPublicKey());
-        byte[] publicKey = Keys.publicKeyIntegerToByteArray(this.getPublicKey());
+        byte[] privateKey = KeyUtils.privateKeyIntegerToByteArray(this.getPublicKey());
+        byte[] publicKey = KeyUtils.publicKeyIntegerToByteArray(this.getPublicKey());
 
         byte[] result = Arrays.copyOf(privateKey, PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE);
         System.arraycopy(publicKey, 0, result, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE);
@@ -217,11 +233,41 @@ public class ECKeyPair {
         return result;
     }
 
+    // TODO: Implement
+    public static class ECPrivateKey extends NeoSerializable {
+
+        @Override
+        public void deserialize(BinaryReader reader) throws DeserializationException {
+
+        }
+
+        @Override
+        public void serialize(BinaryWriter writer) throws IOException {
+
+        }
+
+        @Override
+        public int getSize() {
+            return 0;
+        }
+    }
+
     public static class ECPublicKey extends NeoSerializable {
 
         private ECPoint ecPoint;
 
         public ECPublicKey() {
+        }
+
+        /**
+         * Creates a new
+         * @param ecPoint
+         */
+        public ECPublicKey(ECPoint ecPoint) {
+            if (!ecPoint.getCurve().equals(NeoConstants.CURVE_PARAMS.getCurve())) {
+                throw new IllegalArgumentException("Given EC point is not of the required curve.");
+            }
+            this.ecPoint = ecPoint;
         }
 
         /**
@@ -237,6 +283,17 @@ public class ECKeyPair {
                     NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length + " bytes");
             }
             this.ecPoint = decodePoint(publicKey);
+        }
+
+        /**
+         * Creates a new instance from the given encoded public key. The public key must be encoded
+         * as defined in section 2.3.3 of <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>. It can
+         * be in compressed or uncompressed format.
+         *
+         * @param publicKey The public key.
+         */
+        public ECPublicKey(BigInteger publicKey) {
+            this(Numeric.toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE));
         }
 
         /**

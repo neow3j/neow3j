@@ -1,10 +1,13 @@
 package io.neow3j.wallet;
 
+import static junit.framework.TestCase.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
-import io.neow3j.transaction.Witness;
-import io.neow3j.transaction.RawTransactionOutput;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
@@ -19,21 +22,17 @@ import io.neow3j.protocol.core.methods.response.NeoGetUnspents.UnspentTransactio
 import io.neow3j.protocol.core.methods.response.NeoGetUnspents.Unspents;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.RawTransactionOutput;
+import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Balances.AssetBalance;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static junit.framework.TestCase.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AssetTransferTest {
 
@@ -271,7 +270,8 @@ public class AssetTransferTest {
     @Test
     public void transferFromMultiSigAddress() throws IOException, ErrorResponseException {
         Neow3j neow3j = Neow3j.build(new HttpService("http://nucbox.axlabs.com:30333"));
-        List<BigInteger> keys = Arrays.asList(SampleKeys.PUBLIC_KEY_1, SampleKeys.PUBLIC_KEY_2);
+        List<ECPublicKey> keys = Arrays.asList(SampleKeys.KEY_PAIR_1.getPublicKey2(),
+                SampleKeys.KEY_PAIR_2.getPublicKey2());
         // This account has the address "ATcWffQV1A7NMEsqQ1RmKfS7AbSqcAp2hd"
         Account multiSigAcct = Account.fromMultiSigKeys(keys, 2).build();
         // The account could also be instantiated from the address directly

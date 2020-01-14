@@ -4,15 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.WIF;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
 import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
-import java.math.BigInteger;
 import java.util.Arrays;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -29,11 +28,12 @@ public class ClaimTransactionTest {
         int idx = 0;
         String receivingAdr = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
         byte[] invocationScript = Numeric.hexStringToByteArray("400c40efd5f4a37b09fb8dca3e9cd6486c1b2d46c0319ac216c348f546ff44bb5fc3a328a43f2f49c9b2aa4cb1ce3f40327fd8403966e117745eb5c1266614f7d4");
-        BigInteger publicKey = Numeric.toBigIntNoPrefix("031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4a");
+        ECPublicKey pubKey = new ECPublicKey(Numeric.hexStringToByteArray(
+                "031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4a"));
         ClaimTransaction signedTx = new ClaimTransaction.Builder()
                 .output(new RawTransactionOutput(GASAsset.HASH_ID, "7264", receivingAdr))
                 .claim(new RawTransactionInput(claimableTxId, idx))
-                .script(new Witness(invocationScript, VerificationScript.fromPublicKey(publicKey).getScript())
+                .script(new Witness(invocationScript, new VerificationScript(pubKey).getScript())
         ).build();
 
         byte[] signedTxArray = signedTx.toArray();
@@ -69,7 +69,7 @@ public class ClaimTransactionTest {
 
         String wif = "KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr";
         ECKeyPair ecKeyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif));
-        String adr = Keys.getAddress(ecKeyPair.getPublicKey()); // "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
+        String adr = ecKeyPair.getAddress(); // "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
         String txId = "4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff";
         int index = 0;
         String claimValue = "7264";

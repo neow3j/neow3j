@@ -3,8 +3,8 @@ package io.neow3j.contract;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryWriter;
@@ -14,6 +14,7 @@ import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import org.junit.Test;
 
 public class ScriptHashTest {
@@ -82,9 +83,9 @@ public class ScriptHashTest {
         byte[] m2 = Numeric.hexStringToByteArray("d802a401");
         ScriptHash sh1 = ScriptHash.fromScript(m1);
         ScriptHash sh2 = ScriptHash.fromScript(m2);
-        assertFalse(sh1.equals(sh2));
-        assertFalse(sh2.equals(sh1));
-        assertTrue(sh1.equals(sh1));
+        assertNotEquals(sh1, sh2);
+        assertNotEquals(sh2, sh1);
+        assertEquals(sh1, sh1);
     }
 
     @Test
@@ -117,7 +118,7 @@ public class ScriptHashTest {
                 "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
         byte[] key2 = Numeric.hexStringToByteArray(
                 "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43");
-        ScriptHash sh = ScriptHash.fromPublicKeys(2, key1, key2);
+        ScriptHash sh = ScriptHash.fromPublicKeys(Arrays.asList(key1, key2), 2);
 
         String verificationScriptHex = "5221" + keyHex1 + "21" + keyHex2 + "52ae";
         byte[] verificationScript = Numeric.hexStringToByteArray(verificationScriptHex);

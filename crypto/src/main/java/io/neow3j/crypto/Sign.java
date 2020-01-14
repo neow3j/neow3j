@@ -1,20 +1,20 @@
 package io.neow3j.crypto;
 
+import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
+import static io.neow3j.utils.Assertions.verifyPrecondition;
+
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
+import java.math.BigInteger;
+import java.security.SignatureException;
+import java.util.Arrays;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.math.ec.ECAlgorithms;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
-
-import java.math.BigInteger;
-import java.security.SignatureException;
-import java.util.Arrays;
-
-import static io.neow3j.utils.Assertions.verifyPrecondition;
 
 /**
  * <p>Transaction signing logic.</p>
@@ -247,7 +247,8 @@ public class Sign {
         byte[] s = signatureData.getS();
         SignatureData signatureDataV = new Sign.SignatureData(getRealV(v), r, s);
         BigInteger key = Sign.signedMessageToKey(message, signatureDataV);
-        return Keys.getAddress(key);
+        byte[] keyBytes = Numeric.toBytesPadded(key, PUBLIC_KEY_SIZE);
+        return ScriptHash.fromPublicKey(keyBytes).toAddress();
     }
 
 

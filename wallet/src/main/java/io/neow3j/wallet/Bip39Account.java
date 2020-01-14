@@ -1,10 +1,10 @@
 package io.neow3j.wallet;
 
+import static io.neow3j.crypto.Hash.sha256;
+
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.SecureRandomUtils;
-
-import static io.neow3j.crypto.Hash.sha256;
 
 /**
  * Class encapsulating a BIP-39 compatible NEO account.
@@ -39,8 +39,8 @@ public class Bip39Account extends Account {
         ECKeyPair keyPair = ECKeyPair.create(sha256(seed));
 
         return fromECKeyPair(keyPair)
-                .isDefault(true)
                 .mnemonic(mnemonic)
+                .isDefault(true)
                 .build();
     }
 
@@ -60,7 +60,7 @@ public class Bip39Account extends Account {
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
         b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey();
+        b.publicKey = ecKeyPair.getPublicKey2();
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;

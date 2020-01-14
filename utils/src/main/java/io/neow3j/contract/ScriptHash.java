@@ -1,19 +1,18 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.Base58;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A script hash is as its name says the hash of a executable NeoVM script. It is always 20 bytes
@@ -104,14 +103,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * @return the address.
      */
     public String toAddress() {
-        byte[] data = new byte[1];
-        data[0] = NeoConstants.COIN_VERSION;
-        byte[] dataAndScriptHash = ArrayUtils.concatenate(data, scriptHash);
-        byte[] checksum = Hash.sha256(Hash.sha256(dataAndScriptHash));
-        byte[] first4BytesCheckSum = new byte[4];
-        System.arraycopy(checksum, 0, first4BytesCheckSum, 0, 4);
-        byte[] dataToEncode = ArrayUtils.concatenate(dataAndScriptHash, first4BytesCheckSum);
-        return Base58.encode(dataToEncode);
+        return AddressUtils.scriptHashToAddress(this.scriptHash);
     }
 
     @Override
@@ -133,40 +125,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * @return the script hash.
      */
     public static ScriptHash fromAddress(String address) {
-        if (!Keys.isValidAddress(address)) {
-            throw new IllegalArgumentException("Not a valid NEO address.");
-        }
-        byte[] buffer = new byte[20];
-        System.arraycopy(Base58.decode(address), 1, buffer, 0, 20);
-        return new ScriptHash(buffer);
-    }
-
-    /**
-     * Creates a script hash from the given public key.
-     * <p>
-     * TODO 29.07.19 claude: What form does the public key need to have?
-     *
-     * @param publicKey The key to calculate the script hash for.
-     * @return the script hash.
-     */
-    public static ScriptHash fromPublicKey(byte[] publicKey) {
-        return fromScript(Keys.getVerificationScriptFromPublicKey(publicKey));
-    }
-
-    /**
-     * <p>Creates a script hash from the given public keys and signing threshold.</p>
-     * <br>
-     * <p>The signing threshold is the number of signatures needed for a valid transaction created
-     * with the public keys. It is needed to create the proper verification script.</p>
-     *
-     * @param signingThreshold The signing threshold.
-     * @param publicKeys       The public keys.
-     * @return the script hash.
-     */
-    public static ScriptHash fromPublicKeys(int signingThreshold, byte[]... publicKeys) {
-        byte[] verificationScript = Keys.getVerificationScriptFromPublicKeys(signingThreshold,
-            publicKeys);
-        return fromScript(verificationScript);
+        return new ScriptHash(AddressUtils.addressToScriptHash(address));
     }
 
     /**
@@ -179,6 +138,14 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
         // There is no need to reverse the hash. The hashing method returns the script hash in
         // little-endian format.
         return new ScriptHash(Hash.sha256AndThenRipemd160(script));
+    }
+
+    public static ScriptHash fromPublicKey(byte[] encodedPublicKey) {
+        return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKey));
+    }
+
+    public static ScriptHash fromPublicKeys(List<byte[]> encodedPublicKeys, int signingThreshold) {
+        return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKeys, signingThreshold));
     }
 
     /**

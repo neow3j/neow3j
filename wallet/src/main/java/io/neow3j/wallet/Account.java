@@ -1,29 +1,27 @@
 package io.neow3j.wallet;
 
-import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
-import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.transaction.VerificationScript;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.utils.Keys;
+import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Balances.AssetBalance;
+import io.neow3j.wallet.exceptions.AccountException;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -35,18 +33,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static io.neow3j.constants.OpCode.CHECKMULTISIG;
-
 @SuppressWarnings("unchecked")
 public class Account {
 
+    // Private and public key are stored separately because the private key is not necessarily
+    // available in every account instance.
     private BigInteger privateKey;
-    private BigInteger publicKey;
+    private ECPublicKey publicKey;
     private String address;
     private String encryptedPrivateKey;
     private String label;
     private boolean isDefault;
     private boolean isLocked;
+    // TODO: Replace with a verification script
     private NEP6Contract contract;
     private Balances balances;
 
@@ -80,16 +79,25 @@ public class Account {
         } else if (privateKey != null) {
             return ECKeyPair.create(privateKey);
         } else {
-            return null;
+            throw new AccountException("Account does not hold a decrypted private key.");
         }
     }
 
     public BigInteger getPrivateKey() {
-        return privateKey;
+        if (this.privateKey == null) {
+            throw new AccountException("Account does not hold a decrypted private key.");
+        }
+        return this.privateKey;
     }
 
+    // TODO: Remove this method and replace all occurrences with the method below.
     public BigInteger getPublicKey() {
-        return publicKey;
+        return Numeric.toBigInt(this.publicKey.getEncoded(true));
+    }
+
+    // TODO: Rename as soon as the above method has been removed.
+    public ECPublicKey getPublicKey2() {
+        return this.publicKey;
     }
 
     public String getLabel() {
@@ -112,6 +120,17 @@ public class Account {
         return contract;
     }
 
+    public VerificationScript getVerificationScript() {
+        // TODO: It is preferable that accounts can only created with a verification script set,
+        //  so that this state will never happen. If this check remains necessary, create a
+        //  custom exception for it.
+        if (this.contract == null || this.contract.getScript() == null
+                || this.contract.getScript().isEmpty()) {
+            throw new IllegalStateException("Account does not have a verification script set.");
+        }
+        return new VerificationScript(Numeric.hexStringToByteArray(this.contract.getScript()));
+    }
+
     public String getEncryptedPrivateKey() {
         return encryptedPrivateKey;
     }
@@ -123,9 +142,9 @@ public class Account {
     /**
      * <p>Gets the balance (the amount and a set of UTXOs) for the given asset id.</p>
      * <br>
-     * <p>Note that updating the balance information via a call to a RPC node is left to the library
-     * user. Call {@link Account#updateAssetBalances(Neow3j)} to have the most recent balance
-     * information</p>
+     * <p>Note that updating the balance information via a call to a RPC node is left to the
+     * library user. Call {@link Account#updateAssetBalances(Neow3j)} to have the most recent
+     * balance information</p>
      *
      * @param assetId The id/hash of the asset.
      * @return the asset balance of this account.
@@ -150,19 +169,20 @@ public class Account {
      * <p>Fetches a set of UTXOs from this account that fulfill the required asset amount.</p>
      * <br>
      * <p>Usually the UTXOs will not cover the amount exactly but cover a larger amount. Therefore
-     * it is important to calculate the necessary change before using the UTXOs in a transaction.</p>
+     * it is important to calculate the necessary change before using the UTXOs in a
+     * transaction.</p>
      *
      * @param assetId  The asset needed.
      * @param amount   The amount needed.
      * @param strategy The strategy with which to choose the UTXOs available on this account.
      * @return the list of UTXOs covering the required amount.
-     * @throws IllegalStateException      if this account does not have any balances, e.g. because they
-     *                                    have not been updated before.
+     * @throws IllegalStateException      if this account does not have any balances, e.g. because
+     *                                    they have not been updated before.
      * @throws InsufficientFundsException if this account does does not possess enough UTXOs to
      *                                    fulfill the required amount.
      */
     public List<Utxo> getUtxosForAssetAmount(String assetId, BigDecimal amount,
-                                             InputCalculationStrategy strategy) {
+            InputCalculationStrategy strategy) {
 
         if (getBalances() == null) {
             throw new IllegalStateException("Account does not have any asset balances. " +
@@ -181,7 +201,8 @@ public class Account {
     }
 
     /**
-     * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted.
+     * Decrypts this account's private key, according to the NEP-2 standard, if not already
+     * decrypted.
      *
      * @param password     The passphrase used to decrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for decryption.
@@ -194,23 +215,26 @@ public class Account {
 
         if (privateKey == null) {
             if (encryptedPrivateKey == null) {
-                throw new IllegalStateException("The account does not hold an encrypted private key.");
+                throw new IllegalStateException(
+                        "The account does not hold an encrypted private key.");
             }
             ECKeyPair ecKeyPair = NEP2.decrypt(password, encryptedPrivateKey, scryptParams);
             privateKey = ecKeyPair.getPrivateKey();
-            publicKey = ecKeyPair.getPublicKey();
+            publicKey = ecKeyPair.getPublicKey2();
             tryAddVerificationScriptContract();
         }
     }
 
     /**
-     * Encrypts this account's private key, according to the NEP-2 standard, if not already encrypted.
+     * Encrypts this account's private key, according to the NEP-2 standard, if not already
+     * encrypted.
      *
      * @param password     The passphrase used to encrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for encryption.
      * @throws CipherException throws if failed encrypt the created wallet.
      */
-    public void encryptPrivateKey(String password, ScryptParams scryptParams) throws CipherException {
+    public void encryptPrivateKey(String password, ScryptParams scryptParams)
+            throws CipherException {
 
         if (encryptedPrivateKey == null) {
             if (privateKey == null) {
@@ -225,21 +249,13 @@ public class Account {
     }
 
     public boolean isMultiSig() {
-        // TODO Claude 20.06.19:
-        // Even if the contract script is not empty this might be a multi-sig account. Additionally,
-        // the script in the contract could be something else than a verification script.
-        // Clarify if it makes sense to enforce that the contract's script must be a verification
-        // script and that it must be available (especially for multi-sig accounts).
-        if (contract != null && contract.getScript() != null && contract.getScript().length() >= 2) {
-            String script = contract.getScript();
-            return script.substring(script.length() - 2).equals(OpCode.toHexString(CHECKMULTISIG));
-        }
-        return false;
+        return getVerificationScript().isMultiSigScript();
     }
 
     public NEP6Account toNEP6Account() {
         if (encryptedPrivateKey == null) {
-            throw new IllegalStateException("Private key is not encrypted. Encrypt private key first.");
+            throw new IllegalStateException(
+                    "Private key is not encrypted. Encrypt private key first.");
         }
         return new NEP6Account(getAddress(), label, isDefault, isLocked, encryptedPrivateKey,
                 contract, null);
@@ -248,49 +264,48 @@ public class Account {
     private void tryAddVerificationScriptContract() {
         if (contract == null || contract.getScript() == null) {
             if (publicKey != null) {
-                byte[] scriptBytes = VerificationScript.fromPublicKey(publicKey).getScript();
+                byte[] scriptBytes = new VerificationScript(publicKey).getScript();
                 String scriptHex = Numeric.toHexStringNoPrefix(scriptBytes);
-                NEP6Parameter param = new NEP6Parameter("signature", ContractParameterType.SIGNATURE);
+                NEP6Parameter param = new NEP6Parameter("signature",
+                        ContractParameterType.SIGNATURE);
                 contract = new NEP6Contract(scriptHex, Collections.singletonList(param), false);
             }
         }
     }
 
     /**
-     * Creates a multi-sig account builder from the given public keys.
-     * Mind that the ordering of the keys is important for later usage of the account.
+     * Creates a multi-sig account builder from the given public keys. Mind that the ordering of the
+     * keys is important for later usage of the account.
      *
      * @param publicKeys         The public keys from which to derive the multi-sig account.
      * @param signatureThreshold The number of signatures needed when using this account for signing
      *                           transactions.
      * @return the multi-sig account builder;
      */
-    public static Builder fromMultiSigKeys(List<BigInteger> publicKeys, int signatureThreshold) {
-        // TODO: 2019-07-14 Guil:
-        // Review this method and the functionality it provides.
-        // Maybe we should get rid of this.
-
-        Builder b = new Builder();
-        b.address = Keys.getMultiSigAddress(signatureThreshold, publicKeys);
-        b.label = b.address;
-
-        byte[] script = VerificationScript.fromPublicKeys(signatureThreshold, publicKeys).getScript();
-        String scriptHexString = Numeric.toHexStringNoPrefix(script);
-
+    public static Builder fromMultiSigKeys(List<ECPublicKey> publicKeys, int signatureThreshold) {
+        VerificationScript script = new VerificationScript(publicKeys, signatureThreshold);
+        String address = ScriptHash.fromScript(script.toArray()).toAddress();
         List<NEP6Parameter> parameters = new ArrayList<>();
-        IntStream.range(0, publicKeys.size()).forEachOrdered(i ->
-                parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE)));
-
-        b.contract = new NEP6Contract(scriptHexString, parameters, false);
+        IntStream.range(0, publicKeys.size()).forEachOrdered(i -> {
+            parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE));
+        });
+        NEP6Contract contract =
+                new NEP6Contract(Numeric.toHexString(script.toArray()), parameters, false);
+        Builder b = new Builder();
+        b.address = address;
+        b.label = address;
+        b.contract = contract;
         return b;
     }
 
     public static Builder fromWIF(String wif) {
+        BigInteger privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
+        ECKeyPair keyPair = ECKeyPair.create(privateKey);
         Builder b = new Builder();
-        b.privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
-        b.publicKey = Sign.publicKeyFromPrivate(b.privateKey);
-        b.address = Keys.getAddress(b.publicKey);
-        b.label = b.address;
+        b.privateKey = privateKey;
+        b.publicKey = keyPair.getPublicKey2();
+        b.address = keyPair.getAddress();
+        b.label = keyPair.getAddress();
         return b;
     }
 
@@ -305,7 +320,7 @@ public class Account {
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
         b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey();
+        b.publicKey = ecKeyPair.getPublicKey2();
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;
@@ -342,7 +357,7 @@ public class Account {
 
         String label;
         BigInteger privateKey;
-        BigInteger publicKey;
+        ECPublicKey publicKey;
         boolean isDefault;
         boolean isLocked;
         String address;

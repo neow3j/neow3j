@@ -1,9 +1,12 @@
 package io.neow3j.contract;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
-
+import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,8 +14,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ScriptBuilder {
 
@@ -38,165 +39,41 @@ public class ScriptBuilder {
     }
 
     /**
-     * Appends an app call to the script.
+     * Appends a call to the contract denoted by the given script hash.
      *
      * @param scriptHash The script hash of the contract to call.
-     * @param operation  The operation to call.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
+     * @param method     The method to call.
+     * @param params     The parameters that will be used in the call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder appCall(ScriptHash scriptHash, String operation,
-                                 List<ContractParameter> params) {
+    public ScriptBuilder contractCall(ScriptHash scriptHash, String method,
+            List<ContractParameter> params) {
 
-        if (params == null || params.isEmpty()) {
-            if (operation == null) {
-                return appCall(scriptHash);
-            } else {
-                return appCall(scriptHash, operation);
-            }
-        } else if (operation == null) {
-            return appCall(scriptHash, params);
+        pushParams(params);
+        if (method != null) {
+            pushData(method);
         }
+        pushData(scriptHash.toArray());
+        sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL);
+        return this;
+    }
 
+    public ScriptBuilder sysCall(InteropServiceCode operation) {
+        writeByte(OpCode.SYSCALL.getValue());
+        write(Numeric.hexStringToByteArray(operation.getCode()));
+        return this;
+    }
+
+    public ScriptBuilder pushParams(List<ContractParameter> params) {
+        if (params.isEmpty()) {
+            return pushBoolean(false);
+        }
+        // Push params in reverse order.
         for (int i = params.size() - 1; i >= 0; i--) {
             pushParam(params.get(i));
         }
         pushInteger(params.size());
         opCode(OpCode.PACK);
-        pushData(operation);
-        appCall(scriptHash);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
-     * @return this ScriptBuilder object.
-     */
-    private ScriptBuilder appCall(ScriptHash scriptHash, List<ContractParameter> params) {
-        for (int i = params.size() - 1; i >= 0; i--) {
-            pushParam(params.get(i));
-        }
-        appCall(scriptHash);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call.
-     * @param operation  The operation to call.
-     * @return this ScriptBuilder object.
-     */
-    private ScriptBuilder appCall(ScriptHash scriptHash, String operation) {
-        pushBoolean(false);
-        pushData(operation);
-        appCall(scriptHash);
-        return this;
-    }
-
-    private ScriptBuilder appCall(ScriptHash scriptHash) {
-        return call(scriptHash, OpCode.APPCALL);
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param operation  The operation to call.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, String, List)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash, String operation,
-                                 List<ContractParameter> params) {
-
-        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), operation, params);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, List)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash, List<ContractParameter> params) {
-        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), params);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param operation  The operation to call.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, String)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash, String operation) {
-        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), operation);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash) {
-        return call(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), OpCode.APPCALL);
-    }
-
-    /**
-     * Appends a tail call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#tailCall(ScriptHash)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder tailCall(byte[] scriptHash) {
-        return tailCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)));
-    }
-
-    /**
-     * Appends a tail call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call.
-     * @return this ScriptBuilder object.
-     */
-    public ScriptBuilder tailCall(ScriptHash scriptHash) {
-        return call(scriptHash, OpCode.TAILCALL);
-    }
-
-    private ScriptBuilder call(ScriptHash scriptHash, OpCode opCode) {
-        writeByte(opCode.getValue());
-        write(scriptHash.toArray());
-        return this;
-    }
-
-    public ScriptBuilder sysCall(String operation) {
-        if (operation.length() == 0)
-            throw new IllegalArgumentException("Provided operation string is empty.");
-
-        byte[] operationBytes = operation.getBytes(UTF_8);
-        if (operationBytes.length > 252)
-            throw new IllegalArgumentException("Provided operation is too long.");
-
-        byte[] callArgument = ArrayUtils.concatenate((byte) operationBytes.length, operationBytes);
-        writeByte(OpCode.SYSCALL.getValue());
-        write(callArgument);
         return this;
     }
 
@@ -226,8 +103,8 @@ public class ScriptBuilder {
             case PUBLIC_KEY:
                 // TODO 10.07.19 claude: Implement public key push operation.
             default:
-                throw new IllegalArgumentException("Parameter type \'" + param.getParamType() +
-                        "\' not supported.");
+                throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
+                        "' not supported.");
         }
         return this;
     }
@@ -290,7 +167,8 @@ public class ScriptBuilder {
 
     public ScriptBuilder pushDataLength(int length) {
         if (length <= OpCode.PUSHBYTES75.getValue()) {
-            // For up to 75 bytes of data we can use the OpCodes PUSHBYTES01 to PUSHBYTES75 directly.
+            // For up to 75 bytes of data we can use the OpCodes PUSHBYTES01 to PUSHBYTES75
+            // directly.
             writeByte(length);
         } else if (length <= 255) {
             // If the data is 76 to 255 (0xff) bytes long then write PUSHDATA1 + uint8
@@ -366,5 +244,23 @@ public class ScriptBuilder {
             throw new IllegalStateException("Got IOException without doing IO.");
         }
         return byteStream.toByteArray();
+    }
+
+    public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
+        return new ScriptBuilder()
+                .pushData(encodedPublicKey)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
+                .toArray();
+    }
+
+    public static byte[] buildVerificationScript(List<byte[]> encodedPublicKeys,
+            int signingThreshold) {
+        ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);
+        encodedPublicKeys.forEach(builder::pushData);
+        return builder
+                .pushInteger(encodedPublicKeys.size())
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG)
+                .toArray();
+
     }
 }

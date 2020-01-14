@@ -14,11 +14,12 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.Keys;
+import io.neow3j.utils.KeyUtils;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -143,16 +144,16 @@ public class TransactionTest {
 
         // Add two cosigners via varargs method.
         ScriptHash account1 = ScriptHash.fromPublicKey(
-            Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+            new ECPublicKey(ECKeyPair.createEcKeyPair().getPublicKey()).getEncoded(true));
         ScriptHash account2 = ScriptHash.fromPublicKey(
-            Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+            KeyUtils.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
         b.cosigners(Cosigner.calledByEntry(account1), Cosigner.global(account2));
 
         // Add the rest of cosigners via method taking a set argument.
         List<Cosigner> cosigners = new ArrayList<>();
         for (int i = 3; i <= NeoConstants.MAX_COSIGNERS; i++) {
             ScriptHash account = ScriptHash.fromPublicKey(
-                Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+                KeyUtils.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
             cosigners.add(Cosigner.global(account));
         }
         Transaction tx = b.cosigners(cosigners).build();
@@ -179,7 +180,7 @@ public class TransactionTest {
         // Create one too many cosigners
         for (int i = 0; i <= NeoConstants.MAX_COSIGNERS; i++) {
             ScriptHash account = ScriptHash.fromPublicKey(
-                Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+                KeyUtils.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
             cosigners.add(Cosigner.global(account));
         }
         new Transaction.Builder()

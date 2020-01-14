@@ -15,9 +15,8 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.Keys;
+import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -109,7 +108,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArrayFromAddress(String address) {
-        if (!Keys.isValidAddress(address)) {
+        if (!AddressUtils.isValidAddress(address)) {
             throw new IllegalArgumentException("Argument is not a valid address.");
         }
         return byteArray(ScriptHash.fromAddress(address).toArray());

@@ -1,8 +1,5 @@
 package io.neow3j.wallet;
 
-import io.neow3j.crypto.ECKeyPair;
-import org.junit.Test;
-
 import static io.neow3j.wallet.Bip39Account.fromBip39Mnemonic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -10,7 +7,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 
-public class Bip39AccountTest extends BaseTest {
+import io.neow3j.crypto.ECKeyPair;
+import org.junit.Test;
+
+public class Bip39AccountTest {
 
     @Test
     public void testGenerateAndRecoverBip39Account() throws Exception {

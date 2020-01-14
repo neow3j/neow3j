@@ -1,5 +1,11 @@
 package io.neow3j.wallet;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -9,20 +15,13 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.wallet.nep6.NEP6Account;
-import okhttp3.OkHttpClient;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
-
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import okhttp3.OkHttpClient;
+import org.junit.Test;
 
 
 public class AccountTest {
@@ -146,8 +145,8 @@ public class AccountTest {
     public void testFromMultiSigKeys() {
         Account a = Account.fromMultiSigKeys(
                 Arrays.asList(
-                        SampleKeys.KEY_PAIR_1.getPublicKey(),
-                        SampleKeys.KEY_PAIR_2.getPublicKey()
+                        SampleKeys.KEY_PAIR_1.getPublicKey2(),
+                        SampleKeys.KEY_PAIR_2.getPublicKey2()
                 ),
                 2
         ).build();

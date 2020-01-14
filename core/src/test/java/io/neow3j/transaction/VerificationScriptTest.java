@@ -1,22 +1,22 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.constants.OpCode.CHECKMULTISIG;
-import static io.neow3j.constants.OpCode.CHECKSIG;
 import static io.neow3j.constants.OpCode.PUSH2;
 import static io.neow3j.constants.OpCode.PUSH3;
 import static io.neow3j.constants.OpCode.PUSHBYTES33;
+import static io.neow3j.utils.ArrayUtils.concatenate;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -32,11 +32,14 @@ public class VerificationScriptTest {
     public void testFromPublicKey() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        BigInteger key = ECKeyPair.createEcKeyPair().getPublicKey();
-        VerificationScript veriScript = VerificationScript.fromPublicKey(key);
+        ECPublicKey key = ECKeyPair.createEcKeyPair().getPublicKey2();
+        VerificationScript veriScript = new VerificationScript(key);
 
-        byte[] expectedScript = ArrayUtils.concatenate(ArrayUtils.concatenate(
-                PUSHBYTES33.getValue(), Keys.publicKeyIntegerToByteArray(key)), CHECKSIG.getValue());
+        byte[] expectedScript = concatenate(concatenate(concatenate(
+                PUSHBYTES33.getValue(),
+                key.getEncoded(true)),
+                OpCode.SYSCALL.getValue()),
+                InteropServiceCode.NEO_CRYPTO_CHECKSIG.getCodeBytes());
 
         assertArrayEquals(expectedScript, veriScript.getScript());
     }
@@ -45,22 +48,23 @@ public class VerificationScriptTest {
     public void testFromPublicKeys() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        List<BigInteger> publicKeys = new ArrayList<>();
-        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
-        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
-        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey());
+        List<ECPublicKey> publicKeys = new ArrayList<>();
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey2());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey2());
+        publicKeys.add(ECKeyPair.createEcKeyPair().getPublicKey2());
 
         ByteBuffer buf = ByteBuffer.allocate(1 + 3*(1 + 33) + 1 + 1);
         buf.put(PUSH2.getValue());
         buf.put(PUSHBYTES33.getValue());
-        buf.put(publicKeys.get(0).toByteArray());
+        buf.put(publicKeys.get(0).getEncoded(true));
         buf.put(PUSHBYTES33.getValue());
-        buf.put(publicKeys.get(1).toByteArray());
+        buf.put(publicKeys.get(1).getEncoded(true));
         buf.put(PUSHBYTES33.getValue());
-        buf.put(publicKeys.get(2).toByteArray());
+        buf.put(publicKeys.get(2).getEncoded(true));
         buf.put(PUSH3.getValue());
-        buf.put(CHECKMULTISIG.getValue());
-        VerificationScript script = VerificationScript.fromPublicKeys(2, publicKeys);
+        buf.put(OpCode.SYSCALL.getValue());
+        buf.put(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getCodeBytes());
+        VerificationScript script = new VerificationScript(publicKeys, 2);
 
         assertArrayEquals(buf.array(), script.getScript());
     }
@@ -69,14 +73,15 @@ public class VerificationScriptTest {
     public void testSerialize() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
             NoSuchProviderException {
 
-        BigInteger key = ECKeyPair.createEcKeyPair().getPublicKey();
-        VerificationScript veriScript = VerificationScript.fromPublicKey(key);
+        ECPublicKey key = ECKeyPair.createEcKeyPair().getPublicKey2();
+        VerificationScript veriScript = new VerificationScript(key);
 
         byte[] expectedScript = ByteBuffer.allocate(1+1+33+1)
                 .put((byte)35)
                 .put(PUSHBYTES33.getValue())
-                .put(key.toByteArray())
-                .put(CHECKSIG.getValue())
+                .put(key.getEncoded(true))
+                .put(OpCode.SYSCALL.getValue())
+                .put(InteropServiceCode.NEO_CRYPTO_CHECKSIG.getCodeBytes())
                 .array();
 
         assertArrayEquals(expectedScript, veriScript.toArray());
@@ -95,7 +100,12 @@ public class VerificationScriptTest {
 
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
         byte[] pub = ArrayUtils.concatenate(PUSHBYTES33.getValue(), keyPair.getPublicKey().toByteArray());
-        byte[] expectedScript = ArrayUtils.concatenate(pub, CHECKSIG.getValue());
+        byte[] expectedScript = concatenate(concatenate(concatenate(
+                PUSHBYTES33.getValue(),
+                keyPair.getPublicKey2().getEncoded(true)),
+                OpCode.SYSCALL.getValue()),
+                InteropServiceCode.NEO_CRYPTO_CHECKSIG.getCodeBytes());
+
         serializedScript = ArrayUtils.concatenate((byte)35, expectedScript);
         script = NeoSerializableInterface.from(serializedScript, VerificationScript.class);
         assertArrayEquals(expectedScript, script.getScript());

@@ -81,6 +81,7 @@ public class NeoConstants {
 
     /**
      * The amount of GAS that is free in every execution/invocation of a smart contract.
+     * TODO: Remove. Doesn't exist in Neo 3.
      */
     public static final BigDecimal FREE_GAS_AMOUNT = BigDecimal.TEN;
 
@@ -101,6 +102,7 @@ public class NeoConstants {
 
     /**
      * The amount of GAS that is free in every contract execution (invocation or deployment).
+     * TODO: Remove. Doesn't exist in Neo 3.
      */
     public static final int FREE_OF_CHARGE_EXECUTION_COST = 10;
 
@@ -108,18 +110,19 @@ public class NeoConstants {
      * The maximum transaction size in bytes up to that a transaction is free. Transactions larger
      * need to add a network fee according to the formula (transaction size - 1024) * 0.00001 GAS +
      * 0.001 GAS. See <a href="https://neo.org/blog/details/4148">this</a> blog entry.
+     * TODO: Remove. Doesn't exist in Neo 3.
      */
     public static final int MAX_FREE_TRANSACTION_SIZE = 1024;
 
     /**
-     * The network fee per byte for transactions bigger than
-     * {@link NeoConstants#MAX_FREE_TRANSACTION_SIZE} bytes.
+     * The network fee per byte of a transaction. Amount is in GAS.
      */
-    public static final BigDecimal FEE_PER_EXTRA_BYTE = new BigDecimal("0.00001");
+    public static final long GAS_PER_BYTE = 100000;
 
     /**
      * The network fee threshold above which a transaction becomes a high priority transaction.
      * A transaction with a network fee below this threshold must not be bigger than 1024 bytes.
+     * TODO: Remove. Doesn't exist in Neo 3.
      */
     public static final BigDecimal PRIORITY_THRESHOLD_FEE = new BigDecimal("0.001");
 
