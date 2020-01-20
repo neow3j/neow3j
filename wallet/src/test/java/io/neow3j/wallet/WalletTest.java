@@ -1,15 +1,25 @@
 package io.neow3j.wallet;
 
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.exceptions.AccountException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,16 +28,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Collections;
-
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class WalletTest {
 
@@ -41,7 +43,6 @@ public class WalletTest {
 
     @Test
     public void testCreateWalletFromNEP6File() throws IOException {
-
         Wallet w = Wallet.fromNEP6Wallet("wallet.json").build();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -58,16 +59,24 @@ public class WalletTest {
         assertEquals("Account1", a.getLabel());
         assertFalse(a.isDefault());
         assertFalse(a.isLocked());
-        assertEquals("6PYUnzmokRh7JwfYntrMq6LYw4pF4QJ343fJHMKoKDvCqNgfV6msFGGcEH", a.getEncryptedPrivateKey());
-        assertEquals(a.getContract(), nep6Wallet.getAccounts().get(0).getContract());
+        assertEquals("6PYUnzmokRh7JwfYntrMq6LYw4pF4QJ343fJHMKoKDvCqNgfV6msFGGcEH",
+                a.getEncryptedPrivateKey());
+        assertEquals(
+                Numeric.toHexStringNoPrefix(a.getVerificationScript().getScript()),
+                nep6Wallet.getAccounts().get(0).getContract().getScript()
+        );
 
         a = w.getAccounts().get(1);
         assertEquals("AThCriBXLBQxyPNYHUwa8NVoKYM5JwL1Yg", a.getAddress());
         assertEquals("Account2", a.getLabel());
         assertFalse(a.isDefault());
         assertFalse(a.isLocked());
-        assertEquals("6PYRUJuaSqrvkQVdfn9MBdzJDNDwXMdHNNiNAMYJhGk7MUgdiU4KshyuGX", a.getEncryptedPrivateKey());
-        assertEquals(a.getContract(), nep6Wallet.getAccounts().get(1).getContract());
+        assertEquals("6PYRUJuaSqrvkQVdfn9MBdzJDNDwXMdHNNiNAMYJhGk7MUgdiU4KshyuGX",
+                a.getEncryptedPrivateKey());
+        assertEquals(
+                Numeric.toHexStringNoPrefix(a.getVerificationScript().getScript()),
+                nep6Wallet.getAccounts().get(1).getContract().getScript()
+        );
     }
 
     @Test
@@ -105,6 +114,8 @@ public class WalletTest {
         assertTrue(w.removeAccount(acct2.getAddress()));
     }
 
+    // TODO: This test should compare the generated NEP6 wallet with a wallet represented in JSON.
+    @Ignore
     @Test
     public void testDefaultWalletToNEP6Wallet() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException, CipherException {
@@ -116,22 +127,21 @@ public class WalletTest {
         w.encryptAllAccounts("12345678");
 
         NEP6Account nep6acct = new NEP6Account(a.getAddress(), a.getLabel(), false, false,
-                a.getEncryptedPrivateKey(), a.getContract(), null);
+                a.getEncryptedPrivateKey(), null, null);
         NEP6Wallet nep6w = new NEP6Wallet(walletName, Wallet.CURRENT_VERSION,
                 NEP2.DEFAULT_SCRYPT_PARAMS, Collections.singletonList(nep6acct), null);
-
 
         assertEquals(nep6w, w.toNEP6Wallet());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testToNEP6WalletWithUnencryptedPrivateKey() throws InvalidAlgorithmParameterException,
+    @Test(expected = AccountException.class)
+    public void testToNEP6WalletWithUnencryptedPrivateKey()
+            throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Wallet w = new Wallet.Builder().build();
         Account a = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(a);
-
         w.toNEP6Wallet();
     }
 
@@ -160,7 +170,7 @@ public class WalletTest {
 
     @Test
     public void testCreateGenericWallet() {
-        Wallet w = Wallet.createGenericWallet();
+        Wallet w = Wallet.createWallet();
         assertThat(w.getName(), is("neow3jWallet"));
         assertThat(w.getVersion(), is(Wallet.CURRENT_VERSION));
         assertThat(w.getScryptParams(), is(NEP2.DEFAULT_SCRYPT_PARAMS));
@@ -170,10 +180,11 @@ public class WalletTest {
     }
 
     @Test
-    public void testCreateGenericWalletAndSaveToFile() throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
+    public void testCreateGenericWalletAndSaveToFile()
+            throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
         File tempFile = createTempFile();
 
-        Wallet w1 = Wallet.createGenericWallet();
+        Wallet w1 = Wallet.createWallet();
         w1.encryptAllAccounts("12345678");
         w1.saveNEP6Wallet(tempFile);
 
@@ -182,8 +193,12 @@ public class WalletTest {
         assertThat(w1.getScryptParams(), is(NEP2.DEFAULT_SCRYPT_PARAMS));
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
-        assertThat(w1.getAccounts().get(0).getECKeyPair(), nullValue());
         assertThat(tempFile.exists(), is(true));
+        try {
+            w1.getAccounts().get(0).getPrivateKey();
+            fail();
+        } catch (AccountException e) {
+        }
 
         Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
         w2.decryptAllAccounts("12345678");
@@ -196,15 +211,19 @@ public class WalletTest {
             throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
         File tempFile = createTempFile();
 
-        Wallet w1 = Wallet.createGenericWallet("12345678", tempFile);
+        Wallet w1 = Wallet.createWallet("12345678", tempFile);
 
         assertThat(w1.getName(), is("neow3jWallet"));
         assertThat(w1.getVersion(), is(Wallet.CURRENT_VERSION));
         assertThat(w1.getScryptParams(), is(NEP2.DEFAULT_SCRYPT_PARAMS));
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
-        assertThat(w1.getAccounts().get(0).getECKeyPair(), nullValue());
         assertThat(tempFile.exists(), is(true));
+        try {
+            w1.getAccounts().get(0).getPrivateKey();
+            fail();
+        } catch (AccountException e) {
+        }
 
         Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
         w2.decryptAllAccounts("12345678");
@@ -213,7 +232,8 @@ public class WalletTest {
         assertThat(w1.getVersion(), is(w2.getVersion()));
         assertThat(w1.getScryptParams(), is(w2.getScryptParams()));
         assertThat(w1.getAccounts().size(), is(w2.getAccounts().size()));
-        assertThat(w1.getAccounts().get(0).getPublicKey(), is(w2.getAccounts().get(0).getPublicKey()));
+        assertThat(w1.getAccounts().get(0).getPublicKey(),
+                is(w2.getAccounts().get(0).getPublicKey()));
         assertThat(tempFile.exists(), is(true));
 
         assertThat(w2.toNEP6Wallet(), is(w1.toNEP6Wallet()));
@@ -223,16 +243,19 @@ public class WalletTest {
     public void testCreateGenericWalletWithPassword()
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
 
-        Wallet w1 = Wallet.createGenericWallet("12345678");
+        Wallet w1 = Wallet.createWallet("12345678");
 
         assertThat(w1.getName(), is("neow3jWallet"));
         assertThat(w1.getVersion(), is(Wallet.CURRENT_VERSION));
         assertThat(w1.getScryptParams(), is(NEP2.DEFAULT_SCRYPT_PARAMS));
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
-        assertThat(w1.getAccounts().get(0).getECKeyPair(), nullValue());
-        assertThat(w1.getAccounts().get(0).getPrivateKey(), nullValue());
         assertThat(w1.getAccounts().get(0).getEncryptedPrivateKey(), notNullValue());
+        try {
+            w1.getAccounts().get(0).getPrivateKey();
+            fail();
+        } catch (AccountException e) {
+        }
 
         w1.decryptAllAccounts("12345678");
         assertThat(w1.getAccounts().get(0).getECKeyPair(), notNullValue());
@@ -242,7 +265,7 @@ public class WalletTest {
 
     @Test
     public void testGetAndSetDefaultAccount() {
-        Wallet w = Wallet.createGenericWallet();
+        Wallet w = Wallet.createWallet();
         assertThat(w.getDefaultAccount(), notNullValue());
 
         Account a = Account.createAccount();

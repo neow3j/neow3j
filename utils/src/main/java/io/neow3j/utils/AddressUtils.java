@@ -17,7 +17,7 @@ public class AddressUtils {
         if (data.length != 25) {
             return false;
         }
-        if (data[0] != NeoConstants.COIN_VERSION) {
+        if (data[0] != NeoConstants.ADDRESS_VERSION) {
             return false;
         }
         byte[] checksum = Hash.sha256(Hash.sha256(data, 0, 21));
@@ -54,13 +54,8 @@ public class AddressUtils {
      * @return the address
      */
     public static String scriptHashToAddress(byte[] scriptHash) {
-        byte[] data = new byte[1];
-        data[0] = NeoConstants.COIN_VERSION;
-        byte[] dataAndScriptHash = ArrayUtils.concatenate(data, scriptHash);
-        byte[] checksum = Hash.sha256(Hash.sha256(dataAndScriptHash));
-        byte[] first4BytesCheckSum = new byte[4];
-        System.arraycopy(checksum, 0, first4BytesCheckSum, 0, 4);
-        byte[] dataToEncode = ArrayUtils.concatenate(dataAndScriptHash, first4BytesCheckSum);
-        return Base58.encode(dataToEncode);
+        byte[] script = ArrayUtils.concatenate(NeoConstants.ADDRESS_VERSION, scriptHash);
+        byte[] checksum = ArrayUtils.getFirstNBytes(Hash.sha256(Hash.sha256(script)), 4);
+        return Base58.encode(ArrayUtils.concatenate(script, checksum));
     }
 }

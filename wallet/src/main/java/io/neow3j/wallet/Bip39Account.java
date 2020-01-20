@@ -86,20 +86,4 @@ public class Bip39Account extends Account {
             return new Bip39Account(this);
         }
     }
-
-    @Override
-    public String toString() {
-        return "Bip39Account{" +
-                "privateKey=" + getPrivateKey() +
-                ", publicKey=" + getPublicKey() +
-                ", address='" + getAddress() + '\'' +
-                ", encryptedPrivateKey='" + getEncryptedPrivateKey() + '\'' +
-                ", label='" + getLabel() + '\'' +
-                ", isDefault=" + isDefault() +
-                ", isLocked=" + isLocked() +
-                ", contract=" + getContract() +
-                ", balances=" + getBalances() +
-                ", mnemonic='" + mnemonic + '\'' +
-                '}';
-    }
 }

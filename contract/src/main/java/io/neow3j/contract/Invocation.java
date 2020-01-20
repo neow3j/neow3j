@@ -169,9 +169,7 @@ public class Invocation {
          * @return
          */
         public InvocationBuilder withAccount(Account account) {
-            try {
-                account.getVerificationScript();
-            } catch (AccountException e) {
+            if (account.getVerificationScript() == null) {
                 throw new InvocationConfigurationException("Given account does not have a "
                         + "verification script but needs one to be used in an invocation.");
             }

@@ -76,8 +76,24 @@ public class VerificationScript extends NeoSerializable {
         this.script = ScriptBuilder.buildVerificationScript(encodedKeys, signingThreshold);
     }
 
+    /**
+     * Gets the raw script.
+     * @return the script as a byte array.
+     */
     public byte[] getScript() {
         return script;
+    }
+
+    /**
+     * Serializes this script to a byte array. This is only meant to be used in transaction
+     * serialization because it adds the size of the script as a prefix. Use
+     * {@link VerificationScript#getScript()} instead to get this scripts byte array.
+     * @return the serialized script for usage in a transaction array.
+     */
+    @Override
+    public byte[] toArray() {
+        // Only overridden for documentation.
+        return super.toArray();
     }
 
     /**

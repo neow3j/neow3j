@@ -111,7 +111,7 @@ public class AccountTest {
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
         assertThat(a.getBalances(), notNullValue());
-        assertThat(a.getContract(), notNullValue());
+        assertThat(a.getVerificationScript(), notNullValue());
         assertThat(a.getECKeyPair(), notNullValue());
         assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
         assertThat(a.getLabel(), notNullValue());
@@ -131,7 +131,7 @@ public class AccountTest {
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
         assertThat(a.getBalances(), notNullValue());
-        assertThat(a.getContract(), notNullValue());
+        assertThat(a.getVerificationScript(), notNullValue());
         assertThat(a.getECKeyPair(), notNullValue());
         assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
         assertThat(a.getLabel(), notNullValue());

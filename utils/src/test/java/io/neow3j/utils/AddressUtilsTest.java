@@ -2,31 +2,33 @@ package io.neow3j.utils;
 
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import io.neow3j.crypto.Hash;
 import org.junit.Test;
 
 public class AddressUtilsTest {
 
-
     @Test
     public void scriptHashToAddress() {
-        byte[] scriptHash = Numeric
-                .hexStringToByteArray("23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        assertThat(
-                AddressUtils.scriptHashToAddress(scriptHash),
-                is("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
-        );
+        String script =
+                "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
+        byte[] scriptHash = Hash.sha256AndThenRipemd160(Numeric.hexStringToByteArray(script));
+        String address = AddressUtils.scriptHashToAddress(scriptHash);
+        String expectedAddress = "Aa63RMYRWHPRcrZNzUnq5SNrPqoV866Spu";
+        assertThat(address, is(expectedAddress));
     }
 
     @Test
     public void addressToScriptHash() {
-        byte[] scriptHash = Numeric
-                .hexStringToByteArray("23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        assertThat(
-                AddressUtils.addressToScriptHash("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"),
-                is(scriptHash)
-        );
+        byte[] scriptHash = AddressUtils.addressToScriptHash("Aa63RMYRWHPRcrZNzUnq5SNrPqoV866Spu");
+        String script =
+                "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
+        byte[] expected = Hash.sha256AndThenRipemd160(Numeric.hexStringToByteArray(script));
+        assertArrayEquals(scriptHash, expected);
     }
 
     @Test(expected = IllegalArgumentException.class)

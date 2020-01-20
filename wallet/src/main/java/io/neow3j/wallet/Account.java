@@ -29,7 +29,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -45,8 +45,7 @@ public class Account {
     private String label;
     private boolean isDefault;
     private boolean isLocked;
-    // TODO: Replace with a verification script
-    private NEP6Contract contract;
+    private VerificationScript verificationScript;
     private Balances balances;
 
     private Account() {
@@ -60,9 +59,8 @@ public class Account {
         this.isLocked = b.isLocked;
         this.address = b.address;
         this.encryptedPrivateKey = b.encryptedPrivateKey;
-        this.contract = b.contract;
+        this.verificationScript = b.verificationScript;
         this.balances = new Balances(this);
-        this.tryAddVerificationScriptContract();
     }
 
     public String getAddress() {
@@ -116,19 +114,8 @@ public class Account {
         return isLocked;
     }
 
-    public NEP6Contract getContract() {
-        return contract;
-    }
-
     public VerificationScript getVerificationScript() {
-        // TODO: It is preferable that accounts can only created with a verification script set,
-        //  so that this state will never happen. If this check remains necessary, create a
-        //  custom exception for it.
-        if (this.contract == null || this.contract.getScript() == null
-                || this.contract.getScript().isEmpty()) {
-            throw new AccountException("Account does not have a verification script set.");
-        }
-        return new VerificationScript(Numeric.hexStringToByteArray(this.contract.getScript()));
+        return this.verificationScript;
     }
 
     public String getEncryptedPrivateKey() {
@@ -209,25 +196,32 @@ public class Account {
      * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
      * @throws CipherException       throws if failed encrypt the created wallet.
      * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
+     * @throws AccountException      if
+     *                               <li>the account doesn't hold an encrypted private key
+     *                               <li>the account does already hold a decrypted private key
+     *                               <li>the public key derived from the decrypted private key is
+     *                               not equal to the already set public key.
      */
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
-        if (privateKey == null) {
-            if (encryptedPrivateKey == null) {
-                throw new IllegalStateException(
-                        "The account does not hold an encrypted private key.");
-            }
-            ECKeyPair ecKeyPair = NEP2.decrypt(password, encryptedPrivateKey, scryptParams);
-            privateKey = ecKeyPair.getPrivateKey();
-            publicKey = ecKeyPair.getPublicKey2();
-            tryAddVerificationScriptContract();
+        if (this.privateKey != null) {
+            throw new AccountException("The account does already hold a decrypted private key.");
         }
+        if (this.encryptedPrivateKey == null) {
+            throw new AccountException("The account does not hold an encrypted private key.");
+        }
+        ECKeyPair ecKeyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
+        this.privateKey = ecKeyPair.getPrivateKey();
+        if (this.publicKey != null && !this.publicKey.equals(ecKeyPair.getPublicKey2())) {
+            throw new AccountException("The public key derived from the decrypted private key does "
+                    + "not equal the public key that was already set on the account.");
+        }
+        publicKey = ecKeyPair.getPublicKey2();
     }
 
     /**
-     * Encrypts this account's private key, according to the NEP-2 standard, if not already
-     * encrypted.
+     * Encrypts this account's private key according to the NEP-2 standard and
      *
      * @param password     The passphrase used to encrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for encryption.
@@ -236,41 +230,49 @@ public class Account {
     public void encryptPrivateKey(String password, ScryptParams scryptParams)
             throws CipherException {
 
-        if (encryptedPrivateKey == null) {
-            if (privateKey == null) {
-                throw new IllegalStateException("The account does not hold a private key.");
-            }
-            this.encryptedPrivateKey = NEP2.encrypt(password, getECKeyPair(), scryptParams);
-            // TODO: 2019-07-14 Guil:
-            // Is it the safest way of overwriting a variable on the JVM?
-            // I don't think so. ;-)
-            this.privateKey = null;
+        if (privateKey == null) {
+            throw new AccountException("The account does not hold a decrypted private key.");
         }
+        this.encryptedPrivateKey = NEP2.encrypt(password, getECKeyPair(), scryptParams);
+        // TODO: 2019-07-14 Guil:
+        // Is it the safest way of overwriting a variable on the JVM?
+        // I don't think so. ;-)
+        this.privateKey = null;
     }
 
     public boolean isMultiSig() {
-        return getVerificationScript().isMultiSigScript();
+        if (this.verificationScript == null) {
+            throw new AccountException("This account does not have a verification script, which is "
+                    + "needed to determine if it is a multi-sig account.");
+        }
+        return this.verificationScript.isMultiSigScript();
     }
 
     public NEP6Account toNEP6Account() {
         if (encryptedPrivateKey == null) {
-            throw new IllegalStateException(
-                    "Private key is not encrypted. Encrypt private key first.");
+            throw new AccountException("Private key is not encrypted. Encrypt private key first.");
         }
-        return new NEP6Account(getAddress(), label, isDefault, isLocked, encryptedPrivateKey,
-                contract, null);
-    }
 
-    private void tryAddVerificationScriptContract() {
-        if (contract == null || contract.getScript() == null) {
-            if (publicKey != null) {
-                byte[] scriptBytes = new VerificationScript(publicKey).getScript();
-                String scriptHex = Numeric.toHexStringNoPrefix(scriptBytes);
-                NEP6Parameter param = new NEP6Parameter("signature",
-                        ContractParameterType.SIGNATURE);
-                contract = new NEP6Contract(scriptHex, Collections.singletonList(param), false);
-            }
+        if (this.verificationScript == null) {
+            return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
+                    this.encryptedPrivateKey, null, null);
         }
+        NEP6Contract contract = null;
+        if (this.verificationScript.isMultiSigScript()) {
+            int nrOfAccs = this.verificationScript.getNrOfAccounts();
+            List<NEP6Parameter> parameters = new ArrayList<>();
+            IntStream.range(0, nrOfAccs).forEachOrdered(i -> {
+                parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE));
+            });
+            String script = Numeric.toHexStringNoPrefix(this.verificationScript.getScript());
+            contract = new NEP6Contract(script, parameters, false);
+        } else if (this.verificationScript.isSingleSigScript()) {
+            String script = Numeric.toHexStringNoPrefix(this.verificationScript.getScript());
+            NEP6Parameter param = new NEP6Parameter("signature", ContractParameterType.SIGNATURE);
+            contract = new NEP6Contract(script, Arrays.asList(param), false);
+        }
+        return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
+                this.encryptedPrivateKey, contract, null);
     }
 
     /**
@@ -285,16 +287,10 @@ public class Account {
     public static Builder fromMultiSigKeys(List<ECPublicKey> publicKeys, int signatureThreshold) {
         VerificationScript script = new VerificationScript(publicKeys, signatureThreshold);
         String address = ScriptHash.fromScript(script.toArray()).toAddress();
-        List<NEP6Parameter> parameters = new ArrayList<>();
-        IntStream.range(0, publicKeys.size()).forEachOrdered(i -> {
-            parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE));
-        });
-        NEP6Contract contract = new NEP6Contract(
-                Numeric.toHexStringNoPrefix(script.getScript()), parameters, false);
         Builder b = new Builder();
         b.address = address;
         b.label = address;
-        b.contract = contract;
+        b.verificationScript = script;
         return b;
     }
 
@@ -306,6 +302,7 @@ public class Account {
         b.publicKey = keyPair.getPublicKey2();
         b.address = keyPair.getAddress();
         b.label = keyPair.getAddress();
+        b.verificationScript = new VerificationScript(keyPair.getPublicKey2());
         return b;
     }
 
@@ -323,6 +320,7 @@ public class Account {
         b.publicKey = ecKeyPair.getPublicKey2();
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
+        b.verificationScript = new VerificationScript(ecKeyPair.getPublicKey2());
         return b;
     }
 
@@ -333,7 +331,11 @@ public class Account {
         b.encryptedPrivateKey = nep6Acct.getKey();
         b.isLocked = nep6Acct.getLock();
         b.isDefault = nep6Acct.getDefault();
-        b.contract = nep6Acct.getContract();
+        NEP6Contract contr = nep6Acct.getContract();
+        if (contr != null && contr.getScript() != null && !contr.getScript().isEmpty()) {
+            byte[] script = Numeric.hexStringToByteArray(contr.getScript());
+            b.verificationScript = new VerificationScript(script);
+        }
         return b;
     }
 
@@ -355,6 +357,7 @@ public class Account {
 
     public static class Builder<T extends Account, B extends Builder<T, B>> {
 
+        VerificationScript verificationScript;
         String label;
         BigInteger privateKey;
         ECPublicKey publicKey;
@@ -362,7 +365,6 @@ public class Account {
         boolean isLocked;
         String address;
         String encryptedPrivateKey;
-        NEP6Contract contract;
 
         protected Builder() {
             isDefault = false;
@@ -387,20 +389,5 @@ public class Account {
         public T build() {
             return (T) new Account(this);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Account{" +
-                "privateKey=" + privateKey +
-                ", publicKey=" + publicKey +
-                ", address='" + address + '\'' +
-                ", encryptedPrivateKey='" + encryptedPrivateKey + '\'' +
-                ", label='" + label + '\'' +
-                ", isDefault=" + isDefault +
-                ", isLocked=" + isLocked +
-                ", contract=" + contract +
-                ", balances=" + balances +
-                '}';
     }
 }

@@ -1,5 +1,7 @@
 package io.neow3j.wallet;
 
+import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
@@ -8,7 +10,6 @@ import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,8 +18,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 /**
  * <p>NEO wallet file management. For reference, refer to
@@ -200,7 +199,7 @@ public class Wallet {
      *
      * @return the new wallet.
      */
-    public static Wallet createGenericWallet() {
+    public static Wallet createWallet() {
         Account a = getNewDefaultAccount();
         return new Builder().account(a).build();
     }
@@ -213,7 +212,7 @@ public class Wallet {
      * @return the new wallet.
      * @throws CipherException throws if failed encrypt the created wallet.
      */
-    public static Wallet createGenericWallet(final String password)
+    public static Wallet createWallet(final String password)
             throws CipherException {
         Account a = getNewDefaultAccount();
         Wallet wallet = new Builder().account(a).build();
@@ -231,9 +230,9 @@ public class Wallet {
      * @throws IOException     throws if failed to create the wallet on disk.
      * @throws CipherException throws if failed encrypt the created wallet.
      */
-    public static Wallet createGenericWallet(String password, File destination)
+    public static Wallet createWallet(String password, File destination)
             throws CipherException, IOException {
-        Wallet wallet = createGenericWallet(password);
+        Wallet wallet = createWallet(password);
         wallet.saveNEP6Wallet(destination);
         return wallet;
     }
