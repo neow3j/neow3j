@@ -15,9 +15,9 @@ import java.nio.file.Files;
 
 public class ContractTestUtils {
 
-
     public static final String CONTRACT_1_REL_PATH = "./test/resources/contracts/contract_1.py";
-    public static final String CONTRACT_1_SCRIPT_HASH = "4b7f02924c1949b722ad8d89687ca70968b76e86";
+    // Script hash of contract_1 in big-endian format.
+    public static final String CONTRACT_1_SCRIPT_HASH = "12aa18b1dfc127d34087de01c5db334f3274d77a";
 
     public static final int GETBLOCKCOUNT_RESPONSE = 991991;
 
@@ -31,8 +31,10 @@ public class ContractTestUtils {
                         .withBody(responseBody)));
     }
 
-    public static void setUpWireMockForInvokeFunction(String contractFunction) throws IOException {
-        String responseBody = loadFile("/responses/invokefunction_" + contractFunction + ".json");
+    public static void setUpWireMockForInvokeFunction(String contractFunction, String responseFile)
+            throws IOException {
+
+        String responseBody = loadFile("/responses/" + responseFile);
 
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""

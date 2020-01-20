@@ -479,5 +479,45 @@ public class Transaction extends NeoSerializable {
             }
             return new Transaction(this);
         }
+
+        public long getNonce() {
+            return nonce;
+        }
+
+        public byte getVersion() {
+            return version;
+        }
+
+        public Long getValidUntilBlock() {
+            return validUntilBlock;
+        }
+
+        public ScriptHash getSender() {
+            return sender;
+        }
+
+        public long getSystemFee() {
+            return systemFee;
+        }
+
+        public long getNetworkFee() {
+            return networkFee;
+        }
+
+        public List<Cosigner> getCosigners() {
+            return cosigners;
+        }
+
+        public byte[] getScript() {
+            return script;
+        }
+
+        public List<TransactionAttribute> getAttributes() {
+            return attributes;
+        }
+
+        public List<Witness> getWitnesses() {
+            return witnesses;
+        }
     }
 }

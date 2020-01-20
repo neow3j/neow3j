@@ -12,14 +12,21 @@ public enum OpCode {
     //region Constants
 
     /**
-     * <p>An empty array of bytes is pushed onto the stack.</p>
+     * An empty array of bytes is pushed onto the stack.
      */
     PUSH0((byte) 0x00, 30),
-    PUSHF((byte) 0x00, 120),
+
+    /**
+     * Alias for {@link OpCode#PUSH0}
+     */
+    PUSHF((byte) 0x00, 30),
+
     /**
      * <p>0x01-0x4B The next opcode bytes is data to be pushed onto the stack.</p>
      */
     PUSHBYTES1((byte) 0x01, 120),
+    PUSHBYTES4((byte) 0x04, 120),
+    PUSHBYTES20((byte) 0x14, 120),
     PUSHBYTES33((byte) 0x21, 120),
     PUSHBYTES64((byte) 0x40, 120),
     PUSHBYTES75((byte) 0x4B, 120),
@@ -110,7 +117,6 @@ public enum OpCode {
      */
     PACK((byte) 0xC1, 7000),
 
-
     //endregion
 
     //region Flow control
@@ -154,7 +160,7 @@ public enum OpCode {
 
     OpCode(byte opCode, int price) {
         this.opCode = opCode;
-        this.price = (long)price;
+        this.price = (long) price;
     }
 
     public byte getValue() {
@@ -176,7 +182,7 @@ public enum OpCode {
             }
         }
         throw new IllegalArgumentException("No Opcode found for byte value " +
-            Numeric.toHexString(code) + ".");
+                Numeric.toHexString(code) + ".");
     }
 
     @Override

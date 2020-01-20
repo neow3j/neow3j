@@ -119,4 +119,9 @@ public enum InteropServiceCode {
     public static long getStoragePrice(int byteSize) {
         return byteSize * NeoConstants.GAS_PER_BYTE;
     }
+
+    @Override
+    public String toString() {
+        return getCode();
+    }
 }

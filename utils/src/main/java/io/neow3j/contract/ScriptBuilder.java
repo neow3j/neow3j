@@ -64,14 +64,33 @@ public class ScriptBuilder {
         return this;
     }
 
+    /**
+     * Adds the given contract parameters to the script.
+     * <p>
+     * Example with two parameters in the list:
+     * <pre>
+     *  PUSHBYTES4 a3b00183
+     *  PUSHBYTES20 0100000000000000000000000000000000000000
+     *  PUSH2
+     *  PACK
+     * </pre>
+     *
+     * This method should also be used if the parameters list is empty. In that case the script
+     * looks like the following:
+     * <pre>
+     *  PUSH0
+     *  PACK
+     * </pre>
+     *
+     * @param params The list of parameters to add.
+     * @return this
+     */
     public ScriptBuilder pushParams(List<ContractParameter> params) {
-        if (params.isEmpty()) {
-            return pushBoolean(false);
-        }
         // Push params in reverse order.
         for (int i = params.size() - 1; i >= 0; i--) {
             pushParam(params.get(i));
         }
+        // Even if the parameter list is empty we need to push PUSH0 and PACK OpCodes.
         pushInteger(params.size());
         opCode(OpCode.PACK);
         return this;

@@ -4,7 +4,6 @@ from boa.interop.Neo.Storage import GetContext, Get, Put, Delete
 from boa.builtins import concat
 from boa.interop.Neo.Runtime import Notify
 
-# OWNER = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 TOKEN_NAME = 'Example'
 TOKEN_SYMBOL = 'EXP'
 TOKEN_DECIMALS = 8
@@ -59,7 +58,7 @@ def transfer(t_from, t_to, amount):
     assert len(t_to) == 20, "Invalid to address"
 
     if t_from == t_to:
-        Notify("Trasferring to self. Nothing changes.")
+        Notify("Transferring to self. Nothing changes.")
         return True
 
     from_val = Get(ctx, t_from)
@@ -82,5 +81,5 @@ def allocate(to, amount):
     return True
 
 def AssertionError(msg):
-    Notify("Error occured: " + msg)
+    Notify("Error occurred: " + msg)
     raise Exception(msg)

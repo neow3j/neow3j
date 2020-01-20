@@ -126,7 +126,7 @@ public class Account {
         //  custom exception for it.
         if (this.contract == null || this.contract.getScript() == null
                 || this.contract.getScript().isEmpty()) {
-            throw new IllegalStateException("Account does not have a verification script set.");
+            throw new AccountException("Account does not have a verification script set.");
         }
         return new VerificationScript(Numeric.hexStringToByteArray(this.contract.getScript()));
     }
@@ -289,8 +289,8 @@ public class Account {
         IntStream.range(0, publicKeys.size()).forEachOrdered(i -> {
             parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE));
         });
-        NEP6Contract contract =
-                new NEP6Contract(Numeric.toHexString(script.toArray()), parameters, false);
+        NEP6Contract contract = new NEP6Contract(
+                Numeric.toHexStringNoPrefix(script.getScript()), parameters, false);
         Builder b = new Builder();
         b.address = address;
         b.label = address;

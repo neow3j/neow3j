@@ -146,7 +146,7 @@ public class VerificationScript extends NeoSerializable {
      * @return true if this script is from a multi signature account. False, otherwise.
      */
     public boolean isMultiSigScript() {
-        String interopCode = Numeric.toHexString(ArrayUtils.getLastNBytes(this.script, 4));
+        String interopCode = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(this.script, 4));
         return interopCode.equals(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getCode());
     }
 

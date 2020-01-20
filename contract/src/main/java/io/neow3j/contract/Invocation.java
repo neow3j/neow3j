@@ -17,6 +17,7 @@ import io.neow3j.transaction.Witness;
 import io.neow3j.utils.FeeUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
+import io.neow3j.wallet.exceptions.AccountException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class Invocation {
 
     public Invocation send() throws IOException, ErrorResponseException {
         NeoSendRawTransaction response =
-            neow.sendRawTransaction(Numeric.toHexString(transaction.toArray())).send();
+                neow.sendRawTransaction(Numeric.toHexString(transaction.toArray())).send();
         response.throwOnError();
         // At this point we don't care if the invocation finished in a successful VM state. An
         // exception is only thrown if the node responds with an error.
@@ -53,10 +54,14 @@ public class Invocation {
      *
      * @return this invocation object.
      */
-    public Invocation sign() throws Exception {
-        Witness wit = Witness.createWitness(this.transaction.toArrayWithoutWitnesses(),
-            this.account.getECKeyPair());
-        this.transaction.addWitness(wit);
+    public Invocation sign() {
+        try {
+            this.transaction.addWitness(
+                    Witness.createWitness(getTransactionForSigning(), this.account.getECKeyPair()));
+        } catch (AccountException e) {
+            throw new InvocationConfigurationException("Cannot automatically sign with given "
+                    + "account. The account object needs a decrypted private key.");
+        }
         return this;
     }
 
@@ -77,8 +82,9 @@ public class Invocation {
         VerificationScript verScript = this.account.getVerificationScript();
         if (signatures.size() != verScript.getSigningThreshold()) {
             throw new InvocationConfigurationException("The number of signatures must be equal to "
-                + "the signing threshold of the multi-sig account performing his invocation. The "
-                + "network fee for the invocation was set according to that signing threshold.");
+                    + "the signing threshold of the multi-sig account performing his invocation. "
+                    + "The network fee for the invocation was set according to that signing "
+                    + "threshold.");
         }
         Witness wit = Witness.createMultiSigWitness(signatures, verScript);
         this.transaction.addWitness(wit);
@@ -88,29 +94,19 @@ public class Invocation {
 
         private String function;
         private List<ContractParameter> parameters;
-        private List<Witness> witnesses;
-        private List<TransactionAttribute> attributes;
-        private List<Cosigner> cosigners;
         private long additionalNetworkFee;
-        private boolean isValidUntilBlockSet;
         private ScriptHash scriptHash;
         private Neow3j neow;
-        private Account account;
-        private byte[] script;
         private Transaction.Builder txBuilder;
+        private Account account;
 
         // Should only be called by the SmartContract class. Therefore no checks on the arguments.
         protected InvocationBuilder(Neow3j neow, ScriptHash scriptHash, String function) {
             this.neow = neow;
             this.scriptHash = scriptHash;
             this.function = function;
-            this.witnesses = new ArrayList<>();
-            this.cosigners = new ArrayList<>();
-            this.attributes = new ArrayList<>();
             this.parameters = new ArrayList<>();
             this.txBuilder = new Transaction.Builder();
-            this.script = new byte[]{};
-            this.isValidUntilBlockSet = false;
         }
 
         /**
@@ -118,10 +114,7 @@ public class Invocation {
          * @return
          */
         public InvocationBuilder addWitnesses(Witness... witnesses) {
-            // Add to transaction builder but also to local variable because it is needed later
-            // and the transaction builder does not have getters.
             this.txBuilder.witnesses(witnesses);
-            this.witnesses.addAll(Arrays.asList(witnesses));
             return this;
         }
 
@@ -140,10 +133,7 @@ public class Invocation {
          * @return
          */
         public InvocationBuilder withAttributes(TransactionAttribute... attributes) {
-            // Add to transaction builder but also to local variable because it is needed later
-            // and the transaction builder does not have getters.
             this.txBuilder.attributes(attributes);
-            this.attributes.addAll(Arrays.asList(attributes));
             return this;
         }
 
@@ -152,10 +142,7 @@ public class Invocation {
          * @return
          */
         public InvocationBuilder withCosigners(Cosigner... cosigners) {
-            // Add to transaction builder but also to local variable because it is needed later
-            // and the transaction builder does not have getters.
             this.txBuilder.cosigners(cosigners);
-            this.cosigners.addAll(Arrays.asList(cosigners));
             return this;
         }
 
@@ -165,7 +152,6 @@ public class Invocation {
          */
         public InvocationBuilder validUntilBlock(long blockNr) {
             this.txBuilder.validUntilBlock(blockNr);
-            this.isValidUntilBlockSet = true;
             return this;
         }
 
@@ -183,8 +169,12 @@ public class Invocation {
          * @return
          */
         public InvocationBuilder withAccount(Account account) {
-            // Add to transaction builder but also to local variable because it is needed later
-            // and the transaction builder does not have getters.
+            try {
+                account.getVerificationScript();
+            } catch (AccountException e) {
+                throw new InvocationConfigurationException("Given account does not have a "
+                        + "verification script but needs one to be used in an invocation.");
+            }
             this.txBuilder.sender(account.getScriptHash());
             this.account = account;
             return this;
@@ -199,30 +189,32 @@ public class Invocation {
                 return neow.invokeFunction(scriptHash.toString(), this.function).send();
             }
             return neow.invokeFunction(scriptHash.toString(), this.function, this.parameters)
-                .send();
+                    .send();
         }
 
         public Invocation build() throws IOException {
-            if (this.account == null) {
+            if (this.txBuilder.getSender() == null) {
                 throw new InvocationConfigurationException("Cannot create an invocation without a "
-                    + "sending account.");
+                        + "sending account.");
             }
-            if (!this.isValidUntilBlockSet) {
+            if (this.txBuilder.getValidUntilBlock() == null) {
                 this.txBuilder.validUntilBlock(
-                    fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT);
+                        fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT);
             }
 
-            this.script = createScript();
-            this.txBuilder.script(this.script);
+            // Set the script on the transaction builder and on this builder because it is later
+            // needed for the calculation of the network fee and the transaction builder has no
+            // getters.
+            this.txBuilder.script(createScript());
             this.txBuilder.systemFee(fetchSystemFee());
             // Before we can calculate the network fee the transaction must be completely setup.
             // Therefore, at least a standard cosigner must be set in case no cosigner has been
             // set specifically.
-            if (this.cosigners.isEmpty()) {
-                this.cosigners.add(Cosigner.calledByEntry(this.account.getScriptHash()));
+            if (this.txBuilder.getCosigners().isEmpty()) {
+                this.txBuilder.cosigners(Cosigner.calledByEntry(this.account.getScriptHash()));
             }
             this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
-
+            // TODO: Maybe check if the sender has enough coin to do the invocation.
             return new Invocation(this);
         }
 
@@ -232,8 +224,8 @@ public class Invocation {
 
         private byte[] createScript() {
             return new ScriptBuilder()
-                .contractCall(this.scriptHash, this.function, this.parameters)
-                .toArray();
+                    .contractCall(this.scriptHash, this.function, this.parameters)
+                    .toArray();
         }
 
         /*
@@ -246,7 +238,7 @@ public class Invocation {
                 response = neow.invokeFunction(scriptHash.toString(), this.function).send();
             } else {
                 response = neow.invokeFunction(scriptHash.toString(), this.function,
-                    this.parameters).send();
+                        this.parameters).send();
             }
             // The GAS amount is received in decimal form (not Fixed8) so we can directly convert
             // to BigDecimal. We explicitly do not check if the VM exit state is FAULT. The GAS
@@ -285,13 +277,14 @@ public class Invocation {
          */
         private int calcPredictedTransactionSize() {
             List<Witness> predictedWitnesses = Arrays.asList(createMockWitness());
-            predictedWitnesses.addAll(this.witnesses);
+            predictedWitnesses.addAll(this.txBuilder.getWitnesses());
 
             return Transaction.HEADER_SIZE +
-                IOUtils.getSizeOfVarList(this.attributes) +
-                IOUtils.getSizeOfVarList(this.cosigners) +
-                IOUtils.getSizeOfVarInt(this.script.length) + this.script.length +
-                IOUtils.getSizeOfVarList(predictedWitnesses);
+                    IOUtils.getSizeOfVarList(this.txBuilder.getAttributes()) +
+                    IOUtils.getSizeOfVarList(this.txBuilder.getCosigners()) +
+                    IOUtils.getSizeOfVarInt(this.txBuilder.getScript().length) +
+                    this.txBuilder.getScript().length +
+                    IOUtils.getSizeOfVarList(predictedWitnesses);
         }
 
         /*
@@ -313,8 +306,8 @@ public class Invocation {
             } else if (signatures > 1) {
                 // Account is a multi-sig account
                 List<SignatureData> mockSignatures = IntStream.range(0, signatures)
-                    .mapToObj((i) -> SignatureData.fromByteArray(mockSignatureBytes))
-                    .collect(Collectors.toList());
+                        .mapToObj((i) -> SignatureData.fromByteArray(mockSignatureBytes))
+                        .collect(Collectors.toList());
                 return Witness.createMultiSigWitness(mockSignatures, verScript);
             }
             return null;

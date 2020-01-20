@@ -34,33 +34,35 @@ public class Nep5TokenTest {
     public void transferToken() throws Exception {
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         nep5.transfer(new ScriptHash("e9eed8dc39332032dc22e5d6e86332c50327ba23"),
-            new ScriptHash("0f2b7a6ee34db32d9151c6028960ab2a8babea52"), BigDecimal.ONE);
+                new ScriptHash("0f2b7a6ee34db32d9151c6028960ab2a8babea52"), BigDecimal.ONE);
     }
 
     @Test
     public void getName() throws IOException {
-        ContractTestUtils.setUpWireMockForInvokeFunction("name");
+        ContractTestUtils.setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getName(), is("Example"));
     }
 
     @Test
     public void getSymbol() throws IOException {
-        ContractTestUtils.setUpWireMockForInvokeFunction("symbol");
+        ContractTestUtils.setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getSymbol(), is("EXP"));
     }
 
     @Test
     public void getDecimals() throws Exception {
-        ContractTestUtils.setUpWireMockForInvokeFunction("decimals");
+        ContractTestUtils
+                .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getDecimals(), is(8));
     }
 
     @Test
     public void getTotalSupply() throws Exception {
-        ContractTestUtils.setUpWireMockForInvokeFunction("totalSupply");
+        ContractTestUtils
+                .setUpWireMockForInvokeFunction("totalSupply", "invokefunction_totalSupply.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getTotalSupply(), is(new BigInteger("1000000000000000")));
     }
