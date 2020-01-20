@@ -76,16 +76,19 @@ public enum InteropServiceCode {
     /**
      * Constructs a new interop service code.
      *
-     * @param code A short hash of the code's name as a little endian hex string.
+     * @param code  A short hash of the code's name as a little endian hex string.
      * @param price The execution GAS price of the code.
      */
     InteropServiceCode(String code, Integer price) {
         this.code = code;
-        this.price = (long)price;
+        if (price != null) {
+            this.price = (long) price;
+        }
     }
 
     /**
      * Gets the short hash of the code's name as a little endian hex string.
+     *
      * @return the hashed code name
      */
     public String getCode() {
@@ -94,6 +97,7 @@ public enum InteropServiceCode {
 
     /**
      * Gets the short hash of the code's name as a little endian byte array.
+     *
      * @return the hashed code name
      */
     public byte[] getCodeBytes() {
@@ -103,7 +107,7 @@ public enum InteropServiceCode {
     public long getPrice() {
         if (this.price == null) {
             throw new UnsupportedOperationException("The Interop Service Code " + name() + " does "
-                + "not have a simple fixed. It's price is dependend on other variables.");
+                    + "not have a fixed GAS price. It depends on other variables.");
         }
         return price;
     }

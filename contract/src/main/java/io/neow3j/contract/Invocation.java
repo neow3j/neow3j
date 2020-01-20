@@ -69,6 +69,10 @@ public class Invocation {
         return this.transaction.toArrayWithoutWitnesses();
     }
 
+    public Transaction getTransaction() {
+        return this.transaction;
+    }
+
     public void addSignatures(List<SignatureData> signatures) {
         VerificationScript verScript = this.account.getVerificationScript();
         if (signatures.size() != verScript.getSigningThreshold()) {
@@ -105,6 +109,7 @@ public class Invocation {
             this.attributes = new ArrayList<>();
             this.parameters = new ArrayList<>();
             this.txBuilder = new Transaction.Builder();
+            this.script = new byte[]{};
             this.isValidUntilBlockSet = false;
         }
 
@@ -197,7 +202,7 @@ public class Invocation {
                 .send();
         }
 
-        public Invocation build() throws Exception {
+        public Invocation build() throws IOException {
             if (this.account == null) {
                 throw new InvocationConfigurationException("Cannot create an invocation without a "
                     + "sending account.");
@@ -207,7 +212,8 @@ public class Invocation {
                     fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT);
             }
 
-            this.txBuilder.script(createScript());
+            this.script = createScript();
+            this.txBuilder.script(this.script);
             this.txBuilder.systemFee(fetchSystemFee());
             // Before we can calculate the network fee the transaction must be completely setup.
             // Therefore, at least a standard cosigner must be set in case no cosigner has been
@@ -220,13 +226,8 @@ public class Invocation {
             return new Invocation(this);
         }
 
-        private long fetchCurrentBlockNr() throws Exception {
-            try {
-                return neow.getBlockCount().send().getBlockIndex().longValue();
-            } catch (IOException e) {
-                //TODO: Create a specific exception
-                throw new Exception();
-            }
+        private long fetchCurrentBlockNr() throws IOException {
+            return neow.getBlockCount().send().getBlockIndex().longValue();
         }
 
         private byte[] createScript() {

@@ -31,5 +31,4 @@ public class WIF {
         Arrays.fill(data, (byte) 0);
         return privateKey;
     }
-
 }

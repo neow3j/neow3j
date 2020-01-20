@@ -136,7 +136,7 @@ public class VerificationScript extends NeoSerializable {
      * @return true if this script is from a single signature account. False, otherwise.
      */
     public boolean isSingleSigScript() {
-        String interopCode = Numeric.toHexString(ArrayUtils.getLastNBytes(this.script, 4));
+        String interopCode = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(this.script, 4));
         return interopCode.equals(InteropServiceCode.NEO_CRYPTO_CHECKSIG.getCode());
     }
 

@@ -80,12 +80,6 @@ public class NeoConstants {
     //region Fees
 
     /**
-     * The amount of GAS that is free in every execution/invocation of a smart contract.
-     * TODO: Remove. Doesn't exist in Neo 3.
-     */
-    public static final BigDecimal FREE_GAS_AMOUNT = BigDecimal.TEN;
-
-    /**
      * The basic GAS fee to be paid when deploying or migrating a contract.
      */
     public static final int CONTRACT_DEPLOY_BASIC_FEE = 100;
