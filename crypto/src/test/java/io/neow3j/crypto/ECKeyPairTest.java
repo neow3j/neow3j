@@ -4,6 +4,7 @@ import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.NeoSerializableInterface;
@@ -69,6 +70,11 @@ public class ECKeyPairTest {
             "036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
         ECKeyPair.ECPublicKey key = new ECKeyPair.ECPublicKey(data);
         assertThat(key.getSize(), is(33));
+    }
+
+    @Test
+    public void getAddress() {
+        fail();
     }
 
 }

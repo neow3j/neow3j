@@ -33,11 +33,11 @@ public class WalletUtilsTest {
 
     @Test
     public void testGenerateWalletFile() throws Exception {
-        String fileName = WalletUtils.generateWalletFile(SampleKeys.PASSWORD_1, SampleKeys.KEY_PAIR_1, this.tempDir);
+        String fileName = WalletUtils.generateWalletFile(TestKeys.PASSWORD_1, TestKeys.KEY_PAIR_1, this.tempDir);
         Wallet loadedWallet = Wallet.fromNEP6Wallet(fileName).build();
-        loadedWallet.decryptAllAccounts(SampleKeys.PASSWORD_1);
-        assertEquals(loadedWallet.getAccounts().get(0).getAddress(), SampleKeys.ADDRESS_1);
-        assertEquals(loadedWallet.getAccounts().get(0).getECKeyPair(), SampleKeys.KEY_PAIR_1);
+        loadedWallet.decryptAllAccounts(TestKeys.PASSWORD_1);
+        assertEquals(loadedWallet.getAccounts().get(0).getAddress(), TestKeys.ADDRESS_1);
+        assertEquals(loadedWallet.getAccounts().get(0).getECKeyPair(), TestKeys.KEY_PAIR_1);
     }
 
     @Test

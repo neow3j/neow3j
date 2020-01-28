@@ -270,8 +270,8 @@ public class AssetTransferTest {
     @Test
     public void transferFromMultiSigAddress() throws IOException, ErrorResponseException {
         Neow3j neow3j = Neow3j.build(new HttpService("http://nucbox.axlabs.com:30333"));
-        List<ECPublicKey> keys = Arrays.asList(SampleKeys.KEY_PAIR_1.getPublicKey2(),
-                SampleKeys.KEY_PAIR_2.getPublicKey2());
+        List<ECPublicKey> keys = Arrays.asList(TestKeys.KEY_PAIR_1.getPublicKey2(),
+                TestKeys.KEY_PAIR_2.getPublicKey2());
         // This account has the address "ATcWffQV1A7NMEsqQ1RmKfS7AbSqcAp2hd"
         Account multiSigAcct = Account.fromMultiSigKeys(keys, 2).build();
         // The account could also be instantiated from the address directly
@@ -284,8 +284,8 @@ public class AssetTransferTest {
                 .build();
 
         byte[] unsignedTxHex = at.getTransaction().toArrayWithoutScripts();
-        SignatureData sig1 = Sign.signMessage(unsignedTxHex, SampleKeys.KEY_PAIR_1);
-        SignatureData sig2 = Sign.signMessage(unsignedTxHex, SampleKeys.KEY_PAIR_2);
+        SignatureData sig1 = Sign.signMessage(unsignedTxHex, TestKeys.KEY_PAIR_1);
+        SignatureData sig2 = Sign.signMessage(unsignedTxHex, TestKeys.KEY_PAIR_2);
         Witness witness = Witness.createMultiSigWitness(2, Arrays.asList(sig1, sig2), keys);
         at.addWitness(witness);
 

@@ -5,10 +5,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.ECKeyPair;
@@ -105,7 +105,7 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Wallet w = new Wallet.Builder().build();
-        assertFalse(w.removeAccount(SampleKeys.ADDRESS_1));
+        assertFalse(w.removeAccount(TestKeys.ADDRESS_1));
         Account acct1 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct1);
         Account acct2 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
@@ -194,11 +194,7 @@ public class WalletTest {
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
         assertThat(tempFile.exists(), is(true));
-        try {
-            w1.getAccounts().get(0).getPrivateKey();
-            fail();
-        } catch (AccountException e) {
-        }
+        assertThat(w1.getAccounts().get(0).getPrivateKey(), is(nullValue()));
 
         Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
         w2.decryptAllAccounts("12345678");
@@ -219,11 +215,7 @@ public class WalletTest {
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
         assertThat(tempFile.exists(), is(true));
-        try {
-            w1.getAccounts().get(0).getPrivateKey();
-            fail();
-        } catch (AccountException e) {
-        }
+        assertThat(w1.getAccounts().get(0).getPrivateKey(), is(nullValue()));
 
         Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
         w2.decryptAllAccounts("12345678");
@@ -251,11 +243,7 @@ public class WalletTest {
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
         assertThat(w1.getAccounts().get(0).getEncryptedPrivateKey(), notNullValue());
-        try {
-            w1.getAccounts().get(0).getPrivateKey();
-            fail();
-        } catch (AccountException e) {
-        }
+        assertThat(w1.getAccounts().get(0).getPrivateKey(), is(nullValue()));
 
         w1.decryptAllAccounts("12345678");
         assertThat(w1.getAccounts().get(0).getECKeyPair(), notNullValue());

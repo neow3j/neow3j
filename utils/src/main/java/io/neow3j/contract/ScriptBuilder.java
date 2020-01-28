@@ -265,6 +265,11 @@ public class ScriptBuilder {
         return byteStream.toByteArray();
     }
 
+    /**
+     * TODO: Write documentation
+     * @param encodedPublicKey
+     * @return
+     */
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
@@ -272,6 +277,12 @@ public class ScriptBuilder {
                 .toArray();
     }
 
+    /**
+     * TODO: Write documentation
+     * @param encodedPublicKeys
+     * @param signingThreshold
+     * @return
+     */
     public static byte[] buildVerificationScript(List<byte[]> encodedPublicKeys,
             int signingThreshold) {
         ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);

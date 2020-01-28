@@ -82,9 +82,6 @@ public class Account {
     }
 
     public BigInteger getPrivateKey() {
-        if (this.privateKey == null) {
-            throw new AccountException("Account does not hold a decrypted private key.");
-        }
         return this.privateKey;
     }
 
@@ -286,7 +283,7 @@ public class Account {
      */
     public static Builder fromMultiSigKeys(List<ECPublicKey> publicKeys, int signatureThreshold) {
         VerificationScript script = new VerificationScript(publicKeys, signatureThreshold);
-        String address = ScriptHash.fromScript(script.toArray()).toAddress();
+        String address = ScriptHash.fromScript(script.getScript()).toAddress();
         Builder b = new Builder();
         b.address = address;
         b.label = address;
