@@ -12,6 +12,7 @@ import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.TestKeys;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -103,25 +104,17 @@ public class ScriptHashTest {
 
     @Test
     public void fromPublicKeyByteArray() {
-        String keyHex = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
-        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(keyHex));
-
-        String expectedBigEndianHash = "d76382536f9cd862b01f6e6ef539c43ff8835f29";
-        assertThat(sh.toString(), is(expectedBigEndianHash));
+        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
+        byte[] verificationScript = Numeric.hexStringToByteArray(TestKeys.verificationScript1);
+        assertThat(sh.toArray(), is(Hash.sha256AndThenRipemd160(verificationScript)));
     }
 
     @Test
     public void fromPublicKeyByteArrays() {
-        String keyHex1 = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
-        String keyHex2 = "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43";
-        byte[] key1 = Numeric.hexStringToByteArray(
-                "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
-        byte[] key2 = Numeric.hexStringToByteArray(
-                "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43");
+        byte[] key1 = Numeric.hexStringToByteArray(TestKeys.pubKey2_1);
+        byte[] key2 = Numeric.hexStringToByteArray(TestKeys.pubKey2_2);
         ScriptHash sh = ScriptHash.fromPublicKeys(Arrays.asList(key1, key2), 2);
-
-        String verificationScriptHex = "5221" + keyHex1 + "21" + keyHex2 + "52ae";
-        byte[] verificationScript = Numeric.hexStringToByteArray(verificationScriptHex);
+        byte[] verificationScript = Numeric.hexStringToByteArray(TestKeys.verificationScript2);
         assertThat(sh.toArray(), is(Hash.sha256AndThenRipemd160(verificationScript)));
     }
 
@@ -140,10 +133,8 @@ public class ScriptHashTest {
 
     @Test
     public void toAddress() {
-        String keyHex = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
-        String expectedAddress = "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ";
-        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(keyHex));
-        assertThat(sh.toAddress(), is(expectedAddress));
+        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
+        assertThat(sh.toAddress(), is(TestKeys.address1));
     }
 
     @Test

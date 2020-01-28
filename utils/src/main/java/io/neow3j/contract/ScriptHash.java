@@ -84,6 +84,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      *
      * @return the script hash byte array in little-endian order.
      */
+    @Override
     public byte[] toArray() {
         return super.toArray();
     }

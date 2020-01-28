@@ -32,6 +32,8 @@ public class Nep5TokenTest {
 
     @Test
     public void transferToken() throws Exception {
+//        ContractTestUtils.setUpWireMockForRawTransaction();
+        // TODO: Setup a raw transaction that contains the expecte transaction bytes for a transfer.
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         nep5.transfer(new ScriptHash("e9eed8dc39332032dc22e5d6e86332c50327ba23"),
                 new ScriptHash("0f2b7a6ee34db32d9151c6028960ab2a8babea52"), BigDecimal.ONE);
