@@ -7,7 +7,26 @@ import io.neow3j.crypto.exceptions.AddressFormatException;
 
 public class AddressUtils {
 
+    /**
+     * Checks whether the give address is valid or not. It uses the default address version {@link
+     * NeoConstants#DEFAULT_ADDRESS_VERSION}.
+     *
+     * @param address The address to be checked.
+     * @return whether the address is valid or not
+     */
     public static boolean isValidAddress(String address) {
+        return isValidAddress(address, NeoConstants.DEFAULT_ADDRESS_VERSION);
+    }
+
+    /**
+     * Checks whether the give address is valid or not. It uses the default address version {@link
+     * NeoConstants#DEFAULT_ADDRESS_VERSION}.
+     *
+     * @param address        The address to be checked.
+     * @param addressVersion The address version.
+     * @return whether the address is valid or not
+     */
+    public static boolean isValidAddress(String address, byte addressVersion) {
         byte[] data;
         try {
             data = Base58.decode(address);
@@ -17,7 +36,7 @@ public class AddressUtils {
         if (data.length != 25) {
             return false;
         }
-        if (data[0] != NeoConstants.ADDRESS_VERSION) {
+        if (data[0] != addressVersion) {
             return false;
         }
         byte[] checksum = Hash.sha256(Hash.sha256(data, 0, 21));
@@ -46,7 +65,8 @@ public class AddressUtils {
     }
 
     /**
-     * Derives the Neo address from the given script hash.
+     * Derives the Neo address from the given script hash. It uses the default address version
+     * {@link NeoConstants#DEFAULT_ADDRESS_VERSION}.
      * <p>
      * The script hash needs to be in little-endian order.
      *
@@ -54,7 +74,20 @@ public class AddressUtils {
      * @return the address
      */
     public static String scriptHashToAddress(byte[] scriptHash) {
-        byte[] script = ArrayUtils.concatenate(NeoConstants.ADDRESS_VERSION, scriptHash);
+        return scriptHashToAddress(scriptHash, NeoConstants.DEFAULT_ADDRESS_VERSION);
+    }
+
+    /**
+     * Derives the Neo address from the given script hash, also specifying the address version. Use
+     * {@link #scriptHashToAddress} if the default address version should be used.
+     * <p>
+     * The script hash needs to be in little-endian order.
+     *
+     * @param scriptHash The script hash to get the address for.
+     * @return the address
+     */
+    public static String scriptHashToAddress(byte[] scriptHash, byte addressVersion) {
+        byte[] script = ArrayUtils.concatenate(addressVersion, scriptHash);
         byte[] checksum = ArrayUtils.getFirstNBytes(Hash.sha256(Hash.sha256(script)), 4);
         return Base58.encode(ArrayUtils.concatenate(script, checksum));
     }

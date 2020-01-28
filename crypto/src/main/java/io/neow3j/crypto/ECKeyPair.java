@@ -40,12 +40,12 @@ import org.bouncycastle.util.BigIntegers;
  */
 public class ECKeyPair {
 
-    private final BigInteger privateKey;
-    private final ECPublicKey publicKey;
-
     static {
         addBouncyCastle();
     }
+
+    private final BigInteger privateKey;
+    private final ECPublicKey publicKey;
 
     // TODO: Remove as soon as private key is also its own type (ECPrivateKey).
     public ECKeyPair(BigInteger privateKey, BigInteger publicKey) {
@@ -58,7 +58,6 @@ public class ECKeyPair {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
-
 
     public BigInteger getPrivateKey() {
         return privateKey;
@@ -75,14 +74,26 @@ public class ECKeyPair {
     }
 
     /**
-     * Constructs the NEO address from this key pairs public key.
-     * The address is constructed ad hoc each time this method is called.
+     * Constructs the NEO address from this key pairs public key, specifying the address version
+     * prefix and the address version. The address is constructed ad hoc each time this method is
+     * called.
+     *
+     * @return the NEO address of the public key.
+     */
+    public String getAddress(byte addressVersion) {
+        byte[] script = ScriptBuilder.buildVerificationScript(this.publicKey.getEncoded(true));
+        return ScriptHash.fromScript(script).toAddress(addressVersion);
+    }
+
+    /**
+     * Constructs the NEO address from this key pairs public key. The address is constructed ad hoc
+     * each time this method is called. It uses the default address version {@link
+     * NeoConstants#DEFAULT_ADDRESS_VERSION}.
      *
      * @return the NEO address of the public key.
      */
     public String getAddress() {
-        byte[] script = ScriptBuilder.buildVerificationScript(this.publicKey.getEncoded(true));
-        return ScriptHash.fromScript(script).toAddress();
+        return getAddress(NeoConstants.DEFAULT_ADDRESS_VERSION);
     }
 
     /**
@@ -195,17 +206,6 @@ public class ECKeyPair {
         return result;
     }
 
-    public static ECKeyPair deserialize(byte[] input) {
-        if (input.length != PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE) {
-            throw new RuntimeException("Invalid input key size");
-        }
-
-        BigInteger privateKey = Numeric.toBigInt(input, 0, PRIVATE_KEY_SIZE);
-        BigInteger publicKey = Numeric.toBigInt(input, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE);
-
-        return new ECKeyPair(privateKey, publicKey);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -260,8 +260,9 @@ public class ECKeyPair {
         }
 
         /**
-         * Creates a new
-         * @param ecPoint
+         * Creates a new {@link ECPublicKey} based on a EC point ({@link ECPoint}).
+         *
+         * @param ecPoint The EC point (x,y) to construct the public key.
          */
         public ECPublicKey(ECPoint ecPoint) {
             if (!ecPoint.getCurve().equals(NeoConstants.CURVE_PARAMS.getCurve())) {
@@ -300,7 +301,8 @@ public class ECKeyPair {
          * Gets this public key's elliptic curve point encoded as defined in section 2.3.3 of
          * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
          *
-         * @param compressed If the EC point should be encoded in compressed or uncompressed format.
+         * @param compressed If the EC point should be encoded in compressed or uncompressed
+         *                   format.
          * @return the encoded public key.
          */
         public byte[] getEncoded(boolean compressed) {

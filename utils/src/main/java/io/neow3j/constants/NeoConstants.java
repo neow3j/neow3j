@@ -33,7 +33,9 @@ public class NeoConstants {
 
     //region Accounts, Addresses, Keys
 
-    public static final byte ADDRESS_VERSION = 0x17;
+    public static final byte DEFAULT_ADDRESS_VERSION = 0x17;
+
+    public static final byte PRIVATENET_ADDRESS_VERSION = 0x37;
 
     /**
      * The maximum number of public keys that can take part in a multi-signature address.
