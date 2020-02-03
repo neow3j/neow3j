@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import static io.neow3j.utils.Strings.isEmpty;
 
 import io.neow3j.contract.abi.model.NeoContractEvent;
-import io.neow3j.contract.abi.model.NeoContractFunction;
+import io.neow3j.contract.abi.model.NeoContractMethod;
 import io.neow3j.contract.abi.model.NeoContractInterface;
 import io.neow3j.model.types.ContractParameterType;
 import java.util.Collections;
@@ -117,7 +117,7 @@ public class Contract {
      *
      * @return an {@link Optional} with the contract function representing the entry point.
      */
-    public Optional<NeoContractFunction> getEntryPoint() {
+    public Optional<NeoContractMethod> getEntryPoint() {
         return getFunction(abi.getEntryPoint());
     }
 
@@ -144,8 +144,8 @@ public class Contract {
      *
      * @return a {@link List} with all contract functions.
      */
-    public List<NeoContractFunction> getFunctions() {
-        return abi.getFunctions();
+    public List<NeoContractMethod> getFunctions() {
+        return abi.getMethods();
     }
 
     /**
@@ -165,12 +165,12 @@ public class Contract {
      */
     public List<ContractParameter> getFunctionParameters(final String functionName) {
         throwIfABINotSet();
-        return abi.getFunctions()
+        return abi.getMethods()
             .stream()
             .filter(f -> !isEmpty(f.getName()))
             .filter(f -> f.getName().equals(functionName))
             .findFirst()
-            .map(NeoContractFunction::getParameters)
+            .map(NeoContractMethod::getParameters)
             .orElse(Collections.emptyList());
     }
 
@@ -180,8 +180,8 @@ public class Contract {
      * @param functionName The function name.
      * @return an {@link Optional} with the contract function.
      */
-    public Optional<NeoContractFunction> getFunction(final String functionName) {
-        return abi.getFunctions()
+    public Optional<NeoContractMethod> getFunction(final String functionName) {
+        return abi.getMethods()
             .stream()
             .filter(f -> !isEmpty(f.getName()))
             .filter(f -> f.getName().equals(functionName))
@@ -196,12 +196,12 @@ public class Contract {
      */
     public Optional<ContractParameterType> getFunctionReturnType(final String functionName) {
         throwIfABINotSet();
-        return abi.getFunctions()
+        return abi.getMethods()
             .stream()
             .filter(f -> !isEmpty(f.getName()))
             .filter(f -> f.getName().equals(functionName))
             .findFirst()
-            .map(NeoContractFunction::getReturnType);
+            .map(NeoContractMethod::getReturnType);
     }
 
     /**
