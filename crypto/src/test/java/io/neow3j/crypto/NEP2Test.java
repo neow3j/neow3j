@@ -19,7 +19,8 @@ public class NEP2Test {
     private final String encrypted1b = "6PYLPLfpCw87u1t7TP14gkNweUkuqwpso8qmMt24Kp8aona6K7fvurdsDQ";
 
     private final String wif2 = "L2QTooFoDFyRFTxmtiVHt5CfsXfVnexdbENGDkkrrgTTryiLsPMG";
-    private final String pw2 = "我的密码";
+    // the string 我的密码 to encoded utf chars
+    private final String pw2 = "\u6211\u7684\u5bc6\u7801";
     // Encrypted with the Scrypt params (256, 1, 1)
     private final String encrypted2 = "6PYQqmDYkjqD6D3wsh5YquFqtgWsxThLAZDni1oEXaEp1MTqJKPHzVJEaU";
 
