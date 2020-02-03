@@ -135,20 +135,31 @@ configure(subprojects.findAll()) {
     }
 
     ext {
-        nexusUsername = project.hasProperty('nexusUsername') ? project.property('nexusUsername') : ''
-        nexusPassword = project.hasProperty('nexusPassword') ? project.property('nexusPassword') : ''
+        publishSonaTypeUsername = project.hasProperty('nexusUsername') ? project.property('nexusUsername') : ''
+        publishSonaTypePassword = project.hasProperty('nexusPassword') ? project.property('nexusPassword') : ''
+        publishGitHubUsername = project.hasProperty('githubUsername') ? project.property('githubUsername') : ''
+        publishGitHubPassword = project.hasProperty('githubPassword') ? project.property('githubPassword') : ''
     }
 
     publishing {
         repositories {
             maven {
-                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                url = project.hasProperty('snapshot') ? snapshotsRepoUrl : releasesRepoUrl
-
-                credentials {
-                    username nexusUsername
-                    password nexusPassword
+                def sonatypeReleasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def sonatypeSnapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+                def githubRepoUrl = "https://maven.pkg.github.com/neow3j/neow3j/"
+                if (project.hasProperty('sonatype')) {
+                    url = project.hasProperty('snapshot') ? sonatypeSnapshotsRepoUrl : sonatypeReleasesRepoUrl
+                    credentials {
+                        username publishSonaTypeUsername
+                        password publishSonaTypePassword
+                    }
+                }
+                if (project.hasProperty('github')) {
+                    url = githubRepoUrl
+                    credentials {
+                        username publishGitHubUsername
+                        password publishGitHubPassword
+                    }
                 }
             }
         }
