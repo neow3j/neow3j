@@ -19,7 +19,6 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.exceptions.AccountException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -156,6 +155,15 @@ public class Invocation {
         }
 
         /**
+         * @param nonce
+         * @return
+         */
+        public InvocationBuilder withNonce(long nonce) {
+            this.txBuilder.nonce(nonce);
+            return this;
+        }
+
+        /**
          * @param fee
          * @return
          */
@@ -238,12 +246,14 @@ public class Invocation {
                 response = neow.invokeFunction(scriptHash.toString(), this.function,
                         this.parameters).send();
             }
-            // The GAS amount is received in decimal form (not Fixed8) so we can directly convert
-            // to BigDecimal. We explicitly do not check if the VM exit state is FAULT. The GAS
-            // consumption is determined independent of the invocations outcome.
-            String gasConsumed = response.getInvocationResult().getGasConsumed();
-            BigDecimal fee = new BigDecimal(gasConsumed).multiply(GasToken.FACTOR);
-            return fee.longValue();
+            // The GAS amount is returned in fractions (10^8) by the preview private network node
+            // for Neo 3. But in Neo 2 the amount was given as decimals of whole GAS tokens (e.g.
+            // 0.12).
+            // TODO: Remove above comment once it is clear which format Neo 3 returns here.
+//            String gasConsumed = response.getInvocationResult().getGasConsumed();
+//            BigDecimal fee = new BigDecimal(gasConsumed).multiply(GasToken.FACTOR);
+//            return fee.longValue();
+            return Long.parseLong(response.getInvocationResult().getGasConsumed());
         }
 
         /*

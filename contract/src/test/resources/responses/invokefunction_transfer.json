@@ -1,0 +1,10 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "5a14a33f025bd99b44c841f5c4ccb8a7a9a36853e75714bbf14c0d508108e56402116aede9942a064f7dc653c1087472616e736665721415caa04214310670d5e5a398e147e0dbed98cf4368627d5b52",
+    "state": "HALT",
+    "gas_consumed": "100000000",
+    "stack": []
+  }
+}

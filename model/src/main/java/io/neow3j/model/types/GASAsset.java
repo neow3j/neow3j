@@ -7,7 +7,7 @@ public class GASAsset {
 
     public static final String NAME = "NEOGas";
 
-    public static final String HASH_ID = "602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7";
+    public static final String HASH_ID = "a1760976db5fcdfab2a9930e8f6ce875b2d18225";
 
     public static final AssetType TYPE = AssetType.UTILITY_TOKEN;
 

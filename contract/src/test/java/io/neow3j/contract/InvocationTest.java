@@ -17,6 +17,11 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
+import io.neow3j.crypto.WIF;
+import io.neow3j.crypto.exceptions.CipherException;
+import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
+import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.model.types.NEOAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
@@ -232,5 +237,39 @@ public class InvocationTest {
                 .validUntilBlock(1000)
                 .build()
                 .sign();
+    }
+
+    @Test
+    public void test() {
+        System.out.println(new ScriptHash("57e75368a3a9a7b8ccc4f541c8449bd95b023fa3").toAddress());
+    }
+
+    @Test
+    public void testNeoTransfer()
+            throws IOException, NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+        //  WIF of example address PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL of private net preview.
+        //  See here https://github.com/hal0x2328/neo3-privatenet-tutorial
+        final String method = "transfer";
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_transfer.json");
+        ContractTestUtils.setUpWireMockForSendRawTransaction();
+
+        String wif = "Kx6sh3EAsKQMY3PrqyhXTkNZdbBbs8Ya8D7VEssXkSb4DjfksTXF";
+        ECKeyPair keyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif));
+        Account sender = Account.fromECKeyPair(keyPair).build();
+        ScriptHash sh = new ScriptHash(NEOAsset.HASH_ID);
+        Invocation i = new InvocationBuilder(neow, sh, method)
+                .withAccount(sender)
+                .withNonce(1348080909)
+                .validUntilBlock(2102660)
+                .withParameters(
+                        ContractParameter.byteArrayFromAddress(sender.getAddress()),
+                        ContractParameter
+                                .byteArrayFromAddress("PPULnCTke8Cu8Yyaggg2BCMLKc8k7QdvWr"),
+                        ContractParameter.integer(10))
+                .build();
+        i.sign();
+
+//        The network fee should be 1257240, although the script that was created by the
+//        private net node has one byte too much at the end, which I don't know what it does.
     }
 }
