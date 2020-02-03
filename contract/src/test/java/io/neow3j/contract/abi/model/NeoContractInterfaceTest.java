@@ -27,7 +27,7 @@ public class NeoContractInterfaceTest {
                 "anything",
                 "Main",
                 Arrays.asList(
-                        new NeoContractFunction("anything", Arrays.asList(ContractParameter.byteArray("001010101010")), ContractParameterType.BYTE_ARRAY)
+                        new NeoContractMethod("anything", Arrays.asList(ContractParameter.byteArray("001010101010")), ContractParameterType.BYTE_ARRAY)
                 ),
                 Arrays.asList(
                         new NeoContractEvent("anything", Arrays.asList(ContractParameter.byteArray("001010101010")))
@@ -40,7 +40,7 @@ public class NeoContractInterfaceTest {
                         "{" +
                                 "\"hash\":\"anything\"," +
                                 "\"entrypoint\":\"Main\"," +
-                                "\"functions\":[" +
+                                "\"methods\":[" +
                                 "{" +
                                 "\"name\":\"anything\"," +
                                 "\"parameters\":[" +
@@ -83,7 +83,7 @@ public class NeoContractInterfaceTest {
                         "{" +
                                 "\"hash\":\"anything\"," +
                                 "\"entrypoint\":\"Main\"," +
-                                "\"functions\":[" +
+                                "\"methods\":[" +
                                 "]," +
                                 "\"events\":[" +
                                 "]" +
@@ -107,7 +107,7 @@ public class NeoContractInterfaceTest {
                         "{" +
                                 "\"hash\":\"anything\"," +
                                 "\"entrypoint\":\"Main\"," +
-                                "\"functions\":[" +
+                                "\"methods\":[" +
                                 "]," +
                                 "\"events\":[" +
                                 "]" +
@@ -122,7 +122,7 @@ public class NeoContractInterfaceTest {
         String neoContractInterfaceString = "{" +
                 "\"hash\":\"anything\"," +
                 "\"entrypoint\":\"Main\"," +
-                "\"functions\":[" +
+                "\"methods\":[" +
                 "{" +
                 "\"name\":\"anything\"," +
                 "\"parameters\":[" +
@@ -151,10 +151,10 @@ public class NeoContractInterfaceTest {
 
         assertThat(neoContractInterface.getHash(), is("anything"));
         assertThat(neoContractInterface.getEntryPoint(), is("Main"));
-        assertThat(neoContractInterface.getFunctions(), not(emptyCollectionOf(NeoContractFunction.class)));
-        assertThat(neoContractInterface.getFunctions(),
+        assertThat(neoContractInterface.getMethods(), not(emptyCollectionOf(NeoContractMethod.class)));
+        assertThat(neoContractInterface.getMethods(),
                 CoreMatchers.hasItems(
-                        new NeoContractFunction("anything", Arrays.asList(ContractParameter.byteArray("001010101010")), ContractParameterType.BYTE_ARRAY)
+                        new NeoContractMethod("anything", Arrays.asList(ContractParameter.byteArray("001010101010")), ContractParameterType.BYTE_ARRAY)
                 )
         );
         assertThat(neoContractInterface.getEvents(), not(emptyCollectionOf(NeoContractEvent.class)));
@@ -181,8 +181,8 @@ public class NeoContractInterfaceTest {
 
         assertThat(neoContractInterface.getHash(), is("anything"));
         assertThat(neoContractInterface.getEntryPoint(), is("Main"));
-        assertThat(neoContractInterface.getFunctions(), emptyCollectionOf(NeoContractFunction.class));
-        assertThat(neoContractInterface.getFunctions(), hasSize(0));
+        assertThat(neoContractInterface.getMethods(), emptyCollectionOf(NeoContractMethod.class));
+        assertThat(neoContractInterface.getMethods(), hasSize(0));
         assertThat(neoContractInterface.getEvents(), emptyCollectionOf(NeoContractEvent.class));
         assertThat(neoContractInterface.getEvents(), hasSize(0));
     }
@@ -201,8 +201,8 @@ public class NeoContractInterfaceTest {
 
         assertThat(neoContractInterface.getHash(), is("anything"));
         assertThat(neoContractInterface.getEntryPoint(), is("Main"));
-        assertThat(neoContractInterface.getFunctions(), emptyCollectionOf(NeoContractFunction.class));
-        assertThat(neoContractInterface.getFunctions(), hasSize(0));
+        assertThat(neoContractInterface.getMethods(), emptyCollectionOf(NeoContractMethod.class));
+        assertThat(neoContractInterface.getMethods(), hasSize(0));
         assertThat(neoContractInterface.getEvents(), emptyCollectionOf(NeoContractEvent.class));
         assertThat(neoContractInterface.getEvents(), hasSize(0));
     }

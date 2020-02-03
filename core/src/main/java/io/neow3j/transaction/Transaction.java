@@ -5,6 +5,7 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
@@ -21,6 +22,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class Transaction extends NeoSerializable {
+
+    public static final int HEADER_SIZE = 1 +  // Version byte
+        4 +  // Nonce uint32
+        NeoConstants.SCRIPTHASH_LENGHT_BYTES + // Sender script hash
+        8 +  // System fee int64
+        8 +  // Network fee int64
+        4; // Valid until block uint32
 
     private byte version;
     /**
@@ -101,9 +109,9 @@ public class Transaction extends NeoSerializable {
     }
 
     public void addWitness(Witness witness) {
-        if (witness.getScriptHash() == null || witness.getScriptHash().length() == 0) {
+        if (witness.getScriptHash() == null) {
             throw new IllegalArgumentException("The script hash of the given script is " +
-                    "empty. Please set the script hash.");
+                "empty. Please set the script hash.");
         }
         this.witnesses.add(witness);
     }
@@ -113,8 +121,13 @@ public class Transaction extends NeoSerializable {
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 
+    @Override
     public int getSize() {
-        return toArray().length;
+        return HEADER_SIZE +
+        IOUtils.getSizeOfVarList(this.attributes) +
+        IOUtils.getSizeOfVarList(this.cosigners) +
+        IOUtils.getSizeOfVarInt(this.script.length) + this.script.length +
+        IOUtils.getSizeOfVarList(this.witnesses);
     }
 
     @Override
@@ -235,7 +248,7 @@ public class Transaction extends NeoSerializable {
         public Builder nonce(Long nonce) {
             if (nonce < 0 || nonce >= (long) Math.pow(2, 32)) {
                 throw new TransactionConfigurationException("The value of the transaction nonce " +
-                        "must be in the interval [0, 2^32).");
+                    "must be in the interval [0, 2^32).");
             }
             this.nonce = nonce;
             return this;
@@ -259,7 +272,7 @@ public class Transaction extends NeoSerializable {
         public Builder validUntilBlock(long blockNr) {
             if (blockNr < 0 || blockNr >= (long) Math.pow(2, 32)) {
                 throw new TransactionConfigurationException("The block number up to which this " +
-                        "transaction can be included cannot be less than zero or more than 2^32.");
+                    "transaction can be included cannot be less than zero or more than 2^32.");
             }
             this.validUntilBlock = blockNr;
             return this;
@@ -338,11 +351,11 @@ public class Transaction extends NeoSerializable {
         public Builder cosigners(List<Cosigner> cosigners) {
             if (this.cosigners.size() + cosigners.size() > NeoConstants.MAX_COSIGNERS) {
                 throw new TransactionConfigurationException("Can't have more than " +
-                        NeoConstants.MAX_COSIGNERS + " cosigners on a transaction.");
+                    NeoConstants.MAX_COSIGNERS + " cosigners on a transaction.");
             }
             if (hasDuplicateCosignerAccounts(cosigners)) {
                 throw new TransactionConfigurationException("Can't add multiple cosigners" +
-                        " concerning the same account.");
+                    " concerning the same account.");
             }
             this.cosigners.addAll(cosigners);
             return this;
@@ -350,10 +363,10 @@ public class Transaction extends NeoSerializable {
 
         private boolean hasDuplicateCosignerAccounts(List<Cosigner> cosigners) {
             Set<ScriptHash> newAccts = cosigners.stream().map(Cosigner::getAccount)
-                                                .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
             boolean duplicateCosignerAccts = cosigners.size() != newAccts.size();
             Set<ScriptHash> existingAccts = this.cosigners.stream().map(Cosigner::getAccount)
-                                                          .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
             existingAccts.retainAll(newAccts);
             return duplicateCosignerAccts || existingAccts.size() != 0;
         }
@@ -387,9 +400,9 @@ public class Transaction extends NeoSerializable {
          */
         public Builder attributes(List<TransactionAttribute> attributes) {
             if (this.attributes.size() + attributes.size() >
-                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
+                NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
                 throw new TransactionConfigurationException("Can't have more than " +
-                        NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes on a transaction.");
+                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes on a transaction.");
             }
             this.attributes.addAll(attributes);
             return this;
@@ -419,9 +432,9 @@ public class Transaction extends NeoSerializable {
          */
         public Builder witnesses(List<Witness> witnesses) {
             for (Witness witness : witnesses) {
-                if (witness.getScriptHash() == null || witness.getScriptHash().length() == 0) {
+                if (witness.getScriptHash() == null)  {
                     throw new IllegalArgumentException("The script hash of the given script is " +
-                            "empty. Please set the script hash.");
+                        "empty. Please set the script hash.");
                 }
             }
 
@@ -452,14 +465,59 @@ public class Transaction extends NeoSerializable {
         public Transaction build() {
             if (this.sender == null) {
                 throw new TransactionConfigurationException("A transaction requires a sender " +
-                        "account.");
+                    "account.");
             }
 
             if (this.validUntilBlock == null) {
                 throw new TransactionConfigurationException("A transaction needs to be set up " +
-                        "with a block number up to which this it is considered valid.");
+                    "with a block number up to which this it is considered valid.");
+            }
+
+            if (this.cosigners.isEmpty()) {
+                // Add default restrictive witness scope.
+                this.cosigners.add(Cosigner.calledByEntry(this.sender));
             }
             return new Transaction(this);
+        }
+
+        public long getNonce() {
+            return nonce;
+        }
+
+        public byte getVersion() {
+            return version;
+        }
+
+        public Long getValidUntilBlock() {
+            return validUntilBlock;
+        }
+
+        public ScriptHash getSender() {
+            return sender;
+        }
+
+        public long getSystemFee() {
+            return systemFee;
+        }
+
+        public long getNetworkFee() {
+            return networkFee;
+        }
+
+        public List<Cosigner> getCosigners() {
+            return cosigners;
+        }
+
+        public byte[] getScript() {
+            return script;
+        }
+
+        public List<TransactionAttribute> getAttributes() {
+            return attributes;
+        }
+
+        public List<Witness> getWitnesses() {
+            return witnesses;
         }
     }
 }

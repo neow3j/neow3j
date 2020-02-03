@@ -148,4 +148,9 @@ public class ContractFunctionProperties extends NeoSerializable {
                 .pushData(bytesPrimitive)
                 .toArray());
     }
+
+    @Override
+    public int getSize() {
+        throw new UnsupportedOperationException();
+    }
 }

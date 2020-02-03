@@ -1,15 +1,17 @@
 package io.neow3j.contract.abi.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonPropertyOrder({"hash", "entrypoint", "methods", "events"})
 public class NeoContractInterface {
 
     @JsonProperty("hash")
@@ -18,9 +20,10 @@ public class NeoContractInterface {
     @JsonProperty("entrypoint")
     private String entryPoint;
 
-    @JsonProperty("functions")
+    @JsonProperty("methods")
+    @JsonAlias({"functions"})
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<NeoContractFunction> functions;
+    private List<NeoContractMethod> functions;
 
     @JsonProperty("events")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -29,7 +32,7 @@ public class NeoContractInterface {
     public NeoContractInterface() {
     }
 
-    public NeoContractInterface(String hash, String entryPoint, List<NeoContractFunction> functions, List<NeoContractEvent> events) {
+    public NeoContractInterface(String hash, String entryPoint, List<NeoContractMethod> functions, List<NeoContractEvent> events) {
         this.hash = hash;
         this.entryPoint = entryPoint;
         this.functions = functions != null ? functions : new ArrayList<>();
@@ -44,7 +47,7 @@ public class NeoContractInterface {
         return entryPoint;
     }
 
-    public List<NeoContractFunction> getFunctions() {
+    public List<NeoContractMethod> getMethods() {
         return functions;
     }
 
@@ -59,13 +62,13 @@ public class NeoContractInterface {
         NeoContractInterface that = (NeoContractInterface) o;
         return Objects.equals(getHash(), that.getHash()) &&
                 Objects.equals(getEntryPoint(), that.getEntryPoint()) &&
-                Objects.equals(getFunctions(), that.getFunctions()) &&
+                Objects.equals(getMethods(), that.getMethods()) &&
                 Objects.equals(getEvents(), that.getEvents());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHash(), getEntryPoint(), getFunctions(), getEvents());
+        return Objects.hash(getHash(), getEntryPoint(), getMethods(), getEvents());
     }
 
     @Override

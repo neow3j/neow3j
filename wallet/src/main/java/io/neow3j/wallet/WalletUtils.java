@@ -3,18 +3,10 @@ package io.neow3j.wallet;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neow3j.crypto.Credentials;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.NEP2;
-import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.exceptions.CipherException;
-import io.neow3j.crypto.exceptions.NEP2AccountNotFound;
-import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
-import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -74,32 +66,6 @@ public class WalletUtils {
 
     public static NEP6Wallet loadWalletFile(File source) throws IOException {
         return objectMapper.readValue(source, NEP6Wallet.class);
-    }
-
-    public static Credentials loadCredentials(String accountAddress, String password, String source)
-            throws IOException, CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase, NEP2AccountNotFound {
-        return loadCredentials(accountAddress, password, new File(source));
-    }
-
-    public static Credentials loadCredentials(String accountAddress, String password, File source)
-            throws IOException, CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase, NEP2AccountNotFound {
-
-        NEP6Wallet nep6Wallet = objectMapper.readValue(source, NEP6Wallet.class);
-
-        NEP6Account account = nep6Wallet.getAccounts().stream()
-                .filter((a) -> a.getAddress() != null)
-                .filter((a) -> a.getAddress().equals(accountAddress))
-                .findFirst()
-                .orElseThrow(() -> new NEP2AccountNotFound("Account not found in the specified wallet."));
-
-        return loadCredentials(account, password, nep6Wallet);
-    }
-
-    public static Credentials loadCredentials(NEP6Account account, String password, NEP6Wallet nep6Wallet)
-            throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
-        ScryptParams scryptParams = nep6Wallet.getScrypt();
-        ECKeyPair decrypted = NEP2.decrypt(password, account.getKey(), scryptParams);
-        return new Credentials(decrypted);
     }
 
     public static String getWalletFileName(NEP6Wallet nep6Wallet) {

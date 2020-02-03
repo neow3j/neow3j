@@ -72,4 +72,10 @@ public class RawTransactionInput extends NeoSerializable {
         writer.write(ArrayUtils.reverseArray(Numeric.hexStringToByteArray(this.prevHash)));
         writer.write(BigIntegers.toLittleEndianByteArrayZeroPadded(this.prevIndex, 2));
     }
+
+    @Override
+    public int getSize() {
+        // Not relevant for Neo 3
+        throw new UnsupportedOperationException();
+    }
 }

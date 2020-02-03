@@ -1,18 +1,5 @@
 package io.neow3j.transaction;
 
-import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.transaction.exceptions.CosignerConfigurationException;
-import io.neow3j.utils.Numeric;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -20,6 +7,18 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.transaction.exceptions.CosignerConfigurationException;
+import io.neow3j.utils.Numeric;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CosignerTest {
 
@@ -30,7 +29,7 @@ public class CosignerTest {
     private ECKeyPair.ECPublicKey groupPubKey2;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         acctScriptHash = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
         contract1 = ScriptHash.fromScript(Numeric.hexStringToByteArray("d802a401"));
         contract2 = ScriptHash.fromScript(Numeric.hexStringToByteArray("c503b112"));
@@ -271,5 +270,23 @@ public class CosignerTest {
         assertThat(c.getAllowedGroups(), containsInAnyOrder(groupPubKey1, groupPubKey2));
     }
 
+    @Test
+    public void getSize() {
+        Cosigner c = new Cosigner.Builder()
+            .account(acctScriptHash)
+            .allowedGroups(groupPubKey1, groupPubKey2)
+            .allowedContracts(contract1, contract2)
+            .scopes(WitnessScope.CALLED_BY_ENTRY)
+            .build();
+
+        int expectedSize = 20 + // Account script hash
+            + 1 // Scope byte
+            + 1 // length byte of allowed contracts list
+            + 20 + 20 // Script hashes of two allowed contracts
+            + 1 // length byte of allowed groups list
+            + 33 + 33; // Public keys of two allowed groups
+
+        assertThat(c.getSize(), is(expectedSize));
+    }
 
 }

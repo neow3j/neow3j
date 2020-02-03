@@ -1,9 +1,11 @@
 package io.neow3j.transaction;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
@@ -123,6 +125,19 @@ public class Cosigner extends NeoSerializable {
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
             writer.writeSerializableVariable(this.allowedGroups);
         }
+    }
+
+    @Override
+    public int getSize() {
+        int size = NeoConstants.SCRIPTHASH_LENGHT_BYTES // account script hash
+            + 1; // Scope byte
+        if (this.scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
+            size += IOUtils.getSizeOfVarList(this.allowedContracts);
+        }
+        if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
+            size += IOUtils.getSizeOfVarList(this.allowedGroups);
+        }
+        return size;
     }
 
     @Override

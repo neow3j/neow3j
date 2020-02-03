@@ -553,7 +553,7 @@ public class ContractInvocation {
         private InvocationTransaction buildTransaction() {
 
             byte[] script = new ScriptBuilder()
-                    .appCall(scriptHash, function, params)
+                    .contractCall(scriptHash, function, params)
                     .toArray();
 
             return new InvocationTransaction.Builder()

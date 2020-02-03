@@ -1,23 +1,22 @@
 package io.neow3j.contract;
 
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
-import org.hamcrest.core.Is;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.eq;
+
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import org.hamcrest.core.Is;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ContractParameterTest {
 
@@ -245,17 +244,16 @@ public class ContractParameterTest {
         ContractParameter p = ContractParameter.hash256(hashValue);
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, p.getValue().toString());
+        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[])(p.getValue())));
     }
 
     @Test
     public void testHash256ParameterCreationFromValidByteArray() {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf";
-        ContractParameter p = ContractParameter.hash256(
-                ArrayUtils.reverseArray(Numeric.hexStringToByteArray(hashValue)));
+        ContractParameter p = ContractParameter.hash256(Numeric.hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, p.getValue().toString());
+        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[])(p.getValue())));
     }
 
     @Test(expected = IllegalArgumentException.class)

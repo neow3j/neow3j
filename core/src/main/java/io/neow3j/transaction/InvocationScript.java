@@ -6,6 +6,7 @@ import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
+import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
@@ -108,5 +109,10 @@ public class InvocationScript extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeVarBytes(script);
+    }
+
+    @Override
+    public int getSize() {
+        return IOUtils.getSizeOfVarInt(this.script.length) + this.script.length;
     }
 }

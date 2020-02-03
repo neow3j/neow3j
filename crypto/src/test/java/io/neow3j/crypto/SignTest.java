@@ -1,14 +1,13 @@
 package io.neow3j.crypto;
 
-import io.neow3j.utils.Numeric;
-import org.junit.Test;
-
-import java.math.BigInteger;
-import java.security.SignatureException;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+
+import io.neow3j.utils.Numeric;
+import java.math.BigInteger;
+import java.security.SignatureException;
+import org.junit.Test;
 
 public class SignTest {
 
@@ -16,7 +15,7 @@ public class SignTest {
 
     @Test
     public void testSignMessage() {
-        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, SampleKeys.KEY_PAIR_1);
+        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, TestKeys.KEY_PAIR_1);
 
         Sign.SignatureData expected = new Sign.SignatureData(
                 (byte) 27,
@@ -31,16 +30,16 @@ public class SignTest {
 
     @Test
     public void testSignedMessageToKey() throws SignatureException {
-        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, SampleKeys.KEY_PAIR_1);
+        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, TestKeys.KEY_PAIR_1);
         System.out.println(Numeric.toHexStringNoPrefix(signatureData.getConcatenated()));
         BigInteger key = Sign.signedMessageToKey(TEST_MESSAGE, signatureData);
-        assertThat(key, equalTo(SampleKeys.PUBLIC_KEY_1));
+        assertThat(key, equalTo(TestKeys.PUBLIC_KEY_1));
     }
 
     @Test
     public void testPublicKeyFromPrivateKey() {
-        assertThat(Sign.publicKeyFromPrivate(SampleKeys.PRIVATE_KEY_1),
-                equalTo(SampleKeys.PUBLIC_KEY_1));
+        assertThat(Sign.publicKeyFromPrivate(TestKeys.PRIVATE_KEY_1),
+                equalTo(TestKeys.PUBLIC_KEY_1));
     }
 
     @Test(expected = RuntimeException.class)

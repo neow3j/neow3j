@@ -1,7 +1,9 @@
 package io.neow3j.transaction;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import io.neow3j.io.BinaryReader;
@@ -104,6 +106,30 @@ public class TransactionAttributeTest {
                 assertArrayEquals(ArrayUtils.concatenate(new byte[]{type.byteValue(), dataLength}, data), output);
             }
         }
+    }
+
+    @Test
+    public void getSize() {
+        TransactionAttribute a = new TransactionAttribute(
+            TransactionAttributeUsageType.SCRIPT,
+            "23ba2703c53263e8d6e522dc32203339dcd8eee9");
+        assertThat(a.getSize(), is(1 + 20)); // type byte and fixed script hash length.
+
+        a = new TransactionAttribute(
+            TransactionAttributeUsageType.REMARK,
+            "0102030405");
+        assertThat(a.getSize(), is(1 + 1 + 5)); // type byte, var integer, remark length
+
+        a = new TransactionAttribute(
+            TransactionAttributeUsageType.REMARK, "" +
+            "01020304050102030405010203040501020304050102030405010203040501020304050102030405" +
+            "01020304050102030405010203040501020304050102030405010203040501020304050102030405" +
+            "01020304050102030405010203040501020304050102030405010203040501020304050102030405" +
+            "01020304050102030405010203040501020304050102030405010203040501020304050102030405" +
+            "01020304050102030405010203040501020304050102030405010203040501020304050102030405" +
+            "01020304050102030405010203040501020304050102030405010203040501020304050102030405" +
+            "01020304050102030405010203040501020304050102030405010203040501020304050102030405");
+        assertThat(a.getSize(), is(1 + 3 + 280)); // type byte, var integer, remark length
     }
 
     private static byte[] createByteArray(int length, int replicateByte) {

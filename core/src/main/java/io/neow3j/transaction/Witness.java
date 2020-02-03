@@ -2,13 +2,13 @@ package io.neow3j.transaction;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
@@ -102,43 +102,22 @@ public class Witness extends NeoSerializable {
      */
     public static Witness createWitness(byte[] messageToSign, ECKeyPair keyPair) {
         InvocationScript i = InvocationScript.fromMessageAndKeyPair(messageToSign, keyPair);
-        VerificationScript v = VerificationScript.fromPublicKey(keyPair.getPublicKey());
+        VerificationScript v = new VerificationScript(keyPair.getPublicKey2());
         return new Witness(i, v);
     }
 
     public static Witness createMultiSigWitness(int signingThreshold,
                                                   List<SignatureData> signatures,
-                                                  byte[]... publicKeys) {
+                                                  List<ECPublicKey> publicKeys) {
 
-        VerificationScript v = VerificationScript.fromPublicKeys(signingThreshold, publicKeys);
-        return createMultiSigWitness(signingThreshold, signatures, v);
-    }
-
-    public static Witness createMultiSigWitness(int signingThreshold,
-                                                  List<SignatureData> signatures,
-                                                  List<BigInteger> publicKeys) {
-
-        VerificationScript v = VerificationScript.fromPublicKeys(signingThreshold, publicKeys);
-        return createMultiSigWitness(signingThreshold, signatures, v);
+        VerificationScript v = new VerificationScript(publicKeys, signingThreshold);
+        return createMultiSigWitness(signatures, v);
     }
 
     public static Witness createMultiSigWitness(List<SignatureData> signatures,
                                                   VerificationScript verificationScript) {
 
         int signingThreshold = verificationScript.getSigningThreshold();
-        return createMultiSigWitness(signingThreshold, signatures, verificationScript);
-    }
-
-    public static Witness createMultiSigWitness(List<SignatureData> signatures,
-                                                  byte[] verificationScript) {
-
-        return createMultiSigWitness(signatures, new VerificationScript(verificationScript));
-    }
-
-    public static Witness createMultiSigWitness(int signingThreshold,
-                                                  List<SignatureData> signatures,
-                                                  VerificationScript verificationScript) {
-
         if (signatures.size() < signingThreshold) {
             throw new IllegalArgumentException("Not enough signatures provided for the required " +
                     "signing threshold.");
@@ -200,5 +179,10 @@ public class Witness extends NeoSerializable {
     public void serialize(BinaryWriter writer) throws IOException {
         invocationScript.serialize(writer);
         verificationScript.serialize(writer);
+    }
+
+    @Override
+    public int getSize() {
+        return this.invocationScript.getSize() + this.verificationScript.getSize();
     }
 }

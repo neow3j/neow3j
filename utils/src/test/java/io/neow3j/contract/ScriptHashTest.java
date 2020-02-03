@@ -3,8 +3,8 @@ package io.neow3j.contract;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryWriter;
@@ -12,17 +12,13 @@ import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.TestKeys;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import org.junit.Test;
 
 public class ScriptHashTest {
-
-    @Test
-    public void testLength() {
-        ScriptHash sh = new ScriptHash("23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        assertThat(sh.length(), is(20));
-    }
 
     @Test
     public void createFromValidHash() {
@@ -88,9 +84,9 @@ public class ScriptHashTest {
         byte[] m2 = Numeric.hexStringToByteArray("d802a401");
         ScriptHash sh1 = ScriptHash.fromScript(m1);
         ScriptHash sh2 = ScriptHash.fromScript(m2);
-        assertFalse(sh1.equals(sh2));
-        assertFalse(sh2.equals(sh1));
-        assertTrue(sh1.equals(sh1));
+        assertNotEquals(sh1, sh2);
+        assertNotEquals(sh2, sh1);
+        assertEquals(sh1, sh1);
     }
 
     @Test
@@ -108,25 +104,17 @@ public class ScriptHashTest {
 
     @Test
     public void fromPublicKeyByteArray() {
-        String keyHex = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
-        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(keyHex));
-
-        String expectedBigEndianHash = "d76382536f9cd862b01f6e6ef539c43ff8835f29";
-        assertThat(sh.toString(), is(expectedBigEndianHash));
+        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
+        byte[] verificationScript = Numeric.hexStringToByteArray(TestKeys.verificationScript1);
+        assertThat(sh.toArray(), is(Hash.sha256AndThenRipemd160(verificationScript)));
     }
 
     @Test
     public void fromPublicKeyByteArrays() {
-        String keyHex1 = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
-        String keyHex2 = "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43";
-        byte[] key1 = Numeric.hexStringToByteArray(
-                "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
-        byte[] key2 = Numeric.hexStringToByteArray(
-                "025dd091303c62a683fab1278349c3475c958f4152292495350571d3e998611d43");
-        ScriptHash sh = ScriptHash.fromPublicKeys(2, key1, key2);
-
-        String verificationScriptHex = "5221" + keyHex1 + "21" + keyHex2 + "52ae";
-        byte[] verificationScript = Numeric.hexStringToByteArray(verificationScriptHex);
+        byte[] key1 = Numeric.hexStringToByteArray(TestKeys.pubKey2_1);
+        byte[] key2 = Numeric.hexStringToByteArray(TestKeys.pubKey2_2);
+        ScriptHash sh = ScriptHash.fromPublicKeys(Arrays.asList(key1, key2), 2);
+        byte[] verificationScript = Numeric.hexStringToByteArray(TestKeys.verificationScript2);
         assertThat(sh.toArray(), is(Hash.sha256AndThenRipemd160(verificationScript)));
     }
 
@@ -145,10 +133,8 @@ public class ScriptHashTest {
 
     @Test
     public void toAddress() {
-        String keyHex = "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6";
-        String expectedAddress = "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ";
-        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(keyHex));
-        assertThat(sh.toAddress(), is(expectedAddress));
+        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
+        assertThat(sh.toAddress(), is(TestKeys.address1));
     }
 
     @Test
@@ -170,6 +156,12 @@ public class ScriptHashTest {
         assertThat(sh2.compareTo(sh3), is(1));
         assertThat(sh3.compareTo(sh1), is(1));
         assertThat(sh3.compareTo(sh2), is(-1));
+    }
+
+    @Test
+    public void getSize() {
+        ScriptHash sh = new ScriptHash("23ba2703c53263e8d6e522dc32203339dcd8eee9");
+        assertThat(sh.getSize(), is(20));
     }
 
 }

@@ -14,11 +14,12 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.Keys;
+import io.neow3j.utils.KeyUtils;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -54,7 +55,7 @@ public class TransactionTest {
         assertThat(t.getNetworkFee(), is(0L));
         assertThat(t.getSystemFee(), is(0L));
         assertThat(t.getAttributes(), empty());
-        assertThat(t.getCosigners(), empty());
+        assertThat(t.getCosigners(), containsInAnyOrder(Cosigner.calledByEntry(account1)));
         assertThat(t.getScript().length, is(0));
         assertThat(t.getNonce(), notNullValue());
         assertThat(t.getWitnesses(), empty());
@@ -143,16 +144,16 @@ public class TransactionTest {
 
         // Add two cosigners via varargs method.
         ScriptHash account1 = ScriptHash.fromPublicKey(
-            Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+            new ECPublicKey(ECKeyPair.createEcKeyPair().getPublicKey()).getEncoded(true));
         ScriptHash account2 = ScriptHash.fromPublicKey(
-            Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+            KeyUtils.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
         b.cosigners(Cosigner.calledByEntry(account1), Cosigner.global(account2));
 
         // Add the rest of cosigners via method taking a set argument.
         List<Cosigner> cosigners = new ArrayList<>();
         for (int i = 3; i <= NeoConstants.MAX_COSIGNERS; i++) {
             ScriptHash account = ScriptHash.fromPublicKey(
-                Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+                KeyUtils.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
             cosigners.add(Cosigner.global(account));
         }
         Transaction tx = b.cosigners(cosigners).build();
@@ -179,7 +180,7 @@ public class TransactionTest {
         // Create one too many cosigners
         for (int i = 0; i <= NeoConstants.MAX_COSIGNERS; i++) {
             ScriptHash account = ScriptHash.fromPublicKey(
-                Keys.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
+                KeyUtils.publicKeyIntegerToByteArray(ECKeyPair.createEcKeyPair().getPublicKey()));
             cosigners.add(Cosigner.global(account));
         }
         new Transaction.Builder()
@@ -219,7 +220,8 @@ public class TransactionTest {
             + "0100000000000000"  // network fee (1 GAS fraction)
             + "04030201"  // valid until block
             + "00"  // no attributes
-            + "00"  // no cosigners
+            + "01"  // one default cosigners
+            + "23ba2703c53263e8d6e522dc32203339dcd8eee901" // calledByEntry cosigner
             + "0151"  // push1 script
             + "00"); // no witnesses
 
@@ -302,6 +304,45 @@ public class TransactionTest {
         assertArrayEquals(new byte[]{OpCode.PUSH1.getValue()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
             Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
+    }
+    
+    @Test
+    public void getSize() {
+        Transaction tx = new Transaction.Builder()
+            .sender(account1)
+            .version((byte) 0)
+            .nonce((long) 0x01020304)
+            .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
+            .networkFee(1L) // 1 fraction of GAS
+            .validUntilBlock(0x01020304L)
+            .script(new byte[]{OpCode.PUSH1.getValue()})
+            .attributes(
+                new TransactionAttribute(SCRIPT, account1.toArray()),
+                new TransactionAttribute(SCRIPT, account2.toArray()))
+            .cosigners(
+                Cosigner.global(account1),
+                Cosigner.calledByEntry(account2))
+            .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
+            .build();
+
+        int expectedSize = 1 +  // Version
+            4 +  // Nonce
+            20 + // Sender script hash
+            8 +  // System fee
+            8 +  // Network fee
+            4 + // Valid until block
+            1 + // Byte for attributes list size
+            1 + 20 +  // Attribute type byte and length of script hash attribute
+            1 + 20 +  // Attribute type byte and length of script hash attribute
+            1 + // Byte for cosigners list size
+            1 + 20 + // Cosigner scope byte and cosigner script hash
+            1 + 20 + // Cosigner scope byte and cosigner script hash
+            1 + 1 + // Byte for script length and the actual length
+            1 + // Byte for witnesses list size
+            1 + 1 + // Byte for invocation script length and the actual length.
+            1 + 1; // Byte for verifiaction script length and the actual length.
+
+        assertThat(tx.getSize(), is(expectedSize));
     }
 
 }

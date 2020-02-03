@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.abi.model.NeoContractEvent;
-import io.neow3j.contract.abi.model.NeoContractFunction;
+import io.neow3j.contract.abi.model.NeoContractMethod;
 import io.neow3j.model.types.ContractParameterType;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +31,7 @@ public class ContractAbiLoaderTest {
         assertThat(c1.getFunctions(), hasSize(3));
         assertThat(
             c1.getFunction("Name"),
-            is(of(new NeoContractFunction("Name", Collections.emptyList(),
+            is(of(new NeoContractMethod("Name", Collections.emptyList(),
                 ContractParameterType.STRING)))
         );
         assertThat(c1.getEvents(), hasSize(0));
@@ -40,7 +40,7 @@ public class ContractAbiLoaderTest {
         assertThat(
             c1.getEntryPoint().get(),
             is(
-                new NeoContractFunction("Main",
+                new NeoContractMethod("Main",
                     Arrays.asList(
                         new ContractParameter("operation", ContractParameterType.STRING),
                         new ContractParameter("args", ContractParameterType.ARRAY)
@@ -66,7 +66,7 @@ public class ContractAbiLoaderTest {
             c1.getFunction("Name"),
             is(
                 of(
-                    new NeoContractFunction("Name", Arrays.asList(
+                    new NeoContractMethod("Name", Arrays.asList(
                         new ContractParameter("nameParam1", ContractParameterType.INTEGER)
                     ), ContractParameterType.ARRAY)
                 )
@@ -76,7 +76,7 @@ public class ContractAbiLoaderTest {
             c1.getFunction("Description"),
             is(
                 of(
-                    new NeoContractFunction("Description", Arrays.asList(
+                    new NeoContractMethod("Description", Arrays.asList(
                         new ContractParameter("descriptionParam1", ContractParameterType.STRING)
                     ), ContractParameterType.STRING)
                 )
@@ -114,7 +114,7 @@ public class ContractAbiLoaderTest {
         assertThat(
             c1.getEntryPoint().get(),
             is(
-                new NeoContractFunction("Main",
+                new NeoContractMethod("Main",
                     Arrays.asList(
                         new ContractParameter("operation", ContractParameterType.STRING),
                         new ContractParameter("args", ContractParameterType.ARRAY)

@@ -15,9 +15,8 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.Keys;
+import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -109,7 +108,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArrayFromAddress(String address) {
-        if (!Keys.isValidAddress(address)) {
+        if (!AddressUtils.isValidAddress(address)) {
             throw new IllegalArgumentException("Argument is not a valid address.");
         }
         return byteArray(ScriptHash.fromAddress(address).toArray());
@@ -219,50 +218,35 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter hash160(ScriptHash hash) {
-        if (hash.length() != NeoConstants.SCRIPTHASH_LENGHT_BYTES) {
-            throw new IllegalArgumentException("A Hash160 parameter expects a value of length " +
-                    NeoConstants.SCRIPTHASH_LENGHT_BYTES);
+        if (hash == null) {
+            throw new IllegalArgumentException("A script hash argument must not be null.");
         }
         return new ContractParameter(ContractParameterType.HASH160, hash);
     }
 
     /**
-     * Creates a hash256 parameter from the given hexadecimal string.
+     * Creates a hash256 parameter from the given hex string.
      *
-     * @param hashHexString a hash256 value as hexadecimal string in big-endian order.
+     * @param hashHexString hex string (possibly a 256-bit hash) in little-endian order.
      * @return the contract parameter.
-     * @deprecated
      */
-    @Deprecated
     public static ContractParameter hash256(String hashHexString) {
         if (!Numeric.isValidHexString(hashHexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number");
         }
-        return hash256(new ScriptHash(hashHexString));
+        return hash256(Numeric.hexStringToByteArray(hashHexString));
     }
 
     /**
-     * Creates a hash256 parameter from the given hash.
+     * Creates a hash256 parameter from the given bytes.
      *
-     * @param hash a hash256 value in little-endian order.
+     * @param hash bytes (possibly a 256-bit hash) in little-endian order.
      * @return the contract parameter.
-     * @deprecated
      */
-    @Deprecated
     public static ContractParameter hash256(byte[] hash) {
-        return hash256(new ScriptHash(hash));
-    }
-
-    /**
-     * Creates a hash256 parameter from the given script hash.
-     *
-     * @param hash a script hash
-     * @return the contract parameter.
-     */
-    public static ContractParameter hash256(ScriptHash hash) {
-        if (hash.length() != NeoConstants.ASSET_ID_LENGHT_BYTES) {
-            throw new IllegalArgumentException("A Hash256 parameter expects a value of length " +
-                    NeoConstants.ASSET_ID_LENGHT_BYTES);
+        if (hash.length != 32) {
+            throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes long but was "
+                + hash.length + " bytes long");
         }
         return new ContractParameter(ContractParameterType.HASH256, hash);
     }
@@ -361,8 +345,9 @@ public class ContractParameter {
             switch (p.getParamType()) {
                 case BYTE_ARRAY:
                 case SIGNATURE:
-                    // Byte array and signature values are byte arrays. It is simply converted to a
-                    // hex string. The byte order is not changed. It already has to be correct.
+                case HASH256:
+                    // Here we expect a simple byte array which is converted to a hex string. The
+                    // byte order is not changed.
                     gen.writeStringField("value", Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
                     break;
                 case BOOLEAN:
@@ -372,7 +357,6 @@ public class ContractParameter {
                 case INTEGER:
                     // Convert to a string, i.e. in the final json the number has quotes around it.
                 case HASH160:
-                case HASH256:
                     // In case of a script hash the value is of type ScriptHash, of which the
                     // toString() method returns a big-endian hex string of the hash.
                 case INTEROP_INTERFACE:
@@ -457,6 +441,7 @@ public class ContractParameter {
             switch (type) {
                 case BYTE_ARRAY:
                 case SIGNATURE:
+                case HASH256:
                     // For byte array and signature the data is expected to be a hex string in the
                     // correct ordering. E.g. little-endian for Fixed8 numbers.
                     return Numeric.hexStringToByteArray(value.asText());
@@ -467,7 +452,6 @@ public class ContractParameter {
                 case INTEGER:
                     return new BigInteger(value.asText());
                 case HASH160:
-                case HASH256:
                     // The script hash value is expected to be a big-endian hex string.
                     return new ScriptHash(value.asText());
                 case ARRAY:

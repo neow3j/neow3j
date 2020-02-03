@@ -4,16 +4,16 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.NEOAsset;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
-import java.math.BigInteger;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,12 +28,13 @@ public class ContractTransactionTest {
 
     @Test
     public void serialize_Unsigned() {
-        BigInteger publicKey = Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        byte[] pubKeyBytes = Numeric.hexStringToByteArray("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        ECPublicKey pubKey = new ECPublicKey(pubKeyBytes);
         RawTransaction tUnsigned = new ContractTransaction.Builder()
                 .inputs(Arrays.asList(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0)))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script(new Witness(new InvocationScript(), VerificationScript.fromPublicKey(publicKey)))
+                .script(new Witness(new InvocationScript(), new VerificationScript(pubKey)))
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
@@ -46,14 +47,15 @@ public class ContractTransactionTest {
 
     @Test
     public void serialize_Signed() {
-        BigInteger publicKey = Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        byte[] pubKeyBytes = Numeric.hexStringToByteArray("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        ECPublicKey pubKey = new ECPublicKey(pubKeyBytes);
         byte[] invocationScript = Numeric.hexStringToByteArray(
                 "40a1c29ef0b8215d5bf8f3649ff1eae3fd5d74bf38c92007ce6aceea60efa5a986ed1c3d7669f9073f572a52dbbdc7ad7908fe22c2859e85d979e405807ce3d644");
         RawTransaction tUnsigned = new ContractTransaction.Builder()
                 .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script((new Witness(new InvocationScript(invocationScript), VerificationScript.fromPublicKey(publicKey))))
+                .script((new Witness(new InvocationScript(invocationScript), new VerificationScript(pubKey))))
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArray();
@@ -65,7 +67,6 @@ public class ContractTransactionTest {
 
     @Test
     public void serialize_Signing_Normal_Address() {
-
         ECKeyPair keyPair = ECKeyPair.create(Numeric.hexStringToByteArray("9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3"));
 
         RawTransaction tUnsigned = new ContractTransaction.Builder()
@@ -101,25 +102,26 @@ public class ContractTransactionTest {
         ECKeyPair ecKeyPair9 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("L2xUnihSNBTh8jrYzLyrxMfFwDbPp1HvDe92r7HxsZQ8rL4NktfE"));
         ECKeyPair ecKeyPair10 = ECKeyPair.create(WIF.getPrivateKeyFromWIF("KyRPzRthggPA3SSRTBgma3VyjKhS3yhSM2jsKVrLRfVkFP5g5bQi"));
 
-        List<BigInteger> publicKeys = new ArrayList<>();
-        publicKeys.add(ecKeyPair1.getPublicKey());
-        publicKeys.add(ecKeyPair2.getPublicKey());
-        publicKeys.add(ecKeyPair3.getPublicKey());
-        publicKeys.add(ecKeyPair4.getPublicKey());
-        publicKeys.add(ecKeyPair5.getPublicKey());
-        publicKeys.add(ecKeyPair6.getPublicKey());
-        publicKeys.add(ecKeyPair7.getPublicKey());
-        publicKeys.add(ecKeyPair8.getPublicKey());
-        publicKeys.add(ecKeyPair9.getPublicKey());
-        publicKeys.add(ecKeyPair10.getPublicKey());
+        List<ECPublicKey> publicKeys = new ArrayList<>();
+        publicKeys.add(ecKeyPair1.getPublicKey2());
+        publicKeys.add(ecKeyPair2.getPublicKey2());
+        publicKeys.add(ecKeyPair3.getPublicKey2());
+        publicKeys.add(ecKeyPair4.getPublicKey2());
+        publicKeys.add(ecKeyPair5.getPublicKey2());
+        publicKeys.add(ecKeyPair6.getPublicKey2());
+        publicKeys.add(ecKeyPair7.getPublicKey2());
+        publicKeys.add(ecKeyPair8.getPublicKey2());
+        publicKeys.add(ecKeyPair9.getPublicKey2());
+        publicKeys.add(ecKeyPair10.getPublicKey2());
 
         // the multiSig address should be "AJqgaX57U9ua5WxBKfA27wbfEgtR8HwER3"
-        String multiSigAddress = Keys.getMultiSigAddress(7, publicKeys);
+        String address = ScriptHash.fromScript(new VerificationScript(publicKeys, 7).toArray())
+                .toAddress();
 
         RawTransaction tUnsigned = new ContractTransaction.Builder()
                 .input(new RawTransactionInput("9feac4774eb0f01ab5d6817c713144b7c020b98f257c30b1105062d434e6f254", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "100.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
-                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "900.0", multiSigAddress))
+                .output(new RawTransactionOutput(NEOAsset.HASH_ID, "900.0", address))
                 .build();
 
         byte[] tUnsignedArray = tUnsigned.toArrayWithoutScripts();
@@ -248,7 +250,9 @@ public class ContractTransactionTest {
 
     @Test
     public void serializeThenDeserializeWithScript() throws DeserializationException {
-        BigInteger publicKey = Numeric.toBigIntNoPrefix("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        byte[] pubKeyBytes = Numeric.hexStringToByteArray("0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6");
+        ECPublicKey pubKey = new ECPublicKey(pubKeyBytes);
+
         byte[] invocationScript = Numeric.hexStringToByteArray("40a1c29ef0b8215d5bf8f3649ff1eae3fd5d74bf38c92007ce6ac" +
                 "eea60efa5a986ed1c3d7669f9073f572a52dbbdc7ad7908fe22c2859e85d979e405807ce3d644");
 
@@ -256,7 +260,7 @@ public class ContractTransactionTest {
                 .input(new RawTransactionInput("c94d0f94b0ac9bacd86737c428344cb2d8be9aad296659e85c065d4f88cd2dd2", 0))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "10.0", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"))
                 .output(new RawTransactionOutput(NEOAsset.HASH_ID, "90.0", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"))
-                .script((new Witness(new InvocationScript(invocationScript), VerificationScript.fromPublicKey(publicKey))))
+                .script((new Witness(new InvocationScript(invocationScript), new VerificationScript(pubKey))))
                 .build();
 
         tx = NeoSerializableInterface.from(tx.toArray(), ContractTransaction.class);
@@ -272,7 +276,7 @@ public class ContractTransactionTest {
         assertEquals(1, tx.getScripts().size());
         assertArrayEquals(invocationScript, tx.getScripts().get(0).getInvocationScript().getScript());
         assertArrayEquals(
-                Keys.getVerificationScriptFromPublicKey(publicKey),
+                new VerificationScript(pubKey).toArray(),
                 tx.getScripts().get(0).getVerificationScript().getScript()
         );
     }

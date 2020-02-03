@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NeoContractFunction {
+public class NeoContractMethod {
 
     @JsonProperty("name")
     private String name;
@@ -24,10 +24,10 @@ public class NeoContractFunction {
     @JsonProperty("returntype")
     private ContractParameterType returnType;
 
-    public NeoContractFunction() {
+    public NeoContractMethod() {
     }
 
-    public NeoContractFunction(String name, List<ContractParameter> parameters, ContractParameterType returnType) {
+    public NeoContractMethod(String name, List<ContractParameter> parameters, ContractParameterType returnType) {
         this.name = name;
         this.parameters = parameters != null ? parameters : new ArrayList<>();
         this.returnType = returnType;
@@ -48,8 +48,8 @@ public class NeoContractFunction {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof NeoContractFunction)) return false;
-        NeoContractFunction that = (NeoContractFunction) o;
+        if (!(o instanceof NeoContractMethod)) return false;
+        NeoContractMethod that = (NeoContractMethod) o;
         return Objects.equals(getName(), that.getName()) &&
                 Objects.equals(getParameters(), that.getParameters()) &&
                 getReturnType() == that.getReturnType();

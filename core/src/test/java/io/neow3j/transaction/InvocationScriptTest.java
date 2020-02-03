@@ -1,21 +1,23 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.constants.OpCode.PUSHBYTES64;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThat;
+
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
-import org.junit.Test;
-
+import io.neow3j.utils.Numeric;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
-
-import static io.neow3j.constants.OpCode.PUSHBYTES64;
-import static org.junit.Assert.assertArrayEquals;
+import org.junit.Test;
 
 public class InvocationScriptTest {
 
@@ -90,6 +92,15 @@ public class InvocationScriptTest {
         buf.put(message);
         script = NeoSerializableInterface.from(buf.array(), InvocationScript.class);
         assertArrayEquals(message, script.getScript());
+    }
+
+    @Test
+    public void getSize() {
+        byte[] script = Numeric.hexStringToByteArray(""
+            + "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655"
+            + "523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf");
+        InvocationScript s = new InvocationScript(script);
+        assertThat(s.getSize(), is(1 + 64)); // byte for script length and actual length.
     }
 
 }

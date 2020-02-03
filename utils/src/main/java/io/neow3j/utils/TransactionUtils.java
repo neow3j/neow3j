@@ -18,7 +18,7 @@ public class TransactionUtils {
     public static BigDecimal calcNecessaryNetworkFee(int transactionSize) {
         if (transactionSize > NeoConstants.MAX_FREE_TRANSACTION_SIZE) {
             int chargeableSize = transactionSize - NeoConstants.MAX_FREE_TRANSACTION_SIZE;
-            return NeoConstants.FEE_PER_EXTRA_BYTE
+            return new BigDecimal(NeoConstants.GAS_PER_BYTE)
                     .multiply(new BigDecimal(chargeableSize))
                     .add(NeoConstants.PRIORITY_THRESHOLD_FEE);
         } else {

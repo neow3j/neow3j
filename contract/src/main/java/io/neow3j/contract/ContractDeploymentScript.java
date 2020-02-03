@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -85,8 +86,13 @@ public class ContractDeploymentScript extends NeoSerializable {
                 .toArray());
         // syscall "Neo.Contract.Create"
         writer.write(new ScriptBuilder()
-                .sysCall("Neo.Contract.Create")
+                .sysCall(InteropServiceCode.NEO_CONTRACT_CREATE)
                 .toArray());
+    }
+
+    @Override
+    public int getSize() {
+        throw new UnsupportedOperationException();
     }
 
 }

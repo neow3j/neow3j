@@ -1,14 +1,15 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.OpCode;
-import io.neow3j.io.TestBinaryUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.copyOfRange;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+import io.neow3j.constants.OpCode;
+import io.neow3j.io.TestBinaryUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ScriptBuilderTest extends TestBinaryUtils {
 
@@ -151,6 +152,11 @@ public class ScriptBuilderTest extends TestBinaryUtils {
 
         builder.pushData(data);
         assertThat(copyOfRange(builder.toArray(), 0, 3), is(hexStringToByteArray("4D1027")));
+    }
+
+    @Test
+    public void buildVerificationScript() {
+        fail();
     }
 
 }

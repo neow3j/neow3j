@@ -17,22 +17,22 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
-public class NeoContractFunctionTest {
+public class NeoContractMethodTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void testSerialize() throws JsonProcessingException {
-        NeoContractFunction neoContractFunction = new NeoContractFunction(
+        NeoContractMethod neoContractMethod = new NeoContractMethod(
                 "anything",
                 Arrays.asList(
                         ContractParameter.byteArray("001010101010")
                 ),
                 ContractParameterType.BYTE_ARRAY
         );
-        String neoContractFunctionString = objectMapper.writeValueAsString(neoContractFunction);
+        String neoContractMethodString = objectMapper.writeValueAsString(neoContractMethod);
 
-        assertThat(neoContractFunctionString,
+        assertThat(neoContractMethodString,
                 is(
                         "{" +
                                 "\"name\":\"anything\"," +
@@ -50,14 +50,14 @@ public class NeoContractFunctionTest {
 
     @Test
     public void testSerialize_Empty() throws JsonProcessingException {
-        NeoContractFunction neoContractFunction = new NeoContractFunction(
+        NeoContractMethod neoContractMethod = new NeoContractMethod(
                 "anything",
                 Arrays.asList(),
                 ContractParameterType.BYTE_ARRAY
         );
-        String neoContractFunctionString = objectMapper.writeValueAsString(neoContractFunction);
+        String neoContractMethodString = objectMapper.writeValueAsString(neoContractMethod);
 
-        assertThat(neoContractFunctionString,
+        assertThat(neoContractMethodString,
                 is(
                         "{" +
                                 "\"name\":\"anything\"," +
@@ -71,14 +71,14 @@ public class NeoContractFunctionTest {
 
     @Test
     public void testSerialize_Null() throws JsonProcessingException {
-        NeoContractFunction neoContractFunction = new NeoContractFunction(
+        NeoContractMethod neoContractMethod = new NeoContractMethod(
                 "anything",
                 null,
                 ContractParameterType.BYTE_ARRAY
         );
-        String neoContractFunctionString = objectMapper.writeValueAsString(neoContractFunction);
+        String neoContractMethodString = objectMapper.writeValueAsString(neoContractMethod);
 
-        assertThat(neoContractFunctionString,
+        assertThat(neoContractMethodString,
                 is(
                         "{" +
                                 "\"name\":\"anything\"," +
@@ -93,7 +93,7 @@ public class NeoContractFunctionTest {
     @Test
     public void testDeserialize() throws IOException {
 
-        String neoContractFunctionString = "{" +
+        String neoContractMethodString = "{" +
                 "\"name\":\"anything\"," +
                 "\"parameters\":[" +
                 "{" +
@@ -104,51 +104,51 @@ public class NeoContractFunctionTest {
                 "\"returntype\":\"ByteArray\"" +
                 "}";
 
-        NeoContractFunction neoContractFunction = objectMapper.readValue(neoContractFunctionString, NeoContractFunction.class);
+        NeoContractMethod neoContractMethod = objectMapper.readValue(neoContractMethodString, NeoContractMethod.class);
 
-        assertThat(neoContractFunction.getName(), is("anything"));
-        assertThat(neoContractFunction.getParameters(), not(emptyCollectionOf(ContractParameter.class)));
-        assertThat(neoContractFunction.getParameters(),
+        assertThat(neoContractMethod.getName(), is("anything"));
+        assertThat(neoContractMethod.getParameters(), not(emptyCollectionOf(ContractParameter.class)));
+        assertThat(neoContractMethod.getParameters(),
                 hasItems(
                         ContractParameter.byteArray("001010101010")
                 )
         );
-        assertThat(neoContractFunction.getReturnType(), is(ContractParameterType.BYTE_ARRAY));
+        assertThat(neoContractMethod.getReturnType(), is(ContractParameterType.BYTE_ARRAY));
     }
 
     @Test
     public void testDeserialize_Empty() throws IOException {
 
-        String neoContractFunctionString = "{" +
+        String neoContractMethodString = "{" +
                 "\"name\":\"anything\"," +
                 "\"parameters\":[" +
                 "]," +
                 "\"returntype\":\"ByteArray\"" +
                 "}";
 
-        NeoContractFunction neoContractFunction = objectMapper.readValue(neoContractFunctionString, NeoContractFunction.class);
+        NeoContractMethod neoContractMethod = objectMapper.readValue(neoContractMethodString, NeoContractMethod.class);
 
-        assertThat(neoContractFunction.getName(), is("anything"));
-        assertThat(neoContractFunction.getParameters(), emptyCollectionOf(ContractParameter.class));
-        assertThat(neoContractFunction.getParameters(), hasSize(0));
-        assertThat(neoContractFunction.getReturnType(), is(ContractParameterType.BYTE_ARRAY));
+        assertThat(neoContractMethod.getName(), is("anything"));
+        assertThat(neoContractMethod.getParameters(), emptyCollectionOf(ContractParameter.class));
+        assertThat(neoContractMethod.getParameters(), hasSize(0));
+        assertThat(neoContractMethod.getReturnType(), is(ContractParameterType.BYTE_ARRAY));
     }
 
     @Test
     public void testDeserialize_Null() throws IOException {
 
-        String neoContractFunctionString = "{" +
+        String neoContractMethodString = "{" +
                 "\"name\":\"anything\"," +
                 "\"parameters\":null," +
                 "\"returntype\":\"ByteArray\"" +
                 "}";
 
-        NeoContractFunction neoContractFunction = objectMapper.readValue(neoContractFunctionString, NeoContractFunction.class);
+        NeoContractMethod neoContractMethod = objectMapper.readValue(neoContractMethodString, NeoContractMethod.class);
 
-        assertThat(neoContractFunction.getName(), is("anything"));
-        assertThat(neoContractFunction.getParameters(), emptyCollectionOf(ContractParameter.class));
-        assertThat(neoContractFunction.getParameters(), hasSize(0));
-        assertThat(neoContractFunction.getReturnType(), is(ContractParameterType.BYTE_ARRAY));
+        assertThat(neoContractMethod.getName(), is("anything"));
+        assertThat(neoContractMethod.getParameters(), emptyCollectionOf(ContractParameter.class));
+        assertThat(neoContractMethod.getParameters(), hasSize(0));
+        assertThat(neoContractMethod.getReturnType(), is(ContractParameterType.BYTE_ARRAY));
     }
 
 }

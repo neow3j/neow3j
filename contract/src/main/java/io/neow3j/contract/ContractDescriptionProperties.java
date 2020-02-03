@@ -106,4 +106,9 @@ public class ContractDescriptionProperties extends NeoSerializable {
                 .pushData(this.name)
                 .toArray());
     }
+
+    @Override
+    public int getSize() {
+        throw new UnsupportedOperationException();
+    }
 }
