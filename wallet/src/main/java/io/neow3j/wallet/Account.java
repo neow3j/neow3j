@@ -194,10 +194,12 @@ public class Account {
      * @throws CipherException       throws if failed encrypt the created wallet.
      * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
      * @throws AccountException      if
+     *                               <ul>
      *                               <li>the account doesn't hold an encrypted private key
      *                               <li>the account does already hold a decrypted private key
      *                               <li>the public key derived from the decrypted private key is
      *                               not equal to the already set public key.
+     *                               </ul>
      */
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
