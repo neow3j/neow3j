@@ -1,7 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.abi.model.NeoContractEvent;
-import io.neow3j.contract.abi.model.NeoContractFunction;
+import io.neow3j.contract.abi.model.NeoContractMethod;
 import io.neow3j.contract.abi.model.NeoContractInterface;
 import io.neow3j.model.types.ContractParameterType;
 import org.junit.Test;
@@ -72,10 +72,10 @@ public class ContractTest {
         NeoContractInterface mockABI = spy(NeoContractInterface.class);
 
         when(mockABI.getEntryPoint()).thenReturn("Main");
-        when(mockABI.getFunctions()).thenReturn(
+        when(mockABI.getMethods()).thenReturn(
                 Arrays.asList(
-                        new NeoContractFunction("Main", null, null),
-                        new NeoContractFunction("AnythingElse", null, null)
+                        new NeoContractMethod("Main", null, null),
+                        new NeoContractMethod("AnythingElse", null, null)
                 )
         );
 
@@ -84,15 +84,15 @@ public class ContractTest {
         assertThat(contract.getEntryPoint().isPresent(), is(true));
 
         assertThat(contract.getEntryPoint().get(),
-                is(new NeoContractFunction("Main",
+                is(new NeoContractMethod("Main",
                         Collections.emptyList(), null)));
         assertThat(contract.getFunction("Main").get(),
-                is(new NeoContractFunction("Main",
+                is(new NeoContractMethod("Main",
                         Collections.emptyList(), null)));
 
-        when(mockABI.getFunctions()).thenReturn(
+        when(mockABI.getMethods()).thenReturn(
                 Arrays.asList(
-                        new NeoContractFunction("AnythingElse", null, null)
+                        new NeoContractMethod("AnythingElse", null, null)
                 )
         );
 
@@ -105,9 +105,9 @@ public class ContractTest {
         NeoContractInterface mockABI = spy(NeoContractInterface.class);
 
         when(mockABI.getEntryPoint()).thenReturn("Main");
-        when(mockABI.getFunctions()).thenReturn(
+        when(mockABI.getMethods()).thenReturn(
                 Arrays.asList(
-                        new NeoContractFunction(
+                        new NeoContractMethod(
                                 "Main",
                                 Arrays.asList(
                                         new ContractParameter("param1", ContractParameterType.STRING),
@@ -128,9 +128,9 @@ public class ContractTest {
                 )
         );
 
-        when(mockABI.getFunctions()).thenReturn(
+        when(mockABI.getMethods()).thenReturn(
                 Arrays.asList(
-                        new NeoContractFunction(
+                        new NeoContractMethod(
                                 "Main",
                                 Arrays.asList(),
                                 null
@@ -150,9 +150,9 @@ public class ContractTest {
         NeoContractInterface mockABI = spy(NeoContractInterface.class);
 
         when(mockABI.getEntryPoint()).thenReturn("Main");
-        when(mockABI.getFunctions()).thenReturn(
+        when(mockABI.getMethods()).thenReturn(
                 Arrays.asList(
-                        new NeoContractFunction(
+                        new NeoContractMethod(
                                 "Main",
                                 null,
                                 ContractParameterType.BYTE_ARRAY
@@ -167,9 +167,9 @@ public class ContractTest {
                 is(ContractParameterType.BYTE_ARRAY)
         );
 
-        when(mockABI.getFunctions()).thenReturn(
+        when(mockABI.getMethods()).thenReturn(
                 Arrays.asList(
-                        new NeoContractFunction(
+                        new NeoContractMethod(
                                 "Main",
                                 null,
                                 null
@@ -188,7 +188,7 @@ public class ContractTest {
     public void testGetFunctions() {
         NeoContractInterface mockABI = spy(NeoContractInterface.class);
 
-        NeoContractFunction f1 = new NeoContractFunction(
+        NeoContractMethod f1 = new NeoContractMethod(
                 "Main",
                 Arrays.asList(
                         new ContractParameter("param1", ContractParameterType.INTEGER),
@@ -197,7 +197,7 @@ public class ContractTest {
                 ContractParameterType.BYTE_ARRAY
         );
 
-        NeoContractFunction f2 = new NeoContractFunction(
+        NeoContractMethod f2 = new NeoContractMethod(
                 "Function1",
                 Arrays.asList(
                         new ContractParameter("param1", ContractParameterType.INTEGER),
@@ -206,7 +206,7 @@ public class ContractTest {
                 ContractParameterType.BYTE_ARRAY
         );
 
-        when(mockABI.getFunctions()).thenReturn(
+        when(mockABI.getMethods()).thenReturn(
                 Arrays.asList(f1, f2)
         );
 
@@ -237,7 +237,7 @@ public class ContractTest {
                 is(f2)
         );
 
-        when(mockABI.getFunctions()).thenReturn(Arrays.asList());
+        when(mockABI.getMethods()).thenReturn(Arrays.asList());
 
         assertThat(
                 contract.getFunctions(),
