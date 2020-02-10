@@ -14,7 +14,8 @@ public interface NeoSerializableInterface {
     void serialize(BinaryWriter writer) throws IOException;
 
     /**
-     * Gets the size in bytes that this serializable will have in its serialized form.
+     * Gets the byte size of this serializable in serialized form. This includes possible size
+     * prefixes.
      *
      * @return the byte size.
      */
@@ -33,7 +34,7 @@ public interface NeoSerializableInterface {
     }
 
     static <T extends NeoSerializable> T from(byte[] value, Class<T> t)
-        throws DeserializationException {
+            throws DeserializationException {
 
         try (ByteArrayInputStream ms = new ByteArrayInputStream(value)) {
             try (BinaryReader reader = new BinaryReader(ms)) {
@@ -45,7 +46,7 @@ public interface NeoSerializableInterface {
     }
 
     static <T extends NeoSerializable> List<T> fromAsList(byte[] value, Class<T> t)
-        throws DeserializationException {
+            throws DeserializationException {
 
         try (ByteArrayInputStream ms = new ByteArrayInputStream(value)) {
             try (BinaryReader reader = new BinaryReader(ms)) {

@@ -146,9 +146,9 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter signature(byte[] signature) {
-        if (signature.length != NeoConstants.SIGNATURE_SIZE_BYTES) {
+        if (signature.length != NeoConstants.SIGNATURE_SIZE) {
             throw new IllegalArgumentException("Signature is expected to have a length of " +
-                    NeoConstants.SIGNATURE_SIZE_BYTES + " bytes, but had " +
+                    NeoConstants.SIGNATURE_SIZE + " bytes, but had " +
                     signature.length + ".");
         }
         return new ContractParameter(ContractParameterType.SIGNATURE, signature);

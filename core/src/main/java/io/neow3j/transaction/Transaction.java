@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
 public class Transaction extends NeoSerializable {
 
     public static final int HEADER_SIZE = 1 +  // Version byte
-        4 +  // Nonce uint32
-        NeoConstants.SCRIPTHASH_LENGHT_BYTES + // Sender script hash
-        8 +  // System fee int64
-        8 +  // Network fee int64
-        4; // Valid until block uint32
+            4 +  // Nonce uint32
+            NeoConstants.SCRIPTHASH_SIZE + // Sender script hash
+            8 +  // System fee int64
+            8 +  // Network fee int64
+            4; // Valid until block uint32
 
     private byte version;
     /**
@@ -111,7 +111,7 @@ public class Transaction extends NeoSerializable {
     public void addWitness(Witness witness) {
         if (witness.getScriptHash() == null) {
             throw new IllegalArgumentException("The script hash of the given script is " +
-                "empty. Please set the script hash.");
+                    "empty. Please set the script hash.");
         }
         this.witnesses.add(witness);
     }
@@ -124,10 +124,10 @@ public class Transaction extends NeoSerializable {
     @Override
     public int getSize() {
         return HEADER_SIZE +
-        IOUtils.getSizeOfVarList(this.attributes) +
-        IOUtils.getSizeOfVarList(this.cosigners) +
-        IOUtils.getSizeOfVarInt(this.script.length) + this.script.length +
-        IOUtils.getSizeOfVarList(this.witnesses);
+                IOUtils.getVarSize(this.attributes) +
+                IOUtils.getVarSize(this.cosigners) +
+                IOUtils.getVarSize(this.script.length) + this.script.length +
+                IOUtils.getVarSize(this.witnesses);
     }
 
     @Override
@@ -248,7 +248,7 @@ public class Transaction extends NeoSerializable {
         public Builder nonce(Long nonce) {
             if (nonce < 0 || nonce >= (long) Math.pow(2, 32)) {
                 throw new TransactionConfigurationException("The value of the transaction nonce " +
-                    "must be in the interval [0, 2^32).");
+                        "must be in the interval [0, 2^32).");
             }
             this.nonce = nonce;
             return this;
@@ -272,7 +272,7 @@ public class Transaction extends NeoSerializable {
         public Builder validUntilBlock(long blockNr) {
             if (blockNr < 0 || blockNr >= (long) Math.pow(2, 32)) {
                 throw new TransactionConfigurationException("The block number up to which this " +
-                    "transaction can be included cannot be less than zero or more than 2^32.");
+                        "transaction can be included cannot be less than zero or more than 2^32.");
             }
             this.validUntilBlock = blockNr;
             return this;
@@ -351,11 +351,11 @@ public class Transaction extends NeoSerializable {
         public Builder cosigners(List<Cosigner> cosigners) {
             if (this.cosigners.size() + cosigners.size() > NeoConstants.MAX_COSIGNERS) {
                 throw new TransactionConfigurationException("Can't have more than " +
-                    NeoConstants.MAX_COSIGNERS + " cosigners on a transaction.");
+                        NeoConstants.MAX_COSIGNERS + " cosigners on a transaction.");
             }
             if (hasDuplicateCosignerAccounts(cosigners)) {
                 throw new TransactionConfigurationException("Can't add multiple cosigners" +
-                    " concerning the same account.");
+                        " concerning the same account.");
             }
             this.cosigners.addAll(cosigners);
             return this;
@@ -363,10 +363,10 @@ public class Transaction extends NeoSerializable {
 
         private boolean hasDuplicateCosignerAccounts(List<Cosigner> cosigners) {
             Set<ScriptHash> newAccts = cosigners.stream().map(Cosigner::getAccount)
-                .collect(Collectors.toSet());
+                    .collect(Collectors.toSet());
             boolean duplicateCosignerAccts = cosigners.size() != newAccts.size();
             Set<ScriptHash> existingAccts = this.cosigners.stream().map(Cosigner::getAccount)
-                .collect(Collectors.toSet());
+                    .collect(Collectors.toSet());
             existingAccts.retainAll(newAccts);
             return duplicateCosignerAccts || existingAccts.size() != 0;
         }
@@ -400,9 +400,9 @@ public class Transaction extends NeoSerializable {
          */
         public Builder attributes(List<TransactionAttribute> attributes) {
             if (this.attributes.size() + attributes.size() >
-                NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
+                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
                 throw new TransactionConfigurationException("Can't have more than " +
-                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes on a transaction.");
+                        NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes on a transaction.");
             }
             this.attributes.addAll(attributes);
             return this;
@@ -432,9 +432,9 @@ public class Transaction extends NeoSerializable {
          */
         public Builder witnesses(List<Witness> witnesses) {
             for (Witness witness : witnesses) {
-                if (witness.getScriptHash() == null)  {
+                if (witness.getScriptHash() == null) {
                     throw new IllegalArgumentException("The script hash of the given script is " +
-                        "empty. Please set the script hash.");
+                            "empty. Please set the script hash.");
                 }
             }
 
@@ -445,8 +445,8 @@ public class Transaction extends NeoSerializable {
         /**
          * Adds the given witnesses to this transaction.
          * <p>
-         * Witness data is used to check the transaction validity. It usually consists of the
-         * signature generated by the transacting account but can also be other validating data.
+         * Witnesses are examined by Neo to check the validity of a transaction. It usually consists
+         * of a signature (of the transaction) and the corresponding verification script.
          *
          * @param witnesses The witnesses.
          * @return this builder.
@@ -465,12 +465,12 @@ public class Transaction extends NeoSerializable {
         public Transaction build() {
             if (this.sender == null) {
                 throw new TransactionConfigurationException("A transaction requires a sender " +
-                    "account.");
+                        "account.");
             }
 
             if (this.validUntilBlock == null) {
                 throw new TransactionConfigurationException("A transaction needs to be set up " +
-                    "with a block number up to which this it is considered valid.");
+                        "with a block number up to which this it is considered valid.");
             }
 
             if (this.cosigners.isEmpty()) {

@@ -29,7 +29,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * Constructs a new script hash with 20 zero bytes.
      */
     public ScriptHash() {
-        this.scriptHash = new byte[NeoConstants.SCRIPTHASH_LENGHT_BYTES];
+        this.scriptHash = new byte[NeoConstants.SCRIPTHASH_SIZE];
     }
 
     /**
@@ -63,7 +63,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            this.scriptHash = reader.readBytes(NeoConstants.SCRIPTHASH_LENGHT_BYTES);
+            this.scriptHash = reader.readBytes(NeoConstants.SCRIPTHASH_SIZE);
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
@@ -76,7 +76,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
 
     @Override
     public int getSize() {
-        return NeoConstants.SCRIPTHASH_LENGHT_BYTES;
+        return NeoConstants.SCRIPTHASH_SIZE;
     }
 
     /**
@@ -170,9 +170,9 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     }
 
     private void checkAndThrowHashLength(byte[] scriptHash) {
-        if (scriptHash.length != NeoConstants.SCRIPTHASH_LENGHT_BYTES) {
+        if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
             throw new IllegalArgumentException("Script hash must be " +
-                NeoConstants.SCRIPTHASH_LENGHT_BYTES + " bytes long but was " + scriptHash.length +
+                NeoConstants.SCRIPTHASH_SIZE + " bytes long but was " + scriptHash.length +
                 " bytes.");
         }
     }

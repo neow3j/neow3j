@@ -28,8 +28,6 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.BigIntegers;
-import org.bouncycastle.math.ec.ECPoint;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -39,6 +37,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import org.bouncycastle.math.ec.ECPoint;
 
 public class BinaryReader implements AutoCloseable {
 
@@ -164,6 +163,20 @@ public class BinaryReader implements AutoCloseable {
         reader.readFully(array, 0, 4);
         position += 4;
         return buffer.getInt(0);
+    }
+
+    /**
+     * Reads a 16-bit unsigned integer from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a int.
+     *
+     * @return the 16-bit unsigned integer as a normal Java int.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public int readUInt16() throws IOException {
+        reader.readFully(array, 0, 2);
+        position += 2;
+        return Short.toUnsignedInt(buffer.getShort(0));
     }
 
     /**
@@ -297,6 +310,7 @@ public class BinaryReader implements AutoCloseable {
         return readPushBigInteger().intValue();
     }
 
+    // TODO: Adapt to new pushInteger implementation of Neo 3. See ScriptBuilder.pushInteger().
     public BigInteger readPushBigInteger() throws IOException {
         mark(2);
         byte read = readByte();
@@ -305,8 +319,7 @@ public class BinaryReader implements AutoCloseable {
         } else if (read == OpCode.PUSH0.getValue()) {
             return BigInteger.ZERO;
         } else if (read >= OpCode.PUSH1.getValue() && read <= OpCode.PUSH16.getValue()) {
-            int base = (OpCode.PUSH1.getValue() - (byte) 0x01);
-            return BigInteger.valueOf(read - base);
+            return BigInteger.valueOf(read - OpCode.PUSH0.getValue());
         } else {
             // If the value is larger than the PUSH16 opcode then read as data array.
             // The same byte that has just been read needs to be read again in pushData(), so we
@@ -316,4 +329,14 @@ public class BinaryReader implements AutoCloseable {
         }
     }
 
+    public static int readUInt16(byte[] bytes) {
+        try (ByteArrayInputStream ms = new ByteArrayInputStream(bytes)) {
+            try (BinaryReader reader = new BinaryReader(ms)) {
+                return reader.readUInt16();
+            }
+        } catch (IOException e) {
+            // This shouldn't happen.
+            throw new RuntimeException(e);
+        }
+    }
 }

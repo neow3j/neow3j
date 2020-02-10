@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.InvocationConfigurationException;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.IOUtils;
@@ -9,32 +11,29 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.Cosigner;
-import io.neow3j.transaction.InvocationScript;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.transaction.Witness;
-import io.neow3j.utils.FeeUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
+import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.AccountException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Invocation {
 
     private Transaction transaction;
-    private Account account;
+    private Wallet wallet;
     private Neow3j neow;
 
     protected Invocation(InvocationBuilder builder) {
         this.neow = builder.neow;
-        this.account = builder.account;
-        this.transaction = builder.txBuilder.build();
+        this.wallet = builder.wallet;
+        this.transaction = builder.tx;
     }
 
     public Invocation send() throws IOException, ErrorResponseException {
@@ -46,6 +45,7 @@ public class Invocation {
         return this;
     }
 
+    // TODO: Adapt, so that signatures of all the cosigners are created.
     /**
      * Signs the transaction and add the signature to the transaction as a witness.
      * <p>
@@ -55,8 +55,9 @@ public class Invocation {
      */
     public Invocation sign() {
         try {
+            Account sendingAcc = this.wallet.getAccount(this.transaction.getSender());
             this.transaction.addWitness(
-                    Witness.createWitness(getTransactionForSigning(), this.account.getECKeyPair()));
+                    Witness.createWitness(getTransactionForSigning(), sendingAcc.getECKeyPair()));
         } catch (AccountException e) {
             throw new InvocationConfigurationException("Cannot automatically sign with given "
                     + "account. The account object needs a decrypted private key.");
@@ -78,7 +79,8 @@ public class Invocation {
     }
 
     public void addSignatures(List<SignatureData> signatures) {
-        VerificationScript verScript = this.account.getVerificationScript();
+        Account sendingAcc = this.wallet.getAccount(this.transaction.getSender());
+        VerificationScript verScript = sendingAcc.getVerificationScript();
         if (signatures.size() != verScript.getSigningThreshold()) {
             throw new InvocationConfigurationException("The number of signatures must be equal to "
                     + "the signing threshold of the multi-sig account performing his invocation. "
@@ -96,8 +98,10 @@ public class Invocation {
         private long additionalNetworkFee;
         private ScriptHash scriptHash;
         private Neow3j neow;
+        private Wallet wallet;
+        private ScriptHash sender;
         private Transaction.Builder txBuilder;
-        private Account account;
+        private Transaction tx;
 
         // Should only be called by the SmartContract class. Therefore no checks on the arguments.
         protected InvocationBuilder(Neow3j neow, ScriptHash scriptHash, String function) {
@@ -172,17 +176,17 @@ public class Invocation {
             return this;
         }
 
+        public InvocationBuilder withWallet(Wallet wallet) {
+            this.wallet = wallet;
+            return this;
+        }
+
         /**
-         * @param account
+         * @param sender
          * @return
          */
-        public InvocationBuilder withAccount(Account account) {
-            if (account.getVerificationScript() == null) {
-                throw new InvocationConfigurationException("Given account does not have a "
-                        + "verification script but needs one to be used in an invocation.");
-            }
-            this.txBuilder.sender(account.getScriptHash());
-            this.account = account;
+        public InvocationBuilder withSender(ScriptHash sender) {
+            txBuilder.sender(sender);
             return this;
         }
 
@@ -199,28 +203,24 @@ public class Invocation {
         }
 
         public Invocation build() throws IOException {
-            if (this.txBuilder.getSender() == null) {
+            if (this.wallet == null) {
                 throw new InvocationConfigurationException("Cannot create an invocation without a "
-                        + "sending account.");
+                        + "wallet.");
             }
             if (this.txBuilder.getValidUntilBlock() == null) {
                 this.txBuilder.validUntilBlock(
                         fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT);
             }
-
-            // Set the script on the transaction builder and on this builder because it is later
-            // needed for the calculation of the network fee and the transaction builder has no
-            // getters.
+            // Set the standard cosigner if none has been specified.
+            if (this.txBuilder.getCosigners().isEmpty()) {
+                this.txBuilder.cosigners(Cosigner.calledByEntry(this.txBuilder.getSender()));
+            }
             this.txBuilder.script(createScript());
             this.txBuilder.systemFee(fetchSystemFee());
-            // Before we can calculate the network fee the transaction must be completely setup.
-            // Therefore, at least a standard cosigner must be set in case no cosigner has been
-            // set specifically.
-            if (this.txBuilder.getCosigners().isEmpty()) {
-                this.txBuilder.cosigners(Cosigner.calledByEntry(this.account.getScriptHash()));
-            }
-            this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
             // TODO: Maybe check if the sender has enough coin to do the invocation.
+            this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
+
+            this.tx = this.txBuilder.build();
             return new Invocation(this);
         }
 
@@ -259,66 +259,82 @@ public class Invocation {
         /*
          * Calculates the necessary network fee for the transaction being build in this builder.
          * The fee consists of the cost per transaction byte and the cost for signature
-         * verification. Since the builder's transaction is not signed yet, the expected
-         * signature is derived from the verification script of the set account.
+         * verification. Since the transaction is not signed yet, the calculation works with
+         * expected signatures. This information is derived from the verification scripts of all
+         * cosigners added to the transaction.
          */
         private long calcNetworkFee() {
-            long sigVerificationFee;
-            if (this.account.isMultiSig()) {
-                VerificationScript verScript = this.account.getVerificationScript();
-                int threshold = verScript.getSigningThreshold();
-                int nrOfAccounts = verScript.getNrOfAccounts();
-                sigVerificationFee = FeeUtils.calcNetworkFeeForMultiSig(threshold, nrOfAccounts);
-            } else {
-                sigVerificationFee = FeeUtils.calcNetworkFeeForSingleSig();
+            List<Account> cosigAccs = getCosignerAccounts();
+
+            // Base transaction size
+            int size = Transaction.HEADER_SIZE // constant header size
+                    + IOUtils.getVarSize(this.txBuilder.getAttributes()) // attributes
+                    + IOUtils.getVarSize(this.txBuilder.getCosigners()) // cosigners
+                    + IOUtils.getVarSize(this.txBuilder.getScript().length) + this.txBuilder
+                    .getScript().length // script
+                    + IOUtils.getVarSize(cosigAccs.size()); // varInt for witnesses
+
+            int execFee = 0;
+            for (Account acc : cosigAccs) {
+                if (acc.isMultiSig()) {
+                    size += calcSizeFeeForMultiSigContract(acc.getVerificationScript());
+                    execFee += calcExecutionFeeForMultiSigContract(acc.getVerificationScript());
+                } else {
+                    size += calcSizeFeeForSingleSigContract(acc.getVerificationScript());
+                    execFee += calcExecutionFeeForSingleSigContract();
+                }
             }
-            int txSize = calcPredictedTransactionSize();
-            return sigVerificationFee + FeeUtils.calcTransactionSizeFee(txSize);
+
+            // TODO: Clarify if we can get the FeePerByte from the Policy contract as it is done
+            //  in neo-core. `NativeContract.Policy.GetFeePerByte(snapshot)`
+            return execFee + size * NeoConstants.GAS_PER_BYTE;
         }
 
-        /*
-         * Calculates the size of the transaction being build in this builder. The size is
-         * calculated from all the fields set on the transaction (e.g. script, attributes,
-         * non-signature witnesses) and the expected signature witness. The calculation must be
-         * used before signing the transaction since it includes the size of a witness that is
-         * expected to be added when signing the transaction.
-         */
-        private int calcPredictedTransactionSize() {
-            List<Witness> predictedWitnesses = Arrays.asList(createMockWitness());
-            predictedWitnesses.addAll(this.txBuilder.getWitnesses());
-
-            return Transaction.HEADER_SIZE +
-                    IOUtils.getSizeOfVarList(this.txBuilder.getAttributes()) +
-                    IOUtils.getSizeOfVarList(this.txBuilder.getCosigners()) +
-                    IOUtils.getSizeOfVarInt(this.txBuilder.getScript().length) +
-                    this.txBuilder.getScript().length +
-                    IOUtils.getSizeOfVarList(predictedWitnesses);
+        private List<Account> getCosignerAccounts() {
+            List<Account> accounts = new ArrayList<>();
+            for (Cosigner cosigner : txBuilder.getCosigners()) {
+                Account account = this.wallet.getAccount(cosigner.getAccount());
+                if (account == null) {
+                    throw new InvocationConfigurationException("Wallet does not contain the "
+                            + "account for cosigner with script hash " + cosigner.getAccount());
+                }
+                accounts.add(account);
+            }
+            return accounts;
         }
 
-        /*
-         * Creates a witness object mocking a witness created with the given account. The
-         * account's verification script is used to determine how many signatures the account
-         * requires when signing a transaction (single-sig or multi-sig). The required signatures
-         * are instantiated as zero-valued byte arrays. If it is a multi-sig account, the number
-         * of mock signatures created is equal to the signing threshold of the account.
-         */
-        private Witness createMockWitness() {
-            VerificationScript verScript = this.account.getVerificationScript();
-            int signatures = verScript.getSigningThreshold();
-            byte[] mockSignatureBytes = new byte[NeoConstants.SIGNATURE_SIZE_BYTES];
-            if (signatures == 1) {
-                // Account is a single-sig account
-                SignatureData mockSignature = SignatureData.fromByteArray(mockSignatureBytes);
-                InvocationScript invScript = InvocationScript.fromSignature(mockSignature);
-                return new Witness(invScript, verScript);
-            } else if (signatures > 1) {
-                // Account is a multi-sig account
-                List<SignatureData> mockSignatures = IntStream.range(0, signatures)
-                        .mapToObj((i) -> SignatureData.fromByteArray(mockSignatureBytes))
-                        .collect(Collectors.toList());
-                return Witness.createMultiSigWitness(mockSignatures, verScript);
-            }
-            return null;
+        private long calcSizeFeeForSingleSigContract(VerificationScript verifScript) {
+            // TODO: Clarify if it is even necessary to derive the verification script size or if
+            //  it is always constant.
+            return NeoConstants.SERIALIZED_INVOC_SCRIPT_SIZE + verifScript.getSize();
+        }
+
+        private long calcExecutionFeeForSingleSigContract() {
+            return OpCode.PUSHDATA1.getPrice() // Push invocation script
+                    + OpCode.PUSHDATA1.getPrice() // Push verification script
+                    // TODO: Clarify why this is needed.
+                    + OpCode.PUSHNULL.getPrice()
+                    // TODO: Adapt to neo-core changes to interop service changes.
+                    + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getPrice();
+        }
+
+        private long calcSizeFeeForMultiSigContract(VerificationScript verifScript) {
+            int m = verifScript.getSigningThreshold();
+            int sizeInvocScript = NeoConstants.INVOC_SCRIPT_SIZE * m;
+            return IOUtils.getVarSize(sizeInvocScript) + sizeInvocScript + verifScript.getSize();
+        }
+
+        private long calcExecutionFeeForMultiSigContract(VerificationScript verifScript) {
+            int m = verifScript.getSigningThreshold();
+            int n = verifScript.getNrOfAccounts();
+
+            return OpCode.PUSHDATA1.getPrice() * m
+                    + OpCode.valueOf(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
+                    + OpCode.PUSHDATA1.getPrice() * n
+                    + OpCode.valueOf(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
+                    + OpCode.PUSHNULL.getPrice()
+                    // TODO: Adapt to neo-core changes to interop service changes.
+                    + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getPrice();
         }
     }
 }

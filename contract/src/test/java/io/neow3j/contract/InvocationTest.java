@@ -65,7 +65,7 @@ public class InvocationTest {
         ContractTestUtils.setUpWireMockForGetBlockCount();
         ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         Account acc = Account.createAccount();
-        Invocation i = new InvocationBuilder(neow, sh, method).withAccount(acc).build();
+        Invocation i = new InvocationBuilder(neow, sh, method).withSender(acc.getScriptHash()).build();
         assertThat(
                 i.getTransaction().getValidUntilBlock(),
                 is((long) MAX_VALID_UNTIL_BLOCK_INCREMENT + GETBLOCKCOUNT_RESPONSE)
@@ -80,7 +80,7 @@ public class InvocationTest {
         ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         Account acc = Account.createAccount();
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withAccount(acc)
+                .withSender(acc.getScriptHash())
                 .validUntilBlock(1000)
                 .build();
 
@@ -105,7 +105,7 @@ public class InvocationTest {
         ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         Account acc = Account.createAccount();
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withAccount(acc)
+                .withSender(acc.getScriptHash())
                 .validUntilBlock(1000)
                 .build();
 
@@ -121,7 +121,7 @@ public class InvocationTest {
         Account acc = Account.createAccount();
         long additionalFee = 100_000_000;
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withAccount(acc)
+                .withSender(acc.getScriptHash())
                 .validUntilBlock(1000)
                 .withAdditionalNetworkFee(additionalFee) // Additional fee of 1 GAS.
                 .build();
@@ -149,7 +149,7 @@ public class InvocationTest {
         Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
         long additionalFee = 100_000_000;
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withAccount(multiSigAcc)
+                .withSender(multiSigAcc.getScriptHash())
                 .validUntilBlock(1000)
                 .withAdditionalNetworkFee(additionalFee) // Additional fee of 1 GAS.
                 .build();
@@ -185,7 +185,7 @@ public class InvocationTest {
         int signingThreshold = 2;
         Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withAccount(multiSigAcc)
+                .withSender(multiSigAcc.getScriptHash())
                 .validUntilBlock(1000)
                 .build();
 
@@ -211,7 +211,7 @@ public class InvocationTest {
         int signingThreshold = 3;
         Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withAccount(multiSigAcc)
+                .withSender(multiSigAcc.getScriptHash())
                 .validUntilBlock(1000)
                 .build();
 
@@ -233,7 +233,7 @@ public class InvocationTest {
         List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey2(), keyPair2.getPublicKey2());
         Account multiSigAcc = Account.fromMultiSigKeys(keys, 2).build();
         new InvocationBuilder(neow, sh, method)
-                .withAccount(multiSigAcc)
+                .withSender(multiSigAcc.getScriptHash())
                 .validUntilBlock(1000)
                 .build()
                 .sign();
@@ -258,7 +258,7 @@ public class InvocationTest {
         Account sender = Account.fromECKeyPair(keyPair).build();
         ScriptHash sh = new ScriptHash(NEOAsset.HASH_ID);
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withAccount(sender)
+                .withSender(sender.getScriptHash())
                 .withNonce(1348080909)
                 .validUntilBlock(2102660)
                 .withParameters(

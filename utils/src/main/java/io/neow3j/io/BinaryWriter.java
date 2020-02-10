@@ -179,7 +179,7 @@ public class BinaryWriter implements AutoCloseable {
     public void writeUInt16(int v) throws IOException {
         if (v < 0 || v >= (int) Math.pow(2, 16)) {
             throw new IllegalArgumentException("Value of 16-bit unsigned integer was not in " +
-                "interval [0, 2^16).");
+                    "interval [0, 2^16).");
         }
         buffer.putInt(0, v);
         writer.write(array, 0, 2);
@@ -198,7 +198,7 @@ public class BinaryWriter implements AutoCloseable {
             writeByte((byte) v);
         } else if (v <= 0xFFFF) {
             writeByte((byte) 0xFD);
-            writeUInt16((int)v);
+            writeUInt16((int) v);
         } else if (v <= 0xFFFFFFFFL) {
             writeByte((byte) 0xFE);
             writeUInt32(v);

@@ -3,6 +3,7 @@ package io.neow3j.wallet;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -239,6 +240,14 @@ public class Wallet {
 
     private static Account getNewDefaultAccount() {
         return Account.fromNewECKeyPair().isDefault(true).build();
+    }
+
+    public Account getAccount(ScriptHash account) {
+        // TODO: Maybe migrate type of this.accounts to a Map for better performance of this lookup.
+        return this.accounts.stream()
+                .filter(a -> a.getScriptHash().equals(account))
+                .collect(Collectors.toList())
+                .get(0);
     }
 
     public static class Builder {

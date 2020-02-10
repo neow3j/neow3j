@@ -39,6 +39,19 @@ public class ScriptBuilder {
     }
 
     /**
+     * Appends an OpCode and a belonging argument to the script.
+     *
+     * @param opCode   The OpCode to append.
+     * @param argument The argument of the OpCode.
+     * @return this ScriptBuilder object.
+     */
+    public ScriptBuilder opCode(OpCode opCode, byte[] argument) {
+        writeByte(opCode.getValue());
+        write(argument);
+        return this;
+    }
+
+    /**
      * Appends a call to the contract denoted by the given script hash.
      *
      * @param scriptHash The script hash of the contract to call.
@@ -74,7 +87,7 @@ public class ScriptBuilder {
      *  PUSH2
      *  PACK
      * </pre>
-     *
+     * <p>
      * This method should also be used if the parameters list is empty. In that case the script
      * looks like the following:
      * <pre>
@@ -128,31 +141,70 @@ public class ScriptBuilder {
         return this;
     }
 
+
+    /**
+     * Adds a push operation with the given integer to the script.
+     *
+     * @param v The number to push.
+     * @return this.
+     * @throws IllegalArgumentException if the given number is smaller than -1.
+     */
     public ScriptBuilder pushInteger(int v) {
         return pushInteger(BigInteger.valueOf(v));
     }
 
-    public ScriptBuilder pushInteger(BigInteger number) {
-        if (number.intValue() == -1) {
-            writeByte(OpCode.PUSHM1.getValue());
-        } else if (number.intValue() == 0) {
-            writeByte(OpCode.PUSH0.getValue());
-        } else if (number.intValue() >= 1 && number.intValue() <= 16) {
-            // OpCodes PUSH1 to PUSH16
-            int base = (OpCode.PUSH1.getValue() - 1);
-            writeByte(base + number.intValue());
-        } else {
-            // If the number is larger than 16, it needs to be pushed as a data array.
-            pushData(BigIntegers.toLittleEndianByteArray(number));
+    /**
+     * Adds a push operation with the given integer to the script.
+     * <p>
+     * The integer can be up to 32 bytes long.
+     *
+     * @param v The integer to push.
+     * @return this.
+     * @throws IllegalArgumentException if the given integer is smaller than -1 or takes more space
+     *                                  than 32 bytes.
+     */
+    public ScriptBuilder pushInteger(BigInteger v) {
+        if (v.longValue() >= -1 && v.longValue() <= 16L) {
+            return this.opCode(OpCode.valueOf(v.byteValue()));
         }
-        return this;
+
+        byte[] bytes = BigIntegers.toLittleEndianByteArray(v);
+        if (bytes.length == 1) {
+            return this.opCode(OpCode.PUSHINT8, bytes);
+        }
+        if (bytes.length == 2) {
+            return this.opCode(OpCode.PUSHINT16, bytes);
+        }
+        if (bytes.length <= 4) {
+            return this.opCode(OpCode.PUSHINT32, padRight(bytes, 4));
+        }
+        if (bytes.length <= 8) {
+            return this.opCode(OpCode.PUSHINT64, padRight(bytes, 8));
+        }
+        if (bytes.length <= 16) {
+            return this.opCode(OpCode.PUSHINT128, padRight(bytes, 16));
+        }
+        if (bytes.length <= 32) {
+            return this.opCode(OpCode.PUSHINT256, padRight(bytes, 32));
+        }
+        throw new IllegalArgumentException("The given number (" + v.toString() + ") is out of "
+                + "range.");
+    }
+
+    private byte[] padRight(byte[] data, int desiredLenght) {
+        if (data.length >= desiredLenght) {
+            return data;
+        }
+        byte[] paddedData = new byte[desiredLenght];
+        System.arraycopy(data, 0, paddedData, 0, data.length);
+        return paddedData;
     }
 
     public ScriptBuilder pushBoolean(boolean bool) {
         if (bool) {
-            writeByte(OpCode.PUSHT.getValue());
+            writeByte(OpCode.PUSH1.getValue());
         } else {
-            writeByte(OpCode.PUSHF.getValue());
+            writeByte(OpCode.PUSH0.getValue());
         }
         return this;
     }
@@ -179,31 +231,46 @@ public class ScriptBuilder {
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder pushData(byte[] data) {
-        pushDataLength(data.length);
-        write(data);
-        return this;
-    }
-
-    public ScriptBuilder pushDataLength(int length) {
-        if (length <= OpCode.PUSHBYTES75.getValue()) {
-            // For up to 75 bytes of data we can use the OpCodes PUSHBYTES01 to PUSHBYTES75
-            // directly.
-            writeByte(length);
-        } else if (length <= 255) {
-            // If the data is 76 to 255 (0xff) bytes long then write PUSHDATA1 + uint8
-            writeByte(OpCode.PUSHDATA1.getValue());
-            writeByte(length);
-        } else if (length <= 65535) {
-            // If the data is 256 to 65535 (0xffff) bytes long then write PUSHDATA2 + uint16
-            writeByte(OpCode.PUSHDATA2.getValue());
-            writeShort(length);
+        if (data == null) {
+            throw new IllegalArgumentException("Data must not be null.");
+        }
+        if (data.length < 256) {
+            this.opCode(OpCode.PUSHDATA1);
+            this.writeByte((byte) data.length);
+            this.write(data);
+        } else if (data.length < 65536) {
+            this.opCode(OpCode.PUSHDATA2);
+            this.writeShort(data.length);
+            this.write(data);
         } else {
-            // If the data is bigger than 65536 then write PUSHDATA4 + uint32
-            writeByte(OpCode.PUSHDATA4.getValue());
-            writeInt(length);
+            this.opCode(OpCode.PUSHDATA4);
+            this.writeInt(data.length);
+            this.write(data);
         }
         return this;
     }
+
+//    public ScriptBuilder pushDataLength(int length) {
+//
+//        if (length <= OpCode.PUSHBYTES75.getValue()) {
+//            // For up to 75 bytes of data we can use the OpCodes PUSHBYTES01 to PUSHBYTES75
+//            // directly.
+//            writeByte(length);
+//        } else if (length <= 255) {
+//            // If the data is 76 to 255 (0xff) bytes long then write PUSHDATA1 + uint8
+//            writeByte(OpCode.PUSHDATA1.getValue());
+//            writeByte(length);
+//        } else if (length <= 65535) {
+//            // If the data is 256 to 65535 (0xffff) bytes long then write PUSHDATA2 + uint16
+//            writeByte(OpCode.PUSHDATA2.getValue());
+//            writeShort(length);
+//        } else {
+//            // If the data is bigger than 65536 then write PUSHDATA4 + uint32
+//            writeByte(OpCode.PUSHDATA4.getValue());
+//            writeInt(length);
+//        }
+//        return this;
+//    }
 
     public ScriptBuilder pushArray(ContractParameter[] params) {
         for (int i = params.length - 1; i >= 0; i--) {
@@ -267,6 +334,7 @@ public class ScriptBuilder {
 
     /**
      * TODO: Write documentation
+     *
      * @param encodedPublicKey
      * @return
      */
@@ -279,6 +347,7 @@ public class ScriptBuilder {
 
     /**
      * TODO: Write documentation
+     *
      * @param encodedPublicKeys
      * @param signingThreshold
      * @return

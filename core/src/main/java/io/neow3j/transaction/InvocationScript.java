@@ -113,6 +113,6 @@ public class InvocationScript extends NeoSerializable {
 
     @Override
     public int getSize() {
-        return IOUtils.getSizeOfVarInt(this.script.length) + this.script.length;
+        return IOUtils.getVarSize(this.script.length) + this.script.length;
     }
 }

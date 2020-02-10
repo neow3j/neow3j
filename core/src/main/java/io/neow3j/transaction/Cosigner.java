@@ -129,13 +129,13 @@ public class Cosigner extends NeoSerializable {
 
     @Override
     public int getSize() {
-        int size = NeoConstants.SCRIPTHASH_LENGHT_BYTES // account script hash
+        int size = NeoConstants.SCRIPTHASH_SIZE // account script hash
             + 1; // Scope byte
         if (this.scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
-            size += IOUtils.getSizeOfVarList(this.allowedContracts);
+            size += IOUtils.getVarSize(this.allowedContracts);
         }
         if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
-            size += IOUtils.getSizeOfVarList(this.allowedGroups);
+            size += IOUtils.getVarSize(this.allowedGroups);
         }
         return size;
     }

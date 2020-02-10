@@ -44,22 +44,15 @@ public class NeoConstants {
      */
     public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
 
-    public static final int SCRIPTHASH_LENGHT_BITS = 160;
-    public static final int SCRIPTHASH_LENGHT_BYTES = SCRIPTHASH_LENGHT_BITS / 8;
-    public static final int SCRIPTHASH_LENGHT_HEXSTRING = SCRIPTHASH_LENGHT_BYTES * 2;
-
     /**
-     * Size of a global asset id in bits.
+     * The byte size of a script hash.
      */
-    public static final int ASSET_ID_LENGHT_BITS = 256;
-    public static final int ASSET_ID_LENGHT_BYTES = ASSET_ID_LENGHT_BITS / 8;
-    public static final int ASSET_ID_LENGHT_HEXSTRING = ASSET_ID_LENGHT_BYTES * 2;
+    public static final int SCRIPTHASH_SIZE = 20;
 
     /**
      * Size of a private key in bytes
      */
     public static final int PRIVATE_KEY_SIZE = 32;
-    public static final int PRIVATE_KEY_LENGTH_IN_HEX = PRIVATE_KEY_SIZE << 1;
 
     /**
      * Size of a public key in bytes
@@ -72,10 +65,22 @@ public class NeoConstants {
     public static final int ADDRESS_SIZE = 34;
 
     /**
-     * Standard size of a signature used in NEO.
+     * Size of a signature in bytes.
      */
-    public static final int SIGNATURE_SIZE_BYTES = 64;
-    public static final int SIGNATURE_SIZE_HEXSTRING = SIGNATURE_SIZE_BYTES * 2;
+    public static final int SIGNATURE_SIZE = 64;
+
+    /**
+     * Size of an invocation (signature) script in bytes.
+     *
+     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 66
+     */
+    public static final int INVOC_SCRIPT_SIZE = SIGNATURE_SIZE + 2;
+
+    /**
+     * Size of a serialized invocation (signature) script in bytes.
+     * 1 (byte for VarInt) + 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 67
+     */
+    public static final int SERIALIZED_INVOC_SCRIPT_SIZE = INVOC_SCRIPT_SIZE + 1;
 
     //endregion
 

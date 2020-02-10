@@ -54,17 +54,21 @@ public class TransactionAttribute extends NeoSerializable {
     @Override
     public int getSize() {
         int size = 1 // Type byte
-        + this.data.length; // Attribute data size
+                + this.data.length; // Attribute data size
         if (this.usage.fixedDataLength() == null) {
-            size += IOUtils.getSizeOfVarInt(this.data.length); // Data size integer
+            size += IOUtils.getVarSize(this.data.length); // Data size integer
         }
         return size;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TransactionAttribute)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof TransactionAttribute)) {
+            return false;
+        }
         TransactionAttribute that = (TransactionAttribute) o;
         return getUsage() == that.getUsage() &&
                 Arrays.equals(getDataAsBytes(), that.getDataAsBytes());
