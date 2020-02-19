@@ -73,7 +73,7 @@ public class ScriptBuilder {
 
     public ScriptBuilder sysCall(InteropServiceCode operation) {
         writeByte(OpCode.SYSCALL.getValue());
-        write(Numeric.hexStringToByteArray(operation.getCode()));
+        write(Numeric.hexStringToByteArray(operation.getHash()));
         return this;
     }
 
@@ -164,8 +164,10 @@ public class ScriptBuilder {
      *                                  than 32 bytes.
      */
     public ScriptBuilder pushInteger(BigInteger v) {
-        if (v.longValue() >= -1 && v.longValue() <= 16L) {
-            return this.opCode(OpCode.valueOf(v.byteValue()));
+        int i = v.intValue();
+        if (i >= -1 && i <= 16) {
+            byte opCodeByte = (byte)(OpCode.PUSH0.getValue() + i);
+            return this.opCode(OpCode.valueOf(opCodeByte));
         }
 
         byte[] bytes = BigIntegers.toLittleEndianByteArray(v);
@@ -250,28 +252,6 @@ public class ScriptBuilder {
         return this;
     }
 
-//    public ScriptBuilder pushDataLength(int length) {
-//
-//        if (length <= OpCode.PUSHBYTES75.getValue()) {
-//            // For up to 75 bytes of data we can use the OpCodes PUSHBYTES01 to PUSHBYTES75
-//            // directly.
-//            writeByte(length);
-//        } else if (length <= 255) {
-//            // If the data is 76 to 255 (0xff) bytes long then write PUSHDATA1 + uint8
-//            writeByte(OpCode.PUSHDATA1.getValue());
-//            writeByte(length);
-//        } else if (length <= 65535) {
-//            // If the data is 256 to 65535 (0xffff) bytes long then write PUSHDATA2 + uint16
-//            writeByte(OpCode.PUSHDATA2.getValue());
-//            writeShort(length);
-//        } else {
-//            // If the data is bigger than 65536 then write PUSHDATA4 + uint32
-//            writeByte(OpCode.PUSHDATA4.getValue());
-//            writeInt(length);
-//        }
-//        return this;
-//    }
-
     public ScriptBuilder pushArray(ContractParameter[] params) {
         for (int i = params.length - 1; i >= 0; i--) {
             pushParam(params[i]);
@@ -341,7 +321,7 @@ public class ScriptBuilder {
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY)
                 .toArray();
     }
 
@@ -358,7 +338,7 @@ public class ScriptBuilder {
         encodedPublicKeys.forEach(builder::pushData);
         return builder
                 .pushInteger(encodedPublicKeys.size())
-                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG)
                 .toArray();
 
     }

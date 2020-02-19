@@ -46,6 +46,7 @@ public class Invocation {
     }
 
     // TODO: Adapt, so that signatures of all the cosigners are created.
+
     /**
      * Signs the transaction and add the signature to the transaction as a witness.
      * <p>
@@ -208,11 +209,16 @@ public class Invocation {
                         + "wallet.");
             }
             if (this.txBuilder.getValidUntilBlock() == null) {
+                // If validUntilBlock is not set explicitly set it to the current max.
                 this.txBuilder.validUntilBlock(
                         fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT);
             }
-            // Set the standard cosigner if none has been specified.
+            if (this.txBuilder.getSender() == null) {
+                // If sender is not set explicitly set it to the default account of the wallet.
+                this.txBuilder.sender(this.wallet.getDefaultAccount().getScriptHash());
+            }
             if (this.txBuilder.getCosigners().isEmpty()) {
+                // Set the standard cosigner if none has been specified.
                 this.txBuilder.cosigners(Cosigner.calledByEntry(this.txBuilder.getSender()));
             }
             this.txBuilder.script(createScript());
@@ -272,21 +278,19 @@ public class Invocation {
                     + IOUtils.getVarSize(this.txBuilder.getCosigners()) // cosigners
                     + IOUtils.getVarSize(this.txBuilder.getScript().length) + this.txBuilder
                     .getScript().length // script
-                    + IOUtils.getVarSize(cosigAccs.size()); // varInt for witnesses
+                    + IOUtils.getVarSize(cosigAccs.size()); // varInt for all necessary witnesses
 
+            // Calculate fee for witness verification and collect size of witnesses.
             int execFee = 0;
             for (Account acc : cosigAccs) {
                 if (acc.isMultiSig()) {
-                    size += calcSizeFeeForMultiSigContract(acc.getVerificationScript());
-                    execFee += calcExecutionFeeForMultiSigContract(acc.getVerificationScript());
+                    size += calcSizeForMultiSigWitness(acc.getVerificationScript());
+                    execFee += calcExecutionFeeForMultiSigWitness(acc.getVerificationScript());
                 } else {
-                    size += calcSizeFeeForSingleSigContract(acc.getVerificationScript());
-                    execFee += calcExecutionFeeForSingleSigContract();
+                    size += calcSizeForSingleSigWitness(acc.getVerificationScript());
+                    execFee += calcExecutionFeeForSingleSigWitness();
                 }
             }
-
-            // TODO: Clarify if we can get the FeePerByte from the Policy contract as it is done
-            //  in neo-core. `NativeContract.Policy.GetFeePerByte(snapshot)`
             return execFee + size * NeoConstants.GAS_PER_BYTE;
         }
 
@@ -303,28 +307,26 @@ public class Invocation {
             return accounts;
         }
 
-        private long calcSizeFeeForSingleSigContract(VerificationScript verifScript) {
-            // TODO: Clarify if it is even necessary to derive the verification script size or if
-            //  it is always constant.
-            return NeoConstants.SERIALIZED_INVOC_SCRIPT_SIZE + verifScript.getSize();
+        private long calcSizeForSingleSigWitness(VerificationScript verifScript) {
+            return NeoConstants.SERIALIZED_INVOCATION_SCRIPT_SIZE + verifScript.getSize();
         }
 
-        private long calcExecutionFeeForSingleSigContract() {
+        private long calcExecutionFeeForSingleSigWitness() {
             return OpCode.PUSHDATA1.getPrice() // Push invocation script
                     + OpCode.PUSHDATA1.getPrice() // Push verification script
-                    // TODO: Clarify why this is needed.
+                    // Push null because we don't want to verify a particular message but the
+                    // transaction itself.
                     + OpCode.PUSHNULL.getPrice()
-                    // TODO: Adapt to neo-core changes to interop service changes.
-                    + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getPrice();
+                    + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getPrice();
         }
 
-        private long calcSizeFeeForMultiSigContract(VerificationScript verifScript) {
+        private long calcSizeForMultiSigWitness(VerificationScript verifScript) {
             int m = verifScript.getSigningThreshold();
-            int sizeInvocScript = NeoConstants.INVOC_SCRIPT_SIZE * m;
+            int sizeInvocScript = NeoConstants.INVOCATION_SCRIPT_SIZE * m;
             return IOUtils.getVarSize(sizeInvocScript) + sizeInvocScript + verifScript.getSize();
         }
 
-        private long calcExecutionFeeForMultiSigContract(VerificationScript verifScript) {
+        private long calcExecutionFeeForMultiSigWitness(VerificationScript verifScript) {
             int m = verifScript.getSigningThreshold();
             int n = verifScript.getNrOfAccounts();
 
@@ -332,9 +334,10 @@ public class Invocation {
                     + OpCode.valueOf(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
                     + OpCode.PUSHDATA1.getPrice() * n
                     + OpCode.valueOf(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
+                    // Push null because we don't want to verify a particular message but the
+                    // transaction itself.
                     + OpCode.PUSHNULL.getPrice()
-                    // TODO: Adapt to neo-core changes to interop service changes.
-                    + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getPrice();
+                    + InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getPrice(n);
         }
     }
 }

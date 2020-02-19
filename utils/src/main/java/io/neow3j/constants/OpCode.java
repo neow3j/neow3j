@@ -303,7 +303,7 @@ public enum OpCode {
      * A value n is taken from top of main stack. The next n items on main stack are removed, put
      * inside n-sized array and this array is put on top of the main stack.
      */
-    PACK(0xC1, 7000);
+    PACK(0xC0, 7000);
 
     //endregion
 

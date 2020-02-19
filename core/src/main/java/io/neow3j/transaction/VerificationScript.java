@@ -128,7 +128,7 @@ public class VerificationScript extends NeoSerializable {
         } else if (isMultiSigScript()) {
             try (ByteArrayInputStream stream = new ByteArrayInputStream(script, 0, script.length)) {
                 return new BinaryReader(stream).readPushInteger();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
                 // IOExceptions will not occur when using the ByteArrayInputStream.
             }
         }
@@ -154,12 +154,13 @@ public class VerificationScript extends NeoSerializable {
      */
     public boolean isSingleSigScript() {
         String interopCode = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(this.script, 4));
-        return interopCode.equals(InteropServiceCode.NEO_CRYPTO_CHECKSIG.getCode());
+        return interopCode.equals(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash());
     }
 
     // TODO: Adapt implementation to newest neo-core version.
+
     /**
-     * Checks if this verification script is from multi signature account.
+     * Checks if this verification script is from a multi signature account.
      *
      * @return true if this script is from a multi signature account. False, otherwise.
      */
@@ -167,6 +168,9 @@ public class VerificationScript extends NeoSerializable {
 //        String interopCode = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(this.script,
 //        4));
 //        return interopCode.equals(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getCode());
+
+
+
 //        int m, n, i = 0;
 //        if (script.length < 43) {
 //            return false;
@@ -178,7 +182,8 @@ public class VerificationScript extends NeoSerializable {
 //        } else if (script[i] == OpCode.PUSHINT16.getValue()) {
 //            m = BinaryReader.readUInt16(Arrays.copyOfRange(script, ++i, script.length));
 //            i += 2;
-//        } else if (script[i] >= OpCode.PUSH1.getValue() && script[i] <= OpCode.PUSH16.getValue()) {
+//        } else if (script[i] >= OpCode.PUSH1.getValue() && script[i] <= OpCode.PUSH16.getValue
+//        ()) {
 //            m = script[i] - OpCode.PUSH0.getValue();
 //            ++i;
 //        } else {
@@ -241,6 +246,7 @@ public class VerificationScript extends NeoSerializable {
     }
 
     // TODO: Adapt implementation to newest neo-core version.
+
     /**
      * Gets the public keys that are encoded in this verification script. If this script is from a
      * single signature account the resulting list will only contain one key.
@@ -267,7 +273,8 @@ public class VerificationScript extends NeoSerializable {
 //        } catch (IOException e) {
 //            // IOExceptions will not occur when using the ByteArrayInputStream.
 //        }
-//        throw new ScriptFormatException("No public keys can be determined because this script does "
+//        throw new ScriptFormatException("No public keys can be determined because this script
+//        does "
 //                + "not apply to the format of a signature verification script.");
     }
 
@@ -300,11 +307,5 @@ public class VerificationScript extends NeoSerializable {
     @Override
     public int hashCode() {
         return Objects.hash(getScript());
-    }
-
-    @Override
-    public String toString() {
-        return "VerificationScript{" +
-                "script=" + Numeric.toHexStringNoPrefix(script) + '}';
     }
 }

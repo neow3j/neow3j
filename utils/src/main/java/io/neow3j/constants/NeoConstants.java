@@ -74,13 +74,13 @@ public class NeoConstants {
      *
      * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 66
      */
-    public static final int INVOC_SCRIPT_SIZE = SIGNATURE_SIZE + 2;
+    public static final int INVOCATION_SCRIPT_SIZE = 66;
 
     /**
      * Size of a serialized invocation (signature) script in bytes.
      * 1 (byte for VarInt) + 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 67
      */
-    public static final int SERIALIZED_INVOC_SCRIPT_SIZE = INVOC_SCRIPT_SIZE + 1;
+    public static final int SERIALIZED_INVOCATION_SCRIPT_SIZE = 67;
 
     //endregion
 
@@ -115,6 +115,8 @@ public class NeoConstants {
      */
     public static final int MAX_FREE_TRANSACTION_SIZE = 1024;
 
+    // TODO: Clarify if we can get the FeePerByte from the Policy contract as it is done
+    //  in neo-core. `NativeContract.Policy.GetFeePerByte(snapshot)`
     /**
      * The network fee per byte of a transaction. Amount is in GAS.
      */

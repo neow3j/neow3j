@@ -86,7 +86,7 @@ public class ContractDeploymentScript extends NeoSerializable {
                 .toArray());
         // syscall "Neo.Contract.Create"
         writer.write(new ScriptBuilder()
-                .sysCall(InteropServiceCode.NEO_CONTRACT_CREATE)
+                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CREATE)
                 .toArray());
     }
 

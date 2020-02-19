@@ -168,7 +168,8 @@ public class BinaryReader implements AutoCloseable {
     /**
      * Reads a 16-bit unsigned integer from the underlying input stream.
      * <p>
-     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a int.
+     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a
+     * int.
      *
      * @return the 16-bit unsigned integer as a normal Java int.
      * @throws IOException if an I/O exception occurs.
@@ -328,6 +329,28 @@ public class BinaryReader implements AutoCloseable {
             return BigIntegers.fromLittleEndianByteArray(readPushData());
         }
     }
+
+    public BigInteger ReadPushBigInteger() throws IOException, DeserializationException {
+        byte opCode = readByte();
+        if (opCode >= OpCode.PUSHM1.getValue() && opCode <= OpCode.PUSH16.getValue()) {
+            return BigInteger.valueOf(opCode - OpCode.PUSH0.getValue());
+        } else if (opCode == OpCode.PUSHINT8.getValue()) {
+            return BigIntegers.fromLittleEndianByteArray(new byte[]{readByte()});
+        } else if (opCode == OpCode.PUSHINT16.getValue()) {
+            return BigIntegers.fromLittleEndianByteArray(readBytes(2));
+        } else if (opCode == OpCode.PUSHINT32.getValue()) {
+            return BigIntegers.fromLittleEndianByteArray(readBytes(4));
+        } else if (opCode == OpCode.PUSHINT64.getValue()) {
+            return BigIntegers.fromLittleEndianByteArray(readBytes(8));
+        } else if (opCode == OpCode.PUSHINT128.getValue()) {
+            return BigIntegers.fromLittleEndianByteArray(readBytes(16));
+        } else if (opCode == OpCode.PUSHINT256.getValue()) {
+            return BigIntegers.fromLittleEndianByteArray(readBytes(32));
+        }
+        throw new DeserializationException("Couldn't parse PUSH integer OpCode");
+
+    }
+
 
     public static int readUInt16(byte[] bytes) {
         try (ByteArrayInputStream ms = new ByteArrayInputStream(bytes)) {

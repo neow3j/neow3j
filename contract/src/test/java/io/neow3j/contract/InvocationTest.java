@@ -26,6 +26,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
+import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,14 +59,16 @@ public class InvocationTest {
 
     @Test
     public void testAutomaticSettingOfValidUntilBlockVariable() throws IOException {
+        Wallet wallet = Wallet.createWallet();
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         // This is needed because the builder should fetch the current block number.
         ContractTestUtils.setUpWireMockForGetBlockCount();
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        Account acc = Account.createAccount();
-        Invocation i = new InvocationBuilder(neow, sh, method).withSender(acc.getScriptHash()).build();
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
+                .build();
         assertThat(
                 i.getTransaction().getValidUntilBlock(),
                 is((long) MAX_VALID_UNTIL_BLOCK_INCREMENT + GETBLOCKCOUNT_RESPONSE)
@@ -74,63 +77,62 @@ public class InvocationTest {
 
     @Test
     public void testCreationOfTheScript() throws IOException {
+        Wallet wallet = Wallet.createWallet();
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        Account acc = Account.createAccount();
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(acc.getScriptHash())
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
                 .validUntilBlock(1000)
                 .build();
 
         String expectedScript = "" +
                 OpCode.PUSH0.toString() +
                 OpCode.PACK.toString() +
-                OpCode.PUSHBYTES4.toString() +
+                OpCode.PUSHDATA1.toString() + "04" + // 4 bytes
                 "6e616d65" +                                // method: "name"
-                OpCode.PUSHBYTES20.toString() +
-                Numeric.toHexStringNoPrefix(sh.toArray()) + // ScriptHash in little-endian format
+                OpCode.PUSHDATA1.toString() + "14" + // 20 bytes
+                Numeric.toHexStringNoPrefix(contract.toArray()) + // ScriptHash in little-endian format
                 OpCode.SYSCALL.toString() +
-                InteropServiceCode.SYSTEM_CONTRACT_CALL.toString();
+                InteropServiceCode.SYSTEM_CONTRACT_CALL.getHash();
 
         assertThat(Numeric.toHexStringNoPrefix(i.getTransaction().getScript()), is(expectedScript));
     }
 
     @Test
     public void testAutomaticSettingOfSystemFee() throws IOException {
+        Wallet wallet = Wallet.createWallet();
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        Account acc = Account.createAccount();
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(acc.getScriptHash())
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
                 .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSystemFee(), is(3_700_000L));
+        assertThat(i.getTransaction().getSystemFee(), is(1_007_270L));
     }
 
     @Test
     public void testAutomaticSettingOfNetworkFeeWithSingleSigAccount() throws Exception {
+        Wallet wallet = Wallet.createWallet();
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
+        long additionalFee = 100_000_000; // Additional fee of 1 GAS.
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        Account acc = Account.createAccount();
-        long additionalFee = 100_000_000;
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(acc.getScriptHash())
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
                 .validUntilBlock(1000)
-                .withAdditionalNetworkFee(additionalFee) // Additional fee of 1 GAS.
+                .withAdditionalNetworkFee(additionalFee)
                 .build();
 
         int signedTxSize = i.sign().getTransaction().getSize();
         long sizeFee = signedTxSize * NeoConstants.GAS_PER_BYTE;
-        long verificationFee = OpCode.PUSHBYTES64.getPrice() +
-                OpCode.PUSHBYTES33.getPrice() +
-                InteropServiceCode.NEO_CRYPTO_CHECKSIG.getPrice();
+        // PUSHDATA1 + PUSHDATA1 + PUSHNULL + ECDsaVerify
+        long verificationFee = 180 + 180 + 30 + 1_000_000;
 
         assertThat(i.getTransaction().getNetworkFee(),
                 is(sizeFee + verificationFee + additionalFee));
@@ -139,17 +141,19 @@ public class InvocationTest {
     @Test
     public void testAutomaticSettingOfNetworkFeeWithMultiSigAccount() throws Exception {
         String method = "name";
-        // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
         ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
         List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey2(), keyPair2.getPublicKey2());
-        int signingThreshold = 2;
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
+        int m = 2; // signingThreshold
+        int n = 2; // total number of participating keys
+        Account multiSigAcc = Account.fromMultiSigKeys(keys, m).isDefault(true).build();
+        Wallet wallet = new Wallet.Builder().account(multiSigAcc).build();
         long additionalFee = 100_000_000;
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(multiSigAcc.getScriptHash())
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
                 .validUntilBlock(1000)
                 .withAdditionalNetworkFee(additionalFee) // Additional fee of 1 GAS.
                 .build();
@@ -161,11 +165,8 @@ public class InvocationTest {
         i.addSignatures(sigs);
         int signedTxSize = i.getTransaction().getSize();
         long sizeFee = signedTxSize * NeoConstants.GAS_PER_BYTE;
-        long verificationFee = OpCode.PUSHBYTES64.getPrice() * signingThreshold +
-                OpCode.PUSH2.getPrice() +
-                OpCode.PUSHBYTES33.getPrice() * keys.size() +
-                OpCode.PUSH2.getPrice() +
-                InteropServiceCode.NEO_CRYPTO_CHECKSIG.getPrice() * keys.size();
+        // PUSHDATA1 * m + PUSH2 + PUSHDATA1 * n + PUSH2 + PUSHNULL + ECDsaVerify * n
+        long verificationFee = (180 * m) + 30 + (180 * n) + 30 + 30 + (1_000_000 * n);
 
         assertThat(i.getTransaction().getNetworkFee(),
                 is(sizeFee + verificationFee + additionalFee));
