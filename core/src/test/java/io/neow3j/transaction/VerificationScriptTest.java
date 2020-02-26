@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
@@ -64,34 +65,32 @@ public class VerificationScriptTest {
 
     @Test
     public void testGetSigningThreshold() {
-        String key = "21" + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef";
+        String key = OpCode.PUSHDATA1.toString() + "21"
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef";
 
         // Signing threshold: 2
-        StringBuilder script = new StringBuilder("52"); // signing threshold
-        IntStream.range(0, 3).forEach(i -> script.append(key));
-        script.append("53"); // number of public keys
-        script.append("68c7c34cba"); // sys call
-        byte[] scriptBytes = Numeric.hexStringToByteArray(script.toString());
-        int th = new VerificationScript(scriptBytes).getSigningThreshold();
-        assertEquals(2, th);
+        StringBuilder sb = new StringBuilder();
+        sb.append(OpCode.PUSH2.toString()); // signing threshold
+        IntStream.range(0, 3).forEach(i -> sb.append(key));
+        sb.append(OpCode.PUSH3.toString()); // number of public keys
+        sb.append(OpCode.PUSHNULL.toString());
+        sb.append(OpCode.SYSCALL.toString());
+        sb.append("3073b3bb"); // sys call
+        byte[] script = Numeric.hexStringToByteArray(sb.toString());
+        assertEquals(2, new VerificationScript(script).getSigningThreshold());
 
-        // Signing threshold: 255
-        StringBuilder script2 = new StringBuilder("02ff00"); // signing threshold
-        IntStream.range(0, 16).forEach(i -> script2.append(key));
-        script2.append("02ff00"); // number of public keys
-        script2.append("68c7c34cba"); // sys call
-        scriptBytes = Numeric.hexStringToByteArray(script2.toString());
-        th = new VerificationScript(scriptBytes).getSigningThreshold();
-        assertEquals(255, th);
-
-        // Signing threshold: 1024
-        StringBuilder script3 = new StringBuilder("020004ae"); // signing threshold
-        IntStream.range(0, 16).forEach(i -> script3.append(key));
-        script3.append("020004ae"); // number of public keys
-        script3.append("68c7c34cba"); // sys call
-        scriptBytes = Numeric.hexStringToByteArray(script3.toString());
-        th = new VerificationScript(scriptBytes).getSigningThreshold();
-        assertEquals(1024, th);
+        // Signing threshold: 127
+        StringBuilder sb2 = new StringBuilder();
+        sb2.append(OpCode.PUSHINT8.toString()); // signing threshold
+        sb2.append("7f"); // signing threshold
+        IntStream.range(0, 127).forEach(i -> sb2.append(key));
+        sb2.append(OpCode.PUSHINT8.toString()); // signing threshold
+        sb2.append("7f"); // number of public keys
+        sb2.append(OpCode.PUSHNULL.toString());
+        sb2.append(OpCode.SYSCALL.toString());
+        sb2.append("3073b3bb"); // sys call
+        script = Numeric.hexStringToByteArray(sb2.toString());
+        assertEquals(127, new VerificationScript(script).getSigningThreshold());
     }
 
     @Test(expected = ScriptFormatException.class)
@@ -124,36 +123,159 @@ public class VerificationScriptTest {
         assertThat(s.getSize(), is(1 + 64)); // byte for script length and actual length.
     }
 
+
+    @Test
+    public void isSingleSigScript() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "0a906ad4"); // sys call
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertTrue(s.isSingleSigScript());
+    }
+
     @Test
     public void isMultiSigScript() {
         byte[] scriptBytes = Numeric.hexStringToByteArray(""
-                + "52" // signing threshold
-                + "21" + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef"
-                + "21" + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9"
-                + "21" + "03f0f9b358dfed564e74ffe242713f8bc866414226649f59859b140a130818898b"
-                + "53" // number of public keys
-                + "68c7c34cba"); // sys call
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "03f0f9b358dfed564e74ffe242713f8bc866414226649f59859b140a130818898b" // key
+                + OpCode.PUSH3.toString() // number of public keys
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "3073b3bb"); // sys call to
         VerificationScript s = new VerificationScript(scriptBytes);
         assertTrue(s.isMultiSigScript());
+    }
 
-        // Also return true if the script is not valid but contains the check multi-sig interop
-        // code.
-        scriptBytes = Numeric.hexStringToByteArray("c7c34cba");
-        s = new VerificationScript(scriptBytes);
-        assertTrue(s.isMultiSigScript());
-
-        // Return false if the script does not end in the above interop code.
-        scriptBytes = Numeric.hexStringToByteArray("c8c34cba");
-        s = new VerificationScript(scriptBytes);
+    @Test
+    public void failIsMultiSigScriptBecauseScrtipIsTooShort() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray("a89429c3be9f");
+        VerificationScript s = new VerificationScript(scriptBytes);
         assertFalse(s.isMultiSigScript());
+    }
 
-        scriptBytes = Numeric.hexStringToByteArray("a720be29988");
-        s = new VerificationScript(scriptBytes);
+    @Test
+    public void failIsMultiSigScriptBecauseNIsSmallerThanOne() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH0.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSH1.toString() // number of public keys
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "3073b3bb"); // sys call to
+
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertFalse(s.isMultiSigScript());
+    }
+
+    @Test
+    public void failIsMultiSigScriptBecauseScriptAppruptlyEnds() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef"); // key
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertFalse(s.isMultiSigScript());
+    }
+
+    @Test
+    public void failIsMultiSigScriptBecauseOfWrongPushData() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "43"// PUSHDATA1 and wrong number of bytes for key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSH2.toString() // number of public keys
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "3073b3bb"); // sys call to
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertFalse(s.isMultiSigScript());
+    }
+
+    @Test
+    public void failIsMultiSigScriptBecauseNLargerThanM() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH3.toString() // n > m
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and wrong number of bytes for key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSH2.toString() // number of public keys
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "3073b3bb"); // sys call to
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertFalse(s.isMultiSigScript());
+    }
+
+    @Test
+    public void failIsMultiSigScriptBecauseMIsIncorrect() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and wrong number of bytes for key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSH3.toString() // m not congruent with number of keys
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "3073b3bb"); // sys call to
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertFalse(s.isMultiSigScript());
+    }
+
+    @Test
+    public void failIsMultiSigScriptBecauseOfMissingPUSHNULL() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and wrong number of bytes for key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSH2.toString() // number of public keys
+                // PUSHNULL missing
+                + OpCode.SYSCALL.toString() + "3073b3bb"); // sys call to
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertFalse(s.isMultiSigScript());
+    }
+
+    @Test
+    public void failIsMultiSigScriptBecauseOfMissingSYSCALL() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and wrong number of bytes for key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSH2.toString() // number of public keys
+                + OpCode.PUSHNULL.toString() // m not congruent with number of keys
+                // SYSCALL missing
+                + "3073b3bb");
+        VerificationScript s = new VerificationScript(scriptBytes);
+        assertFalse(s.isMultiSigScript());
+    }
+
+    @Test
+    public void failIsMultiSigScriptBecauseOfWrongInteropService() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and wrong number of bytes for key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSH3.toString() // number of public keys
+                + OpCode.PUSHNULL.toString() // m not congruent with number of keys
+                + OpCode.SYSCALL.toString() + "103ab300"); // wrong interop service
+        VerificationScript s = new VerificationScript(scriptBytes);
         assertFalse(s.isMultiSigScript());
     }
 
     @Test
     public void getPublicKeys() {
-       fail();
+        fail();
     }
 }

@@ -3,6 +3,8 @@ package io.neow3j.transaction;
 import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
 
 import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.NeoConstants;
+import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -14,7 +16,6 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.ScriptFormatException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,10 +127,10 @@ public class VerificationScript extends NeoSerializable {
         if (isSingleSigScript()) {
             return 1;
         } else if (isMultiSigScript()) {
-            try (ByteArrayInputStream stream = new ByteArrayInputStream(script, 0, script.length)) {
-                return new BinaryReader(stream).readPushInteger();
-            } catch (IOException ignored) {
-                // IOExceptions will not occur when using the ByteArrayInputStream.
+            try {
+                return new BinaryReader(script).readPushInteger();
+            } catch (DeserializationException e) {
+                throw new RuntimeException(e);
             }
         }
         throw new ScriptFormatException("The signing threshold cannot be determined because this "
@@ -153,11 +154,16 @@ public class VerificationScript extends NeoSerializable {
      * @return true if this script is from a single signature account. False, otherwise.
      */
     public boolean isSingleSigScript() {
-        String interopCode = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(this.script, 4));
-        return interopCode.equals(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash());
+        if (script.length != 41) {
+            return false;
+        }
+        String interopService = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(script, 4));
+        return script[0] == OpCode.PUSHDATA1.getValue()
+                && script[1] == 33 // 33 bytes of public key
+                && script[35] == OpCode.PUSHNULL.getValue()
+                && script[36] == OpCode.SYSCALL.getValue()
+                && interopService.equals(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash());
     }
-
-    // TODO: Adapt implementation to newest neo-core version.
 
     /**
      * Checks if this verification script is from a multi signature account.
@@ -165,87 +171,59 @@ public class VerificationScript extends NeoSerializable {
      * @return true if this script is from a multi signature account. False, otherwise.
      */
     public boolean isMultiSigScript() {
-//        String interopCode = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(this.script,
-//        4));
-//        return interopCode.equals(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getCode());
+        if (script.length < 43) {
+            return false;
+        }
+        try {
+            BinaryReader reader = new BinaryReader(this.script);
+            int n = reader.readPushInteger(); // Signing Threshold (n of m)
+            if (n < 1 || n > NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
+                return false;
+            }
 
+            int m = 0; // Number of participating keys
+            while (reader.readByte() == OpCode.PUSHDATA1.getValue()) {
+                // Position at PUSHDATA1 + (1 byte data size + 33 bytes + 1 byte to make sure
+                // script does not end after the key.
+                if (script.length <= reader.getPosition() + 35) {
+                    return false;
+                }
+                // Byte after PUSHDATA1 must have value 33 for 33 bytes of public key data.
+                if (reader.readByte() != 33) {
+                    return false;
+                }
+                reader.readEncodedECPoint();
+                m++;
+                // Mark the current position to be able to reset the last readBytes() which is not a
+                // PUSHDATA1 anymore.
+                reader.mark(0);
+            }
+            if (n > m || m > MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
+                return false;
+            }
 
-
-//        int m, n, i = 0;
-//        if (script.length < 43) {
-//            return false;
-//        }
-//        // Determine m (signing threshold)
-//        if (script[i] == OpCode.PUSHINT8.getValue()) {
-//            m = script[++i];
-//            ++i;
-//        } else if (script[i] == OpCode.PUSHINT16.getValue()) {
-//            m = BinaryReader.readUInt16(Arrays.copyOfRange(script, ++i, script.length));
-//            i += 2;
-//        } else if (script[i] >= OpCode.PUSH1.getValue() && script[i] <= OpCode.PUSH16.getValue
-//        ()) {
-//            m = script[i] - OpCode.PUSH0.getValue();
-//            ++i;
-//        } else {
-//            return false;
-//        }
-//        if (m < 1 || m > NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
-//            return false;
-//        }
-//        while (script[i] == (byte) OpCode.PUSHDATA1) {
-//            if (script.Length <= i + 35) {
-//                return false;
-//            }
-//            if (script[++i] != 33) {
-//                return false;
-//            }
-//            i += 34;
-//            ++n;
-//        }
-//        if (n < m || n > 1024) {
-//            return false;
-//        }
-//        switch (script[i]) {
-//            case (byte) OpCode.PUSHINT8:
-//                if (n != script[++i]) {
-//                    return false;
-//                }
-//                ++i;
-//                break;
-//            case (byte) OpCode.PUSHINT16:
-//                if (script.Length < i + 3 || n != BinaryPrimitives
-//                        .ReadUInt16LittleEndian(script.AsSpan(++i))) {
-//                    return false;
-//                }
-//                i += 2;
-//                break;
-//            case
-//                byte b when b >=(byte) OpCode.PUSH1 && b <= (byte) OpCode.PUSH16:
-//                if (n != b - (byte) OpCode.PUSH0) {
-//                    return false;
-//                }
-//                ++i;
-//                break;
-//            default:
-//                return false;
-//        }
-//        if (script[i++] != (byte) OpCode.PUSHNULL) {
-//            return false;
-//        }
-//        if (script[i++] != (byte) OpCode.SYSCALL) {
-//            return false;
-//        }
-//        if (script.Length != i + 4) {
-//            return false;
-//        }
-//        if (BitConverter.ToUInt32(script, i) != InteropService.Crypto.ECDsaCheckMultiSig) {
-//            return false;
-//        }
-//        return true;
-        return false;
+            reader.reset(); // Reset the last performed readBytes() from the while loop.
+            int alsoM = reader.readPushInteger();
+            if (m != alsoM) {
+                return false;
+            }
+            if (reader.readByte() != OpCode.PUSHNULL.getValue()) {
+                return false;
+            }
+            if (reader.readByte() != OpCode.SYSCALL.getValue()) {
+                return false;
+            }
+            byte[] interopServiceCode = new byte[4];
+            reader.read(interopServiceCode, 0, 4);
+            if (!Numeric.toHexStringNoPrefix(interopServiceCode)
+                    .equals(InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getHash())) {
+                return false;
+            }
+        } catch (DeserializationException | IOException e) {
+            return false;
+        }
+        return true;
     }
-
-    // TODO: Adapt implementation to newest neo-core version.
 
     /**
      * Gets the public keys that are encoded in this verification script. If this script is from a
@@ -254,28 +232,31 @@ public class VerificationScript extends NeoSerializable {
      * @return the list of public keys encoded in this script.
      */
     public List<ECPublicKey> getPublicKeys() {
-        return new ArrayList<>();
-//        try (ByteArrayInputStream stream =
-//                new ByteArrayInputStream(this.script, 0, this.script.length)) {
-//            BinaryReader reader = new BinaryReader(stream);
-//            List<ECPublicKey> keys = new ArrayList<>();
-//            if (isSingleSigScript()) {
-//                reader.readByte(); // OpCode.PUSHBYTES33;
+//        BinaryReader reader = new BinaryReader(this.script);
+//        List<ECPublicKey> keys = new ArrayList<>();
+//        if (isSingleSigScript()) {
+//            reader.readByte(); // OpCode.PUSHBYTES33;
+//            keys.add(new ECPublicKey(reader.readECPoint()));
+//            return keys;
+//        } else if (isMultiSigScript()) {
+//            reader.readPushInteger();
+//            while (reader.readByte() == OpCode.PUSHBYTES33.getValue()) {
 //                keys.add(new ECPublicKey(reader.readECPoint()));
-//                return keys;
-//            } else if (isMultiSigScript()) {
-//                reader.readPushInteger();
-//                while (reader.readByte() == OpCode.PUSHBYTES33.getValue()) {
-//                    keys.add(new ECPublicKey(reader.readECPoint()));
-//                }
-//                return keys;
 //            }
-//        } catch (IOException e) {
-//            // IOExceptions will not occur when using the ByteArrayInputStream.
+//            return keys;
 //        }
-//        throw new ScriptFormatException("No public keys can be determined because this script
-//        does "
-//                + "not apply to the format of a signature verification script.");
+//    } catch(
+//    IOException e)
+//
+//    {
+//        // IOExceptions will not occur when using the ByteArrayInputStream.
+//    }
+//        throw new
+//
+//    ScriptFormatException("No public keys can be determined because this script
+//            does "
+//            +"not apply to the format of a signature verification script.");
+        return new ArrayList<>();
     }
 
     @Override
