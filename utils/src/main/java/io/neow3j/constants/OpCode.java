@@ -11,6 +11,8 @@ public enum OpCode {
 
     //region Constants
 
+    // Push a signed integer of the given bit length in its two's complement and little-endian
+    // order.
     PUSHINT8(0x00, 30),
     PUSHINT16(0x01, 30),
     PUSHINT32(0x02, 30),
@@ -274,7 +276,7 @@ public enum OpCode {
      * Calls the function at the target address which is represented as a 4-bytes signed offset from
      * the beginning of the current instruction.
      */
-    CALL_L(0x35,22000),
+    CALL_L(0x35, 22000),
 
     /**
      * Pop the address of a function from the stack, and call the function.
@@ -312,7 +314,7 @@ public enum OpCode {
     private Long price;
 
     OpCode(int opCode, int price) {
-        this.opCode = (byte)opCode;
+        this.opCode = (byte) opCode;
         this.price = (long) price;
     }
 

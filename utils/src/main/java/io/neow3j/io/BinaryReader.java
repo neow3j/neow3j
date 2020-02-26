@@ -125,6 +125,23 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getDouble(0);
     }
 
+    public byte[] readEncodedECPoint() throws DeserializationException {
+        byte[] ecPoint = new byte[33];
+        try {
+            byte encoded = reader.readByte();
+            position += Byte.BYTES;
+            if (encoded == 0x02 || encoded == 0x03) {
+                ecPoint[0] = encoded;
+                reader.readFully(ecPoint, 1, 32);
+                position += 32;
+                return ecPoint;
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
+        throw new DeserializationException("Failed parsing encoded EC point.");
+    }
+
     public ECPoint readECPoint() throws IOException {
         // based on: https://tools.ietf.org/html/rfc5480#section-2.2
         byte[] encoded;
@@ -307,48 +324,32 @@ public class BinaryReader implements AutoCloseable {
         return new String(readPushData(), "UTF-8");
     }
 
-    public int readPushInteger() throws IOException {
+    public int readPushInteger() throws DeserializationException {
         return readPushBigInteger().intValue();
     }
 
-    // TODO: Adapt to new pushInteger implementation of Neo 3. See ScriptBuilder.pushInteger().
-    public BigInteger readPushBigInteger() throws IOException {
-        mark(2);
-        byte read = readByte();
-        if (read == OpCode.PUSHM1.getValue()) {
-            return BigInteger.ONE.negate();
-        } else if (read == OpCode.PUSH0.getValue()) {
-            return BigInteger.ZERO;
-        } else if (read >= OpCode.PUSH1.getValue() && read <= OpCode.PUSH16.getValue()) {
-            return BigInteger.valueOf(read - OpCode.PUSH0.getValue());
-        } else {
-            // If the value is larger than the PUSH16 opcode then read as data array.
-            // The same byte that has just been read needs to be read again in pushData(), so we
-            // reset the stream to the mark.
-            reset();
-            return BigIntegers.fromLittleEndianByteArray(readPushData());
-        }
-    }
-
-    public BigInteger ReadPushBigInteger() throws IOException, DeserializationException {
-        byte opCode = readByte();
-        if (opCode >= OpCode.PUSHM1.getValue() && opCode <= OpCode.PUSH16.getValue()) {
-            return BigInteger.valueOf(opCode - OpCode.PUSH0.getValue());
-        } else if (opCode == OpCode.PUSHINT8.getValue()) {
-            return BigIntegers.fromLittleEndianByteArray(new byte[]{readByte()});
-        } else if (opCode == OpCode.PUSHINT16.getValue()) {
-            return BigIntegers.fromLittleEndianByteArray(readBytes(2));
-        } else if (opCode == OpCode.PUSHINT32.getValue()) {
-            return BigIntegers.fromLittleEndianByteArray(readBytes(4));
-        } else if (opCode == OpCode.PUSHINT64.getValue()) {
-            return BigIntegers.fromLittleEndianByteArray(readBytes(8));
-        } else if (opCode == OpCode.PUSHINT128.getValue()) {
-            return BigIntegers.fromLittleEndianByteArray(readBytes(16));
-        } else if (opCode == OpCode.PUSHINT256.getValue()) {
-            return BigIntegers.fromLittleEndianByteArray(readBytes(32));
+    public BigInteger readPushBigInteger() throws DeserializationException {
+        try {
+            byte opCode = readByte();
+            if (opCode >= OpCode.PUSHM1.getValue() && opCode <= OpCode.PUSH16.getValue()) {
+                return BigInteger.valueOf(opCode - OpCode.PUSH0.getValue());
+            } else if (opCode == OpCode.PUSHINT8.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(new byte[]{readByte()});
+            } else if (opCode == OpCode.PUSHINT16.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(2));
+            } else if (opCode == OpCode.PUSHINT32.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(4));
+            } else if (opCode == OpCode.PUSHINT64.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(8));
+            } else if (opCode == OpCode.PUSHINT128.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(16));
+            } else if (opCode == OpCode.PUSHINT256.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(32));
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
         }
         throw new DeserializationException("Couldn't parse PUSH integer OpCode");
-
     }
 
 

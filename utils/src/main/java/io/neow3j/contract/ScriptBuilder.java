@@ -154,7 +154,8 @@ public class ScriptBuilder {
     }
 
     /**
-     * Adds a push operation with the given integer to the script.
+     * Adds a push operation with the given integer to the script. The integer is encoded in its
+     * two's complement and in little-endian order.
      * <p>
      * The integer can be up to 32 bytes long.
      *
