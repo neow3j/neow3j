@@ -222,7 +222,7 @@ public class TransactionTest {
             + "00"  // no attributes
             + "01"  // one default cosigners
             + "23ba2703c53263e8d6e522dc32203339dcd8eee901" // calledByEntry cosigner
-            + "0151"  // push1 script
+            + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
             + "00"); // no witnesses
 
         assertArrayEquals(expected, actual);
@@ -261,7 +261,7 @@ public class TransactionTest {
             + "02"  // 2 cosigners
             + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
             + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
-            + "0151"  // push1 script
+            + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
             + "01" // 1 witness
             + "01000100" // witness
         );
@@ -284,7 +284,7 @@ public class TransactionTest {
             + "02"  // 2 cosigners
             + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
             + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
-            + "0151"  // push1 script
+            + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
             + "01" // 1 witness
             + "01000100"); /* witness*/
 
