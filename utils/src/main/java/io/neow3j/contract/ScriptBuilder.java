@@ -4,7 +4,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
@@ -296,14 +295,6 @@ public class ScriptBuilder {
         }
     }
 
-    private void writeReversed(byte[] data) {
-        try {
-            stream.write(ArrayUtils.reverseArray(data));
-        } catch (IOException e) {
-            throw new IllegalStateException("Got IOException without doing IO.");
-        }
-    }
-
     public byte[] toArray() {
         try {
             stream.flush();
@@ -322,6 +313,7 @@ public class ScriptBuilder {
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
+                .opCode(OpCode.PUSHNULL)
                 .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY)
                 .toArray();
     }
@@ -339,6 +331,7 @@ public class ScriptBuilder {
         encodedPublicKeys.forEach(builder::pushData);
         return builder
                 .pushInteger(encodedPublicKeys.size())
+                .opCode(OpCode.PUSHNULL)
                 .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG)
                 .toArray();
 

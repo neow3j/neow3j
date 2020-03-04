@@ -1,13 +1,15 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.constants.NeoConstants.VERIFICATION_SCRIPT_SIZE;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.NeoSerializableInterface;
@@ -23,44 +25,79 @@ public class VerificationScriptTest {
 
     @Test
     public void testFromPublicKey() {
-        ECPublicKey key = new ECPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
-        VerificationScript script = new VerificationScript(key);
+        final String key = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        final ECPublicKey ecPubKey = new ECPublicKey(Numeric.hexStringToByteArray(key));
+        VerificationScript script = new VerificationScript(ecPubKey);
 
-        assertArrayEquals(
-                Numeric.hexStringToByteArray(TestKeys.verificationScript1),
-                script.getScript());
+        byte[] expected = Numeric.hexStringToByteArray(""
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key // public key
+                + OpCode.PUSHNULL.toString()
+                + OpCode.SYSCALL.toString()
+                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash()
+        );
+        assertArrayEquals(expected, script.getScript());
     }
 
     @Test
     public void testFromPublicKeys() {
+        final String key1 = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        final String key2 = "03eda286d19f7ee0b472afd1163d803d620a961e1581a8f2704b52c0285f6e022d";
+
         List<ECPublicKey> publicKeys = Arrays.asList(
-                new ECPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey2_1)),
-                new ECPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey2_2)));
+                new ECPublicKey(Numeric.hexStringToByteArray(key1)),
+                new ECPublicKey(Numeric.hexStringToByteArray(key2)));
         VerificationScript script = new VerificationScript(publicKeys, 2);
 
-        assertArrayEquals(
-                Numeric.hexStringToByteArray(TestKeys.verificationScript2),
-                script.getScript());
+        byte[] expected = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // n = 2, signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key1 // public key
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key2 // public key
+                + OpCode.PUSH2.toString() // m = 2, number of keys
+                + OpCode.PUSHNULL.toString()
+                + OpCode.SYSCALL.toString()
+                + InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getHash()
+        );
+        assertArrayEquals(expected, script.getScript());
     }
 
     @Test
     public void testSerialize() {
-        final String expected = "27" + TestKeys.verificationScript1;
-        ECPublicKey key = new ECPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
-        VerificationScript veriScript = new VerificationScript(key);
-        assertArrayEquals(Numeric.hexStringToByteArray(expected), veriScript.toArray());
+        final String key = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        final ECPublicKey ecPubKey = new ECPublicKey(Numeric.hexStringToByteArray(key));
+        VerificationScript script = new VerificationScript(ecPubKey);
 
-
+        byte[] expected = Numeric.hexStringToByteArray(""
+                + Numeric.toHexStringNoPrefix((byte) VERIFICATION_SCRIPT_SIZE) // Var Int
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key // public key
+                + OpCode.PUSHNULL.toString()
+                + OpCode.SYSCALL.toString()
+                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash()
+        );
+        assertArrayEquals(expected, script.toArray());
     }
 
     @Test
     public void testDeserialize() throws DeserializationException {
-        final String serialized = "27" + TestKeys.verificationScript1;
-        VerificationScript script = NeoSerializableInterface.from(
-                Numeric.hexStringToByteArray(serialized), VerificationScript.class);
+        final String key = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        String script =  ""
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key // public key
+                + OpCode.PUSHNULL.toString()
+                + OpCode.SYSCALL.toString()
+                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash();
 
-        assertThat(script.getScript(),
-                is(Numeric.hexStringToByteArray(TestKeys.verificationScript1)));
+        byte[] serialized = Numeric.hexStringToByteArray(""
+                + Numeric.toHexStringNoPrefix((byte) VERIFICATION_SCRIPT_SIZE) // Var Int
+                + script);
+
+        VerificationScript verificationScript =
+                NeoSerializableInterface.from(serialized, VerificationScript.class);
+
+        assertThat(verificationScript.getScript(), is(Numeric.hexStringToByteArray(script)));
     }
 
     @Test
@@ -97,7 +134,7 @@ public class VerificationScriptTest {
     public void throwOnInvalidScriptFormat1() {
         VerificationScript script = new VerificationScript(
                 Numeric.hexStringToByteArray("0123456789abcdef"));
-       script.getPublicKeys();
+        script.getPublicKeys();
     }
 
     @Test(expected = ScriptFormatException.class)
@@ -275,7 +312,40 @@ public class VerificationScriptTest {
     }
 
     @Test
-    public void getPublicKeys() {
-        fail();
+    public void getPublicKeysFromSingleSigScript() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "0a906ad4"); // sys call
+        VerificationScript s = new VerificationScript(scriptBytes);
+        List<ECPublicKey> pubKeys = s.getPublicKeys();
+        assertThat(pubKeys, hasSize(1));
+        assertThat(Numeric.toHexStringNoPrefix(pubKeys.get(0).getEncoded(true)),
+                is("02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef"));
+    }
+
+    @Test
+    public void getPublicKeysFromMutliSigScript() {
+        byte[] scriptBytes = Numeric.hexStringToByteArray(""
+                + OpCode.PUSH2.toString() // signing threshold
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9" // key
+                + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
+                + "03f0f9b358dfed564e74ffe242713f8bc866414226649f59859b140a130818898b" // key
+                + OpCode.PUSH3.toString() // number of public keys
+                + OpCode.PUSHNULL.toString() // null message
+                + OpCode.SYSCALL.toString() + "3073b3bb"); // sys call to
+        VerificationScript s = new VerificationScript(scriptBytes);
+        List<ECPublicKey> pubKeys = s.getPublicKeys();
+        assertThat(pubKeys, hasSize(3));
+        assertThat(Numeric.toHexStringNoPrefix(pubKeys.get(0).getEncoded(true)),
+                is("02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef"));
+        assertThat(Numeric.toHexStringNoPrefix(pubKeys.get(1).getEncoded(true)),
+                is("031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9"));
+        assertThat(Numeric.toHexStringNoPrefix(pubKeys.get(2).getEncoded(true)),
+                is("03f0f9b358dfed564e74ffe242713f8bc866414226649f59859b140a130818898b"));
     }
 }

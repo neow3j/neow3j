@@ -232,31 +232,29 @@ public class VerificationScript extends NeoSerializable {
      * @return the list of public keys encoded in this script.
      */
     public List<ECPublicKey> getPublicKeys() {
-//        BinaryReader reader = new BinaryReader(this.script);
-//        List<ECPublicKey> keys = new ArrayList<>();
-//        if (isSingleSigScript()) {
-//            reader.readByte(); // OpCode.PUSHBYTES33;
-//            keys.add(new ECPublicKey(reader.readECPoint()));
-//            return keys;
-//        } else if (isMultiSigScript()) {
-//            reader.readPushInteger();
-//            while (reader.readByte() == OpCode.PUSHBYTES33.getValue()) {
-//                keys.add(new ECPublicKey(reader.readECPoint()));
-//            }
-//            return keys;
-//        }
-//    } catch(
-//    IOException e)
-//
-//    {
-//        // IOExceptions will not occur when using the ByteArrayInputStream.
-//    }
-//        throw new
-//
-//    ScriptFormatException("No public keys can be determined because this script
-//            does "
-//            +"not apply to the format of a signature verification script.");
-        return new ArrayList<>();
+        BinaryReader reader = new BinaryReader(this.script);
+        List<ECPublicKey> keys = new ArrayList<>();
+        try {
+            if (isSingleSigScript()) {
+                reader.readByte(); // OpCode.PUSHDATA1;
+                reader.readByte(); // size byte
+                keys.add(new ECPublicKey(reader.readECPoint()));
+                return keys;
+            } else if (isMultiSigScript()) {
+                int n = reader.readPushInteger(); // Signing Threshold (n of m)
+                int m = 0; // Number of participating keys
+                while (reader.readByte() == OpCode.PUSHDATA1.getValue()) {
+                    reader.readByte(); // size byte
+                    keys.add(new ECPublicKey(reader.readECPoint()));
+                }
+                return keys;
+            }
+        } catch (IOException | DeserializationException e) {
+            // Shouldn't happen because the underlying stream is a ByteArrayInputStream.
+            throw new RuntimeException(e);
+        }
+        throw new ScriptFormatException("The verification script is in an incorrect format. No "
+                + "public keys can be read from it.");
     }
 
     @Override
