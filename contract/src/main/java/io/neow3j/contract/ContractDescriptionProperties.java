@@ -27,7 +27,8 @@ public class ContractDescriptionProperties extends NeoSerializable {
     public ContractDescriptionProperties() {
     }
 
-    public ContractDescriptionProperties(String name, String version, String author, String email, String description) {
+    public ContractDescriptionProperties(String name, String version, String author, String email,
+            String description) {
         this.name = name;
         this.version = version;
         this.author = author;
@@ -57,8 +58,12 @@ public class ContractDescriptionProperties extends NeoSerializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ContractDescriptionProperties)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ContractDescriptionProperties)) {
+            return false;
+        }
         ContractDescriptionProperties that = (ContractDescriptionProperties) o;
         return Objects.equals(getName(), that.getName()) &&
                 Objects.equals(getVersion(), that.getVersion()) &&
@@ -85,15 +90,11 @@ public class ContractDescriptionProperties extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
-        try {
-            this.description = reader.readPushString();
-            this.email = reader.readPushString();
-            this.author = reader.readPushString();
-            this.version = reader.readPushString();
-            this.name = reader.readPushString();
-        } catch (IOException e) {
-            throw new DeserializationException(e);
-        }
+        this.description = reader.readPushString();
+        this.email = reader.readPushString();
+        this.author = reader.readPushString();
+        this.version = reader.readPushString();
+        this.name = reader.readPushString();
     }
 
     @Override

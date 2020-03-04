@@ -67,7 +67,7 @@ public class ContractDeploymentScript extends NeoSerializable {
             this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
             this.scriptBinary = reader.readPushData();
             this.contractScriptHash = ScriptHash.fromScript(this.scriptBinary);
-        } catch (IllegalAccessException | InstantiationException | IOException e) {
+        } catch (IllegalAccessException | InstantiationException e) {
             throw new DeserializationException(e);
         }
     }

@@ -32,7 +32,9 @@ public class ContractFunctionProperties extends NeoSerializable {
     public ContractFunctionProperties() {
     }
 
-    public ContractFunctionProperties(List<ContractParameterType> parameterTypes, ContractParameterType returnType, boolean needsStorage, boolean needsDynamicInvoke, boolean isPayable) {
+    public ContractFunctionProperties(List<ContractParameterType> parameterTypes,
+            ContractParameterType returnType, boolean needsStorage, boolean needsDynamicInvoke,
+            boolean isPayable) {
         this.parameterTypes = parameterTypes;
         this.returnType = returnType;
         this.needsStorage = needsStorage;
@@ -88,8 +90,12 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ContractFunctionProperties)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ContractFunctionProperties)) {
+            return false;
+        }
         ContractFunctionProperties that = (ContractFunctionProperties) o;
         return getNeedsStorage() == that.getNeedsStorage() &&
                 getNeedsDynamicInvoke() == that.getNeedsDynamicInvoke() &&
@@ -100,7 +106,8 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getParameterTypes(), getReturnType(), getNeedsStorage(), getNeedsDynamicInvoke(), getPayable());
+        return Objects.hash(getParameterTypes(), getReturnType(), getNeedsStorage(),
+                getNeedsDynamicInvoke(), getPayable());
     }
 
     @Override
@@ -116,19 +123,15 @@ public class ContractFunctionProperties extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
-        try {
-            int functionProperties = reader.readPushInteger();
-            this.needsStorage = unpackNeedsStorage(functionProperties);
-            this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
-            this.isPayable = unpackIsPayable(functionProperties);
-            this.returnType = ContractParameterType.valueOf((byte) reader.readPushInteger());
-            byte[] parameters = reader.readPushData();
-            this.parameterTypes = new ArrayList<>();
-            for (byte parameter : parameters) {
-                parameterTypes.add(ContractParameterType.valueOf(parameter));
-            }
-        } catch (IOException e) {
-            throw new DeserializationException(e);
+        int functionProperties = reader.readPushInteger();
+        this.needsStorage = unpackNeedsStorage(functionProperties);
+        this.needsDynamicInvoke = unpackNeedsDynamicInvoke(functionProperties);
+        this.isPayable = unpackIsPayable(functionProperties);
+        this.returnType = ContractParameterType.valueOf((byte) reader.readPushInteger());
+        byte[] parameters = reader.readPushData();
+        this.parameterTypes = new ArrayList<>();
+        for (byte parameter : parameters) {
+            parameterTypes.add(ContractParameterType.valueOf(parameter));
         }
     }
 
