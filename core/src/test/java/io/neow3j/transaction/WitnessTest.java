@@ -1,12 +1,15 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.constants.OpCode.PUSH2;
 import static io.neow3j.constants.OpCode.PUSHDATA1;
+import static io.neow3j.constants.OpCode.PUSHNULL;
 import static io.neow3j.constants.OpCode.SYSCALL;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -50,6 +53,7 @@ public class WitnessTest {
         expected = "" +
                 PUSHDATA1.toString() + "21" + // 33 bytes of public key
                 Numeric.toHexStringNoPrefix(keyPair.getPublicKey2().getEncoded(true)) + // pubKey
+                PUSHNULL.toString() +
                 SYSCALL.toString() + // syscall to...
                 InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash(); // ...signature verification
 
@@ -96,21 +100,23 @@ public class WitnessTest {
         }
 
         String expected = ""
-                + "82" // 130 (0x82) bytes follow
-                + "40"// PUSHBYTES64
+                + "84" // 132 bytes follow as invocation script
+                + PUSHDATA1.toString() + "40" // PUSHDATA 64 bytes
                 + Numeric.toHexStringNoPrefix(signatures.get(0).getConcatenated()) // key 1 sig
-                + "40" // PUSHBYTES64
+                + PUSHDATA1.toString() + "40" // PUSHDATA 64 bytes
                 + Numeric.toHexStringNoPrefix(signatures.get(1).getConcatenated()) // key 2 sig
-                + "69" // 105 (0x69) bytes follow
-                + "52" // PUSH2 (the signing threshold)
-                + "21" // PUSHBYTES33
+                + "71" // 113 bytes follow as verification script
+                + PUSH2.toString() // signing threshold
+                + PUSHDATA1 + "21" // PUSHDATA 33 bytes
                 + Numeric.toHexStringNoPrefix(publicKeys.get(0).getEncoded(true)) // public key 1
-                + "21" // PUSHBYTES33
+                + PUSHDATA1 + "21" // PUSHDATA 33 bytes
                 + Numeric.toHexStringNoPrefix(publicKeys.get(1).getEncoded(true)) // public key 2
-                + "21" // PUSHBYTES33
+                + PUSHDATA1 + "21" // PUSHDATA 33 bytes
                 + Numeric.toHexStringNoPrefix(publicKeys.get(2).getEncoded(true)) // public key 3
-                + "53" // PUSH3 (the total number of involved addresses)
-                + "ae"; // CHECKMULTISIG
+                + OpCode.PUSH3.toString() // m = 3, number of keys
+                + OpCode.PUSHNULL.toString()
+                + OpCode.SYSCALL.toString()
+                + InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getHash();
 
         // Test create from BigIntegers
         Witness script = Witness.createMultiSigWitness(signingThreshold, signatures, publicKeys);
@@ -181,6 +187,7 @@ public class WitnessTest {
         String expectedVerificationScript = ""
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + pk // public key
+                + PUSHNULL.toString()
                 + SYSCALL.toString() // syscall to...
                 + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash(); // ...signature verification
 
