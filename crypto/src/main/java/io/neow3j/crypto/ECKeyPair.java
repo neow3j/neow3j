@@ -78,6 +78,7 @@ public class ECKeyPair {
      * prefix and the address version. The address is constructed ad hoc each time this method is
      * called.
      *
+     * @param addressVersion The address version to use.
      * @return the NEO address of the public key.
      */
     public String getAddress(byte addressVersion) {
