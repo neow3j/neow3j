@@ -19,121 +19,59 @@ public class BinaryReaderTest extends TestBinaryUtils {
 
     // region Read push data byte array
 
-    @Test
-    public void readPushData_ByteArray_1Byte() throws IOException {
-
-        this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("01")
-                .setAnyDataWithSize(1)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
-    }
-
-    @Test
-    public void readPushData_ByteArray_75Bytes() throws IOException {
-
+    @Test(expected = DeserializationException.class)
+    public void failReadPushDataByteArray() throws DeserializationException {
+        // Uses a prefix different from any of the PUSHDATA OpCodes and should therefore fail.
         this.arrayBuilder = new ByteArrayBuilder()
                 .setPrefix("4b")
-                .setAnyDataWithSize(75)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
+                .setAnyDataWithSize(1)
+                .setSuffix("0000");
+        readPushDataByteArray();
     }
 
     @Test
-    public void readPushData_ByteArray_76Bytes() throws IOException {
-
+    public void readPushDataByteArray1Byte() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4c4c")
-                .setAnyDataWithSize(76)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
+                .setPrefix("0c01")
+                .setAnyDataWithSize(1);
+        readPushDataByteArray();
+        assertThat(this.readResultByteArray, is(this.arrayBuilder.getData()));
     }
 
     @Test
-    public void readPushData_ByteArray_77Bytes() throws IOException {
-
+    public void readPushDataByteArray255Bytes() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4c4d")
-                .setAnyDataWithSize(77)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
+                .setPrefix("0cff")
+                .setAnyDataWithSize(255);
+        readPushDataByteArray();
+        assertThat(this.readResultByteArray, is(this.arrayBuilder.getData()));
     }
 
     @Test
-    public void readPushData_ByteArray_255Bytes() throws IOException {
-
+    public void readPushDataByteArray256Bytes() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4cff")
-                .setAnyDataWithSize(255)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
+                .setPrefix("0d0001")
+                .setAnyDataWithSize(256);
+        readPushDataByteArray();
+        assertThat(this.readResultByteArray, is(this.arrayBuilder.getData()));
     }
 
     @Test
-    public void readPushData_ByteArray_256Bytes() throws IOException {
-
+    public void readPushDataByteArray4096Bytes() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4D0001")
-                .setAnyDataWithSize(256)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
+                .setPrefix("0d0010")
+                .setAnyDataWithSize(4096);
+        readPushDataByteArray();
+        assertThat(this.readResultByteArray, is(this.arrayBuilder.getData()));
     }
 
     @Test
-    public void readPushData_ByteArray_2769Bytes() throws IOException {
-
+    public void readPushDataByteArray65536Bytes() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4DD10A")
-                .setAnyDataWithSize(2769)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
-    }
-
-    @Test
-    public void readPushData_ByteArray_4096Bytes() throws IOException {
-
-        this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4E00100000")
-                .setAnyDataWithSize(4096)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
-    }
-
-    @Test
-    public void readPushData_ByteArray_14096Bytes() throws IOException {
-
-        this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4E10370000")
-                .setAnyDataWithSize(14096)
-                .setSuffix("0000000000");
-
-        readPushData_ByteArray();
-
-        assertThat(this.readResultByteArray, is(arrayBuilder.getData()));
+                .setPrefix("0e00000100")
+                .setAnyDataWithSize(65536);
+        readPushDataByteArray();
+        assertThat(this.readResultByteArray, is(this.arrayBuilder.getData()));
     }
 
     //endregion
@@ -141,37 +79,27 @@ public class BinaryReaderTest extends TestBinaryUtils {
     //region Read push data string
 
     @Test
-    public void readPushData_String_0Bytes() throws IOException {
-
+    public void readPushDataString0Bytes() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("00");
-
-        readPushData_String();
-
+                .setPrefix("0c00");
+        readPushDataString();
         assertThat(this.readResultString, is(""));
     }
 
     @Test
-    public void readPushData_String_1Bytes() throws IOException {
-
+    public void readPushDataString1Byte() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("0161");
-
-        readPushData_String();
-
+                .setPrefix("0c0161");
+        readPushDataString();
         assertThat(this.readResultString, is("a"));
     }
 
     @Test
-    public void readPushData_String_10000Bytes() throws IOException {
-
+    public void readPushDataString10000Bytes() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder()
-                .setPrefix("4E10270000")
-                .setAnyStringWithSize(10000)
-                .setSuffix("F0F0F0");
-
-        readPushData_String();
-
+                .setPrefix("0e10270000")
+                .setAnyStringWithSize(10000);
+        readPushDataString();
         assertThat(this.readResultString, is(new String(this.arrayBuilder.getData())));
     }
 
@@ -180,126 +108,127 @@ public class BinaryReaderTest extends TestBinaryUtils {
     //region Read push integer
 
     @Test
-    public void readPushInteger0() throws IOException, DeserializationException {
+    public void readPushInteger0() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setData("10"); // PUSH0
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(0)));
     }
 
     @Test
-    public void readPushInteger1() throws IOException, DeserializationException {
+    public void readPushInteger1() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("11"); // PUSH1
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(1)));
     }
 
     @Test
-    public void readPushIntegerMinus1() throws IOException, DeserializationException {
+    public void readPushIntegerMinus1() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("0f"); // PUSHM1
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(-1)));
     }
 
     @Test
-    public void readPushInteger16() throws IOException, DeserializationException {
+    public void readPushInteger16() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("20"); // PUSH16
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(16)));
     }
 
     @Test(expected = DeserializationException.class)
-    public void failReadPushIntegerUnsupported() throws IOException, DeserializationException {
+    public void failReadPushIntegerUnsupported() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("0e"); // Not a PUSH OpCode
         readPushInteger();
     }
 
     @Test
-    public void readPushIntegerMin8BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMin8BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("0080");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(-128)));
     }
 
     @Test
-    public void readPushIntegerMax8BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMax8BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("007f");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(127)));
     }
 
     @Test
-    public void readPushIntegerMin16BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMin16BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("010080");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(-32_768)));
     }
 
     @Test
-    public void readPushInteger16BitInt255() throws IOException, DeserializationException {
+    public void readPushInteger16BitInt255() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("01ff00");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(255)));
     }
 
     @Test
-    public void readPushIntegerMax16BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMax16BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("01ff7f");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(32_767)));
     }
 
     @Test
-    public void readPushIntegerMin32BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMin32BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("0200000080");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(-2_147_483_648)));
     }
 
     @Test
-    public void readPushInteger32BitInt65535() throws IOException, DeserializationException {
+    public void readPushInteger32BitInt65535() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("02ffff0000");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(65_535)));
     }
 
     @Test
-    public void readPushIntegerMax32BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMax32BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("02ffffff7f");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(2_147_483_647)));
     }
 
     @Test
-    public void readPushIntegerMin64BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMin64BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("030000000000000080");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(-9_223_372_036_854_775_808L)));
     }
 
     @Test
-    public void readPushInteger64BitInt65535() throws IOException, DeserializationException {
+    public void readPushInteger64BitInt65535() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("03ffffffff00000000");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(4_294_967_295L)));
     }
 
     @Test
-    public void readPushIntegerMax64BitInt() throws IOException, DeserializationException {
+    public void readPushIntegerMax64BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("03ffffffffffffff7f");
         readPushInteger();
         assertThat(this.readResultInt, is(BigInteger.valueOf(9_223_372_036_854_775_807L)));
     }
 
     @Test
-    public void readPushInteger128BitInt() throws IOException, DeserializationException {
+    public void readPushInteger128BitInt() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("04ffffffffffffffff0000000000000000");
         readPushInteger();
         assertThat(this.readResultInt, is(new BigInteger("18446744073709551615")));
     }
 
     @Test
-    public void readPushInteger256BitInt() throws IOException, DeserializationException {
-        this.arrayBuilder = new ByteArrayBuilder().setPrefix("050100000000000000feffffffffffffff00000000000000000000000000000000");
+    public void readPushInteger256BitInt() throws DeserializationException {
+        this.arrayBuilder = new ByteArrayBuilder()
+                .setPrefix("050100000000000000feffffffffffffff00000000000000000000000000000000");
         readPushInteger();
         BigInteger uLong = new BigInteger("18446744073709551615");
         BigInteger val = uLong.multiply(uLong);
@@ -370,21 +299,21 @@ public class BinaryReaderTest extends TestBinaryUtils {
         this.testBinaryReader = new BinaryReader(new ByteArrayInputStream(data));
     }
 
-    private void readPushData_ByteArray() throws IOException {
+    private void readPushDataByteArray() throws DeserializationException {
         byte[] testArray = this.arrayBuilder.build();
 
         buildBinaryReader(testArray);
         this.readResultByteArray = this.testBinaryReader.readPushData();
     }
 
-    private void readPushData_String() throws IOException {
+    private void readPushDataString() throws DeserializationException {
         byte[] testArray = this.arrayBuilder.build();
 
         buildBinaryReader(testArray);
         this.readResultString = this.testBinaryReader.readPushString();
     }
 
-    private void readPushInteger() throws IOException, DeserializationException {
+    private void readPushInteger() throws DeserializationException {
         byte[] testArray = this.arrayBuilder.build();
         buildBinaryReader(testArray);
         this.readResultInt = this.testBinaryReader.readPushBigInteger();

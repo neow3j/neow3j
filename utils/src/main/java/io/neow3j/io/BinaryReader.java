@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.bouncycastle.math.ec.ECPoint;
@@ -281,29 +282,28 @@ public class BinaryReader implements AutoCloseable {
      *
      * @return The data read
      */
-    public byte[] readPushData() throws IOException {
-        byte singleByte = readByte();
-        int size = 0;
-        if (singleByte == OpCode.PUSHDATA1.getValue()) {
-            // read the next byte (as the data size)
-            size = readUnsignedByte();
-        } else if (singleByte == OpCode.PUSHDATA2.getValue()) {
-            // read the next 2 bytes (as the data size)
-            // short is 2 bytes
-            size = readShort();
-        } else if (singleByte == OpCode.PUSHDATA4.getValue()) {
-            // read the next 4 bytes (as the data size)
-            // int is 4 bytes
-            size = readInt();
-        } else {
-            // the singleByte is actually the data size already
-            size = singleByte;
+    public byte[] readPushData() throws DeserializationException {
+        try {
+            byte singleByte = readByte();
+            int size = 0;
+            if (singleByte == OpCode.PUSHDATA1.getValue()) {
+                size = readUnsignedByte();
+            } else if (singleByte == OpCode.PUSHDATA2.getValue()) {
+                size = readShort();
+            } else if (singleByte == OpCode.PUSHDATA4.getValue()) {
+                size = readInt();
+            } else {
+                throw new DeserializationException("Stream did not contain a PUSHDATA OpCode at "
+                        + "the current position.");
+            }
+            // read the buffer based on the data's byte size
+            if (size == 1) {
+                return new byte[]{readByte()};
+            }
+            return readBytes(size);
+        } catch (IOException e) {
+            throw new DeserializationException(e);
         }
-        // read the buffer based on the data size
-        if (size == 1) {
-            return new byte[]{readByte()};
-        }
-        return readBytes(size);
     }
 
     public byte[] readVarBytes(int max) throws IOException {
@@ -332,8 +332,8 @@ public class BinaryReader implements AutoCloseable {
         return value;
     }
 
-    public String readPushString() throws IOException {
-        return new String(readPushData(), "UTF-8");
+    public String readPushString() throws DeserializationException {
+        return new String(readPushData(), StandardCharsets.UTF_8);
     }
 
     public int readPushInteger() throws DeserializationException {
@@ -361,7 +361,7 @@ public class BinaryReader implements AutoCloseable {
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
-        throw new DeserializationException("Couldn't parse PUSH integer OpCode");
+        throw new DeserializationException("Couldn't parse PUSHINT OpCode");
     }
 
 
@@ -371,7 +371,7 @@ public class BinaryReader implements AutoCloseable {
                 return reader.readUInt16();
             }
         } catch (IOException e) {
-            // This shouldn't happen.
+            // Shouldn't happen because the underlying stream is a ByteArrayInputStream.
             throw new RuntimeException(e);
         }
     }
