@@ -6,16 +6,18 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-import io.neow3j.utils.TestKeys;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 
 public class ScriptHashTest {
@@ -104,18 +106,28 @@ public class ScriptHashTest {
 
     @Test
     public void fromPublicKeyByteArray() {
-        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
-        byte[] verificationScript = Numeric.hexStringToByteArray(TestKeys.verificationScript1);
-        assertThat(sh.toArray(), is(Hash.sha256AndThenRipemd160(verificationScript)));
+        final String key = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        byte[] script = Numeric.hexStringToByteArray(""
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key // public key
+                + OpCode.PUSHNULL.toString()
+                + OpCode.SYSCALL.toString()
+                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash()
+        );
+
+        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(key));
+        assertThat(sh.toArray(), is(Hash.sha256AndThenRipemd160(script)));
     }
 
     @Test
     public void fromPublicKeyByteArrays() {
-        byte[] key1 = Numeric.hexStringToByteArray(TestKeys.pubKey2_1);
-        byte[] key2 = Numeric.hexStringToByteArray(TestKeys.pubKey2_2);
-        ScriptHash sh = ScriptHash.fromPublicKeys(Arrays.asList(key1, key2), 2);
-        byte[] verificationScript = Numeric.hexStringToByteArray(TestKeys.verificationScript2);
-        assertThat(sh.toArray(), is(Hash.sha256AndThenRipemd160(verificationScript)));
+        final String key1 = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        final String key2 = "03eda286d19f7ee0b472afd1163d803d620a961e1581a8f2704b52c0285f6e022d";
+        String expectedScriptHash = "e8691a3bf757e3d522b85f2c2f7b22785cf15e9d";
+        List<byte[]> keys = Arrays.asList(
+                Numeric.hexStringToByteArray(key1), Numeric.hexStringToByteArray(key2));
+        ScriptHash sh = ScriptHash.fromPublicKeys(keys, 2);
+        assertThat(sh.toArray(), is(Numeric.hexStringToByteArray(expectedScriptHash)));
     }
 
     @Test
@@ -133,8 +145,11 @@ public class ScriptHashTest {
 
     @Test
     public void toAddress() {
-        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(TestKeys.pubKey1));
-        assertThat(sh.toAddress(), is(TestKeys.address1));
+        final String key = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        // Address generated from the above key, with address version 0x17.
+        final String expectedAddress = "AbBUMCKvHqok5xKeD82zU9sDXdVkFzzFYj";
+        ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(key));
+        assertThat(sh.toAddress(), is(expectedAddress));
     }
 
     @Test
