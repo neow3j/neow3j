@@ -125,6 +125,13 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getDouble(0);
     }
 
+    /**
+     * Tries to read an encoded EC point from the underlying stream.
+     *
+     * @return the encoded EC point byte array
+     * @throws DeserializationException if an the stream does not contain an EC point or an
+     *                                  IOException occurs.
+     */
     public byte[] readEncodedECPoint() throws DeserializationException {
         byte[] ecPoint = new byte[33];
         try {
@@ -269,6 +276,11 @@ public class BinaryReader implements AutoCloseable {
         return readVarBytes(0x7fffffc7);
     }
 
+    /**
+     * Tries to read a PUSHDATA OpCode and the following data from the underlying byte stream.
+     *
+     * @return The data read
+     */
     public byte[] readPushData() throws IOException {
         byte singleByte = readByte();
         int size = 0;

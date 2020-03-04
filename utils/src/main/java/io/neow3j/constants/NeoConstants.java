@@ -38,9 +38,9 @@ public class NeoConstants {
     public static final byte PRIVATENET_ADDRESS_VERSION = 0x37;
 
     /**
-     * The maximum number of public keys that can take part in a multi-signature address.
-     * Taken from Neo.SmartContract.Contract.CreateMultiSigRedeemScript(...) in the C# neo repo
-     * at https://github.com/neo-project/neo.
+     * The maximum number of public keys that can take part in a multi-signature address. Taken from
+     * Neo.SmartContract.Contract.CreateMultiSigRedeemScript(...) in the C# neo repo at
+     * https://github.com/neo-project/neo.
      */
     public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
 
@@ -71,16 +71,25 @@ public class NeoConstants {
 
     /**
      * Size of an invocation (signature) script in bytes.
-     *
+     * <p>
      * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 66
      */
     public static final int INVOCATION_SCRIPT_SIZE = 66;
 
     /**
      * Size of a serialized invocation (signature) script in bytes.
+     * <p>
      * 1 (byte for VarInt) + 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 67
      */
     public static final int SERIALIZED_INVOCATION_SCRIPT_SIZE = 67;
+
+    /**
+     * Size of a verification script in bytes.
+     * <p>
+     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 33 (public key) + 1 (PUSHNULL OpCode) + 1
+     * (SYSCALL Opcode) + 4 (InteropServiceCode) = 41
+     */
+    public static final int VERIFICATION_SCRIPT_SIZE = 41;
 
     //endregion
 
@@ -102,16 +111,16 @@ public class NeoConstants {
     public static final int CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE = 500;
 
     /**
-     * The amount of GAS that is free in every contract execution (invocation or deployment).
-     * TODO: Remove. Doesn't exist in Neo 3.
+     * The amount of GAS that is free in every contract execution (invocation or deployment). TODO:
+     * Remove. Doesn't exist in Neo 3.
      */
     public static final int FREE_OF_CHARGE_EXECUTION_COST = 10;
 
     /**
      * The maximum transaction size in bytes up to that a transaction is free. Transactions larger
      * need to add a network fee according to the formula (transaction size - 1024) * 0.00001 GAS +
-     * 0.001 GAS. See <a href="https://neo.org/blog/details/4148">this</a> blog entry.
-     * TODO: Remove. Doesn't exist in Neo 3.
+     * 0.001 GAS. See <a href="https://neo.org/blog/details/4148">this</a> blog entry. TODO: Remove.
+     * Doesn't exist in Neo 3.
      */
     public static final int MAX_FREE_TRANSACTION_SIZE = 1024;
 
@@ -123,9 +132,9 @@ public class NeoConstants {
     public static final long GAS_PER_BYTE = 100000;
 
     /**
-     * The network fee threshold above which a transaction becomes a high priority transaction.
-     * A transaction with a network fee below this threshold must not be bigger than 1024 bytes.
-     * TODO: Remove. Doesn't exist in Neo 3.
+     * The network fee threshold above which a transaction becomes a high priority transaction. A
+     * transaction with a network fee below this threshold must not be bigger than 1024 bytes. TODO:
+     * Remove. Doesn't exist in Neo 3.
      */
     public static final BigDecimal PRIORITY_THRESHOLD_FEE = new BigDecimal("0.001");
 
