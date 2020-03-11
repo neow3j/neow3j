@@ -42,6 +42,7 @@ public class ContractInvocation {
     private List<ContractParameter> params;
     private Account account;
     private InvocationTransaction tx;
+    private NeoSendRawTransaction response;
 
     private ContractInvocation() {
     }
@@ -81,6 +82,7 @@ public class ContractInvocation {
         String rawTx = Numeric.toHexStringNoPrefix(tx.toArray());
         NeoSendRawTransaction response = neow3j.sendRawTransaction(rawTx).send();
         response.throwOnError();
+        this.response = response;
         return this;
     }
 

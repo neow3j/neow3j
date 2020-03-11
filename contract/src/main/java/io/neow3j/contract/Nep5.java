@@ -122,7 +122,7 @@ public class Nep5 {
                 .invoke();
 
         // TODO: 11.03.20 Michael
-        //  read invoc to identify successful invocation
+        //  read invoc to identify successful invocation - test if invoc is what is expected
 
         return false;
     }
