@@ -19,6 +19,7 @@ public class AddressUtilsTest {
             "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
         byte[] scriptHash = Hash.sha256AndThenRipemd160(Numeric.hexStringToByteArray(script));
         String address = AddressUtils.scriptHashToAddress(scriptHash);
+        // Used neo-core with address version 0x17 to generate this address.
         String expectedAddress = "Aa63RMYRWHPRcrZNzUnq5SNrPqoV866Spu";
         assertThat(address, is(expectedAddress));
     }

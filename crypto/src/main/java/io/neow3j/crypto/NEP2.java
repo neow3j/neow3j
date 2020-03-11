@@ -1,22 +1,5 @@
 package io.neow3j.crypto;
 
-import io.neow3j.crypto.exceptions.CipherException;
-import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
-import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.utils.Numeric;
-import org.bouncycastle.crypto.generators.SCrypt;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.Arrays;
-
 import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
@@ -24,6 +7,22 @@ import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.getLastNBytes;
 import static io.neow3j.utils.ArrayUtils.xor;
 import static java.nio.charset.StandardCharsets.UTF_8;
+
+import io.neow3j.crypto.exceptions.CipherException;
+import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
+import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.utils.Numeric;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.Arrays;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+import org.bouncycastle.crypto.generators.SCrypt;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * Provides encryption and decryption functionality according to NEP-2 specification.
@@ -111,7 +110,7 @@ public class NEP2 {
      *
      * @param password  The passphrase used for encryption.
      * @param ecKeyPair the {@link ECKeyPair} to be encrypted
-     * @return The NEP-2 encrypted password.
+     * @return the NEP-2 encrypted private key.
      * @throws CipherException throws if the key pair cannot be encrypted.
      */
     public static String encrypt(String password, ECKeyPair ecKeyPair) throws CipherException {
@@ -124,7 +123,7 @@ public class NEP2 {
      * @param password     the passphrase to be used to encrypt
      * @param ecKeyPair    the {@link ECKeyPair} to be encrypted
      * @param scryptParams the scrypt parameters used for encryption.
-     * @return encrypted private key as described on NEP-2.
+     * @return the NEP-2 encrypted private key.
      * @throws CipherException thrown when the AES/ECB/NoPadding cipher operation fails
      */
     public static String encrypt(String password, ECKeyPair ecKeyPair, ScryptParams scryptParams)
@@ -141,7 +140,7 @@ public class NEP2 {
      * @param n         the "n" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
      * @param p         the "p" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
      * @param r         the "r" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
-     * @return encrypted private key as described on NEP-2.
+     * @return the NEP-2 encrypted private key.
      * @throws CipherException thrown when the AES/ECB/NoPadding cipher operation fails
      */
     public static String encrypt(String password, ECKeyPair ecKeyPair, int n, int p, int r)
