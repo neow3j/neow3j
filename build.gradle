@@ -17,6 +17,7 @@ buildscript {
     ext.hamcrestVersion = '1.3'
     ext.testcontainersVersion = '1.10.5'
     ext.awaitility = '3.1.5'
+    ext.wiremockVersion = '2.25.1'
 
     repositories {
         mavenCentral()

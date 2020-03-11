@@ -8,5 +8,5 @@ dependencies {
             project(':wallet'),
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
-    testCompile "com.github.tomakehurst:wiremock-jre8:2.25.1"
+    testCompile "com.github.tomakehurst:wiremock-jre8:$wiremockVersion"
 }
