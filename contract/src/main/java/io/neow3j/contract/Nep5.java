@@ -90,7 +90,7 @@ public class Nep5 {
     }
 
     /**
-     * Transfers an amount of tokens from the from account to the to account.
+     * Transfers an amount of tokens from one account to another.
      *
      * @param from the account, that sends the tokens.
      * @param to the account, that receives the tokens.
@@ -100,7 +100,7 @@ public class Nep5 {
      * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
      *                                node.
      */
-    public Boolean transfer(Account from, ScriptHash to, BigInteger amount) {
+    public Boolean transfer(Account from, ScriptHash to, BigInteger amount) throws IOException, ErrorResponseException {
         if (amount.intValue() < 0) {
             throw new IllegalArgumentException("Transfer amount has to be greater than zero.");
         }
@@ -112,41 +112,24 @@ public class Nep5 {
         params.add(toParam);
         params.add(amountParam);
 
+        ContractInvocation invoc = new ContractInvocation.Builder(neow3j)
+                .contractScriptHash(fromContractScriptHash)
+                .function("transfer")
+                .parameters(params)
+                .account(from)
+                .build()
+                .sign()
+                .invoke();
+
         // TODO: 11.03.20 Michael
-        //  implement transfer method
+        //  read invoc to identify successful invocation
 
         return false;
     }
 
-    // TODO: 11.03.20 Michael
-    //  Should we include the invoke function directly in the transfer method, since it is only used there?
-
-    /**
-     * Invokes the contract with the given method.
-     *
-     * @param method the NEP5 method.
-     * @param fromAccount the account, that invokes the contract.
-     * @param params the parameters for the invocation.
-     * @return the contract invocation object.
-     * @throws IOException              if a connection problem with the RPC node arises.
-     * @throws ErrorResponseException   if the execution of the invocation lead to an error on the RPC
-     *                                  node.
-     */
-    private ContractInvocation invoke(String method, Account fromAccount, List<ContractParameter> params) throws IOException, ErrorResponseException {
-        ContractInvocation invocation = new ContractInvocation.Builder(neow3j)
-                .contractScriptHash(fromContractScriptHash)
-                .function(method)
-                .parameters(params)
-                .account(fromAccount)
-                .build()
-                .sign()
-                .invoke();
-        return invocation;
-    }
-
     /**
      * Tests the contract invocation. Doing this does not affect the blockchain's state.
-     * This method is useful for requests, that only want to retrieve the current state of blockchain.
+     * This method is useful for requests, that only want to retrieve the current state of the blockchain.
      *
      * @param method the NEP5 method.
      * @param param the additional NEP5 parameters used for the invocation.
@@ -155,7 +138,6 @@ public class Nep5 {
      * @throws ErrorResponseException   if the call to the node lead to an error. Not due to the
      *                                  contract invocation itself but due to the call in general.
      */
-    // invocation without additional parameters to the method
     private InvocationResult testInvoke(String method, ContractParameter param) throws IOException, ErrorResponseException {
         ContractInvocation.Builder builder = new ContractInvocation.Builder(neow3j)
                 .contractScriptHash(fromContractScriptHash)
@@ -166,15 +148,6 @@ public class Nep5 {
         } else {
             return builder.build().testInvoke();
         }
-    }
-
-    public NeoInvoke invokeContract(String nep5Method, byte[] param) throws IOException {
-        Optional.ofNullable(nep5Method).orElseThrow(() -> new IllegalStateException("Method is not set"));
-        Optional.ofNullable(param).orElseThrow(() -> new IllegalStateException("required params is not set"));
-        List<ContractParameter> contractParameters = Arrays.asList(
-                ContractParameter.string(nep5Method),
-                ContractParameter.array(ContractParameter.byteArray(param)));
-        return neow3j.invoke(this.fromContractScriptHash.toString(), contractParameters).send();
     }
 
     public static class Builder {
