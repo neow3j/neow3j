@@ -30,7 +30,7 @@ public class WalletUtils {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public static String generateNewWalletFile(
+    public static String generateWalletFile(
             String password, File destinationDirectory)
             throws CipherException, IOException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
@@ -58,14 +58,6 @@ public class WalletUtils {
         objectMapper.writeValue(destination, nep6Wallet);
 
         return fileName;
-    }
-
-    public static NEP6Wallet loadWalletFile(String source) throws IOException {
-        return loadWalletFile(new File(source));
-    }
-
-    public static NEP6Wallet loadWalletFile(File source) throws IOException {
-        return objectMapper.readValue(source, NEP6Wallet.class);
     }
 
     public static String getWalletFileName(NEP6Wallet nep6Wallet) {
