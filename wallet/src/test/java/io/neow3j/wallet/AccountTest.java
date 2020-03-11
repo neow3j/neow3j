@@ -111,7 +111,6 @@ public class AccountTest {
         Account a = Account.fromWIF(wif).build();
         a.encryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
         assertThat(a.getEncryptedPrivateKey(), is(expectedNep2Encrypted));
-
     }
 
     @Test
