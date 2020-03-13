@@ -2,16 +2,12 @@ package io.neow3j.contract;
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
-import io.neow3j.protocol.core.methods.response.NeoInvoke;
-import io.neow3j.protocol.core.methods.response.Script;
-import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -112,7 +108,7 @@ public class Nep5 {
         params.add(toParam);
         params.add(amountParam);
 
-        ContractInvocation invoc = new ContractInvocation.Builder(neow3j)
+        ContractInvocation invocation = new ContractInvocation.Builder(neow3j)
                 .contractScriptHash(fromContractScriptHash)
                 .function("transfer")
                 .parameters(params)
@@ -121,10 +117,7 @@ public class Nep5 {
                 .sign()
                 .invoke();
 
-        // TODO: 11.03.20 Michael
-        //  read invoc to identify successful invocation - test if invoc is what is expected
-
-        return false;
+        return invocation.getResponse().getResult();
     }
 
     /**

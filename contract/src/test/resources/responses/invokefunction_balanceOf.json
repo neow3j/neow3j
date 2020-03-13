@@ -1,0 +1,16 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "14e9eed8dc39332032dc22e5d6e86332c50327ba2351c10962616c616e63654f6667afed9ee0aba1ce983cc5d95a4c6f6407a8174e48",
+    "state": "HALT",
+    "gas_consumed": "0.219",
+    "stack": [
+      {
+        "type": "ByteArray",
+        "value": "641900"
+      }
+    ],
+    "tx": "d1013614e9eed8dc39332032dc22e5d6e86332c50327ba2351c10962616c616e63654f6667afed9ee0aba1ce983cc5d95a4c6f6407a8174e48000000000000000000000000"
+  }
+}

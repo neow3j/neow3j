@@ -67,6 +67,15 @@ public class ContractInvocation {
     }
 
     /**
+     * Gets the response from this contract invocation.
+     *
+     * @return the response on this invocation.
+     */
+    public NeoSendRawTransaction getResponse() {
+        return response;
+    }
+
+    /**
      * <p>Sends the serialized invocation transaction to the RPC node (synchronous).</p>
      * <br>
      * <p>Before calling this method you should make sure that the transaction is signed either by

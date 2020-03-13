@@ -8,6 +8,7 @@ TOKEN_NAME = 'Example'
 TOKEN_SYMBOL = 'EXP'
 TOKEN_DECIMALS = 8
 TOKEN_TOTAL_SUPPLY = 10000000 * 100000000
+OWNER = b'#\xba\'\x03\xc52c\xe8\xd6\xe5"\xdc2 39\xdc\xd8\xee\xe9'
 
 def Main(operation, args):
     if operation == 'name':
@@ -31,13 +32,29 @@ def Main(operation, args):
         assert len(args) == 3, 'incorrect arguments length'
         return transfer(args[0], args[1], args[2])
 
+    elif operation == 'deploy':
+        return deploy()
+
+    elif operation == 'acct':
+        return acct()
+
     AssertionError('unknown operation')
+
+def deploy():
+    ctx = GetContext()
+    Put(ctx, OWNER, TOKEN_TOTAL_SUPPLY)
+    Notify('Contract deployed.')
+    return True
+
 
 def name():
     return TOKEN_NAME
 
 def symbol():
     return TOKEN_SYMBOL
+
+def acct():
+    return OWNER
 
 def totalSupply():
     return TOKEN_TOTAL_SUPPLY
@@ -67,10 +84,13 @@ def transfer(t_from, t_to, amount):
     else:
         difference = from_val - amount
         Put(ctx, t_from, difference)
+    if from_val < amount:
+        return False
 
     to_value = Get(ctx, t_to)
     to_total = to_value + amount
     Put(ctx, t_to, to_total)
+    Notify("Transfer successful.")
 
     return True
 
