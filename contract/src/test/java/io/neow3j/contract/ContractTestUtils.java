@@ -15,8 +15,10 @@ import java.nio.file.Files;
 
 public class ContractTestUtils {
 
-    public static final String NEP5_CONTRACT_REL_PATH = "./test/resources/contracts/nep5contract.py";
-    // Script hash of nep5contract in big-endian format.
+    /**
+     * The script hash of the used NEP5 contract in big-endian format.
+     * (The contract is located in ./test/resources/contracts/nep5contract.py)
+     */
     public static final String NEP5_CONTRACT_SCRIPT_HASH = "2b019d92a2b0a3babc675a066cf85166f53572bc";
 
     public static void setUpWireMockForSendRawTransaction() throws IOException {

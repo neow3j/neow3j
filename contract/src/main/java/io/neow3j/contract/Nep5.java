@@ -14,14 +14,14 @@ import java.util.Optional;
 public class Nep5 {
 
     private Neow3j neow3j;
-    private ScriptHash fromContractScriptHash;
+    private ScriptHash scriptHash;
 
     private Nep5() {
     }
 
     private Nep5(Builder builder) {
         this.neow3j = builder.neow3j;
-        this.fromContractScriptHash = builder.fromContractScriptHash;
+        this.scriptHash = builder.scriptHash;
     }
 
     /**
@@ -109,7 +109,7 @@ public class Nep5 {
         params.add(amountParam);
 
         ContractInvocation invocation = new ContractInvocation.Builder(neow3j)
-                .contractScriptHash(fromContractScriptHash)
+                .contractScriptHash(scriptHash)
                 .function("transfer")
                 .parameters(params)
                 .account(from)
@@ -133,7 +133,7 @@ public class Nep5 {
      */
     private InvocationResult testInvoke(String method, ContractParameter param) throws IOException, ErrorResponseException {
         ContractInvocation.Builder builder = new ContractInvocation.Builder(neow3j)
-                .contractScriptHash(fromContractScriptHash)
+                .contractScriptHash(scriptHash)
                 .function(method);
 
         if (param != null) {
@@ -145,18 +145,31 @@ public class Nep5 {
 
     public static class Builder {
         private Neow3j neow3j;
-        private ScriptHash fromContractScriptHash;
+        private ScriptHash scriptHash;
         public Builder(Neow3j neow3j) {
             this.neow3j = neow3j;
         }
-        public Nep5.Builder fromContract(ScriptHash contractScriptHash) {
-            this.fromContractScriptHash = contractScriptHash;
+
+        /**
+         * Sets the script hash of this NEP5 object. It specifies the NEP5 contract.
+         *
+         * @param contractScriptHash The contract script hash.
+         * @return this Builder object.
+         */
+        public Builder fromContract(ScriptHash contractScriptHash) {
+            this.scriptHash = contractScriptHash;
             return this;
         }
 
+        /**
+         * Builds the NEP5 contract object. It collects the necessary inputs (the neow3j object and the contract's
+         * script hash).
+         *
+         * @return The constructed NEP5 object.
+         */
         public Nep5 build() {
-            Optional.ofNullable(neow3j).orElseThrow(() -> new IllegalStateException("Neow3j not set."));
-            Optional.ofNullable(fromContractScriptHash).orElseThrow(() -> new IllegalStateException("Contract not set."));
+            if (neow3j == null) throw new IllegalStateException("Neow3j not set");
+            if (scriptHash == null) throw new IllegalStateException("Contract script hash not set");
             return new Nep5(this);
         }
     }
