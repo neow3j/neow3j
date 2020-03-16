@@ -190,6 +190,7 @@ public class Nep5Test {
      */
     @Test
     public void transfer() throws IOException, ErrorResponseException {
+        ContractTestUtils.setUpWireMockForSendRawTransaction();
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
                 .build();
