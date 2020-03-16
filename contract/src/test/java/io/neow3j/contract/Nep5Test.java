@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +25,13 @@ public class Nep5Test {
     /**
      * The neow3j object configured to use default localhost and port 8080.
      */
-    private final Neow3j NEOW3J = Neow3j.build(new HttpService("http://localhost:8080"));;
+    private final Neow3j NEOW3J = Neow3j.build(new HttpService("http://localhost:8080"));
+
+    /**
+     * An empty Neow3j instance for all tests which don't actually need to make the final invocation
+     * call.
+     */
+    private static final Neow3j EMPTY_NEOW3J = Neow3j.build(null);
 
     /**
      * The script hash of the used NEP5 contract in the location: ./test/resources/contracts/nep5contract.py
@@ -32,15 +39,20 @@ public class Nep5Test {
     private final ScriptHash NEP5_CONTRACT_SCRIPT_HASH = new ScriptHash(ContractTestUtils.NEP5_CONTRACT_SCRIPT_HASH);
 
     /**
-     * The script hash from the account with address AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y.
+     * The account with address AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y.
      */
-    private final ScriptHash ACCT_SCRIPTHASH = new ScriptHash("e9eed8dc39332032dc22e5d6e86332c50327ba23");
+    private final Account ACCOUNT = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 
     /**
-     * An empty Neow3j instance for all tests which don't actually need to make the final invocation
-     * call.
+     * The script hash from the account with address AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y.
+     * (e9eed8dc39332032dc22e5d6e86332c50327ba23)
      */
-    private static final Neow3j EMPTY_NEOW3J = Neow3j.build(null);
+    private final ScriptHash ACCT_SCRIPTHASH = ACCOUNT.getScriptHash();
+
+    /**
+     * The script hash from the account with address AWKECj9RD8rS8RPcpCgYVjk1DeYyHwxZm3.
+     */
+    private final ScriptHash TO_ACCT_SCRIPTHASH = new ScriptHash("68ebfc4fefbe24c9cff0f7e3c0d27ed396d07f9f");
 
     /**
      * The WireMockRule used for this test class.
@@ -157,7 +169,33 @@ public class Nep5Test {
                 .build();
         assertThat(nep5.balanceOf(this.ACCT_SCRIPTHASH), is(new BigInteger("6500")));
     }
-    
+
+    /**
+     * Tests that the builder throws an exception, if the amount to transfer is negative.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void no_positive_amount_transfer() throws IOException, ErrorResponseException {
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("-5"));
+    }
+
+    /**
+     * Tests the transfer
+     *
+     * @throws IOException            if a connection problem with the RPC node arises.
+     * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
+     *                                node.
+     */
+    @Test
+    public void transfer() throws IOException, ErrorResponseException {
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        assertThat(nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("20")), is(Boolean.TRUE));
+    }
+
     /**
      * Tests that the builder throws an exception, if the required script hash is not set.
      */
@@ -176,18 +214,4 @@ public class Nep5Test {
                 .fromContract(NEP5_CONTRACT_SCRIPT_HASH)
                 .build();
     }
-
-
-//    @Test
-//    public void transfer() throws IOException {
-//        ContractTestUtils.setUpWireMockForSendRawTransaction();
-//
-//        rawtrans=d1014d02dc0514f2ae394071b7e30d48edbb7d04a520516e8fe1201423ba2703c53263e8d6e522dc32203339dcd8eee953c1087472616e73666572672c2a9b9bdc6b01b8ace2e6c4a4546bbfde4e0d470000000000000000022023ba2703c53263e8d6e522dc32203339dcd8eee9f00c00000170d4cb9413869f3af80000014140d34842917cc3c07fc85181798cd8f3e79e791f37a2ab08da3b8ed52786c983733f4076b78fb4f084ab109b03c81c67d386f59154e9a97ba8cbd79a92970f37792321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac
-//    }
-//
-//    @Test
-//    public void transfer() {
-//      test: normal transfer
-//      test: negative amount value to throw Exception
-//    }
 }

@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class Nep5 {
 
@@ -146,6 +145,12 @@ public class Nep5 {
     public static class Builder {
         private Neow3j neow3j;
         private ScriptHash scriptHash;
+
+        /**
+         * Constructor of the Builder class of this NEP5 object.
+         *
+         * @param neow3j The neow3j object used in this NEP5 object.
+         */
         public Builder(Neow3j neow3j) {
             this.neow3j = neow3j;
         }
