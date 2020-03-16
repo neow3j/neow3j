@@ -110,33 +110,12 @@ public class NeoConstants {
      */
     public static final int CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE = 500;
 
-    /**
-     * The amount of GAS that is free in every contract execution (invocation or deployment). TODO:
-     * Remove. Doesn't exist in Neo 3.
-     */
-    public static final int FREE_OF_CHARGE_EXECUTION_COST = 10;
-
-    /**
-     * The maximum transaction size in bytes up to that a transaction is free. Transactions larger
-     * need to add a network fee according to the formula (transaction size - 1024) * 0.00001 GAS +
-     * 0.001 GAS. See <a href="https://neo.org/blog/details/4148">this</a> blog entry. TODO: Remove.
-     * Doesn't exist in Neo 3.
-     */
-    public static final int MAX_FREE_TRANSACTION_SIZE = 1024;
-
     // TODO: Clarify if we can get the FeePerByte from the Policy contract as it is done
     //  in neo-core. `NativeContract.Policy.GetFeePerByte(snapshot)`
     /**
      * The network fee per byte of a transaction. Amount is in GAS.
      */
     public static final long GAS_PER_BYTE = 100000;
-
-    /**
-     * The network fee threshold above which a transaction becomes a high priority transaction. A
-     * transaction with a network fee below this threshold must not be bigger than 1024 bytes. TODO:
-     * Remove. Doesn't exist in Neo 3.
-     */
-    public static final BigDecimal PRIORITY_THRESHOLD_FEE = new BigDecimal("0.001");
 
     //endregion
 

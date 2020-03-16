@@ -55,7 +55,8 @@ public class ContractDeploymentScript extends NeoSerializable {
         if (functionProperties.getNeedsDynamicInvoke()) {
             fee += NeoConstants.CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE;
         }
-        fee -= NeoConstants.FREE_OF_CHARGE_EXECUTION_COST;
+        // TODO: This fee doesn't exist in Neo 3.
+//        fee -= NeoConstants.FREE_OF_CHARGE_EXECUTION_COST;
         return new BigDecimal(Math.max(fee, 0));
     }
 

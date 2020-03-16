@@ -1,11 +1,10 @@
 package io.neow3j.model.types;
 
-import org.junit.Test;
-
-import java.math.BigInteger;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+
+import java.math.BigInteger;
+import org.junit.Test;
 
 public class GASAssetTest {
 
@@ -17,18 +16,12 @@ public class GASAssetTest {
 
     @Test
     public void testField_HashId() {
-        assertThat(GASAsset.HASH_ID, is("602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7"));
+        assertThat(GASAsset.HASH_ID, is("a1760976db5fcdfab2a9930e8f6ce875b2d18225"));
     }
 
     @Test
     public void testField_Name() {
         assertThat(GASAsset.NAME, is("NEOGas"));
-    }
-
-    @Test
-    public void testField_Type() {
-        assertThat(GASAsset.TYPE, is(AssetType.UTILITY_TOKEN));
-        assertThat(GASAsset.TYPE.jsonValue(), is("UtilityToken"));
     }
 
 }

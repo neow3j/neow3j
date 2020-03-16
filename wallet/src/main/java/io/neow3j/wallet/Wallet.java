@@ -15,9 +15,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -70,8 +73,8 @@ public class Wallet {
     }
 
     /**
-     * Sets the account at the given index to be the default account.
-     * The previous default account is unset.
+     * Sets the account at the given index to be the default account. The previous default account
+     * is unset.
      *
      * @param index the index of the new default account.
      */
@@ -139,6 +142,27 @@ public class Wallet {
         }
     }
 
+    // TODO 16.03.20 claude: Write unit test.
+    public Map<ScriptHash, BigDecimal> getBalances() {
+        Map<ScriptHash, BigDecimal> accuMap = new HashMap<>();
+        for (Account a : this.accounts) {
+            a.getBalances().forEach((key, value) -> accuMap.merge(key, value, BigDecimal::add));
+        }
+        return accuMap;
+    }
+
+    // TODO 16.03.20 claude: Write unit test.
+    public BigDecimal getBalance(ScriptHash token) {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (Account a : this.accounts) {
+            BigDecimal curr = a.getBalance(token);
+            if (curr != null) {
+                sum = sum.add(curr);
+            }
+        }
+        return sum;
+    }
+
     public NEP6Wallet toNEP6Wallet() {
         List<NEP6Account> accts = accounts.stream().map(
                 a -> a.toNEP6Account()).collect(Collectors.toList());
@@ -146,7 +170,8 @@ public class Wallet {
     }
 
     public static Builder fromNEP6Wallet(String nep6WalletFileName) throws IOException {
-        return fromNEP6Wallet(Wallet.class.getClassLoader().getResourceAsStream(nep6WalletFileName));
+        return fromNEP6Wallet(
+                Wallet.class.getClassLoader().getResourceAsStream(nep6WalletFileName));
     }
 
     public static Builder fromNEP6Wallet(URI nep6WalletFileUri) throws IOException {
@@ -158,7 +183,8 @@ public class Wallet {
     }
 
     public static Builder fromNEP6Wallet(InputStream nep6WalletFileInputStream) throws IOException {
-        NEP6Wallet nep6Wallet = OBJECT_MAPPER.readValue(nep6WalletFileInputStream, NEP6Wallet.class);
+        NEP6Wallet nep6Wallet = OBJECT_MAPPER
+                .readValue(nep6WalletFileInputStream, NEP6Wallet.class);
         return fromNEP6Wallet(nep6Wallet);
     }
 
@@ -206,8 +232,8 @@ public class Wallet {
     }
 
     /**
-     * Creates a new wallet with one account that is set as the default account.
-     * Encrypts such account with the password.
+     * Creates a new wallet with one account that is set as the default account. Encrypts such
+     * account with the password.
      *
      * @param password password used to encrypt the account.
      * @return the new wallet.
@@ -222,8 +248,8 @@ public class Wallet {
     }
 
     /**
-     * Creates a new wallet with one account that is set as the default account.
-     * Also, encrypts such account and persists the NEP6 wallet to a file.
+     * Creates a new wallet with one account that is set as the default account. Also, encrypts such
+     * account and persists the NEP6 wallet to a file.
      *
      * @param password    password used to encrypt the account.
      * @param destination destination to the new NEP6 wallet file.

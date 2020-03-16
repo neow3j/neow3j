@@ -3,23 +3,15 @@ package io.neow3j.contract;
 import io.neow3j.contract.abi.NeoABIUtils;
 import io.neow3j.contract.abi.exceptions.NEP3Exception;
 import io.neow3j.contract.abi.model.NeoContractInterface;
-import io.neow3j.transaction.Witness;
-import io.neow3j.transaction.RawTransactionInput;
-import io.neow3j.transaction.RawTransactionOutput;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.model.types.GASAsset;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.transaction.InvocationTransaction;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
 import io.neow3j.utils.TransactionUtils;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.InputCalculationStrategy;
-import io.neow3j.wallet.Utxo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,10 +19,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContractDeployment {
 
@@ -39,7 +30,7 @@ public class ContractDeployment {
     private Neow3j neow3j;
     private Account account;
     private NeoContractInterface abi;
-    private InvocationTransaction tx;
+    private Transaction tx;
     private ContractDeploymentScript deploymentScript;
 
     private ContractDeployment(final Builder builder) {
@@ -68,7 +59,8 @@ public class ContractDeployment {
                     "signing the transaction. Decrypt the private key before attempting to sign " +
                     "with it.");
         }
-        tx.addScript(Witness.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
+        // TODO: Adapt to new transaction model.
+//        tx.addScript(Witness.createWitness(tx.toArrayWithoutScripts(), account.getECKeyPair()));
         return this;
     }
 
@@ -98,11 +90,12 @@ public class ContractDeployment {
      * @return this.
      */
     public ContractDeployment addWitness(Witness witness) {
-        tx.addScript(witness);
+        // TODO: Adapt to new transaction model.
+//        tx.addScript(witness);
         return this;
     }
 
-    public InvocationTransaction getTransaction() {
+    public Transaction getTransaction() {
         return this.tx;
     }
 
@@ -122,15 +115,13 @@ public class ContractDeployment {
         private boolean isPayable;
         private byte[] scriptBinary;
         private NeoContractInterface abi;
-        private InputCalculationStrategy inputCalculationStrategy;
         private BigDecimal networkFee;
         private ContractDeploymentScript deploymentScript;
-        private InvocationTransaction tx;
+        private Transaction tx;
 
         public Builder(final Neow3j neow3j) {
             this.neow3j = neow3j;
             this.parameters = new ArrayList<>();
-            this.inputCalculationStrategy = InputCalculationStrategy.DEFAULT_STRATEGY;
             this.networkFee = BigDecimal.ZERO;
             this.name = "";
             this.version = "";
@@ -242,24 +233,10 @@ public class ContractDeployment {
         }
 
         /**
-         * Adds the strategy that will be used to determine which UTXOs should be used as
-         * transaction inputs.
-         *
-         * @param strategy The strategy to use.
-         * @return this Builder object.
-         */
-        public Builder inputCalculationStrategy(InputCalculationStrategy strategy) {
-            this.inputCalculationStrategy = strategy;
-            return this;
-        }
-
-        /**
          * <p>Adds a network fee.</p>
          * <br>
          * <p>The network fee (measured in GAS) can be used to add priority to a transaction. It is
          * required for a successful transaction if the transaction is larger than 1024 bytes.
-         * Use {@link TransactionUtils#calcNecessaryNetworkFee(int)} to calculate the necessary
-         * network fee for large transactions.</p>
          *
          * @param networkFee The fee amount to add.
          * @return this Builder object.
@@ -281,84 +258,50 @@ public class ContractDeployment {
         }
 
         public ContractDeployment build() {
-            if (this.neow3j == null) {
-                throw new IllegalStateException("Neow3j not set.");
-            }
-            if (this.account == null) {
-                throw new IllegalStateException("Account not set.");
-            }
-            if (this.scriptBinary == null) {
-                throw new IllegalStateException("AVM script binary not set.");
-            }
-            ContractDescriptionProperties cdp = new ContractDescriptionProperties(
-                    this.name, this.version, this.author, this.email, this.description);
-            ContractFunctionProperties cfp = new ContractFunctionProperties(
-                    this.parameters, this.returnType, this.needsStorage, this.needsDynamicInvoke, this.isPayable);
-            this.deploymentScript = new ContractDeploymentScript(this.scriptBinary, cfp, cdp);
-
-            BigDecimal systemFee = this.deploymentScript.getDeploymentSystemFee();
-
-            Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(null, systemFee, networkFee);
-
-            List<RawTransactionInput> inputs = new ArrayList<>();
-            List<RawTransactionOutput> outputs = new ArrayList<>();
-
-            if (!requiredAssets.isEmpty()) {
-                if (this.account == null)
-                    throw new IllegalStateException("No account set but needed " +
-                            "for fetching transaction inputs.");
-
-                requiredAssets.forEach((reqAssetId, reqValue) -> {
-                    List<Utxo> utxos = this.account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
-                    inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
-                    BigDecimal changeAmount = calculateChange(utxos, reqValue);
-                    if (changeAmount != null) outputs.add(
-                            new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), this.account.getAddress()));
-                });
-            }
-
-            this.tx = new InvocationTransaction.Builder()
-                    .outputs(outputs)
-                    .inputs(inputs)
-                    .systemFee(systemFee)
-                    .contractScript(deploymentScript.toArray())
-                    .build();
-
+//            if (this.neow3j == null) {
+//                throw new IllegalStateException("Neow3j not set.");
+//            }
+//            if (this.account == null) {
+//                throw new IllegalStateException("Account not set.");
+//            }
+//            if (this.scriptBinary == null) {
+//                throw new IllegalStateException("AVM script binary not set.");
+//            }
+//            ContractDescriptionProperties cdp = new ContractDescriptionProperties(
+//                    this.name, this.version, this.author, this.email, this.description);
+//            ContractFunctionProperties cfp = new ContractFunctionProperties(
+//                    this.parameters, this.returnType, this.needsStorage, this.needsDynamicInvoke, this.isPayable);
+//            this.deploymentScript = new ContractDeploymentScript(this.scriptBinary, cfp, cdp);
+//
+//            BigDecimal systemFee = this.deploymentScript.getDeploymentSystemFee();
+//
+//            Map<String, BigDecimal> requiredAssets = calculateRequiredAssetsForIntents(null, systemFee, networkFee);
+//
+//            List<RawTransactionInput> inputs = new ArrayList<>();
+//            List<RawTransactionOutput> outputs = new ArrayList<>();
+//
+//            if (!requiredAssets.isEmpty()) {
+//                if (this.account == null)
+//                    throw new IllegalStateException("No account set but needed " +
+//                            "for fetching transaction inputs.");
+//
+//                requiredAssets.forEach((reqAssetId, reqValue) -> {
+//                    List<Utxo> utxos = this.account.getUtxosForAssetAmount(reqAssetId, reqValue, inputCalculationStrategy);
+//                    inputs.addAll(utxos.stream().map(Utxo::toTransactionInput).collect(Collectors.toList()));
+//                    BigDecimal changeAmount = calculateChange(utxos, reqValue);
+//                    if (changeAmount != null) outputs.add(
+//                            new RawTransactionOutput(reqAssetId, changeAmount.toPlainString(), this.account.getAddress()));
+//                });
+//            }
+//
+//            this.tx = new InvocationTransaction.Builder()
+//                    .outputs(outputs)
+//                    .inputs(inputs)
+//                    .systemFee(systemFee)
+//                    .contractScript(deploymentScript.toArray())
+//                    .build();
+//
             return new ContractDeployment(this);
-        }
-
-        private Map<String, BigDecimal> calculateRequiredAssetsForIntents(
-                List<RawTransactionOutput> outputs, BigDecimal... fees) {
-
-            List<RawTransactionOutput> intents = outputs == null ? new ArrayList<>() : new ArrayList<>(outputs);
-            intents.addAll(createOutputsFromFees(fees));
-            Map<String, BigDecimal> assets = new HashMap<>();
-            intents.forEach(output -> {
-                BigDecimal value = new BigDecimal(output.getValue());
-                if (assets.containsKey(output.getAssetId())) {
-                    value = assets.get(output.getAssetId()).add(value);
-                }
-                assets.put(output.getAssetId(), value);
-            });
-            return assets;
-        }
-
-        private List<RawTransactionOutput> createOutputsFromFees(BigDecimal... fees) {
-            List<RawTransactionOutput> outputs = new ArrayList<>(fees.length);
-            for (BigDecimal fee : fees) {
-                if (fee.compareTo(BigDecimal.ZERO) > 0) {
-                    outputs.add(new RawTransactionOutput(GASAsset.HASH_ID, fee.toPlainString(), null));
-                }
-            }
-            return outputs;
-        }
-
-        private static BigDecimal calculateChange(List<Utxo> utxos, BigDecimal reqValue) {
-            BigDecimal inputAmount = utxos.stream().map(Utxo::getValue).reduce(BigDecimal::add).get();
-            if (inputAmount.compareTo(reqValue) > 0) {
-                return inputAmount.subtract(reqValue);
-            }
-            return null;
         }
     }
 

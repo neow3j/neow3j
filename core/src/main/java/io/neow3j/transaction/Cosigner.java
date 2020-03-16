@@ -104,7 +104,7 @@ public class Cosigner extends NeoSerializable {
         try {
             this.account = reader.readSerializable(ScriptHash.class);
             this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
-            if (this.scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
+            if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
                 this.allowedContracts = reader.readSerializableList(ScriptHash.class);
             }
             if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
@@ -119,7 +119,7 @@ public class Cosigner extends NeoSerializable {
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeSerializableFixed(account);
         writer.writeByte(WitnessScope.combineScopes(this.scopes));
-        if (scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
+        if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
             writer.writeSerializableVariable(this.allowedContracts);
         }
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
@@ -131,7 +131,7 @@ public class Cosigner extends NeoSerializable {
     public int getSize() {
         int size = NeoConstants.SCRIPTHASH_SIZE // account script hash
             + 1; // Scope byte
-        if (this.scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
+        if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
             size += IOUtils.getVarSize(this.allowedContracts);
         }
         if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
@@ -197,15 +197,15 @@ public class Cosigner extends NeoSerializable {
         /**
          * Sets the contracts that are allowed to use the witness.
          * <p>
-         * When adding contracts here the {@link WitnessScope#CUSTOM_CONSTRACTS} scope is added
+         * When adding contracts here the {@link WitnessScope#CUSTOM_CONTRACTS} scope is added
          * automatically.
          *
          * @param contracts one or more contract script hashes.
          * @return this builder.
          */
         public Builder allowedContracts(ScriptHash... contracts) {
-            if (!this.scopes.contains(WitnessScope.CUSTOM_CONSTRACTS)) {
-                this.scopes.add(WitnessScope.CUSTOM_CONSTRACTS);
+            if (!this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
+                this.scopes.add(WitnessScope.CUSTOM_CONTRACTS);
             }
             this.allowedContracts.addAll(Arrays.asList(contracts));
             return this;
@@ -257,7 +257,7 @@ public class Cosigner extends NeoSerializable {
                 throw new CosignerConfigurationException("The global witness scope cannot be " +
                         "combined with other scopes.");
             }
-            if (scopes.contains(WitnessScope.CUSTOM_CONSTRACTS) && allowedContracts.isEmpty()) {
+            if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS) && allowedContracts.isEmpty()) {
                 throw new CosignerConfigurationException("Set of allowed contracts must not be " +
                         "empty for a cosigner with the custom contracts scope.");
             }

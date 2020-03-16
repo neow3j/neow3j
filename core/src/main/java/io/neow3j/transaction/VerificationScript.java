@@ -62,6 +62,7 @@ public class VerificationScript extends NeoSerializable {
      *                         the given public keys.
      */
     public VerificationScript(List<ECPublicKey> publicKeys, int signingThreshold) {
+        // TODO: Allow multi sig accounts with only one signing key.
         if (signingThreshold < 2 || signingThreshold > publicKeys.size()) {
             throw new IllegalArgumentException("Signing threshold must be at least 2 and not " +
                     "higher than the number of public keys.");

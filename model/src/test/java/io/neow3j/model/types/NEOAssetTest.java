@@ -1,28 +1,20 @@
 package io.neow3j.model.types;
 
-import org.junit.Test;
-
-import java.math.BigInteger;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
 
 public class NEOAssetTest {
 
     @Test
     public void testField_HashId() {
-        assertThat(NEOAsset.HASH_ID, is("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b"));
+        assertThat(NEOAsset.HASH_ID, is("43cf98eddbe047e198a3e5d57006311442a0ca15"));
     }
 
     @Test
     public void testField_Name() {
         assertThat(NEOAsset.NAME, is("NEO"));
-    }
-
-    @Test
-    public void testField_Type() {
-        assertThat(NEOAsset.TYPE, is(AssetType.GOVERNING_TOKEN));
-        assertThat(NEOAsset.TYPE.jsonValue(), is("GoverningToken"));
     }
 
 }

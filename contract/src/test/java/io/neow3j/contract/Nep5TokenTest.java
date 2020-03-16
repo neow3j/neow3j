@@ -2,11 +2,13 @@ package io.neow3j.contract;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -32,11 +34,16 @@ public class Nep5TokenTest {
 
     @Test
     public void transferToken() throws Exception {
-//        ContractTestUtils.setUpWireMockForRawTransaction();
-        // TODO: Setup a raw transaction that contains the expecte transaction bytes for a transfer.
+        ContractTestUtils.setUpWireMockForSendRawTransaction();
+        ContractTestUtils.setUpWireMockForInvokeFunction("transfer", "invokefunction_transfer.json");
+        ContractTestUtils.setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+        ContractTestUtils.setUpWireMockForGetBlockCount();
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
-        nep5.transfer(new ScriptHash("e9eed8dc39332032dc22e5d6e86332c50327ba23"),
+        Wallet w = Wallet.createWallet();
+        nep5.transfer(w, new ScriptHash("e9eed8dc39332032dc22e5d6e86332c50327ba23"),
                 new ScriptHash("0f2b7a6ee34db32d9151c6028960ab2a8babea52"), BigDecimal.ONE);
+        // TODO: Setup a raw transaction that contains the expected transaction bytes for a transfer.
+        fail();
     }
 
     @Test

@@ -22,7 +22,7 @@ public enum WitnessScope {
      * This scope allows the specification of additional contracts in which the witness can be
      * used.
      */
-    CUSTOM_CONSTRACTS(0x10),
+    CUSTOM_CONTRACTS(0x10),
 
     /**
      * This scope allows the specification of contract groups in which the witness can be used.
@@ -53,8 +53,8 @@ public enum WitnessScope {
         if ((combinedScopes & CALLED_BY_ENTRY.byteValue()) != 0) {
             scopes.add(CALLED_BY_ENTRY);
         }
-        if ((combinedScopes & CUSTOM_CONSTRACTS.byteValue()) != 0) {
-            scopes.add(CUSTOM_CONSTRACTS);
+        if ((combinedScopes & CUSTOM_CONTRACTS.byteValue()) != 0) {
+            scopes.add(CUSTOM_CONTRACTS);
         }
         if ((combinedScopes & CUSTOM_GROUPS.byteValue()) != 0) {
             scopes.add(CUSTOM_GROUPS);

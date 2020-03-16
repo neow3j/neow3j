@@ -63,14 +63,14 @@ public class CosignerTest {
     public void buildValidCosigner1() {
         Cosigner cos = new Cosigner.Builder()
                 .account(this.acctScriptHash)
-                .scopes(WitnessScope.CUSTOM_CONSTRACTS, WitnessScope.CALLED_BY_ENTRY)
+                .scopes(WitnessScope.CUSTOM_CONTRACTS, WitnessScope.CALLED_BY_ENTRY)
                 .allowedContracts(this.contract1, this.contract2)
                 .build();
 
         assertThat(cos.getAccount(), is(this.acctScriptHash));
         assertThat(cos.getScopes(), hasSize(2));
         assertThat(cos.getScopes(),
-                containsInAnyOrder(WitnessScope.CUSTOM_CONSTRACTS, WitnessScope.CALLED_BY_ENTRY));
+                containsInAnyOrder(WitnessScope.CUSTOM_CONTRACTS, WitnessScope.CALLED_BY_ENTRY));
         assertThat(cos.getAllowedContracts(), hasSize(2));
         assertThat(cos.getAllowedContracts(), containsInAnyOrder(this.contract1, this.contract2));
         assertTrue(cos.getAllowedGroups().isEmpty());
@@ -86,7 +86,7 @@ public class CosignerTest {
 
         assertThat(cos.getAccount(), is(this.acctScriptHash));
         assertThat(cos.getScopes(), hasSize(1));
-        assertThat(cos.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_CONSTRACTS));
+        assertThat(cos.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_CONTRACTS));
         assertThat(cos.getAllowedContracts(), hasSize(2));
         assertThat(cos.getAllowedContracts(),
                 containsInAnyOrder(this.contract1, this.contract2));
@@ -135,7 +135,7 @@ public class CosignerTest {
             new Cosigner.Builder()
                     .account(this.acctScriptHash)
                     .scopes(WitnessScope.GLOBAL)
-                    .scopes(WitnessScope.CUSTOM_CONSTRACTS)
+                    .scopes(WitnessScope.CUSTOM_CONTRACTS)
                     .build();
         } catch (CosignerConfigurationException e) {
             // continue
@@ -162,7 +162,7 @@ public class CosignerTest {
     public void tryBuildCustomContractsCosignerWithoutSpecifyingAllowedContracts() {
         new Cosigner.Builder()
                 .account(this.acctScriptHash)
-                .scopes(WitnessScope.CUSTOM_CONSTRACTS)
+                .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .build();
     }
 
@@ -263,7 +263,7 @@ public class CosignerTest {
         Cosigner c = NeoSerializableInterface.from(data, Cosigner.class);
         assertThat(c.getAccount(), is(acctScriptHash));
         assertThat(c.getScopes(), containsInAnyOrder(
-                WitnessScope.CUSTOM_CONSTRACTS,
+                WitnessScope.CUSTOM_CONTRACTS,
                 WitnessScope.CALLED_BY_ENTRY,
                 WitnessScope.CUSTOM_GROUPS));
         assertThat(c.getAllowedContracts(), containsInAnyOrder(contract1, contract2));

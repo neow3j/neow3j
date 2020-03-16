@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
 
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -140,6 +141,7 @@ public class AccountTest {
 
         Account a = Account.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").build();
         a.updateAssetBalances(neow3j);
+        fail();
     }
 
 

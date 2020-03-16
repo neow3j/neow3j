@@ -11,14 +11,10 @@ import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.Numeric;
-import io.neow3j.wallet.Balances.AssetBalance;
 import io.neow3j.wallet.exceptions.AccountException;
-import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
@@ -30,7 +26,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("unchecked")
@@ -46,7 +44,7 @@ public class Account {
     private boolean isDefault;
     private boolean isLocked;
     private VerificationScript verificationScript;
-    private Balances balances;
+    private Map<ScriptHash, BigDecimal> balances;
 
     private Account() {
     }
@@ -60,7 +58,7 @@ public class Account {
         this.address = b.address;
         this.encryptedPrivateKey = b.encryptedPrivateKey;
         this.verificationScript = b.verificationScript;
-        this.balances = new Balances(this);
+        this.balances = new HashMap<>();
     }
 
     public String getAddress() {
@@ -119,69 +117,18 @@ public class Account {
         return encryptedPrivateKey;
     }
 
-    public Balances getBalances() {
+    public Map<ScriptHash, BigDecimal> getBalances() {
         return balances;
     }
 
-    /**
-     * <p>Gets the balance (the amount and a set of UTXOs) for the given asset id.</p>
-     * <br>
-     * <p>Note that updating the balance information via a call to a RPC node is left to the
-     * library user. Call {@link Account#updateAssetBalances(Neow3j)} to have the most recent
-     * balance information</p>
-     *
-     * @param assetId The id/hash of the asset.
-     * @return the asset balance of this account.
-     */
-    public AssetBalance getAssetBalance(String assetId) {
-        return this.balances.getAssetBalance(assetId);
+    public BigDecimal getBalance(ScriptHash token) {
+        return balances.get(token);
     }
 
     public void updateAssetBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
-        NeoGetUnspents response = neow3j.getUnspents(getAddress()).send();
-        response.throwOnError();
-        balances.updateAssetBalances(response.getUnspents());
     }
 
     public void updateTokenBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
-        NeoGetNep5Balances response = neow3j.getNep5Balances(getAddress()).send();
-        response.throwOnError();
-        balances.updateTokenBalances(response.getBalances());
-    }
-
-    /**
-     * <p>Fetches a set of UTXOs from this account that fulfill the required asset amount.</p>
-     * <br>
-     * <p>Usually the UTXOs will not cover the amount exactly but cover a larger amount. Therefore
-     * it is important to calculate the necessary change before using the UTXOs in a
-     * transaction.</p>
-     *
-     * @param assetId  The asset needed.
-     * @param amount   The amount needed.
-     * @param strategy The strategy with which to choose the UTXOs available on this account.
-     * @return the list of UTXOs covering the required amount.
-     * @throws IllegalStateException      if this account does not have any balances, e.g. because
-     *                                    they have not been updated before.
-     * @throws InsufficientFundsException if this account does does not possess enough UTXOs to
-     *                                    fulfill the required amount.
-     */
-    public List<Utxo> getUtxosForAssetAmount(String assetId, BigDecimal amount,
-            InputCalculationStrategy strategy) {
-
-        if (getBalances() == null) {
-            throw new IllegalStateException("Account does not have any asset balances. " +
-                    "Update account's asset balances first.");
-        }
-        if (!getBalances().hasAsset(assetId)) {
-            throw new InsufficientFundsException("Account balance does not contain the asset " +
-                    "with ID " + assetId);
-        }
-        AssetBalance balance = getBalances().getAssetBalance(assetId);
-        if (balance.getAmount().compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Needed " + amount + " but only found " +
-                    balance.getAmount() + " for asset with ID " + assetId);
-        }
-        return strategy.calculateInputs(balance.getUtxos(), amount);
     }
 
     /**

@@ -5,6 +5,7 @@ import static io.neow3j.contract.ContractTestUtils.CONTRACT_1_SCRIPT_HASH;
 import static io.neow3j.contract.ContractTestUtils.GETBLOCKCOUNT_RESPONSE;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -256,20 +257,21 @@ public class InvocationTest {
 
         String wif = "Kx6sh3EAsKQMY3PrqyhXTkNZdbBbs8Ya8D7VEssXkSb4DjfksTXF";
         ECKeyPair keyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif));
-        Account sender = Account.fromECKeyPair(keyPair).build();
+        Account sender = Account.fromECKeyPair(keyPair).isDefault(true).build();
+        Wallet w = new Wallet.Builder().account(sender).build();
         ScriptHash sh = new ScriptHash(NEOAsset.HASH_ID);
         Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(sender.getScriptHash())
+                .withWallet(w)
                 .withNonce(1348080909)
                 .validUntilBlock(2102660)
                 .withParameters(
                         ContractParameter.byteArrayFromAddress(sender.getAddress()),
                         ContractParameter
-                                .byteArrayFromAddress("PPULnCTke8Cu8Yyaggg2BCMLKc8k7QdvWr"),
+                                .byteArrayFromAddress("AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN"),
                         ContractParameter.integer(10))
                 .build();
         i.sign();
-
+        fail();
 //        The network fee should be 1257240, although the script that was created by the
 //        private net node has one byte too much at the end, which I don't know what it does.
     }

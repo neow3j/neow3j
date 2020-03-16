@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -54,15 +55,17 @@ public class Nep5Token extends SmartContract {
         return this.decimals;
     }
 
-    public boolean transfer(ScriptHash from, ScriptHash to, BigDecimal amount) throws Exception {
+    public boolean transfer(Wallet wallet, ScriptHash from, ScriptHash to, BigDecimal amount)
+            throws Exception {
         BigInteger intAmount = amount.multiply(BigDecimal.TEN.pow(getDecimals())).toBigInteger();
         invoke(NEP5_TRANSFER)
-            .withParameters(
-                ContractParameter.byteArrayFromAddress(from.toAddress()),
-                ContractParameter.byteArrayFromAddress(to.toAddress()),
-                ContractParameter.integer(intAmount)
-            ).build()
-            .send();
+                .withWallet(wallet)
+                .withParameters(
+                        ContractParameter.byteArrayFromAddress(from.toAddress()),
+                        ContractParameter.byteArrayFromAddress(to.toAddress()),
+                        ContractParameter.integer(intAmount)
+                ).build()
+                .send();
         return true;
         // TODO get boolean stackitem
         // TODO error checking.
@@ -86,7 +89,7 @@ public class Nep5Token extends SmartContract {
 
     private String callFuncReturningString(String function) throws IOException {
         return invoke(function).run().getInvocationResult().getStack().get(0)
-            .asByteArray().getAsString();
+                .asByteArray().getAsString();
     }
 
     private BigInteger callFuncReturningInt(String function) throws Exception {

@@ -16,12 +16,12 @@ public class WitnessScopeTest {
     public void combineScopes() {
         byte scope = WitnessScope.combineScopes(Arrays.asList(
                 WitnessScope.CALLED_BY_ENTRY,
-                WitnessScope.CUSTOM_CONSTRACTS));
+                WitnessScope.CUSTOM_CONTRACTS));
         assertThat(scope, is((byte) 0x11));
 
         scope = WitnessScope.combineScopes(Arrays.asList(
                 WitnessScope.CALLED_BY_ENTRY,
-                WitnessScope.CUSTOM_CONSTRACTS,
+                WitnessScope.CUSTOM_CONTRACTS,
                 WitnessScope.CUSTOM_GROUPS));
         assertThat(scope, is((byte) 0x31));
 
@@ -37,7 +37,7 @@ public class WitnessScopeTest {
         scopes = WitnessScope.extractCombinedScopes((byte) 0x11);
         assertThat(scopes, containsInAnyOrder(
                 WitnessScope.CALLED_BY_ENTRY,
-                WitnessScope.CUSTOM_CONSTRACTS));
+                WitnessScope.CUSTOM_CONTRACTS));
 
         scopes = WitnessScope.extractCombinedScopes((byte) 0x21);
         assertThat(scopes, containsInAnyOrder(
@@ -48,6 +48,6 @@ public class WitnessScopeTest {
         assertThat(scopes, containsInAnyOrder(
                 WitnessScope.CALLED_BY_ENTRY,
                 WitnessScope.CUSTOM_GROUPS,
-                WitnessScope.CUSTOM_CONSTRACTS));
+                WitnessScope.CUSTOM_CONTRACTS));
     }
 }
