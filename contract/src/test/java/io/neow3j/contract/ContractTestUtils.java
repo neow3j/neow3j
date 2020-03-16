@@ -8,7 +8,6 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -21,6 +20,11 @@ public class ContractTestUtils {
      */
     public static final String NEP5_CONTRACT_SCRIPT_HASH = "2b019d92a2b0a3babc675a066cf85166f53572bc";
 
+    /**
+     * This method mocks the SendRawTransaction request and refers to the sendrawtransaction.json as the response.
+     *
+     * @throws IOException if the response .json is not found.
+     */
     public static void setUpWireMockForSendRawTransaction() throws IOException {
         String responseBody = loadFile("/responses/sendrawtransaction.json");
 
@@ -31,6 +35,13 @@ public class ContractTestUtils {
                         .withBody(responseBody)));
     }
 
+    /**
+     * Mocks the RPC calls and refers to the according .json as the response.
+     *
+     * @param contractFunction The operation function that is called on the contract.
+     * @param responseFile The response file according to the function called.
+     * @throws IOException if the response file is not found.
+     */
     public static void setUpWireMockForInvokeFunction(String contractFunction, String responseFile)
             throws IOException {
 
@@ -45,11 +56,16 @@ public class ContractTestUtils {
                         .withBody(responseBody)));
     }
 
+    /**
+     * Loads a file from a relative path.
+     *
+     * @param fileName The file to be loaded.
+     * @return The file in one single String.
+     * @throws IOException if the file is not found.
+     */
     private static String loadFile(String fileName) throws IOException {
         String absFileName = ContractTestUtils.class.getResource(fileName).getFile();
-        FileInputStream inStream = new FileInputStream(new File(absFileName));
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
                 .reduce((a, b) -> a + b).get();
     }
-
 }
