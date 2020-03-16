@@ -90,7 +90,7 @@ public class Nep5Test {
     }
 
     /**
-     * Tests the RPC call with the operation 'name' in the smart contract.
+     * Tests the RPC call with the operation name in the smart contract.
      *
      * @throws IOException              if a connection problem with the RPC node arises.
      * @throws ErrorResponseException   if the call to the node lead to an error. Not due to the
@@ -106,7 +106,7 @@ public class Nep5Test {
     }
 
     /**
-     * Tests the RPC call with the operation 'totalSupply' in the smart contract.
+     * Tests the RPC call with the operation totalSupply in the smart contract.
      *
      * @throws IOException              if a connection problem with the RPC node arises.
      * @throws ErrorResponseException   if the call to the node lead to an error. Not due to the
@@ -122,7 +122,7 @@ public class Nep5Test {
     }
 
     /**
-     * Tests the RPC call with the operation 'symbol' in the smart contract.
+     * Tests the RPC call with the operation symbol in the smart contract.
      *
      * @throws IOException              if a connection problem with the RPC node arises.
      * @throws ErrorResponseException   if the call to the node lead to an error. Not due to the
@@ -138,7 +138,7 @@ public class Nep5Test {
     }
 
     /**
-     * Tests the RPC call with the operation 'decimals' in the smart contract.
+     * Tests the RPC call with the operation decimals in the smart contract.
      *
      * @throws IOException              if a connection problem with the RPC node arises.
      * @throws ErrorResponseException   if the call to the node lead to an error. Not due to the
@@ -155,7 +155,7 @@ public class Nep5Test {
     }
 
     /**
-     * Tests the RPC call with the operation 'balanceOf' in the smart contract.
+     * Tests the RPC call with the operation balanceOf in the smart contract.
      *
      * @throws IOException              if a connection problem with the RPC node arises.
      * @throws ErrorResponseException   if the call to the node lead to an error. Not due to the
@@ -171,18 +171,7 @@ public class Nep5Test {
     }
 
     /**
-     * Tests that the builder throws an exception, if the amount to transfer is negative.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void no_positive_amount_transfer() throws IOException, ErrorResponseException {
-        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
-                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
-                .build();
-        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("-5"));
-    }
-
-    /**
-     * Tests the transfer
+     * Tests the transfer operation in the smart contract.
      *
      * @throws IOException            if a connection problem with the RPC node arises.
      * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
@@ -198,10 +187,21 @@ public class Nep5Test {
     }
 
     /**
+     * Tests that the builder throws an exception, if the amount to transfer is negative.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void noPositiveAmountTransfer() throws IOException, ErrorResponseException {
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("-5"));
+    }
+
+    /**
      * Tests that the builder throws an exception, if the required script hash is not set.
      */
     @Test(expected = IllegalStateException.class)
-    public void not_adding_required_script_hash() {
+    public void notAddingRequiredScriptHash() {
         new Nep5.Builder(EMPTY_NEOW3J)
                 .build();
     }
@@ -210,7 +210,7 @@ public class Nep5Test {
      * Tests that the builder throws an exception, if the required neow3j is not set.
      */
     @Test(expected = IllegalStateException.class)
-    public void not_adding_required_script_neow3j() {
+    public void notAddingRequiredNeow3j() {
         new Nep5.Builder(null)
                 .fromContract(NEP5_CONTRACT_SCRIPT_HASH)
                 .build();
