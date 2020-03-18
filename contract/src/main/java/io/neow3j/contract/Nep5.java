@@ -95,8 +95,8 @@ public class Nep5 {
      * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
      *                                node.
      */
-    public Boolean transfer(Account from, ScriptHash to, BigInteger amount) throws IOException, ErrorResponseException {
-        if (amount.intValue() < 0) {
+    public Boolean transfer(Account from, ScriptHash to, Integer amount) throws IOException, ErrorResponseException {
+        if (amount < 0) {
             throw new IllegalArgumentException("Transfer amount has to be greater than zero.");
         }
         ContractParameter fromParam = ContractParameter.byteArrayFromAddress(from.getAddress());

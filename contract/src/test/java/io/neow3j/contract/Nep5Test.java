@@ -50,9 +50,9 @@ public class Nep5Test {
     private final ScriptHash ACCT_SCRIPTHASH = ACCOUNT.getScriptHash();
 
     /**
-     * The script hash from the account with address AWKECj9RD8rS8RPcpCgYVjk1DeYyHwxZm3.
+     * The script hash from the recipient's address.
      */
-    private final ScriptHash TO_ACCT_SCRIPTHASH = new ScriptHash("68ebfc4fefbe24c9cff0f7e3c0d27ed396d07f9f");
+    private final ScriptHash TO_ACCT_SCRIPTHASH = ScriptHash.fromAddress("AWKECj9RD8rS8RPcpCgYVjk1DeYyHwxZm3");
 
     /**
      * The WireMockRule used for this test class.
@@ -183,7 +183,7 @@ public class Nep5Test {
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
                 .build();
-        assertThat(nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("20")), is(Boolean.TRUE));
+        assertThat(nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, 20), is(Boolean.TRUE));
     }
 
     /**
@@ -194,7 +194,7 @@ public class Nep5Test {
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
                 .build();
-        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("-5"));
+        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, -5);
     }
 
     /**
