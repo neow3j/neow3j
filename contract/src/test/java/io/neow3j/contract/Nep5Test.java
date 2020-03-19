@@ -65,7 +65,7 @@ public class Nep5Test {
      * default host and port of the neow3j object in this test class.
      */
     @Before
-    public void setUp() {
+    public void setUpTest() {
         WireMock.configure();
     }
 
@@ -82,7 +82,7 @@ public class Nep5Test {
      *              underlying constructor represents an abstract class.
      */
     @Test
-    public void testConstructorIsPrivate() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public void constructorIsPrivateTest() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor<Nep5> constructor = Nep5.class.getDeclaredConstructor();
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
         constructor.setAccessible(true);
@@ -97,7 +97,7 @@ public class Nep5Test {
      *                                  contract invocation itself but due to the call in general.
      */
     @Test
-    public void name() throws IOException, ErrorResponseException {
+    public void nameTest() throws IOException, ErrorResponseException {
         ContractTestUtils.setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
@@ -113,7 +113,7 @@ public class Nep5Test {
      *                                  contract invocation itself but due to the call in general.
      */
     @Test
-    public void totalSupply() throws IOException, ErrorResponseException {
+    public void totalSupplyTest() throws IOException, ErrorResponseException {
         ContractTestUtils.setUpWireMockForInvokeFunction("totalSupply", "invokefunction_totalSupply.json");
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
@@ -129,7 +129,7 @@ public class Nep5Test {
      *                                  contract invocation itself but due to the call in general.
      */
     @Test
-    public void symbol() throws IOException, ErrorResponseException {
+    public void symbolTest() throws IOException, ErrorResponseException {
         ContractTestUtils.setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
@@ -145,7 +145,7 @@ public class Nep5Test {
      *                                  contract invocation itself but due to the call in general.
      */
     @Test
-    public void decimals() throws IOException, ErrorResponseException {
+    public void decimalsTest() throws IOException, ErrorResponseException {
         ContractTestUtils.setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
@@ -162,7 +162,7 @@ public class Nep5Test {
      *                                  contract invocation itself but due to the call in general.
      */
     @Test
-    public void balanceOf() throws IOException, ErrorResponseException {
+    public void balanceOfTest() throws IOException, ErrorResponseException {
         ContractTestUtils.setUpWireMockForInvokeFunction("balanceOf", "invokefunction_balanceOf.json");
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
@@ -178,23 +178,51 @@ public class Nep5Test {
      *                                node.
      */
     @Test
-    public void transfer() throws IOException, ErrorResponseException {
+    public void transferTest() throws IOException, ErrorResponseException {
         ContractTestUtils.setUpWireMockForSendRawTransaction();
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
                 .build();
-        assertThat(nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, 20), is(Boolean.TRUE));
+        assertThat(nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("20")), is(Boolean.TRUE));
     }
 
     /**
      * Tests that the builder throws an exception, if the amount to transfer is negative.
      */
     @Test(expected = IllegalArgumentException.class)
-    public void noPositiveAmountTransfer() throws IOException, ErrorResponseException {
+    public void noPositiveAmountTransferTest() throws IOException, ErrorResponseException {
         Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
                 .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
                 .build();
-        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, -5);
+        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, new BigInteger("-5"));
+    }
+
+    /**
+     * Tests the transfer operation in the smart contract with the parameter amount as a String.
+     *
+     * @throws IOException            if a connection problem with the RPC node arises.
+     * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
+     *                                node.
+     */
+    @Test
+    public void transferStringTest() throws IOException, ErrorResponseException {
+        ContractTestUtils.setUpWireMockForSendRawTransaction();
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        assertThat(nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, "20"), is(Boolean.TRUE));
+    }
+
+    /**
+     * Tests that the builder throws an exception, if the amount to transfer is negative.
+     * Tests the transfer method that takes the parameter amount as a String.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void noPositiveAmountTransferStringTest() throws IOException, ErrorResponseException {
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        nep5.transfer(ACCOUNT, TO_ACCT_SCRIPTHASH, "-5");
     }
 
     /**

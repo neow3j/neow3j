@@ -95,17 +95,11 @@ public class Nep5 {
      * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
      *                                node.
      */
-    public Boolean transfer(Account from, ScriptHash to, Integer amount) throws IOException, ErrorResponseException {
-        if (amount < 0) {
+    public Boolean transfer(Account from, ScriptHash to, BigInteger amount) throws IOException, ErrorResponseException {
+        if (amount.intValue() < 0) {
             throw new IllegalArgumentException("Transfer amount has to be greater than zero.");
         }
-        ContractParameter fromParam = ContractParameter.byteArrayFromAddress(from.getAddress());
-        ContractParameter toParam = ContractParameter.byteArrayFromAddress(to.toAddress());
-        ContractParameter amountParam = ContractParameter.integer(amount);
-        List<ContractParameter> params = new ArrayList<>();
-        params.add(fromParam);
-        params.add(toParam);
-        params.add(amountParam);
+        List<ContractParameter> params = buildContractParameters(from, to, amount);
 
         ContractInvocation invocation = new ContractInvocation.Builder(neow3j)
                 .contractScriptHash(scriptHash)
@@ -120,8 +114,55 @@ public class Nep5 {
     }
 
     /**
+     * Transfers an amount of tokens from one account to another.
+     * This method takes the parameter amount as a String, which may be more convenient for developers.
+     *
+     * @param from the account, that sends the tokens.
+     * @param to the account, that receives the tokens.
+     * @param amountAsString the amount of tokens, that is transferred.
+     * @return a boolean, if the transfer was successfully processed.
+     * @throws IOException            if a connection problem with the RPC node arises.
+     * @throws ErrorResponseException if the execution of the invocation lead to an error on the RPC
+     *                                node.
+     */
+    public Boolean transfer(Account from, ScriptHash to, String amountAsString) throws IOException, ErrorResponseException {
+        BigInteger amount = new BigInteger(amountAsString);
+        if (amount.signum() == -1) {
+            throw new IllegalArgumentException("Transfer amount has to be greater than zero.");
+        }
+        List<ContractParameter> params = buildContractParameters(from, to, amount);
+
+        ContractInvocation invocation = new ContractInvocation.Builder(neow3j)
+                .contractScriptHash(scriptHash)
+                .function("transfer")
+                .parameters(params)
+                .account(from)
+                .build()
+                .sign()
+                .invoke();
+
+        return invocation.getResponse().getResult();
+    }
+
+    /**
+     * Builds a parameter list that can be used to build a ContractInvocation.
+     *
+     * @param from an account
+     * @param to a script hash of an address
+     * @param amount a BigInteger
+     * @return a list of ContractParameters containing the input parameters in the same order.
+     */
+    private List<ContractParameter> buildContractParameters(Account from, ScriptHash to, BigInteger amount) {
+        List<ContractParameter> params = new ArrayList<>();
+        params.add(ContractParameter.byteArrayFromAddress(from.getAddress()));
+        params.add(ContractParameter.byteArrayFromAddress(to.toAddress()));
+        params.add(ContractParameter.integer(amount));
+        return params;
+    }
+
+    /**
      * Tests the contract invocation. Doing this does not affect the blockchain's state.
-     * This method is useful for requests, that only want to retrieve the current state of the blockchain.
+     * This method is useful for requests that only want to retrieve the current state of the blockchain.
      *
      * @param method the NEP5 method.
      * @param param the additional NEP5 parameters used for the invocation.
