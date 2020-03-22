@@ -1,8 +1,5 @@
 package io.neow3j.model.types;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 public class NEOAsset {
 
     public static final String NAME = "NEO";

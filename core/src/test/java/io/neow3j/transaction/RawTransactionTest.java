@@ -1,15 +1,13 @@
 package io.neow3j.transaction;
 
+import static org.junit.Assert.assertEquals;
+
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.transaction.RawScript;
 import io.neow3j.crypto.transaction.RawTransaction;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
-
 import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class RawTransactionTest {
 

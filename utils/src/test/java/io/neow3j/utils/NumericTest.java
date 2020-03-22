@@ -1,13 +1,25 @@
 package io.neow3j.utils;
 
-import io.neow3j.exceptions.MessageDecodingException;
-import io.neow3j.exceptions.MessageEncodingException;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
+import static io.neow3j.utils.Numeric.containsHexPrefix;
+import static io.neow3j.utils.Numeric.decodeQuantity;
+import static io.neow3j.utils.Numeric.encodeQuantity;
+import static io.neow3j.utils.Numeric.fromDecimalToFixed8ByteArray;
+import static io.neow3j.utils.Numeric.fromDecimalToFixed8HexString;
+import static io.neow3j.utils.Numeric.fromFixed8ToDecimal;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.hexToInteger;
+import static io.neow3j.utils.Numeric.hexToString;
+import static io.neow3j.utils.Numeric.isIntegerValue;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.prependHexPrefix;
+import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toBytesPadded;
+import static io.neow3j.utils.Numeric.toHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefixZeroPadded;
+import static io.neow3j.utils.Numeric.toHexStringWithPrefix;
+import static io.neow3j.utils.Numeric.toHexStringWithPrefixSafe;
+import static io.neow3j.utils.Numeric.toHexStringWithPrefixZeroPadded;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -15,6 +27,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import io.neow3j.exceptions.MessageDecodingException;
+import io.neow3j.exceptions.MessageEncodingException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import org.junit.Test;
 
 
 public class NumericTest {
@@ -34,56 +52,56 @@ public class NumericTest {
 
     @Test
     public void testQuantityEncodeLeadingZero() {
-        assertThat(Numeric.toHexStringWithPrefixSafe(BigInteger.valueOf(0L)), equalTo("0x00"));
-        assertThat(Numeric.toHexStringWithPrefixSafe(BigInteger.valueOf(1024L)), equalTo("0x400"));
-        assertThat(Numeric.toHexStringWithPrefixSafe(BigInteger.valueOf(Long.MAX_VALUE)),
+        assertThat(toHexStringWithPrefixSafe(BigInteger.valueOf(0L)), equalTo("0x00"));
+        assertThat(toHexStringWithPrefixSafe(BigInteger.valueOf(1024L)), equalTo("0x400"));
+        assertThat(toHexStringWithPrefixSafe(BigInteger.valueOf(Long.MAX_VALUE)),
                 equalTo("0x7fffffffffffffff"));
-        assertThat(Numeric.toHexStringWithPrefixSafe(
+        assertThat(toHexStringWithPrefixSafe(
                 new BigInteger("204516877000845695339750056077105398031")),
                 equalTo("0x99dc848b94efc27edfad28def049810f"));
     }
 
     @Test
     public void testQuantityDecode() {
-        assertThat(Numeric.decodeQuantity("0x0"), equalTo(BigInteger.valueOf(0L)));
-        assertThat(Numeric.decodeQuantity("0x400"), equalTo(BigInteger.valueOf((1024L))));
-        assertThat(Numeric.decodeQuantity("0x0"), equalTo(BigInteger.valueOf((0L))));
-        assertThat(Numeric.decodeQuantity(
+        assertThat(decodeQuantity("0x0"), equalTo(BigInteger.valueOf(0L)));
+        assertThat(decodeQuantity("0x400"), equalTo(BigInteger.valueOf((1024L))));
+        assertThat(decodeQuantity("0x0"), equalTo(BigInteger.valueOf((0L))));
+        assertThat(decodeQuantity(
                 "0x7fffffffffffffff"), equalTo(BigInteger.valueOf((Long.MAX_VALUE))));
-        assertThat(Numeric.decodeQuantity("0x99dc848b94efc27edfad28def049810f"),
+        assertThat(decodeQuantity("0x99dc848b94efc27edfad28def049810f"),
                 equalTo(new BigInteger("204516877000845695339750056077105398031")));
     }
 
     @Test(expected = MessageDecodingException.class)
     public void testQuantityDecodeLeadingZeroException() {
-        Numeric.decodeQuantity("0x0400");
+        decodeQuantity("0x0400");
     }
 
     @Test(expected = MessageDecodingException.class)
     public void testQuantityDecodeMissingPrefix() {
-        Numeric.decodeQuantity("ff");
+        decodeQuantity("ff");
     }
 
     @Test(expected = MessageDecodingException.class)
     public void testQuantityDecodeMissingValue() {
-        Numeric.decodeQuantity("0x");
+        decodeQuantity("0x");
     }
 
     @Test
     public void testQuantityEncode() {
-        assertThat(Numeric.encodeQuantity(BigInteger.valueOf(0)), is("0x0"));
-        assertThat(Numeric.encodeQuantity(BigInteger.valueOf(1)), is("0x1"));
-        assertThat(Numeric.encodeQuantity(BigInteger.valueOf(1024)), is("0x400"));
-        assertThat(Numeric.encodeQuantity(
+        assertThat(encodeQuantity(BigInteger.valueOf(0)), is("0x0"));
+        assertThat(encodeQuantity(BigInteger.valueOf(1)), is("0x1"));
+        assertThat(encodeQuantity(BigInteger.valueOf(1024)), is("0x400"));
+        assertThat(encodeQuantity(
                 BigInteger.valueOf(Long.MAX_VALUE)), is("0x7fffffffffffffff"));
-        assertThat(Numeric.encodeQuantity(
+        assertThat(encodeQuantity(
                 new BigInteger("204516877000845695339750056077105398031")),
                 is("0x99dc848b94efc27edfad28def049810f"));
     }
 
     @Test(expected = MessageEncodingException.class)
     public void testQuantityEncodeNegative() {
-        Numeric.encodeQuantity(BigInteger.valueOf(-1));
+        encodeQuantity(BigInteger.valueOf(-1));
     }
 
     @Test
@@ -96,74 +114,74 @@ public class NumericTest {
 
     @Test
     public void testPrependHexPrefix() {
-        assertThat(Numeric.prependHexPrefix(""), is("0x"));
-        assertThat(Numeric.prependHexPrefix("0x0123456789abcdef"), is("0x0123456789abcdef"));
-        assertThat(Numeric.prependHexPrefix("0x"), is("0x"));
-        assertThat(Numeric.prependHexPrefix("0123456789abcdef"), is("0x0123456789abcdef"));
+        assertThat(prependHexPrefix(""), is("0x"));
+        assertThat(prependHexPrefix("0x0123456789abcdef"), is("0x0123456789abcdef"));
+        assertThat(prependHexPrefix("0x"), is("0x"));
+        assertThat(prependHexPrefix("0123456789abcdef"), is("0x0123456789abcdef"));
     }
 
     @Test
     public void testToHexStringWithPrefix() {
-        assertThat(Numeric.toHexStringWithPrefix(BigInteger.TEN), is("0xa"));
+        assertThat(toHexStringWithPrefix(BigInteger.TEN), is("0xa"));
     }
 
     @Test
     public void testToHexStringNoPrefix() {
-        assertThat(Numeric.toHexStringNoPrefix(BigInteger.TEN), is("a"));
+        assertThat(toHexStringNoPrefix(BigInteger.TEN), is("a"));
     }
 
     @Test
     public void testToBytesPadded() {
-        assertThat(Numeric.toBytesPadded(BigInteger.TEN, 1),
+        assertThat(toBytesPadded(BigInteger.TEN, 1),
                 is(new byte[]{0xa}));
 
-        assertThat(Numeric.toBytesPadded(BigInteger.TEN, 8),
+        assertThat(toBytesPadded(BigInteger.TEN, 8),
                 is(new byte[]{0, 0, 0, 0, 0, 0, 0, 0xa}));
 
-        assertThat(Numeric.toBytesPadded(BigInteger.valueOf(Integer.MAX_VALUE), 4),
+        assertThat(toBytesPadded(BigInteger.valueOf(Integer.MAX_VALUE), 4),
                 is(new byte[]{0x7f, (byte) 0xff, (byte) 0xff, (byte) 0xff}));
     }
 
     @Test(expected = RuntimeException.class)
     public void testToBytesPaddedInvalid() {
-        Numeric.toBytesPadded(BigInteger.valueOf(Long.MAX_VALUE), 7);
+        toBytesPadded(BigInteger.valueOf(Long.MAX_VALUE), 7);
     }
 
     @Test
     public void testHexStringToByteArray() {
-        assertThat(Numeric.hexStringToByteArray(""), is(new byte[]{}));
-        assertThat(Numeric.hexStringToByteArray("0"), is(new byte[]{0}));
-        assertThat(Numeric.hexStringToByteArray("1"), is(new byte[]{0x1}));
-        assertThat(Numeric.hexStringToByteArray(HEX_RANGE_STRING),
+        assertThat(hexStringToByteArray(""), is(new byte[]{}));
+        assertThat(hexStringToByteArray("0"), is(new byte[]{0}));
+        assertThat(hexStringToByteArray("1"), is(new byte[]{0x1}));
+        assertThat(hexStringToByteArray(HEX_RANGE_STRING),
                 is(HEX_RANGE_ARRAY));
 
-        assertThat(Numeric.hexStringToByteArray("0x123"),
+        assertThat(hexStringToByteArray("0x123"),
                 is(new byte[]{0x1, 0x23}));
     }
 
     @Test
     public void testToHexString() {
-        assertThat(Numeric.toHexString(new byte[]{}), is("0x"));
-        assertThat(Numeric.toHexString(new byte[]{0x1}), is("0x01"));
-        assertThat(Numeric.toHexString(HEX_RANGE_ARRAY), is(HEX_RANGE_STRING));
+        assertThat(toHexString(new byte[]{}), is("0x"));
+        assertThat(toHexString(new byte[]{0x1}), is("0x01"));
+        assertThat(toHexString(HEX_RANGE_ARRAY), is(HEX_RANGE_STRING));
     }
 
     @Test
     public void testToHexStringNoPrefixZeroPadded() {
         assertThat(
-                Numeric.toHexStringNoPrefixZeroPadded(
+                toHexStringNoPrefixZeroPadded(
                         BigInteger.ZERO,
                         5),
                 is("00000"));
 
         assertThat(
-                Numeric.toHexStringNoPrefixZeroPadded(
+                toHexStringNoPrefixZeroPadded(
                         new BigInteger("11c52b08330e05d731e38c856c1043288f7d9744", 16),
                         40),
                 is("11c52b08330e05d731e38c856c1043288f7d9744"));
 
         assertThat(
-                Numeric.toHexStringNoPrefixZeroPadded(
+                toHexStringNoPrefixZeroPadded(
                         new BigInteger("01c52b08330e05d731e38c856c1043288f7d9744", 16),
                         40),
                 is("01c52b08330e05d731e38c856c1043288f7d9744"));
@@ -172,19 +190,19 @@ public class NumericTest {
     @Test
     public void testToHexStringWithPrefixZeroPadded() {
         assertThat(
-                Numeric.toHexStringWithPrefixZeroPadded(
+                toHexStringWithPrefixZeroPadded(
                         BigInteger.ZERO,
                         5),
                 is("0x00000"));
 
         assertThat(
-                Numeric.toHexStringWithPrefixZeroPadded(
+                toHexStringWithPrefixZeroPadded(
                         new BigInteger("01c52b08330e05d731e38c856c1043288f7d9744", 16),
                         40),
                 is("0x01c52b08330e05d731e38c856c1043288f7d9744"));
 
         assertThat(
-                Numeric.toHexStringWithPrefixZeroPadded(
+                toHexStringWithPrefixZeroPadded(
                         new BigInteger("01c52b08330e05d731e38c856c1043288f7d9744", 16),
                         40),
                 is("0x01c52b08330e05d731e38c856c1043288f7d9744"));
@@ -192,35 +210,35 @@ public class NumericTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testToHexStringZeroPaddedNegative() {
-        Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 20);
+        toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 20);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void testToHexStringZeroPaddedTooLargs() {
-        Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 5);
+        toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 5);
     }
 
     @Test
     public void testIsIntegerValue() {
-        assertTrue(Numeric.isIntegerValue(BigDecimal.ZERO));
-        assertTrue(Numeric.isIntegerValue(BigDecimal.ZERO));
-        assertTrue(Numeric.isIntegerValue(BigDecimal.valueOf(Long.MAX_VALUE)));
-        assertTrue(Numeric.isIntegerValue(BigDecimal.valueOf(Long.MIN_VALUE)));
-        assertTrue(Numeric.isIntegerValue(new BigDecimal(
+        assertTrue(isIntegerValue(BigDecimal.ZERO));
+        assertTrue(isIntegerValue(BigDecimal.ZERO));
+        assertTrue(isIntegerValue(BigDecimal.valueOf(Long.MAX_VALUE)));
+        assertTrue(isIntegerValue(BigDecimal.valueOf(Long.MIN_VALUE)));
+        assertTrue(isIntegerValue(new BigDecimal(
                 "9999999999999999999999999999999999999999999999999999999999999999.0")));
-        assertTrue(Numeric.isIntegerValue(new BigDecimal(
+        assertTrue(isIntegerValue(new BigDecimal(
                 "-9999999999999999999999999999999999999999999999999999999999999999.0")));
 
-        assertFalse(Numeric.isIntegerValue(BigDecimal.valueOf(0.1)));
-        assertFalse(Numeric.isIntegerValue(BigDecimal.valueOf(-0.1)));
-        assertFalse(Numeric.isIntegerValue(BigDecimal.valueOf(1.1)));
-        assertFalse(Numeric.isIntegerValue(BigDecimal.valueOf(-1.1)));
+        assertFalse(isIntegerValue(BigDecimal.valueOf(0.1)));
+        assertFalse(isIntegerValue(BigDecimal.valueOf(-0.1)));
+        assertFalse(isIntegerValue(BigDecimal.valueOf(1.1)));
+        assertFalse(isIntegerValue(BigDecimal.valueOf(-1.1)));
     }
 
     @Test
     public void testHandleNPE() {
-        assertFalse(Numeric.containsHexPrefix(null));
-        assertFalse(Numeric.containsHexPrefix(""));
+        assertFalse(containsHexPrefix(null));
+        assertFalse(containsHexPrefix(""));
     }
 
     @Test
@@ -228,7 +246,7 @@ public class NumericTest {
         String hex = "bc99b2a477e28581b2fd04249ba27599ebd736d3";
         String reversed = "d336d7eb9975a29b2404fdb28185e277a4b299bc";
 
-        Assert.assertThat(Numeric.reverseHexString(hex), is(reversed));
+        assertThat(reverseHexString(hex), is(reversed));
     }
 
     @Test
@@ -236,7 +254,7 @@ public class NumericTest {
         String hex = "72656164";
         String original = "read";
 
-        Assert.assertThat(Numeric.hexToString(hex), is(original));
+        assertThat(hexToString(hex), is(original));
     }
 
     @Test
@@ -244,67 +262,70 @@ public class NumericTest {
         String hex = "b100";
         BigInteger original = BigInteger.valueOf(177);
 
-        Assert.assertThat(Numeric.hexToInteger(hex), is(original));
+        assertThat(hexToInteger(hex), is(original));
     }
 
     @Test
     public void testFromFixed8ToBigDecimal() {
         byte[] fixed8 = {0x01, (byte) 0xe4, 0x0b, (byte) 0x54, 0x02, 0x00, 0x00, 0x00};
-        BigDecimal asBigDecimal = Numeric.fromFixed8ToDecimal(fixed8);
+        BigDecimal asBigDecimal = fromFixed8ToDecimal(fixed8);
         BigDecimal expected = BigDecimal.valueOf(100.00000001d);
-        Assert.assertEquals(0, expected.compareTo(asBigDecimal));
+        assertEquals(0, expected.compareTo(asBigDecimal));
     }
 
     @Test
     public void testFromDecimalToFixed8HexString() {
         BigDecimal d = BigDecimal.TEN;
-        String i = Numeric.fromDecimalToFixed8HexString(d);
+        String i = fromDecimalToFixed8HexString(d);
         assertEquals(i, "000000003b9aca00");
 
         d = new BigDecimal("0.001");
-        i = Numeric.fromDecimalToFixed8HexString(d);
+        i = fromDecimalToFixed8HexString(d);
         assertEquals(i, "00000000000186a0");
 
         d = new BigDecimal("0.00000001");
-        i = Numeric.fromDecimalToFixed8HexString(d);
+        i = fromDecimalToFixed8HexString(d);
         assertEquals(i, "0000000000000001");
 
         d = new BigDecimal("0.000000001");
-        i = Numeric.fromDecimalToFixed8HexString(d);
+        i = fromDecimalToFixed8HexString(d);
         assertEquals(i, "0000000000000000");
     }
 
     @Test
     public void testFromDecimalToFixed8ByteArray() {
         BigDecimal d = BigDecimal.TEN;
-        byte[] i = Numeric.fromDecimalToFixed8ByteArray(d);
-        assertArrayEquals(i, new byte[]{(byte) 0x00, (byte) 0xca, (byte) 0x9a, (byte) 0x3b, 0x00, 0x00, 0x00, 0x00});
+        byte[] i = fromDecimalToFixed8ByteArray(d);
+        assertArrayEquals(i,
+                new byte[]{(byte) 0x00, (byte) 0xca, (byte) 0x9a, (byte) 0x3b, 0x00, 0x00, 0x00,
+                        0x00});
 
         d = new BigDecimal("0.001");
-        i = Numeric.fromDecimalToFixed8ByteArray(d);
-        assertArrayEquals(i, new byte[]{(byte) 0xa0, (byte) 0x86, (byte) 0x01, 0x00, 0x00, 0x00, 0x00, 0x00});
+        i = fromDecimalToFixed8ByteArray(d);
+        assertArrayEquals(i,
+                new byte[]{(byte) 0xa0, (byte) 0x86, (byte) 0x01, 0x00, 0x00, 0x00, 0x00, 0x00});
 
         d = new BigDecimal("0.00000001");
-        i = Numeric.fromDecimalToFixed8ByteArray(d);
+        i = fromDecimalToFixed8ByteArray(d);
         assertArrayEquals(i, new byte[]{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 
         d = new BigDecimal("0.000000001");
-        i = Numeric.fromDecimalToFixed8ByteArray(d);
+        i = fromDecimalToFixed8ByteArray(d);
         assertArrayEquals(i, new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
     }
 
     @Test
     public void testIsValidHexString() {
-        assertTrue(Numeric.isValidHexString("0x9ef022"));
-        assertTrue(Numeric.isValidHexString("9ef022"));
-        assertTrue(Numeric.isValidHexString("0123456789abcdef"));
+        assertTrue(isValidHexString("0x9ef022"));
+        assertTrue(isValidHexString("9ef022"));
+        assertTrue(isValidHexString("0123456789abcdef"));
         // Empty string considered to be valid hex.
-        assertTrue(Numeric.isValidHexString(""));
+        assertTrue(isValidHexString(""));
         // Strings with odd number of digits not considered to be valid.
-        assertFalse(Numeric.isValidHexString("9ef02"));
-        assertFalse(Numeric.isValidHexString("1g"));
-        assertFalse(Numeric.isValidHexString("0x1g"));
-        assertFalse(Numeric.isValidHexString("0x123456789abcdeg"));
+        assertFalse(isValidHexString("9ef02"));
+        assertFalse(isValidHexString("1g"));
+        assertFalse(isValidHexString("0x1g"));
+        assertFalse(isValidHexString("0x123456789abcdeg"));
     }
 
 }
