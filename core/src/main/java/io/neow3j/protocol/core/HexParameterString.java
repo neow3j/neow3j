@@ -3,7 +3,6 @@ package io.neow3j.protocol.core;
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.utils.Numeric;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
