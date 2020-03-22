@@ -41,7 +41,7 @@ import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
-import rx.Observable;
+import io.reactivex.Observable;
 
 import java.io.IOException;
 import java.util.Arrays;

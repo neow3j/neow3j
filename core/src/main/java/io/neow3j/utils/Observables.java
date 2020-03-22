@@ -1,6 +1,6 @@
 package io.neow3j.utils;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 import java.math.BigInteger;
 
@@ -18,8 +18,8 @@ public class Observables {
      * Simple Observable implementation to emit a range of BigInteger values.
      *
      * @param startValue first value to emit in range
-     * @param endValue final value to emit in range
-     * @param ascending direction to iterate through range
+     * @param endValue   final value to emit in range
+     * @param ascending  direction to iterate through range
      * @return Observable to emit this range of values
      */
     public static Observable<BigInteger> range(
@@ -34,27 +34,27 @@ public class Observables {
         if (ascending) {
             return Observable.create(subscriber -> {
                 for (BigInteger i = startValue;
-                        i.compareTo(endValue) < 1
-                             && !subscriber.isUnsubscribed();
-                        i = i.add(BigInteger.ONE)) {
+                     i.compareTo(endValue) < 1
+                             && !subscriber.isDisposed();
+                     i = i.add(BigInteger.ONE)) {
                     subscriber.onNext(i);
                 }
 
-                if (!subscriber.isUnsubscribed()) {
-                    subscriber.onCompleted();
+                if (!subscriber.isDisposed()) {
+                    subscriber.onComplete();
                 }
             });
         } else {
             return Observable.create(subscriber -> {
                 for (BigInteger i = endValue;
-                        i.compareTo(startValue) > -1
-                             && !subscriber.isUnsubscribed();
-                        i = i.subtract(BigInteger.ONE)) {
+                     i.compareTo(startValue) > -1
+                             && !subscriber.isDisposed();
+                     i = i.subtract(BigInteger.ONE)) {
                     subscriber.onNext(i);
                 }
 
-                if (!subscriber.isUnsubscribed()) {
-                    subscriber.onCompleted();
+                if (!subscriber.isDisposed()) {
+                    subscriber.onComplete();
                 }
             });
         }

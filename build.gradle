@@ -3,7 +3,7 @@ buildscript {
     ext.jacksonVersion = '2.9.7'
     ext.jnr_unixsocketVersion = '0.15'
     ext.okhttpVersion = '3.8.1'
-    ext.rxjavaVersion = '1.2.4'
+    ext.rxjavaVersion = '2.2.15'
     ext.slf4jVersion = '1.7.25'
     ext.javaWebSocketVersion = '1.3.8'
 
@@ -55,7 +55,7 @@ allprojects {
     if (project.hasProperty('snapshot')) {
         version = version + '-SNAPSHOT'
     }
-    
+
     repositories {
         mavenLocal()
         mavenCentral()
@@ -110,7 +110,7 @@ subprojects {
 }
 
 configure(subprojects.findAll()) {
-    
+
     apply plugin: 'signing'
     apply plugin: 'maven-publish'
 
@@ -206,7 +206,7 @@ configure(subprojects.findAll()) {
 
                 // The code below was based on:
                 // https://medium.com/@nmauti/sign-and-publish-on-maven-central-a-project-with-the-new-maven-publish-gradle-plugin-22a72a4bfd4b
-                
+
                 // create the sign pom artifact
                 pom.withXml {
                     def pomFile = file("${project.buildDir}/generated-pom.xml")
@@ -255,7 +255,7 @@ configure(subprojects.findAll()) {
     task release {
         dependsOn 'build'
         dependsOn 'publish'
-        
+
         tasks.findByName('publish').mustRunAfter 'build'
     }
 }
