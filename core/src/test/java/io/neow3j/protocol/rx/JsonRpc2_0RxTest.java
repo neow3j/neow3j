@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.mockito.stubbing.OngoingStubbing;
@@ -195,8 +196,8 @@ public class JsonRpc2_0RxTest {
     }
 
     @Test
-//    @Ignore("Ignored due to a missing feature. "
-//        + "A feature to buffer blocks that come out of order should be implemented on neow3j lib.")
+    @Ignore("Ignored due to a missing feature. "
+        + "A feature to buffer blocks that come out of order should be implemented on neow3j lib.")
     public void testCatchUpToLatestAndSubscribeToNewBlockObservable_NotContinuousBlocks()
         throws Exception {
 
