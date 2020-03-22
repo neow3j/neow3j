@@ -1,15 +1,13 @@
 package io.neow3j.protocol.core.methods.response;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
-
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ByteArrayStackItem extends StackItem {
 

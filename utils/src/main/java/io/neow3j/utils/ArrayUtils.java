@@ -61,7 +61,8 @@ public class ArrayUtils {
 
     public static byte[] xor(byte[] array1, byte[] array2) throws IllegalArgumentException {
         if (array1.length != array2.length) {
-            throw new IllegalArgumentException("Arrays do not have the same length to perform the XOR operation.");
+            throw new IllegalArgumentException(
+                    "Arrays do not have the same length to perform the XOR operation.");
         }
         byte[] result = new byte[array1.length];
         int i = 0;

@@ -1,21 +1,19 @@
 package io.neow3j.contract.abi.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-
-import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.model.types.ContractParameterType;
+import java.io.IOException;
+import java.util.Arrays;
+import org.hamcrest.CoreMatchers;
+import org.junit.Test;
 
 public class NeoContractInterfaceTest {
 

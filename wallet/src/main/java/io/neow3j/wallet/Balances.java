@@ -2,11 +2,7 @@ package io.neow3j.wallet;
 
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents.Unspents;
-
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
