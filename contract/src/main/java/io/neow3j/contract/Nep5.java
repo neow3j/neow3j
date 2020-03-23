@@ -2,14 +2,17 @@ package io.neow3j.contract;
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+/**
+ * Wrapper to interact with contracts that are compatible with the NEP-5 standard.
+ */
 public class Nep5 {
 
     private Neow3j neow3j;
@@ -32,7 +35,10 @@ public class Nep5 {
      *                                  contract invocation itself but due to the call in general.
      */
     public String name() throws IOException, ErrorResponseException {
-        return this.testInvoke("name", null).getStack().get(0).asByteArray().getAsString();
+        InvocationResult invocResultName = this.testInvoke("name", null);
+        return streamResponse(invocResultName)
+                .asByteArray()
+                .getAsString();
     }
 
     /**
@@ -44,7 +50,10 @@ public class Nep5 {
      *                                  contract invocation itself but due to the call in general.
      */
     public BigInteger totalSupply() throws IOException, ErrorResponseException {
-        return this.testInvoke("totalSupply", null).getStack().get(0).asByteArray().getAsNumber();
+        InvocationResult invocResultTotalSupply = this.testInvoke("totalSupply", null);
+        return streamResponse(invocResultTotalSupply)
+                .asByteArray()
+                .getAsNumber();
     }
 
     /**
@@ -56,7 +65,10 @@ public class Nep5 {
      *                                  contract invocation itself but due to the call in general.
      */
     public String symbol() throws IOException, ErrorResponseException {
-        return this.testInvoke("symbol", null).getStack().get(0).asByteArray().getAsString();
+        InvocationResult invocResultSymbol = this.testInvoke("symbol", null);
+        return streamResponse(invocResultSymbol)
+                 .asByteArray()
+                 .getAsString();
     }
 
     /**
@@ -68,7 +80,10 @@ public class Nep5 {
      *                                  contract invocation itself but due to the call in general.
      */
     public BigInteger decimals() throws IOException, ErrorResponseException {
-        return this.testInvoke("decimals", null).getStack().get(0).asInteger().getValue();
+        InvocationResult invocResultDecimals = this.testInvoke("decimals", null);
+        return streamResponse(invocResultDecimals)
+                .asInteger()
+                .getValue();
     }
 
     /**
@@ -81,14 +96,32 @@ public class Nep5 {
      *                                  contract invocation itself but due to the call in general.
      */
     public BigInteger balanceOf(ScriptHash account) throws IOException, ErrorResponseException {
-        return this.testInvoke("balanceOf", ContractParameter.byteArrayFromAddress(account.toAddress())).getStack().get(0).asByteArray().getAsNumber();
+        InvocationResult invocResultBalanceOf = this.testInvoke("balanceOf",
+                ContractParameter.byteArrayFromAddress(account.toAddress()));
+        return streamResponse(invocResultBalanceOf)
+                .asByteArray()
+                .getAsNumber();
+    }
+
+    /**
+     * Gets the stack from the response and streams it to get the first Entry of the stack.
+     *
+     * @param invocResult the response {@link InvocationResult} from an RPC call.
+     * @return the first item of the stack.
+     */
+    private StackItem streamResponse(InvocationResult invocResult) {
+        return Optional.ofNullable(invocResult.getStack())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Stack is null or empty in the response."));
     }
 
     /**
      * Transfers an amount of tokens from one account to another.
      *
      * @param from the account, that sends the tokens.
-     * @param to the account, that receives the tokens.
+     * @param to the address, represented as a {@link ScriptHash}, that receives the tokens.
      * @param amount the amount of tokens, that is transferred.
      * @return a boolean, if the transfer was successfully processed.
      * @throws IOException            if a connection problem with the RPC node arises.
@@ -99,18 +132,8 @@ public class Nep5 {
         if (amount.intValue() < 0) {
             throw new IllegalArgumentException("Transfer amount has to be greater than zero.");
         }
-        List<ContractParameter> params = buildContractParameters(from, to, amount);
 
-        ContractInvocation invocation = new ContractInvocation.Builder(neow3j)
-                .contractScriptHash(scriptHash)
-                .function("transfer")
-                .parameters(params)
-                .account(from)
-                .build()
-                .sign()
-                .invoke();
-
-        return invocation.getResponse().getResult();
+        return invokeTransfer(from, to, amount).getResponse().getResult();
     }
 
     /**
@@ -118,7 +141,7 @@ public class Nep5 {
      * This method takes the parameter amount as a String, which may be more convenient for developers.
      *
      * @param from the account, that sends the tokens.
-     * @param to the account, that receives the tokens.
+     * @param to the address, represented as a {@link ScriptHash}, that receives the tokens.
      * @param amountAsString the amount of tokens, that is transferred.
      * @return a boolean, if the transfer was successfully processed.
      * @throws IOException            if a connection problem with the RPC node arises.
@@ -130,9 +153,28 @@ public class Nep5 {
         if (amount.signum() == -1) {
             throw new IllegalArgumentException("Transfer amount has to be greater than zero.");
         }
-        List<ContractParameter> params = buildContractParameters(from, to, amount);
 
-        ContractInvocation invocation = new ContractInvocation.Builder(neow3j)
+        return invokeTransfer(from, to, amount).getResponse().getResult();
+    }
+
+    /**
+     * Invokes the transfer method in the smart contract.
+     *
+     * @param from the account, that sends the tokens.
+     * @param to the address, represented as a {@link ScriptHash}, that receives the tokens.
+     * @param amount the amount of tokens, that is transferred.
+     * @return an invocation object {@link ContractInvocation}.
+     * @throws IOException              if a connection problem with the RPC node arises.
+     * @throws ErrorResponseException   if the execution of the invocation lead to an error on the RPC
+     *                                  node.
+     */
+    private ContractInvocation invokeTransfer(Account from, ScriptHash to, BigInteger amount) throws IOException, ErrorResponseException {
+        List<ContractParameter> params = new ArrayList<>();
+        params.add(ContractParameter.byteArrayFromAddress(from.getAddress()));
+        params.add(ContractParameter.byteArrayFromAddress(to.toAddress()));
+        params.add(ContractParameter.integer(amount));
+
+        return new ContractInvocation.Builder(neow3j)
                 .contractScriptHash(scriptHash)
                 .function("transfer")
                 .parameters(params)
@@ -140,24 +182,6 @@ public class Nep5 {
                 .build()
                 .sign()
                 .invoke();
-
-        return invocation.getResponse().getResult();
-    }
-
-    /**
-     * Builds a parameter list that can be used to build a ContractInvocation.
-     *
-     * @param from an account
-     * @param to a script hash of an address
-     * @param amount a BigInteger
-     * @return a list of ContractParameters containing the input parameters in the same order.
-     */
-    private List<ContractParameter> buildContractParameters(Account from, ScriptHash to, BigInteger amount) {
-        List<ContractParameter> params = new ArrayList<>();
-        params.add(ContractParameter.byteArrayFromAddress(from.getAddress()));
-        params.add(ContractParameter.byteArrayFromAddress(to.toAddress()));
-        params.add(ContractParameter.integer(amount));
-        return params;
     }
 
     /**

@@ -154,6 +154,33 @@ public class Nep5Test {
 
     }
 
+    @Test (expected = IllegalStateException.class)
+    public void noStackTest() throws IOException, ErrorResponseException {
+        ContractTestUtils.setUpWireMockForInvokeFunction("decimals", "noStack.json");
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        assertThat(nep5.decimals(), is(new BigInteger("8")));
+    }
+
+    @Test (expected = IllegalStateException.class)
+    public void emptyStackTest() throws IOException, ErrorResponseException {
+        ContractTestUtils.setUpWireMockForInvokeFunction("decimals", "emptyStack.json");
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        assertThat(nep5.decimals(), is(new BigInteger("8")));
+    }
+
+    @Test (expected = IllegalStateException.class)
+    public void nullStackTest() throws IOException, ErrorResponseException {
+        ContractTestUtils.setUpWireMockForInvokeFunction("decimals", "nullStack.json");
+        Nep5 nep5 = new Nep5.Builder(this.NEOW3J)
+                .fromContract(this.NEP5_CONTRACT_SCRIPT_HASH)
+                .build();
+        assertThat(nep5.decimals(), is(new BigInteger("8")));
+    }
+
     /**
      * Tests the RPC call with the operation balanceOf in the smart contract.
      *
