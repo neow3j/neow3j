@@ -103,6 +103,7 @@ public class Invocation {
         private ScriptHash sender;
         private Transaction.Builder txBuilder;
         private Transaction tx;
+        private boolean failIfReturnsFalse;
 
         // Should only be called by the SmartContract class. Therefore no checks on the arguments.
         protected InvocationBuilder(Neow3j neow, ScriptHash scriptHash, String function) {
@@ -111,6 +112,7 @@ public class Invocation {
             this.function = function;
             this.parameters = new ArrayList<>();
             this.txBuilder = new Transaction.Builder();
+            this.failIfReturnsFalse = false;
         }
 
         /**
@@ -192,6 +194,15 @@ public class Invocation {
         }
 
         /**
+         *
+         * @return
+         */
+        public InvocationBuilder failIfReturnsFalse() {
+            this.failIfReturnsFalse = true;
+            return this;
+        }
+
+        /**
          * @return
          * @throws IOException
          */
@@ -235,9 +246,12 @@ public class Invocation {
         }
 
         private byte[] createScript() {
-            return new ScriptBuilder()
-                    .contractCall(this.scriptHash, this.function, this.parameters)
-                    .toArray();
+            ScriptBuilder b = new ScriptBuilder()
+                    .contractCall(this.scriptHash, this.function, this.parameters);
+            if (failIfReturnsFalse) {
+                b.opCode(OpCode.ASSERT);
+            }
+            return b.toArray();
         }
 
         /*
@@ -276,8 +290,7 @@ public class Invocation {
             int size = Transaction.HEADER_SIZE // constant header size
                     + IOUtils.getVarSize(this.txBuilder.getAttributes()) // attributes
                     + IOUtils.getVarSize(this.txBuilder.getCosigners()) // cosigners
-                    + IOUtils.getVarSize(this.txBuilder.getScript().length) + this.txBuilder
-                    .getScript().length // script
+                    + IOUtils.getVarSize(this.txBuilder.getScript()) // script
                     + IOUtils.getVarSize(cosigAccs.size()); // varInt for all necessary witnesses
 
             // Calculate fee for witness verification and collect size of witnesses.
@@ -339,5 +352,6 @@ public class Invocation {
                     + OpCode.PUSHNULL.getPrice()
                     + InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getPrice(n);
         }
+
     }
 }
