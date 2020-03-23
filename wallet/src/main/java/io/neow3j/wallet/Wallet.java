@@ -244,10 +244,10 @@ public class Wallet {
 
     public static class Builder {
 
-        String name;
-        String version;
-        List<Account> accounts;
-        ScryptParams scryptParams;
+        private String name;
+        private String version;
+        private List<Account> accounts;
+        private ScryptParams scryptParams;
 
         public Builder() {
             this.name = DEFAULT_WALLET_NAME;

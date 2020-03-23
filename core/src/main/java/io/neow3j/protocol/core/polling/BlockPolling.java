@@ -1,9 +1,9 @@
 package io.neow3j.protocol.core.polling;
 
 import io.neow3j.protocol.Neow3j;
+import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Observable;
 
 import java.io.IOException;
 import java.math.BigInteger;

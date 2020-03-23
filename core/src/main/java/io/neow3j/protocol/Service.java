@@ -5,7 +5,7 @@ import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.notifications.Notification;
 import io.neow3j.utils.Async;
-import rx.Observable;
+import io.reactivex.Observable;
 
 import java.io.IOException;
 import java.io.InputStream;

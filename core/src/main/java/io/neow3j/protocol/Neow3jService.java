@@ -3,7 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.notifications.Notification;
-import rx.Observable;
+import io.reactivex.Observable;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;

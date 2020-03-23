@@ -1,11 +1,9 @@
 package io.neow3j.model.types;
 
-import org.junit.Test;
-
-import java.math.BigInteger;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
 
 public class NEOAssetTest {
 

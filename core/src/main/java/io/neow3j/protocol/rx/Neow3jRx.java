@@ -4,7 +4,7 @@ import io.neow3j.protocol.core.BlockParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.Transaction;
-import rx.Observable;
+import io.reactivex.Observable;
 
 /**
  * The Observables JSON-RPC client event API.
