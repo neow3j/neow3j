@@ -283,9 +283,9 @@ public enum OpCode {
      */
     CALLA(0x36, 22000),
 
-    THROW(0x37, 30),
-    THROWIF(0x38, 30),
-    THROWIFNOT(0x39, 30),
+    ABORT(0x37, 30),
+    ASSERT(0x38, 30),
+    THROW(0x3A, 30),
 
     /**
      * Returns from the current method.
