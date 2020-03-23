@@ -115,7 +115,7 @@ public class NeoConstants {
     /**
      * The network fee per byte of a transaction. Amount is in GAS.
      */
-    public static final long GAS_PER_BYTE = 100000;
+    public static final long GAS_PER_BYTE = 1000;
 
     //endregion
 
