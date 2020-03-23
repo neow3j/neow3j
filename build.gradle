@@ -47,7 +47,7 @@ allprojects {
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '2.3.1'
+    version '2.4.0'
     archivesBaseName = "${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
