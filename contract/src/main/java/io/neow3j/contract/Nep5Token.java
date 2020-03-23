@@ -67,8 +67,9 @@ public class Nep5Token extends SmartContract {
                 ).build()
                 .send();
         return true;
-        // TODO get boolean stackitem
-        // TODO error checking.
+        // TODO: Add an ASSERT OpCode at the end of the script to make the transfer invocation fail
+        //  if the return value is false.
+        // TODO: Do error checking.
     }
 
     private void fetchName() throws IOException {

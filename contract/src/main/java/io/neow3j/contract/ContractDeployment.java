@@ -10,7 +10,6 @@ import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
-import io.neow3j.utils.TransactionUtils;
 import io.neow3j.wallet.Account;
 import java.io.File;
 import java.io.FileInputStream;
