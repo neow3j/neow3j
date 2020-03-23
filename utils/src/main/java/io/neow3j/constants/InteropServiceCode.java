@@ -7,12 +7,15 @@ import java.nio.charset.StandardCharsets;
 
 public enum InteropServiceCode {
 
-
     SYSTEM_CONTRACT_CREATE("System.Contract.Create", null), // (Script.Size + Manifest.Size) * GasPerByte
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1000000),
 
     NEO_CRYPTO_ECDSACHECKMULTISIG("Neo.Crypto.ECDsaCheckMultiSig", null), // ECDsaVerify * NumberOfSignatures
-    NEO_CRYPTO_ECDSAVERIFY("Neo.Crypto.ECDsaVerify", 1_000_000);
+    NEO_CRYPTO_ECDSAVERIFY("Neo.Crypto.ECDsaVerify", 1_000_000),
+
+    // Native tokens, needed to derive the script hashes of the native token contracts.
+    NEO_NATIVE_TOKENS_NEO("Neo.Native.Tokens.NEO", null),
+    NEO_NATIVE_TOKENS_GAS("Neo.Native.Tokens.GAS", null);
 
     // Note that the below commented Interop Service Codes are not up to date.
 //    SYSTEM_BINARY_SERIALIZE("ee83bbc8", 100_000),
