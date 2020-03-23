@@ -210,13 +210,7 @@ public class Wallet {
         if (destination == null) {
             throw new IllegalArgumentException("Destination file cannot be null");
         }
-
         NEP6Wallet nep6Wallet = toNEP6Wallet();
-
-        if (!destination.isFile()) {
-            throw new IllegalArgumentException("Destination file cannot be a directory");
-        }
-
         OBJECT_MAPPER.writeValue(destination, nep6Wallet);
         return this;
     }

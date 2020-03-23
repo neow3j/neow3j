@@ -28,7 +28,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Collections;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class WalletTest {
@@ -114,8 +113,6 @@ public class WalletTest {
         assertTrue(w.removeAccount(acct2.getAddress()));
     }
 
-    // TODO: This test should compare the generated NEP6 wallet with a wallet represented in JSON.
-    @Ignore
     @Test
     public void testDefaultWalletToNEP6Wallet() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException, CipherException {
