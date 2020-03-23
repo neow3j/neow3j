@@ -5,7 +5,7 @@ import java.util.List;
 public class IOUtils {
 
     /**
-     * Gets the byte size of the given number when serialized.
+     * Gets the byte size of the given number when Neo-serialized.
      *
      * @param i The number.
      * @return the byte size.
@@ -23,7 +23,7 @@ public class IOUtils {
     }
 
     /**
-     * Gets the byte size of the given list when serialized.
+     * Gets the byte size of the given list when Neo-serialized.
      *
      * @param serializables The list of serializables.
      * @return the byte size.
@@ -34,6 +34,16 @@ public class IOUtils {
                 .map(NeoSerializableInterface::getSize)
                 .reduce(0, Integer::sum);
         return sizeByteSize + objectsByteSize;
+    }
+
+    /**
+     * Gets the byte size of the given byte array when Neo-serialized.
+     *
+     * @param bytes The bytes to serialize.
+     * @return the byte size.
+     */
+    public static int getVarSize(byte[] bytes) {
+        return getVarSize(bytes.length) + bytes.length;
     }
 
 }
