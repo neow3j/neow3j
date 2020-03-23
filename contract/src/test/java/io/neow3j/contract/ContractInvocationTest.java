@@ -25,7 +25,7 @@ import static org.mockito.Mockito.spy;
 public class ContractInvocationTest {
 
     /**
-     * Account with address AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y
+     * Account with address AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y.
      */
     private static final Account ACCT = Account.fromWIF("KxDgvEKzgSBPPfuVfw67oPQBSjidEiqTHURKSDL1R7yGaGYAeYnr").build();
 

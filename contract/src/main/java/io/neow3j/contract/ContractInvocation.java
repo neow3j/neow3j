@@ -42,6 +42,7 @@ public class ContractInvocation {
     private List<ContractParameter> params;
     private Account account;
     private InvocationTransaction tx;
+    private NeoSendRawTransaction response;
 
     private ContractInvocation() {
     }
@@ -66,6 +67,15 @@ public class ContractInvocation {
     }
 
     /**
+     * Gets the response from this contract invocation.
+     *
+     * @return the response on this invocation.
+     */
+    public NeoSendRawTransaction getResponse() {
+        return response;
+    }
+
+    /**
      * <p>Sends the serialized invocation transaction to the RPC node (synchronous).</p>
      * <br>
      * <p>Before calling this method you should make sure that the transaction is signed either by
@@ -81,6 +91,7 @@ public class ContractInvocation {
         String rawTx = Numeric.toHexStringNoPrefix(tx.toArray());
         NeoSendRawTransaction response = neow3j.sendRawTransaction(rawTx).send();
         response.throwOnError();
+        this.response = response;
         return this;
     }
 
