@@ -4,8 +4,8 @@ import static io.neow3j.constants.NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT;
 import static io.neow3j.contract.ContractTestUtils.CONTRACT_1_SCRIPT_HASH;
 import static io.neow3j.contract.ContractTestUtils.GETBLOCKCOUNT_RESPONSE;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -19,10 +19,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
-import io.neow3j.crypto.exceptions.CipherException;
-import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
-import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.model.types.NEOAsset;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
@@ -33,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -94,7 +92,7 @@ public class InvocationTest {
                 OpCode.PUSHDATA1.toString() + "04" + // 4 bytes
                 "6e616d65" +                                // method: "name"
                 OpCode.PUSHDATA1.toString() + "14" + // 20 bytes
-                Numeric.toHexStringNoPrefix(contract.toArray()) + // ScriptHash in little-endian format
+                Numeric.toHexStringNoPrefix(contract.toArray()) + // script hash, little-endian
                 OpCode.SYSCALL.toString() +
                 InteropServiceCode.SYSTEM_CONTRACT_CALL.getHash();
 
@@ -247,32 +245,34 @@ public class InvocationTest {
     }
 
     @Test
-    public void testNeoTransfer()
-            throws IOException, NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
-        //  WIF of example address PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL of private net preview.
-        //  See here https://github.com/hal0x2328/neo3-privatenet-tutorial
-        final String method = "transfer";
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_transfer.json");
-        ContractTestUtils.setUpWireMockForSendRawTransaction();
-
-        String wif = "Kx6sh3EAsKQMY3PrqyhXTkNZdbBbs8Ya8D7VEssXkSb4DjfksTXF";
-        ECKeyPair keyPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif));
-        Account sender = Account.fromECKeyPair(keyPair).isDefault(true).build();
+    @Ignore("Test is ignored because the neo-core is not stable and therefore no valid reference "
+            + "transaction can be produced.")
+    public void testNeoTransfer() throws IOException, DeserializationException {
+        // Used address version 23 (0x17)
+        // Reference transaction created with neo-node.
+        byte[] expectedTx = Numeric.hexStringToByteArray(
+                "004f211c3fbff3224963185dd8767494f8b7cd201346f0131400e1f50500000000064b130000000000891420000001bff3224963185dd8767494f8b7cd201346f013140155110c140fac870f5f898f68b2b769da8c2c9fd156618e0f0c14bff3224963185dd8767494f8b7cd201346f0131413c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4057a75d45013a32d758a10f5355668367761a5d5968d9a19a923fca5e6893fb6036825e9ca87abcde22f65f289434625066121c16e3002d4c5a8f7e24934d2a56290c21027824fe1f368614d83fbce6cfb84b068113cb08e45181741d29f83acacfb79a890b410a906ad4");
+        ContractTestUtils.setUpWireMockForInvokeFunction("transfer",
+                "invokefunction_transfer.json");
+        String senderWif = "KzaTU6vRwLCYfAcWScBWX6sMMfZ7tdfk4SmTNgXSBkUgbaRGJqGz";
+        ECKeyPair senderPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(senderWif));
+        Account sender = Account.fromECKeyPair(senderPair).isDefault(true).build();
         Wallet w = new Wallet.Builder().account(sender).build();
-        ScriptHash sh = new ScriptHash(NEOAsset.HASH_ID);
-        Invocation i = new InvocationBuilder(neow, sh, method)
+        ScriptHash neo = ScriptHash.fromScript(
+                new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
+        Invocation i = new InvocationBuilder(neow, neo, "transfer")
                 .withWallet(w)
-                .withNonce(1348080909)
-                .validUntilBlock(2102660)
+                .withNonce(1058808143)
+                .validUntilBlock(2102409)
                 .withParameters(
                         ContractParameter.byteArrayFromAddress(sender.getAddress()),
                         ContractParameter
                                 .byteArrayFromAddress("AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN"),
-                        ContractParameter.integer(10))
+                        ContractParameter.integer(1))
+                .failOnFalse()
                 .build();
         i.sign();
-        fail();
-//        The network fee should be 1257240, although the script that was created by the
-//        private net node has one byte too much at the end, which I don't know what it does.
+
+        assertArrayEquals(expectedTx, i.getTransaction().toArray());
     }
 }
