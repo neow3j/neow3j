@@ -143,7 +143,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
         ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
-        List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey2(), keyPair2.getPublicKey2());
+        List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey());
         int m = 2; // signingThreshold
         int n = 2; // total number of participating keys
         Account multiSigAcc = Account.fromMultiSigKeys(keys, m).isDefault(true).build();
@@ -181,7 +181,7 @@ public class InvocationTest {
         ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
         ECKeyPair keyPair3 = ECKeyPair.createEcKeyPair();
         List<ECPublicKey> keys = Arrays.asList(
-                keyPair1.getPublicKey2(), keyPair2.getPublicKey2(), keyPair3.getPublicKey2());
+                keyPair1.getPublicKey(), keyPair2.getPublicKey(), keyPair3.getPublicKey());
         int signingThreshold = 2;
         Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
         Invocation i = new InvocationBuilder(neow, sh, method)
@@ -207,7 +207,7 @@ public class InvocationTest {
         ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
         ECKeyPair keyPair3 = ECKeyPair.createEcKeyPair();
         List<ECPublicKey> keys = Arrays.asList(
-                keyPair1.getPublicKey2(), keyPair2.getPublicKey2(), keyPair3.getPublicKey2());
+                keyPair1.getPublicKey(), keyPair2.getPublicKey(), keyPair3.getPublicKey());
         int signingThreshold = 3;
         Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
         Invocation i = new InvocationBuilder(neow, sh, method)
@@ -230,7 +230,7 @@ public class InvocationTest {
         ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
         ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
-        List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey2(), keyPair2.getPublicKey2());
+        List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey());
         Account multiSigAcc = Account.fromMultiSigKeys(keys, 2).build();
         new InvocationBuilder(neow, sh, method)
                 .withSender(multiSigAcc.getScriptHash())

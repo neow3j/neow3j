@@ -102,7 +102,7 @@ public class Witness extends NeoSerializable {
      */
     public static Witness createWitness(byte[] messageToSign, ECKeyPair keyPair) {
         InvocationScript i = InvocationScript.fromMessageAndKeyPair(messageToSign, keyPair);
-        VerificationScript v = new VerificationScript(keyPair.getPublicKey2());
+        VerificationScript v = new VerificationScript(keyPair.getPublicKey());
         return new Witness(i, v);
     }
 

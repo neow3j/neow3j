@@ -52,7 +52,7 @@ public class WitnessTest {
         // Test verification script
         expected = "" +
                 PUSHDATA1.toString() + "21" + // 33 bytes of public key
-                Numeric.toHexStringNoPrefix(keyPair.getPublicKey2().getEncoded(true)) + // pubKey
+                Numeric.toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) + // pubKey
                 PUSHNULL.toString() +
                 SYSCALL.toString() + // syscall to...
                 InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash(); // ...signature verification
@@ -74,7 +74,7 @@ public class WitnessTest {
 
         byte[] invScript = InvocationScript.fromMessageAndKeyPair(message, keyPair).getScript();
         byte[] invScriptLen = BigInteger.valueOf(invScript.length).toByteArray();
-        byte[] veriScript = new VerificationScript(keyPair.getPublicKey2()).getScript();
+        byte[] veriScript = new VerificationScript(keyPair.getPublicKey()).getScript();
         byte[] veriScriptLen = BigInteger.valueOf(veriScript.length).toByteArray();
 
         byte[] expectedWitness = concatenate(invScriptLen, invScript, veriScriptLen, veriScript);
@@ -96,7 +96,7 @@ public class WitnessTest {
         for (int i = 0; i < 3; i++) {
             ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
             signatures.add(Sign.signMessage(message, keyPair));
-            publicKeys.add(keyPair.getPublicKey2());
+            publicKeys.add(keyPair.getPublicKey());
         }
 
         String expected = ""
@@ -154,7 +154,7 @@ public class WitnessTest {
 
         String verificationScript = ""
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
-                + Numeric.toHexStringNoPrefix(keyPair.getPublicKey().toByteArray()) // pubKey
+                + Numeric.toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) // pubKey
                 + SYSCALL.toString() // syscall to...
                 + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash(); // ...signature verification
 

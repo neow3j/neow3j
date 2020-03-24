@@ -2,6 +2,7 @@ package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
@@ -36,7 +37,7 @@ public class Account {
 
     // Private and public key are stored separately because the private key is not necessarily
     // available in every account instance.
-    private BigInteger privateKey;
+    private ECPrivateKey privateKey;
     private ECPublicKey publicKey;
     private String address;
     private String encryptedPrivateKey;
@@ -70,8 +71,8 @@ public class Account {
     }
 
     public ECKeyPair getECKeyPair() {
-        if (privateKey != null && publicKey != null) {
-            return new ECKeyPair(privateKey, publicKey);
+        if (this.privateKey != null && this.publicKey != null) {
+            return new ECKeyPair(this.privateKey, this.publicKey);
         } else if (privateKey != null) {
             return ECKeyPair.create(privateKey);
         } else {
@@ -79,7 +80,7 @@ public class Account {
         }
     }
 
-    public BigInteger getPrivateKey() {
+    public ECPrivateKey getPrivateKey() {
         return this.privateKey;
     }
 
@@ -151,6 +152,7 @@ public class Account {
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
+        // TODO: Remove this check and just return without doing anything in this case.
         if (this.privateKey != null) {
             throw new AccountException("The account does already hold a decrypted private key.");
         }
@@ -159,11 +161,11 @@ public class Account {
         }
         ECKeyPair ecKeyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
         this.privateKey = ecKeyPair.getPrivateKey();
-        if (this.publicKey != null && !this.publicKey.equals(ecKeyPair.getPublicKey2())) {
+        if (this.publicKey != null && !this.publicKey.equals(ecKeyPair.getPublicKey())) {
             throw new AccountException("The public key derived from the decrypted private key does "
                     + "not equal the public key that was already set on the account.");
         }
-        publicKey = ecKeyPair.getPublicKey2();
+        publicKey = ecKeyPair.getPublicKey();
     }
 
     /**
@@ -244,11 +246,11 @@ public class Account {
         BigInteger privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
         Builder b = new Builder();
-        b.privateKey = privateKey;
-        b.publicKey = keyPair.getPublicKey2();
+        b.privateKey = keyPair.getPrivateKey();
+        b.publicKey = keyPair.getPublicKey();
         b.address = keyPair.getAddress();
         b.label = keyPair.getAddress();
-        b.verificationScript = new VerificationScript(keyPair.getPublicKey2());
+        b.verificationScript = new VerificationScript(keyPair.getPublicKey());
         return b;
     }
 
@@ -263,10 +265,10 @@ public class Account {
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
         b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey2();
+        b.publicKey = ecKeyPair.getPublicKey();
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
-        b.verificationScript = new VerificationScript(ecKeyPair.getPublicKey2());
+        b.verificationScript = new VerificationScript(ecKeyPair.getPublicKey());
         return b;
     }
 
@@ -305,7 +307,7 @@ public class Account {
 
         VerificationScript verificationScript;
         String label;
-        BigInteger privateKey;
+        ECPrivateKey privateKey;
         ECPublicKey publicKey;
         boolean isDefault;
         boolean isLocked;

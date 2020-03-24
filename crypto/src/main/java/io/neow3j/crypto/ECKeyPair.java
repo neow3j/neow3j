@@ -1,7 +1,5 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
-import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import io.neow3j.constants.NeoConstants;
@@ -12,7 +10,6 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.KeyUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -44,32 +41,20 @@ public class ECKeyPair {
         addBouncyCastle();
     }
 
-    private final BigInteger privateKey;
+    private final ECPrivateKey privateKey;
     private final ECPublicKey publicKey;
 
-    // TODO: Remove as soon as private key is also its own type (ECPrivateKey).
-    public ECKeyPair(BigInteger privateKey, BigInteger publicKey) {
-        this.privateKey = privateKey;
-        this.publicKey = new ECPublicKey(publicKey);
-    }
-
-    // TODO: Remove as soon as private key is also its own type (ECPrivateKey).
-    public ECKeyPair(BigInteger privateKey, ECPublicKey publicKey) {
+    public ECKeyPair(ECPrivateKey privateKey, ECPublicKey publicKey) {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
 
-    public BigInteger getPrivateKey() {
+    public ECPrivateKey getPrivateKey() {
         return privateKey;
     }
 
-    // TODO: Remove and fix all occurences
-    public BigInteger getPublicKey() {
-        return Numeric.toBigInt(publicKey.getEncoded(true));
-    }
-
     // TODO: Rename after removing the above method.
-    public ECPublicKey getPublicKey2() {
+    public ECPublicKey getPublicKey() {
         return publicKey;
     }
 
@@ -105,7 +90,8 @@ public class ECKeyPair {
      */
     public BigInteger[] sign(byte[] transactionHash) {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
-        ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey, NeoConstants.CURVE);
+        ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey.getInt(),
+                NeoConstants.CURVE);
         signer.init(true, privKey);
         return signer.generateSignature(transactionHash);
     }
@@ -140,16 +126,18 @@ public class ECKeyPair {
         BCECPrivateKey privateKey = (BCECPrivateKey) keyPair.getPrivate();
         BCECPublicKey publicKey = (BCECPublicKey) keyPair.getPublic();
 
-        BigInteger privateKeyValue = privateKey.getD();
+        return new ECKeyPair(
+                new ECPrivateKey(privateKey.getD()),
+                new ECPublicKey(publicKey.getQ()));
+    }
 
-        byte[] publicKeyBytes = publicKey.getQ().getEncoded(true);
-        BigInteger publicKeyValue = new BigInteger(1, publicKeyBytes);
-
-        return new ECKeyPair(privateKeyValue, publicKeyValue);
+    public static ECKeyPair create(ECPrivateKey privateKey) {
+        return create(privateKey.getInt());
     }
 
     public static ECKeyPair create(BigInteger privateKey) {
-        return new ECKeyPair(privateKey, Sign.publicKeyFromPrivate(privateKey));
+        return new ECKeyPair(new ECPrivateKey(privateKey),
+                Sign.publicKeyFromPrivate(new ECPrivateKey(privateKey)));
     }
 
     public static ECKeyPair create(byte[] privateKey) {
@@ -164,8 +152,10 @@ public class ECKeyPair {
      * <p>Private keys are encoded using X.509.</p>
      *
      * @return The created {@link ECKeyPair}.
-     * @throws InvalidAlgorithmParameterException throws if the algorithm parameter used is invalid.
-     * @throws NoSuchAlgorithmException           throws if the encryption algorithm is not available in the specified provider.
+     * @throws InvalidAlgorithmParameterException throws if the algorithm parameter used is
+     *                                            invalid.
+     * @throws NoSuchAlgorithmException           throws if the encryption algorithm is not
+     *                                            available in the specified provider.
      * @throws NoSuchProviderException            throws if the provider is not available.
      */
     public static ECKeyPair createEcKeyPair() throws InvalidAlgorithmParameterException,
@@ -177,7 +167,8 @@ public class ECKeyPair {
     private static KeyPair createSecp256r1KeyPair() throws NoSuchProviderException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator
+                .getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
         ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec("secp256r1");
         keyPairGenerator.initialize(ecGenParameterSpec, SecureRandomUtils.secureRandom());
@@ -187,7 +178,7 @@ public class ECKeyPair {
     public String exportAsWIF() {
         byte[] data = ArrayUtils.concatenate(
                 new byte[]{(byte) 0x80},
-                Numeric.toBytesPadded(getPrivateKey(), PRIVATE_KEY_SIZE),
+                Numeric.toBytesPadded(getPrivateKey().getInt(), NeoConstants.PRIVATE_KEY_SIZE),
                 new byte[]{(byte) 0x01}
         );
         byte[] checksum = Hash.sha256(Hash.sha256(data, 0, data.length));
@@ -198,15 +189,6 @@ public class ECKeyPair {
         return wif;
     }
 
-    public byte[] serialize() {
-        byte[] privateKey = KeyUtils.privateKeyIntegerToByteArray(this.getPublicKey());
-        byte[] publicKey = KeyUtils.publicKeyIntegerToByteArray(this.getPublicKey());
-
-        byte[] result = Arrays.copyOf(privateKey, PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE);
-        System.arraycopy(publicKey, 0, result, PRIVATE_KEY_SIZE, PUBLIC_KEY_SIZE);
-        return result;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -215,16 +197,9 @@ public class ECKeyPair {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
-        ECKeyPair ecKeyPair = (ECKeyPair) o;
-
-        if (privateKey != null
-                ? !privateKey.equals(ecKeyPair.privateKey) : ecKeyPair.privateKey != null) {
-            return false;
-        }
-
-        return publicKey != null
-                ? publicKey.equals(ecKeyPair.publicKey) : ecKeyPair.publicKey == null;
+        ECKeyPair that = (ECKeyPair) o;
+        return Objects.equals(this.privateKey, that.privateKey)
+                && Objects.equals(publicKey, that.publicKey);
     }
 
     @Override
@@ -234,22 +209,66 @@ public class ECKeyPair {
         return result;
     }
 
-    // TODO: Implement
-    public static class ECPrivateKey extends NeoSerializable {
+    public static class ECPrivateKey {
 
-        @Override
-        public void deserialize(BinaryReader reader) throws DeserializationException {
+        private BigInteger privateKey;
 
+        /**
+         * Creates a ECPrivateKey instance from the given private key.
+         *
+         * @param key The private key.
+         */
+        public ECPrivateKey(BigInteger key) {
+            this.privateKey = key;
+        }
+
+        /**
+         * Creates a ECPrivateKey instance from the given private key. The bytes are interpreted as
+         * a positive integer (not two's complement) in big-endian ordering.
+         *
+         * @param key The key's bytes.
+         */
+        public ECPrivateKey(byte[] key) {
+            if (key.length != NeoConstants.PRIVATE_KEY_SIZE) {
+                throw new IllegalArgumentException("Private key byte array must have length of "
+                        + NeoConstants.PRIVATE_KEY_SIZE);
+            }
+            this.privateKey = new BigInteger(1, key);
+        }
+
+        /**
+         * Gets this private key as an integer.
+         *
+         * @return This private key as an integer.
+         */
+        public BigInteger getInt() {
+            return this.privateKey;
+        }
+
+        /**
+         * Gets this private key as a byte array in big-endian order (not in two's complement).
+         *
+         * @return This private key as a byte array.
+         */
+        public byte[] getBytes() {
+            return Numeric.toBytesPadded(this.privateKey, NeoConstants.PRIVATE_KEY_SIZE);
         }
 
         @Override
-        public void serialize(BinaryWriter writer) throws IOException {
-
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            ECPrivateKey that = (ECPrivateKey) o;
+            return privateKey.equals(that.privateKey);
         }
 
         @Override
-        public int getSize() {
-            return 0;
+        public int hashCode() {
+            return Objects.hashCode(privateKey);
         }
     }
 
@@ -282,7 +301,8 @@ public class ECKeyPair {
         public ECPublicKey(byte[] publicKey) {
             if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
                 throw new IllegalArgumentException("Public key argument must be " +
-                    NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length + " bytes");
+                        NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length
+                        + " bytes");
             }
             this.ecPoint = decodePoint(publicKey);
         }
@@ -320,7 +340,7 @@ public class ECKeyPair {
         @Override
         public void deserialize(BinaryReader reader) throws DeserializationException {
             try {
-                ecPoint = decodePoint(reader.readBytes(PUBLIC_KEY_SIZE));
+                ecPoint = decodePoint(reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE));
             } catch (IOException e) {
                 throw new DeserializationException();
             }
@@ -342,10 +362,19 @@ public class ECKeyPair {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             ECPublicKey that = (ECPublicKey) o;
-            return Objects.equals(ecPoint, that.ecPoint);
+            return Objects.equals(this.ecPoint, that.ecPoint);
+        }
+
+        @Override
+        public int hashCode() {
+            return ecPoint.hashCode();
         }
     }
 }

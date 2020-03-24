@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -18,7 +19,6 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.nep6.NEP6Account;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import okhttp3.OkHttpClient;
@@ -87,7 +87,7 @@ public class AccountTest {
         String adr = "AQ3ZPRnoBGBkfjgxGa9gZkELb8knQSU5xe";
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
-        List<ECPublicKey> keys = Arrays.asList(pair.getPublicKey2(), pair.getPublicKey2());
+        List<ECPublicKey> keys = Arrays.asList(pair.getPublicKey(), pair.getPublicKey());
         Account a = Account.fromMultiSigKeys(keys, 2).build();
         byte[] verScript = Numeric.hexStringToByteArray(
                 "120c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b20c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2120b413073b3bb");
@@ -118,8 +118,8 @@ public class AccountTest {
     public void decryptWithStandardScryptParams() throws NEP2InvalidFormat, CipherException,
             NEP2InvalidPassphrase {
 
-        final BigInteger privateKey = Numeric.toBigInt(
-                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+        final ECPrivateKey privateKey = new ECPrivateKey(Numeric.toBigInt(
+                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
         String password = "pwd";
         // Used neo-core with address version 0x17 to generate the encrypted key.
         String nep2Encrypted = "6PYX9GMW3WgtYcivcWgrqzk2igqY8jhnMcysgFw4npoLqRnxZ16yj8V6V1";

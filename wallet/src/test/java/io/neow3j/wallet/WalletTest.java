@@ -103,8 +103,9 @@ public class WalletTest {
     public void testRemoveAccounts() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
+        final String address = "AUcY65mkxygUB5bXZqYhNKsrq1khuncqr3";
         Wallet w = new Wallet.Builder().build();
-        assertFalse(w.removeAccount(TestKeys.ADDRESS_1));
+        assertFalse(w.removeAccount(address));
         Account acct1 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct1);
         Account acct2 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();

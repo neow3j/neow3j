@@ -1,6 +1,5 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.constants.NeoConstants.PRIVATE_KEY_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
@@ -11,7 +10,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.utils.Numeric;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -177,13 +175,9 @@ public class NEP2 {
 
     private static byte[] xorPrivateKeyAndDerivedHalf(ECKeyPair ecKeyPair, byte[] derivedHalf, int from, int to) {
         return xor(
-                Arrays.copyOfRange(privateKeyToBytes(ecKeyPair), from, to),
+                Arrays.copyOfRange(ecKeyPair.getPrivateKey().getBytes() , from, to),
                 Arrays.copyOfRange(derivedHalf, from, to)
         );
-    }
-
-    private static byte[] privateKeyToBytes(ECKeyPair ecKeyPair) {
-        return Numeric.toBytesPadded(ecKeyPair.getPrivateKey(), PRIVATE_KEY_SIZE);
     }
 
     private static byte[] generateDerivedScryptKey(

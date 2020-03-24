@@ -1,10 +1,11 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.constants.NeoConstants.PUBLIC_KEY_SIZE;
 import static io.neow3j.utils.Assertions.verifyPrecondition;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
@@ -34,7 +35,6 @@ public class Sign {
     }
 
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair, boolean needToHash) {
-        BigInteger publicKey = keyPair.getPublicKey();
         byte[] messageHash;
         if (needToHash) {
             messageHash = Hash.sha256(message);
@@ -46,8 +46,8 @@ public class Sign {
         // Now we have to work backwards to figure out the recId needed to recover the signature.
         int recId = -1;
         for (int i = 0; i < 4; i++) {
-            BigInteger k = recoverFromSignature(i, sig, messageHash);
-            if (k != null && k.equals(publicKey)) {
+            ECPublicKey k = recoverFromSignature(i, sig, messageHash);
+            if (k != null && k.equals(keyPair.getPublicKey())) {
                 recId = i;
                 break;
             }
@@ -88,7 +88,7 @@ public class Sign {
      * @param message Hash of the data that was signed.
      * @return An ECKey containing only the public part, or null if recovery wasn't possible.
      */
-    public static BigInteger recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
+    public static ECPublicKey recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
         verifyPrecondition(recId >= 0, "recId must be positive");
         verifyPrecondition(sig.r.signum() >= 0, "r must be positive");
         verifyPrecondition(sig.s.signum() >= 0, "s must be positive");
@@ -141,8 +141,7 @@ public class Sign {
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
         ECPoint q = ECAlgorithms.sumOfTwoMultiplies(NeoConstants.CURVE.getG(), eInvrInv, R, srInv);
 
-        byte[] qBytes = q.getEncoded(true);
-        return new BigInteger(1, qBytes);
+        return new ECPublicKey(q);
     }
 
     /**
@@ -169,7 +168,7 @@ public class Sign {
      * @throws SignatureException If the public key could not be recovered or if there was a
      *                            signature format error.
      */
-    public static BigInteger signedMessageToKey(
+    public static ECPublicKey signedMessageToKey(
             byte[] message, SignatureData signatureData) throws SignatureException {
 
         byte[] r = signatureData.getR();
@@ -191,7 +190,7 @@ public class Sign {
 
         byte[] messageHash = Hash.sha256(message);
         int recId = header - 27;
-        BigInteger key = recoverFromSignature(recId, sig, messageHash);
+        ECPublicKey key = recoverFromSignature(recId, sig, messageHash);
         if (key == null) {
             throw new SignatureException("Could not recover public key from signature");
         }
@@ -204,10 +203,8 @@ public class Sign {
      * @param privKey the private key to derive the public key from
      * @return BigInteger encoded public key
      */
-    public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
-        ECPoint point = publicPointFromPrivateKey(privKey);
-        byte[] encoded = point.getEncoded(true);
-        return Numeric.toBigInt(encoded);
+    public static ECPublicKey publicKeyFromPrivate(ECPrivateKey privKey) {
+        return new ECPublicKey(publicPointFromPrivateKey(privKey));
     }
 
     /**
@@ -216,15 +213,16 @@ public class Sign {
      * @param privKey The private key as BigInteger
      * @return The ECPoint object representation of the public key based on the given private key
      */
-    public static ECPoint publicPointFromPrivateKey(BigInteger privKey) {
+    public static ECPoint publicPointFromPrivateKey(ECPrivateKey privKey) {
+        BigInteger key = privKey.getInt();
         /*
          * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
          * order, but that could change in future versions.
          */
-        if (privKey.bitLength() > NeoConstants.CURVE.getN().bitLength()) {
-            privKey = privKey.mod(NeoConstants.CURVE.getN());
+        if (key.bitLength() > NeoConstants.CURVE.getN().bitLength()) {
+            key = key.mod(NeoConstants.CURVE.getN());
         }
-        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), privKey)
+        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), key)
                                              .normalize();
     }
 
@@ -246,9 +244,8 @@ public class Sign {
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
         SignatureData signatureDataV = new Sign.SignatureData(getRealV(v), r, s);
-        BigInteger key = Sign.signedMessageToKey(message, signatureDataV);
-        byte[] keyBytes = Numeric.toBytesPadded(key, PUBLIC_KEY_SIZE);
-        return ScriptHash.fromPublicKey(keyBytes).toAddress();
+        ECPublicKey key = Sign.signedMessageToKey(message, signatureDataV);
+        return ScriptHash.fromPublicKey(key.getEncoded(true)).toAddress();
     }
 
 

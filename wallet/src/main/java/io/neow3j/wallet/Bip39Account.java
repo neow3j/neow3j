@@ -60,7 +60,7 @@ public class Bip39Account extends Account {
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
         b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey2();
+        b.publicKey = ecKeyPair.getPublicKey();
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;
