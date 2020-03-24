@@ -103,7 +103,7 @@ public class Invocation {
         private ScriptHash sender;
         private Transaction.Builder txBuilder;
         private Transaction tx;
-        private boolean failIfReturnsFalse;
+        private boolean failOnFalse;
 
         // Should only be called by the SmartContract class. Therefore no checks on the arguments.
         protected InvocationBuilder(Neow3j neow, ScriptHash scriptHash, String function) {
@@ -112,7 +112,7 @@ public class Invocation {
             this.function = function;
             this.parameters = new ArrayList<>();
             this.txBuilder = new Transaction.Builder();
-            this.failIfReturnsFalse = false;
+            this.failOnFalse = false;
         }
 
         /**
@@ -194,11 +194,13 @@ public class Invocation {
         }
 
         /**
+         * Sets the invocation up so that it fails (NeoVM exits with state FAULT) if the return
+         * value of the invocation is "False".
          *
-         * @return
+         * @return this
          */
-        public InvocationBuilder failIfReturnsFalse() {
-            this.failIfReturnsFalse = true;
+        public InvocationBuilder failOnFalse() {
+            this.failOnFalse = true;
             return this;
         }
 
@@ -248,7 +250,7 @@ public class Invocation {
         private byte[] createScript() {
             ScriptBuilder b = new ScriptBuilder()
                     .contractCall(this.scriptHash, this.function, this.parameters);
-            if (failIfReturnsFalse) {
+            if (failOnFalse) {
                 b.opCode(OpCode.ASSERT);
             }
             return b.toArray();
