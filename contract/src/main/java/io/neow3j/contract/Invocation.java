@@ -36,13 +36,14 @@ public class Invocation {
         this.transaction = builder.tx;
     }
 
-    public Invocation send() throws IOException, ErrorResponseException {
-        NeoSendRawTransaction response =
-                neow.sendRawTransaction(Numeric.toHexString(transaction.toArray())).send();
+    public String send() throws IOException, ErrorResponseException {
+        String hex = Numeric.toHexString(transaction.toArray());
+        NeoSendRawTransaction response = neow.sendRawTransaction(hex).send();
         response.throwOnError();
-        // At this point we don't care if the invocation finished in a successful VM state. An
-        // exception is only thrown if the node responds with an error.
-        return this;
+        return "";
+        // TODO: Adapt as soon as JSON-RPC implementation is adapted to Neo 3.
+        // The new return type of the `sendrawtransaction` RPC call in Neo 3 is the transaction hash.
+        // return response.getResult();
     }
 
     // TODO: Adapt, so that signatures of all the cosigners are created.

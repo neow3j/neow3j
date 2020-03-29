@@ -1,13 +1,23 @@
 package io.neow3j.contract;
 
+import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+/**
+ * Represents a NEP-5 token contract.
+ * <p>
+ * The first time that the getters are used, RPC calls need to be made to fetch the information from
+ * a Neo node.
+ */
 public class Nep5Token extends SmartContract {
 
     private static final String NEP5_NAME = "name";
@@ -18,7 +28,8 @@ public class Nep5Token extends SmartContract {
     private static final String NEP5_TRANSFER = "transfer";
 
     private String name;
-    // TODO: Determine if this is the amount in fractions of the token.
+    // It is expected that Nep5 contracts return the total supply in fractions of their token.
+    // Therefore an integer is used here instead of a decimal number.
     private BigInteger totalSupply;
     private Integer decimals;
     private String symbol;
@@ -27,93 +38,164 @@ public class Nep5Token extends SmartContract {
         super(scriptHash, neow);
     }
 
-    public String getName() throws IOException {
+    /**
+     * Gets the name of this token.
+     *
+     * @return the name.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a string.
+     */
+    public String getName() throws IOException, UnexpectedReturnTypeException {
         if (this.name == null) {
-            fetchName();
+            this.name = callFuncReturningString(NEP5_NAME);
         }
         return this.name;
     }
 
-    public String getSymbol() throws IOException {
+    /**
+     * Gets the symbol of this token.
+     *
+     * @return the symbol.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a string.
+     */
+    public String getSymbol() throws IOException, UnexpectedReturnTypeException {
         if (this.symbol == null) {
-            fetchSymbol();
+            this.symbol = callFuncReturningString(NEP5_SYMBOL);
         }
         return this.symbol;
     }
 
-    public BigInteger getTotalSupply() throws Exception {
+    /**
+     * Gets the total supply of this token in fractions.
+     *
+     * @return the total supply.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a number.
+     */
+    public BigInteger getTotalSupply() throws IOException, UnexpectedReturnTypeException {
         if (this.totalSupply == null) {
-            fetchTotalSupply();
+            this.totalSupply = callFuncReturningInt(NEP5_TOTAL_SUPPLY);
         }
         return this.totalSupply;
     }
 
-    public int getDecimals() throws Exception {
+    /**
+     * Gets the number of fractions that one unit of this token can be divided into.
+     *
+     * @return the the number of fractions.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a number.
+     */
+    public int getDecimals() throws IOException, UnexpectedReturnTypeException {
         if (this.decimals == null) {
-            fetchDecimals();
+            this.decimals = callFuncReturningInt(NEP5_DECIMALS).intValue();
         }
         return this.decimals;
     }
 
-    public boolean transfer(Wallet wallet, ScriptHash from, ScriptHash to, BigDecimal amount)
-            throws Exception {
-        BigInteger intAmount = amount.multiply(BigDecimal.TEN.pow(getDecimals())).toBigInteger();
-        invoke(NEP5_TRANSFER)
+    /**
+     * Gets the token balance for the given script hash in fractions.
+     * <p>
+     * The balance is not saved locally. Calling this method multiple times for the same script hash
+     * causes a new RPC call in every invocation.
+     *
+     * @param scriptHash The script hash to fetch the balance for.
+     * @return the token balance.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a number.
+     */
+    public BigInteger getBalanceOf(ScriptHash scriptHash) throws IOException,
+            UnexpectedReturnTypeException {
+
+        ContractParameter ofParam = ContractParameter.hash160(scriptHash);
+        return callFuncReturningInt(NEP5_BALANCE_OF, ofParam);
+    }
+
+    /**
+     * Creates and sends a transfer transaction.
+     * <p>
+     * Currently only the wallet's default account is used to cover the token amount.
+     *
+     * @param wallet The wallet from which to send the tokens from.
+     * @param to     The script hash of the receiver.
+     * @param amount The amount to transfer as a decimal number, i.e. not in fractions but token
+     *               units.
+     * @return The transaction hash.
+     * @throws ErrorResponseException
+     * @throws IOException            if there was a problem fetching information from the Neo
+     *                                node.
+     */
+    public String transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
+            throws ErrorResponseException, IOException {
+
+        Account acc = wallet.getDefaultAccount();
+        BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
+        BigInteger fractions = amount.multiply(factor).toBigInteger();
+        // TODO: Extend balance checking to other accounts in the wallet.
+        // TODO: Move balance checking to the Wallet and Accounts.
+        BigInteger defaultAccBalance = getBalanceOf(acc.getScriptHash());
+        if (defaultAccBalance.compareTo(fractions) < 0) {
+            throw new InsufficientFundsException("Default account does not hold enough tokens. "
+                    + "Transfer amount is " + fractions.toString() + " but account only holds "
+                    + defaultAccBalance.toString() + " (in token fractions).");
+        }
+        return invoke(NEP5_TRANSFER)
                 .withWallet(wallet)
                 .withParameters(
-                        ContractParameter.byteArrayFromAddress(from.toAddress()),
+                        ContractParameter.byteArrayFromAddress(acc.getAddress()),
                         ContractParameter.byteArrayFromAddress(to.toAddress()),
-                        ContractParameter.integer(intAmount)
-                ).build()
+                        ContractParameter.integer(fractions)
+                )
+                .failOnFalse()
+                .build()
+                .sign()
                 .send();
-        return true;
-        // TODO: Add an ASSERT OpCode at the end of the script to make the transfer invocation fail
-        //  if the return value is false.
-        // TODO: Do error checking.
     }
 
-    private void fetchName() throws IOException {
-        this.name = callFuncReturningString(NEP5_NAME);
-    }
+    private String callFuncReturningString(String function)
+            throws UnexpectedReturnTypeException, IOException {
 
-    private void fetchSymbol() throws IOException {
-        this.symbol = callFuncReturningString(NEP5_SYMBOL);
-    }
-
-    private void fetchTotalSupply() throws Exception {
-        this.totalSupply = callFuncReturningInt(NEP5_TOTAL_SUPPLY);
-    }
-
-    private void fetchDecimals() throws Exception {
-        this.decimals = callFuncReturningInt(NEP5_DECIMALS).intValue();
-    }
-
-    private String callFuncReturningString(String function) throws IOException {
-        return invoke(function).run().getInvocationResult().getStack().get(0)
-                .asByteArray().getAsString();
-    }
-
-    private BigInteger callFuncReturningInt(String function) throws Exception {
         StackItem item = invoke(function).run().getInvocationResult().getStack().get(0);
+        if (item.getType().equals(StackItemType.BYTE_ARRAY)) {
+            return item.asByteArray().getAsString();
+        }
+        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BYTE_ARRAY);
+    }
+
+    protected BigInteger callFuncReturningInt(String function, ContractParameter... params)
+            throws IOException, UnexpectedReturnTypeException {
+
+        StackItem item;
+        if (params.length > 0) {
+            item = invoke(function).run().getInvocationResult().getStack().get(0);
+        } else {
+            item = invoke(function).withParameters(params).run()
+                    .getInvocationResult().getStack().get(0);
+        }
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue();
         }
         if (item.getType().equals(StackItemType.BYTE_ARRAY)) {
             return item.asByteArray().getAsNumber();
         }
-        // TODO: Throw specific exception.
-        throw new Exception();
+        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
+                StackItemType.BYTE_ARRAY);
     }
 
-//    protected class Nep5InvocationBuilder extends BaseInvocationBuilder<Nep5InvocationBuilder> {
-//
-//        public Nep5InvocationBuilder(String function) {
-//            super(function);
-//        }
-//
-//        @Override
-//        public Nep5InvocationBuilder getThis() {
-//            return this;
-//        }
-//    }
+    private BigInteger callFuncReturningInt(String function)
+            throws UnexpectedReturnTypeException, IOException {
+
+        return callFuncReturningInt(function, new ContractParameter[]{});
+    }
 }
