@@ -1,8 +1,27 @@
 package io.neow3j.protocol;
 
+import static io.neow3j.protocol.TestHelper.GAS_HASH;
+import static io.neow3j.protocol.TestHelper.NEO_HASH;
+import static io.neow3j.utils.Numeric.prependHexPrefix;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import io.neow3j.model.types.AssetType;
-import io.neow3j.model.types.GASAsset;
-import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.core.BlockParameterIndex;
@@ -35,36 +54,16 @@ import io.neow3j.protocol.core.methods.response.Script;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.List;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.IsNull;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.List;
-
-import static io.neow3j.utils.Numeric.prependHexPrefix;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 // This test class uses a static container which is reused in every test to avoid the long startup
 // time of the container. Therefore only tests that perform read-only operations should be added
@@ -238,8 +237,8 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(accountState.getFrozen(), is(false));
         assertThat(accountState.getVersion(), is(0));
         assertThat(accountState.getBalances(), hasSize(2));
-        assertThat(accountState.getBalances(), hasItem(new NeoGetAccountState.Balance(prependHexPrefix(NEOAsset.HASH_ID), ADDR1_INIT_NEO_BALANCE)));
-        assertThat(accountState.getBalances().get(1).getAssetAddress(), is(prependHexPrefix(GASAsset.HASH_ID)));
+        assertThat(accountState.getBalances(), hasItem(new NeoGetAccountState.Balance(prependHexPrefix(NEO_HASH.toString()), ADDR1_INIT_NEO_BALANCE)));
+        assertThat(accountState.getBalances().get(1).getAssetAddress(), is(prependHexPrefix(GAS_HASH.toString())));
         assertThat(accountState.getBalances().get(1).getValue(), is(notNullValue()));
     }
 
@@ -298,7 +297,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         TransactionOutput tx = getTxOut.getTransaction();
         assertNotNull(tx);
         assertThat(tx.getIndex(), is(0));
-        assertThat(tx.getAssetId(), is(prependHexPrefix(NEOAsset.HASH_ID)));
+        assertThat(tx.getAssetId(), is(prependHexPrefix(NEO_HASH.toString())));
         assertThat(tx.getAddress(), not(isEmptyOrNullString()));
         assertThat(tx.getValue(), not(isEmptyOrNullString()));
     }
@@ -332,7 +331,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(
                 getTransaction.getTransaction().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), ADDR1_INIT_NEO_BALANCE, ADDRESS_1)
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), ADDR1_INIT_NEO_BALANCE, ADDRESS_1)
                 )
         );
         assertThat(
@@ -377,7 +376,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetBalance() throws IOException {
-        NeoGetBalance getBalance = getNeow3j().getBalance(NEOAsset.HASH_ID).send();
+        NeoGetBalance getBalance = getNeow3j().getBalance(NEO_HASH.toString()).send();
         assertThat(getBalance.getBalance(), is(notNullValue()));
         assertThat(Integer.parseInt(getBalance.getBalance().getConfirmed()), is(greaterThanOrEqualTo(0)));
         assertThat(Integer.parseInt(getBalance.getBalance().getConfirmed()), is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
@@ -387,7 +386,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetAssetState() throws IOException {
-        NeoGetAssetState getAssetState = getNeow3j().getAssetState(NEOAsset.HASH_ID).send();
+        NeoGetAssetState getAssetState = getNeow3j().getAssetState(NEO_HASH.toString()).send();
         assertThat(getAssetState.getAssetState(), CoreMatchers.is(CoreMatchers.notNullValue()));
         assertThat(
                 getAssetState.getAssetState().getVersion(),
@@ -395,7 +394,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         );
         assertThat(
                 getAssetState.getAssetState().getId(),
-                is("0x" + NEOAsset.HASH_ID)
+                is("0x" + NEO_HASH.toString())
         );
         assertThat(
                 getAssetState.getAssetState().getType(),
@@ -481,7 +480,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(balances.size(), is(2));
 
         Balance b = balances.get(0);
-        assertThat(b.getAssetHash(), is(GASAsset.HASH_ID));
+        assertThat(b.getAssetHash(), is(GAS_HASH.toString()));
         assertThat(b.getAmount(), is(greaterThanOrEqualTo(BigDecimal.ZERO)));
 
         List<NeoGetUnspents.UnspentTransaction> utxos = b.getUnspentTransactions();

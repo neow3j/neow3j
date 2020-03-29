@@ -1,8 +1,25 @@
 package io.neow3j.protocol.core;
 
+import static io.neow3j.utils.Numeric.prependHexPrefix;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.AssetType;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.model.types.TransactionAttributeUsageType;
@@ -57,35 +74,22 @@ import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.utils.Numeric;
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.neow3j.utils.Numeric.prependHexPrefix;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import org.hamcrest.CoreMatchers;
+import org.junit.Test;
 
 /**
  * Core Protocol Response tests.
  */
 public class ResponseTest extends ResponseTester {
+
+    public static final ScriptHash NEO_HASH = ScriptHash.fromScript(
+            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
 
     @Test
     public void testErrorResponse() {
@@ -1002,8 +1006,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 sendToAddress.getSendToAddress().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
                 )
         );
         assertThat(
@@ -1097,8 +1101,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getTransaction.getTransaction().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
                 )
         );
         assertThat(
@@ -1466,9 +1470,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 sendMany.getSendMany().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "10", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
-                        new TransactionOutput(2, prependHexPrefix(NEOAsset.HASH_ID), "99999550", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()), "99999550", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
                 )
         );
         assertThat(

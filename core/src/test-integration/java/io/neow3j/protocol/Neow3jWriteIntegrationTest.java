@@ -1,23 +1,6 @@
 package io.neow3j.protocol;
 
-import io.neow3j.constants.NeoConstants;
-import io.neow3j.model.types.NEOAsset;
-import io.neow3j.model.types.TransactionType;
-import io.neow3j.protocol.core.methods.response.NeoGetBalance;
-import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
-import io.neow3j.protocol.core.methods.response.NeoSendMany;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
-import io.neow3j.protocol.core.methods.response.Transaction;
-import io.neow3j.protocol.core.methods.response.TransactionOutput;
-import org.junit.Rule;
-import org.junit.Test;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-
-import java.io.IOException;
-import java.util.Arrays;
-
+import static io.neow3j.protocol.TestHelper.NEO_HASH;
 import static io.neow3j.protocol.jsonrpc.JsonRpcErrorConstants.INVALID_PARAMS_CODE;
 import static io.neow3j.protocol.jsonrpc.JsonRpcErrorConstants.INVALID_PARAMS_MESSAGE;
 import static io.neow3j.utils.Numeric.prependHexPrefix;
@@ -31,6 +14,22 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+
+import io.neow3j.constants.NeoConstants;
+import io.neow3j.model.types.TransactionType;
+import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import java.io.IOException;
+import java.util.Arrays;
+import org.junit.Rule;
+import org.junit.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 // This test class spins up a new private net container for each test. This consumes a lot of time
 // but allows the tests to make changes without interfering with each other.
@@ -73,14 +72,14 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     @Test
     public void testSendToAddress() throws Exception {
         NeoSendToAddress neoSendToAddress = getNeow3j()
-                .sendToAddress(NEOAsset.HASH_ID, ADDRESS_4, "10")
+                .sendToAddress(NEO_HASH.toString(), ADDRESS_4, "10")
                 .send();
         Transaction sendToAddress = neoSendToAddress.getSendToAddress();
         assertNotNull(sendToAddress);
         assertThat(
                 sendToAddress.getOutputs(),
                 hasItem(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", ADDRESS_4)
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10", ADDRESS_4)
                 )
         );
     }
@@ -88,14 +87,14 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     @Test
     public void testSendToAddress_Fee() throws IOException {
         NeoSendToAddress neoSendToAddress = getNeow3j()
-                .sendToAddress(NEOAsset.HASH_ID, ADDRESS_4, "10", "0.1")
+                .sendToAddress(NEO_HASH.toString(), ADDRESS_4, "10", "0.1")
                 .send();
         Transaction sendToAddress = neoSendToAddress.getSendToAddress();
         assertNotNull(sendToAddress);
         assertThat(
                 sendToAddress.getOutputs(),
                 hasItem(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", ADDRESS_4)
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10", ADDRESS_4)
                 )
         );
         assertThat(
@@ -109,7 +108,7 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         NeoGetNewAddress neoGetNewAddress = getNeow3j().getNewAddress().send();
         String newChangeAddress = neoGetNewAddress.getAddress();
         NeoSendToAddress neoSendToAddress = getNeow3j()
-                .sendToAddress(NEOAsset.HASH_ID, ADDRESS_4, "10", "0.1", newChangeAddress)
+                .sendToAddress(NEO_HASH.toString(), ADDRESS_4, "10", "0.1", newChangeAddress)
                 .send();
         Transaction sendToAddress = neoSendToAddress.getSendToAddress();
         assertNotNull(sendToAddress);
@@ -130,19 +129,19 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         String newNeoBalance = Integer.toString(balance - 110);
         NeoSendMany sendMany = getNeow3j().sendMany(
                 Arrays.asList(
-                        new TransactionOutput(NEOAsset.HASH_ID, "100", ADDRESS_2),
-                        new TransactionOutput(NEOAsset.HASH_ID, "10", ADDRESS_2)
+                        new TransactionOutput(NEO_HASH.toString(), "100", ADDRESS_2),
+                        new TransactionOutput(NEO_HASH.toString(), "10", ADDRESS_2)
                 )
         ).send();
         assertThat(sendMany.getSendMany(), is(notNullValue()));
         assertThat(
                 sendMany.getSendMany().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "100", ADDRESS_2),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "10", ADDRESS_2),
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100", ADDRESS_2),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10", ADDRESS_2),
                         // instead of "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", the address
                         // "AKkkumHbBipZ46UMZJoFynJMXzSRnBvKcs" is also part of the wallet -- default address
-                        new TransactionOutput(2, prependHexPrefix(NEOAsset.HASH_ID), newNeoBalance, ADDRESS_3)
+                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()), newNeoBalance, ADDRESS_3)
                 )
         );
         assertThat(sendMany.getSendMany().getInputs(), not(empty()));
@@ -167,8 +166,8 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         String newNeoBalance = Integer.toString(balance - 110);
         NeoSendMany sendMany = getNeow3j().sendMany(
                 Arrays.asList(
-                        new TransactionOutput(NEOAsset.HASH_ID, "100", ADDRESS_2),
-                        new TransactionOutput(NEOAsset.HASH_ID, "10", ADDRESS_2)
+                        new TransactionOutput(NEO_HASH.toString(), "100", ADDRESS_2),
+                        new TransactionOutput(NEO_HASH.toString(), "10", ADDRESS_2)
                 ),
                 "0.1"
         ).send();
@@ -176,11 +175,11 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         assertThat(
                 sendMany.getSendMany().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "100", ADDRESS_2),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "10", ADDRESS_2),
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100", ADDRESS_2),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10", ADDRESS_2),
                         // instead of "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", the address
                         // "AKkkumHbBipZ46UMZJoFynJMXzSRnBvKcs" is also part of the wallet -- default address
-                        new TransactionOutput(2, prependHexPrefix(NEOAsset.HASH_ID), newNeoBalance, ADDRESS_3)
+                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()), newNeoBalance, ADDRESS_3)
                 )
         );
         assertThat(sendMany.getSendMany().getInputs(), not(empty()));
@@ -200,8 +199,8 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         String newNeoBalance = Integer.toString(balance - 110);
         NeoSendMany sendMany = getNeow3j().sendMany(
                 Arrays.asList(
-                        new TransactionOutput(NEOAsset.HASH_ID, "100", ADDRESS_2),
-                        new TransactionOutput(NEOAsset.HASH_ID, "10", ADDRESS_2)
+                        new TransactionOutput(NEO_HASH.toString(), "100", ADDRESS_2),
+                        new TransactionOutput(NEO_HASH.toString(), "10", ADDRESS_2)
                 ),
                 "0.1",
                 ADDRESS_1
@@ -210,9 +209,9 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         assertThat(
                 sendMany.getSendMany().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "100", ADDRESS_2),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "10", ADDRESS_2),
-                        new TransactionOutput(2, prependHexPrefix(NEOAsset.HASH_ID), newNeoBalance, ADDRESS_1)
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100", ADDRESS_2),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10", ADDRESS_2),
+                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()), newNeoBalance, ADDRESS_1)
                 )
         );
         assertThat(sendMany.getSendMany().getInputs(), not(empty()));
@@ -227,7 +226,7 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     }
 
     private int getCurrentNeoBalance() throws IOException {
-        NeoGetBalance.Balance b = getNeow3j().getBalance(NEOAsset.HASH_ID).send().getBalance();
+        NeoGetBalance.Balance b = getNeow3j().getBalance(NEO_HASH.toString()).send().getBalance();
         return Integer.parseInt(b.getBalance());
     }
 
