@@ -1,8 +1,8 @@
 package io.neow3j.contract;
 
-import static io.neow3j.constants.NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT;
 import static io.neow3j.contract.ContractTestUtils.CONTRACT_1_SCRIPT_HASH;
-import static io.neow3j.contract.ContractTestUtils.GETBLOCKCOUNT_RESPONSE;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
@@ -19,9 +19,9 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
-import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Cosigner;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -68,10 +68,9 @@ public class InvocationTest {
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .build();
-        assertThat(
-                i.getTransaction().getValidUntilBlock(),
-                is((long) MAX_VALID_UNTIL_BLOCK_INCREMENT + GETBLOCKCOUNT_RESPONSE)
-        );
+        assertThat(i.getTransaction().getValidUntilBlock(),
+                is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT
+                        + ContractTestUtils.GETBLOCKCOUNT_RESPONSE));
     }
 
     @Test
@@ -147,7 +146,7 @@ public class InvocationTest {
         int m = 2; // signingThreshold
         int n = 2; // total number of participating keys
         Account multiSigAcc = Account.fromMultiSigKeys(keys, m).isDefault(true).build();
-        Wallet wallet = new Wallet.Builder().account(multiSigAcc).build();
+        Wallet wallet = new Wallet.Builder().accounts(multiSigAcc).build();
         long additionalFee = 100_000_000;
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
@@ -240,14 +239,70 @@ public class InvocationTest {
     }
 
     @Test
-    public void test() {
-        System.out.println(new ScriptHash("57e75368a3a9a7b8ccc4f541c8449bd95b023fa3").toAddress());
+    public void addSenderCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet() throws IOException {
+        Wallet wallet = Wallet.createWallet();
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
+                .validUntilBlock(1000)
+                .build();
+
+        Cosigner expected = Cosigner.calledByEntry(wallet.getDefaultAccount().getScriptHash());
+        assertThat(i.getTransaction().getCosigners(), hasSize(1));
+        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+    }
+
+    @Test
+    public void addSenderCosignerIfNotExplicitlySetAndAnotherCosignerIsSet() throws IOException {
+        Wallet wallet = Wallet.createWallet();
+        Account other = Account.createAccount();
+        wallet.addAccount(other);
+        Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
+                .withCosigners(cosigner)
+                .validUntilBlock(1000)
+                .build();
+
+        Cosigner expected = Cosigner.calledByEntry(wallet.getDefaultAccount().getScriptHash());
+        assertThat(i.getTransaction().getCosigners(), hasSize(2));
+        assertThat(i.getTransaction().getCosigners(), containsInAnyOrder(expected, cosigner));
+    }
+
+    @Test
+    public void dontAddDuplicateSenderCosignerIfAlreadySetExplicitly() throws IOException {
+        // WIF created from private key
+        // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
+        final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
+        Account acc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
+                .isDefault(true).build();
+        Wallet wallet = new Wallet.Builder().accounts(acc).build();
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
+                .withCosigners(Cosigner.calledByEntry(acc.getScriptHash()))
+                .validUntilBlock(1000)
+                .build();
+
+        Cosigner expected = Cosigner.calledByEntry(acc.getScriptHash());
+        assertThat(i.getTransaction().getCosigners(), hasSize(1));
+        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
     }
 
     @Test
     @Ignore("Test is ignored because the neo-core is not stable and therefore no valid reference "
             + "transaction can be produced.")
-    public void testNeoTransfer() throws IOException, DeserializationException {
+    public void testNeoTransfer() throws IOException {
         // Used address version 23 (0x17)
         // Reference transaction created with neo-node.
         byte[] expectedTx = Numeric.hexStringToByteArray(
@@ -257,7 +312,7 @@ public class InvocationTest {
         String senderWif = "KzaTU6vRwLCYfAcWScBWX6sMMfZ7tdfk4SmTNgXSBkUgbaRGJqGz";
         ECKeyPair senderPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(senderWif));
         Account sender = Account.fromECKeyPair(senderPair).isDefault(true).build();
-        Wallet w = new Wallet.Builder().account(sender).build();
+        Wallet w = new Wallet.Builder().accounts(sender).build();
         ScriptHash neo = ScriptHash.fromScript(
                 new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
         Invocation i = new InvocationBuilder(neow, neo, "transfer")
