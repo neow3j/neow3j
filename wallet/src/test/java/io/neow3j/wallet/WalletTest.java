@@ -11,13 +11,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.utils.Numeric;
-import io.neow3j.wallet.exceptions.AccountException;
+import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import java.io.File;
@@ -53,27 +53,27 @@ public class WalletTest {
         assertEquals(2, w.getAccounts().size());
         assertEquals(NEP2.DEFAULT_SCRYPT_PARAMS, w.getScryptParams());
 
-        Account a = w.getAccounts().get(0);
-        assertEquals("AWUfbdLYUeJ5X6gvbPQYkjL4JZ78z2X9Pk", a.getAddress());
+        Account a = w.getAccount(ScriptHash.fromAddress("AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN"));
+        assertEquals("AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN", a.getAddress());
         assertEquals("Account1", a.getLabel());
-        assertFalse(a.isDefault());
+        assertTrue(a.isDefault());
         assertFalse(a.isLocked());
-        assertEquals("6PYUnzmokRh7JwfYntrMq6LYw4pF4QJ343fJHMKoKDvCqNgfV6msFGGcEH",
+        assertEquals("6PYVmzptUSqkpw1YRPrNwuhCVGF5BvUNWCRB9XwrQuJJmcE4soABybYWxq",
                 a.getEncryptedPrivateKey());
         assertEquals(
-                Numeric.toHexStringNoPrefix(a.getVerificationScript().getScript()),
+                "DCEDGY4G2y1nT0NiREFiPxAlSv38eRgqmNCp2HocRQVX7OgLQQqQatQ=",
                 nep6Wallet.getAccounts().get(0).getContract().getScript()
         );
 
-        a = w.getAccounts().get(1);
-        assertEquals("AThCriBXLBQxyPNYHUwa8NVoKYM5JwL1Yg", a.getAddress());
+        a = w.getAccount(ScriptHash.fromAddress("AaSsb7k1mFPKqhJynyr4qQybtQrRBub21Q"));
+        assertEquals("AaSsb7k1mFPKqhJynyr4qQybtQrRBub21Q", a.getAddress());
         assertEquals("Account2", a.getLabel());
         assertFalse(a.isDefault());
         assertFalse(a.isLocked());
-        assertEquals("6PYRUJuaSqrvkQVdfn9MBdzJDNDwXMdHNNiNAMYJhGk7MUgdiU4KshyuGX",
+        assertEquals("6PYSMtdYvx6vXK21AAc2NBvbYuBusCxre59uy1EhnbRysSmhgMkTk37Qez",
                 a.getEncryptedPrivateKey());
         assertEquals(
-                Numeric.toHexStringNoPrefix(a.getVerificationScript().getScript()),
+                "DCEDmd53lLYbIBx/SYdaYgQ13PvUFcEsgudizzN2B2kpAEkLQQqQatQ=",
                 nep6Wallet.getAccounts().get(1).getContract().getScript()
         );
     }
@@ -132,7 +132,7 @@ public class WalletTest {
         assertEquals(nep6w, w.toNEP6Wallet());
     }
 
-    @Test(expected = AccountException.class)
+    @Test(expected = AccountStateException.class)
     public void testToNEP6WalletWithUnencryptedPrivateKey()
             throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
@@ -156,6 +156,7 @@ public class WalletTest {
 
     @Test
     public void testFromNEP6WalletFileToNEP6Wallet() throws IOException, URISyntaxException {
+        // TODO: Update the wallet file. It's not up to date with Neo 3.
         URL nep6WalletFileUrl = WalletTest.class.getClassLoader().getResource("wallet.json");
         File nep6WalletFile = new File(nep6WalletFileUrl.toURI());
         Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile).build();
@@ -229,6 +230,12 @@ public class WalletTest {
         assertThat(w2.toNEP6Wallet(), is(w1.toNEP6Wallet()));
     }
 
+    private File createTempFile() throws IOException {
+        File testFile = File.createTempFile("neow3j", "-test");
+        testFile.deleteOnExit();
+        return testFile;
+    }
+
     @Test
     public void testCreateGenericWalletWithPassword()
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
@@ -256,15 +263,20 @@ public class WalletTest {
 
         Account a = Account.createAccount();
         w.addAccount(a);
-        w.setDefaultAccount(1);
+        w.setDefaultAccount(a.getScriptHash());
         assertThat(w.getDefaultAccount(), notNullValue());
         assertThat(w.getDefaultAccount(), is(a));
     }
 
-    private File createTempFile() throws IOException {
-        File testFile = File.createTempFile("neow3j", "-test");
-        testFile.deleteOnExit();
-        return testFile;
+    @Test
+    public void encryptWallet() throws CipherException {
+        Wallet w = Wallet.createWallet();
+        w.addAccount(Account.createAccount());
+        assertThat(w.getAccounts().get(0).getPrivateKey().getInt(), notNullValue());
+        assertThat(w.getAccounts().get(1).getPrivateKey().getInt(), notNullValue());
+        w.encryptAllAccounts("pw");
+        assertThat(w.getAccounts().get(0).getPrivateKey(), nullValue());
+        assertThat(w.getAccounts().get(1).getPrivateKey(), nullValue());
     }
 
 }
