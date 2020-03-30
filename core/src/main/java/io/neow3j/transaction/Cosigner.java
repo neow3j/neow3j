@@ -144,11 +144,11 @@ public class Cosigner extends NeoSerializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Cosigner cosigner = (Cosigner) o;
-        return account.equals(cosigner.account) &&
-                scopes.equals(cosigner.scopes) &&
-                allowedContracts.equals(cosigner.allowedContracts) &&
-                allowedGroups.equals(cosigner.allowedGroups);
+        Cosigner that = (Cosigner) o;
+        return Objects.equals(this.account, that.account) &&
+                Objects.equals(this.scopes, that.scopes) &&
+                Objects.equals(this.allowedContracts, that.allowedContracts) &&
+                Objects.equals(this.allowedGroups, that.allowedGroups);
     }
 
     @Override

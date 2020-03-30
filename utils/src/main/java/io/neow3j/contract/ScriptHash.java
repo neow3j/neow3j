@@ -117,18 +117,6 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
         return toAddress(NeoConstants.DEFAULT_ADDRESS_VERSION);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ScriptHash that = (ScriptHash) o;
-        return Arrays.equals(scriptHash, that.scriptHash);
-    }
-
     /**
      * Creates a script hash from the given address.
      *
@@ -181,5 +169,22 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     public int compareTo(ScriptHash o) {
         return new BigInteger(1, ArrayUtils.reverseArray(scriptHash))
             .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ScriptHash that = (ScriptHash) o;
+        return Arrays.equals(scriptHash, that.scriptHash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(this.scriptHash);
     }
 }
