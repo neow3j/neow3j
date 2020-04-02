@@ -1,7 +1,24 @@
 package io.neow3j.protocol.core;
 
+import static io.neow3j.utils.Numeric.prependHexPrefix;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.model.types.TransactionAttributeUsageType;
@@ -45,37 +62,21 @@ import io.neow3j.protocol.core.methods.response.Script;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
-import io.neow3j.protocol.core.methods.response.TransactionInput;
-import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.utils.Numeric;
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.neow3j.utils.Numeric.prependHexPrefix;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Core Protocol Response tests.
  */
 public class ResponseTest extends ResponseTester {
+
+    public static final ScriptHash NEO_HASH = ScriptHash.fromScript(
+            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
 
     @Test
     public void testErrorResponse() {
@@ -143,12 +144,14 @@ public class ResponseTest extends ResponseTester {
                 "{\n"
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": \"0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3\"\n"
+                        + "  \"result\": "
+                        + "\"0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3\"\n"
                         + "}"
         );
 
         NeoBlockHash neoBestBlockHash = deserialiseResponse(NeoBlockHash.class);
-        assertThat(neoBestBlockHash.getBlockHash(), is("0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3"));
+        assertThat(neoBestBlockHash.getBlockHash(),
+                is("0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3"));
     }
 
     @Test
@@ -190,11 +193,13 @@ public class ResponseTest extends ResponseTester {
 
         NeoListAddress listAddress = deserialiseResponse(NeoListAddress.class);
         assertThat(listAddress.getAddresses(), hasSize(2));
-        assertThat(listAddress.getAddresses().get(0).getAddress(), is("AKkkumHbBipZ46UMZJoFynJMXzSRnBvKcs"));
+        assertThat(listAddress.getAddresses().get(0).getAddress(),
+                is("AKkkumHbBipZ46UMZJoFynJMXzSRnBvKcs"));
         assertThat(listAddress.getAddresses().get(0).getHasKey(), is(true));
         assertThat(listAddress.getAddresses().get(0).getLabel(), is("blah"));
         assertThat(listAddress.getAddresses().get(0).getWatchOnly(), is(false));
-        assertThat(listAddress.getAddresses().get(1).getAddress(), is("AZ81H31DMWzbSnFDLFkzh9vHwaDLayV7fU"));
+        assertThat(listAddress.getAddresses().get(1).getAddress(),
+                is("AZ81H31DMWzbSnFDLFkzh9vHwaDLayV7fU"));
         assertThat(listAddress.getAddresses().get(1).getHasKey(), is(false));
         assertThat(listAddress.getAddresses().get(1).getLabel(), is(nullValue()));
         assertThat(listAddress.getAddresses().get(1).getWatchOnly(), is(true));
@@ -329,9 +334,14 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":67,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": [\n"
-                        + "      \"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e\",\n"
-                        + "      \"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7\",\n"
-                        + "      \"0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6\"\n"
+                        + "      "
+                        + "\"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"
+                        + "\",\n"
+                        + "      "
+                        + "\"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"
+                        + "\",\n"
+                        + "      "
+                        + "\"0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6\"\n"
                         + "   ]\n"
                         + "}"
         );
@@ -371,17 +381,23 @@ public class ResponseTest extends ResponseTester {
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": [\n"
                         + "      {\n"
-                        + "          \"publickey\": \"02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6\",\n"
+                        + "          \"publickey\": "
+                        + "\"02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6"
+                        + "\",\n"
                         + "          \"votes\": \"0\",\n"
                         + "          \"active\": false\n"
                         + "      },\n"
                         + "      {\n"
-                        + "          \"publickey\": \"025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64\",\n"
+                        + "          \"publickey\": "
+                        + "\"025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64"
+                        + "\",\n"
                         + "          \"votes\": \"91600000\",\n"
                         + "          \"active\": true\n"
                         + "      },\n"
                         + "      {\n"
-                        + "          \"publickey\": \"0266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af07\",\n"
+                        + "          \"publickey\": "
+                        + "\"0266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af07"
+                        + "\",\n"
                         + "          \"votes\": \"91600000\",\n"
                         + "          \"active\": true\n"
                         + "      }"
@@ -394,12 +410,19 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getValidators.getValidators(),
                 containsInAnyOrder(
-                        new NeoGetValidators.Validator("02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6", "0", false),
-                        new NeoGetValidators.Validator("025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64", "91600000", true),
-                        new NeoGetValidators.Validator("0266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af07", "91600000", true)
+                        new NeoGetValidators.Validator(
+                                "02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6",
+                                "0", false),
+                        new NeoGetValidators.Validator(
+                                "025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64",
+                                "91600000", true),
+                        new NeoGetValidators.Validator(
+                                "0266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af07",
+                                "91600000", true)
                 )
         );
-        assertThat(getValidators.getValidators().get(0).getVotesAsBigInteger(), is(BigInteger.valueOf(0)));
+        assertThat(getValidators.getValidators().get(0).getVotesAsBigInteger(),
+                is(BigInteger.valueOf(0)));
     }
 
     @Test
@@ -433,7 +456,8 @@ public class ResponseTest extends ResponseTester {
 
         NeoValidateAddress validateAddress = deserialiseResponse(NeoValidateAddress.class);
         assertThat(validateAddress.getValidation(), is(notNullValue()));
-        assertThat(validateAddress.getValidation().getAddress(), is("AQVh2pG732YvtNaxEGkQUei3YA4cvo7d2i"));
+        assertThat(validateAddress.getValidation().getAddress(),
+                is("AQVh2pG732YvtNaxEGkQUei3YA4cvo7d2i"));
         assertThat(validateAddress.getValidation().getValid(), is(true));
     }
 
@@ -444,22 +468,40 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"hash\": \"0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816\",\n" +
+                        "        \"hash\": "
+                        + "\"0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816"
+                        + "\",\n"
+                        +
                         "        \"size\": 1217,\n" +
                         "        \"version\": 0,\n" +
-                        "        \"previousblockhash\": \"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
-                        "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
+                        "        \"previousblockhash\": "
+                        + "\"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"
+                        + "\",\n"
+                        +
+                        "        \"merkleroot\": "
+                        + "\"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"
+                        + "\",\n"
+                        +
                         "        \"time\": 1539968858,\n" +
                         "        \"index\": 1914006,\n" +
                         "        \"nonce\": \"44ed38ca21ae8877\",\n" +
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
                         "        \"script\": {\n" +
-                        "            \"invocation\": \"4038f080f920e30fc2b08903788fa53c262a05f92a8e7ae8a8e6ebd45d6c035e15441675d037359dcec8e010b00ae0b9c5d2f51aa9e0a27b79e36b8d65c365fea0407b9618d2ca30b3dcf14422212fe8dd9d2b126f72a8d84d9dcd523ebf75ffc308495e8ddf13111216c1076b36fd1c1fa1c45c974e3d59427305fe4a44041dc93b4000a7c634b6e5fc7d5d543a4fe072530f114a823b9b4fdd069c1aacd0f4c7aa1ba166dadc6a1755b2485646331457ba1f1a62e915172a878dc5dad49958410bcc406fffecc421608a2ad257311e5b4ef7b86b3d7a207116e6b7f1b8e1b657093ea37b2c469d733213bce1099942e82ce2ef6663d4f244769acdb04696e7446afed4404bcd150392baec630b96da0954e06a9bf4bef3f9f6983ea6604482ec6762493a596189aad0e1c30bb0a4b05048c524b354bf449077e58d6cb6f91bbd49e280f7\",\n" +
-                        "            \"verification\": \"5521030ef96257401b803da5dd201233e2be828795672b775dd674d69df83f7aec1e36210327da12b5c40200e9f65569476bbff2218da4f32548ff43b6387ec1416a231ee821025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64210266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af0721026ce35b29147ad09e4afe4ec4a7319095f08198fa8babbe3c56e970b143528d222103c089d7122b840a4935234e82e26ae5efd0c2acb627239dc9f207311337b6f2c12103fd95a9cb3098e6447d0de9f76cc97fd5e36830f9c7044457c15a0e81316bf28f57ae\"\n" +
+                        "            \"invocation\": "
+                        +
+                        "\"4038f080f920e30fc2b08903788fa53c262a05f92a8e7ae8a8e6ebd45d6c035e15441675d037359dcec8e010b00ae0b9c5d2f51aa9e0a27b79e36b8d65c365fea0407b9618d2ca30b3dcf14422212fe8dd9d2b126f72a8d84d9dcd523ebf75ffc308495e8ddf13111216c1076b36fd1c1fa1c45c974e3d59427305fe4a44041dc93b4000a7c634b6e5fc7d5d543a4fe072530f114a823b9b4fdd069c1aacd0f4c7aa1ba166dadc6a1755b2485646331457ba1f1a62e915172a878dc5dad49958410bcc406fffecc421608a2ad257311e5b4ef7b86b3d7a207116e6b7f1b8e1b657093ea37b2c469d733213bce1099942e82ce2ef6663d4f244769acdb04696e7446afed4404bcd150392baec630b96da0954e06a9bf4bef3f9f6983ea6604482ec6762493a596189aad0e1c30bb0a4b05048c524b354bf449077e58d6cb6f91bbd49e280f7\",\n"
+                        +
+                        "            \"verification\": "
+                        +
+                        "\"5521030ef96257401b803da5dd201233e2be828795672b775dd674d69df83f7aec1e36210327da12b5c40200e9f65569476bbff2218da4f32548ff43b6387ec1416a231ee821025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64210266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af0721026ce35b29147ad09e4afe4ec4a7319095f08198fa8babbe3c56e970b143528d222103c089d7122b840a4935234e82e26ae5efd0c2acb627239dc9f207311337b6f2c12103fd95a9cb3098e6447d0de9f76cc97fd5e36830f9c7044457c15a0e81316bf28f57ae\"\n"
+                        +
                         "        },\n" +
                         "        \"tx\": [\n" +
                         "            {\n" +
-                        "                \"txid\": \"0x96ff8b13809f9ad38b165545f4d6c723faf7ca4d3a8d88297726532caa89a21c\",\n" +
+                        "                \"txid\": "
+                        + "\"0x96ff8b13809f9ad38b165545f4d6c723faf7ca4d3a8d88297726532caa89a21c"
+                        + "\",\n"
+                        +
                         "                \"size\": 10,\n" +
                         "                \"type\": \"MinerTransaction\",\n" +
                         "                \"version\": 0,\n" +
@@ -472,59 +514,94 @@ public class ResponseTest extends ResponseTester {
                         "                \"nonce\": 565086327\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"txid\": \"0x93c569cbe33e918f7a5392025fbdeab5f6c97c8e5897fafc466694b6e8e1b0d2\",\n" +
+                        "                \"txid\": "
+                        + "\"0x93c569cbe33e918f7a5392025fbdeab5f6c97c8e5897fafc466694b6e8e1b0d2"
+                        + "\",\n"
+                        +
                         "                \"size\": 322,\n" +
                         "                \"type\": \"ContractTransaction\",\n" +
                         "                \"version\": 0,\n" +
                         "                \"attributes\": [],\n" +
                         "                \"vin\": [\n" +
                         "                    {\n" +
-                        "                        \"txid\": \"0x5b0b51b63f476fbc8080b5450a20703b7af23c9125cfae45215953529e13bb32\",\n" +
+                        "                        \"txid\": "
+                        + "\"0x5b0b51b63f476fbc8080b5450a20703b7af23c9125cfae45215953529e13bb32"
+                        + "\",\n"
+                        +
                         "                        \"vout\": 1\n" +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"vout\": [\n" +
                         "                    {\n" +
                         "                        \"n\": 0,\n" +
-                        "                        \"asset\": \"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n" +
+                        "                        \"asset\": "
+                        + "\"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7"
+                        + "\",\n"
+                        +
                         "                        \"value\": \"10\",\n" +
-                        "                        \"address\": \"AHb4HXonuseHsAztd97GZTtmNvwEoMDQg7\"\n" +
+                        "                        \"address\": "
+                        + "\"AHb4HXonuseHsAztd97GZTtmNvwEoMDQg7\"\n"
+                        +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"n\": 1,\n" +
-                        "                        \"asset\": \"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n" +
+                        "                        \"asset\": "
+                        + "\"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7"
+                        + "\",\n"
+                        +
                         "                        \"value\": \"10\",\n" +
-                        "                        \"address\": \"AYL1UwhA1J8zpHK8X4hSmjuFSLa49XUhFe\"\n" +
+                        "                        \"address\": "
+                        + "\"AYL1UwhA1J8zpHK8X4hSmjuFSLa49XUhFe\"\n"
+                        +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"n\": 2,\n" +
-                        "                        \"asset\": \"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n" +
+                        "                        \"asset\": "
+                        + "\"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7"
+                        + "\",\n"
+                        +
                         "                        \"value\": \"28056.999\",\n" +
-                        "                        \"address\": \"APVdDEtthapuaPedMHCgrDR5Vyc22fns9m\"\n" +
+                        "                        \"address\": "
+                        + "\"APVdDEtthapuaPedMHCgrDR5Vyc22fns9m\"\n"
+                        +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"sys_fee\": \"0\",\n" +
                         "                \"net_fee\": \"0\",\n" +
                         "                \"scripts\": [\n" +
                         "                    {\n" +
-                        "                        \"invocation\": \"407cf160d0e7c4e82383c3d3f28e26d894d8498507625e4a23cee34915128edd5713f3eb8db2ba30f8e8d47686af2481baa40e8e452a3e983a3209246087f83040\",\n" +
-                        "                        \"verification\": \"210293cd2efa68906ef5839afd332cf6817a27f8474d64c799647e4438dfcd1bcab0ac\"\n" +
+                        "                        \"invocation\": "
+                        +
+                        "\"407cf160d0e7c4e82383c3d3f28e26d894d8498507625e4a23cee34915128edd5713f3eb8db2ba30f8e8d47686af2481baa40e8e452a3e983a3209246087f83040\",\n"
+                        +
+                        "                        \"verification\": "
+                        +
+                        "\"210293cd2efa68906ef5839afd332cf6817a27f8474d64c799647e4438dfcd1bcab0ac"
+                        + "\"\n"
+                        +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"txid\": \"0xb6d5eccf7cea2c21f23c27ca1ad08d1eb6095decd8225b980d45059dbb0713ce\",\n" +
+                        "                \"txid\": "
+                        + "\"0xb6d5eccf7cea2c21f23c27ca1ad08d1eb6095decd8225b980d45059dbb0713ce"
+                        + "\",\n"
+                        +
                         "                \"size\": 209,\n" +
                         "                \"type\": \"InvocationTransaction\",\n" +
                         "                \"version\": 1,\n" +
                         "                \"attributes\": [\n" +
                         "                    {\n" +
                         "                        \"usage\": \"Script\",\n" +
-                        "                        \"data\": \"1b574e7c412bf48304c1d359805f078487878735\"\n" +
+                        "                        \"data\": "
+                        + "\"1b574e7c412bf48304c1d359805f078487878735\"\n"
+                        +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"usage\": \"Remark\",\n" +
-                        "                        \"data\": \"313533393936383835353131366463336361623763\"\n" +
+                        "                        \"data\": "
+                        + "\"313533393936383835353131366463336361623763\"\n"
+                        +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"vin\": [],\n" +
@@ -533,16 +610,28 @@ public class ResponseTest extends ResponseTester {
                         "                \"net_fee\": \"0\",\n" +
                         "                \"scripts\": [\n" +
                         "                    {\n" +
-                        "                        \"invocation\": \"4076513172004c2337f47094120e25a6c71fb9bfc4e12ca91babd4f8110523ae52a53f3ca4839ae8d3276df0120a9fe6b9385271ce4c1f0195d5249fa133ef718a\",\n" +
-                        "                        \"verification\": \"21021012fef0dd6437c25d1b1f437d8828ccc37e9c21543b31de27cac97dce987947ac\"\n" +
+                        "                        \"invocation\": "
+                        +
+                        "\"4076513172004c2337f47094120e25a6c71fb9bfc4e12ca91babd4f8110523ae52a53f3ca4839ae8d3276df0120a9fe6b9385271ce4c1f0195d5249fa133ef718a\",\n"
+                        +
+                        "                        \"verification\": "
+                        +
+                        "\"21021012fef0dd6437c25d1b1f437d8828ccc37e9c21543b31de27cac97dce987947ac"
+                        + "\"\n"
+                        +
                         "                    }\n" +
                         "                ],\n" +
-                        "                \"script\": \"0127141b574e7c412bf48304c1d359805f07848787873552c10974616b654f7264657267f9c7d7248356eba19eae6ff828e2bcf26cf985d5\",\n" +
+                        "                \"script\": "
+                        +
+                        "\"0127141b574e7c412bf48304c1d359805f07848787873552c10974616b654f7264657267f9c7d7248356eba19eae6ff828e2bcf26cf985d5\",\n"
+                        +
                         "                \"gas\": \"0\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"confirmations\": 7878,\n" +
-                        "        \"nextblockhash\": \"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n" +
+                        "        \"nextblockhash\": "
+                        + "\"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n"
+                        +
                         "    }\n" +
                         "}"
         );
@@ -550,19 +639,23 @@ public class ResponseTest extends ResponseTester {
         NeoGetBlock getBlock = deserialiseResponse(NeoGetBlock.class);
         assertThat(getBlock.getBlock(), is(notNullValue()));
 
-        assertThat(getBlock.getBlock().getHash(), is("0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816"));
+        assertThat(getBlock.getBlock().getHash(),
+                is("0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816"));
         assertThat(getBlock.getBlock().getSize(), is(1217L));
         assertThat(getBlock.getBlock().getVersion(), is(0));
-        assertThat(getBlock.getBlock().getPrevBlockHash(), is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
-        assertThat(getBlock.getBlock().getMerkleRootHash(), is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
+        assertThat(getBlock.getBlock().getPrevBlockHash(),
+                is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
+        assertThat(getBlock.getBlock().getMerkleRootHash(),
+                is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getNonce(), is("44ed38ca21ae8877"));
-        assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
+        assertThat(getBlock.getBlock().getNextConsensus(),
+                is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
         assertThat(getBlock.getBlock().getScript(), is(notNullValue()));
         assertThat(
                 getBlock.getBlock().getScript(),
-                CoreMatchers.is(
+                is(
                         new Script(
                                 "4038f080f920e30fc2b08903788fa53c262a05f92a8e7ae8a8e6ebd45d6c035e15441675d037359dcec8e010b00ae0b9c5d2f51aa9e0a27b79e36b8d65c365fea0407b9618d2ca30b3dcf14422212fe8dd9d2b126f72a8d84d9dcd523ebf75ffc308495e8ddf13111216c1076b36fd1c1fa1c45c974e3d59427305fe4a44041dc93b4000a7c634b6e5fc7d5d543a4fe072530f114a823b9b4fdd069c1aacd0f4c7aa1ba166dadc6a1755b2485646331457ba1f1a62e915172a878dc5dad49958410bcc406fffecc421608a2ad257311e5b4ef7b86b3d7a207116e6b7f1b8e1b657093ea37b2c469d733213bce1099942e82ce2ef6663d4f244769acdb04696e7446afed4404bcd150392baec630b96da0954e06a9bf4bef3f9f6983ea6604482ec6762493a596189aad0e1c30bb0a4b05048c524b354bf449077e58d6cb6f91bbd49e280f7",
                                 "5521030ef96257401b803da5dd201233e2be828795672b775dd674d69df83f7aec1e36210327da12b5c40200e9f65569476bbff2218da4f32548ff43b6387ec1416a231ee821025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64210266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af0721026ce35b29147ad09e4afe4ec4a7319095f08198fa8babbe3c56e970b143528d222103c089d7122b840a4935234e82e26ae5efd0c2acb627239dc9f207311337b6f2c12103fd95a9cb3098e6447d0de9f76cc97fd5e36830f9c7044457c15a0e81316bf28f57ae"
@@ -597,7 +690,9 @@ public class ResponseTest extends ResponseTester {
                                 0,
                                 Arrays.asList(),
                                 Arrays.asList(
-                                        new TransactionInput("0x5b0b51b63f476fbc8080b5450a20703b7af23c9125cfae45215953529e13bb32", 1)
+                                        new TransactionInput(
+                                                "0x5b0b51b63f476fbc8080b5450a20703b7af23c9125cfae45215953529e13bb32",
+                                                1)
                                 ),
                                 Arrays.asList(
                                         new TransactionOutput(
@@ -664,7 +759,8 @@ public class ResponseTest extends ResponseTester {
         );
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
-        assertThat(getBlock.getBlock().getNextBlockHash(), is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
+        assertThat(getBlock.getBlock().getNextBlockHash(),
+                is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
     }
 
     @Test
@@ -674,21 +770,38 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"hash\": \"0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816\",\n" +
+                        "        \"hash\": "
+                        + "\"0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816"
+                        + "\",\n"
+                        +
                         "        \"size\": 1217,\n" +
                         "        \"version\": 0,\n" +
-                        "        \"previousblockhash\": \"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
-                        "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
+                        "        \"previousblockhash\": "
+                        + "\"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"
+                        + "\",\n"
+                        +
+                        "        \"merkleroot\": "
+                        + "\"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"
+                        + "\",\n"
+                        +
                         "        \"time\": 1539968858,\n" +
                         "        \"index\": 1914006,\n" +
                         "        \"nonce\": \"44ed38ca21ae8877\",\n" +
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
                         "        \"script\": {\n" +
-                        "            \"invocation\": \"4038f080f920e30fc2b08903788fa53c262a05f92a8e7ae8a8e6ebd45d6c035e15441675d037359dcec8e010b00ae0b9c5d2f51aa9e0a27b79e36b8d65c365fea0407b9618d2ca30b3dcf14422212fe8dd9d2b126f72a8d84d9dcd523ebf75ffc308495e8ddf13111216c1076b36fd1c1fa1c45c974e3d59427305fe4a44041dc93b4000a7c634b6e5fc7d5d543a4fe072530f114a823b9b4fdd069c1aacd0f4c7aa1ba166dadc6a1755b2485646331457ba1f1a62e915172a878dc5dad49958410bcc406fffecc421608a2ad257311e5b4ef7b86b3d7a207116e6b7f1b8e1b657093ea37b2c469d733213bce1099942e82ce2ef6663d4f244769acdb04696e7446afed4404bcd150392baec630b96da0954e06a9bf4bef3f9f6983ea6604482ec6762493a596189aad0e1c30bb0a4b05048c524b354bf449077e58d6cb6f91bbd49e280f7\",\n" +
-                        "            \"verification\": \"5521030ef96257401b803da5dd201233e2be828795672b775dd674d69df83f7aec1e36210327da12b5c40200e9f65569476bbff2218da4f32548ff43b6387ec1416a231ee821025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64210266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af0721026ce35b29147ad09e4afe4ec4a7319095f08198fa8babbe3c56e970b143528d222103c089d7122b840a4935234e82e26ae5efd0c2acb627239dc9f207311337b6f2c12103fd95a9cb3098e6447d0de9f76cc97fd5e36830f9c7044457c15a0e81316bf28f57ae\"\n" +
+                        "            \"invocation\": "
+                        +
+                        "\"4038f080f920e30fc2b08903788fa53c262a05f92a8e7ae8a8e6ebd45d6c035e15441675d037359dcec8e010b00ae0b9c5d2f51aa9e0a27b79e36b8d65c365fea0407b9618d2ca30b3dcf14422212fe8dd9d2b126f72a8d84d9dcd523ebf75ffc308495e8ddf13111216c1076b36fd1c1fa1c45c974e3d59427305fe4a44041dc93b4000a7c634b6e5fc7d5d543a4fe072530f114a823b9b4fdd069c1aacd0f4c7aa1ba166dadc6a1755b2485646331457ba1f1a62e915172a878dc5dad49958410bcc406fffecc421608a2ad257311e5b4ef7b86b3d7a207116e6b7f1b8e1b657093ea37b2c469d733213bce1099942e82ce2ef6663d4f244769acdb04696e7446afed4404bcd150392baec630b96da0954e06a9bf4bef3f9f6983ea6604482ec6762493a596189aad0e1c30bb0a4b05048c524b354bf449077e58d6cb6f91bbd49e280f7\",\n"
+                        +
+                        "            \"verification\": "
+                        +
+                        "\"5521030ef96257401b803da5dd201233e2be828795672b775dd674d69df83f7aec1e36210327da12b5c40200e9f65569476bbff2218da4f32548ff43b6387ec1416a231ee821025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64210266b588e350ab63b850e55dbfed0feeda44410a30966341b371014b803a15af0721026ce35b29147ad09e4afe4ec4a7319095f08198fa8babbe3c56e970b143528d222103c089d7122b840a4935234e82e26ae5efd0c2acb627239dc9f207311337b6f2c12103fd95a9cb3098e6447d0de9f76cc97fd5e36830f9c7044457c15a0e81316bf28f57ae\"\n"
+                        +
                         "        },\n" +
                         "        \"confirmations\": 7878,\n" +
-                        "        \"nextblockhash\": \"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n" +
+                        "        \"nextblockhash\": "
+                        + "\"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n"
+                        +
                         "    }\n" +
                         "}"
         );
@@ -696,15 +809,19 @@ public class ResponseTest extends ResponseTester {
         NeoGetBlock getBlock = deserialiseResponse(NeoGetBlock.class);
         assertThat(getBlock.getBlock(), is(notNullValue()));
 
-        assertThat(getBlock.getBlock().getHash(), is("0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816"));
+        assertThat(getBlock.getBlock().getHash(),
+                is("0x498b16db3fba92448fac63caeecb91ce38cb4b565de7d717d473f0dd37a1e816"));
         assertThat(getBlock.getBlock().getSize(), is(1217L));
         assertThat(getBlock.getBlock().getVersion(), is(0));
-        assertThat(getBlock.getBlock().getPrevBlockHash(), is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
-        assertThat(getBlock.getBlock().getMerkleRootHash(), is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
+        assertThat(getBlock.getBlock().getPrevBlockHash(),
+                is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
+        assertThat(getBlock.getBlock().getMerkleRootHash(),
+                is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getNonce(), is("44ed38ca21ae8877"));
-        assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
+        assertThat(getBlock.getBlock().getNextConsensus(),
+                is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
         assertThat(getBlock.getBlock().getScript(), is(notNullValue()));
         assertThat(
                 getBlock.getBlock().getScript(),
@@ -719,7 +836,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlock.getBlock().getTransactions(), is(nullValue()));
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
-        assertThat(getBlock.getBlock().getNextBlockHash(), is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
+        assertThat(getBlock.getBlock().getNextBlockHash(),
+                is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
     }
 
 
@@ -729,13 +847,16 @@ public class ResponseTest extends ResponseTester {
                 "{\n"
                         + "  \"id\":67,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": \"00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000\"\n"
+                        + "  \"result\": "
+                        +
+                        "\"00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000\"\n"
                         + "}"
         );
 
         NeoGetRawBlock getRawBlock = deserialiseResponse(NeoGetRawBlock.class);
         assertThat(getRawBlock.getRawBlock(), is(notNullValue()));
-        assertThat(getRawBlock.getRawBlock(), is("00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000"));
+        assertThat(getRawBlock.getRawBlock(),
+                is("00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000"));
     }
 
     @Test
@@ -823,7 +944,9 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"txid\": \"0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",\n"
+                        + "      \"txid\": "
+                        + "\"0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6"
+                        + "\",\n"
                         + "      \"size\": 283,\n"
                         + "      \"type\": \"ContractTransaction\",\n"
                         + "      \"version\": 0,\n"
@@ -835,20 +958,24 @@ public class ResponseTest extends ResponseTester {
                         + "      ],\n"
                         + "      \"vin\": [\n"
                         + "           {\n"
-                        + "               \"txid\": \"0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff\",\n"
+                        + "               \"txid\": "
+                        + "\"0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff"
+                        + "\",\n"
                         + "               \"vout\": 0\n"
                         + "           }\n"
                         + "      ],\n"
                         + "      \"vout\": [\n"
                         + "           {\n"
                         + "               \"n\": 0,\n"
-                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+                        + "\",\n"
                         + "               \"value\": \"10\",\n"
                         + "               \"address\": \"AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ\"\n"
                         + "           },\n"
                         + "           {\n"
                         + "               \"n\": 1,\n"
-                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+                        + "\",\n"
                         + "               \"value\": \"99999990\",\n"
                         + "               \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
                         + "           }\n"
@@ -857,8 +984,13 @@ public class ResponseTest extends ResponseTester {
                         + "      \"net_fee\": \"0\",\n"
                         + "      \"scripts\": [\n"
                         + "           {\n"
-                        + "               \"invocation\": \"405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0\",\n"
-                        + "               \"verification\": \"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "               \"invocation\": "
+                        +
+                        "\"405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0\",\n"
+                        + "               \"verification\": "
+                        +
+                        "\"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac"
+                        + "\"\n"
                         + "           }\n"
                         + "      ]\n"
                         + "   }\n"
@@ -870,14 +1002,18 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 sendToAddress.getSendToAddress().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10",
+                                "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "99999990",
+                                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
                 )
         );
         assertThat(
                 sendToAddress.getSendToAddress().getInputs(),
                 hasItem(
-                        new TransactionInput("0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0)
+                        new TransactionInput(
+                                "0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff",
+                                0)
                 )
         );
         assertThat(
@@ -893,7 +1029,9 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"txid\": \"0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",\n"
+                        + "      \"txid\": "
+                        + "\"0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6"
+                        + "\",\n"
                         + "      \"size\": 283,\n"
                         + "      \"type\": \"ContractTransaction\",\n"
                         + "      \"version\": 0,\n"
@@ -905,20 +1043,24 @@ public class ResponseTest extends ResponseTester {
                         + "      ],\n"
                         + "      \"vin\": [\n"
                         + "           {\n"
-                        + "               \"txid\": \"0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff\",\n"
+                        + "               \"txid\": "
+                        + "\"0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff"
+                        + "\",\n"
                         + "               \"vout\": 0\n"
                         + "           }\n"
                         + "      ],\n"
                         + "      \"vout\": [\n"
                         + "           {\n"
                         + "               \"n\": 0,\n"
-                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+                        + "\",\n"
                         + "               \"value\": \"10\",\n"
                         + "               \"address\": \"AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ\"\n"
                         + "           },\n"
                         + "           {\n"
                         + "               \"n\": 1,\n"
-                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+                        + "\",\n"
                         + "               \"value\": \"99999990\",\n"
                         + "               \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
                         + "           }\n"
@@ -927,11 +1069,18 @@ public class ResponseTest extends ResponseTester {
                         + "      \"net_fee\": \"0\",\n"
                         + "      \"scripts\": [\n"
                         + "           {\n"
-                        + "               \"invocation\": \"405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0\",\n"
-                        + "               \"verification\": \"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "               \"invocation\": "
+                        +
+                        "\"405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0\",\n"
+                        + "               \"verification\": "
+                        +
+                        "\"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac"
+                        + "\"\n"
                         + "           }\n"
                         + "      ],\n"
-                        + "      \"blockhash\": \"0x0c7ec8f8f952d7206b8ef82b6997a5f9ce44a88b356d3ca42a2a29457c608387\",\n"
+                        + "      \"blockhash\": "
+                        + "\"0x0c7ec8f8f952d7206b8ef82b6997a5f9ce44a88b356d3ca42a2a29457c608387"
+                        + "\",\n"
                         + "      \"confirmations\": 200,\n"
                         + "      \"blocktime\": 1548704299\n"
                         + "   }\n"
@@ -959,20 +1108,25 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getTransaction.getTransaction().getAttributes(),
                 hasItem(
-                        new TransactionAttribute(TransactionAttributeUsageType.SCRIPT, "23ba2703c53263e8d6e522dc32203339dcd8eee9")
+                        new TransactionAttribute(TransactionAttributeUsageType.SCRIPT,
+                                "23ba2703c53263e8d6e522dc32203339dcd8eee9")
                 )
         );
         assertThat(
                 getTransaction.getTransaction().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "10", "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "99999990", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10",
+                                "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ"),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "99999990",
+                                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
                 )
         );
         assertThat(
                 getTransaction.getTransaction().getInputs(),
                 hasItem(
-                        new TransactionInput("0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff", 0)
+                        new TransactionInput(
+                                "0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff",
+                                0)
                 )
         );
         assertThat(
@@ -986,7 +1140,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getTransaction.getTransaction().getScripts(),
                 hasItems(
-                        new Script("405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0", "21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac")
+                        new Script(
+                                "405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d0",
+                                "21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac")
                 )
         );
         assertThat(
@@ -1009,7 +1165,9 @@ public class ResponseTest extends ResponseTester {
                 "{\n"
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": \"8000012023ba2703c53263e8d6e522dc32203339dcd8eee901ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b00000000295f83f83fc439f56e6e1fb062d89c6f538263d79b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500362634f286230023ba2703c53263e8d6e522dc32203339dcd8eee90141405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d02321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "  \"result\": "
+                        +
+                        "\"8000012023ba2703c53263e8d6e522dc32203339dcd8eee901ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b00000000295f83f83fc439f56e6e1fb062d89c6f538263d79b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500362634f286230023ba2703c53263e8d6e522dc32203339dcd8eee90141405797c43807e098a78014ae6c0e0f7b3c2565791dedc6753b9e821a0c3a565bdb5eb117ff5218be932b6f616f3d195c1417128b75e366589a83845a1a982c29d02321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
                         + "}"
         );
 
@@ -1102,7 +1260,9 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"txid\": \"0x5fd1d2d417a1b26404827672c49953f4d517ba3893954cc9f08daa3c231b4c8d\",\n"
+                        + "      \"txid\": "
+                        + "\"0x5fd1d2d417a1b26404827672c49953f4d517ba3893954cc9f08daa3c231b4c8d"
+                        + "\",\n"
                         + "      \"size\": 343,\n"
                         + "      \"type\": \"ContractTransaction\",\n"
                         + "      \"version\": 0,\n"
@@ -1114,26 +1274,31 @@ public class ResponseTest extends ResponseTester {
                         + "      ],\n"
                         + "      \"vin\": [\n"
                         + "           {\n"
-                        + "               \"txid\": \"0xe728209ebbacf28c956d695b7f03221fe6760b7aa8c52fd34656bb56c8ae70da\",\n"
+                        + "               \"txid\": "
+                        + "\"0xe728209ebbacf28c956d695b7f03221fe6760b7aa8c52fd34656bb56c8ae70da"
+                        + "\",\n"
                         + "               \"vout\": 2\n"
                         + "           }\n"
                         + "      ],\n"
                         + "      \"vout\": [\n"
                         + "           {\n"
                         + "               \"n\": 0,\n"
-                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+                        + "\",\n"
                         + "               \"value\": \"100\",\n"
                         + "               \"address\": \"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"\n"
                         + "           },\n"
                         + "           {\n"
                         + "               \"n\": 1,\n"
-                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+                        + "\",\n"
                         + "               \"value\": \"10\",\n"
                         + "               \"address\": \"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"\n"
                         + "           },\n"
                         + "           {\n"
                         + "               \"n\": 2,\n"
-                        + "               \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
+                        + "               \"asset\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+                        + "\",\n"
                         + "               \"value\": \"99999550\",\n"
                         + "               \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
                         + "           }\n"
@@ -1142,8 +1307,13 @@ public class ResponseTest extends ResponseTester {
                         + "      \"net_fee\": \"0\",\n"
                         + "      \"scripts\": [\n"
                         + "           {\n"
-                        + "               \"invocation\": \"4038a01e2354e0f80513cad7c0fe6a5e4bb92e34ebe9b4143e7ef1a0e03a2f56513277d9cf65483bd3286c4a357ae23cc36e4fbd3e19ad356a42ce90dee7ac232d\",\n"
-                        + "               \"verification\": \"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac\"\n"
+                        + "               \"invocation\": "
+                        +
+                        "\"4038a01e2354e0f80513cad7c0fe6a5e4bb92e34ebe9b4143e7ef1a0e03a2f56513277d9cf65483bd3286c4a357ae23cc36e4fbd3e19ad356a42ce90dee7ac232d\",\n"
+                        + "               \"verification\": "
+                        +
+                        "\"21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac"
+                        + "\"\n"
                         + "           }\n"
                         + "      ]\n"
                         + "   }\n"
@@ -1155,15 +1325,20 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 sendMany.getSendMany().getOutputs(),
                 hasItems(
-                        new TransactionOutput(0, prependHexPrefix(NEOAsset.HASH_ID), "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
-                        new TransactionOutput(1, prependHexPrefix(NEOAsset.HASH_ID), "10", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
-                        new TransactionOutput(2, prependHexPrefix(NEOAsset.HASH_ID), "99999550", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100",
+                                "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10",
+                                "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()), "99999550",
+                                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
                 )
         );
         assertThat(
                 sendMany.getSendMany().getInputs(),
                 hasItem(
-                        new TransactionInput("0xe728209ebbacf28c956d695b7f03221fe6760b7aa8c52fd34656bb56c8ae70da", 2)
+                        new TransactionInput(
+                                "0xe728209ebbacf28c956d695b7f03221fe6760b7aa8c52fd34656bb56c8ae70da",
+                                2)
                 )
         );
         assertThat(
@@ -1212,7 +1387,8 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
+                        + "      \"script\": "
+                        + "\"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
                         + "      \"state\": \"HALT, BREAK\",\n"
                         + "      \"gas_consumed\": \"2.489\",\n"
                         + "      \"stack\": ["
@@ -1236,19 +1412,23 @@ public class ResponseTest extends ResponseTester {
                         + "               ]"
                         + "           }"
                         + "      ],\n"
-                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
+                        + "      \"tx\": "
+                        +
+                        "\"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
                         + "   }\n"
                         + "}"
         );
 
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
         assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
-        assertThat(invokeFunction.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
         assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
         Map<StackItem, StackItem> stackMap = new HashMap<>();
-        stackMap.put(new ByteArrayStackItem(Numeric.hexStringToByteArray("6964")), new IntegerStackItem(new BigInteger("1")));
+        stackMap.put(new ByteArrayStackItem(Numeric.hexStringToByteArray("6964")),
+                new IntegerStackItem(new BigInteger("1")));
         assertThat(
                 invokeFunction.getInvocationResult().getStack(),
                 hasItems(
@@ -1257,7 +1437,8 @@ public class ResponseTest extends ResponseTester {
                 )
         );
 
-        assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
+        assertThat(invokeFunction.getInvocationResult().getTx(),
+                is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
     }
 
     @Test
@@ -1267,22 +1448,27 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
+                        + "      \"script\": "
+                        + "\"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
                         + "      \"state\": \"HALT, BREAK\",\n"
                         + "      \"gas_consumed\": \"2.489\",\n"
                         + "      \"stack\": [],\n"
-                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
+                        + "      \"tx\": "
+                        +
+                        "\"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
                         + "   }\n"
                         + "}"
         );
 
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
         assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
-        assertThat(invokeFunction.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
         assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
-        assertThat(invokeFunction.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
+        assertThat(invokeFunction.getInvocationResult().getTx(),
+                is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
     }
 
     @Test
@@ -1292,7 +1478,8 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"script\": \"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n"
+                        + "      \"script\": "
+                        + "\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n"
                         + "      \"state\": \"HALT, BREAK\",\n"
                         + "      \"gas_consumed\": \"0.161\",\n"
                         + "      \"stack\": ["
@@ -1301,14 +1488,17 @@ public class ResponseTest extends ResponseTester {
                         + "               \"value\": \"4e45503520474153\"\n"
                         + "           }"
                         + "      ],\n"
-                        + "      \"tx\": \"d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000\"\n"
+                        + "      \"tx\": "
+                        +
+                        "\"d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000\"\n"
                         + "   }\n"
                         + "}"
         );
 
         NeoInvokeScript invokeScript = deserialiseResponse(NeoInvokeScript.class);
         assertThat(invokeScript.getInvocationResult(), is(notNullValue()));
-        assertThat(invokeScript.getInvocationResult().getScript(), is("00046e616d656724058e5e1b6008847cd662728549088a9ee82191"));
+        assertThat(invokeScript.getInvocationResult().getScript(),
+                is("00046e616d656724058e5e1b6008847cd662728549088a9ee82191"));
         assertThat(invokeScript.getInvocationResult().getState(), is("HALT, BREAK"));
         assertThat(invokeScript.getInvocationResult().getGasConsumed(), is("0.161"));
         assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
@@ -1318,7 +1508,8 @@ public class ResponseTest extends ResponseTester {
                         new ByteArrayStackItem(Numeric.hexStringToByteArray("4e45503520474153"))
                 )
         );
-        assertThat(invokeScript.getInvocationResult().getTx(), is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
+        assertThat(invokeScript.getInvocationResult().getTx(),
+                is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
     }
 
     @Test
@@ -1330,7 +1521,9 @@ public class ResponseTest extends ResponseTester {
                         + "  \"result\": {\n"
                         + "      \"version\": 0,\n"
                         + "      \"hash\": \"0xdc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f\",\n"
-                        + "      \"script\": \"5fc56b6c766b00527ac46c766b51527ac46107576f6f6c6f6e676c766b52527ac403574e476c766b53527ac4006c766b54527ac4210354ae498221046c666efebbaee9bd0eb4823469c98e748494a92a71f346b1a6616c766b55527ac46c766b00c3066465706c6f79876c766b56527ac46c766b56c36416006c766b55c36165f2026c766b57527ac462d8016c766b55c36165d801616c766b00c30b746f74616c537570706c79876c766b58527ac46c766b58c36440006168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746c766b57527ac46270016c766b00c3046e616d65876c766b59527ac46c766b59c36412006c766b52c36c766b57527ac46247016c766b00c30673796d626f6c876c766b5a527ac46c766b5ac36412006c766b53c36c766b57527ac4621c016c766b00c308646563696d616c73876c766b5b527ac46c766b5bc36412006c766b54c36c766b57527ac462ef006c766b00c30962616c616e63654f66876c766b5c527ac46c766b5cc36440006168164e656f2e53746f726167652e476574436f6e746578746c766b51c351c3617c680f4e656f2e53746f726167652e4765746c766b57527ac46293006c766b51c300c36168184e656f2e52756e74696d652e436865636b5769746e657373009c6c766b5d527ac46c766b5dc3640e00006c766b57527ac46255006c766b00c3087472616e73666572876c766b5e527ac46c766b5ec3642c006c766b51c300c36c766b51c351c36c766b51c352c36165d40361527265c9016c766b57527ac4620e00006c766b57527ac46203006c766b57c3616c756653c56b6c766b00527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746165700351936c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361651103615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746165f40251936c766b52527ac46168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b52c361659302615272680f4e656f2e53746f726167652e50757461616c756653c56b6c766b00527ac461516c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361654002615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b51c361650202615272680f4e656f2e53746f726167652e50757461516c766b52527ac46203006c766b52c3616c756659c56b6c766b00527ac46c766b51527ac46c766b52527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746c766b53527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b51c3617c680f4e656f2e53746f726167652e4765746c766b54527ac46c766b53c3616576016c766b52c3946c766b55527ac46c766b54c3616560016c766b52c3936c766b56527ac46c766b55c300a2640d006c766b52c300a2620400006c766b57527ac46c766b57c364ec00616168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b55c36165d800615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e746578746c766b51c36c766b56c361659c00615272680f4e656f2e53746f726167652e5075746155c57600135472616e73666572205375636365737366756cc476516c766b00c3c476526c766b51c3c476536c766b52c3c476546168184e656f2e426c6f636b636861696e2e476574486569676874c46168124e656f2e52756e74696d652e4e6f7469667961516c766b58527ac4620e00006c766b58527ac46203006c766b58c3616c756653c56b6c766b00527ac4616c766b00c36c766b51527ac46c766b51c36c766b52527ac46203006c766b52c3616c756653c56b6c766b00527ac461516c766b00c36a527a527ac46c766b51c36c766b52527ac46203006c766b52c3616c7566\",\n"
+                        + "      \"script\": "
+                        +
+                        "\"5fc56b6c766b00527ac46c766b51527ac46107576f6f6c6f6e676c766b52527ac403574e476c766b53527ac4006c766b54527ac4210354ae498221046c666efebbaee9bd0eb4823469c98e748494a92a71f346b1a6616c766b55527ac46c766b00c3066465706c6f79876c766b56527ac46c766b56c36416006c766b55c36165f2026c766b57527ac462d8016c766b55c36165d801616c766b00c30b746f74616c537570706c79876c766b58527ac46c766b58c36440006168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746c766b57527ac46270016c766b00c3046e616d65876c766b59527ac46c766b59c36412006c766b52c36c766b57527ac46247016c766b00c30673796d626f6c876c766b5a527ac46c766b5ac36412006c766b53c36c766b57527ac4621c016c766b00c308646563696d616c73876c766b5b527ac46c766b5bc36412006c766b54c36c766b57527ac462ef006c766b00c30962616c616e63654f66876c766b5c527ac46c766b5cc36440006168164e656f2e53746f726167652e476574436f6e746578746c766b51c351c3617c680f4e656f2e53746f726167652e4765746c766b57527ac46293006c766b51c300c36168184e656f2e52756e74696d652e436865636b5769746e657373009c6c766b5d527ac46c766b5dc3640e00006c766b57527ac46255006c766b00c3087472616e73666572876c766b5e527ac46c766b5ec3642c006c766b51c300c36c766b51c351c36c766b51c352c36165d40361527265c9016c766b57527ac4620e00006c766b57527ac46203006c766b57c3616c756653c56b6c766b00527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746165700351936c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361651103615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746165f40251936c766b52527ac46168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b52c361659302615272680f4e656f2e53746f726167652e50757461616c756653c56b6c766b00527ac461516c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361654002615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b51c361650202615272680f4e656f2e53746f726167652e50757461516c766b52527ac46203006c766b52c3616c756659c56b6c766b00527ac46c766b51527ac46c766b52527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746c766b53527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b51c3617c680f4e656f2e53746f726167652e4765746c766b54527ac46c766b53c3616576016c766b52c3946c766b55527ac46c766b54c3616560016c766b52c3936c766b56527ac46c766b55c300a2640d006c766b52c300a2620400006c766b57527ac46c766b57c364ec00616168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b55c36165d800615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e746578746c766b51c36c766b56c361659c00615272680f4e656f2e53746f726167652e5075746155c57600135472616e73666572205375636365737366756cc476516c766b00c3c476526c766b51c3c476536c766b52c3c476546168184e656f2e426c6f636b636861696e2e476574486569676874c46168124e656f2e52756e74696d652e4e6f7469667961516c766b58527ac4620e00006c766b58527ac46203006c766b58c3616c756653c56b6c766b00527ac4616c766b00c36c766b51527ac46c766b51c36c766b52527ac46203006c766b52c3616c756653c56b6c766b00527ac461516c766b00c36a527a527ac46c766b51c36c766b52527ac46203006c766b52c3616c7566\",\n"
                         + "      \"parameters\": ["
                         + "           \"ByteArray\"\n"
                         + "      ],\n"
@@ -1351,18 +1544,23 @@ public class ResponseTest extends ResponseTester {
         NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
         assertThat(getContractState.getContractState(), is(notNullValue()));
         assertThat(getContractState.getContractState().getVersion(), is(0));
-        assertThat(getContractState.getContractState().getHash(), is("0xdc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f"));
-        assertThat(getContractState.getContractState().getScript(), is("5fc56b6c766b00527ac46c766b51527ac46107576f6f6c6f6e676c766b52527ac403574e476c766b53527ac4006c766b54527ac4210354ae498221046c666efebbaee9bd0eb4823469c98e748494a92a71f346b1a6616c766b55527ac46c766b00c3066465706c6f79876c766b56527ac46c766b56c36416006c766b55c36165f2026c766b57527ac462d8016c766b55c36165d801616c766b00c30b746f74616c537570706c79876c766b58527ac46c766b58c36440006168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746c766b57527ac46270016c766b00c3046e616d65876c766b59527ac46c766b59c36412006c766b52c36c766b57527ac46247016c766b00c30673796d626f6c876c766b5a527ac46c766b5ac36412006c766b53c36c766b57527ac4621c016c766b00c308646563696d616c73876c766b5b527ac46c766b5bc36412006c766b54c36c766b57527ac462ef006c766b00c30962616c616e63654f66876c766b5c527ac46c766b5cc36440006168164e656f2e53746f726167652e476574436f6e746578746c766b51c351c3617c680f4e656f2e53746f726167652e4765746c766b57527ac46293006c766b51c300c36168184e656f2e52756e74696d652e436865636b5769746e657373009c6c766b5d527ac46c766b5dc3640e00006c766b57527ac46255006c766b00c3087472616e73666572876c766b5e527ac46c766b5ec3642c006c766b51c300c36c766b51c351c36c766b51c352c36165d40361527265c9016c766b57527ac4620e00006c766b57527ac46203006c766b57c3616c756653c56b6c766b00527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746165700351936c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361651103615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746165f40251936c766b52527ac46168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b52c361659302615272680f4e656f2e53746f726167652e50757461616c756653c56b6c766b00527ac461516c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361654002615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b51c361650202615272680f4e656f2e53746f726167652e50757461516c766b52527ac46203006c766b52c3616c756659c56b6c766b00527ac46c766b51527ac46c766b52527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746c766b53527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b51c3617c680f4e656f2e53746f726167652e4765746c766b54527ac46c766b53c3616576016c766b52c3946c766b55527ac46c766b54c3616560016c766b52c3936c766b56527ac46c766b55c300a2640d006c766b52c300a2620400006c766b57527ac46c766b57c364ec00616168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b55c36165d800615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e746578746c766b51c36c766b56c361659c00615272680f4e656f2e53746f726167652e5075746155c57600135472616e73666572205375636365737366756cc476516c766b00c3c476526c766b51c3c476536c766b52c3c476546168184e656f2e426c6f636b636861696e2e476574486569676874c46168124e656f2e52756e74696d652e4e6f7469667961516c766b58527ac4620e00006c766b58527ac46203006c766b58c3616c756653c56b6c766b00527ac4616c766b00c36c766b51527ac46c766b51c36c766b52527ac46203006c766b52c3616c756653c56b6c766b00527ac461516c766b00c36a527a527ac46c766b51c36c766b52527ac46203006c766b52c3616c7566"));
+        assertThat(getContractState.getContractState().getHash(),
+                is("0xdc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f"));
+        assertThat(getContractState.getContractState().getScript(),
+                is("5fc56b6c766b00527ac46c766b51527ac46107576f6f6c6f6e676c766b52527ac403574e476c766b53527ac4006c766b54527ac4210354ae498221046c666efebbaee9bd0eb4823469c98e748494a92a71f346b1a6616c766b55527ac46c766b00c3066465706c6f79876c766b56527ac46c766b56c36416006c766b55c36165f2026c766b57527ac462d8016c766b55c36165d801616c766b00c30b746f74616c537570706c79876c766b58527ac46c766b58c36440006168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746c766b57527ac46270016c766b00c3046e616d65876c766b59527ac46c766b59c36412006c766b52c36c766b57527ac46247016c766b00c30673796d626f6c876c766b5a527ac46c766b5ac36412006c766b53c36c766b57527ac4621c016c766b00c308646563696d616c73876c766b5b527ac46c766b5bc36412006c766b54c36c766b57527ac462ef006c766b00c30962616c616e63654f66876c766b5c527ac46c766b5cc36440006168164e656f2e53746f726167652e476574436f6e746578746c766b51c351c3617c680f4e656f2e53746f726167652e4765746c766b57527ac46293006c766b51c300c36168184e656f2e52756e74696d652e436865636b5769746e657373009c6c766b5d527ac46c766b5dc3640e00006c766b57527ac46255006c766b00c3087472616e73666572876c766b5e527ac46c766b5ec3642c006c766b51c300c36c766b51c351c36c766b51c352c36165d40361527265c9016c766b57527ac4620e00006c766b57527ac46203006c766b57c3616c756653c56b6c766b00527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746165700351936c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361651103615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746165f40251936c766b52527ac46168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b52c361659302615272680f4e656f2e53746f726167652e50757461616c756653c56b6c766b00527ac461516c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361654002615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b51c361650202615272680f4e656f2e53746f726167652e50757461516c766b52527ac46203006c766b52c3616c756659c56b6c766b00527ac46c766b51527ac46c766b52527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746c766b53527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b51c3617c680f4e656f2e53746f726167652e4765746c766b54527ac46c766b53c3616576016c766b52c3946c766b55527ac46c766b54c3616560016c766b52c3936c766b56527ac46c766b55c300a2640d006c766b52c300a2620400006c766b57527ac46c766b57c364ec00616168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b55c36165d800615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e746578746c766b51c36c766b56c361659c00615272680f4e656f2e53746f726167652e5075746155c57600135472616e73666572205375636365737366756cc476516c766b00c3c476526c766b51c3c476536c766b52c3c476546168184e656f2e426c6f636b636861696e2e476574486569676874c46168124e656f2e52756e74696d652e4e6f7469667961516c766b58527ac4620e00006c766b58527ac46203006c766b58c3616c756653c56b6c766b00527ac4616c766b00c36c766b51527ac46c766b51c36c766b52527ac46203006c766b52c3616c756653c56b6c766b00527ac461516c766b00c36a527a527ac46c766b51c36c766b52527ac46203006c766b52c3616c7566"));
         assertThat(getContractState.getContractState().getContractParameters(), hasSize(1));
-        assertThat(getContractState.getContractState().getContractParameters(), hasItems(ContractParameterType.BYTE_ARRAY));
-        assertThat(getContractState.getContractState().getReturnContractType(), is(ContractParameterType.BYTE_ARRAY));
+        assertThat(getContractState.getContractState().getContractParameters(),
+                hasItems(ContractParameterType.BYTE_ARRAY));
+        assertThat(getContractState.getContractState().getReturnContractType(),
+                is(ContractParameterType.BYTE_ARRAY));
         assertThat(getContractState.getContractState().getName(), is("Contract Name"));
         assertThat(getContractState.getContractState().getCodeVersion(), is("0.0.1"));
         assertThat(getContractState.getContractState().getAuthor(), is("Author Name"));
         assertThat(getContractState.getContractState().getEmail(), is("blah@blah.com"));
         assertThat(getContractState.getContractState().getDescription(), is("GO NEO!!!"));
         assertThat(getContractState.getContractState().getProperties(), is(notNullValue()));
-        assertThat(getContractState.getContractState().getProperties(), is(new NeoGetContractState.ContractStateProperties(true, false)));
+        assertThat(getContractState.getContractState().getProperties(),
+                is(new NeoGetContractState.ContractStateProperties(true, false)));
     }
 
     @Test
@@ -1392,12 +1590,14 @@ public class ResponseTest extends ResponseTester {
                         + "  \"result\": {\n"
                         + "      \"balance\": [\n"
                         + "           {\n"
-                        + "               \"asset_hash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n"
+                        + "               \"asset_hash\": "
+                        + "\"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n"
                         + "               \"amount\": \"50000000000\",\n"
                         + "               \"last_updated_block\": 251604\n"
                         + "           },\n"
                         + "           {\n"
-                        + "               \"asset_hash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n"
+                        + "               \"asset_hash\": "
+                        + "\"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n"
                         + "               \"amount\": \"50000000000\",\n"
                         + "               \"last_updated_block\": 251600\n"
                         + "           }\n"
@@ -1452,7 +1652,10 @@ public class ResponseTest extends ResponseTester {
                         "  \"jsonrpc\": \"2.0\",\n" +
                         "  \"id\": 1,\n" +
                         "  \"result\": {\n" +
-                        "    \"txid\": \"0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\",\n" +
+                        "    \"txid\": "
+                        + "\"0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b"
+                        + "\",\n"
+                        +
                         "    \"executions\": [\n" +
                         "      {\n" +
                         "        \"trigger\": \"Application\",\n" +
@@ -1467,7 +1670,9 @@ public class ResponseTest extends ResponseTester {
                         "        ],\n" +
                         "        \"notifications\": [\n" +
                         "          {\n" +
-                        "            \"contract\": \"0x43fa0777cf984faea46b954ec640a266bcbc3319\",\n" +
+                        "            \"contract\": \"0x43fa0777cf984faea46b954ec640a266bcbc3319"
+                        + "\",\n"
+                        +
                         "            \"state\": {\n" +
                         "              \"type\": \"Array\",\n" +
                         "              \"value\": [\n" +
@@ -1477,7 +1682,9 @@ public class ResponseTest extends ResponseTester {
                         "                },\n" +
                         "                {\n" +
                         "                  \"type\": \"ByteArray\",\n" +
-                        "                  \"value\": \"10d46912932d6ebcd1d3c4a27a1a8ea77e68ac95\"\n" +
+                        "                  \"value\": "
+                        + "\"10d46912932d6ebcd1d3c4a27a1a8ea77e68ac95\"\n"
+                        +
                         "                },\n" +
                         "                {\n" +
                         "                  \"type\": \"ByteArray\",\n" +
@@ -1487,7 +1694,9 @@ public class ResponseTest extends ResponseTester {
                         "            }\n" +
                         "          },\n" +
                         "          {\n" +
-                        "             \"contract\": \"0xef182f4977544adb207507b0c8c6c3ec1749c7df\",\n" +
+                        "             \"contract\": \"0xef182f4977544adb207507b0c8c6c3ec1749c7df"
+                        + "\",\n"
+                        +
                         "             \"state\": {\n" +
                         "               \"type\": \"Map\",\n" +
                         "               \"value\": [\n" +
@@ -1522,10 +1731,12 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetApplicationLog applicationLog = deserialiseResponse(NeoGetApplicationLog.class);
-        assertThat(applicationLog.getApplicationLog().getTransactionId(), is("0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b"));
+        assertThat(applicationLog.getApplicationLog().getTransactionId(),
+                is("0x420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b"));
         assertThat(applicationLog.getApplicationLog().getExecutions(), hasSize(1));
 
-        NeoApplicationLog.Execution execution = applicationLog.getApplicationLog().getExecutions().get(0);
+        NeoApplicationLog.Execution execution = applicationLog.getApplicationLog().getExecutions()
+                .get(0);
 
         assertThat(execution.getTrigger(), is("Application"));
         assertThat(execution.getContract(), is("0x857477dd9457d09aff11fc4a791a247a42dbb17f"));
@@ -1536,7 +1747,8 @@ public class ResponseTest extends ResponseTester {
 
         List<NeoApplicationLog.Notification> notifications = execution.getNotifications();
 
-        assertThat(notifications.get(0).getContract(), is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
+        assertThat(notifications.get(0).getContract(),
+                is("0x43fa0777cf984faea46b954ec640a266bcbc3319"));
         assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
         assertTrue(notifications.get(0).getState() instanceof ArrayStackItem);
 
@@ -1550,7 +1762,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(address, is("AHJrv6y6L6k9PfJvY7vtX3XTAmEprsd3Xn"));
         assertThat(amount, is(BigInteger.valueOf(177)));
 
-        assertThat(notifications.get(1).getContract(), is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
+        assertThat(notifications.get(1).getContract(),
+                is("0xef182f4977544adb207507b0c8c6c3ec1749c7df"));
         assertTrue(notifications.get(1).getState() instanceof MapStackItem);
         assertThat(notifications.get(1).getState().getType(), is(StackItemType.MAP));
         MapStackItem map = notifications.get(1).getState().asMap();
@@ -1566,39 +1779,40 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testListPlugins() {
         buildResponse(
-            "{\n"
-                + "    \"jsonrpc\": \"2.0\",\n"
-                + "    \"id\": 1,\n"
-                + "    \"result\": [\n"
-                + "        {\n"
-                + "            \"name\": \"ApplicationLogs\",\n"
-                + "            \"version\": \"2.10.2.0\",\n"
-                + "            \"interfaces\": [\n"
-                + "                \"IRpcPlugin\",\n"
-                + "                \"IPersistencePlugin\"\n"
-                + "            ]\n"
-                + "        },\n"
-                + "        {\n"
-                + "            \"name\": \"RpcSystemAssetTrackerPlugin\",\n"
-                + "            \"version\": \"2.10.2.0\",\n"
-                + "            \"interfaces\": [\n"
-                + "                \"IPersistencePlugin\",\n"
-                + "                \"IRpcPlugin\"\n"
-                + "            ]\n"
-                + "        },\n"
-                + "        {\n"
-                + "            \"name\": \"SimplePolicyPlugin\",\n"
-                + "            \"version\": \"2.10.2.0\",\n"
-                + "            \"interfaces\": [\n"
-                + "                \"ILogPlugin\",\n"
-                + "                \"IPolicyPlugin\"\n"
-                + "            ]\n"
-                + "        }\n"
-                + "    ]\n"
-                + "}"
+                "{\n"
+                        + "    \"jsonrpc\": \"2.0\",\n"
+                        + "    \"id\": 1,\n"
+                        + "    \"result\": [\n"
+                        + "        {\n"
+                        + "            \"name\": \"ApplicationLogs\",\n"
+                        + "            \"version\": \"2.10.2.0\",\n"
+                        + "            \"interfaces\": [\n"
+                        + "                \"IRpcPlugin\",\n"
+                        + "                \"IPersistencePlugin\"\n"
+                        + "            ]\n"
+                        + "        },\n"
+                        + "        {\n"
+                        + "            \"name\": \"RpcSystemAssetTrackerPlugin\",\n"
+                        + "            \"version\": \"2.10.2.0\",\n"
+                        + "            \"interfaces\": [\n"
+                        + "                \"IPersistencePlugin\",\n"
+                        + "                \"IRpcPlugin\"\n"
+                        + "            ]\n"
+                        + "        },\n"
+                        + "        {\n"
+                        + "            \"name\": \"SimplePolicyPlugin\",\n"
+                        + "            \"version\": \"2.10.2.0\",\n"
+                        + "            \"interfaces\": [\n"
+                        + "                \"ILogPlugin\",\n"
+                        + "                \"IPolicyPlugin\"\n"
+                        + "            ]\n"
+                        + "        }\n"
+                        + "    ]\n"
+                        + "}"
         );
 
-        List<NeoListPlugins.Plugin> plugins = deserialiseResponse(NeoListPlugins.class).getPlugins();
+        List<NeoListPlugins.Plugin> plugins = deserialiseResponse(NeoListPlugins.class)
+                .getPlugins();
         assertNotNull(plugins);
         assertEquals(3, plugins.size());
 
@@ -1611,7 +1825,8 @@ public class ResponseTest extends ResponseTester {
         assertEquals("IPersistencePlugin", plugin.getInterfaces().get(1));
 
         plugin = plugins.get(1);
-        assertEquals(NodePluginType.RPC_SYSTEM_ASSET_TRACKER, NodePluginType.valueOfName(plugin.getName()));
+        assertEquals(NodePluginType.RPC_SYSTEM_ASSET_TRACKER,
+                NodePluginType.valueOfName(plugin.getName()));
         assertEquals("2.10.2.0", plugin.getVersion());
         assertNotNull(plugin.getInterfaces());
         assertEquals(2, plugin.getInterfaces().size());

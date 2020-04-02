@@ -1,19 +1,18 @@
 package io.neow3j.protocol;
 
-import io.neow3j.model.types.NEOAsset;
+import static io.neow3j.protocol.TestHelper.NEO_HASH;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import org.hamcrest.Matcher;
-import org.junit.Before;
-import org.testcontainers.containers.GenericContainer;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.testcontainers.containers.GenericContainer;
 
 abstract class Neow3jIntegrationTest {
 
@@ -87,7 +86,7 @@ abstract class Neow3jIntegrationTest {
         private Callable<BigDecimal> callableGetBalance() {
             return () -> {
                 try {
-                    return new BigDecimal(super.getBalance(NEOAsset.HASH_ID).send()
+                    return new BigDecimal(super.getBalance(NEO_HASH.toString()).send()
                             .getBalance().getBalance());
                 } catch (IOException e) {
                     return BigDecimal.ZERO;

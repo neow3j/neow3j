@@ -18,7 +18,7 @@ import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
-import io.neow3j.wallet.exceptions.AccountException;
+import io.neow3j.wallet.exceptions.AccountStateException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,13 +36,14 @@ public class Invocation {
         this.transaction = builder.tx;
     }
 
-    public Invocation send() throws IOException, ErrorResponseException {
-        NeoSendRawTransaction response =
-                neow.sendRawTransaction(Numeric.toHexString(transaction.toArray())).send();
+    public String send() throws IOException, ErrorResponseException {
+        String hex = Numeric.toHexString(transaction.toArray());
+        NeoSendRawTransaction response = neow.sendRawTransaction(hex).send();
         response.throwOnError();
-        // At this point we don't care if the invocation finished in a successful VM state. An
-        // exception is only thrown if the node responds with an error.
-        return this;
+        return "";
+        // TODO: Adapt as soon as JSON-RPC implementation is adapted to Neo 3.
+        // The new return type of the `sendrawtransaction` RPC call in Neo 3 is the transaction hash.
+        // return response.getResult();
     }
 
     // TODO: Adapt, so that signatures of all the cosigners are created.
@@ -59,7 +60,7 @@ public class Invocation {
             Account sendingAcc = this.wallet.getAccount(this.transaction.getSender());
             this.transaction.addWitness(
                     Witness.createWitness(getTransactionForSigning(), sendingAcc.getECKeyPair()));
-        } catch (AccountException e) {
+        } catch (AccountStateException e) {
             throw new InvocationConfigurationException("Cannot automatically sign with given "
                     + "account. The account object needs a decrypted private key.");
         }
@@ -230,7 +231,7 @@ public class Invocation {
                 // If sender is not set explicitly set it to the default account of the wallet.
                 this.txBuilder.sender(this.wallet.getDefaultAccount().getScriptHash());
             }
-            if (this.txBuilder.getCosigners().isEmpty()) {
+            if (this.txBuilder.getCosigners().isEmpty() || !senderCosignerExists()) {
                 // Set the standard cosigner if none has been specified.
                 this.txBuilder.cosigners(Cosigner.calledByEntry(this.txBuilder.getSender()));
             }
@@ -241,6 +242,11 @@ public class Invocation {
 
             this.tx = this.txBuilder.build();
             return new Invocation(this);
+        }
+
+        private boolean senderCosignerExists() {
+            return this.txBuilder.getCosigners().stream()
+                    .anyMatch(c -> c.getAccount().equals(this.txBuilder.getSender()));
         }
 
         private long fetchCurrentBlockNr() throws IOException {

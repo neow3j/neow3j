@@ -9,21 +9,25 @@ import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
+ * // TODO: Update class docs.
  * <p>NEO wallet file management. For reference, refer to
  * <a href="https://github.com/neo-project/proposals/blob/master/nep-6.mediawiki">
  * Wallet Standards (NEP-6)</a> or the
@@ -33,17 +37,13 @@ import java.util.stream.Collectors;
 public class Wallet {
 
     private static final String DEFAULT_WALLET_NAME = "neow3jWallet";
-
-    public static final String CURRENT_VERSION = "1.0";
-
+    public static final String CURRENT_VERSION = "3.0";
     public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private String name;
-
     private String version;
-
-    private List<Account> accounts = new ArrayList<>();
-
+    private Map<ScriptHash, Account> accounts = new HashMap<>();
+    private ScriptHash defaultAccount;
     private ScryptParams scryptParams;
 
     static {
@@ -57,7 +57,9 @@ public class Wallet {
         this.name = builder.name;
         this.version = builder.version;
         this.scryptParams = builder.scryptParams;
-        this.accounts = builder.accounts;
+        this.accounts = builder.accounts.stream().collect(
+                Collectors.toMap(Account::getScriptHash, Function.identity()));
+        this.defaultAccount = builder.defaultAccount;
     }
 
     public String getName() {
@@ -69,19 +71,24 @@ public class Wallet {
     }
 
     public List<Account> getAccounts() {
-        return accounts;
+        return accounts.entrySet().stream()
+                .sorted(Entry.comparingByKey())
+                .map(Entry::getValue)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Sets the account at the given index to be the default account. The previous default account
-     * is unset.
+     * Sets the account with the given script hash to the default account of this wallet.
      *
-     * @param index the index of the new default account.
+     * @param accountScriptHash The new default account.
+     * @throws AccountStateException if the given account is not in this wallet.
      */
-    public void setDefaultAccount(int index) {
-        for (int i = 0; i < accounts.size(); i++) {
-            accounts.get(i).setIsDefault(i == index);
+    public void setDefaultAccount(ScriptHash accountScriptHash) throws AccountStateException {
+        if (!this.accounts.containsKey(accountScriptHash)) {
+            throw new AccountStateException("Wallet did not contain the account with script hash "
+                    + accountScriptHash.toString() + ".");
         }
+        this.defaultAccount = accountScriptHash;
     }
 
     public ScryptParams getScryptParams() {
@@ -89,9 +96,11 @@ public class Wallet {
     }
 
     public Account getDefaultAccount() {
-        return this.accounts.stream().filter(Account::isDefault)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No default account found."));
+        if (this.defaultAccount == null) {
+            throw new AccountStateException("No default account was set. Make sure that the wallet "
+                    + "has a default account.");
+        }
+        return this.accounts.get(defaultAccount);
     }
 
     public void setName(String name) {
@@ -103,17 +112,18 @@ public class Wallet {
     }
 
     /**
-     * Adds the given account to this wallet.
+     * Adds the given account to this wallet if it doesn't contain an account with the same
+     * address.
      *
      * @param account The account to add.
-     * @return true if the account was added, false if an account with that address was already in
-     * the wallet.
+     * @return true if the account was added, false if an account with the same address was already
+     * in the wallet.
      */
     public boolean addAccount(Account account) {
-        if (accounts.stream().anyMatch(acc -> acc.getAddress().equals(account.getAddress()))) {
+        if (this.accounts.containsKey(account.getScriptHash())) {
             return false;
         }
-        accounts.add(account);
+        this.accounts.put(account.getScriptHash(), account);
         return true;
     }
 
@@ -124,48 +134,27 @@ public class Wallet {
      * @return true if an account was removed, false if no account with the given address was found.
      */
     public boolean removeAccount(String address) {
-        return accounts.removeIf(acc -> acc.getAddress().equals(address));
+        return accounts.remove(ScriptHash.fromAddress(address)) != null;
     }
 
     public void decryptAllAccounts(String password)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
-        for (Account acct : accounts) {
-            acct.decryptPrivateKey(password, scryptParams);
+        for (Entry<ScriptHash, Account> e : accounts.entrySet()) {
+            e.getValue().decryptPrivateKey(password, scryptParams);
         }
     }
 
     public void encryptAllAccounts(String password) throws CipherException {
-
-        for (Account acct : accounts) {
-            acct.encryptPrivateKey(password, scryptParams);
+        for (Entry<ScriptHash, Account> e : accounts.entrySet()) {
+            e.getValue().encryptPrivateKey(password, scryptParams);
         }
-    }
-
-    // TODO 16.03.20 claude: Write unit test.
-    public Map<ScriptHash, BigDecimal> getBalances() {
-        Map<ScriptHash, BigDecimal> accuMap = new HashMap<>();
-        for (Account a : this.accounts) {
-            a.getBalances().forEach((key, value) -> accuMap.merge(key, value, BigDecimal::add));
-        }
-        return accuMap;
-    }
-
-    // TODO 16.03.20 claude: Write unit test.
-    public BigDecimal getBalance(ScriptHash token) {
-        BigDecimal sum = BigDecimal.ZERO;
-        for (Account a : this.accounts) {
-            BigDecimal curr = a.getBalance(token);
-            if (curr != null) {
-                sum = sum.add(curr);
-            }
-        }
-        return sum;
     }
 
     public NEP6Wallet toNEP6Wallet() {
-        List<NEP6Account> accts = accounts.stream().map(
-                a -> a.toNEP6Account()).collect(Collectors.toList());
+        List<NEP6Account> accts = this.accounts.values().stream()
+                .map(Account::toNEP6Account)
+                .collect(Collectors.toList());
         return new NEP6Wallet(name, version, scryptParams, accts, null);
     }
 
@@ -189,13 +178,21 @@ public class Wallet {
     }
 
     public static Builder fromNEP6Wallet(NEP6Wallet nep6Wallet) {
-        Builder b = new Builder();
-        b.name = nep6Wallet.getName();
-        b.version = nep6Wallet.getVersion();
-        b.scryptParams = nep6Wallet.getScrypt();
-        for (NEP6Account nep6Acct : nep6Wallet.getAccounts()) {
-            b.accounts.add(Account.fromNEP6Account(nep6Acct).build());
-        }
+        Account[] accs = nep6Wallet.getAccounts().stream()
+                .map(nep6Acc -> Account.fromNEP6Account(nep6Acc).build())
+                .toArray(Account[]::new);
+
+        Builder b = new Builder()
+                .name(nep6Wallet.getName())
+                .version(nep6Wallet.getVersion())
+                .scryptParams(nep6Wallet.getScrypt())
+                .accounts(accs);
+
+        // Set the default account if available
+        nep6Wallet.getAccounts().stream()
+                .filter(NEP6Account::getDefault).findFirst()
+                .ifPresent(a -> b.defaultAccount(ScriptHash.fromAddress(a.getAddress())));
+
         return b;
     }
 
@@ -221,8 +218,8 @@ public class Wallet {
      * @return the new wallet.
      */
     public static Wallet createWallet() {
-        Account a = getNewDefaultAccount();
-        return new Builder().account(a).build();
+        Account a = Account.fromNewECKeyPair().isDefault(true).build();
+        return new Builder().accounts(a).build();
     }
 
     /**
@@ -235,8 +232,8 @@ public class Wallet {
      */
     public static Wallet createWallet(final String password)
             throws CipherException {
-        Account a = getNewDefaultAccount();
-        Wallet wallet = new Builder().account(a).build();
+        Account a = Account.fromNewECKeyPair().isDefault(true).build();
+        Wallet wallet = new Builder().accounts(a).build();
         wallet.encryptAllAccounts(password);
         return wallet;
     }
@@ -258,16 +255,8 @@ public class Wallet {
         return wallet;
     }
 
-    private static Account getNewDefaultAccount() {
-        return Account.fromNewECKeyPair().isDefault(true).build();
-    }
-
     public Account getAccount(ScriptHash account) {
-        // TODO: Maybe migrate type of this.accounts to a Map for better performance of this lookup.
-        return this.accounts.stream()
-                .filter(a -> a.getScriptHash().equals(account))
-                .collect(Collectors.toList())
-                .get(0);
+        return this.accounts.get(account);
     }
 
     public static class Builder {
@@ -276,6 +265,7 @@ public class Wallet {
         String version;
         List<Account> accounts;
         ScryptParams scryptParams;
+        private ScriptHash defaultAccount;
 
         public Builder() {
             this.name = DEFAULT_WALLET_NAME;
@@ -294,13 +284,26 @@ public class Wallet {
             return this;
         }
 
-        public Builder accounts(List<Account> accounts) {
-            this.accounts.addAll(accounts);
+        /**
+         * Adds the given accounts to the wallet, the first of which is set to be he default
+         * account.
+         *
+         * @param accounts The accounts to add.
+         * @return this.
+         */
+        public Builder accounts(Account... accounts) {
+            this.accounts.addAll(Arrays.asList(accounts));
+            this.defaultAccount = accounts[0].getScriptHash();
             return this;
         }
 
-        public Builder account(Account account) {
-            this.accounts.add(account);
+        /**
+         * TODO: Document
+         * @param accountScriptHash
+         * @return
+         */
+        public Builder defaultAccount(ScriptHash accountScriptHash) {
+            // TODO: Implement
             return this;
         }
 
@@ -314,13 +317,4 @@ public class Wallet {
         }
     }
 
-    @Override
-    public String toString() {
-        return "Wallet{" +
-                "name='" + name + '\'' +
-                ", version='" + version + '\'' +
-                ", accounts=" + accounts +
-                ", scryptParams=" + scryptParams +
-                '}';
-    }
 }

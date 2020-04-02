@@ -44,7 +44,7 @@ public class WalletUtils {
             throws CipherException, IOException {
 
         Account a = Account.fromECKeyPair(ecKeyPair).build();
-        Wallet w = new Wallet.Builder().account(a).build();
+        Wallet w = new Wallet.Builder().accounts(a).build();
         w.encryptAllAccounts(password);
         return generateWalletFile(w.toNEP6Wallet(), destinationDirectory);
     }

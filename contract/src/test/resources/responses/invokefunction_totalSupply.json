@@ -2,13 +2,13 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "script": "00c10b746f74616c537570706c7967866eb76809a77c68898dad22b749194c92027f4b",
+    "script": "10c00c0b746f74616c537570706c790c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b52",
     "state": "HALT",
-    "gas_consumed": "2007270",
+    "gas_consumed": "2007390",
     "stack": [
       {
-        "type": "ByteArray",
-        "value": "0080c6a47e8d03"
+        "type": "Integer",
+        "value": "3000000000000000"
       }
     ]
   }

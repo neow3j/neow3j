@@ -32,17 +32,25 @@ public class Nep5TokenTest {
         this.contract = new ScriptHash(ContractTestUtils.CONTRACT_1_SCRIPT_HASH);
     }
 
+//    @Ignore
     @Test
     public void transferToken() throws Exception {
         ContractTestUtils.setUpWireMockForSendRawTransaction();
-        ContractTestUtils.setUpWireMockForInvokeFunction("transfer", "invokefunction_transfer.json");
-        ContractTestUtils.setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+        ContractTestUtils
+                .setUpWireMockForInvokeFunction("transfer", "invokefunction_transfer.json");
+        ContractTestUtils
+                .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         ContractTestUtils.setUpWireMockForGetBlockCount();
+
+        // Block count will be NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT
+        // + ContractTestUtils.GETBLOCKCOUNT_RESPONSE;
+
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         Wallet w = Wallet.createWallet();
-        nep5.transfer(w, new ScriptHash("e9eed8dc39332032dc22e5d6e86332c50327ba23"),
-                new ScriptHash("0f2b7a6ee34db32d9151c6028960ab2a8babea52"), BigDecimal.ONE);
-        // TODO: Setup a raw transaction that contains the expected transaction bytes for a transfer.
+        nep5.transfer(w, new ScriptHash("0f2b7a6ee34db32d9151c6028960ab2a8babea52"),
+                BigDecimal.ONE);
+        // TODO: Setup a raw transaction that contains the expected transaction bytes for a
+        //  transfer.
         fail();
     }
 
@@ -73,6 +81,16 @@ public class Nep5TokenTest {
         ContractTestUtils
                 .setUpWireMockForInvokeFunction("totalSupply", "invokefunction_totalSupply.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
-        assertThat(nep5.getTotalSupply(), is(new BigInteger("1000000000000000")));
+        assertThat(nep5.getTotalSupply(), is(new BigInteger("3000000000000000")));
     }
+
+    @Test
+    public void getBalanceOf() throws Exception {
+        ScriptHash acc = ScriptHash.fromAddress("AMRZWegpH58nwY3iSDbmbBGg3kfGH6RgRt");
+        ContractTestUtils.setUpWireMockForInvokeFunction("balanceOf",
+                "invokefunction_balanceOf.json");
+        Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
+        assertThat(nep5.getBalanceOf(acc), is(new BigInteger("3000000000000000")));
+    }
+
 }
