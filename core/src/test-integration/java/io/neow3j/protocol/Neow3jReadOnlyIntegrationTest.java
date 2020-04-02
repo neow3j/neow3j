@@ -1,7 +1,5 @@
 package io.neow3j.protocol;
 
-import io.neow3j.model.types.AssetType;
-import io.neow3j.model.types.GASAsset;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
@@ -11,8 +9,6 @@ import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
-import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
-import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
@@ -21,10 +17,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents.Balance;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents.Unspents;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
@@ -35,15 +27,12 @@ import io.neow3j.protocol.core.methods.response.Script;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionInput;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.core.IsNull;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -229,21 +218,6 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testGetAccountState() throws IOException {
-        NeoGetAccountState getAccountState = getNeow3j()
-                .getAccountState(ADDRESS_1).send();
-        NeoGetAccountState.State accountState = getAccountState.getAccountState();
-        assertNotNull(accountState);
-        assertThat(accountState.getVotes(), is(empty()));
-        assertThat(accountState.getFrozen(), is(false));
-        assertThat(accountState.getVersion(), is(0));
-        assertThat(accountState.getBalances(), hasSize(2));
-        assertThat(accountState.getBalances(), hasItem(new NeoGetAccountState.Balance(prependHexPrefix(NEOAsset.HASH_ID), ADDR1_INIT_NEO_BALANCE)));
-        assertThat(accountState.getBalances().get(1).getAssetAddress(), is(prependHexPrefix(GASAsset.HASH_ID)));
-        assertThat(accountState.getBalances().get(1).getValue(), is(notNullValue()));
-    }
-
-    @Test
     public void testGetBlockHeader_Hash() throws IOException {
         NeoBlock block = getNeow3j().getBlockHeader(BLOCK_2001_HASH).send().getBlock();
         assertThat(block, not(nullValue()));
@@ -288,19 +262,6 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
                 .getBlockSysFee(new BlockParameterIndex(BigInteger.ONE)).send();
         String fee = getBlockSysFee.getFee();
         assertThat(fee, not(isEmptyOrNullString()));
-    }
-
-    @Test
-    public void testGetTxOut() throws IOException {
-        NeoGetTxOut getTxOut = getNeow3j()
-                .getTxOut(UTXO_TX_HASH, 0)
-                .send();
-        TransactionOutput tx = getTxOut.getTransaction();
-        assertNotNull(tx);
-        assertThat(tx.getIndex(), is(0));
-        assertThat(tx.getAssetId(), is(prependHexPrefix(NEOAsset.HASH_ID)));
-        assertThat(tx.getAddress(), not(isEmptyOrNullString()));
-        assertThat(tx.getValue(), not(isEmptyOrNullString()));
     }
 
     @Test
@@ -386,71 +347,6 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testGetAssetState() throws IOException {
-        NeoGetAssetState getAssetState = getNeow3j().getAssetState(NEOAsset.HASH_ID).send();
-        assertThat(getAssetState.getAssetState(), CoreMatchers.is(CoreMatchers.notNullValue()));
-        assertThat(
-                getAssetState.getAssetState().getVersion(),
-                is(0)
-        );
-        assertThat(
-                getAssetState.getAssetState().getId(),
-                is("0x" + NEOAsset.HASH_ID)
-        );
-        assertThat(
-                getAssetState.getAssetState().getType(),
-                is(AssetType.GOVERNING_TOKEN)
-        );
-        assertThat(
-                getAssetState.getAssetState().getNames(),
-                hasItems(
-                        new NeoGetAssetState.AssetName("zh-CN", "小蚁股"),
-                        new NeoGetAssetState.AssetName("en", "AntShare")
-                )
-        );
-        assertThat(
-                getAssetState.getAssetState().getAmount(),
-                is(Integer.toString(TOTAL_NEO_SUPPLY))
-        );
-        assertThat(
-                getAssetState.getAssetState().getAvailable(),
-                is(Integer.toString(TOTAL_NEO_SUPPLY))
-        );
-        assertThat(
-                getAssetState.getAssetState().getPrecision(),
-                is(0)
-        );
-        assertThat(
-                getAssetState.getAssetState().getFee(),
-                is(IsNull.nullValue())
-        );
-        assertThat(
-                getAssetState.getAssetState().getAddress(),
-                is(IsNull.nullValue())
-        );
-        assertThat(
-                getAssetState.getAssetState().getOwner(),
-                is("00")
-        );
-        assertThat(
-                getAssetState.getAssetState().getAdmin(),
-                is(ASSET_ISSUER_ADDRESS)
-        );
-        assertThat(
-                getAssetState.getAssetState().getIssuer(),
-                is(ASSET_ISSUER_ADDRESS)
-        );
-        assertThat(
-                getAssetState.getAssetState().getExpiration(),
-                is(4000000L)
-        );
-        assertThat(
-                getAssetState.getAssetState().getFrozen(),
-                is(false)
-        );
-    }
-
-    @Test
     public void testDumpPrivKey() throws IOException {
         NeoDumpPrivKey neoDumpPrivKey = getNeow3j().dumpPrivKey(ADDRESS_1).send();
         String privKey = neoDumpPrivKey.getDumpPrivKey();
@@ -468,40 +364,6 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     public void testGetContractState() throws IOException {
         // TODO: 2019-03-17 Guil:
         // to be implemented
-    }
-
-    @Test
-    public void testGetUnspents() throws IOException {
-        NeoGetUnspents response = getNeow3j().getUnspents(ADDRESS_1).send();
-        Unspents unspents = response.getUnspents();
-        assertThat(unspents, is(notNullValue()));
-        assertThat(unspents.getAddress(), is(ADDRESS_1));
-        List<Balance> balances = unspents.getBalances();
-        assertThat(balances, not(nullValue()));
-        assertThat(balances.size(), is(2));
-
-        Balance b = balances.get(0);
-        assertThat(b.getAssetHash(), is(GASAsset.HASH_ID));
-        assertThat(b.getAmount(), is(greaterThanOrEqualTo(BigDecimal.ZERO)));
-
-        List<NeoGetUnspents.UnspentTransaction> utxos = b.getUnspentTransactions();
-        assertThat(utxos, not(empty()));
-
-        NeoGetUnspents.UnspentTransaction utxo = utxos.get(0);
-        assertThat(utxo.getTxId(), not(isEmptyOrNullString()));
-        assertThat(utxo.getIndex(), is(greaterThanOrEqualTo(0)));
-        assertThat(utxo.getValue(), is(greaterThanOrEqualTo(BigDecimal.ZERO)));
-
-        b = balances.get(1);
-        assertThat(b.getAmount(), is(greaterThanOrEqualTo(BigDecimal.ZERO)));
-
-        utxos = b.getUnspentTransactions();
-        assertThat(utxos, not(empty()));
-
-        utxo = utxos.get(0);
-        assertThat(utxo.getTxId(), not(isEmptyOrNullString()));
-        assertThat(utxo.getIndex(), is(greaterThanOrEqualTo(0)));
-        assertThat(utxo.getValue(), is(greaterThanOrEqualTo(BigDecimal.ZERO)));
     }
 
     @Test

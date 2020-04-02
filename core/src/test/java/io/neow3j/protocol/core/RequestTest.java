@@ -144,15 +144,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetAccountState() throws Exception {
-        neow3j.getAccountState("AQVh2pG732YvtNaxEGkQUei3YA4cvo7d2i").send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getaccountstate\","
-                        + "\"params\":[\"AQVh2pG732YvtNaxEGkQUei3YA4cvo7d2i\"],\"id\":1}");
-    }
-
-    @Test
     public void testGetBlockHeader_Hash() throws Exception {
         neow3j.getBlockHeader("0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d").send();
 
@@ -213,15 +204,6 @@ public class RequestTest extends RequestTester {
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getblocksysfee\","
                         + "\"params\":[12345],\"id\":1}");
-    }
-
-    @Test
-    public void testGetTxOut() throws Exception {
-        neow3j.getTxOut("0x93c569cbe33e918f7a5392025fbdeab5f6c97c8e5897fafc466694b6e8e1b0d2", 0).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"gettxout\","
-                        + "\"params\":[\"0x93c569cbe33e918f7a5392025fbdeab5f6c97c8e5897fafc466694b6e8e1b0d2\",0],\"id\":1}");
     }
 
     @Test
@@ -316,24 +298,6 @@ public class RequestTest extends RequestTester {
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
-                        + "\"params\":[\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\"],\"id\":1}");
-    }
-
-    @Test
-    public void testGetAssetState() throws Exception {
-        neow3j.getAssetState("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b").send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getassetstate\","
-                        + "\"params\":[\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\"],\"id\":1}");
-    }
-
-    @Test
-    public void testGetAssetState_with_Prefix() throws Exception {
-        neow3j.getAssetState("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b").send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getassetstate\","
                         + "\"params\":[\"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\"],\"id\":1}");
     }
 
@@ -437,78 +401,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testInvoke() throws Exception {
-        neow3j.invoke(
-                "dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f",
-                Arrays.asList(
-                        ContractParameter.signature("53c874d7c434b9912b9ee38b958ec78c1c4b0a3c4b5753bada198a1e49649f13bf5def112ee8d31133799759d3d88dd3c1650a4d6fa36f29493ffbc8068600ed"),
-                        ContractParameter.bool(false),
-                        ContractParameter.integer(8),
-                        ContractParameter.hash160(new ScriptHash("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f")),
-                        ContractParameter.hash256("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf"),
-                        ContractParameter.byteArray("4e45503520474153"),
-                        ContractParameter.string("name"),
-                        ContractParameter.array(
-                                ContractParameter.string("name"),
-                                ContractParameter.byteArray("4e45503520474153"),
-                                ContractParameter.array(
-                                        ContractParameter.string("name")
-                                )
-                        )
-                        // TODO 17.07.19 claude:
-                        // Include public key parameter when it is implemented.
-                        // ContractParameter.publicKey("4e45503520474153"),
-
-                        // INTEROP_INTERFACE and VOID are only return types and need not be tested here.
-                        // ContractParameter(ContractParameterType.INTEROP_INTERFACE, "array"),
-                        // ContractParameter(ContractParameterType.VOID, "")
-                )
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"invoke\","
-                        + "\"params\":[\"dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f\","
-                        + "["
-                        +   "{\"type\":\"Signature\",\"value\":\"53c874d7c434b9912b9ee38b958ec78c1c4b0a3c4b5753bada198a1e49649f13bf5def112ee8d31133799759d3d88dd3c1650a4d6fa36f29493ffbc8068600ed\"},"
-                        +   "{\"type\":\"Boolean\",\"value\":false},"
-                        +   "{\"type\":\"Integer\",\"value\":\"8\"},"
-                        +   "{\"type\":\"Hash160\",\"value\":\"576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f\"},"
-                        +   "{\"type\":\"Hash256\",\"value\":\"576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf\"},"
-                        +   "{\"type\":\"ByteArray\",\"value\":\"4e45503520474153\"},"
-                        +   "{\"type\":\"String\",\"value\":\"name\"},"
-                        +   "{\"type\":\"Array\",\"value\":"
-                        +       "["
-                        +           "{\"type\":\"String\",\"value\":\"name\"},"
-                        +           "{\"type\":\"ByteArray\",\"value\":\"4e45503520474153\"},"
-                        +           "{\"type\":\"Array\",\"value\":"
-                        +               "["
-                        +                   "{\"type\":\"String\",\"value\":\"name\"}"
-                        +               "]"
-                        +           "}"
-                        +       "]"
-                        +   "}"
-                        + "]"
-                        + "],\"id\":1}"
-//                        + "{\"type\":\"PublicKey\",\"value\":\"4e45503520474153\"},"
-        );
-    }
-
-    @Test
-    public void testInvoke_empty_Params() throws Exception {
-        neow3j.invoke(
-                "dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f",
-                Arrays.asList()
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"invoke\","
-                        + "\"params\":[\"dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f\","
-                        + "[]"
-                        + "],\"id\":1}"
-        );
-    }
-
-    @Test
     public void testInvokeFunction() throws Exception {
         neow3j.invokeFunction(
                 "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
@@ -592,31 +484,11 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetUnspents() throws Exception {
-        neow3j.getUnspents("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getunspents\","
-                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
-        );
-    }
-
-    @Test
     public void testGetNep5Balances() throws Exception {
         neow3j.getNep5Balances("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5balances\","
-                        + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
-        );
-    }
-
-    @Test
-    public void testGetClaimable() throws Exception {
-        neow3j.getClaimable("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getclaimable\","
                         + "\"params\":[\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}"
         );
     }

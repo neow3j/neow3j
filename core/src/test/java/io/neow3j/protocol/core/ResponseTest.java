@@ -1,6 +1,5 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.model.types.AssetType;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NEOAsset;
 import io.neow3j.model.types.NodePluginType;
@@ -17,15 +16,10 @@ import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
-import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
-import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
-import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claim;
-import io.neow3j.protocol.core.methods.response.NeoGetClaimable.Claimables;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -35,12 +29,9 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
-import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
@@ -60,7 +51,6 @@ import io.neow3j.utils.Numeric;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -764,68 +754,6 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetAccountState() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"version\": 0,\n"
-                        + "      \"script_hash\": \"0x1cfacc3e315977329c11ca50fe753730939da95f\",\n"
-                        + "      \"frozen\": false,\n"
-                        + "      \"votes\": [\n"
-                        + "          \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n"
-                        + "          \"02df48f60e8f3e01c48ff40b9b7f1310d7a8b2a193188befe1c2e3df740e895093\",\n"
-                        + "          \"03b8d9d5771d8f513aa0869b9cc8d50986403b78c6da36890638c3d46a5adce04a\",\n"
-                        + "          \"02ca0e27697b9c248f6f16e085fd0061e26f44da85b58ee835c110caa5ec3ba554\",\n"
-                        + "          \"024c7b7fb6c310fccf1ba33b082519d82964ea93868d676662d4a59ad548df0e7d\",\n"
-                        + "          \"035e819642a8915a2572f972ddbdbe3042ae6437349295edce9bdc3b8884bbf9a3\",\n"
-                        + "          \"025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64\"\n"
-                        + "      ],\n"
-                        + "      \"balances\": [\n"
-                        + "          {\n"
-                        + "              \"asset\": \"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n"
-                        + "              \"value\": \"0.00001058\"\n"
-                        + "          },\n"
-                        + "          {\n"
-                        + "              \"asset\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
-                        + "              \"value\": \"35000001\"\n"
-                        + "          }\n"
-                        + "      ]\n"
-                        + "   }\n"
-                        + "}"
-        );
-
-        NeoGetAccountState getAccountState = deserialiseResponse(NeoGetAccountState.class);
-        assertThat(getAccountState.getAccountState(), is(notNullValue()));
-        assertThat(getAccountState.getAccountState().getVersion(), is(0));
-        assertThat(getAccountState.getAccountState().getScriptHash(), is("0x1cfacc3e315977329c11ca50fe753730939da95f"));
-        assertThat(getAccountState.getAccountState().getFrozen(), is(false));
-        assertThat(getAccountState.getAccountState().getVotes(), hasSize(7));
-        assertThat(
-                getAccountState.getAccountState().getVotes(),
-                containsInAnyOrder(
-                        "03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c",
-                        "02df48f60e8f3e01c48ff40b9b7f1310d7a8b2a193188befe1c2e3df740e895093",
-                        "03b8d9d5771d8f513aa0869b9cc8d50986403b78c6da36890638c3d46a5adce04a",
-                        "02ca0e27697b9c248f6f16e085fd0061e26f44da85b58ee835c110caa5ec3ba554",
-                        "024c7b7fb6c310fccf1ba33b082519d82964ea93868d676662d4a59ad548df0e7d",
-                        "035e819642a8915a2572f972ddbdbe3042ae6437349295edce9bdc3b8884bbf9a3",
-                        "025bdf3f181f53e9696227843950deb72dcd374ded17c057159513c3d0abe20b64"
-                )
-        );
-
-        assertThat(getAccountState.getAccountState().getBalances(), hasSize(2));
-        assertThat(
-                getAccountState.getAccountState().getBalances(),
-                containsInAnyOrder(
-                        new NeoGetAccountState.Balance("0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7", "0.00001058"),
-                        new NeoGetAccountState.Balance("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b", "35000001")
-                )
-        );
-    }
-
-    @Test
     public void testGetNewAddress() {
         buildResponse(
                 "{\n"
@@ -868,66 +796,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetBlockSysFee getBlockSysFee = deserialiseResponse(NeoGetBlockSysFee.class);
         assertThat(getBlockSysFee.getFee(), is(notNullValue()));
         assertThat(getBlockSysFee.getFee(), is("200"));
-    }
-
-    @Test
-    public void testGetTxOut() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"n\": 0,\n"
-                        + "      \"asset\": \"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n"
-                        + "      \"value\": \"10\",\n"
-                        + "      \"address\": \"AHb4HXonuseHsAztd97GZTtmNvwEoMDQg7\"\n"
-                        + "  }\n"
-                        + "}"
-        );
-
-        NeoGetTxOut getTxOut = deserialiseResponse(NeoGetTxOut.class);
-        assertThat(getTxOut.getTransaction(), is(notNullValue()));
-        assertThat(
-                getTxOut.getTransaction(),
-                is(
-                        new TransactionOutput(
-                                0,
-                                "0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7",
-                                "10",
-                                "AHb4HXonuseHsAztd97GZTtmNvwEoMDQg7"
-                        )
-                )
-        );
-    }
-
-    @Test
-    public void testGetTxOut_JsonAttribute_Alias() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"N\": 0,\n"
-                        + "      \"Asset\": \"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n"
-                        + "      \"Value\": \"10\",\n"
-                        + "      \"Address\": \"AHb4HXonuseHsAztd97GZTtmNvwEoMDQg7\"\n"
-                        + "  }\n"
-                        + "}"
-        );
-
-        NeoGetTxOut getTxOut = deserialiseResponse(NeoGetTxOut.class);
-        assertThat(getTxOut.getTransaction(), is(notNullValue()));
-        assertThat(
-                getTxOut.getTransaction(),
-                is(
-                        new TransactionOutput(
-                                0,
-                                "0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7",
-                                "10",
-                                "AHb4HXonuseHsAztd97GZTtmNvwEoMDQg7"
-                        )
-                )
-        );
     }
 
     @Test
@@ -1228,185 +1096,6 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetAssetState_NeoCLI() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":1,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"version\": 0,\n"
-                        + "      \"id\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
-                        + "      \"type\": \"GoverningToken\",\n"
-                        + "      \"name\": [\n"
-                        + "           {\n"
-                        + "               \"lang\": \"zh-CN\",\n"
-                        + "               \"name\": \"小蚁股\"\n"
-                        + "           },\n"
-                        + "           {\n"
-                        + "               \"lang\": \"en\",\n"
-                        + "               \"name\": \"AntShare\"\n"
-                        + "           }\n"
-                        + "      ],\n"
-                        + "      \"amount\": \"100000000\",\n"
-                        + "      \"available\": \"100000000\",\n"
-                        + "      \"precision\": 0,\n"
-                        + "      \"owner\": \"00\",\n"
-                        + "      \"admin\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
-                        + "      \"issuer\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
-                        + "      \"expiration\": 4000000,\n"
-                        + "      \"frozen\": false\n"
-                        + "  }\n"
-                        + "}"
-        );
-
-        NeoGetAssetState getAssetState = deserialiseResponse(NeoGetAssetState.class);
-        assertThat(getAssetState.getAssetState(), is(notNullValue()));
-        assertThat(
-                getAssetState.getAssetState().getVersion(),
-                is(0)
-        );
-        assertThat(
-                getAssetState.getAssetState().getId(),
-                is("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
-        );
-        assertThat(
-                getAssetState.getAssetState().getType(),
-                is(AssetType.GOVERNING_TOKEN)
-        );
-        assertThat(
-                getAssetState.getAssetState().getNames(),
-                hasItems(
-                        new NeoGetAssetState.AssetName("zh-CN", "小蚁股"),
-                        new NeoGetAssetState.AssetName("en", "AntShare")
-                )
-        );
-        assertThat(
-                getAssetState.getAssetState().getAmount(),
-                is("100000000")
-        );
-        assertThat(
-                getAssetState.getAssetState().getAvailable(),
-                is("100000000")
-        );
-        assertThat(
-                getAssetState.getAssetState().getPrecision(),
-                is(0)
-        );
-        assertThat(
-                getAssetState.getAssetState().getFee(),
-                is(nullValue())
-        );
-        assertThat(
-                getAssetState.getAssetState().getAddress(),
-                is(nullValue())
-        );
-        assertThat(
-                getAssetState.getAssetState().getOwner(),
-                is("00")
-        );
-        assertThat(
-                getAssetState.getAssetState().getAdmin(),
-                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
-        );
-        assertThat(
-                getAssetState.getAssetState().getIssuer(),
-                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
-        );
-        assertThat(
-                getAssetState.getAssetState().getExpiration(),
-                is(4000000L)
-        );
-        assertThat(
-                getAssetState.getAssetState().getFrozen(),
-                is(false)
-        );
-    }
-
-    @Test
-    public void testGetAssetState_NeoPython() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":1,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"assetId\": \"0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
-                        + "      \"assetType\": 0,\n"
-                        + "      \"name\": \"NEO\",\n"
-                        + "      \"amount\": 10000000000000000,\n"
-                        + "      \"available\": 10000000000000000,\n"
-                        + "      \"precision\": 0,\n"
-                        + "      \"fee\": 0,\n"
-                        + "      \"address\": \"0000000000000000000000000000000000000000\",\n"
-                        + "      \"owner\": \"00\",\n"
-                        + "      \"admin\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
-                        + "      \"issuer\": \"Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt\",\n"
-                        + "      \"expiration\": 4000000,\n"
-                        + "      \"is_frozen\": false\n"
-                        + "  }\n"
-                        + "}"
-        );
-
-        NeoGetAssetState getAssetState = deserialiseResponse(NeoGetAssetState.class);
-        assertThat(getAssetState.getAssetState(), is(notNullValue()));
-        assertThat(
-                getAssetState.getAssetState().getVersion(),
-                is(nullValue())
-        );
-        assertThat(
-                getAssetState.getAssetState().getId(),
-                is("0xc56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
-        );
-        assertThat(
-                getAssetState.getAssetState().getType(),
-                is(AssetType.GOVERNING_TOKEN)
-        );
-        assertThat(
-                getAssetState.getAssetState().getNames(),
-                hasItem(new NeoGetAssetState.AssetName("en", "NEO"))
-        );
-        assertThat(
-                getAssetState.getAssetState().getAmount(),
-                is("10000000000000000")
-        );
-        assertThat(
-                getAssetState.getAssetState().getAvailable(),
-                is("10000000000000000")
-        );
-        assertThat(
-                getAssetState.getAssetState().getPrecision(),
-                is(0)
-        );
-        assertThat(
-                getAssetState.getAssetState().getFee(),
-                is(0)
-        );
-        assertThat(
-                getAssetState.getAssetState().getAddress(),
-                is("0000000000000000000000000000000000000000")
-        );
-        assertThat(
-                getAssetState.getAssetState().getOwner(),
-                is("00")
-        );
-        assertThat(
-                getAssetState.getAssetState().getAdmin(),
-                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
-        );
-        assertThat(
-                getAssetState.getAssetState().getIssuer(),
-                is("Abf2qMs1pzQb8kYk9RuxtUb9jtRKJVuBJt")
-        );
-        assertThat(
-                getAssetState.getAssetState().getExpiration(),
-                is(4000000L)
-        );
-        assertThat(
-                getAssetState.getAssetState().getFrozen(),
-                is(false)
-        );
-    }
-
-    @Test
     public void testSendMany() {
         buildResponse(
                 "{\n"
@@ -1514,67 +1203,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetStorage getStorage = deserialiseResponse(NeoGetStorage.class);
         assertThat(getStorage.getStorage(), is(notNullValue()));
         assertThat(getStorage.getStorage(), is("616e797468696e67"));
-    }
-
-    @Test
-    public void testInvoke() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":1,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
-                        + "      \"state\": \"HALT, BREAK\",\n"
-                        + "      \"gas_consumed\": \"2.489\",\n"
-                        + "      \"stack\": ["
-                        + "           {"
-                        + "               \"type\": \"ByteArray\",\n"
-                        + "               \"value\": \"576f6f6c6f6e67\"\n"
-                        + "           }"
-                        + "      ],\n"
-                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
-                        + "   }\n"
-                        + "}"
-        );
-
-        NeoInvoke invoke = deserialiseResponse(NeoInvoke.class);
-        assertThat(invoke.getInvocationResult(), is(notNullValue()));
-        assertThat(invoke.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
-        assertThat(invoke.getInvocationResult().getState(), is("HALT, BREAK"));
-        assertThat(invoke.getInvocationResult().getGasConsumed(), is("2.489"));
-        assertThat(invoke.getInvocationResult().getStack(), hasSize(1));
-        assertThat(
-                invoke.getInvocationResult().getStack(),
-                hasItems(
-                        new ByteArrayStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67"))
-                )
-        );
-        assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
-    }
-
-    @Test
-    public void testInvoke_empty_Stack() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":1,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
-                        + "      \"state\": \"HALT, BREAK\",\n"
-                        + "      \"gas_consumed\": \"2.489\",\n"
-                        + "      \"stack\": [],\n"
-                        + "      \"tx\": \"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
-                        + "   }\n"
-                        + "}"
-        );
-
-        NeoInvoke invoke = deserialiseResponse(NeoInvoke.class);
-        assertThat(invoke.getInvocationResult(), is(notNullValue()));
-        assertThat(invoke.getInvocationResult().getScript(), is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
-        assertThat(invoke.getInvocationResult().getState(), is("HALT, BREAK"));
-        assertThat(invoke.getInvocationResult().getGasConsumed(), is("2.489"));
-        assertThat(invoke.getInvocationResult().getStack(), hasSize(0));
-        assertThat(invoke.getInvocationResult().getTx(), is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
     }
 
     @Test
@@ -1756,128 +1384,6 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetUnspents() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":1,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"balance\": [\n"
-                        + "           {\n"
-                        + "               \"unspent\": [\n"
-                        + "                    {\n"
-                        + "                         \"txid\": \"4ee4af75d5aa60598fbae40ce86fb9a23ffec5a75dfa8b59d259d15f9e304319\",\n"
-                        + "                         \"n\": 0,\n"
-                        + "                         \"value\": 27844.821\n"
-                        + "                    },\n"
-                        + "                    {\n"
-                        + "                         \"txid\": \"9906bf2a9f531ac523aad5e9507bd6540acc1c65ae9144918ccc891188578253\",\n"
-                        + "                         \"n\": 0,\n"
-                        + "                         \"value\": 0.987\n"
-                        + "                    },\n"
-                        + "                    {\n"
-                        + "                         \"txid\": \"184e34eb3f9550d07d03563391d73eb6c438130c7fdca37f0700d5d52ad7deb1\",\n"
-                        + "                         \"n\": 0,\n"
-                        + "                         \"value\": 243.95598\n"
-                        + "                    },\n"
-                        + "                    {\n"
-                        + "                         \"txid\": \"448abc64412284fb21c9625ac9edd2100090367a551c18ce546c1eded61e77c3\",\n"
-                        + "                         \"n\": 0,\n"
-                        + "                         \"value\": 369.84904\n"
-                        + "                    },\n"
-                        + "                    {\n"
-                        + "                         \"txid\": \"bd454059e58da4221aaf4effa3278660b231e9af7cea97912f4ac5c4995bb7e4\",\n"
-                        + "                         \"n\": 0,\n"
-                        + "                         \"value\": 600.41014479\n"
-                        + "                    }\n"
-                        + "               ],\n"
-                        + "               \"asset_hash\": \"602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7\",\n"
-                        + "               \"asset\": \"GAS\",\n"
-                        + "               \"asset_symbol\": \"GAS\",\n"
-                        + "               \"amount\": 29060.02316479\n"
-                        + "           },\n"
-                        + "           {\n"
-                        + "               \"unspent\": [\n"
-                        + "                    {\n"
-                        + "                         \"txid\": \"c3182952855314b3f4b1ecf01a03b891d4627d19426ce841275f6d4c186e729a\",\n"
-                        + "                         \"n\": 0,\n"
-                        + "                         \"value\": 800000\n"
-                        + "                    }\n"
-                        + "               ],\n"
-                        + "               \"asset_hash\": \"c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b\",\n"
-                        + "               \"asset\": \"NEO\",\n"
-                        + "               \"asset_symbol\": \"NEO\",\n"
-                        + "               \"amount\": 800000\n"
-                        + "           }\n"
-                        + "      ],\n"
-                        + "      \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"\n"
-                        + "   }\n"
-                        + "}"
-        );
-
-        NeoGetUnspents getUnspents = deserialiseResponse(NeoGetUnspents.class);
-        assertThat(getUnspents.getUnspents(), is(notNullValue()));
-        assertThat(
-                getUnspents.getUnspents().getAddress(),
-                is("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances(),
-                hasSize(2)
-        );
-        // First balance entry:
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(0).getAssetHash(),
-                is("602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7")
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(0).getAssetName(),
-                is("GAS")
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(0).getAssetSymbol(),
-                is("GAS")
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(0).getAmount(),
-                is(new BigDecimal("29060.02316479"))
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(0).getUnspentTransactions(),
-                hasItems(
-                        new NeoGetUnspents.UnspentTransaction("4ee4af75d5aa60598fbae40ce86fb9a23ffec5a75dfa8b59d259d15f9e304319", 0, new BigDecimal("27844.821")),
-                        new NeoGetUnspents.UnspentTransaction("9906bf2a9f531ac523aad5e9507bd6540acc1c65ae9144918ccc891188578253", 0, new BigDecimal("0.987")),
-                        new NeoGetUnspents.UnspentTransaction("184e34eb3f9550d07d03563391d73eb6c438130c7fdca37f0700d5d52ad7deb1", 0, new BigDecimal("243.95598")),
-                        new NeoGetUnspents.UnspentTransaction("448abc64412284fb21c9625ac9edd2100090367a551c18ce546c1eded61e77c3", 0, new BigDecimal("369.84904")),
-                        new NeoGetUnspents.UnspentTransaction("bd454059e58da4221aaf4effa3278660b231e9af7cea97912f4ac5c4995bb7e4", 0, new BigDecimal("600.41014479"))
-                )
-        );
-        // Second balance entry:
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(1).getAssetHash(),
-                is("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(1).getAssetName(),
-                is("NEO")
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(1).getAssetSymbol(),
-                is("NEO")
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(1).getAmount(),
-                is(new BigDecimal("800000"))
-        );
-        assertThat(
-                getUnspents.getUnspents().getBalances().get(1).getUnspentTransactions(),
-                hasItems(
-                        new NeoGetUnspents.UnspentTransaction("c3182952855314b3f4b1ecf01a03b891d4627d19426ce841275f6d4c186e729a", 0, new BigDecimal("800000"))
-                )
-        );
-    }
-
-    @Test
     public void testGetNep5Balances() {
         buildResponse(
                 "{\n"
@@ -1937,68 +1443,6 @@ public class ResponseTest extends ResponseTester {
                 getNep5Balances.getResult().getBalances().get(1).getLastUpdatedBlock(),
                 is(new BigInteger("251600"))
         );
-    }
-
-    @Test
-    public void testGetClaimable() {
-        buildResponse(
-                "{\n"
-                        + "    \"jsonrpc\": \"2.0\",\n"
-                        + "    \"id\": 1,\n"
-                        + "    \"result\": {\n"
-                        + "        \"claimable\": [\n"
-                        + "            {\n"
-                        + "                \"txid\": \"2d7c565c19bfcd288856d6ac16ab69cf17fbf14d7d848f00ea32532c7db6a506\",\n"
-                        + "                \"n\": 2,\n"
-                        + "                \"value\": 700,\n"
-                        + "                \"start_height\": 2025847,\n"
-                        + "                \"end_height\": 2532062,\n"
-                        + "                \"generated\": 24.804535,\n"
-                        + "                \"sys_fee\": 2.229262,\n"
-                        + "                \"unclaimed\": 27.033797\n"
-                        + "            },\n"
-                        + "            {\n"
-                        + "                \"txid\": \"c78eb5a5b148af6a0ef04bf36d5da2d84b17eb2a1d27669b41be95e6f264dd5b\",\n"
-                        + "                \"n\": 1,\n"
-                        + "                \"value\": 795,\n"
-                        + "                \"start_height\": 1866619,\n"
-                        + "                \"end_height\": 2025847,\n"
-                        + "                \"generated\": 9.92141715,\n"
-                        + "                \"sys_fee\": 1.4571873,\n"
-                        + "                \"unclaimed\": 11.37860445\n"
-                        + "            }\n"
-                        + "        ],\n"
-                        + "        \"address\": \"ATBTRWX8v8teMHCvPXovir3Hy92RPnwdEi\",\n"
-                        + "        \"unclaimed\": 38.41240145\n"
-                        + "    }\n"
-                        + "}"
-        );
-
-        Claimables claimables = deserialiseResponse(NeoGetClaimable.class).getResult();
-        assertThat(claimables, is(notNullValue()));
-        assertThat(claimables.getAddress(), is("ATBTRWX8v8teMHCvPXovir3Hy92RPnwdEi"));
-        assertThat(claimables.getTotalUnclaimed(), is("38.41240145"));
-        assertThat(claimables.getClaims(), hasSize(2));
-
-        Claim claim1 = claimables.getClaims().get(0);
-        assertThat(claim1.getTxId(), is("2d7c565c19bfcd288856d6ac16ab69cf17fbf14d7d848f00ea32532c7db6a506"));
-        assertThat(claim1.getIndex(), is(2));
-        assertThat(claim1.getNeoValue(), is(new BigInteger("700")));
-        assertThat(claim1.getStartHeight(), is(new BigInteger("2025847")));
-        assertThat(claim1.getEndHeight(), is(new BigInteger("2532062")));
-        assertThat(claim1.getGeneratedGas(), is("24.804535"));
-        assertThat(claim1.getSystemFee(), is("2.229262"));
-        assertThat(claim1.getUnclaimedGas(), is("27.033797"));
-
-        Claim claim2 = claimables.getClaims().get(1);
-        assertThat(claim2.getTxId(), is("c78eb5a5b148af6a0ef04bf36d5da2d84b17eb2a1d27669b41be95e6f264dd5b"));
-        assertThat(claim2.getIndex(), is(1));
-        assertThat(claim2.getNeoValue(), is(new BigInteger("795")));
-        assertThat(claim2.getStartHeight(), is(new BigInteger("1866619")));
-        assertThat(claim2.getEndHeight(), is(new BigInteger("2025847")));
-        assertThat(claim2.getGeneratedGas(), is("9.92141715"));
-        assertThat(claim2.getSystemFee(), is("1.4571873"));
-        assertThat(claim2.getUnclaimedGas(), is("11.37860445"));
     }
 
     @Test

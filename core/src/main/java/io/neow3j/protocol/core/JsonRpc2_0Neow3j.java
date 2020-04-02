@@ -1,21 +1,25 @@
 package io.neow3j.protocol.core;
 
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
+import static io.neow3j.utils.Strings.isEmpty;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
-import io.neow3j.protocol.core.methods.response.NeoGetAccountState;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetAssetState;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
-import io.neow3j.protocol.core.methods.response.NeoGetClaimable;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -23,16 +27,17 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetTxOut;
-import io.neow3j.protocol.core.methods.response.NeoGetUnspents;
+import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
-import io.neow3j.protocol.core.methods.response.NeoInvoke;
+import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoListPlugins;
+import io.neow3j.protocol.core.methods.response.NeoOpenWallet;
+import io.neow3j.protocol.core.methods.response.NeoSendFrom;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
@@ -42,16 +47,11 @@ import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
 import io.reactivex.Observable;
-
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
-
-import static io.neow3j.utils.Numeric.cleanHexPrefix;
-import static io.neow3j.utils.Strings.isEmpty;
 
 /**
  * JSON-RPC 2.0 factory implementation.
@@ -78,22 +78,32 @@ public class JsonRpc2_0Neow3j implements Neow3j {
         this.scheduledExecutorService = scheduledExecutorService;
     }
 
+    // Blockchain Methods
+
     @Override
-    public Request<?, NeoGetVersion> getVersion() {
+    public Request<?, NeoBlockHash> getBestBlockHash() {
         return new Request<>(
-                "getversion",
-                Collections.<String>emptyList(),
+                "getbestblockhash",
+                emptyList(),
                 neow3jService,
-                NeoGetVersion.class);
+                NeoBlockHash.class);
     }
 
+    @Override
+    public Request<?, NeoBlockHash> getBlockHash(BlockParameterIndex blockIndex) {
+        return new Request<>(
+                "getblockhash",
+                asList(blockIndex.getBlockIndex()),
+                neow3jService,
+                NeoBlockHash.class);
+    }
 
     @Override
     public Request<?, NeoGetBlock> getBlock(String address, boolean returnFullTransactionObjects) {
         if (returnFullTransactionObjects) {
             return new Request<>(
                     "getblock",
-                    Arrays.asList(address, 1),
+                    asList(address, 1),
                     neow3jService,
                     NeoGetBlock.class);
         } else {
@@ -105,17 +115,18 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetRawBlock> getRawBlock(String address) {
         return new Request<>(
                 "getblock",
-                Arrays.asList(address, 0),
+                asList(address, 0),
                 neow3jService,
                 NeoGetRawBlock.class);
     }
 
     @Override
-    public Request<?, NeoGetBlock> getBlock(BlockParameterIndex blockIndex, boolean returnFullTransactionObjects) {
+    public Request<?, NeoGetBlock> getBlock(BlockParameterIndex blockIndex,
+            boolean returnFullTransactionObjects) {
         if (returnFullTransactionObjects) {
             return new Request<>(
                     "getblock",
-                    Arrays.asList(blockIndex.getBlockIndex(), 1),
+                    asList(blockIndex.getBlockIndex(), 1),
                     neow3jService,
                     NeoGetBlock.class);
         } else {
@@ -127,7 +138,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetRawBlock> getRawBlock(BlockParameterIndex blockIndex) {
         return new Request<>(
                 "getblock",
-                Arrays.asList(blockIndex.getBlockIndex(), 0),
+                asList(blockIndex.getBlockIndex(), 0),
                 neow3jService,
                 NeoGetRawBlock.class);
     }
@@ -136,34 +147,16 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoBlockCount> getBlockCount() {
         return new Request<>(
                 "getblockcount",
-                Collections.<String>emptyList(),
+                emptyList(),
                 neow3jService,
                 NeoBlockCount.class);
-    }
-
-    @Override
-    public Request<?, NeoBlockHash> getBestBlockHash() {
-        return new Request<>(
-                "getbestblockhash",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoBlockHash.class);
-    }
-
-    @Override
-    public Request<?, NeoBlockHash> getBlockHash(BlockParameterIndex blockIndex) {
-        return new Request<>(
-                "getblockhash",
-                Arrays.asList(blockIndex.getBlockIndex()),
-                neow3jService,
-                NeoBlockHash.class);
     }
 
     @Override
     public Request<?, NeoGetBlock> getBlockHeader(String hash) {
         return new Request<>(
                 "getblockheader",
-                Arrays.asList(hash, 1),
+                asList(hash, 1),
                 neow3jService,
                 NeoGetBlock.class);
     }
@@ -172,7 +165,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetBlock> getBlockHeader(BlockParameterIndex blockIndex) {
         return new Request<>(
                 "getblockheader",
-                Arrays.asList(blockIndex.getBlockIndex(), 1),
+                asList(blockIndex.getBlockIndex(), 1),
                 neow3jService,
                 NeoGetBlock.class);
     }
@@ -181,7 +174,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetRawBlock> getRawBlockHeader(String hash) {
         return new Request<>(
                 "getblockheader",
-                Arrays.asList(hash, 0),
+                asList(hash, 0),
                 neow3jService,
                 NeoGetRawBlock.class);
     }
@@ -190,145 +183,43 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex) {
         return new Request<>(
                 "getblockheader",
-                Arrays.asList(blockIndex.getBlockIndex(), 0),
+                asList(blockIndex.getBlockIndex(), 0),
                 neow3jService,
                 NeoGetRawBlock.class);
-    }
-
-    @Override
-    public Request<?, NeoConnectionCount> getConnectionCount() {
-        return new Request<>(
-                "getconnectioncount",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoConnectionCount.class);
-    }
-
-    @Override
-    public Request<?, NeoListAddress> listAddress() {
-        return new Request<>(
-                "listaddress",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoListAddress.class);
-    }
-
-    @Override
-    public Request<?, NeoGetPeers> getPeers() {
-        return new Request<>(
-                "getpeers",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoGetPeers.class);
-    }
-
-    @Override
-    public Request<?, NeoGetRawMemPool> getRawMemPool() {
-        return new Request<>(
-                "getrawmempool",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoGetRawMemPool.class);
-    }
-
-    @Override
-    public Request<?, NeoGetValidators> getValidators() {
-        return new Request<>(
-                "getvalidators",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoGetValidators.class);
-    }
-
-    @Override
-    public Request<?, NeoValidateAddress> validateAddress(String address) {
-        return new Request<>(
-                "validateaddress",
-                Arrays.asList(address),
-                neow3jService,
-                NeoValidateAddress.class);
-    }
-
-    @Override
-    public Request<?, NeoGetAccountState> getAccountState(String address) {
-        return new Request<>(
-                "getaccountstate",
-                Arrays.asList(address),
-                neow3jService,
-                NeoGetAccountState.class);
-    }
-
-    @Override
-    public Request<?, NeoGetNewAddress> getNewAddress() {
-        return new Request<>(
-                "getnewaddress",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoGetNewAddress.class);
-    }
-
-    @Override
-    public Request<?, NeoGetWalletHeight> getWalletHeight() {
-        return new Request<>(
-                "getwalletheight",
-                Collections.<String>emptyList(),
-                neow3jService,
-                NeoGetWalletHeight.class);
     }
 
     @Override
     public Request<?, NeoGetBlockSysFee> getBlockSysFee(BlockParameterIndex blockIndex) {
         return new Request<>(
                 "getblocksysfee",
-                Arrays.asList(blockIndex.getBlockIndex()),
+                asList(blockIndex.getBlockIndex()),
                 neow3jService,
                 NeoGetBlockSysFee.class);
     }
 
     @Override
-    public Request<?, NeoGetTxOut> getTxOut(String transactionHash, int txIndex) {
+    public Request<?, NeoGetContractState> getContractState(String scriptHash) {
         return new Request<>(
-                "gettxout",
-                Arrays.asList(transactionHash, txIndex),
+                "getcontractstate",
+                asList(scriptHash),
                 neow3jService,
-                NeoGetTxOut.class);
+                NeoGetContractState.class);
     }
 
     @Override
-    public Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex) {
+    public Request<?, NeoGetRawMemPool> getRawMemPool() {
         return new Request<>(
-                "sendrawtransaction",
-                Arrays.asList(rawTransactionHex),
+                "getrawmempool",
+                emptyList(),
                 neow3jService,
-                NeoSendRawTransaction.class);
-    }
-
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value) {
-        return sendToAddress(assetId, toAddress, value, null, null);
-    }
-
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee) {
-        return sendToAddress(assetId, toAddress, value, fee, null);
-    }
-
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee, String changeAddress) {
-        return new Request<>(
-                "sendtoaddress",
-                Arrays.asList(assetId, toAddress, value, fee, changeAddress).stream()
-                        .filter((param) -> (param != null && !isEmpty(param)))
-                        .collect(Collectors.toList()),
-                neow3jService,
-                NeoSendToAddress.class);
+                NeoGetRawMemPool.class);
     }
 
     @Override
     public Request<?, NeoGetTransaction> getTransaction(String txId) {
         return new Request<>(
                 "getrawtransaction",
-                Arrays.asList(txId, 1),
+                asList(txId, 1),
                 neow3jService,
                 NeoGetTransaction.class);
     }
@@ -337,27 +228,222 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetRawTransaction> getRawTransaction(String txId) {
         return new Request<>(
                 "getrawtransaction",
-                Arrays.asList(txId, 0),
+                asList(txId, 0),
                 neow3jService,
                 NeoGetRawTransaction.class);
+    }
+
+    @Override
+    public Request<?, NeoGetStorage> getStorage(String contractAddress, HexParameter keyToLookUp) {
+        return getStorage(contractAddress, keyToLookUp.getHexValue());
+    }
+
+    @Override
+    public Request<?, NeoGetStorage> getStorage(String contractAddress,
+            String keyToLookUpAsHexString) {
+        return new Request<>(
+                "getstorage",
+                asList(contractAddress, keyToLookUpAsHexString),
+                neow3jService,
+                NeoGetStorage.class);
+    }
+
+    @Override
+    public Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId) {
+        return new Request<>(
+                "gettransactionheight",
+                asList(txId),
+                neow3jService,
+                NeoGetTransactionHeight.class);
+    }
+
+    @Override
+    public Request<?, NeoGetValidators> getValidators() {
+        return new Request<>(
+                "getvalidators",
+                emptyList(),
+                neow3jService,
+                NeoGetValidators.class);
+    }
+
+    // Node Methods
+
+    @Override
+    public Request<?, NeoConnectionCount> getConnectionCount() {
+        return new Request<>(
+                "getconnectioncount",
+                emptyList(),
+                neow3jService,
+                NeoConnectionCount.class);
+    }
+
+    @Override
+    public Request<?, NeoGetPeers> getPeers() {
+        return new Request<>(
+                "getpeers",
+                emptyList(),
+                neow3jService,
+                NeoGetPeers.class);
+    }
+
+    @Override
+    public Request<?, NeoGetVersion> getVersion() {
+        return new Request<>(
+                "getversion",
+                emptyList(),
+                neow3jService,
+                NeoGetVersion.class);
+    }
+
+    @Override
+    public Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex) {
+        return new Request<>(
+                "sendrawtransaction",
+                asList(rawTransactionHex),
+                neow3jService,
+                NeoSendRawTransaction.class);
+    }
+
+    @Override
+    public Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex) {
+        return new Request<>(
+                "submitblock",
+                asList(serializedBlockAsHex),
+                neow3jService,
+                NeoSubmitBlock.class);
+    }
+
+    // SmartContract Methods
+
+    @Override
+    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
+            String functionName) {
+        return invokeFunction(contractScriptHash, functionName, null);
+    }
+
+    @Override
+    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
+            String functionName, List<ContractParameter> params) {
+        return new Request<>(
+                "invokefunction",
+                asList(contractScriptHash, functionName, params).stream()
+                        .filter((param) -> (param != null))
+                        .collect(Collectors.toList()),
+                neow3jService,
+                NeoInvokeFunction.class);
+    }
+
+    @Override
+    public Request<?, NeoInvokeScript> invokeScript(String script) {
+        return new Request<>(
+                "invokescript",
+                asList(script),
+                neow3jService,
+                NeoInvokeScript.class);
+    }
+
+    // Utilities Methods
+
+    @Override
+    public Request<?, NeoListPlugins> listPlugins() {
+        return new Request<>(
+                "listplugins",
+                emptyList(),
+                neow3jService,
+                NeoListPlugins.class);
+    }
+
+    @Override
+    public Request<?, NeoValidateAddress> validateAddress(String address) {
+        return new Request<>(
+                "validateaddress",
+                asList(address),
+                neow3jService,
+                NeoValidateAddress.class);
+    }
+
+    // Wallet Methods
+
+    @Override
+    public Request<?, NeoCloseWallet> closeWallet() {
+        return new Request<>(
+                "closewallet",
+                emptyList(),
+                neow3jService,
+                NeoCloseWallet.class);
+    }
+
+    @Override
+    public Request<?, NeoOpenWallet> openWallet(String walletPath, String password) {
+        return new Request<>(
+                "openwallet",
+                asList(walletPath, password),
+                neow3jService,
+                NeoOpenWallet.class);
+    }
+
+    @Override
+    public Request<?, NeoDumpPrivKey> dumpPrivKey(String address) {
+        return new Request<>(
+                "dumpprivkey",
+                asList(address),
+                neow3jService,
+                NeoDumpPrivKey.class);
     }
 
     @Override
     public Request<?, NeoGetBalance> getBalance(String assetId) {
         return new Request<>(
                 "getbalance",
-                Arrays.asList(cleanHexPrefix(assetId)),
+                asList(cleanHexPrefix(assetId)),
                 neow3jService,
                 NeoGetBalance.class);
     }
 
     @Override
-    public Request<?, NeoGetAssetState> getAssetState(String assetId) {
+    public Request<?, NeoGetNewAddress> getNewAddress() {
         return new Request<>(
-                "getassetstate",
-                Arrays.asList(cleanHexPrefix(assetId)),
+                "getnewaddress",
+                emptyList(),
                 neow3jService,
-                NeoGetAssetState.class);
+                NeoGetNewAddress.class);
+    }
+
+    @Override
+    public Request<?, NeoGetUnclaimedGas> getUnclaimedGas() {
+        return new Request<>(
+                "getunclaimedgas",
+                emptyList(),
+                neow3jService,
+                NeoGetUnclaimedGas.class);
+    }
+
+    @Override
+    public Request<?, NeoImportPrivKey> importPrivKey(String privateKeyInWIF) {
+        return new Request<>(
+                "importprivkey",
+                asList(privateKeyInWIF),
+                neow3jService,
+                NeoImportPrivKey.class);
+    }
+
+    @Override
+    public Request<?, NeoListAddress> listAddress() {
+        return new Request<>(
+                "listaddress",
+                emptyList(),
+                neow3jService,
+                NeoListAddress.class);
+    }
+
+    @Override
+    public Request<?, NeoSendFrom> sendFrom(String assetId, String fromAddress,
+            String toAddress, String value) {
+        return new Request<>(
+                "sendfrom",
+                asList(assetId, toAddress, value),
+                neow3jService,
+                NeoSendFrom.class);
     }
 
     @Override
@@ -371,10 +457,11 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee, String changeAddress) {
+    public Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee,
+            String changeAddress) {
         return new Request<>(
                 "sendmany",
-                Arrays.asList(outputs, fee, changeAddress).stream()
+                asList(outputs, fee, changeAddress).stream()
                         .filter((param) -> (param != null))
                         .collect(Collectors.toList()),
                 neow3jService,
@@ -382,115 +469,79 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoDumpPrivKey> dumpPrivKey(String address) {
+    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress,
+            String value) {
+        return sendToAddress(assetId, toAddress, value, null, null);
+    }
+
+    @Override
+    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress,
+            String value, String fee) {
+        return sendToAddress(assetId, toAddress, value, fee, null);
+    }
+
+    @Override
+    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress,
+            String value, String fee, String changeAddress) {
         return new Request<>(
-                "dumpprivkey",
-                Arrays.asList(address),
-                neow3jService,
-                NeoDumpPrivKey.class);
-    }
-
-    @Override
-    public Request<?, NeoGetStorage> getStorage(String contractAddress, HexParameter keyToLookUp) {
-        return getStorage(contractAddress, keyToLookUp.getHexValue());
-    }
-
-    @Override
-    public Request<?, NeoGetStorage> getStorage(String contractAddress, String keyToLookUpAsHexString) {
-        return new Request<>(
-                "getstorage",
-                Arrays.asList(contractAddress, keyToLookUpAsHexString),
-                neow3jService,
-                NeoGetStorage.class);
-    }
-
-    @Override
-    public Request<?, NeoInvoke> invoke(String contractScriptHash, List<ContractParameter> params) {
-        return new Request<>(
-                "invoke",
-                Arrays.asList(contractScriptHash, params),
-                neow3jService,
-                NeoInvoke.class);
-    }
-
-    @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName) {
-        return invokeFunction(contractScriptHash, functionName, null);
-    }
-
-    @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName, List<ContractParameter> params) {
-        return new Request<>(
-                "invokefunction",
-                Arrays.asList(contractScriptHash, functionName, params).stream()
-                        .filter((param) -> (param != null))
+                "sendtoaddress",
+                asList(assetId, toAddress, value, fee, changeAddress).stream()
+                        .filter((param) -> (param != null && !isEmpty(param)))
                         .collect(Collectors.toList()),
                 neow3jService,
-                NeoInvokeFunction.class);
+                NeoSendToAddress.class);
+    }
+
+    // RpcNep5Tracker
+
+    @Override
+    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address) {
+        return new Request<>(
+                "getnep5transfers",
+                asList(address),
+                neow3jService,
+                NeoGetNep5Transfers.class);
     }
 
     @Override
-    public Request<?, NeoInvokeScript> invokeScript(String script) {
+    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date until) {
         return new Request<>(
-                "invokescript",
-                Arrays.asList(script),
+                "getnep5transfers",
+                asList(address, until.getTime()),
                 neow3jService,
-                NeoInvokeScript.class);
+                NeoGetNep5Transfers.class);
     }
 
     @Override
-    public Request<?, NeoGetContractState> getContractState(String scriptHash) {
+    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date from, Date to) {
         return new Request<>(
-                "getcontractstate",
-                Arrays.asList(scriptHash),
+                "getnep5transfers",
+                asList(address, from.getTime(), to.getTime()),
                 neow3jService,
-                NeoGetContractState.class);
-    }
-
-    @Override
-    public Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex) {
-        return new Request<>(
-                "submitblock",
-                Arrays.asList(serializedBlockAsHex),
-                neow3jService,
-                NeoSubmitBlock.class);
-    }
-
-    @Override
-    public Request<?, NeoGetUnspents> getUnspents(String address) {
-        return new Request<>(
-                "getunspents",
-                Arrays.asList(address),
-                neow3jService,
-                NeoGetUnspents.class);
+                NeoGetNep5Transfers.class);
     }
 
     @Override
     public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
         return new Request<>(
                 "getnep5balances",
-                Arrays.asList(address),
+                asList(address),
                 neow3jService,
                 NeoGetNep5Balances.class);
     }
 
-    @Override
-    public Request<?, NeoGetClaimable> getClaimable(String address) {
-        return new Request<>(
-                "getclaimable",
-                Arrays.asList(address),
-                neow3jService,
-                NeoGetClaimable.class);
-    }
+    // ApplicationLogs
 
     @Override
-    public Request<?, NeoListPlugins> listPlugins() {
+    public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
         return new Request<>(
-                "listplugins",
-                Collections.<String>emptyList(),
+                "getapplicationlog",
+                asList(txId),
                 neow3jService,
-                NeoListPlugins.class);
+                NeoGetApplicationLog.class);
     }
+
+    // Neow3j Rx Convenience methods:
 
     @Override
     public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects) {
@@ -531,15 +582,6 @@ public class JsonRpc2_0Neow3j implements Neow3j {
             BlockParameter startBlock, boolean fullTransactionObjects) {
         return neow3jRx.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 startBlock, fullTransactionObjects, blockTime);
-    }
-
-    @Override
-    public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
-        return new Request<>(
-                "getapplicationlog",
-                Collections.singletonList(txId),
-                neow3jService,
-                NeoGetApplicationLog.class);
     }
 
     @Override

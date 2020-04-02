@@ -232,12 +232,6 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testInvoke() throws IOException {
-        // TODO: 2019-03-17 Guil:
-        // to be implemented
-    }
-
-    @Test
     public void testInvokeFunction() throws IOException {
         // TODO: 2019-03-17 Guil:
         // to be implemented
