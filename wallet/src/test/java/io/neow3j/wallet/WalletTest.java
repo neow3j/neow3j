@@ -105,13 +105,13 @@ public class WalletTest {
 
         final String address = "AUcY65mkxygUB5bXZqYhNKsrq1khuncqr3";
         Wallet w = new Wallet.Builder().build();
-        assertFalse(w.removeAccount(address));
+        assertFalse(w.removeAccount(ScriptHash.fromAddress(address)));
         Account acct1 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct1);
         Account acct2 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct2);
-        assertTrue(w.removeAccount(acct1.getAddress()));
-        assertTrue(w.removeAccount(acct2.getAddress()));
+        assertTrue(w.removeAccount(acct1.getScriptHash()));
+        assertTrue(w.removeAccount(acct2.getScriptHash()));
     }
 
     @Test
