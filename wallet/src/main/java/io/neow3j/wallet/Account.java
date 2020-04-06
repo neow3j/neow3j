@@ -80,17 +80,21 @@ public class Account {
         }
     }
 
+    /**
+     * Gets this account's EC private key.
+     *
+     * @return The private key.
+     */
     public ECPrivateKey getPrivateKey() {
         return this.privateKey;
     }
 
-    // TODO: Remove this method and replace all occurrences with the method below.
-    public BigInteger getPublicKey() {
-        return Numeric.toBigInt(this.publicKey.getEncoded(true));
-    }
-
-    // TODO: Rename as soon as the above method has been removed.
-    public ECPublicKey getPublicKey2() {
+    /**
+     * Gets this account's EC public key.
+     *
+     * @return The public key.
+     */
+    public ECPublicKey getPublicKey() {
         return this.publicKey;
     }
 

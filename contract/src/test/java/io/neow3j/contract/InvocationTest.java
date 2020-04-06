@@ -403,7 +403,7 @@ public class InvocationTest {
                 .map(wit -> wit.getVerificationScript().getPublicKeys().get(0))
                 .collect(Collectors.toList());
         assertThat(signers, containsInAnyOrder(
-                w.getDefaultAccount().getPublicKey2(), cosigner.getPublicKey2()));
+                w.getDefaultAccount().getPublicKey(), cosigner.getPublicKey()));
     }
 
     @Test(expected = InvocationConfigurationException.class)
