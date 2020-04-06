@@ -22,4 +22,8 @@ public class UnexpectedReturnTypeException extends RuntimeException {
                         .map(StackItemType::jsonValue)
                         .collect(Collectors.joining(", ", "", ""))));
     }
+
+    public UnexpectedReturnTypeException(String message, Exception e) {
+        super(message, e);
+    }
 }

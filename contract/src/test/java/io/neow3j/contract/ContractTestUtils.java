@@ -56,7 +56,7 @@ public class ContractTestUtils {
                         .withBody(responseBody)));
     }
 
-    private static String loadFile(String fileName) throws IOException {
+    public static String loadFile(String fileName) throws IOException {
         String absFileName = ContractTestUtils.class.getResource(fileName).getFile();
         FileInputStream inStream = new FileInputStream(new File(absFileName));
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
