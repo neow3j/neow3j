@@ -77,7 +77,7 @@ public class NeoURITest {
         NeoURI neoURI = new NeoURI.Builder()
                 .toAddress(VALID_ADDRESS)
                 .asset("gas")
-                .amount("1.0")
+                .amount("0.1")
                 .ecdh02("02ed53ad58c838435d4dd7a4b25c1eba01384c814ca53a539405434807afbb04b4")
                 .build();
         String uri = neoURI.getUri();
