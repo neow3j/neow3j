@@ -15,12 +15,24 @@ public class NeoURI {
 
     private URI uri;
 
+    private String address;
+    private Map<String, String> query;
+    private List<String> hashs;
+    private List<String> remarks;
+
     protected NeoURI(Builder builder) {
         this.uri = builder.uri;
+
+        this.address = builder.address;
+        this.query = builder.query;
+        this.hashs = builder.hashs;
+        this.remarks = builder.remarks;
     }
 
     private NeoURI(String uriString) {
         this.uri = URI.create(uriString);
+        // TODO: 22.04.20 Michael: make individual parts better accessible for better handling in using classes.
+        //  Getter for every individual part?
     }
 
     public static NeoURI fromURI(String uriString) {
@@ -35,6 +47,28 @@ public class NeoURI {
         return this.uri;
     }
 
+    public ScriptHash getAddress() {
+        return ScriptHash.fromAddress(this.address);
+    }
+
+    public ScriptHash getAsset() {
+        String asset = this.query.get("asset");
+        return new ScriptHash(asset);
+    }
+
+    public BigDecimal getAmount() {
+        String amount = this.query.get("amount");
+        return new BigDecimal(amount);
+    }
+
+    public List<String> getHashs() {
+        return this.hashs;
+    }
+
+    public List<String> getRemarks() {
+        return this.remarks;
+    }
+
     public static class Builder {
         private String scheme;
         private String address;
@@ -43,7 +77,6 @@ public class NeoURI {
         private List<String> hashs;
         private List<String> remarks;
 
-        private String uriString;
         private URI uri;
 
         public Builder() {
@@ -163,14 +196,15 @@ public class NeoURI {
             String basePart = buildBasePart();
             String queryPart = buildQueryPart();
 
+            String uriString;
             if (queryPart.isEmpty()) {
-                this.uriString = basePart;
+                uriString = basePart;
             } else {
-                this.uriString = basePart + "?" + queryPart;
+                uriString = basePart + "?" + queryPart;
             }
 
             // Create a URI object from the generated URI string
-            this.uri = URI.create(this.uriString);
+            this.uri = URI.create(uriString);
 
             return new NeoURI(this);
         }

@@ -2,21 +2,11 @@ package io.neow3j.contract;
 
 import org.junit.Test;
 
-import java.net.URI;
-
 import static org.junit.Assert.assertEquals;
 
 public class NeoURITest {
 
     private final String BEGIN_TX = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
-
-    private final String BEGIN_TX_ASSET = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo";
-
-    private final String BEGIN_TX_ASSET_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1";
-
-    private final String BEGIN_TX_DESCRIPTION = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1.0&description=Hello";
-
-    private final String BEGIN_TX_ECDH02 = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=gas&amount=0.1&ecdh02=02ed53ad58c838435d4dd7a4b25c1eba01384c814ca53a539405434807afbb04b4";
 
     private final String VALID_ADDRESS = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
 
@@ -48,7 +38,8 @@ public class NeoURITest {
 
         String uri = neoURI.getUriAsString();
 
-        assertEquals(BEGIN_TX_ASSET, uri);
+        String beginTxAsset = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo";
+        assertEquals(beginTxAsset, uri);
     }
 
     @Test
@@ -63,7 +54,8 @@ public class NeoURITest {
 
         String uri = neoURI.getUriAsString();
 
-        assertEquals(BEGIN_TX_ASSET_AMOUNT, uri);
+        String beginTxAssetAmount = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1";
+        assertEquals(beginTxAssetAmount, uri);
     }
 
     @Test
@@ -77,7 +69,8 @@ public class NeoURITest {
 
         String uri = neoURI.getUriAsString();
 
-        assertEquals(BEGIN_TX_DESCRIPTION, uri);
+        String beginTxDescription = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1.0&description=Hello";
+        assertEquals(beginTxDescription, uri);
     }
 
     @Test
@@ -90,7 +83,8 @@ public class NeoURITest {
                 .build();
         String uri = neoURI.getUriAsString();
 
-        assertEquals(BEGIN_TX_ECDH02, uri);
+        String beginTxEcdh02 = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=gas&amount=0.1&ecdh02=02ed53ad58c838435d4dd7a4b25c1eba01384c814ca53a539405434807afbb04b4";
+        assertEquals(beginTxEcdh02, uri);
     }
 
     @Test(expected = IllegalStateException.class)

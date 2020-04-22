@@ -6,6 +6,8 @@ import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
+import org.bouncycastle.util.Strings;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -161,4 +163,14 @@ public class Nep5Token extends SmartContract {
                 .send();
     }
 
+    public String transferFromURI(Wallet wallet, NeoURI neoURI) throws IOException, ErrorResponseException {
+        ScriptHash to = neoURI.getAddress(); // TODO: 22.04.20 Michael: handle insufficient uri
+        BigDecimal amount = neoURI.getAmount();
+
+        if (this.scriptHash != neoURI.getAsset()) {
+            return "";
+        }
+
+        return transfer(wallet, to, amount);
+    }
 }

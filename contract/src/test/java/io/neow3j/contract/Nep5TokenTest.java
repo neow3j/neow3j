@@ -7,12 +7,14 @@ import static org.junit.Assert.fail;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -51,6 +53,25 @@ public class Nep5TokenTest {
                 BigDecimal.ONE);
         // TODO: Setup a raw transaction that contains the expected transaction bytes for a
         //  transfer.
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void transferTokenFromURI() throws IOException, ErrorResponseException {
+        ContractTestUtils.setUpWireMockForSendRawTransaction();
+        ContractTestUtils
+                .setUpWireMockForInvokeFunction("transfer", "invokefunction_transfer.json");
+        ContractTestUtils
+                .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+        ContractTestUtils.setUpWireMockForGetBlockCount();;
+
+        Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
+        Wallet w = Wallet.createWallet();
+        String s = this.contract.toString();
+        // TODO: 22.04.20 Michael: reverse transaction from transferToken() test, so that same mock json can be used.
+        NeoURI neoURI = NeoURI.fromURI("neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=" + s + "&amount=");
+        nep5.transferFromURI(w, neoURI);
         fail();
     }
 
