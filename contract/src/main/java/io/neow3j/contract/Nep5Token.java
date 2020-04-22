@@ -163,13 +163,18 @@ public class Nep5Token extends SmartContract {
     }
 
     public String transferFromURI(Wallet wallet, NeoURI neoURI) throws IOException, ErrorResponseException {
-        ScriptHash to = neoURI.getAddress(); // TODO: 22.04.20 Michael: handle insufficient uri
+        ScriptHash to = neoURI.getAddress();
         BigDecimal amount = neoURI.getAmount();
+        ScriptHash asset = neoURI.getAsset();
 
-        if (this.scriptHash != neoURI.getAsset()) {
+        if (asset == null || amount == null) {
             return "";
         }
 
-        return transfer(wallet, to, amount);
+        if (this.scriptHash.equals(asset)) {
+            return transfer(wallet, to, amount);
+        }
+
+        return "";
     }
 }

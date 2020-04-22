@@ -87,6 +87,10 @@ public class NeoURI {
         }
 
         public Builder toAddress(String address) {
+            if (!AddressUtils.isValidAddress(address)) {
+                throw new IllegalStateException("Invalid address used.");
+            }
+
             this.address = address;
             return this;
         }
@@ -189,9 +193,6 @@ public class NeoURI {
             if (this.address == null) {
                 throw new IllegalStateException("Address not set.");
             }
-            if (!AddressUtils.isValidAddress(this.address)) {
-                throw new IllegalStateException("Invalid address used.");
-            }
 
             String basePart = buildBasePart();
             String queryPart = buildQueryPart();
@@ -246,6 +247,21 @@ public class NeoURI {
             if (isNotEmptyAndNotNull(this.query.get("description"))) {
                 query.add("description=" + this.query.get("description"));
             }
+
+            for (int i = 0; i < this.hashes.size(); i++) {
+                int hashNr = i+1;
+                query.add("hash"+hashNr+"="+this.hashes.get(i));
+            }
+
+            for (int i = 0; i < this.remarks.size(); i++) {
+                if (i==0) {
+                    query.add("remark="+this.remarks.get(0));
+                } else {
+                    int remarkNr = i + 1;
+                    query.add("remark"+remarkNr+"="+this.remarks.get(i));
+                }
+            }
+
 
             return Strings.join(query, "&");
         }

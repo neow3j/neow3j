@@ -87,6 +87,37 @@ public class NeoURITest {
         assertEquals(beginTxEcdh02, uri);
     }
 
+    @Test
+    public void addCustomHashes() {
+        NeoURI neoURI = new NeoURI.Builder()
+                .toAddress(VALID_ADDRESS)
+                .asset("neo")
+                .amount("1.0")
+                .customHash("h1")
+                .customHash("h2")
+                .customHash("h3")
+                .build();
+
+        String uri = neoURI.getUriAsString();
+        String remarkUri = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1.0&hash1=h1&hash2=h2&hash3=h3";
+        assertEquals(remarkUri, uri);
+    }
+
+    @Test
+    public void addRemarks() {
+        NeoURI neoURI = new NeoURI.Builder()
+                .toAddress(VALID_ADDRESS)
+                .asset("neo")
+                .amount("1.0")
+                .remark("remark1")
+                .remark("remark2")
+                .build();
+
+        String uri = neoURI.getUriAsString();
+        String remarkUri = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1.0&remark=remark1&remark2=remark2";
+        assertEquals(remarkUri, uri);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void useInvalidAddress() {
         String invalidAddress = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp";
