@@ -3,6 +3,9 @@ package io.neow3j.contract;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Strings;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,14 +13,26 @@ import java.util.Map;
 
 public class NeoURI {
 
-    private String uri;
+    private URI uri;
 
     protected NeoURI(Builder builder) {
         this.uri = builder.uri;
     }
 
-    public String getUri() {
-        return uri;
+    private NeoURI(String uriString) {
+        this.uri = URI.create(uriString);
+    }
+
+    public static NeoURI fromURI(String uriString) {
+        return new NeoURI(uriString);
+    }
+
+    public String getUriAsString() {
+        return this.uri.toString();
+    }
+
+    public URI getUri() {
+        return this.uri;
     }
 
     public static class Builder {
@@ -28,7 +43,8 @@ public class NeoURI {
         private List<String> hashs;
         private List<String> remarks;
 
-        private String uri;
+        private String uriString;
+        private URI uri;
 
         public Builder() {
             this.scheme = "neo";
@@ -47,19 +63,39 @@ public class NeoURI {
             return this;
         }
 
+        public Builder asset(ScriptHash asset) {
+            this.query.put("asset", asset.toString());
+            return this;
+        }
+
         public Builder amount(String amount) {
             // TODO: 20.04.20 Michael: handle decimals if needed.
             this.query.put("amount", amount);
             return this;
         }
 
-        public Builder amount(int amount) {
-            this.query.put("amount", String.valueOf((double) amount));
+        public Builder amount(Integer amount) {
+            this.query.put("amount", Integer.toString(amount));
+            return this;
+        }
+
+        public Builder amount(BigInteger amount) {
+            this.query.put("amount", amount.toString());
+            return this;
+        }
+
+        public Builder amount(BigDecimal amount) {
+            this.query.put("amount", amount.toString());
             return this;
         }
 
         public Builder contractHash(String contractHash) {
             this.query.put("contractHash", contractHash);
+            return this;
+        }
+
+        public Builder contractHash(ScriptHash contractHash) {
+            this.query.put("contractHash", contractHash.toString());
             return this;
         }
 
@@ -128,10 +164,13 @@ public class NeoURI {
             String queryPart = buildQueryPart();
 
             if (queryPart.isEmpty()) {
-                this.uri = basePart;
+                this.uriString = basePart;
             } else {
-                this.uri = basePart + "?" + queryPart;
+                this.uriString = basePart + "?" + queryPart;
             }
+
+            // Create a URI object from the generated URI string
+            this.uri = URI.create(this.uriString);
 
             return new NeoURI(this);
         }

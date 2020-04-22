@@ -2,7 +2,7 @@ package io.neow3j.contract;
 
 import org.junit.Test;
 
-import java.net.URISyntaxException;
+import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,7 +12,7 @@ public class NeoURITest {
 
     private final String BEGIN_TX_ASSET = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo";
 
-    private final String BEGIN_TX_ASSET_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1.0";
+    private final String BEGIN_TX_ASSET_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1";
 
     private final String BEGIN_TX_DESCRIPTION = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1.0&description=Hello";
 
@@ -21,12 +21,20 @@ public class NeoURITest {
     private final String VALID_ADDRESS = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
 
     @Test
-    public void beginTx() throws URISyntaxException {
+    public void fromUri() {
+        NeoURI neoURI = NeoURI.fromURI(BEGIN_TX);
+        String uriString = neoURI.getUriAsString();
+
+        assertEquals(BEGIN_TX, uriString);
+    }
+
+    @Test
+    public void beginTx() {
         NeoURI neoURI = new NeoURI.Builder()
                 .toAddress(VALID_ADDRESS)
                 .build();
 
-        String uri = neoURI.getUri();
+        String uri = neoURI.getUriAsString();
 
         assertEquals(BEGIN_TX, uri);
     }
@@ -38,7 +46,7 @@ public class NeoURITest {
                 .asset("neo")
                 .build();
 
-        String uri = neoURI.getUri();
+        String uri = neoURI.getUriAsString();
 
         assertEquals(BEGIN_TX_ASSET, uri);
     }
@@ -53,7 +61,7 @@ public class NeoURITest {
                 .amount(amount)
                 .build();
 
-        String uri = neoURI.getUri();
+        String uri = neoURI.getUriAsString();
 
         assertEquals(BEGIN_TX_ASSET_AMOUNT, uri);
     }
@@ -67,7 +75,7 @@ public class NeoURITest {
                 .description("Hello")
                 .build();
 
-        String uri = neoURI.getUri();
+        String uri = neoURI.getUriAsString();
 
         assertEquals(BEGIN_TX_DESCRIPTION, uri);
     }
@@ -80,7 +88,7 @@ public class NeoURITest {
                 .amount("0.1")
                 .ecdh02("02ed53ad58c838435d4dd7a4b25c1eba01384c814ca53a539405434807afbb04b4")
                 .build();
-        String uri = neoURI.getUri();
+        String uri = neoURI.getUriAsString();
 
         assertEquals(BEGIN_TX_ECDH02, uri);
     }
