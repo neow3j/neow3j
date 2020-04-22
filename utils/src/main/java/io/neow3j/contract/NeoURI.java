@@ -54,7 +54,7 @@ public class NeoURI {
         }
 
         public Builder amount(int amount) {
-            this.query.put("amount", String.valueOf(amount));
+            this.query.put("amount", String.valueOf((double) amount));
             return this;
         }
 
@@ -98,7 +98,7 @@ public class NeoURI {
             return this;
         }
 
-        // TODO: 20.04.20 Michael: add hashs and remarkds to URI
+        // TODO: 20.04.20 Michael: add hashs and remarks to URI
         public Builder customHash(String hash) {
             if (this.hashs.size() <= 15) {
                 this.hashs.add(hash);
@@ -127,7 +127,12 @@ public class NeoURI {
             String basePart = buildBasePart();
             String queryPart = buildQueryPart();
 
-            this.uri = basePart + "?" + queryPart;
+            if (queryPart.isEmpty()) {
+                this.uri = basePart;
+            } else {
+                this.uri = basePart + "?" + queryPart;
+            }
+
             return new NeoURI(this);
         }
 
