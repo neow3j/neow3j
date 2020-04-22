@@ -6,7 +6,6 @@ import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
-import org.bouncycastle.util.Strings;
 
 import java.io.IOException;
 import java.math.BigDecimal;

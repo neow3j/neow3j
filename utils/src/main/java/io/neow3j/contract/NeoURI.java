@@ -17,7 +17,7 @@ public class NeoURI {
 
     private String address;
     private Map<String, String> query;
-    private List<String> hashs;
+    private List<String> hashes;
     private List<String> remarks;
 
     protected NeoURI(Builder builder) {
@@ -25,7 +25,7 @@ public class NeoURI {
 
         this.address = builder.address;
         this.query = builder.query;
-        this.hashs = builder.hashs;
+        this.hashes = builder.hashes;
         this.remarks = builder.remarks;
     }
 
@@ -61,8 +61,8 @@ public class NeoURI {
         return new BigDecimal(amount);
     }
 
-    public List<String> getHashs() {
-        return this.hashs;
+    public List<String> getHashes() {
+        return this.hashes;
     }
 
     public List<String> getRemarks() {
@@ -74,7 +74,7 @@ public class NeoURI {
         private String address;
 
         private Map<String, String> query;
-        private List<String> hashs;
+        private List<String> hashes;
         private List<String> remarks;
 
         private URI uri;
@@ -82,7 +82,7 @@ public class NeoURI {
         public Builder() {
             this.scheme = "neo";
             this.query = new HashMap<>();
-            this.hashs = new ArrayList<>();
+            this.hashes = new ArrayList<>();
             this.remarks = new ArrayList<>();
         }
 
@@ -167,10 +167,10 @@ public class NeoURI {
             return this;
         }
 
-        // TODO: 20.04.20 Michael: add hashs and remarks to URI
+        // TODO: 20.04.20 Michael: add hashes and remarks to URI
         public Builder customHash(String hash) {
-            if (this.hashs.size() <= 15) {
-                this.hashs.add(hash);
+            if (this.hashes.size() <= 15) {
+                this.hashes.add(hash);
             }
             return this;
         }
