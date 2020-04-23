@@ -1,9 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -163,39 +161,4 @@ public class Nep5Token extends SmartContract {
                 .send();
     }
 
-    private String callFuncReturningString(String function)
-            throws UnexpectedReturnTypeException, IOException {
-
-        StackItem item = invoke(function).run().getInvocationResult().getStack().get(0);
-        if (item.getType().equals(StackItemType.BYTE_ARRAY)) {
-            return item.asByteArray().getAsString();
-        }
-        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BYTE_ARRAY);
-    }
-
-    protected BigInteger callFuncReturningInt(String function, ContractParameter... params)
-            throws IOException, UnexpectedReturnTypeException {
-
-        StackItem item;
-        if (params.length > 0) {
-            item = invoke(function).run().getInvocationResult().getStack().get(0);
-        } else {
-            item = invoke(function).withParameters(params).run()
-                    .getInvocationResult().getStack().get(0);
-        }
-        if (item.getType().equals(StackItemType.INTEGER)) {
-            return item.asInteger().getValue();
-        }
-        if (item.getType().equals(StackItemType.BYTE_ARRAY)) {
-            return item.asByteArray().getAsNumber();
-        }
-        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
-                StackItemType.BYTE_ARRAY);
-    }
-
-    private BigInteger callFuncReturningInt(String function)
-            throws UnexpectedReturnTypeException, IOException {
-
-        return callFuncReturningInt(function, new ContractParameter[]{});
-    }
 }

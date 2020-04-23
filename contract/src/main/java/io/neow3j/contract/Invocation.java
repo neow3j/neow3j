@@ -4,6 +4,7 @@ import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.InvocationConfigurationException;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
@@ -42,7 +43,8 @@ public class Invocation {
         response.throwOnError();
         return "";
         // TODO: Adapt as soon as JSON-RPC implementation is adapted to Neo 3.
-        // The new return type of the `sendrawtransaction` RPC call in Neo 3 is the transaction hash.
+        // The new return type of the `sendrawtransaction` RPC call in Neo 3 is the transaction
+        // hash.
         // return response.getResult();
     }
 
@@ -56,13 +58,21 @@ public class Invocation {
      * @return this invocation object.
      */
     public Invocation sign() {
-        try {
-            Account sendingAcc = this.wallet.getAccount(this.transaction.getSender());
-            this.transaction.addWitness(
-                    Witness.createWitness(getTransactionForSigning(), sendingAcc.getECKeyPair()));
-        } catch (AccountStateException e) {
-            throw new InvocationConfigurationException("Cannot automatically sign with given "
-                    + "account. The account object needs a decrypted private key.");
+       byte[] txBytes = getTransactionForSigning();
+        for (Cosigner c : this.transaction.getCosigners()) {
+            Account a = this.wallet.getAccount(c.getAccount());
+            if (a == null) {
+                throw new InvocationConfigurationException("Wallet does not contain the account "
+                        + "for cosigner with script hash " + c.getAccount());
+            }
+            ECKeyPair kp;
+            try {
+                kp = a.getECKeyPair();
+            } catch (AccountStateException e) {
+                throw new InvocationConfigurationException("Cannot sign transaction with account "
+                        + "with script hash " + c.getAccount(), e);
+            }
+            this.transaction.addWitness(Witness.createWitness(txBytes, kp));
         }
         return this;
     }

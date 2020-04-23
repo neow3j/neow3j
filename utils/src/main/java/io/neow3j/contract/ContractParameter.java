@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Contract parameters are used for example in contract invocations and represent an input parameter.
- * But they can also represent an output type and value.
+ * Contract parameters are used for example in contract invocations and represent an input
+ * parameter. But they can also represent an output type and value.
  */
 @JsonSerialize(using = ContractParameterSerializer.class)
 @JsonDeserialize(using = ContractParameterDeserializer.class)
@@ -101,17 +101,18 @@ public class ContractParameter {
     }
 
     /**
-     * Creates a byte array parameter from the given address.
-     * The address is converted to its script hash.
+     * Creates a byte array parameter from the given address. The address is converted to its script
+     * hash.
      *
      * @param address An address.
      * @return the contract parameter.
      */
+    // TODO: Rename to `fromScriptHash` or `fromAddress`
     public static ContractParameter byteArrayFromAddress(String address) {
         if (!AddressUtils.isValidAddress(address)) {
             throw new IllegalArgumentException("Argument is not a valid address.");
         }
-        return byteArray(ScriptHash.fromAddress(address).toArray());
+        return byteArray(ScriptHash.fromAddress(address).toString());
     }
 
     /**
@@ -246,19 +247,26 @@ public class ContractParameter {
     public static ContractParameter hash256(byte[] hash) {
         if (hash.length != 32) {
             throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes long but was "
-                + hash.length + " bytes long");
+                    + hash.length + " bytes long");
         }
         return new ContractParameter(ContractParameterType.HASH256, hash);
     }
 
-    public static ContractParameter publicKey(String publicKey) {
-        // TODO 17.07.19 claude: Implement
-        throw new UnsupportedOperationException();
-    }
-
+    /**
+     * Creates a public key parameter from the given public key bytes.
+     * <p>
+     * The public key must be encoded in compressed format as described in section 2.3.3 of
+     * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
+     *
+     * @param publicKey The public key to use in the parameter.
+     * @return the contract parameter.
+     */
     public static ContractParameter publicKey(byte[] publicKey) {
-        // TODO 17.07.19 claude: Implement
-        throw new UnsupportedOperationException();
+        if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
+            throw new IllegalArgumentException("Public key argument must be " +
+                    NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length +" bytes");
+        }
+        return new ContractParameter(ContractParameterType.PUBLIC_KEY, publicKey);
     }
 
     public String getParamName() {
@@ -275,8 +283,12 @@ public class ContractParameter {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ContractParameter)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ContractParameter)) {
+            return false;
+        }
         ContractParameter that = (ContractParameter) o;
 
         if (paramType == that.paramType &&
@@ -284,6 +296,7 @@ public class ContractParameter {
 
             if (paramType.equals(ContractParameterType.BYTE_ARRAY) ||
                     paramType.equals(ContractParameterType.SIGNATURE) ||
+                    paramType.equals(ContractParameterType.PUBLIC_KEY) ||
                     paramType.equals(ContractParameterType.HASH160) ||
                     paramType.equals(ContractParameterType.HASH256)) {
 
@@ -301,15 +314,6 @@ public class ContractParameter {
         return Objects.hash(paramName, paramType, value);
     }
 
-    @Override
-    public String toString() {
-        return "ContractParameter{" +
-                "paramName='" + paramName + '\'' +
-                ", paramType=" + paramType +
-                ", value=" + value +
-                '}';
-    }
-
     protected static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
 
         public ContractParameterSerializer() {
@@ -322,7 +326,7 @@ public class ContractParameter {
 
         @Override
         public void serialize(ContractParameter value, JsonGenerator gen,
-                              SerializerProvider provider) throws IOException {
+                SerializerProvider provider) throws IOException {
 
             serializeParameter(value, gen);
         }
@@ -346,9 +350,11 @@ public class ContractParameter {
                 case BYTE_ARRAY:
                 case SIGNATURE:
                 case HASH256:
+                case PUBLIC_KEY:
                     // Here we expect a simple byte array which is converted to a hex string. The
                     // byte order is not changed.
-                    gen.writeStringField("value", Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
+                    gen.writeStringField("value",
+                            Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
                     break;
                 case BOOLEAN:
                     // Convert to true or false without quotes
@@ -371,8 +377,6 @@ public class ContractParameter {
                     }
                     gen.writeEndArray();
                     break;
-                case PUBLIC_KEY:
-                    // TODO 30.07.19 claude: Implement public key serialization
                 default:
                     throw new UnsupportedOperationException("Parameter type \'" +
                             p.getParamType().toString() + "\' not supported.");
@@ -385,7 +389,8 @@ public class ContractParameter {
             extends ParameterDeserializer<ContractParameter> {
 
         @Override
-        public ContractParameter newInstance(String name, ContractParameterType type, Object value) {
+        public ContractParameter newInstance(String name, ContractParameterType type,
+                Object value) {
             return new ContractParameter(name, type, value);
         }
 
@@ -442,6 +447,7 @@ public class ContractParameter {
                 case BYTE_ARRAY:
                 case SIGNATURE:
                 case HASH256:
+                case PUBLIC_KEY:
                     // For byte array and signature the data is expected to be a hex string in the
                     // correct ordering. E.g. little-endian for Fixed8 numbers.
                     return Numeric.hexStringToByteArray(value.asText());
@@ -465,8 +471,6 @@ public class ContractParameter {
                 case INTEROP_INTERFACE:
                     // We assume that the interop interface parameter holds a plain string.
                     return value.asText();
-                case PUBLIC_KEY:
-                    // TODO 30.07.19 claude: Implement public key deserialization
                 default:
                     throw new UnsupportedOperationException("Parameter type \'" + type +
                             "\' not supported.");

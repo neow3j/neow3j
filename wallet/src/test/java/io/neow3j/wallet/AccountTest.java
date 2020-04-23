@@ -93,7 +93,7 @@ public class AccountTest {
                 "120c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b20c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2120b413073b3bb");
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(adr));
-        assertThat(a.getPublicKey2(), is(nullValue()));
+        assertThat(a.getPublicKey(), is(nullValue()));
         assertThat(a.getPrivateKey(), is(nullValue()));
         assertThat(a.getLabel(), is(adr));
         assertThat(a.getVerificationScript().getScript(), is(verScript));

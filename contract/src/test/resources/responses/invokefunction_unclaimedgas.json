@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "00640c140feced44a74300d9da049fa93670a43117188ff612c00c0c756e636c61696d65644761730c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52",
+    "state": "HALT",
+    "gas_consumed": "4007600",
+    "stack": [
+      {
+        "type": "Integer",
+        "value": "60000000000"
+      }
+    ]
+  }
+}

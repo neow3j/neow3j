@@ -133,8 +133,8 @@ public class Wallet {
      * @param address The address of the account to be removed.
      * @return true if an account was removed, false if no account with the given address was found.
      */
-    public boolean removeAccount(String address) {
-        return accounts.remove(ScriptHash.fromAddress(address)) != null;
+    public boolean removeAccount(ScriptHash scriptHash) {
+        return accounts.remove(scriptHash) != null;
     }
 
     public void decryptAllAccounts(String password)

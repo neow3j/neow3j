@@ -22,6 +22,7 @@ import io.neow3j.crypto.WIF;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -239,7 +241,9 @@ public class InvocationTest {
     }
 
     @Test
-    public void addSenderCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet() throws IOException {
+    public void addDefaultAccountCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet()
+            throws IOException {
+
         Wallet wallet = Wallet.createWallet();
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
@@ -256,7 +260,9 @@ public class InvocationTest {
     }
 
     @Test
-    public void addSenderCosignerIfNotExplicitlySetAndAnotherCosignerIsSet() throws IOException {
+    public void addDefaultAccountCosignerIfNotExplicitlySetAndAnotherCosignerIsSet()
+            throws IOException {
+
         Wallet wallet = Wallet.createWallet();
         Account other = Account.createAccount();
         wallet.addAccount(other);
@@ -277,9 +283,8 @@ public class InvocationTest {
     }
 
     @Test
-    public void dontAddDuplicateSenderCosignerIfAlreadySetExplicitly() throws IOException {
-        // WIF created from private key
-        // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
+    public void dontAddDuplicateDefaultAccountCosignerIfAlreadySetExplicitly() throws IOException {
+        // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account acc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
                 .isDefault(true).build();
@@ -297,6 +302,145 @@ public class InvocationTest {
         Cosigner expected = Cosigner.calledByEntry(acc.getScriptHash());
         assertThat(i.getTransaction().getCosigners(), hasSize(1));
         assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+    }
+
+    @Test
+    public void addSenderCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet() throws IOException {
+        // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
+        final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
+        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
+                .isDefault(true).build();
+        Wallet wallet = Wallet.createWallet();
+        wallet.addAccount(senderAcc);
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
+                .withSender(senderAcc.getScriptHash())
+                .validUntilBlock(1000)
+                .build();
+
+        Cosigner expected = Cosigner.calledByEntry(senderAcc.getScriptHash());
+        assertThat(i.getTransaction().getCosigners(), hasSize(1));
+        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+    }
+
+    @Test
+    public void addSenderCosignerIfNotExplicitlySetAndAnotherCosignerIsSet()
+            throws IOException {
+
+        // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
+        final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
+        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
+                .isDefault(true).build();
+        Wallet wallet = Wallet.createWallet();
+        wallet.addAccount(senderAcc);
+        Account other = Account.createAccount();
+        wallet.addAccount(other);
+        Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
+                .withSender(senderAcc.getScriptHash())
+                .withCosigners(cosigner)
+                .validUntilBlock(1000)
+                .build();
+
+        Cosigner expected = Cosigner.calledByEntry(senderAcc.getScriptHash());
+        assertThat(i.getTransaction().getCosigners(), hasSize(2));
+        assertThat(i.getTransaction().getCosigners(), containsInAnyOrder(expected, cosigner));
+    }
+
+    @Test
+    public void dontAddDuplicateSenderCosignerIfAlreadySetExplicitly() throws IOException {
+        // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
+        final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
+        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
+                .isDefault(true).build();
+
+        Wallet wallet = Wallet.createWallet();
+        wallet.addAccount(senderAcc);
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(wallet)
+                .withSender(senderAcc.getScriptHash())
+                .withCosigners(Cosigner.calledByEntry(senderAcc.getScriptHash()))
+                .validUntilBlock(1000)
+                .build();
+
+        Cosigner expected = Cosigner.calledByEntry(senderAcc.getScriptHash());
+        assertThat(i.getTransaction().getCosigners(), hasSize(1));
+        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+    }
+
+    @Test
+    public void signTransactionWithAdditionalCosigners() throws IOException {
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Wallet w = Wallet.createWallet();
+        Account cosigner = Account.createAccount();
+        w.addAccount(cosigner);
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(w)
+                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
+                .build()
+                .sign();
+
+        List<Witness> witnesses = i.getTransaction().getWitnesses();
+        assertThat(witnesses, hasSize(2));
+        List<ECPublicKey> signers = witnesses.stream()
+                .map(wit -> wit.getVerificationScript().getPublicKeys().get(0))
+                .collect(Collectors.toList());
+        assertThat(signers, containsInAnyOrder(
+                w.getDefaultAccount().getPublicKey(), cosigner.getPublicKey()));
+    }
+
+    @Test(expected = InvocationConfigurationException.class)
+    public void failBuildingInvocationBecauseWalletDoesntContainCosignerAccount()
+            throws IOException {
+
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Wallet w = Wallet.createWallet();
+        Account cosigner = Account.createAccount();
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(w)
+                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
+                .build();
+    }
+
+    @Test(expected = InvocationConfigurationException.class)
+    public void failSigningInvocationBecauseWalletDoesntContainCosignerAccount()
+            throws IOException {
+
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Wallet w = Wallet.createWallet();
+        Account cosigner = Account.createAccount();
+        w.addAccount(cosigner);
+        Invocation i = new InvocationBuilder(neow, contract, method)
+                .withWallet(w)
+                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
+                .build();
+        w.removeAccount(cosigner.getScriptHash());
+        i.sign();
     }
 
     @Test
