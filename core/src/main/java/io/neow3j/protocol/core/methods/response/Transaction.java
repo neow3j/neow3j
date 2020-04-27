@@ -59,4 +59,119 @@ public class Transaction {
     public Transaction() {
     }
 
+    public Transaction(String hash, long size, int version, Long nonce, String sender,
+            String sysFee, String netFee, Long validUntilBlock,
+            List<TransactionAttribute> attributes,
+            List<TransactionCosigner> cosigners, String script, String gas) {
+        this.hash = hash;
+        this.size = size;
+        this.version = version;
+        this.nonce = nonce;
+        this.sender = sender;
+        this.sysFee = sysFee;
+        this.netFee = netFee;
+        this.validUntilBlock = validUntilBlock;
+        this.attributes = attributes;
+        this.cosigners = cosigners;
+        this.script = script;
+        this.gas = gas;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public Long getNonce() {
+        return nonce;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public String getSysFee() {
+        return sysFee;
+    }
+
+    public String getNetFee() {
+        return netFee;
+    }
+
+    public Long getValidUntilBlock() {
+        return validUntilBlock;
+    }
+
+    public List<TransactionAttribute> getAttributes() {
+        return attributes;
+    }
+
+    public List<TransactionCosigner> getCosigners() {
+        return cosigners;
+    }
+
+    public String getScript() {
+        return script;
+    }
+
+    public String getGas() {
+        return gas;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Transaction)) {
+            return false;
+        }
+        Transaction that = (Transaction) o;
+        return getSize() == that.getSize() &&
+                getVersion() == that.getVersion() &&
+                Objects.equals(getHash(), that.getHash()) &&
+                Objects.equals(getNonce(), that.getNonce()) &&
+                Objects.equals(getSender(), that.getSender()) &&
+                Objects.equals(getSysFee(), that.getSysFee()) &&
+                Objects.equals(getNetFee(), that.getNetFee()) &&
+                Objects.equals(getValidUntilBlock(), that.getValidUntilBlock()) &&
+                Objects.equals(getAttributes(), that.getAttributes()) &&
+                Objects.equals(getCosigners(), that.getCosigners()) &&
+                Objects.equals(getScript(), that.getScript()) &&
+                Objects.equals(getGas(), that.getGas());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects
+                .hash(getHash(), getSize(), getVersion(), getNonce(), getSender(), getSysFee(),
+                        getNetFee(), getValidUntilBlock(), getAttributes(), getCosigners(),
+                        getScript(),
+                        getGas());
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "hash='" + hash + '\'' +
+                ", size=" + size +
+                ", version=" + version +
+                ", nonce=" + nonce +
+                ", sender='" + sender + '\'' +
+                ", sysFee='" + sysFee + '\'' +
+                ", netFee='" + netFee + '\'' +
+                ", validUntilBlock=" + validUntilBlock +
+                ", attributes=" + attributes +
+                ", cosigners=" + cosigners +
+                ", script='" + script + '\'' +
+                ", gas='" + gas + '\'' +
+                '}';
+    }
 }

@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -36,8 +37,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
-import io.neow3j.protocol.core.methods.response.TransactionOutput;
-
+import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import java.util.Date;
 import java.util.List;
 
@@ -56,7 +56,8 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlock(String address);
 
-    Request<?, NeoGetBlock> getBlock(BlockParameterIndex blockIndex, boolean returnFullTransactionObjects);
+    Request<?, NeoGetBlock> getBlock(BlockParameterIndex blockIndex,
+            boolean returnFullTransactionObjects);
 
     Request<?, NeoGetRawBlock> getRawBlock(BlockParameterIndex blockIndex);
 
@@ -74,6 +75,8 @@ public interface Neo {
 
     Request<?, NeoGetContractState> getContractState(String scriptHash);
 
+    Request<?, NeoGetMemPool> getMemPool();
+
     Request<?, NeoGetRawMemPool> getRawMemPool();
 
     Request<?, NeoGetTransaction> getTransaction(String txId);
@@ -88,7 +91,6 @@ public interface Neo {
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 
     Request<?, NeoGetValidators> getValidators();
-
 
     // Node Methods
 
@@ -106,7 +108,8 @@ public interface Neo {
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName);
 
-    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName, List<ContractParameter> params);
+    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
+            List<ContractParameter> params);
 
     Request<?, NeoInvokeScript> invokeScript(String script);
 
@@ -118,49 +121,48 @@ public interface Neo {
 
     // Wallet Methods
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
     Request<?, NeoCloseWallet> closeWallet();
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
     Request<?, NeoOpenWallet> openWallet(String walletPath, String password);
 
     Request<?, NeoDumpPrivKey> dumpPrivKey(String address);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
     Request<?, NeoGetBalance> getBalance(String assetId);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
     Request<?, NeoGetNewAddress> getNewAddress();
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
     Request<?, NeoGetUnclaimedGas> getUnclaimedGas();
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
     Request<?, NeoImportPrivKey> importPrivKey(String privateKeyInWIF);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
     Request<?, NeoListAddress> listAddress();
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
-    Request<?, NeoSendFrom> sendFrom(String assetId, String fromAddress, String toAddress, String value);
+    Request<?, NeoSendFrom> sendFrom(String fromAddress, String assetId, String toAddress,
+            String value);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
-    Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs);
+    Request<?, NeoSendFrom> sendFrom(String fromAddress, TransactionSendAsset txSendAsset);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
-    Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee);
+    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
-    Request<?, NeoSendMany> sendMany(List<TransactionOutput> outputs, String fee, String changeAddress);
+    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
+    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee,
+            String changeAddress);
+
     Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
-    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee);
+    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
 
-    // TODO: 11.02.20 Guil: needs to be confirmed
-    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value, String fee, String changeAddress);
+    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value,
+            String fee);
+
+    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset, String fee);
+
+    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value,
+            String fee, String changeAddress);
+
+    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset, String fee,
+            String changeAddress);
 
     // RpcNep5Tracker
 

@@ -64,13 +64,17 @@ public class NeoAddress {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NeoListAddress.Address)) return false;
-        NeoAddress address1 = (NeoAddress) o;
-        return Objects.equals(getAddress(), address1.getAddress()) &&
-                Objects.equals(getHasKey(), address1.getHasKey()) &&
-                Objects.equals(getLabel(), address1.getLabel()) &&
-                Objects.equals(getWatchOnly(), address1.getWatchOnly());
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof NeoAddress)) {
+            return false;
+        }
+        NeoAddress that = (NeoAddress) o;
+        return Objects.equals(getAddress(), that.getAddress()) &&
+                Objects.equals(getHasKey(), that.getHasKey()) &&
+                Objects.equals(getLabel(), that.getLabel()) &&
+                Objects.equals(getWatchOnly(), that.getWatchOnly());
     }
 
     @Override
