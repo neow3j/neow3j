@@ -20,7 +20,7 @@ public class NeoGetMemPool extends Response<NeoGetMemPool.MemPoolDetails> {
     public static class MemPoolDetails {
 
         @JsonProperty("height")
-        private BigInteger height;
+        private Long height;
 
         @JsonProperty("verified")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -33,14 +33,14 @@ public class NeoGetMemPool extends Response<NeoGetMemPool.MemPoolDetails> {
         public MemPoolDetails() {
         }
 
-        public MemPoolDetails(BigInteger height, List<String> verified,
+        public MemPoolDetails(Long height, List<String> verified,
                 List<String> unverified) {
             this.height = height;
             this.verified = verified;
             this.unverified = unverified;
         }
 
-        public BigInteger getHeight() {
+        public Long getHeight() {
             return height;
         }
 

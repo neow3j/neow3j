@@ -52,9 +52,9 @@ public class Transaction {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String script;
 
-    @JsonProperty("gas")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String gas;
+    @JsonProperty("witnesses")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<NeoWitness> witnesses;
 
     public Transaction() {
     }
@@ -62,7 +62,8 @@ public class Transaction {
     public Transaction(String hash, long size, int version, Long nonce, String sender,
             String sysFee, String netFee, Long validUntilBlock,
             List<TransactionAttribute> attributes,
-            List<TransactionCosigner> cosigners, String script, String gas) {
+            List<TransactionCosigner> cosigners, String script,
+            List<NeoWitness> witnesses) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -74,7 +75,7 @@ public class Transaction {
         this.attributes = attributes;
         this.cosigners = cosigners;
         this.script = script;
-        this.gas = gas;
+        this.witnesses = witnesses;
     }
 
     public String getHash() {
@@ -121,8 +122,8 @@ public class Transaction {
         return script;
     }
 
-    public String getGas() {
-        return gas;
+    public List<NeoWitness> getWitnesses() {
+        return witnesses;
     }
 
     @Override
@@ -145,7 +146,7 @@ public class Transaction {
                 Objects.equals(getAttributes(), that.getAttributes()) &&
                 Objects.equals(getCosigners(), that.getCosigners()) &&
                 Objects.equals(getScript(), that.getScript()) &&
-                Objects.equals(getGas(), that.getGas());
+                Objects.equals(getWitnesses(), that.getWitnesses());
     }
 
     @Override
@@ -154,7 +155,7 @@ public class Transaction {
                 .hash(getHash(), getSize(), getVersion(), getNonce(), getSender(), getSysFee(),
                         getNetFee(), getValidUntilBlock(), getAttributes(), getCosigners(),
                         getScript(),
-                        getGas());
+                        getWitnesses());
     }
 
     @Override
@@ -171,7 +172,7 @@ public class Transaction {
                 ", attributes=" + attributes +
                 ", cosigners=" + cosigners +
                 ", script='" + script + '\'' +
-                ", gas='" + gas + '\'' +
+                ", witnesses=" + witnesses +
                 '}';
     }
 }

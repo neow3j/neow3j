@@ -41,7 +41,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
-import io.neow3j.protocol.core.methods.response.Script;
+import io.neow3j.protocol.core.methods.response.NeoWitness;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -315,7 +315,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(
                 getTransaction.getTransaction().getScripts(),
                 hasItems(
-                        new Script(
+                        new NeoWitness(
                                 "40a3799c78dec17823fde75233793a7039bf2b1dbca4383a6eef1ac829460ba14c1e6a50ab1f2174e689bebfc0bb7accc965a6fe3e46d517b317bba1325b7fdaca",
                                 "21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac")
                 )
