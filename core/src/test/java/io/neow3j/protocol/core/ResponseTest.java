@@ -26,47 +26,7 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.ResponseTester;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
-import io.neow3j.protocol.core.methods.response.ByteArrayStackItem;
-import io.neow3j.protocol.core.methods.response.ConsensusData;
-import io.neow3j.protocol.core.methods.response.IntegerStackItem;
-import io.neow3j.protocol.core.methods.response.MapStackItem;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoBlockCount;
-import io.neow3j.protocol.core.methods.response.NeoBlockHash;
-import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
-import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
-import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetBalance;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
-import io.neow3j.protocol.core.methods.response.NeoGetPeers;
-import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetStorage;
-import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
-import io.neow3j.protocol.core.methods.response.NeoGetVersion;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletHeight;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
-import io.neow3j.protocol.core.methods.response.NeoListAddress;
-import io.neow3j.protocol.core.methods.response.NeoListPlugins;
-import io.neow3j.protocol.core.methods.response.NeoSendMany;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
-import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
-import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
-import io.neow3j.protocol.core.methods.response.NeoWitness;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.protocol.core.methods.response.Transaction;
-import io.neow3j.protocol.core.methods.response.TransactionAttribute;
-import io.neow3j.protocol.core.methods.response.TransactionCosigner;
+import io.neow3j.protocol.core.methods.response.*;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
@@ -87,15 +47,15 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testErrorResponse() {
         buildResponse(
-                "{"
-                        + "  \"jsonrpc\":\"2.0\","
-                        + "  \"id\":1,"
-                        + "  \"error\":{"
-                        + "    \"code\":-32602,"
-                        + "    \"message\":\"Invalid address length, expected 40 got 64 bytes\","
-                        + "    \"data\":null"
-                        + "  }"
-                        + "}"
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"error\": {\n" +
+                        "        \"code\": -32602,\n" +
+                        "        \"message\": \"Invalid address length, expected 40 got 64 bytes\",\n" +
+                        "        \"data\": null\n" +
+                        "    }\n" +
+                        "}"
         );
 
         NeoBlockCount ethBlock = deserialiseResponse(NeoBlockCount.class);
@@ -107,15 +67,17 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testErrorResponseComplexData() {
         buildResponse(
-                "{"
-                        + "  \"jsonrpc\":\"2.0\","
-                        + "  \"id\":1,"
-                        + "  \"error\":{"
-                        + "    \"code\":-32602,"
-                        + "    \"message\":\"Invalid address length, expected 40 got 64 bytes\","
-                        + "    \"data\":{\"foo\":\"bar\"}"
-                        + "  }"
-                        + "}"
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"error\": {\n" +
+                        "        \"code\":-32602,\n" +
+                        "        \"message\":\"Invalid address length, expected 40 got 64 bytes\",\n" +
+                        "        \"data\": {\n" +
+                        "            \"foo\":\"bar\"\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}"
         );
 
         NeoBlockCount ethBlock = deserialiseResponse(NeoBlockCount.class);
@@ -128,12 +90,11 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetBlockHash() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":1,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": "
-                        + "\"0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3\"\n"
-                        + "}"
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": \"0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3\"\n" +
+                        "}"
         );
 
         NeoBlockHash neoBestBlockHash = deserialiseResponse(NeoBlockHash.class);
@@ -163,8 +124,8 @@ public class ResponseTest extends ResponseTester {
                         "            }\n" +
                         "        ],\n" +
                         "        \"consensus_data\": {\n" +
-                        "            \"primary\": 0," +
-                        "            \"nonce\": \"45fba5f11cb04667\"" +
+                        "            \"primary\": 0,\n" +
+                        "            \"nonce\": \"45fba5f11cb04667\"\n" +
                         "        },\n" +
                         "        \"tx\": [\n" +
                         "            {\n" +
@@ -183,7 +144,8 @@ public class ResponseTest extends ResponseTester {
                         "                        \"scopes\": \"CalledByEntry\"\n" +
                         "                    }\n" +
                         "                ],\n" +
-                        "                \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
+                        "                \"script\":\n" +
+                        "                    \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
                         "                \"witnesses\": [\n" +
                         "                    {\n" +
                         "                        \"invocation\": \"DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+\",\n" +
@@ -387,10 +349,10 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetRawBlock() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": \"00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000\"\n" +
+                "{\n" +
+                        "  \"jsonrpc\": \"2.0\",\n" +
+                        "  \"id\": 67,\n" +
+                        "  \"result\": \"00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000\"\n" +
                         "}"
         );
 
@@ -403,11 +365,11 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetBlockCount() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": 1234\n"
-                        + "}"
+                "{\n" +
+                        "  \"jsonrpc\": \"2.0\",\n" +
+                        "  \"id\": 67,\n" +
+                        "  \"result\": 1234\n" +
+                        "}"
         );
 
         NeoBlockCount neoBlockCount = deserialiseResponse(NeoBlockCount.class);
@@ -418,11 +380,11 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetBlockSysFee() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": \"200\"\n"
-                        + "}"
+                "{\n" +
+                        "  \"jsonrpc\":\"2.0\",\n" +
+                        "  \"id\":67,\n" +
+                        "  \"result\": \"200\"\n" +
+                        "}"
         );
 
         NeoGetBlockSysFee getBlockSysFee = deserialiseResponse(NeoGetBlockSysFee.class);
@@ -484,21 +446,21 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetMemPool() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "        \"height\": 5492,\n"
-                        + "        \"verified\": [\n"
-                        + "             \"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e\",\n"
-                        + "             \"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7\""
-                        + "         ],\n"
-                        + "        \"unverified\": [\n"
-                        + "             \"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e\",\n"
-                        + "             \"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7\"\n"
-                        + "         ]\n"
-                        + "    }\n"
-                        + "}"
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 67,\n" +
+                        "    \"result\": {\n" +
+                        "        \"height\": 5492,\n" +
+                        "        \"verified\": [\n" +
+                        "            \"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e\",\n" +
+                        "            \"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7\"\n" +
+                        "        ],\n" +
+                        "        \"unverified\": [\n" +
+                        "            \"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e\",\n" +
+                        "            \"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7\"\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
         );
 
         NeoGetMemPool getMemPool = deserialiseResponse(NeoGetMemPool.class);
@@ -526,15 +488,15 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetMemPool_Empty() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "        \"height\": 5492,\n"
-                        + "        \"verified\": [],\n"
-                        + "        \"unverified\": []"
-                        + "    }\n"
-                        + "}"
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 67,\n" +
+                        "    \"result\": {\n" +
+                        "        \"height\": 5492,\n" +
+                        "        \"verified\": [],\n" +
+                        "        \"unverified\": []\n" +
+                        "    }\n" +
+                        "}"
         );
 
         NeoGetMemPool getMemPool = deserialiseResponse(NeoGetMemPool.class);
@@ -548,21 +510,29 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetRawMemPool() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": [\n"
-                        + "      "
-                        + "\"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"
-                        + "\",\n"
-                        + "      "
-                        + "\"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"
-                        + "\",\n"
-                        + "      "
-                        + "\"0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6\"\n"
-                        + "   ]\n"
-                        + "}"
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 67,\n" +
+                        "    \"result\": [\n" +
+                        "        \"0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e\",\n" +
+                        "        \"0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7\",\n" +
+                        "        \"0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6\"\n" +
+                        "    ]\n" +
+                        "}"
         );
+        // TODO: 09.05.20 Michael: "GetRawMemPool", I get a different output - check this.
+        /*
+        I get:
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "result": {
+                "height": 2612,
+                "verified": [],
+                "unverified": []
+            }
+        }
+         */
 
         NeoGetRawMemPool getRawMemPool = deserialiseResponse(NeoGetRawMemPool.class);
         assertThat(getRawMemPool.getAddresses(), hasSize(3));
@@ -579,19 +549,293 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetRawMemPool_Empty() {
         buildResponse(
-                "{\n"
-                        + "  \"id\":67,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": [\n"
-                        + "  ]\n"
-                        + "}"
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 67,\n" +
+                        "    \"result\": []\n" +
+                        "}"
         );
         NeoGetRawMemPool getRawMemPool = deserialiseResponse(NeoGetRawMemPool.class);
         assertThat(getRawMemPool.getAddresses(), notNullValue());
         assertThat(getRawMemPool.getAddresses(), hasSize(0));
     }
 
+    @Test
+    public void testGetTransaction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"hash\": \"0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89\",\n" +
+                        "        \"size\": 267,\n" +
+                        "        \"version\": 0,\n" +
+                        "        \"nonce\": 1046354582,\n" +
+                        "        \"sender\": \"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\",\n" +
+                        "        \"sys_fee\": \"9007810\",\n" +
+                        "        \"net_fee\": \"1267450\",\n" +
+                        "        \"valid_until_block\": 2103622,\n" +
+                        "        \"attributes\": [],\n" +
+                        "        \"cosigners\": [\n" +
+                        "            {\n" +
+                        "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
+                        "                \"scopes\": \"CalledByEntry\"\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
+                        "        \"witnesses\": [\n" +
+                        "            {\n" +
+                        "                \"invocation\": \"DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L\",\n" +
+                        "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"blockhash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299\",\n" +
+                        "        \"confirmations\": 1388,\n" +
+                        "        \"blocktime\": 1589019142879,\n" +
+                        "        \"vm_state\": \"HALT\"\n" +
+                        "    }\n" +
+                        "}"
+        );
 
+        NeoGetTransaction getTransaction = deserialiseResponse(NeoGetTransaction.class);
+        assertThat(getTransaction.getTransaction(), is(notNullValue()));
+        assertThat(getTransaction.getTransaction().getHash(),
+                is("0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89"));
+        assertThat(getTransaction.getTransaction().getSize(), is(267L));
+        assertThat(getTransaction.getTransaction().getVersion(), is(0));
+        assertThat(getTransaction.getTransaction().getNonce(), is(1046354582L));
+        assertThat(getTransaction.getTransaction().getSender(), is("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"));
+        assertThat(getTransaction.getTransaction().getSysFee(), is("9007810"));
+        assertThat(getTransaction.getTransaction().getNetFee(), is("1267450"));
+        assertThat(getTransaction.getTransaction().getValidUntilBlock(), is(2103622L));
+        assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
+        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(0));
+
+        assertThat(getTransaction.getTransaction().getCosigners(), is(notNullValue()));
+        assertThat(getTransaction.getTransaction().getCosigners(), hasSize(1));
+        assertThat(
+                getTransaction.getTransaction().getCosigners(),
+                containsInAnyOrder(
+                        new TransactionCosigner(
+                                "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                WitnessScope.CALLED_BY_ENTRY
+                        )
+                ));
+
+        assertThat(getTransaction.getTransaction().getScript(),
+                is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));
+        assertThat(getTransaction.getTransaction().getWitnesses(), is(notNullValue()));
+        assertThat(getTransaction.getTransaction().getWitnesses(), hasSize(1));
+        assertThat(getTransaction.getTransaction().getWitnesses(),
+                containsInAnyOrder(
+                        new NeoWitness(
+                                "DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L",
+                                "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
+                        )
+                ));
+        // TODO: 09.05.20 Michael: blockhash, confirmations, blocktime and vm_state don't have an entry in
+        //  Transaction.java - should be added and tested here.
+    }
+
+    @Test
+    public void testGetRawTransaction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": \"00961a5e3e0feced44a74300d9da049fa93670a43117188ff6c272890000000000fa561300000000004619200000010feced44a74300d9da049fa93670a43117188ff6015600640c14e6c1013654af113d8a968bdca52c9948a82b953d0c140feced44a74300d9da049fa93670a43117188ff613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4061b2e4bd2f14363caa71d97249fda184affa59eea7d9cbbececa10e65b1f81a1b9100270cf2e0ea884e6bd4921dad0e3036af525ef3a66262a77afc4f90ebd4b2b110c2103f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2110b413073b3bb\"\n" +
+                        "}"
+        );
+
+        NeoGetRawTransaction getRawTransaction = deserialiseResponse(NeoGetRawTransaction.class);
+        assertThat(getRawTransaction.getRawTransaction(), is("00961a5e3e0feced44a74300d9da049fa93670a43117188ff6c272890000000000fa561300000000004619200000010feced44a74300d9da049fa93670a43117188ff6015600640c14e6c1013654af113d8a968bdca52c9948a82b953d0c140feced44a74300d9da049fa93670a43117188ff613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4061b2e4bd2f14363caa71d97249fda184affa59eea7d9cbbececa10e65b1f81a1b9100270cf2e0ea884e6bd4921dad0e3036af525ef3a66262a77afc4f90ebd4b2b110c2103f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2110b413073b3bb"));
+    }
+
+    // TODO: 09.05.20 Michael: deploy smart contract to test GetStorage() and GetStorage_with_HexParameter()
+//    @Test
+//    public void testGetStorage() {
+//    }
+
+//    @Test
+//    public void testGetStorage_with_HexParameter() {
+//    }
+
+    @Test
+    public void testTransactionHeight() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": 1223\n" +
+                        "}"
+        );
+
+        NeoGetTransactionHeight getTransactionHeight = deserialiseResponse(NeoGetTransactionHeight.class);
+        assertThat(getTransactionHeight.getHeight(), is(new BigInteger("1223")));
+    }
+
+    @Test
+    public void testGetValidators() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": [\n" +
+                        "        {\n" +
+                        "            \"publickey\": \"03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2\",\n" +
+                        "            \"votes\": \"0\",\n" +
+                        "            \"active\": true\n" +
+                        "        }\n" +
+                        "    ]\n" +
+                        "}"
+        );
+
+        NeoGetValidators getValidators = deserialiseResponse(NeoGetValidators.class);
+        assertThat(getValidators.getValidators(), hasSize(1));
+        assertThat(getValidators.getValidators(),
+                containsInAnyOrder(
+                        new NeoGetValidators.Validator(
+                                "03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2",
+                                "0", true)
+                        )
+                );
+    }
+
+    @Test
+    public void testGetValidators_Empty() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 67,\n" +
+                        "    \"result\": []\n" +
+                        "}"
+        );
+
+        NeoGetValidators getValidators = deserialiseResponse(NeoGetValidators.class);
+        assertThat(getValidators.getValidators(), is(notNullValue()));
+        assertThat(getValidators.getValidators(), hasSize(0));
+    }
+
+    // Node Methods
+
+    @Test
+    public void testGetConnectionCount() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": 2\n" +
+                        "}"
+        );
+        NeoConnectionCount connectionCount = deserialiseResponse(NeoConnectionCount.class);
+        assertThat(connectionCount.getCount(), is(2));
+    }
+
+    @Test
+    public void testGetPeers() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"unconnected\": [],\n" +
+                        "        \"bad\": [],\n" +
+                        "        \"connected\": [\n" +
+                        "            {\n" +
+                        "                \"address\": \"172.18.0.3\",\n" +
+                        "                \"port\": 40333\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"address\": \"172.18.0.4\",\n" +
+                        "                \"port\": 20333\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
+        NeoGetPeers getPeers = deserialiseResponse(NeoGetPeers.class);
+        assertThat(getPeers.getPeers().getUnconnected(), hasSize(0));
+        assertThat(getPeers.getPeers().getUnconnected(), is(notNullValue()));
+        assertThat(getPeers.getPeers().getBad(), hasSize(0));
+        assertThat(getPeers.getPeers().getBad(), is(notNullValue()));
+
+        assertThat(getPeers.getPeers().getConnected(), hasSize(2));
+        assertThat(getPeers.getPeers().getConnected(),
+                containsInAnyOrder(
+                        new NeoGetPeers.AddressEntry(
+                                "172.18.0.3",
+                                40333
+                        ),
+                        new NeoGetPeers.AddressEntry(
+                                "172.18.0.4",
+                                20333
+                        )
+                )
+        );
+    }
+
+    @Test
+    public void testGetPeers_Empty() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"unconnected\": [],\n" +
+                        "        \"bad\": [],\n" +
+                        "        \"connected\": []\n" +
+                        "    }\n" +
+                        "}"
+        );
+        NeoGetPeers getPeers = deserialiseResponse(NeoGetPeers.class);
+        assertThat(getPeers.getPeers(), is(notNullValue()));
+        assertThat(getPeers.getPeers().getUnconnected(), is(notNullValue()));
+        assertThat(getPeers.getPeers().getBad(), is(notNullValue()));
+        assertThat(getPeers.getPeers().getConnected(), is(notNullValue()));
+
+        assertThat(getPeers.getPeers().getUnconnected(), hasSize(0));
+        assertThat(getPeers.getPeers().getBad(), hasSize(0));
+        assertThat(getPeers.getPeers().getConnected(), hasSize(0));
+    }
+
+    @Test
+    public void testGetVersion() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"tcp_port\": 10333,\n" +
+                        "        \"ws_port\": 10334,\n" +
+                        "        \"nonce\": 1845610272,\n" +
+                        "        \"user_agent\": \"/Neo:3.0.0-preview2-00/\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
+        // TODO: 09.05.20 Michael: testGetVersion - only "port" implemented
+        //  need to rewrite port to tcp_port / ws_port, and rewrite "useragent"
+        //  (is currently stored without _ -> in reality it is with _)
+        assertThat(getVersion.getVersion().getNonce(), is(1845610272L));
+    }
+
+//    // TODO: 09.05.20 Michael: SendRawTransaction returned: "Invalid params" - check this
+//    @Test
+//    public void testSendRawTransaction() {
+//        buildResponse(
+//                ""
+//        );
+//    }
+//
+//    @Test
+//    public void testSubmitBlock() {
+//        buildResponse(
+//                ""
+//        );
+//    }
+
+    // SmartContract Methods
 
 
 
