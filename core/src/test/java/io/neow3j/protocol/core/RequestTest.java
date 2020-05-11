@@ -660,9 +660,4 @@ public class RequestTest extends RequestTester {
                         + "\"params\":[\"420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\"],\"id\":1}"
         );
     }
-
-
-
-
-
 }
