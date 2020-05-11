@@ -545,19 +545,6 @@ public class ResponseTest extends ResponseTester {
                         "    ]\n" +
                         "}"
         );
-        // TODO: 09.05.20 Michael: "GetRawMemPool", I get a different output - check this.
-        /*
-        I get:
-        {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "result": {
-                "height": 2612,
-                "verified": [],
-                "unverified": []
-            }
-        }
-         */
 
         NeoGetRawMemPool getRawMemPool = deserialiseResponse(NeoGetRawMemPool.class);
         assertThat(getRawMemPool.getAddresses(), is(notNullValue()));
@@ -660,12 +647,11 @@ public class ResponseTest extends ResponseTester {
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
-//        getTransaction.getTransaction().getBlockHash()
-//        getTransaction.getTransaction().getConfirmations()
-//        getTransaction.getTransaction().getBlockTime()
-//        getTransaction.getTransaction().getVMState()
-        // TODO: 09.05.20 Michael: blockhash, confirmations, blocktime and vm_state don't have an entry in
-        //  Transaction.java - should be added and tested here.
+        assertThat(getTransaction.getTransaction().getBlockHash(),
+                is("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299"));
+        assertThat(getTransaction.getTransaction().getConfirmations(), is(1388));
+        assertThat(getTransaction.getTransaction().getBlockTime(), is(1589019142879L));
+        assertThat(getTransaction.getTransaction().getVMState(), is("HALT"));
     }
 
     @Test
@@ -685,29 +671,20 @@ public class ResponseTest extends ResponseTester {
         );
     }
 
-    // TODO: 09.05.20 Michael: deploy smart contract to test GetStorage() and GetStorage_with_HexParameter()
     @Test
     public void testGetStorage() {
+        buildResponse(
+                "{\n" +
+                        "  \"jsonrpc\": \"2.0\",\n" +
+                        "  \"id\": 15,\n" +
+                        "  \"result\": \"4c696e\"\n" +
+                        "}"
+        );
 
+        NeoGetStorage getStorage = deserialiseResponse(NeoGetStorage.class);
+        assertThat(getStorage.getStorage(), is(notNullValue()));
+        assertThat(getStorage.getStorage(), is("4c696e"));
     }
-    @Test
-    public void testGetStorage_with_HexParameter() {
-
-    }
-//    @Test
-//    public void testGetStorage() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":1,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": \"616e797468696e67\"\n"
-//                        + "}"
-//        );
-//
-//        NeoGetStorage getStorage = deserialiseResponse(NeoGetStorage.class);
-//        assertThat(getStorage.getStorage(), is(notNullValue()));
-//        assertThat(getStorage.getStorage(), is("616e797468696e67"));
-//    }
 
     @Test
     public void testTransactionHeight() {
@@ -791,6 +768,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": 2\n" +
                         "}"
         );
+
         NeoConnectionCount connectionCount = deserialiseResponse(NeoConnectionCount.class);
         assertThat(connectionCount.getCount(), is(2));
     }
@@ -835,10 +813,9 @@ public class ResponseTest extends ResponseTester {
                         "    }\n" +
                         "}"
         );
+
         NeoGetPeers getPeers = deserialiseResponse(NeoGetPeers.class);
-
         assertThat(getPeers.getPeers(), is(notNullValue()));
-
         assertThat(getPeers.getPeers().getUnconnected(), is(notNullValue()));
         assertThat(getPeers.getPeers().getUnconnected(), hasSize(3));
         assertThat(getPeers.getPeers().getUnconnected(),
@@ -896,10 +873,9 @@ public class ResponseTest extends ResponseTester {
                         "    }\n" +
                         "}"
         );
+
         NeoGetPeers getPeers = deserialiseResponse(NeoGetPeers.class);
-
         assertThat(getPeers.getPeers(), is(notNullValue()));
-
         assertThat(getPeers.getPeers().getUnconnected(), is(notNullValue()));
         assertThat(getPeers.getPeers().getBad(), is(notNullValue()));
         assertThat(getPeers.getPeers().getConnected(), is(notNullValue()));
@@ -925,235 +901,186 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
-//        assertThat(getVersion.getVersion().getTCP_Port(), is(10333));
-//        assertThat(getVersion.getVersion().getWS_Port(), is(10334));
-        // TODO: 09.05.20 Michael: testGetVersion - only "port" implemented
-        //  need to rewrite port to tcp_port / ws_port, and rewrite "useragent"
-        //  (is currently stored without _ -> in reality it is with _)
+        assertThat(getVersion.getVersion(), is(notNullValue()));
+        assertThat(getVersion.getVersion().getTCPPort(), is(10333));
+        assertThat(getVersion.getVersion().getWSPort(), is(10334));
         assertThat(getVersion.getVersion().getNonce(), is(1845610272L));
-//        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview2-00/"));
+        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview2-00/"));
     }
-//    @Test
-//    public void testGetVersion() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":67,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": { "
-//                        + "    \"port\": 1234,\n"
-//                        + "    \"nonce\": 12345678,\n"
-//                        + "    \"useragent\": \"\\/NEO:2.7.6\\/\"\n"
-//                        + "   }"
-//                        + "}"
-//        );
-//
-//        NeoGetVersion neoGetVersion = deserialiseResponse(NeoGetVersion.class);
-//        assertThat(neoGetVersion.getVersion().getUserAgent(), is("/NEO:2.7.6/"));
-//        assertThat(neoGetVersion.getVersion().getPort(), is(1234));
-//        assertThat(neoGetVersion.getVersion().getNonce(), is(12345678L));
-//    }
 
-//    // TODO: 09.05.20 Michael: SendRawTransaction returned: "Invalid params" - check this
     @Test
     public void testSendRawTransaction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"hash\": \"0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770\"\n" +
+                        "    }\n" +
+                        "}"
+        );
 
+        NeoSendRawTransaction sendRawTransaction = deserialiseResponse(NeoSendRawTransaction.class);
+        assertThat(sendRawTransaction.getSendRawTransaction(), is(notNullValue()));
+        assertThat(sendRawTransaction.getSendRawTransaction().getHash(),
+                is("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770"));
     }
-//    @Test
-//    public void testSendRawTransaction() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":1,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": true\n"
-//                        + "}"
-//        );
-//
-//        NeoSendRawTransaction sendRawTransaction = deserialiseResponse(NeoSendRawTransaction.class);
-//        assertThat(sendRawTransaction.getSendRawTransaction(), is(notNullValue()));
-//        assertThat(
-//                sendRawTransaction.getSendRawTransaction(),
-//                is(true)
-//        );
-//    }
 
     @Test
     public void testSubmitBlock() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": true\n" +
+                        "}"
+        );
 
+        NeoSubmitBlock submitBlock = deserialiseResponse(NeoSubmitBlock.class);
+        assertThat(submitBlock.getSubmitBlock(), is(notNullValue()));
+        assertThat(submitBlock.getSubmitBlock(), is(true));
     }
-//    @Test
-//    public void testSubmitBlock() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":1,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": true\n"
-//                        + "}"
-//        );
-//
-//        NeoSubmitBlock submitBlock = deserialiseResponse(NeoSubmitBlock.class);
-//        assertThat(submitBlock.getSubmitBlock(), is(notNullValue()));
-//        assertThat(
-//                submitBlock.getSubmitBlock(),
-//                is(true)
-//        );
-//    }
 
     // SmartContract Methods
 
     @Test
     public void testInvokeFunction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"state\": \"HALT\",\n" +
+                        "        \"gas_consumed\": \"2007570\",\n" +
+                        "        \"stack\": [\n" +
+                        "            {\n" +
+                        "                \"type\": \"ByteArray\",\n" +
+                        "                \"value\": \"576f6f6c6f6e67\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"type\": \"Map\",\n" +
+                        "                \"value\": [\n" +
+                        "                    {\n" +
+                        "                        \"key\": {\n" +
+                        "                            \"type\": \"ByteArray\",\n" +
+                        "                            \"value\": \"6964\"\n" +
+                        "                        },\n" +
+                        "                        \"value\": {\n" +
+                        "                            \"type\": \"Integer\",\n" +
+                        "                            \"value\": \"1\"\n" +
+                        "                        }\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
 
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT"));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
+
+        assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
+        HashMap<StackItem, StackItem> stackMap = new HashMap<>();
+        stackMap.put(new ByteArrayStackItem(Numeric.hexStringToByteArray("6964")),
+                new IntegerStackItem(new BigInteger("1")));
+        assertThat(invokeFunction.getInvocationResult().getStack(),
+                containsInAnyOrder(
+                        new ByteArrayStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67")),
+                        new MapStackItem(stackMap)
+                )
+        );
     }
 
     @Test
     public void testInvokeFunction_empty_Stack() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
+                        "        \"state\": \"HALT, BREAK\",\n" +
+                        "        \"gas_consumed\": \"2.489\",\n" +
+                        "        \"stack\": []\n" +
+                        "    }\n" +
+                        "}"
+        );
 
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
+
+        assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
     }
 
     @Test
-    public void testInvokeFunction_without_Params() {
+    public void testInvokeFunction_withoutOrEmpty_Params() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"state\": \"FAULT\",\n" +
+                        "        \"gas_consumed\": \"2007390\",\n" +
+                        "        \"stack\": []\n" +
+                        "    }\n" +
+                        "}"
+        );
 
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is("FAULT"));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007390"));
+        assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
     }
-
-    @Test
-    public void testInvokeFunction_empty_Params() {
-
-    }
-    //    @Test
-//    public void testInvokeFunction() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":1,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": {\n"
-//                        + "      \"script\": "
-//                        + "\"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
-//                        + "      \"state\": \"HALT, BREAK\",\n"
-//                        + "      \"gas_consumed\": \"2.489\",\n"
-//                        + "      \"stack\": ["
-//                        + "           {"
-//                        + "               \"type\": \"ByteArray\",\n"
-//                        + "               \"value\": \"576f6f6c6f6e67\"\n"
-//                        + "           },"
-//                        + "           {"
-//                        + "               \"type\": \"Map\",\n"
-//                        + "               \"value\": ["
-//                        + "                   {"
-//                        + "                     \"key\": {"
-//                        + "                         \"type\": \"ByteArray\",\n"
-//                        + "                         \"value\": \"6964\"\n"
-//                        + "                     },"
-//                        + "                     \"value\": {"
-//                        + "                         \"type\": \"Integer\",\n"
-//                        + "                         \"value\": \"1\"\n"
-//                        + "                     }"
-//                        + "                   }"
-//                        + "               ]"
-//                        + "           }"
-//                        + "      ],\n"
-//                        + "      \"tx\": "
-//                        +
-//                        "\"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
-//                        + "   }\n"
-//                        + "}"
-//        );
-//
-//        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
-//        assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
-//        assertThat(invokeFunction.getInvocationResult().getScript(),
-//                is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
-//        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
-//        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
-//        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
-//        Map<StackItem, StackItem> stackMap = new HashMap<>();
-//        stackMap.put(new ByteArrayStackItem(Numeric.hexStringToByteArray("6964")),
-//                new IntegerStackItem(new BigInteger("1")));
-//        assertThat(
-//                invokeFunction.getInvocationResult().getStack(),
-//                hasItems(
-//                        new ByteArrayStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67")),
-//                        new MapStackItem(stackMap)
-//                )
-//        );
-//
-//        assertThat(invokeFunction.getInvocationResult().getTx(),
-//                is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
-//    }
-//
-//    @Test
-//    public void testInvokeFunction_empty_Stack() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":1,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": {\n"
-//                        + "      \"script\": "
-//                        + "\"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n"
-//                        + "      \"state\": \"HALT, BREAK\",\n"
-//                        + "      \"gas_consumed\": \"2.489\",\n"
-//                        + "      \"stack\": [],\n"
-//                        + "      \"tx\": "
-//                        +
-//                        "\"d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000\"\n"
-//                        + "   }\n"
-//                        + "}"
-//        );
-//
-//        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
-//        assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
-//        assertThat(invokeFunction.getInvocationResult().getScript(),
-//                is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
-//        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
-//        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
-//        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
-//        assertThat(invokeFunction.getInvocationResult().getTx(),
-//                is("d1011b00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc000000000000000000000000"));
-//    }
 
     @Test
     public void testInvokeScript() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 3,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n" +
+                        "        \"state\": \"HALT, BREAK\",\n" +
+                        "        \"gas_consumed\": \"0.161\",\n" +
+                        "        \"stack\": [\n" +
+                        "            {\n" +
+                        "                \"type\": \"ByteArray\",\n" +
+                        "                \"value\": \"4e45503520474153\"\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
 
+        NeoInvokeScript invokeScript = deserialiseResponse(NeoInvokeScript.class);
+        assertThat(invokeScript.getInvocationResult(), is(notNullValue()));
+        assertThat(invokeScript.getInvocationResult().getScript(),
+                is("00046e616d656724058e5e1b6008847cd662728549088a9ee82191"));
+        assertThat(invokeScript.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invokeScript.getInvocationResult().getGasConsumed(), is("0.161"));
+        assertThat(invokeScript.getInvocationResult().getStack(), is(notNullValue()));
+        assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
+        assertThat(invokeScript.getInvocationResult().getStack(),
+                hasItem(
+                        new ByteArrayStackItem(Numeric.hexStringToByteArray("4e45503520474153"))
+                ));
     }
-//    @Test
-//    public void testInvokeScript() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":1,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": {\n"
-//                        + "      \"script\": "
-//                        + "\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n"
-//                        + "      \"state\": \"HALT, BREAK\",\n"
-//                        + "      \"gas_consumed\": \"0.161\",\n"
-//                        + "      \"stack\": ["
-//                        + "           {"
-//                        + "               \"type\": \"ByteArray\",\n"
-//                        + "               \"value\": \"4e45503520474153\"\n"
-//                        + "           }"
-//                        + "      ],\n"
-//                        + "      \"tx\": "
-//                        +
-//                        "\"d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000\"\n"
-//                        + "   }\n"
-//                        + "}"
-//        );
-//
-//        NeoInvokeScript invokeScript = deserialiseResponse(NeoInvokeScript.class);
-//        assertThat(invokeScript.getInvocationResult(), is(notNullValue()));
-//        assertThat(invokeScript.getInvocationResult().getScript(),
-//                is("00046e616d656724058e5e1b6008847cd662728549088a9ee82191"));
-//        assertThat(invokeScript.getInvocationResult().getState(), is("HALT, BREAK"));
-//        assertThat(invokeScript.getInvocationResult().getGasConsumed(), is("0.161"));
-//        assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
-//        assertThat(
-//                invokeScript.getInvocationResult().getStack(),
-//                hasItems(
-//                        new ByteArrayStackItem(Numeric.hexStringToByteArray("4e45503520474153"))
-//                )
-//        );
-//        assertThat(invokeScript.getInvocationResult().getTx(),
-//                is("d1011b00046e616d656724058e5e1b6008847cd662728549088a9ee82191000000000000000000000000"));
-//    }
 
     // Utilities Methods
 
@@ -1193,6 +1120,11 @@ public class ResponseTest extends ResponseTester {
                         "            ]\n" +
                         "        },\n" +
                         "        {\n" +
+                        "            \"name\": \"RpcServerPlugin\",\n" +
+                        "            \"version\": \"3.0.0.0\",\n" +
+                        "            \"interfaces\": []\n" +
+                        "        },\n" +
+                        "        {\n" +
                         "            \"name\": \"StatesDumper\",\n" +
                         "            \"version\": \"3.0.0.0\",\n" +
                         "            \"interfaces\": [\n" +
@@ -1212,7 +1144,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoListPlugins listPlugins = deserialiseResponse(NeoListPlugins.class);
         assertThat(listPlugins.getPlugins(), is(notNullValue()));
-        assertThat(listPlugins.getPlugins(), hasSize(6));
+        assertThat(listPlugins.getPlugins(), hasSize(7));
 
         NeoListPlugins.Plugin plugin = listPlugins.getPlugins().get(0);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
@@ -1248,13 +1180,20 @@ public class ResponseTest extends ResponseTester {
 
         plugin = listPlugins.getPlugins().get(4);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
+                is(NodePluginType.RPC_SERVER_PLUGIN));
+        assertThat(plugin.getVersion(), is("3.0.0.0"));
+        assertThat(plugin.getInterfaces(), is(notNullValue()));
+        assertThat(plugin.getInterfaces(), hasSize(0));
+
+        plugin = listPlugins.getPlugins().get(5);
+        assertThat(NodePluginType.valueOfName(plugin.getName()),
                 is(NodePluginType.STATES_DUMPER));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
         assertThat(plugin.getInterfaces(), containsInAnyOrder("IPersistencePlugin"));
 
-        plugin = listPlugins.getPlugins().get(5);
+        plugin = listPlugins.getPlugins().get(6);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
                 is(NodePluginType.SYSTEM_LOG));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
@@ -1293,7 +1232,7 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoCloseWallet closeWallet = deserialiseResponse(NeoCloseWallet.class);
-        assertThat(closeWallet.getCloseWallet().booleanValue(), is(true));
+        assertThat(closeWallet.getCloseWallet(), is(true));
     }
 
     @Test
@@ -1307,7 +1246,7 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoOpenWallet openWallet = deserialiseResponse(NeoOpenWallet.class);
-        assertThat(openWallet.getOpenWallet().booleanValue(), is(true));
+        assertThat(openWallet.getOpenWallet(), is(true));
     }
 
     @Test
@@ -1558,7 +1497,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"sys_fee\": \"18015620\",\n" +
                         "        \"net_fee\": \"1352450\",\n" +
                         "        \"valid_until_block\": 2106840,\n" +
-                        "        \"attributes\": [],\n" +
+                        "        \"attributes\": [],\n" + // TODO: 11.05.20 Michael: check for attributes/cosigners/witnesses in neo documentation and make second test - generally check for potential variations to test
                         "        \"cosigners\": [\n" +
                         "            {\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
@@ -1785,7 +1724,14 @@ public class ResponseTest extends ResponseTester {
 
     @Test
     public void testGetApplicationLog() {
-
+        // TODO: 11.05.20 Michael: no method found
+//        {
+//            "jsonrpc": "2.0",
+//                "id": 1,
+//                "error": {
+//            "code": -32601,
+//                    "message": "Method not found"
+//        }
     }
 //    @Test
 //    public void testApplicationLog() {
@@ -1948,13 +1894,6 @@ public class ResponseTest extends ResponseTester {
 
 
 
-//
-//
-//
-//
-//
-//
-//
 //    @Test
 //    public void testGetWalletHeight() {
 //        buildResponse(

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.model.types.TransactionType;
 
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +55,22 @@ public class Transaction {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<NeoWitness> witnesses;
 
+    @JsonProperty("blockhash")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private String blockHash;
+
+    @JsonProperty("confirmations")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private int confirmations;
+
+    @JsonProperty("blocktime")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private long blockTime;
+
+    @JsonProperty("vm_state")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private String vmState;
+
     public Transaction() {
     }
 
@@ -76,6 +91,30 @@ public class Transaction {
         this.cosigners = cosigners;
         this.script = script;
         this.witnesses = witnesses;
+    }
+
+    public Transaction(String hash, long size, int version, Long nonce, String sender,
+                       String sysFee, String netFee, Long validUntilBlock,
+                       List<TransactionAttribute> attributes,
+                       List<TransactionCosigner> cosigners, String script,
+                       List<NeoWitness> witnesses, String blockHash, int confirmations,
+                       long blockTime, String vmState) {
+        this.hash = hash;
+        this.size = size;
+        this.version = version;
+        this.nonce = nonce;
+        this.sender = sender;
+        this.sysFee = sysFee;
+        this.netFee = netFee;
+        this.validUntilBlock = validUntilBlock;
+        this.attributes = attributes;
+        this.cosigners = cosigners;
+        this.script = script;
+        this.witnesses = witnesses;
+        this.blockHash = blockHash;
+        this.confirmations = confirmations;
+        this.blockTime = blockTime;
+        this.vmState = vmState;
     }
 
     public String getHash() {
@@ -126,6 +165,22 @@ public class Transaction {
         return witnesses;
     }
 
+    public String getBlockHash() {
+        return blockHash;
+    }
+
+    public int getConfirmations() {
+        return confirmations;
+    }
+
+    public long getBlockTime() {
+        return blockTime;
+    }
+
+    public String getVMState() {
+        return vmState;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -146,7 +201,11 @@ public class Transaction {
                 Objects.equals(getAttributes(), that.getAttributes()) &&
                 Objects.equals(getCosigners(), that.getCosigners()) &&
                 Objects.equals(getScript(), that.getScript()) &&
-                Objects.equals(getWitnesses(), that.getWitnesses());
+                Objects.equals(getWitnesses(), that.getWitnesses()) &&
+                Objects.equals(getBlockHash(), that.getBlockHash()) &&
+                Objects.equals(getConfirmations(), that.getConfirmations()) &&
+                Objects.equals(getBlockTime(), that.getBlockTime()) &&
+                Objects.equals(getVMState(), that.getVMState());
     }
 
     @Override
@@ -154,8 +213,9 @@ public class Transaction {
         return Objects
                 .hash(getHash(), getSize(), getVersion(), getNonce(), getSender(), getSysFee(),
                         getNetFee(), getValidUntilBlock(), getAttributes(), getCosigners(),
-                        getScript(),
-                        getWitnesses());
+                        getScript(), getWitnesses(), getBlockHash(), getConfirmations(),
+                        getBlockTime(),
+                        getVMState());
     }
 
     @Override
@@ -173,6 +233,10 @@ public class Transaction {
                 ", cosigners=" + cosigners +
                 ", script='" + script + '\'' +
                 ", witnesses=" + witnesses +
+                ", blockHash=" + blockHash +
+                ", confirmations=" + confirmations +
+                ", blockTime=" + blockTime +
+                ", vmState=" + vmState +
                 '}';
     }
 }

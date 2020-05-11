@@ -9,6 +9,7 @@ public enum NodePluginType {
     ROCKS_DB_STORE("RocksDBStore"),
     RPC_NEP5_TRACKER("RpcNep5Tracker"),
     RPC_SECURITY("RpcSecurity"),
+    RPC_SERVER_PLUGIN("RpcServerPlugin"),
     RPC_SYSTEM_ASSET_TRACKER("RpcSystemAssetTrackerPlugin"),
     RPC_WALLET("RpcSystemAssetTrackerPlugin"),
     SIMPLE_POLICY("SimplePolicyPlugin"),
