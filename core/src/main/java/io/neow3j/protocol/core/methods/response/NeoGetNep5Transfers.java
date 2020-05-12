@@ -20,7 +20,7 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
 
         @JsonProperty("sent")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Nep5Transfer> timestamp;
+        private List<Nep5Transfer> sent;
 
         @JsonProperty("received")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -32,14 +32,14 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
         public Nep5TransferWrapper() {
         }
 
-        public Nep5TransferWrapper(List<Nep5Transfer> timestamp, List<Nep5Transfer> received, String transferAddress) {
-            this.timestamp = timestamp;
+        public Nep5TransferWrapper(List<Nep5Transfer> sent, List<Nep5Transfer> received, String transferAddress) {
+            this.sent = sent;
             this.received = received;
             this.transferAddress = transferAddress;
         }
 
-        public List<Nep5Transfer> getTimestamp() {
-            return timestamp;
+        public List<Nep5Transfer> getSent() {
+            return sent;
         }
 
         public List<Nep5Transfer> getReceived() {
@@ -55,18 +55,18 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
             if (this == o) return true;
             if (!(o instanceof Nep5TransferWrapper)) return false;
             Nep5TransferWrapper that = (Nep5TransferWrapper) o;
-            return Objects.equals(getTimestamp(), that.getTimestamp()) && Objects.equals(getReceived(), that.getReceived()) && Objects
+            return Objects.equals(getSent(), that.getSent()) && Objects.equals(getReceived(), that.getReceived()) && Objects
                     .equals(getTransferAddress(), that.getTransferAddress());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTimestamp(), getReceived(), getTransferAddress());
+            return Objects.hash(getSent(), getReceived(), getTransferAddress());
         }
 
         @Override
         public String toString() {
-            return "Nep5TransferWrapper{" + "timestamp=" + timestamp + ", received=" + received + ", transferAddress='" + transferAddress + '\'' + '}';
+            return "Nep5TransferWrapper{" + "sent=" + sent + ", received=" + received + ", transferAddress='" + transferAddress + '\'' + '}';
         }
     }
 

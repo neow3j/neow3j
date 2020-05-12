@@ -51,7 +51,12 @@ public class NeoApplicationLog {
         public Execution() {
         }
 
-        public Execution(String trigger, String contract, String state, String gasConsumed, List<StackItem> stack, List<Notification> notifications) {
+        public Execution(String trigger,
+                         String contract,
+                         String state,
+                         String gasConsumed,
+                         List<StackItem> stack,
+                         List<Notification> notifications) {
             this.trigger = trigger;
             this.contract = contract;
             this.state = state;
