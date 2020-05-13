@@ -7,12 +7,12 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
@@ -399,7 +399,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlockSysFee.getFee(), is("200"));
     }
 
-
     @Test
     public void testGetContractState() {
         buildResponse(
@@ -435,7 +434,7 @@ public class ResponseTest extends ResponseTester {
                         "                            \"type\": \"Array\"\n" +
                         "                        }\n" +
                         "                    ],\n" +
-                        "                    \"returnType\": \"Any\"\n" +
+                        "                    \"returnType\": \"Void\"\n" +
                         "                },\n" +
                         "                \"methods\": [\n" +
                         "                    {\n" +
@@ -492,11 +491,16 @@ public class ResponseTest extends ResponseTester {
                         "            },\n" +
                         "            \"permissions\": [\n" +
                         "                {\n" +
-                        "                    \"contract\": \"*\",\n" +
-                        "                    \"methods\": \"*\"\n" +
+                        "                    \"contract\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\n" +
+                        "                    \"methods\": [\n" +
+                        "                        \"name\",\n" +
+                        "                        \"transfer\"\n" +
+                        "                    ]\n" +
                         "                }\n" +
                         "            ],\n" +
-                        "            \"trusts\": [],\n" +
+                        "            \"trusts\": [" +
+                        "                \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"\n" +
+                        "            ],\n" +
                         "            \"safeMethods\": [\n" +
                         "                \"name\",\n" +
                         "                \"symbol\",\n" +
@@ -513,80 +517,162 @@ public class ResponseTest extends ResponseTester {
 
         NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
         assertThat(getContractState.getContractState(), is(notNullValue()));
+        assertThat(getContractState.getContractState().getId(), is(-2));
         assertThat(getContractState.getContractState().getHash(),
                 is("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"));
         assertThat(getContractState.getContractState().getScript(), is("QetD9PQ="));
 
-        // TODO: 11.05.20 Michael: Test contractState
-//        result:
-//            id
-//            hash
-//            script
-//            manifest
-//              groups
-//              features
-//              abi
-//                  getHash()
-//                  getEntryPoint() // contains one method (with returnType)
-//                  getMethods()
-//                  getEvents() // maybe use contains or create method
-//                  contractMethods contain - 'name'=String, 'parameters'=List of {name,type} (and 'returnType' only in methods and not in events)
-//                  getPermissions()
-//                  getTrusts()
-//                  getSafeMethods()
-//                  getExtra()
+        NeoGetContractState.ContractState.ContractManifest manifest = getContractState.getContractState().getManifest();
+        assertThat(manifest, is(notNullValue()));
+        assertThat(manifest.getGroups(), is(notNullValue()));
+        assertThat(manifest.getGroups(), hasSize(1));
+        assertThat(manifest.getGroups().get(0).getPubKey(),
+                is("03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c"));
+        assertThat(manifest.getGroups().get(0).getSignature(),
+                is("41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141"));
+
+        assertThat(manifest.getFeatures(), is(notNullValue()));
+        assertThat(manifest.getFeatures().getStorage(), is(true));
+        assertThat(manifest.getFeatures().getPayable(), is(false));
+
+        NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
+        assertThat(abi, is(notNullValue()));
+        assertThat(abi.getHash(), is("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"));
+
+        assertThat(abi.getEntryPoint(), is(notNullValue()));
+        assertThat(abi.getEntryPoint().getName(), is("Main"));
+        assertThat(abi.getEntryPoint().getParameters(), is(notNullValue()));
+        assertThat(abi.getEntryPoint().getParameters(), hasSize(2));
+        assertThat(abi.getEntryPoint().getParameters().get(0).getParamName(), is("operation"));
+        assertThat(abi.getEntryPoint().getParameters().get(0).getParamType(), is(ContractParameterType.STRING));
+
+        assertThat(abi.getMethods(), is(notNullValue()));
+        assertThat(abi.getMethods(), hasSize(5));
+        assertThat(abi.getMethods().get(1).getName(), is("symbol"));
+        assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
+        assertThat(abi.getMethods().get(1).getParameters(), hasSize(0));
+        assertThat(abi.getMethods().get(4).getName(), is("balanceOf"));
+        assertThat(abi.getMethods().get(4).getParameters(), is(notNullValue()));
+        assertThat(abi.getMethods().get(4).getParameters(), hasSize(1));
+        assertThat(abi.getMethods().get(4).getReturnType(), is(ContractParameterType.INTEGER));
+
+        assertThat(abi.getEvents(), is(notNullValue()));
+        assertThat(abi.getEvents(), hasSize(1));
+        assertThat(abi.getEvents().get(0).getName(), is("Transfer"));
+        assertThat(abi.getEvents().get(0).getParameters(), is(notNullValue()));
+        assertThat(abi.getEvents().get(0).getParameters(), hasSize(3));
+        assertThat(abi.getEvents().get(0).getParameters().get(2).getParamName(), is("amount"));
+        assertThat(abi.getEvents().get(0).getParameters().get(2).getParamType(), is(ContractParameterType.INTEGER));
+
+        assertThat(manifest.getPermissions(), is(notNullValue()));
+        assertThat(manifest.getPermissions(), hasSize(1));
+        assertThat(manifest.getPermissions().get(0).getContract(),
+                is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+        assertThat(manifest.getPermissions().get(0).getMethods(), is(notNullValue()));
+        assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(2));
+        assertThat(manifest.getPermissions().get(0).getMethods().get(1), is("transfer"));
+
+        assertThat(manifest.getTrusts(), is(notNullValue()));
+        assertThat(manifest.getTrusts(), hasSize(1));
+        assertFalse(manifest.trusts_isWildCard());
+        assertThat(manifest.getTrusts().get(0), is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+
+        assertThat(manifest.getSafeMethods(), is(notNullValue()));
+        assertThat(manifest.getSafeMethods(), hasSize(6));
+        assertFalse(manifest.safeMethods_isWildCard());
+        assertThat(manifest.getSafeMethods(),
+                containsInAnyOrder(
+                        "name",
+                        "symbol",
+                        "decimals",
+                        "totalSupply",
+                        "balanceOf",
+                        "supportedStandards"
+                ));
+
+        assertThat(manifest.getExtra(), is(nullValue()));
     }
 
-//    @Test
-//    public void testGetContractState() {
-//        buildResponse(
-//                "{\n"
-//                        + "  \"id\":1,\n"
-//                        + "  \"jsonrpc\":\"2.0\",\n"
-//                        + "  \"result\": {\n"
-//                        + "      \"version\": 0,\n"
-//                        + "      \"hash\": \"0xdc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f\",\n"
-//                        + "      \"script\": "
-//                        +
-//                        "\"5fc56b6c766b00527ac46c766b51527ac46107576f6f6c6f6e676c766b52527ac403574e476c766b53527ac4006c766b54527ac4210354ae498221046c666efebbaee9bd0eb4823469c98e748494a92a71f346b1a6616c766b55527ac46c766b00c3066465706c6f79876c766b56527ac46c766b56c36416006c766b55c36165f2026c766b57527ac462d8016c766b55c36165d801616c766b00c30b746f74616c537570706c79876c766b58527ac46c766b58c36440006168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746c766b57527ac46270016c766b00c3046e616d65876c766b59527ac46c766b59c36412006c766b52c36c766b57527ac46247016c766b00c30673796d626f6c876c766b5a527ac46c766b5ac36412006c766b53c36c766b57527ac4621c016c766b00c308646563696d616c73876c766b5b527ac46c766b5bc36412006c766b54c36c766b57527ac462ef006c766b00c30962616c616e63654f66876c766b5c527ac46c766b5cc36440006168164e656f2e53746f726167652e476574436f6e746578746c766b51c351c3617c680f4e656f2e53746f726167652e4765746c766b57527ac46293006c766b51c300c36168184e656f2e52756e74696d652e436865636b5769746e657373009c6c766b5d527ac46c766b5dc3640e00006c766b57527ac46255006c766b00c3087472616e73666572876c766b5e527ac46c766b5ec3642c006c766b51c300c36c766b51c351c36c766b51c352c36165d40361527265c9016c766b57527ac4620e00006c766b57527ac46203006c766b57c3616c756653c56b6c766b00527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746165700351936c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361651103615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746165f40251936c766b52527ac46168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b52c361659302615272680f4e656f2e53746f726167652e50757461616c756653c56b6c766b00527ac461516c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361654002615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b51c361650202615272680f4e656f2e53746f726167652e50757461516c766b52527ac46203006c766b52c3616c756659c56b6c766b00527ac46c766b51527ac46c766b52527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746c766b53527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b51c3617c680f4e656f2e53746f726167652e4765746c766b54527ac46c766b53c3616576016c766b52c3946c766b55527ac46c766b54c3616560016c766b52c3936c766b56527ac46c766b55c300a2640d006c766b52c300a2620400006c766b57527ac46c766b57c364ec00616168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b55c36165d800615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e746578746c766b51c36c766b56c361659c00615272680f4e656f2e53746f726167652e5075746155c57600135472616e73666572205375636365737366756cc476516c766b00c3c476526c766b51c3c476536c766b52c3c476546168184e656f2e426c6f636b636861696e2e476574486569676874c46168124e656f2e52756e74696d652e4e6f7469667961516c766b58527ac4620e00006c766b58527ac46203006c766b58c3616c756653c56b6c766b00527ac4616c766b00c36c766b51527ac46c766b51c36c766b52527ac46203006c766b52c3616c756653c56b6c766b00527ac461516c766b00c36a527a527ac46c766b51c36c766b52527ac46203006c766b52c3616c7566\",\n"
-//                        + "      \"parameters\": ["
-//                        + "           \"ByteArray\"\n"
-//                        + "      ],\n"
-//                        + "      \"returntype\": \"ByteArray\",\n"
-//                        + "      \"name\": \"Contract Name\",\n"
-//                        + "      \"code_version\": \"0.0.1\",\n"
-//                        + "      \"author\": \"Author Name\",\n"
-//                        + "      \"email\": \"blah@blah.com\",\n"
-//                        + "      \"description\": \"GO NEO!!!\",\n"
-//                        + "      \"properties\": {"
-//                        + "           \"storage\": true,\n"
-//                        + "           \"dynamic_invoke\": false\n"
-//                        + "      }\n"
-//                        + "   }\n"
-//                        + "}"
-//        );
-//
-//        NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
-//        assertThat(getContractState.getContractState(), is(notNullValue()));
-//        assertThat(getContractState.getContractState().getVersion(), is(0));
-//        assertThat(getContractState.getContractState().getHash(),
-//                is("0xdc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f"));
-//        assertThat(getContractState.getContractState().getScript(),
-//                is("5fc56b6c766b00527ac46c766b51527ac46107576f6f6c6f6e676c766b52527ac403574e476c766b53527ac4006c766b54527ac4210354ae498221046c666efebbaee9bd0eb4823469c98e748494a92a71f346b1a6616c766b55527ac46c766b00c3066465706c6f79876c766b56527ac46c766b56c36416006c766b55c36165f2026c766b57527ac462d8016c766b55c36165d801616c766b00c30b746f74616c537570706c79876c766b58527ac46c766b58c36440006168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746c766b57527ac46270016c766b00c3046e616d65876c766b59527ac46c766b59c36412006c766b52c36c766b57527ac46247016c766b00c30673796d626f6c876c766b5a527ac46c766b5ac36412006c766b53c36c766b57527ac4621c016c766b00c308646563696d616c73876c766b5b527ac46c766b5bc36412006c766b54c36c766b57527ac462ef006c766b00c30962616c616e63654f66876c766b5c527ac46c766b5cc36440006168164e656f2e53746f726167652e476574436f6e746578746c766b51c351c3617c680f4e656f2e53746f726167652e4765746c766b57527ac46293006c766b51c300c36168184e656f2e52756e74696d652e436865636b5769746e657373009c6c766b5d527ac46c766b5dc3640e00006c766b57527ac46255006c766b00c3087472616e73666572876c766b5e527ac46c766b5ec3642c006c766b51c300c36c766b51c351c36c766b51c352c36165d40361527265c9016c766b57527ac4620e00006c766b57527ac46203006c766b57c3616c756653c56b6c766b00527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746165700351936c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361651103615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c79617c680f4e656f2e53746f726167652e4765746165f40251936c766b52527ac46168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b52c361659302615272680f4e656f2e53746f726167652e50757461616c756653c56b6c766b00527ac461516c766b51527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b51c361654002615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e7465787406737570706c796c766b51c361650202615272680f4e656f2e53746f726167652e50757461516c766b52527ac46203006c766b52c3616c756659c56b6c766b00527ac46c766b51527ac46c766b52527ac4616168164e656f2e53746f726167652e476574436f6e746578746c766b00c3617c680f4e656f2e53746f726167652e4765746c766b53527ac46168164e656f2e53746f726167652e476574436f6e746578746c766b51c3617c680f4e656f2e53746f726167652e4765746c766b54527ac46c766b53c3616576016c766b52c3946c766b55527ac46c766b54c3616560016c766b52c3936c766b56527ac46c766b55c300a2640d006c766b52c300a2620400006c766b57527ac46c766b57c364ec00616168164e656f2e53746f726167652e476574436f6e746578746c766b00c36c766b55c36165d800615272680f4e656f2e53746f726167652e507574616168164e656f2e53746f726167652e476574436f6e746578746c766b51c36c766b56c361659c00615272680f4e656f2e53746f726167652e5075746155c57600135472616e73666572205375636365737366756cc476516c766b00c3c476526c766b51c3c476536c766b52c3c476546168184e656f2e426c6f636b636861696e2e476574486569676874c46168124e656f2e52756e74696d652e4e6f7469667961516c766b58527ac4620e00006c766b58527ac46203006c766b58c3616c756653c56b6c766b00527ac4616c766b00c36c766b51527ac46c766b51c36c766b52527ac46203006c766b52c3616c756653c56b6c766b00527ac461516c766b00c36a527a527ac46c766b51c36c766b52527ac46203006c766b52c3616c7566"));
-//        assertThat(getContractState.getContractState().getContractParameters(), hasSize(1));
-//        assertThat(getContractState.getContractState().getContractParameters(),
-//                hasItems(ContractParameterType.BYTE_ARRAY));
-//        assertThat(getContractState.getContractState().getReturnContractType(),
-//                is(ContractParameterType.BYTE_ARRAY));
-//        assertThat(getContractState.getContractState().getName(), is("Contract Name"));
-//        assertThat(getContractState.getContractState().getCodeVersion(), is("0.0.1"));
-//        assertThat(getContractState.getContractState().getAuthor(), is("Author Name"));
-//        assertThat(getContractState.getContractState().getEmail(), is("blah@blah.com"));
-//        assertThat(getContractState.getContractState().getDescription(), is("GO NEO!!!"));
-//        assertThat(getContractState.getContractState().getProperties(), is(notNullValue()));
-//        assertThat(getContractState.getContractState().getProperties(),
-//                is(new NeoGetContractState.ContractStateProperties(true, false)));
-//    }
+    @Test
+    public void testGetContractState_wildCards() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"id\": -2,\n" +
+                        "        \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "        \"script\": \"QetD9PQ=\",\n" +
+                        "        \"manifest\": {\n" +
+                        "            \"groups\": [\n" +
+                        "                {\n" +
+                        "                    \"pubKey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
+                        "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
+                        "                }\n" +
+                        "            ],\n" +
+                        "            \"features\": {\n" +
+                        "                \"storage\": true,\n" +
+                        "                \"payable\": false\n" +
+                        "            },\n" +
+                        "            \"abi\": {\n" +
+                        "                \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "                \"entryPoint\": {\n" +
+                        "                    \"name\": \"Main\",\n" +
+                        "                    \"parameters\": [\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"operation\",\n" +
+                        "                            \"type\": \"String\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"args\",\n" +
+                        "                            \"type\": \"Array\"\n" +
+                        "                        }\n" +
+                        "                    ],\n" +
+                        "                    \"returnType\": \"Void\"\n" +
+                        "                },\n" +
+                        "                \"methods\": [\n" +
+                        "                    {\n" +
+                        "                        \"name\": \"name\",\n" +
+                        "                        \"parameters\": [],\n" +
+                        "                        \"returnType\": \"String\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"events\": [\n" +
+                        "                    {\n" +
+                        "                        \"name\": \"Transfer\",\n" +
+                        "                        \"parameters\": [\n" +
+                        "                            {\n" +
+                        "                                \"name\": \"from\",\n" +
+                        "                                \"type\": \"Hash160\"\n" +
+                        "                            },\n" +
+                        "                            {\n" +
+                        "                                \"name\": \"to\",\n" +
+                        "                                \"type\": \"Hash160\"\n" +
+                        "                            },\n" +
+                        "                            {\n" +
+                        "                                \"name\": \"amount\",\n" +
+                        "                                \"type\": \"Integer\"\n" +
+                        "                            }\n" +
+                        "                        ],\n" +
+                        "                        \"returnType\": \"Signature\"\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            },\n" +
+                        "            \"permissions\": [],\n" +
+                        "            \"trusts\": \"*\",\n" +
+                        "            \"safeMethods\": \"*\",\n" +
+                        "            \"extra\": \"individual info\"\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
+        NeoGetContractState.ContractState.ContractManifest manifest = getContractState.getContractState().getManifest();
+        assertTrue(manifest.trusts_isWildCard());
+        assertTrue(manifest.safeMethods_isWildCard());
+        assertThat(manifest.getExtra(), is("individual info"));
+    }
 
     @Test
     public void testGetMemPool() {
@@ -1623,7 +1709,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"sys_fee\": \"18015620\",\n" +
                         "        \"net_fee\": \"1352450\",\n" +
                         "        \"valid_until_block\": 2106840,\n" +
-                        "        \"attributes\": [],\n" + // TODO: 11.05.20 Michael: check for attributes/cosigners/witnesses in neo documentation and make second test - generally check for potential variations to test
+                        "        \"attributes\": [],\n" +
                         "        \"cosigners\": [\n" +
                         "            {\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
