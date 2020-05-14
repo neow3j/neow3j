@@ -2,9 +2,9 @@ package io.neow3j.protocol.core.methods.response;
 
 import io.neow3j.protocol.core.Response;
 
-public class NeoSendRawTransaction extends Response<Boolean> {
+public class NeoSendRawTransaction extends Response<String> {
 
-    public Boolean getSendRawTransaction() {
+    public String getSendRawTransaction() {
         return getResult();
     }
 

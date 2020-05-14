@@ -16,6 +16,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.TransactionType;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -24,6 +26,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionOutput;
+import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.util.Arrays;
 import org.junit.Rule;
@@ -54,19 +57,16 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testSendRawTransaction() throws IOException {
-        NeoSendRawTransaction neoSendRawTransaction = getNeow3j()
-                .sendRawTransaction("80000001ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6" +
-                        "f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf" +
-                        "6efc336fc500e1f505000000001cc9c05cefffe6cdd7b182816a9152ec218d2ec09b7cff" +
-                        "daa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001fcb69f28623" +
-                        "0023ba2703c53263e8d6e522dc32203339dcd8eee9014140ccd298c88d8c3609d9369d27" +
-                        "0c6ab2278b3a4c1540df73b65fee93cbc088160bf3b9ada13a6c089f5a7b970985d4a31f" +
-                        "54bf549cfa2bac8b9121cb0c56a6c7e22321031a6c6fbbdf02ca351745fa86b9ba5a9452" +
-                        "d785ac4f7fc2b7548ca2a46c4fcf4aac")
-                .send();
-        Boolean sendRawTransaction = neoSendRawTransaction.getSendRawTransaction();
-        assertThat(sendRawTransaction, is(true));
+    public void testSendRawTransaction() throws IOException, DeserializationException {
+        String txHex =
+                "80000001ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500e1f505000000001cc9c05cefffe6cdd7b182816a9152ec218d2ec09b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001fcb69f286230023ba2703c53263e8d6e522dc32203339dcd8eee9014140ccd298c88d8c3609d9369d270c6ab2278b3a4c1540df73b65fee93cbc088160bf3b9ada13a6c089f5a7b970985d4a31f54bf549cfa2bac8b9121cb0c56a6c7e22321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac";
+        NeoSendRawTransaction neoSendRawTransaction = getNeow3j().sendRawTransaction(txHex).send();
+        String txId = neoSendRawTransaction.getSendRawTransaction();
+
+        io.neow3j.transaction.Transaction tx = NeoSerializableInterface.from(
+                Numeric.hexStringToByteArray(txHex), io.neow3j.transaction.Transaction.class);
+
+        assertThat(txId, is(tx.getTxId()));
     }
 
     @Test
