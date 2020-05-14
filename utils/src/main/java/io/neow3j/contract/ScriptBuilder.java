@@ -314,7 +314,7 @@ public class ScriptBuilder {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
                 .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY)
                 .toArray();
     }
 
@@ -332,7 +332,7 @@ public class ScriptBuilder {
         return builder
                 .pushInteger(encodedPublicKeys.size())
                 .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG)
                 .toArray();
 
     }

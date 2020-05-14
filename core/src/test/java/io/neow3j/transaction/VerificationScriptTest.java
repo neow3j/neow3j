@@ -34,7 +34,7 @@ public class VerificationScriptTest {
                 + key // public key
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash()
+                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash()
         );
         assertArrayEquals(expected, script.getScript());
     }
@@ -58,7 +58,7 @@ public class VerificationScriptTest {
                 + OpCode.PUSH2.toString() // m = 2, number of keys
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getHash()
+                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getHash()
         );
         assertArrayEquals(expected, script.getScript());
     }
@@ -75,7 +75,7 @@ public class VerificationScriptTest {
                 + key // public key
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash()
+                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash()
         );
         assertArrayEquals(expected, script.toArray());
     }
@@ -88,7 +88,7 @@ public class VerificationScriptTest {
                 + key // public key
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash();
+                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash();
 
         byte[] serialized = Numeric.hexStringToByteArray(""
                 + Numeric.toHexStringNoPrefix((byte) VERIFICATION_SCRIPT_SIZE) // Var Int

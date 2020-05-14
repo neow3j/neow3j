@@ -112,7 +112,7 @@ public class ScriptHashTest {
                 + key // public key
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash()
+                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash()
         );
 
         ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(key));
