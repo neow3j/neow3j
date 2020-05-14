@@ -332,7 +332,7 @@ public class ScriptBuilder {
         return builder
                 .pushInteger(encodedPublicKeys.size())
                 .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG)
                 .toArray();
 
     }
