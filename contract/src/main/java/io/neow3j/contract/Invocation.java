@@ -37,8 +37,18 @@ public class Invocation {
         this.transaction = builder.tx;
     }
 
-    public String send() throws IOException, ErrorResponseException {
-        String hex = Numeric.toHexString(transaction.toArray());
+    /**
+     * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
+     * <p>
+     * Before sending, make sure to sign the transaction by calling {@link Invocation#sign()} or
+     * by adding signatures manually with {@link Invocation#addWitnesses(Witness...)}.
+     *
+     * @return the Neo node's response.
+     * @throws IOException if a problem in communicating with the Neo node occurs.
+     */
+    public NeoSendRawTransaction send() throws IOException {
+        // TODO 14.05.20 claude: Consider checking for sufficient witnesses.
+        String hex = Numeric.toHexStringNoPrefix(transaction.toArray());
         NeoSendRawTransaction response = neow.sendRawTransaction(hex).send();
         response.throwOnError();
         return "";
@@ -48,14 +58,13 @@ public class Invocation {
         // return response.getResult();
     }
 
-    // TODO: Adapt, so that signatures of all the cosigners are created.
-
     /**
-     * Signs the transaction and add the signature to the transaction as a witness.
+     * Creates signatures for every cosigner of the invocation transaction and adds them to the
+     * transaction as witnesses.
      * <p>
-     * The signature is created with the account set on the transaction.
+     * For each cosigner set on the transaction corresponding account must exist in the wallet.
      *
-     * @return this invocation object.
+     * @return this.
      */
     public Invocation sign() {
        byte[] txBytes = getTransactionForSigning();
@@ -78,7 +87,8 @@ public class Invocation {
     }
 
     /**
-     * Gets the transaction bytes for signing. The witnesses are not included in the array.
+     * Gets the invocation transaction bytes for signing. No witnesses are included in the returned
+     * byte array.
      *
      * @return the transaction as a byte array
      */
@@ -86,6 +96,9 @@ public class Invocation {
         return this.transaction.toArrayWithoutWitnesses();
     }
 
+    /**
+     * Gets the invocation transaction.
+     */
     public Transaction getTransaction() {
         return this.transaction;
     }
