@@ -1,6 +1,7 @@
 package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -30,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
-import org.java_websocket.util.Base64;
 
 @SuppressWarnings("unchecked")
 public class Account {
@@ -221,7 +221,7 @@ public class Account {
         } else if (this.verificationScript.isSingleSigScript()) {
             parameters.add(new NEP6Parameter("signature", ContractParameterType.SIGNATURE));
         }
-        String script = Base64.encodeBytes(this.verificationScript.getScript());
+        String script = Base64.encode(this.verificationScript.getScript());
         NEP6Contract contract = new NEP6Contract(script, parameters, false);
         return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
                 this.encryptedPrivateKey, contract, null);
@@ -285,12 +285,8 @@ public class Account {
         b.isDefault = nep6Acct.getDefault();
         NEP6Contract contr = nep6Acct.getContract();
         if (contr != null && contr.getScript() != null && !contr.getScript().isEmpty()) {
-            try {
-                byte[] script = Base64.decode(contr.getScript());
-                b.verificationScript = new VerificationScript(script);
-            } catch (IOException e) {
-                // Will not happen because no I/O is going on.
-            }
+            byte[] script = Base64.decode(contr.getScript());
+            b.verificationScript = new VerificationScript(script);
         }
         return b;
     }
