@@ -126,7 +126,6 @@ public class Invocation {
         private ScriptHash scriptHash;
         private Neow3j neow;
         private Wallet wallet;
-        private ScriptHash sender;
         private Transaction.Builder txBuilder;
         private Transaction tx;
         private boolean failOnFalse;
