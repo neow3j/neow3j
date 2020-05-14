@@ -65,7 +65,7 @@ public class NeoToken extends Nep5Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getUnclaimedGas(ScriptHash scriptHash, long blockHeight) throws IOException {
-        ContractParameter accParam = ContractParameter.byteArrayFromAddress(scriptHash.toAddress());
+        ContractParameter accParam = ContractParameter.hash160(scriptHash);
         ContractParameter heightParam = ContractParameter.integer(BigInteger.valueOf(blockHeight));
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }

@@ -457,17 +457,18 @@ public class InvocationTest {
         ECKeyPair senderPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(senderWif));
         Account sender = Account.fromECKeyPair(senderPair).isDefault(true).build();
         Wallet w = new Wallet.Builder().accounts(sender).build();
-        ScriptHash neo = ScriptHash.fromScript(
-                new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
+
+        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash receiver = new ScriptHash("3d952ba848992ca5dc8b968a3d11af543601c1e6");
+
         Invocation i = new InvocationBuilder(neow, neo, "transfer")
                 .withWallet(w)
                 .withNonce(1058808143)
                 .validUntilBlock(2102409)
                 .withParameters(
-                        ContractParameter.byteArrayFromAddress(sender.getAddress()),
-                        ContractParameter
-                                .byteArrayFromAddress("AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN"),
-                        ContractParameter.integer(1))
+                        ContractParameter.hash160(sender.getScriptHash()),
+                        ContractParameter.hash160(receiver),
+                        ContractParameter.integer(5))
                 .failOnFalse()
                 .build();
         i.sign();

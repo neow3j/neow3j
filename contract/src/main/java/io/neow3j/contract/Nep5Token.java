@@ -143,18 +143,18 @@ public class Nep5Token extends SmartContract {
         BigInteger fractions = amount.multiply(factor).toBigInteger();
         // TODO: Extend balance checking to other accounts in the wallet.
         // TODO: Move balance checking to the Wallet and Accounts.
-        BigInteger defaultAccBalance = getBalanceOf(acc.getScriptHash());
-        if (defaultAccBalance.compareTo(fractions) < 0) {
-            throw new InsufficientFundsException("Default account does not hold enough tokens. "
-                    + "Transfer amount is " + fractions.toString() + " but account only holds "
-                    + defaultAccBalance.toString() + " (in token fractions).");
+        BigInteger accBalance = getBalanceOf(acc.getScriptHash());
+        if (accBalance.compareTo(fractions) < 0) {
+            throw new InsufficientFundsException("The wallet's default account does not hold enough "
+                    + "tokens. Transfer amount is " + fractions.toString() + " but account only "
+                    + "holds " + accBalance.toString() + " (in token fractions).");
         }
         NeoSendRawTransaction response = invoke(NEP5_TRANSFER)
                 .withWallet(wallet)
                 .withParameters(
-                        ContractParameter.byteArrayFromAddress(acc.getAddress()),
-                        ContractParameter.byteArrayFromAddress(to.toAddress()),
-                        ContractParameter.integer(fractions)
+                        ContractParameter.hash160(acc.getScriptHash()),
+                        ContractParameter.hash160(to),
+                        ContractParameter.integer(amount.toBigInteger())
                 )
                 .failOnFalse()
                 .build()
