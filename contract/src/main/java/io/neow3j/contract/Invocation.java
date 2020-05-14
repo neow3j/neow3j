@@ -10,7 +10,6 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
@@ -24,6 +23,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Invocation {
 
@@ -62,21 +63,27 @@ public class Invocation {
      * @return this.
      */
     public Invocation sign() {
-       byte[] txBytes = getTransactionForSigning();
+        byte[] txBytes = getTransactionForSigning();
         for (Cosigner c : this.transaction.getCosigners()) {
             Account a = this.wallet.getAccount(c.getAccount());
             if (a == null) {
                 throw new InvocationConfigurationException("Wallet does not contain the account "
                         + "for cosigner with script hash " + c.getAccount());
             }
-            ECKeyPair kp;
+            if (a.isMultiSig()) {
+                // TODO 13.05.20 claude: Add the possiblity to automatically sign with a mutli-sig
+                //  account. For this to work the participating accounts need to be in the wallet.
+                throw new InvocationConfigurationException("Automatic signing with a "
+                        + "multi-signature account is not supported. Create and add a signature "
+                        + "manually. ");
+            }
             try {
-                kp = a.getECKeyPair();
+                ECKeyPair keyPair = a.getECKeyPair();
+                this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
             } catch (AccountStateException e) {
                 throw new InvocationConfigurationException("Cannot sign transaction with account "
                         + "with script hash " + c.getAccount(), e);
             }
-            this.transaction.addWitness(Witness.createWitness(txBytes, kp));
         }
         return this;
     }
@@ -227,12 +234,30 @@ public class Invocation {
          * @return
          * @throws IOException
          */
-        public NeoInvokeFunction run() throws IOException {
+        public NeoInvokeFunction call() throws IOException {
+            // This list is required for `invokescript` calls that will hit ChecekWitness checks
+            // in the smart contract.
+            String[] signers = getSigners();
             if (this.parameters.isEmpty()) {
-                return neow.invokeFunction(scriptHash.toString(), this.function).send();
+                return neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
+                        .send();
             }
-            return neow.invokeFunction(scriptHash.toString(), this.function, this.parameters)
-                    .send();
+            return neow.invokeFunction(scriptHash.toString(), this.function, this.parameters,
+                    signers).send();
+        }
+
+        /*
+         * Get scripthashes of all cosigners. If cosigners have not yet been set explicitely
+         * this method adds the sender scripthash to the set.
+         */
+        private String[] getSigners() {
+            Set<String> signersSet = this.txBuilder.getCosigners().stream()
+                    .map(c -> c.getAccount().toString())
+                    .collect(Collectors.toSet());
+            if (this.txBuilder.getSender() != null) {
+                signersSet.add(this.txBuilder.getSender().toString());
+            }
+            return signersSet.toArray(new String[]{});
         }
 
         public Invocation build() throws IOException {
@@ -285,12 +310,16 @@ public class Invocation {
          * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
          */
         private long fetchSystemFee() throws IOException {
+            // The signers are required for `invokescript` calls that will hit ChecekWitness checks
+            // in the smart contract.
+            String[] signers = getSigners();
             NeoInvokeFunction response;
             if (this.parameters.isEmpty()) {
-                response = neow.invokeFunction(scriptHash.toString(), this.function).send();
+                response = neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
+                        .send();
             } else {
                 response = neow.invokeFunction(scriptHash.toString(), this.function,
-                        this.parameters).send();
+                        this.parameters, signers).send();
             }
             // The GAS amount is returned in fractions (10^8) by the preview private network node
             // for Neo 3. But in Neo 2 the amount was given as decimals of whole GAS tokens (e.g.

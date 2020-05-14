@@ -1,5 +1,8 @@
 package io.neow3j.protocol.core;
 
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
+import static io.neow3j.utils.Strings.isEmpty;
+
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
@@ -42,16 +45,14 @@ import io.neow3j.protocol.core.methods.response.TransactionOutput;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
 import io.reactivex.Observable;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
-
-import static io.neow3j.utils.Numeric.cleanHexPrefix;
-import static io.neow3j.utils.Strings.isEmpty;
+import java.util.stream.Stream;
 
 /**
  * JSON-RPC 2.0 factory implementation.
@@ -415,15 +416,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName) {
-        return invokeFunction(contractScriptHash, functionName, null);
+        return invokeFunction(contractScriptHash, functionName, null, null);
     }
 
     @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName, List<ContractParameter> params) {
+    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName, List<ContractParameter> params, String... witnesses) {
         return new Request<>(
                 "invokefunction",
-                Arrays.asList(contractScriptHash, functionName, params).stream()
-                        .filter((param) -> (param != null))
+                Stream.of(contractScriptHash, functionName, params, witnesses)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList()),
                 neow3jService,
                 NeoInvokeFunction.class);
