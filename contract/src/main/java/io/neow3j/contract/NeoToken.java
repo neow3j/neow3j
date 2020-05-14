@@ -5,6 +5,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Wallet;
@@ -81,13 +82,17 @@ public class NeoToken extends Nep5Token {
      */
     public String registerValidator(Wallet wallet, ECPublicKey validatorKey)
             throws IOException, ErrorResponseException {
-        return invoke(REGISTER_VALIDATOR)
+        NeoSendRawTransaction response = invoke(REGISTER_VALIDATOR)
                 .withWallet(wallet)
                 .withParameters(ContractParameter.publicKey(validatorKey.getEncoded(true)))
                 .failOnFalse()
                 .build()
                 .sign()
                 .send();
+
+        response.throwOnError();
+
+        return response.getResult();
     }
 
     /**

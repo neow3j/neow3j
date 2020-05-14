@@ -50,12 +50,7 @@ public class Invocation {
         // TODO 14.05.20 claude: Consider checking for sufficient witnesses.
         String hex = Numeric.toHexStringNoPrefix(transaction.toArray());
         NeoSendRawTransaction response = neow.sendRawTransaction(hex).send();
-        response.throwOnError();
-        return "";
-        // TODO: Adapt as soon as JSON-RPC implementation is adapted to Neo 3.
-        // The new return type of the `sendrawtransaction` RPC call in Neo 3 is the transaction
-        // hash.
-        // return response.getResult();
+        return response;
     }
 
     /**
