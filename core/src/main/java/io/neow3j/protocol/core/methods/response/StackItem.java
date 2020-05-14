@@ -6,10 +6,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.StackItem.StackDeserializer;
-import io.neow3j.utils.Numeric;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -193,7 +192,7 @@ public class StackItem {
             }
             switch (type) {
                 case BYTE_ARRAY:
-                    return new ByteArrayStackItem(Numeric.hexStringToByteArray(valueNode.asText()));
+                    return new ByteArrayStackItem(Base64.decode(valueNode.asText()));
                 case BOOLEAN:
                     return new BooleanStackItem(valueNode.asBoolean());
                 case INTEGER:

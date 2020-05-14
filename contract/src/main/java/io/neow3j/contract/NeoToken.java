@@ -152,14 +152,12 @@ public class NeoToken extends Nep5Token {
             throw new UnexpectedReturnTypeException(keyItem.getType(),
                     StackItemType.BYTE_ARRAY);
         }
-        ECPublicKey key;
         try {
-            key = new ECPublicKey(keyItem.asByteArray().getValue());
+            return new ECPublicKey(keyItem.asByteArray().getValue());
         } catch (IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException("Byte array return type did not contain "
                     + "public key in expected format.", e);
         }
-        return key;
     }
 
     // TODO: Implement method for GET_NEXT_BLOCK_VALIDATOR

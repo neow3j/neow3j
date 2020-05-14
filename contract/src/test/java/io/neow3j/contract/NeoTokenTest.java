@@ -99,7 +99,7 @@ public class NeoTokenTest {
                         .withBody(responseBody)));
 
         List<ECPublicKey> result = new NeoToken(neow).getValidators();
-        String expKeyHex = "03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2";
+        String expKeyHex = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
         ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
         assertThat(result, contains(expKey));
     }
