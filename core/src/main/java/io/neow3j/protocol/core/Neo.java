@@ -109,7 +109,7 @@ public interface Neo {
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName);
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
-            List<ContractParameter> params);
+            List<ContractParameter> params, String... witnesses);
 
     Request<?, NeoInvokeScript> invokeScript(String script);
 

@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
@@ -329,16 +330,16 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
             String functionName) {
-        return invokeFunction(contractScriptHash, functionName, null);
+        return invokeFunction(contractScriptHash, functionName, null, null);
     }
 
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
-            String functionName, List<ContractParameter> params) {
+            String functionName, List<ContractParameter> params, String... witnesses) {
         return new Request<>(
                 "invokefunction",
-                asList(contractScriptHash, functionName, params).stream()
-                        .filter((param) -> (param != null))
+                asList(contractScriptHash, functionName, params, witnesses).stream()
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList()),
                 neow3jService,
                 NeoInvokeFunction.class);
