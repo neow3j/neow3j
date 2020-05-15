@@ -273,7 +273,7 @@ public class InvocationTest {
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
-                .withCosigners(cosigner)
+                .withAttributes(cosigner)
                 .validUntilBlock(1000)
                 .build();
 
@@ -295,7 +295,7 @@ public class InvocationTest {
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
-                .withCosigners(Cosigner.calledByEntry(acc.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(acc.getScriptHash()))
                 .validUntilBlock(1000)
                 .build();
 
@@ -347,7 +347,7 @@ public class InvocationTest {
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
-                .withCosigners(cosigner)
+                .withAttributes(cosigner)
                 .validUntilBlock(1000)
                 .build();
 
@@ -372,7 +372,7 @@ public class InvocationTest {
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
-                .withCosigners(Cosigner.calledByEntry(senderAcc.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(senderAcc.getScriptHash()))
                 .validUntilBlock(1000)
                 .build();
 
@@ -392,7 +392,7 @@ public class InvocationTest {
         w.addAccount(cosigner);
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(w)
-                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build()
                 .sign();
@@ -418,7 +418,7 @@ public class InvocationTest {
         Account cosigner = Account.createAccount();
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(w)
-                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
     }
@@ -436,7 +436,7 @@ public class InvocationTest {
         w.addAccount(cosigner);
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(w)
-                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
         w.removeAccount(cosigner.getScriptHash());

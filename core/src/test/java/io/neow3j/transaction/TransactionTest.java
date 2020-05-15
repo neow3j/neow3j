@@ -1,9 +1,7 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.model.types.TransactionAttributeUsageType.SCRIPT;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertArrayEquals;
@@ -13,19 +11,12 @@ import static org.junit.Assert.fail;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.TransactionAttributeUsageType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +27,7 @@ public class TransactionTest {
     private ScriptHash account2;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         account1 = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
         account2 = ScriptHash.fromAddress("APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL");
     }
@@ -132,63 +123,26 @@ public class TransactionTest {
             .build();
     }
 
-    @Test
-    public void buildTxWithUpToMaxCosigners() throws InvalidAlgorithmParameterException,
-        NoSuchAlgorithmException, NoSuchProviderException {
-
-        Transaction.Builder b = new Transaction.Builder()
-            .sender(account1)
-            .validUntilBlock(1L);
-
-        // Add two cosigners via varargs method.
-        ScriptHash account1 = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-        ScriptHash account2 = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-        b.cosigners(Cosigner.calledByEntry(account1), Cosigner.global(account2));
-
-        // Add the rest of cosigners via method taking a set argument.
-        List<Cosigner> cosigners = new ArrayList<>();
-        for (int i = 3; i <= NeoConstants.MAX_COSIGNERS; i++) {
-            ScriptHash account = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-            cosigners.add(Cosigner.global(account));
-        }
-        Transaction tx = b.cosigners(cosigners).build();
-        assertThat(tx.getCosigners(), hasSize(NeoConstants.MAX_COSIGNERS));
-    }
-
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount1() {
         Transaction.Builder b = new Transaction.Builder();
-        b.cosigners(Cosigner.global(account1), Cosigner.calledByEntry(account1));
+        b.attributes(Cosigner.global(account1), Cosigner.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount2() {
         Transaction.Builder b = new Transaction.Builder();
-        b.cosigners(Cosigner.global(account1));
-        b.cosigners(Cosigner.calledByEntry(account1));
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMoreThanMaxCosignersToTxBuilder() throws
-        InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        List<Cosigner> cosigners = new ArrayList<>();
-        // Create one too many cosigners
-        for (int i = 0; i <= NeoConstants.MAX_COSIGNERS; i++) {
-            ScriptHash account = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-            cosigners.add(Cosigner.global(account));
-        }
-        new Transaction.Builder()
-            .sender(account1)
-            .validUntilBlock(1L)
-            .cosigners(cosigners);
+        b.attributes(Cosigner.global(account1));
+        b.attributes(Cosigner.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMoreThanMaxAttributesToTxBuilder() {
-        List<TransactionAttribute> attrs = new ArrayList<>();
-        // Create one too many attributes.
+        // Add one too many attributes.
+        TransactionAttribute[] attrs =
+                new TransactionAttribute[NeoConstants.MAX_TRANSACTION_ATTRIBUTES + 1];
         for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
-            attrs.add(new TransactionAttribute(TransactionAttributeUsageType.DESCRIPTION, "" + i));
+            attrs[i] = new Cosigner();
         }
         new Transaction.Builder().attributes(attrs);
     }
@@ -233,9 +187,6 @@ public class TransactionTest {
             .validUntilBlock(0x01020304L)
             .script(new byte[]{OpCode.PUSH1.getValue()})
             .attributes(
-                new TransactionAttribute(SCRIPT, account1.toArray()),
-                new TransactionAttribute(SCRIPT, account2.toArray()))
-            .cosigners(
                 Cosigner.global(account1),
                 Cosigner.calledByEntry(account2))
             .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
@@ -272,9 +223,6 @@ public class TransactionTest {
             + "00e1f50500000000"  // system fee (1 GAS)
             + "0100000000000000"  // network fee (1 GAS fraction)
             + "04030201"  // valid until block
-            + "02"  // 2 attributes
-            + "2023ba2703c53263e8d6e522dc32203339dcd8eee9" // Script attribute 1
-            + "2052eaab8b2aab608902c651912db34de36e7a2b0f" // Script attribute 2
             + "02"  // 2 cosigners
             + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
             + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
@@ -289,9 +237,6 @@ public class TransactionTest {
         assertThat(tx.getSystemFee(), is((long) Math.pow(10, 8)));
         assertThat(tx.getNetworkFee(), is(1L));
         assertThat(tx.getValidUntilBlock(), is(16_909_060L));
-        assertThat(tx.getAttributes(), containsInAnyOrder(
-            new TransactionAttribute(SCRIPT, account1.toArray()),
-            new TransactionAttribute(SCRIPT, account2.toArray())));
         assertThat(tx.getCosigners(), containsInAnyOrder(
             Cosigner.global(account1),
             Cosigner.calledByEntry(account2)));
@@ -299,7 +244,7 @@ public class TransactionTest {
         assertThat(tx.getWitnesses(), is(
             Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
     }
-    
+
     @Test
     public void getSize() {
         Transaction tx = new Transaction.Builder()
@@ -311,9 +256,6 @@ public class TransactionTest {
             .validUntilBlock(0x01020304L)
             .script(new byte[]{OpCode.PUSH1.getValue()})
             .attributes(
-                new TransactionAttribute(SCRIPT, account1.toArray()),
-                new TransactionAttribute(SCRIPT, account2.toArray()))
-            .cosigners(
                 Cosigner.global(account1),
                 Cosigner.calledByEntry(account2))
             .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))

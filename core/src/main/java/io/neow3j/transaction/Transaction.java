@@ -8,6 +8,7 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.model.types.TransactionAttributeType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -16,10 +17,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Transaction extends NeoSerializable {
 
@@ -48,7 +51,6 @@ public class Transaction extends NeoSerializable {
     private long systemFee;
     private long networkFee;
     private List<TransactionAttribute> attributes;
-    private List<Cosigner> cosigners;
     private byte[] script;
     private List<Witness> witnesses;
 
@@ -63,7 +65,6 @@ public class Transaction extends NeoSerializable {
         this.systemFee = builder.systemFee;
         this.networkFee = builder.networkFee;
         this.attributes = builder.attributes;
-        this.cosigners = builder.cosigners;
         this.script = builder.script;
         this.witnesses = builder.witnesses;
     }
@@ -97,7 +98,10 @@ public class Transaction extends NeoSerializable {
     }
 
     public List<Cosigner> getCosigners() {
-        return cosigners;
+        return this.attributes.stream()
+                .filter(a -> a.type.equals(TransactionAttributeType.COSIGNER))
+                .map(a -> ((Cosigner) a))
+                .collect(Collectors.toList());
     }
 
     public byte[] getScript() {
@@ -125,8 +129,7 @@ public class Transaction extends NeoSerializable {
     public int getSize() {
         return HEADER_SIZE +
                 IOUtils.getVarSize(this.attributes) +
-                IOUtils.getVarSize(this.cosigners) +
-                IOUtils.getVarSize(this.script.length) + this.script.length +
+                IOUtils.getVarSize(this.script) +
                 IOUtils.getVarSize(this.witnesses);
     }
 
@@ -140,7 +143,6 @@ public class Transaction extends NeoSerializable {
             this.networkFee = reader.readInt64();
             this.validUntilBlock = reader.readUInt32();
             this.attributes = reader.readSerializableList(TransactionAttribute.class);
-            this.cosigners = reader.readSerializableList(Cosigner.class);
             this.script = reader.readVarBytes();
             this.witnesses = reader.readSerializableList(Witness.class);
         } catch (IOException | InstantiationException | IllegalAccessException e) {
@@ -156,7 +158,6 @@ public class Transaction extends NeoSerializable {
         writer.writeInt64(this.networkFee);
         writer.writeUInt32(this.validUntilBlock);
         writer.writeSerializableVariable(this.attributes);
-        writer.writeSerializableVariable(this.cosigners);
         writer.writeVarBytes(this.script);
     }
 
@@ -204,7 +205,6 @@ public class Transaction extends NeoSerializable {
         private ScriptHash sender;
         private long systemFee;
         private long networkFee;
-        private List<Cosigner> cosigners;
         private byte[] script;
         private List<TransactionAttribute> attributes;
         private List<Witness> witnesses;
@@ -216,7 +216,6 @@ public class Transaction extends NeoSerializable {
             this.version = NeoConstants.CURRENT_TX_VERSION;
             this.networkFee = 0L;
             this.systemFee = 0L;
-            this.cosigners = new ArrayList<>();
             this.attributes = new ArrayList<>();
             this.witnesses = new ArrayList<>();
             this.script = new byte[]{};
@@ -321,7 +320,6 @@ public class Transaction extends NeoSerializable {
             return this;
         }
 
-
         /**
          * Sets the contract script for this transaction.
          * <p>
@@ -336,57 +334,6 @@ public class Transaction extends NeoSerializable {
         }
 
         /**
-         * Adds the given cosigners to this transaction.
-         * <p>
-         * The maximum number of cosigners on a transaction is given in {@link
-         * NeoConstants#MAX_COSIGNERS}.
-         *
-         * @param cosigners The cosigners.
-         * @return this builder.
-         * @throws TransactionConfigurationException when attempting to add more than the {@link
-         *                                           NeoConstants#MAX_COSIGNERS} Cosigners or
-         *                                           multiple Cosigners concerning the same
-         *                                           account.
-         */
-        public Builder cosigners(List<Cosigner> cosigners) {
-            if (this.cosigners.size() + cosigners.size() > NeoConstants.MAX_COSIGNERS) {
-                throw new TransactionConfigurationException("Can't have more than " +
-                        NeoConstants.MAX_COSIGNERS + " cosigners on a transaction.");
-            }
-            if (hasDuplicateCosignerAccounts(cosigners)) {
-                throw new TransactionConfigurationException("Can't add multiple cosigners" +
-                        " concerning the same account.");
-            }
-            this.cosigners.addAll(cosigners);
-            return this;
-        }
-
-        private boolean hasDuplicateCosignerAccounts(List<Cosigner> cosigners) {
-            Set<ScriptHash> newAccts = cosigners.stream().map(Cosigner::getAccount)
-                    .collect(Collectors.toSet());
-            boolean duplicateCosignerAccts = cosigners.size() != newAccts.size();
-            Set<ScriptHash> existingAccts = this.cosigners.stream().map(Cosigner::getAccount)
-                    .collect(Collectors.toSet());
-            existingAccts.retainAll(newAccts);
-            return duplicateCosignerAccts || existingAccts.size() != 0;
-        }
-
-        /**
-         * Adds the given cosigners to this transaction.
-         * <p>
-         * The maximum number of cosigners on a transaction is given in {@link
-         * NeoConstants#MAX_COSIGNERS}.
-         *
-         * @param cosigners The cosigners.
-         * @return this builder.
-         * @throws TransactionConfigurationException when attempting to add more than the {@link
-         *                                           NeoConstants#MAX_COSIGNERS} Cosigners.
-         */
-        public Builder cosigners(Cosigner... cosigners) {
-            return cosigners(Arrays.asList(cosigners));
-        }
-
-        /**
          * Adds the given attributes to this transaction.
          * <p>
          * The maximum number of attributes on a transaction is given in {@link
@@ -398,27 +345,34 @@ public class Transaction extends NeoSerializable {
          *                                           NeoConstants#MAX_TRANSACTION_ATTRIBUTES}
          *                                           attributes.
          */
-        public Builder attributes(List<TransactionAttribute> attributes) {
-            if (this.attributes.size() + attributes.size() >
+        public Builder attributes(TransactionAttribute... attributes) {
+            if (this.attributes.size() + attributes.length >
                     NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-                throw new TransactionConfigurationException("Can't have more than " +
-                        NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes on a transaction.");
+                throw new TransactionConfigurationException("A transaction cannot have more "
+                        + "than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
             }
-            this.attributes.addAll(attributes);
+            if (containsDuplicateCosigners(attributes)) {
+                throw new TransactionConfigurationException("Can't add multiple cosigners" +
+                        " concerning the same account.");
+            }
+            this.attributes.addAll(Arrays.asList(attributes));
             return this;
         }
 
-        /**
-         * Adds the given attributes to this transaction.
-         * <p>
-         * The maximum number of attributes on a transaction is given in {@link
-         * NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
-         *
-         * @param attributes The attributes.
-         * @return this builder.
-         */
-        public Builder attributes(TransactionAttribute... attributes) {
-            return attributes(Arrays.asList(attributes));
+        private boolean containsDuplicateCosigners(TransactionAttribute... newAttributes) {
+            List<ScriptHash> newCosignersList = Stream.of(newAttributes)
+                    .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
+                    .map(a -> ((Cosigner) a).getAccount())
+                    .collect(Collectors.toList());
+            Set<ScriptHash> newCosignersSet = new HashSet<>(newCosignersList);
+            if (newCosignersList.size() != newCosignersSet.size()) {
+                // The new cosingers list contains duplicates in itself.
+                return true;
+            }
+            return this.attributes.stream()
+                    .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
+                    .map(a -> ((Cosigner) a).getAccount())
+                    .anyMatch(newCosignersSet::contains);
         }
 
         /**
@@ -430,29 +384,15 @@ public class Transaction extends NeoSerializable {
          * @param witnesses The witnesses.
          * @return this builder.
          */
-        public Builder witnesses(List<Witness> witnesses) {
+        public Builder witnesses(Witness... witnesses) {
             for (Witness witness : witnesses) {
                 if (witness.getScriptHash() == null) {
                     throw new IllegalArgumentException("The script hash of the given script is " +
                             "empty. Please set the script hash.");
                 }
             }
-
-            this.witnesses.addAll(witnesses);
+            this.witnesses.addAll(Arrays.asList(witnesses));
             return this;
-        }
-
-        /**
-         * Adds the given witnesses to this transaction.
-         * <p>
-         * Witnesses are examined by Neo to check the validity of a transaction. It usually consists
-         * of a signature (of the transaction) and the corresponding verification script.
-         *
-         * @param witnesses The witnesses.
-         * @return this builder.
-         */
-        public Builder witnesses(Witness... witnesses) {
-            return witnesses(Arrays.asList(witnesses));
         }
 
         /**
@@ -473,9 +413,9 @@ public class Transaction extends NeoSerializable {
                         "with a block number up to which this it is considered valid.");
             }
 
-            if (this.cosigners.isEmpty()) {
+            if (getCosigners().isEmpty()) {
                 // Add default restrictive witness scope.
-                this.cosigners.add(Cosigner.calledByEntry(this.sender));
+                this.attributes.add(Cosigner.calledByEntry(this.sender));
             }
             return new Transaction(this);
         }
@@ -505,7 +445,10 @@ public class Transaction extends NeoSerializable {
         }
 
         public List<Cosigner> getCosigners() {
-            return cosigners;
+            return this.attributes.stream()
+                    .filter(a -> a.type.equals(TransactionAttributeType.COSIGNER))
+                    .map(a -> ((Cosigner) a))
+                    .collect(Collectors.toList());
         }
 
         public byte[] getScript() {

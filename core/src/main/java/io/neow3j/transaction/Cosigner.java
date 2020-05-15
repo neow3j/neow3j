@@ -6,10 +6,9 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
-import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.model.types.TransactionAttributeType;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,18 +17,22 @@ import java.util.Objects;
 
 
 /**
- * A Cosigner instance models witness scoping. It is part of a transaction and defines in which
- * scopes a transaction's witness can be used.
+ * A Cosigner represents a signer of a transaction. It also sets a scope in which the signer's
+ * witness/signature is valid.
  */
-public class Cosigner extends NeoSerializable {
+public class Cosigner extends TransactionAttribute {
+
+
+    // The limit for the number of AllowedContracts and AllowedGroups.
+    private final static int MAX_SUBITEMS = 16;
 
     /**
-     * The script hash of the witness originator. I.e. the account that created the witness.
+     * The script hash of the signer account.
      */
     private ScriptHash account;
 
     /**
-     * The scopes in which a transaction witness can be used. Multiple scopes can be combined.
+     * The scopes in which the signer's signatures can be used. Multiple scopes can be combined.
      */
     private List<WitnessScope> scopes;
 
@@ -44,6 +47,7 @@ public class Cosigner extends NeoSerializable {
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
     public Cosigner() {
+        super(TransactionAttributeType.COSIGNER);
         this.account = new ScriptHash();
         this.scopes = new ArrayList<>();
         this.allowedContracts = new ArrayList<>();
@@ -51,6 +55,7 @@ public class Cosigner extends NeoSerializable {
     }
 
     private Cosigner(Builder builder) {
+        super(TransactionAttributeType.COSIGNER);
         this.account = builder.account;
         this.scopes = builder.scopes;
         this.allowedContracts = builder.allowedContracts;
@@ -100,15 +105,25 @@ public class Cosigner extends NeoSerializable {
     }
 
     @Override
-    public void deserialize(BinaryReader reader) throws DeserializationException {
+    public void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
         try {
             this.account = reader.readSerializable(ScriptHash.class);
             this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
             if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
                 this.allowedContracts = reader.readSerializableList(ScriptHash.class);
+                if (this.allowedContracts.size() > MAX_SUBITEMS) {
+                    throw new DeserializationException("A cosigner's scope can only contain "
+                            + MAX_SUBITEMS + " contracts. The input data contained "
+                            + this.allowedContracts.size() + " contracts.");
+                }
             }
             if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
                 this.allowedGroups = reader.readSerializableList(ECKeyPair.ECPublicKey.class);
+                if (this.allowedGroups.size() > MAX_SUBITEMS) {
+                    throw new DeserializationException("A cosigner's scope can only contain "
+                            + MAX_SUBITEMS + " groups. The input data contained "
+                            + this.allowedGroups.size() + " groups.");
+                }
             }
         } catch (IllegalAccessException | InstantiationException | IOException e) {
             throw new DeserializationException(e);
@@ -116,8 +131,8 @@ public class Cosigner extends NeoSerializable {
     }
 
     @Override
-    public void serialize(BinaryWriter writer) throws IOException {
-        writer.writeSerializableFixed(account);
+    public void serializeWithoutType(BinaryWriter writer) throws IOException {
+        writer.writeSerializableFixed(this.account);
         writer.writeByte(WitnessScope.combineScopes(this.scopes));
         if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
             writer.writeSerializableVariable(this.allowedContracts);
@@ -128,9 +143,9 @@ public class Cosigner extends NeoSerializable {
     }
 
     @Override
-    public int getSize() {
-        int size = NeoConstants.SCRIPTHASH_SIZE // account script hash
-            + 1; // Scope byte
+    public int getSizeWithoutType() {
+        // Account script hash plus scope byte.
+        int size = NeoConstants.SCRIPTHASH_SIZE + 1;
         if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
             size += IOUtils.getVarSize(this.allowedContracts);
         }
@@ -142,8 +157,15 @@ public class Cosigner extends NeoSerializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         Cosigner that = (Cosigner) o;
         return Objects.equals(this.account, that.account) &&
                 Objects.equals(this.scopes, that.scopes) &&
@@ -153,7 +175,7 @@ public class Cosigner extends NeoSerializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(account, scopes, allowedContracts, allowedGroups);
+        return Objects.hash(super.hashCode(), account, scopes, allowedContracts, allowedGroups);
     }
 
     public static class Builder {
@@ -207,6 +229,10 @@ public class Cosigner extends NeoSerializable {
             if (!this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
                 this.scopes.add(WitnessScope.CUSTOM_CONTRACTS);
             }
+            if (this.allowedContracts.size() + contracts.length > MAX_SUBITEMS) {
+                throw new CosignerConfigurationException("A cosigner's scope can only contain "
+                        + MAX_SUBITEMS + " contracts.");
+            }
             this.allowedContracts.addAll(Arrays.asList(contracts));
             return this;
         }
@@ -223,6 +249,10 @@ public class Cosigner extends NeoSerializable {
         public Builder allowedGroups(ECKeyPair.ECPublicKey... groups) {
             if (!this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
                 this.scopes.add(WitnessScope.CUSTOM_GROUPS);
+            }
+            if (this.allowedGroups.size() + groups.length > MAX_SUBITEMS) {
+                throw new CosignerConfigurationException("A cosigner's scope can only contain "
+                        + MAX_SUBITEMS + " groups.");
             }
             this.allowedGroups.addAll(Arrays.asList(groups));
             return this;

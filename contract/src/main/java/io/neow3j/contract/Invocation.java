@@ -159,15 +159,6 @@ public class Invocation {
         }
 
         /**
-         * @param cosigners
-         * @return
-         */
-        public InvocationBuilder withCosigners(Cosigner... cosigners) {
-            this.txBuilder.cosigners(cosigners);
-            return this;
-        }
-
-        /**
          * @param blockNr
          * @return
          */
@@ -265,7 +256,7 @@ public class Invocation {
             }
             if (this.txBuilder.getCosigners().isEmpty() || !senderCosignerExists()) {
                 // Set the standard cosigner if none has been specified.
-                this.txBuilder.cosigners(Cosigner.calledByEntry(this.txBuilder.getSender()));
+                this.txBuilder.attributes(Cosigner.calledByEntry(this.txBuilder.getSender()));
             }
             this.txBuilder.script(createScript());
             this.txBuilder.systemFee(fetchSystemFee());
