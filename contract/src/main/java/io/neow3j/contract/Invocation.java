@@ -5,7 +5,6 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.InvocationConfigurationException;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -41,8 +40,8 @@ public class Invocation {
     /**
      * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
      * <p>
-     * Before sending, make sure to sign the transaction by calling {@link Invocation#sign()} or
-     * by adding signatures manually with {@link Invocation#addWitnesses(Witness...)}.
+     * Before sending, make sure to sign the transaction by calling {@link Invocation#sign()} or by
+     * adding signatures manually with {@link Invocation#addWitnesses(Witness...)}.
      *
      * @return the Neo node's response.
      * @throws IOException if a problem in communicating with the Neo node occurs.
@@ -105,17 +104,18 @@ public class Invocation {
         return this.transaction;
     }
 
-    public void addSignatures(List<SignatureData> signatures) {
-        Account sendingAcc = this.wallet.getAccount(this.transaction.getSender());
-        VerificationScript verScript = sendingAcc.getVerificationScript();
-        if (signatures.size() != verScript.getSigningThreshold()) {
-            throw new InvocationConfigurationException("The number of signatures must be equal to "
-                    + "the signing threshold of the multi-sig account performing his invocation. "
-                    + "The network fee for the invocation was set according to that signing "
-                    + "threshold.");
+    /**
+     * Adds the given witnesses to the invocation transaction.
+     * <p>
+     * Use this method if you can't use the automatic signing method {@link Invocation#sign()},
+     * e.g., because one of the cosigners is a multi-signature account.
+     *
+     * @param witnesses The witnesses to add.
+     */
+    public void addWitnesses(Witness... witnesses) {
+        for (Witness witness : witnesses) {
+            this.transaction.addWitness(witness);
         }
-        Witness wit = Witness.createMultiSigWitness(signatures, verScript);
-        this.transaction.addWitness(wit);
     }
 
     public static class InvocationBuilder {
@@ -139,16 +139,6 @@ public class Invocation {
             this.txBuilder = new Transaction.Builder();
             this.failOnFalse = false;
         }
-
-        /**
-         * @param witnesses
-         * @return
-         */
-        public InvocationBuilder addWitnesses(Witness... witnesses) {
-            this.txBuilder.witnesses(witnesses);
-            return this;
-        }
-
 
         /**
          * @param parameters
