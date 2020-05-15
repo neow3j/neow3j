@@ -58,11 +58,11 @@ public class ContractParameterTest {
 
     @Test
     public void testByteArrayParamCreationFromValidAddress() {
-        String validAddress = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
-        ScriptHash scriptHash = ScriptHash.fromAddress(validAddress);
+        String validAddress = "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm";
+        String scriptHash = "969a77db482f74ce27105f760efa139223431394";
 
         ContractParameter p = ContractParameter.byteArrayFromAddress(validAddress);
-        assertArrayEquals(scriptHash.toArray(), (byte[]) p.getValue());
+        assertArrayEquals(Numeric.hexStringToByteArray(scriptHash), (byte[]) p.getValue());
         assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
     }
 

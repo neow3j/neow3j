@@ -138,6 +138,26 @@ public class Account {
 
     /**
      * Decrypts this account's private key, according to the NEP-2 standard, if not already
+     * decrypted. Uses the default Scrypt parameters.
+     *
+     * @param password     The passphrase used to decrypt this account's private key.
+     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       throws if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
+     * @throws AccountStateException if
+     *                               <ul>
+     *                               <li>the account doesn't hold an encrypted private key
+     *                               <li>the account does already hold a decrypted private key
+     *                               <li>the public key derived from the decrypted private key is
+     *                               not equal to the already set public key.
+     *                               </ul>
+     */
+    public void decryptPrivateKey(String password)
+            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+        decryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
+    }
+    /**
+     * Decrypts this account's private key, according to the NEP-2 standard, if not already
      * decrypted.
      *
      * @param password     The passphrase used to decrypt this account's private key.
@@ -175,11 +195,22 @@ public class Account {
     }
 
     /**
+     * Encrypts this account's private key according to the NEP-2 standard using the default Scrypt
+     * parameters.
+     *
+     * @param password The passphrase used to encrypt this account's private key.
+     * @throws CipherException if failed encrypt the created wallet.
+     */
+    public void encryptPrivateKey(String password) throws CipherException {
+        encryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
+    }
+
+    /**
      * Encrypts this account's private key according to the NEP-2 standard and
      *
      * @param password     The passphrase used to encrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for encryption.
-     * @throws CipherException throws if failed encrypt the created wallet.
+     * @throws CipherException if failed encrypt the created wallet.
      */
     public void encryptPrivateKey(String password, ScryptParams scryptParams)
             throws CipherException {

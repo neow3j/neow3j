@@ -6,10 +6,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
@@ -66,11 +67,14 @@ public class AccountTest {
     @Test
     public void testBuildAccountFromExistingKeyPair() {
         // Used neo-core with address version 0x17 to generate test data.
-        String expectedAdr = "AMEr3rD5jUBRdkkmqmEU1WhhtVsAPXG2q9";
+        String expectedAdr = "AMuDKuFCrHNtEg4jCV17ge4eyoa3JwD9fH";
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
-        String verScirpt =
-                "0c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b20b410a906ad4";
+        String verScirpt = "0c21"
+                + "027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2"
+                + OpCode.PUSHNULL
+                + OpCode.SYSCALL.toString()
+                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash();
 
         Account a = Account.fromECKeyPair(pair).build();
         assertThat(a.isMultiSig(), is(false));
@@ -84,13 +88,13 @@ public class AccountTest {
     @Test
     public void testFromMultiSigKeys() {
         // Used neo-core with address version 0x17 to generate test data.
-        String adr = "AQ3ZPRnoBGBkfjgxGa9gZkELb8knQSU5xe";
+        String adr = "AKmZGyN7AmQDvH6Q9eEbBPuG1nDgCRyrcP";
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
         List<ECPublicKey> keys = Arrays.asList(pair.getPublicKey(), pair.getPublicKey());
         Account a = Account.fromMultiSigKeys(keys, 2).build();
         byte[] verScript = Numeric.hexStringToByteArray(
-                "120c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b20c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2120b413073b3bb");
+                "120c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b20c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2120b41c330181e");
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(adr));
         assertThat(a.getPublicKey(), is(nullValue()));
@@ -99,18 +103,15 @@ public class AccountTest {
         assertThat(a.getVerificationScript().getScript(), is(verScript));
     }
 
-    // TODO: This test needs examples generated with the newest neo core implementation.
-    //  The current test data is not up to date and therefore fails.
     @Test
     public void testEncryptPrivateKey() throws CipherException {
-        // WIF created from private key
-        // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
-        String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
+         String privKeyString = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+         ECKeyPair keyPair = ECKeyPair.create(Numeric.hexStringToByteArray(privKeyString));
         String password = "pwd";
         // Used neo-core with address version 0x17 to generate the encrypted key.
-        String expectedNep2Encrypted = "6PYX9GMW3WgtYcivcWgrqzk2igqY8jhnMcysgFw4npoLqRnxZ16yj8V6V1";
-        Account a = Account.fromWIF(wif).build();
-        a.encryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
+        String expectedNep2Encrypted = "6PYMGfNyeJAf8bLXmPh8MbJxLB8uvQqtnZje1RUhhUcDDucj55dZsvbk8k";
+        Account a = Account.fromECKeyPair(keyPair).build();
+        a.encryptPrivateKey(password);
         assertThat(a.getEncryptedPrivateKey(), is(expectedNep2Encrypted));
     }
 
@@ -122,11 +123,11 @@ public class AccountTest {
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
         String password = "pwd";
         // Used neo-core with address version 0x17 to generate the encrypted key.
-        String nep2Encrypted = "6PYX9GMW3WgtYcivcWgrqzk2igqY8jhnMcysgFw4npoLqRnxZ16yj8V6V1";
+        String nep2Encrypted = "6PYMGfNyeJAf8bLXmPh8MbJxLB8uvQqtnZje1RUhhUcDDucj55dZsvbk8k";
 
         NEP6Account nep6Acct = new NEP6Account("", "", true, false, nep2Encrypted, null, null);
         Account a = Account.fromNEP6Account(nep6Acct).build();
-        a.decryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
+        a.decryptPrivateKey(password);
         assertThat(a.getPrivateKey(), is(privateKey));
     }
 
