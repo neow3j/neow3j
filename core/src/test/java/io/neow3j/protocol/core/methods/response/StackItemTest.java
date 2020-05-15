@@ -1,22 +1,21 @@
 package io.neow3j.protocol.core.methods.response;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class StackItemTest extends ResponseTester {
 
@@ -25,7 +24,7 @@ public class StackItemTest extends ResponseTester {
     private final static String BYTEARRAY_JSON = ""
             + " {"
             + "   \"type\": \"ByteArray\",\n"
-            + "   \"value\": \"576f6f6c6f6e67\"\n"
+            + "   \"value\": \"V29vbG9uZw==\"\n"
             + " }";
 
     @Test(expected = IllegalStateException.class)
@@ -76,7 +75,7 @@ public class StackItemTest extends ResponseTester {
         String json = ""
                 + " {"
                 + "   \"type\": \"ByteArray\",\n"
-                + "   \"value\": \"6964\"\n"
+                + "   \"value\": \"aWQ=\"\n"
                 + " }";
 
         item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteArray();
@@ -87,7 +86,7 @@ public class StackItemTest extends ResponseTester {
                 + " {"
                 + "   \"type\": \"ByteArray\",\n"
                 // The script hash hex string in littel-endian format
-                + "   \"value\": \"d42cf7a931ce3c46550fd90de482583fc5ea701a\"\n"
+                + "   \"value\": \"1Cz3qTHOPEZVD9kN5IJYP8XqcBo=\"\n"
                 + " }";
 
         item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteArray();
@@ -211,7 +210,7 @@ public class StackItemTest extends ResponseTester {
                 + "    {"
                 + "      \"key\": {"
                 + "        \"type\": \"ByteArray\","
-                + "        \"value\": \"746573745f6b65795f61\""
+                + "        \"value\": \"dGVzdF9rZXlfYQ==\""
                 + "      },"
                 + "      \"value\": {"
                 + "        \"type\": \"Boolean\","
@@ -221,7 +220,7 @@ public class StackItemTest extends ResponseTester {
                 + "    {"
                 + "      \"key\": {"
                 + "        \"type\": \"ByteArray\","
-                + "        \"value\": \"746573745f6b65795f62\""
+                + "        \"value\": \"dGVzdF9rZXlfYg==\""
                 + "      },"
                 + "      \"value\": {"
                 + "        \"type\": \"Integer\","

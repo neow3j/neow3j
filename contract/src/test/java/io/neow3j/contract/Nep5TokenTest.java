@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class Nep5TokenTest {
         this.contract = new ScriptHash(ContractTestUtils.CONTRACT_1_SCRIPT_HASH);
     }
 
-//    @Ignore
+    @Ignore
     @Test
     public void transferToken() throws Exception {
         ContractTestUtils.setUpWireMockForSendRawTransaction();
@@ -57,15 +58,15 @@ public class Nep5TokenTest {
     @Test
     public void getName() throws IOException {
         ContractTestUtils.setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
-        Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
-        assertThat(nep5.getName(), is("Example"));
+        Nep5Token nep5 = new Nep5Token(NeoToken.SCRIPT_HASH, this.neow);
+        assertThat(nep5.getName(), is("NEO"));
     }
 
     @Test
     public void getSymbol() throws IOException {
         ContractTestUtils.setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
-        assertThat(nep5.getSymbol(), is("EXP"));
+        assertThat(nep5.getSymbol(), is("neo"));
     }
 
     @Test
