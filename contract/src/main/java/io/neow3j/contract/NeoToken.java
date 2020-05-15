@@ -92,7 +92,7 @@ public class NeoToken extends Nep5Token {
 
         response.throwOnError();
 
-        return response.getResult();
+        return response.getResult().getHash();
     }
 
     /**

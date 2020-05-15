@@ -330,7 +330,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
             String functionName) {
-        return invokeFunction(contractScriptHash, functionName, null);
+        return invokeFunction(contractScriptHash, functionName, null, (String[]) null);
     }
 
     @Override

@@ -162,7 +162,7 @@ public class Nep5Token extends SmartContract {
                 .send();
 
         response.throwOnError();
-        return response.getResult();
+        return response.getResult().getHash();
     }
 
 }
