@@ -84,8 +84,4 @@ public class AddressUtilsTest {
         fail();
     }
 
-    @Test
-    public void test() {
-
-    }
 }

@@ -59,14 +59,4 @@ public class NEP2Test {
         assertThat(NEP2.encrypt(pw, keyPair, nonDefaultScryptParams), is(expected));
     }
 
-    @Test
-    public void test() throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
-        System.out.println(WIF.privateKeyToWIF(Numeric.hexStringToByteArray(
-                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")));
-        ECKeyPair keyPair = NEP2
-                .decrypt("neo", "6PYV39zSDnpCb9ecybeL3z6XrLTpKy1AugUGd6DYFFNELHv9aLj6M7KGD2");
-        System.out.println(Numeric.toHexStringNoPrefix(keyPair.getPrivateKey().getBytes()));
-        System.out.println(WIF.privateKeyToWIF(keyPair.getPrivateKey().getBytes()));
-    }
-
 }
