@@ -2,9 +2,9 @@ package io.neow3j.protocol.core.methods.response;
 
 import io.neow3j.protocol.core.Response;
 
-public class NeoGetTxOut extends Response<TransactionOutput> {
+public class NeoSendFrom extends Response<Transaction> {
 
-    public TransactionOutput getTransaction() {
+    public Transaction getSendFrom() {
         return getResult();
     }
 

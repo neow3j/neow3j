@@ -14,10 +14,10 @@ import java.util.Objects;
 public class TransactionAttribute {
 
     @JsonProperty("usage")
-    public TransactionAttributeUsageType usage;
+    private TransactionAttributeUsageType usage;
 
     @JsonProperty("data")
-    public byte[] data;
+    private byte[] data;
 
     public TransactionAttribute() {
     }

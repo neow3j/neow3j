@@ -1,5 +1,7 @@
 package io.neow3j.transaction;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,33 +12,32 @@ public enum WitnessScope {
      * The global scope allows to use a witness in all contexts. It cannot be combined with other
      * scopes.
      */
-    GLOBAL(0x00),
+    GLOBAL("Global", 0x00),
 
     /**
      * This scope limits the use of a witness to the level of the contract called in the
      * transaction. I.e. it only allows the invoked contract to use the witness.
      */
-    CALLED_BY_ENTRY(0x01),
+    CALLED_BY_ENTRY("CalledByEntry", 0x01),
 
     /**
      * This scope allows the specification of additional contracts in which the witness can be
      * used.
      */
-    CUSTOM_CONTRACTS(0x10),
+    CUSTOM_CONTRACTS("CustomContracts", 0x10),
 
     /**
      * This scope allows the specification of contract groups in which the witness can be used.
      */
-    CUSTOM_GROUPS(0x20);
+    CUSTOM_GROUPS("CustomGroups", 0x20);
+
+    private String jsonValue;
 
     private byte byteValue;
 
-    WitnessScope(int byteValue) {
+    WitnessScope(String jsonValue, int byteValue) {
+        this.jsonValue = jsonValue;
         this.byteValue = (byte) byteValue;
-    }
-
-    public byte byteValue() {
-        return this.byteValue;
     }
 
     /**
@@ -74,6 +75,47 @@ public enum WitnessScope {
             combined |= s.byteValue();
         }
         return combined;
+    }
+
+    @JsonCreator
+    public static WitnessScope fromJson(Object value) {
+        if (value instanceof String) {
+            return fromJsonValue((String) value);
+        }
+        if (value instanceof Integer) {
+            return valueOf(((Integer) value).byteValue());
+        }
+        throw new IllegalArgumentException(
+                String.format("%s value type not found.", WitnessScope.class.getName()));
+    }
+
+    public static WitnessScope valueOf(byte byteValue) {
+        for (WitnessScope e : WitnessScope.values()) {
+            if (e.byteValue == byteValue) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException(
+                String.format("%s value type not found.", WitnessScope.class.getName()));
+    }
+
+    public static WitnessScope fromJsonValue(String jsonValue) {
+        for (WitnessScope e : WitnessScope.values()) {
+            if (e.jsonValue.equals(jsonValue)) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException(
+                String.format("%s value type not found.", WitnessScope.class.getName()));
+    }
+
+    public byte byteValue() {
+        return this.byteValue;
+    }
+
+    @JsonValue
+    public String jsonValue() {
+        return this.jsonValue;
     }
 
 }

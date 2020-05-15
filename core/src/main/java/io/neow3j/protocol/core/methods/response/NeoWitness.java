@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Script {
+public class NeoWitness {
 
     @JsonProperty("invocation")
     private String invocation;
@@ -14,10 +14,10 @@ public class Script {
     @JsonProperty("verification")
     private String verification;
 
-    public Script() {
+    public NeoWitness() {
     }
 
-    public Script(String invocation, String verification) {
+    public NeoWitness(String invocation, String verification) {
         this.invocation = invocation;
         this.verification = verification;
     }
@@ -33,8 +33,8 @@ public class Script {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Script)) return false;
-        Script script = (Script) o;
+        if (!(o instanceof NeoWitness)) return false;
+        NeoWitness script = (NeoWitness) o;
         return Objects.equals(getInvocation(), script.getInvocation()) &&
                 Objects.equals(getVerification(), script.getVerification());
     }

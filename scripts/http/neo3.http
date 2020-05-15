@@ -1,0 +1,21 @@
+// Invoke function
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params":[
+  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "transfer",
+  [
+    {"type": "Hash160","value": "0x3d952ba848992ca5dc8b968a3d11af543601c1e6"},
+ {"type": "Hash160","value": "0xf68f181731a47036a99f04dad90043a744edec0f"},
+    {"type": "Integer", "value": "1"}
+  ],
+  ["0x3d952ba848992ca5dc8b968a3d11af543601c1e6"]
+  ],
+ "id": 1
+}
+
+###

@@ -1,0 +1,14 @@
+{
+  "ProtocolConfiguration": {
+    "Magic": 769,
+    "AddressVersion": 23,
+    "MillisecondsPerBlock": 15000,
+    "ValidatorsCount": 1,
+    "StandbyValidators": [
+      "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238",
+    ],
+    "SeedList": [
+      "localhost:40333",
+    ]
+  }
+}
