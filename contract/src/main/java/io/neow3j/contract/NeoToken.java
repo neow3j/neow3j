@@ -5,6 +5,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Wallet;
@@ -64,7 +65,7 @@ public class NeoToken extends Nep5Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getUnclaimedGas(ScriptHash scriptHash, long blockHeight) throws IOException {
-        ContractParameter accParam = ContractParameter.byteArrayFromAddress(scriptHash.toAddress());
+        ContractParameter accParam = ContractParameter.hash160(scriptHash);
         ContractParameter heightParam = ContractParameter.integer(BigInteger.valueOf(blockHeight));
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }
@@ -81,13 +82,17 @@ public class NeoToken extends Nep5Token {
      */
     public String registerValidator(Wallet wallet, ECPublicKey validatorKey)
             throws IOException, ErrorResponseException {
-        return invoke(REGISTER_VALIDATOR)
+        NeoSendRawTransaction response = invoke(REGISTER_VALIDATOR)
                 .withWallet(wallet)
                 .withParameters(ContractParameter.publicKey(validatorKey.getEncoded(true)))
                 .failOnFalse()
                 .build()
                 .sign()
                 .send();
+
+        response.throwOnError();
+
+        return response.getResult();
     }
 
     /**
@@ -147,14 +152,12 @@ public class NeoToken extends Nep5Token {
             throw new UnexpectedReturnTypeException(keyItem.getType(),
                     StackItemType.BYTE_ARRAY);
         }
-        ECPublicKey key;
         try {
-            key = new ECPublicKey(keyItem.asByteArray().getValue());
+            return new ECPublicKey(keyItem.asByteArray().getValue());
         } catch (IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException("Byte array return type did not contain "
                     + "public key in expected format.", e);
         }
-        return key;
     }
 
     // TODO: Implement method for GET_NEXT_BLOCK_VALIDATOR

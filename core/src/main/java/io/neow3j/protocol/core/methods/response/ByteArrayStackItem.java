@@ -1,15 +1,13 @@
 package io.neow3j.protocol.core.methods.response;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
-
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ByteArrayStackItem extends StackItem {
 
@@ -17,6 +15,11 @@ public class ByteArrayStackItem extends StackItem {
         super(StackItemType.BYTE_ARRAY, value);
     }
 
+    /**
+     * Decodes the stack item's base64-encoded value and returns it as a byte array.
+     *
+     * @return the value of this stack item.
+     */
     @Override
     public byte[] getValue() {
         return (byte[]) this.value;
@@ -36,7 +39,7 @@ public class ByteArrayStackItem extends StackItem {
     /**
      * <p>Gets this byte array's value as string.</p>
      * <br>
-     * <p>Expects the byte array to encode a string in UTF-8.</p>
+     * <p>Expects the byte array to be UTF-8-encoded.</p>
      *
      * @return the string represented by the byte array.
      */

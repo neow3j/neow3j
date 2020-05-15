@@ -10,7 +10,6 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
@@ -24,6 +23,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Invocation {
 
@@ -37,48 +38,59 @@ public class Invocation {
         this.transaction = builder.tx;
     }
 
-    public String send() throws IOException, ErrorResponseException {
-        String hex = Numeric.toHexString(transaction.toArray());
+    /**
+     * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
+     * <p>
+     * Before sending, make sure to sign the transaction by calling {@link Invocation#sign()} or
+     * by adding signatures manually with {@link Invocation#addWitnesses(Witness...)}.
+     *
+     * @return the Neo node's response.
+     * @throws IOException if a problem in communicating with the Neo node occurs.
+     */
+    public NeoSendRawTransaction send() throws IOException {
+        // TODO 14.05.20 claude: Consider checking for sufficient witnesses.
+        String hex = Numeric.toHexStringNoPrefix(transaction.toArray());
         NeoSendRawTransaction response = neow.sendRawTransaction(hex).send();
-        response.throwOnError();
-        return "";
-        // TODO: Adapt as soon as JSON-RPC implementation is adapted to Neo 3.
-        // The new return type of the `sendrawtransaction` RPC call in Neo 3 is the transaction
-        // hash.
-        // return response.getResult();
+        return response;
     }
 
-    // TODO: Adapt, so that signatures of all the cosigners are created.
-
     /**
-     * Signs the transaction and add the signature to the transaction as a witness.
+     * Creates signatures for every cosigner of the invocation transaction and adds them to the
+     * transaction as witnesses.
      * <p>
-     * The signature is created with the account set on the transaction.
+     * For each cosigner set on the transaction corresponding account must exist in the wallet.
      *
-     * @return this invocation object.
+     * @return this.
      */
     public Invocation sign() {
-       byte[] txBytes = getTransactionForSigning();
+        byte[] txBytes = getTransactionForSigning();
         for (Cosigner c : this.transaction.getCosigners()) {
             Account a = this.wallet.getAccount(c.getAccount());
             if (a == null) {
                 throw new InvocationConfigurationException("Wallet does not contain the account "
                         + "for cosigner with script hash " + c.getAccount());
             }
-            ECKeyPair kp;
+            if (a.isMultiSig()) {
+                // TODO 13.05.20 claude: Add the possiblity to automatically sign with a mutli-sig
+                //  account. For this to work the participating accounts need to be in the wallet.
+                throw new InvocationConfigurationException("Automatic signing with a "
+                        + "multi-signature account is not supported. Create and add a signature "
+                        + "manually. ");
+            }
             try {
-                kp = a.getECKeyPair();
+                ECKeyPair keyPair = a.getECKeyPair();
+                this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
             } catch (AccountStateException e) {
                 throw new InvocationConfigurationException("Cannot sign transaction with account "
                         + "with script hash " + c.getAccount(), e);
             }
-            this.transaction.addWitness(Witness.createWitness(txBytes, kp));
         }
         return this;
     }
 
     /**
-     * Gets the transaction bytes for signing. The witnesses are not included in the array.
+     * Gets the invocation transaction bytes for signing. No witnesses are included in the returned
+     * byte array.
      *
      * @return the transaction as a byte array
      */
@@ -86,6 +98,9 @@ public class Invocation {
         return this.transaction.toArrayWithoutWitnesses();
     }
 
+    /**
+     * Gets the invocation transaction.
+     */
     public Transaction getTransaction() {
         return this.transaction;
     }
@@ -111,7 +126,6 @@ public class Invocation {
         private ScriptHash scriptHash;
         private Neow3j neow;
         private Wallet wallet;
-        private ScriptHash sender;
         private Transaction.Builder txBuilder;
         private Transaction tx;
         private boolean failOnFalse;
@@ -219,12 +233,30 @@ public class Invocation {
          * @return
          * @throws IOException
          */
-        public NeoInvokeFunction run() throws IOException {
+        public NeoInvokeFunction call() throws IOException {
+            // This list is required for `invokescript` calls that will hit ChecekWitness checks
+            // in the smart contract.
+            String[] signers = getSigners();
             if (this.parameters.isEmpty()) {
-                return neow.invokeFunction(scriptHash.toString(), this.function).send();
+                return neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
+                        .send();
             }
-            return neow.invokeFunction(scriptHash.toString(), this.function, this.parameters)
-                    .send();
+            return neow.invokeFunction(scriptHash.toString(), this.function, this.parameters,
+                    signers).send();
+        }
+
+        /*
+         * Get scripthashes of all cosigners. If cosigners have not yet been set explicitely
+         * this method adds the sender scripthash to the set.
+         */
+        private String[] getSigners() {
+            Set<String> signersSet = this.txBuilder.getCosigners().stream()
+                    .map(c -> c.getAccount().toString())
+                    .collect(Collectors.toSet());
+            if (this.txBuilder.getSender() != null) {
+                signersSet.add(this.txBuilder.getSender().toString());
+            }
+            return signersSet.toArray(new String[]{});
         }
 
         public Invocation build() throws IOException {
@@ -277,12 +309,16 @@ public class Invocation {
          * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
          */
         private long fetchSystemFee() throws IOException {
+            // The signers are required for `invokescript` calls that will hit ChecekWitness checks
+            // in the smart contract.
+            String[] signers = getSigners();
             NeoInvokeFunction response;
             if (this.parameters.isEmpty()) {
-                response = neow.invokeFunction(scriptHash.toString(), this.function).send();
+                response = neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
+                        .send();
             } else {
                 response = neow.invokeFunction(scriptHash.toString(), this.function,
-                        this.parameters).send();
+                        this.parameters, signers).send();
             }
             // The GAS amount is returned in fractions (10^8) by the preview private network node
             // for Neo 3. But in Neo 2 the amount was given as decimals of whole GAS tokens (e.g.
@@ -348,7 +384,7 @@ public class Invocation {
                     // Push null because we don't want to verify a particular message but the
                     // transaction itself.
                     + OpCode.PUSHNULL.getPrice()
-                    + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getPrice();
+                    + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getPrice();
         }
 
         private long calcSizeForMultiSigWitness(VerificationScript verifScript) {
@@ -368,7 +404,7 @@ public class Invocation {
                     // Push null because we don't want to verify a particular message but the
                     // transaction itself.
                     + OpCode.PUSHNULL.getPrice()
-                    + InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getPrice(n);
+                    + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getPrice(n);
         }
 
     }

@@ -106,8 +106,10 @@ public class ContractParameter {
      *
      * @param address An address.
      * @return the contract parameter.
+     * @deprecated
      */
     // TODO: Rename to `fromScriptHash` or `fromAddress`
+    @Deprecated
     public static ContractParameter byteArrayFromAddress(String address) {
         if (!AddressUtils.isValidAddress(address)) {
             throw new IllegalArgumentException("Argument is not a valid address.");

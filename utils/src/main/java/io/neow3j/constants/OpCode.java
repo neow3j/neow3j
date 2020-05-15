@@ -3,9 +3,10 @@ package io.neow3j.constants;
 import io.neow3j.utils.Numeric;
 
 /**
- * This class represents a <b>subset</b> of NEO VM opcodes.
- * <br>
- * Based on: https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs
+ * This enum contains a <b>subset</b> of NEO VM opcodes.
+ * <p>
+ * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs">here</a> for
+ * a complete list.
  */
 public enum OpCode {
 
@@ -283,8 +284,20 @@ public enum OpCode {
      */
     CALLA(0x36, 22000),
 
+    /**
+     * Turn the vm state to FAULT immediately, and cannot be caught.
+     */
     ABORT(0x37, 30),
+
+    /**
+     * Pop the top value of the stack, if it false, then exit vm execution and set vm state to
+     * FAULT.
+     */
     ASSERT(0x38, 30),
+
+    /**
+     * Pop the top value of the stack, and throw it.
+     */
     THROW(0x3A, 30),
 
     /**

@@ -2,6 +2,7 @@ package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -129,7 +130,7 @@ public class Nep5Token extends SmartContract {
      * @param to     The script hash of the receiver.
      * @param amount The amount to transfer as a decimal number, i.e. not in fractions but token
      *               units.
-     * @return The transaction hash.
+     * @return The transaction id.
      * @throws ErrorResponseException
      * @throws IOException            if there was a problem fetching information from the Neo
      *                                node.
@@ -142,23 +143,26 @@ public class Nep5Token extends SmartContract {
         BigInteger fractions = amount.multiply(factor).toBigInteger();
         // TODO: Extend balance checking to other accounts in the wallet.
         // TODO: Move balance checking to the Wallet and Accounts.
-        BigInteger defaultAccBalance = getBalanceOf(acc.getScriptHash());
-        if (defaultAccBalance.compareTo(fractions) < 0) {
-            throw new InsufficientFundsException("Default account does not hold enough tokens. "
-                    + "Transfer amount is " + fractions.toString() + " but account only holds "
-                    + defaultAccBalance.toString() + " (in token fractions).");
+        BigInteger accBalance = getBalanceOf(acc.getScriptHash());
+        if (accBalance.compareTo(fractions) < 0) {
+            throw new InsufficientFundsException("The wallet's default account does not hold enough "
+                    + "tokens. Transfer amount is " + fractions.toString() + " but account only "
+                    + "holds " + accBalance.toString() + " (in token fractions).");
         }
-        return invoke(NEP5_TRANSFER)
+        NeoSendRawTransaction response = invoke(NEP5_TRANSFER)
                 .withWallet(wallet)
                 .withParameters(
-                        ContractParameter.byteArrayFromAddress(acc.getAddress()),
-                        ContractParameter.byteArrayFromAddress(to.toAddress()),
-                        ContractParameter.integer(fractions)
+                        ContractParameter.hash160(acc.getScriptHash()),
+                        ContractParameter.hash160(to),
+                        ContractParameter.integer(amount.toBigInteger())
                 )
                 .failOnFalse()
                 .build()
                 .sign()
                 .send();
+
+        response.throwOnError();
+        return response.getResult();
     }
 
 }
