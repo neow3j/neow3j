@@ -1,4 +1,6 @@
-// Invoke function
+####################
+# invokefunction
+####################
 POST http://localhost:40332
 Content-Type: application/javascript'
 
@@ -18,4 +20,54 @@ Content-Type: application/javascript'
  "id": 1
 }
 
-###
+####################
+# getblockcount
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getblockcount",
+ "params": [ ],
+ "id": 1
+}
+
+####################
+# sendrawtransaction
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "sendrawtransaction",
+ "params": [ "00fde9020c00fea46931b5c22a99277a25233ff431d642b855c27289000000000088442400000000009f1420000101941343239213fa0e765f1027ce742f48db779a96015600640c14e6c1013654af113d8a968bdca52c9948a82b953d0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523802420c40b7e850a00d6184b3a9ce405ea4913c6a2790c5eb7230103c6cd978ce5a118c0fa37006ee6e1c42086189fa5a1f66e7ddeae977e024a2c181397345da9f6622762b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e420c40afc6c138eadf472826f64b410a45e4c917af3acedfa0ccacdc2641024d28d307d1619564d65bb485edd258b54ae0840e16e01bfbcb5b0ca6b06f13c1b56a3a02290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75" ],
+ "id": 1
+}
+
+####################
+# getrawtransaction
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getrawtransaction",
+ "params": [ "0x508c11ed02e31cec8d05df60efe3bb52fb7349b487033e5f4d8fea132489b2eb", 0 ],
+ "id": 1
+}
+
+####################
+# getblock
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getblock",
+ "params": [ 32, 1 ],
+ "id": 1
+}
