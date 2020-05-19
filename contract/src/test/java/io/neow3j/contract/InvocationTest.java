@@ -162,7 +162,9 @@ public class InvocationTest {
         List<SignatureData> sigs = new ArrayList<>();
         sigs.add(Sign.signMessage(txBytes, keyPair1));
         sigs.add(Sign.signMessage(txBytes, keyPair2));
-        i.addSignatures(sigs);
+        Witness w = Witness.createMultiSigWitness(m, sigs,
+                Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey()));
+        i.addWitnesses(w);
         int signedTxSize = i.getTransaction().getSize();
         long sizeFee = signedTxSize * NeoConstants.GAS_PER_BYTE;
         // PUSHDATA1 * m + PUSH2 + PUSHDATA1 * n + PUSH2 + PUSHNULL + ECDsaVerify * n
@@ -170,57 +172,6 @@ public class InvocationTest {
 
         assertThat(i.getTransaction().getNetworkFee(),
                 is(sizeFee + verificationFee + additionalFee));
-    }
-
-    @Test(expected = InvocationConfigurationException.class)
-    public void failTryingToAddTooManySignatures() throws Exception {
-        String method = "name";
-        // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair3 = ECKeyPair.createEcKeyPair();
-        List<ECPublicKey> keys = Arrays.asList(
-                keyPair1.getPublicKey(), keyPair2.getPublicKey(), keyPair3.getPublicKey());
-        int signingThreshold = 2;
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(multiSigAcc.getScriptHash())
-                .validUntilBlock(1000)
-                .build();
-
-        byte[] txBytes = i.getTransactionForSigning();
-        List<SignatureData> sigs = new ArrayList<>();
-        sigs.add(Sign.signMessage(txBytes, keyPair1));
-        sigs.add(Sign.signMessage(txBytes, keyPair2));
-        sigs.add(Sign.signMessage(txBytes, keyPair3));
-        i.addSignatures(sigs);
-    }
-
-    @Test(expected = InvocationConfigurationException.class)
-    public void failTryingToAddTooFewSignatures() throws Exception {
-        String method = "name";
-        // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair3 = ECKeyPair.createEcKeyPair();
-        List<ECPublicKey> keys = Arrays.asList(
-                keyPair1.getPublicKey(), keyPair2.getPublicKey(), keyPair3.getPublicKey());
-        int signingThreshold = 3;
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(multiSigAcc.getScriptHash())
-                .validUntilBlock(1000)
-                .build();
-
-        byte[] txBytes = i.getTransactionForSigning();
-        List<SignatureData> sigs = new ArrayList<>();
-        sigs.add(Sign.signMessage(txBytes, keyPair1));
-        sigs.add(Sign.signMessage(txBytes, keyPair2));
-        i.addSignatures(sigs);
     }
 
     @Test(expected = InvocationConfigurationException.class)
