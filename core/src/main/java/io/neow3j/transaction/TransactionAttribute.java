@@ -11,9 +11,6 @@ public abstract class TransactionAttribute extends NeoSerializable {
 
     protected TransactionAttributeType type;
 
-    public TransactionAttribute() {
-    }
-
     public TransactionAttribute(TransactionAttributeType type) {
         if (type == null) {
             throw new IllegalArgumentException("Attribute type cannot be null.");
@@ -56,6 +53,19 @@ public abstract class TransactionAttribute extends NeoSerializable {
     }
 
     protected abstract void serializeWithoutType(BinaryWriter writer) throws IOException;
+
+    public static TransactionAttribute deserializeAttribute(BinaryReader reader)
+            throws DeserializationException {
+
+        try {
+            TransactionAttributeType type = TransactionAttributeType.valueOf(reader.readByte());
+            TransactionAttribute a = type.clazz().newInstance();
+            a.deserializeWithoutType(reader);
+            return a;
+        } catch (IOException | IllegalAccessException | InstantiationException e) {
+            throw new DeserializationException(e);
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

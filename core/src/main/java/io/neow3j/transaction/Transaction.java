@@ -8,6 +8,7 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.model.NeoConfig;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -54,6 +55,8 @@ public class Transaction extends NeoSerializable {
     private List<Witness> witnesses;
 
     public Transaction() {
+        this.attributes = new ArrayList<>();
+        this.witnesses = new ArrayList<>();
     }
 
     protected Transaction(Builder builder) {
@@ -113,14 +116,15 @@ public class Transaction extends NeoSerializable {
 
     public void addWitness(Witness witness) {
         if (witness.getScriptHash() == null) {
-            throw new IllegalArgumentException("The script hash of the given script is " +
-                    "empty. Please set the script hash.");
+            throw new IllegalArgumentException("The script hash of the given witness must not be "
+                    + "null.");
         }
         this.witnesses.add(witness);
     }
 
     public String getTxId() {
-        byte[] hash = Hash.sha256(Hash.sha256(toArrayWithoutWitnesses()));
+        byte[] data = ArrayUtils.concatenate(NeoConfig.magicNumber(), toArrayWithoutWitnesses());
+        byte[] hash = Hash.sha256(Hash.sha256(data));
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 
@@ -141,11 +145,24 @@ public class Transaction extends NeoSerializable {
             this.systemFee = reader.readInt64();
             this.networkFee = reader.readInt64();
             this.validUntilBlock = reader.readUInt32();
-            this.attributes = reader.readSerializableList(TransactionAttribute.class);
+            readTransactionAttributes(reader);
             this.script = reader.readVarBytes();
             this.witnesses = reader.readSerializableList(Witness.class);
         } catch (IOException | InstantiationException | IllegalAccessException e) {
             throw new DeserializationException(e);
+        }
+    }
+
+    private void readTransactionAttributes(BinaryReader reader)
+            throws IOException, DeserializationException {
+        long nrOfAttributes = reader.readVarInt();
+        if (nrOfAttributes > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
+            throw new DeserializationException("A transaction can hold at most "
+                    + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + ". Input data had "
+                    + nrOfAttributes + " attributes.");
+        }
+        for (int i = 0; i < nrOfAttributes; i++) {
+            this.attributes.add(TransactionAttribute.deserializeAttribute(reader));
         }
     }
 
