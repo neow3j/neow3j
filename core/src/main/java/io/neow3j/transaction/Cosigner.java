@@ -7,7 +7,6 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.TransactionAttributeType;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,9 +21,6 @@ import java.util.Objects;
  */
 public class Cosigner extends TransactionAttribute {
 
-
-    // The limit for the number of AllowedContracts and AllowedGroups.
-    public final static int MAX_SUBITEMS = 16;
 
     /**
      * The script hash of the signer account.
@@ -111,18 +107,18 @@ public class Cosigner extends TransactionAttribute {
             this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
             if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
                 this.allowedContracts = reader.readSerializableList(ScriptHash.class);
-                if (this.allowedContracts.size() > MAX_SUBITEMS) {
+                if (this.allowedContracts.size() > NeoConstants.MAX_COSIGNER_SUBITEMS) {
                     throw new DeserializationException("A cosigner's scope can only contain "
-                            + MAX_SUBITEMS + " contracts. The input data contained "
-                            + this.allowedContracts.size() + " contracts.");
+                            + NeoConstants.MAX_COSIGNER_SUBITEMS + " contracts. The input data "
+                            + "contained " + this.allowedContracts.size() + " contracts.");
                 }
             }
             if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
                 this.allowedGroups = reader.readSerializableList(ECKeyPair.ECPublicKey.class);
-                if (this.allowedGroups.size() > MAX_SUBITEMS) {
+                if (this.allowedGroups.size() > NeoConstants.MAX_COSIGNER_SUBITEMS) {
                     throw new DeserializationException("A cosigner's scope can only contain "
-                            + MAX_SUBITEMS + " groups. The input data contained "
-                            + this.allowedGroups.size() + " groups.");
+                            + NeoConstants.MAX_COSIGNER_SUBITEMS + " groups. The input data "
+                            + "contained " + this.allowedGroups.size() + " groups.");
                 }
             }
         } catch (IllegalAccessException | InstantiationException | IOException e) {
@@ -229,9 +225,10 @@ public class Cosigner extends TransactionAttribute {
             if (!this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
                 this.scopes.add(WitnessScope.CUSTOM_CONTRACTS);
             }
-            if (this.allowedContracts.size() + contracts.length > MAX_SUBITEMS) {
+            if (this.allowedContracts.size() + contracts.length
+                    > NeoConstants.MAX_COSIGNER_SUBITEMS) {
                 throw new CosignerConfigurationException("A cosigner's scope can only contain "
-                        + MAX_SUBITEMS + " contracts.");
+                        + NeoConstants.MAX_COSIGNER_SUBITEMS + " contracts.");
             }
             this.allowedContracts.addAll(Arrays.asList(contracts));
             return this;
@@ -250,9 +247,9 @@ public class Cosigner extends TransactionAttribute {
             if (!this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
                 this.scopes.add(WitnessScope.CUSTOM_GROUPS);
             }
-            if (this.allowedGroups.size() + groups.length > MAX_SUBITEMS) {
+            if (this.allowedGroups.size() + groups.length > NeoConstants.MAX_COSIGNER_SUBITEMS) {
                 throw new CosignerConfigurationException("A cosigner's scope can only contain "
-                        + MAX_SUBITEMS + " groups.");
+                        + NeoConstants.MAX_COSIGNER_SUBITEMS + " groups.");
             }
             this.allowedGroups.addAll(Arrays.asList(groups));
             return this;

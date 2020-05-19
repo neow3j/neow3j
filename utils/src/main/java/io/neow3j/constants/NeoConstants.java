@@ -23,6 +23,7 @@ public class NeoConstants {
     public static final int FIXED8_SCALE = 8;
 
     public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
+
     /**
      * Length of a Fixed8 byte array.
      */
@@ -132,9 +133,9 @@ public class NeoConstants {
     public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
 
     /**
-     * The maximum number of cosigners that a transaction can have.
+     * The maximum number of contracts or groups a cosigner scope can contian
      */
-    public static final int MAX_COSIGNERS = 16;
+    public static final int MAX_COSIGNER_SUBITEMS = 16;
 
     /**
      * The maximum value for the 'validUntilBlock' transaction property.
