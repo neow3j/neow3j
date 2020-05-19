@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import io.neow3j.model.types.TransactionAttributeType;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Numeric;
 
 import java.util.Arrays;

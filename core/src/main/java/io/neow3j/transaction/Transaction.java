@@ -8,7 +8,6 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.TransactionAttributeType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;

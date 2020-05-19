@@ -1,52 +1,28 @@
-package io.neow3j.model.types;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+package io.neow3j.transaction;
 
 public enum TransactionAttributeType {
 
-    COSIGNER("Cosigner", 0x01);
+    COSIGNER(0x01, Cosigner.class);
 
-    private String jsonValue;
     private byte byteValue;
+    private Class<? extends TransactionAttribute> clazz;
 
-    TransactionAttributeType(String jsonValue, int byteValue) {
-        this.jsonValue = jsonValue;
+    TransactionAttributeType(int byteValue, Class<? extends TransactionAttribute> clazz) {
         this.byteValue = (byte) byteValue;
-    }
-
-    @JsonValue
-    public String jsonValue() {
-        return this.jsonValue;
+        this.clazz = clazz;
     }
 
     public byte byteValue() {
         return this.byteValue;
     }
 
-    @JsonCreator
-    public static TransactionAttributeType fromJson(Object value) {
-        if (value instanceof String) {
-            return fromJsonValue((String) value);
-        }
-        if (value instanceof Integer) {
-            return valueOf(((Integer) value).byteValue());
-        }
-        throw new IllegalArgumentException(String.format("%s value type not found.", TransactionAttributeType.class.getName()));
+    public Class<? extends TransactionAttribute> clazz() {
+        return this.clazz;
     }
 
     public static TransactionAttributeType valueOf(byte byteValue) {
         for (TransactionAttributeType e : TransactionAttributeType.values()) {
             if (e.byteValue == byteValue) {
-                return e;
-            }
-        }
-        throw new IllegalArgumentException(String.format("%s value type not found.", TransactionAttributeType.class.getName()));
-    }
-
-    public static TransactionAttributeType fromJsonValue(String jsonValue) {
-        for (TransactionAttributeType e : TransactionAttributeType.values()) {
-            if (e.jsonValue.equals(jsonValue)) {
                 return e;
             }
         }
