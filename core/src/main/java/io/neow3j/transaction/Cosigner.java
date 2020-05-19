@@ -24,7 +24,7 @@ public class Cosigner extends TransactionAttribute {
 
 
     // The limit for the number of AllowedContracts and AllowedGroups.
-    private final static int MAX_SUBITEMS = 16;
+    public final static int MAX_SUBITEMS = 16;
 
     /**
      * The script hash of the signer account.
