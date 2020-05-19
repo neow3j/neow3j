@@ -26,16 +26,11 @@ public class NeoConstants {
     /**
      * Length of a Fixed8 byte array.
      */
-
     public static final int FIXED8_LENGTH = 8;
 
     //endregion
 
     //region Accounts, Addresses, Keys
-
-    public static final byte DEFAULT_ADDRESS_VERSION = 0x17;
-
-    public static final byte PRIVATENET_ADDRESS_VERSION = 0x37;
 
     /**
      * The maximum number of public keys that can take part in a multi-signature address. Taken from
