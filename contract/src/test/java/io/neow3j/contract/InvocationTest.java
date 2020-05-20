@@ -103,16 +103,24 @@ public class InvocationTest {
     @Test
     public void testAutomaticSettingOfSystemFee() throws IOException {
         Wallet wallet = Wallet.createWallet();
-        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        ScriptHash neoToken = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        Invocation i = new InvocationBuilder(neow, contract, method)
+        Invocation i = new InvocationBuilder(neow, neoToken, method)
                 .withWallet(wallet)
                 .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSystemFee(), is(1_007_270L));
+        assertThat(i.getTransaction().getSystemFee(), is(1007390L));
+
+        i = new InvocationBuilder(neow, neoToken, method)
+                .withWallet(wallet)
+                .validUntilBlock(1000)
+                .failOnFalse()
+                .build();
+
+        assertThat(i.getTransaction().getSystemFee(), is(1007420L));
     }
 
     @Test
