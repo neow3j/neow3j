@@ -15,7 +15,6 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -101,23 +100,6 @@ public class ContractParameter {
     }
 
     /**
-     * Creates a byte array parameter from the given address. The address is converted to its script
-     * hash.
-     *
-     * @param address An address.
-     * @return the contract parameter.
-     * @deprecated
-     */
-    // TODO: Rename to `fromScriptHash` or `fromAddress`
-    @Deprecated
-    public static ContractParameter byteArrayFromAddress(String address) {
-        if (!AddressUtils.isValidAddress(address)) {
-            throw new IllegalArgumentException("Argument is not a valid address.");
-        }
-        return byteArray(ScriptHash.fromAddress(address).toString());
-    }
-
-    /**
      * Creates a byte array parameter from the given number, transforming it to the Fixed8 number
      * format in little-endian order.
      *
@@ -185,33 +167,6 @@ public class ContractParameter {
      */
     public static ContractParameter integer(BigInteger integer) {
         return new ContractParameter(ContractParameterType.INTEGER, integer);
-    }
-
-    /**
-     * Creates a hash160 parameter from the given hexadecimal string.
-     *
-     * @param hashHexString a hash160 value as hexadecimal string in big-endian order.
-     * @return the contract parameter.
-     * @deprecated
-     */
-    @Deprecated
-    public static ContractParameter hash160(String hashHexString) {
-        if (!Numeric.isValidHexString(hashHexString)) {
-            throw new IllegalArgumentException("Argument is not a valid hex number");
-        }
-        return hash160(new ScriptHash(hashHexString));
-    }
-
-    /**
-     * Creates a hash160 parameter from the given hash.
-     *
-     * @param hash a hash160 value in little-endian order.
-     * @return the contract parameter.
-     * @deprecated
-     */
-    @Deprecated
-    public static ContractParameter hash160(byte[] hash) {
-        return hash160(new ScriptHash(hash));
     }
 
     /**
