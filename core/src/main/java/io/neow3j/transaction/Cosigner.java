@@ -63,6 +63,7 @@ public class Cosigner extends TransactionAttribute {
      * WitnessScope#CALLED_BY_ENTRY}).
      *
      * @param account The originator of the witness.
+     * @return {@link Cosigner}
      */
     public static Cosigner calledByEntry(ScriptHash account) {
         return new Builder()
@@ -76,6 +77,7 @@ public class Cosigner extends TransactionAttribute {
      * WitnessScope#GLOBAL}).
      *
      * @param account The originator of the witness.
+     * @return {@link Cosigner}
      */
     public static Cosigner global(ScriptHash account) {
         return new Builder()

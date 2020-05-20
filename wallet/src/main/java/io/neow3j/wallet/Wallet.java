@@ -128,10 +128,11 @@ public class Wallet {
     }
 
     /**
-     * Removes the account with the given address from this wallet.
+     * Removes the account with the given script hash (address) from this wallet.
      *
-     * @param address The address of the account to be removed.
-     * @return true if an account was removed, false if no account with the given address was found.
+     * @param scriptHash The {@link ScriptHash} of the account to be removed.
+     * @return true if an account was removed, false if no account with the given
+     * address was found.
      */
     public boolean removeAccount(ScriptHash scriptHash) {
         return accounts.remove(scriptHash) != null;
