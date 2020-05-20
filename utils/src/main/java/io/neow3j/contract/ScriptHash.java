@@ -99,22 +99,12 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     }
 
     /**
-     * Derives the address corresponding to this script hash, specifying the address version.
-     *
-     * @return the address.
-     */
-    public String toAddress(byte addressVersion) {
-        return AddressUtils.scriptHashToAddress(this.scriptHash, addressVersion);
-    }
-
-    /**
-     * Derives the address corresponding to this script hash. It uses the default address version
-     * {@link NeoConstants#DEFAULT_ADDRESS_VERSION}
+     * Derives the address corresponding to this script hash.
      *
      * @return the address.
      */
     public String toAddress() {
-        return toAddress(NeoConstants.DEFAULT_ADDRESS_VERSION);
+        return AddressUtils.scriptHashToAddress(this.scriptHash);
     }
 
     /**

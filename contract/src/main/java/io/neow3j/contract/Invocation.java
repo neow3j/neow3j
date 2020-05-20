@@ -159,15 +159,6 @@ public class Invocation {
         }
 
         /**
-         * @param cosigners
-         * @return
-         */
-        public InvocationBuilder withCosigners(Cosigner... cosigners) {
-            this.txBuilder.cosigners(cosigners);
-            return this;
-        }
-
-        /**
          * @param blockNr
          * @return
          */
@@ -265,7 +256,7 @@ public class Invocation {
             }
             if (this.txBuilder.getCosigners().isEmpty() || !senderCosignerExists()) {
                 // Set the standard cosigner if none has been specified.
-                this.txBuilder.cosigners(Cosigner.calledByEntry(this.txBuilder.getSender()));
+                this.txBuilder.attributes(Cosigner.calledByEntry(this.txBuilder.getSender()));
             }
             this.txBuilder.script(createScript());
             this.txBuilder.systemFee(fetchSystemFee());
@@ -310,14 +301,14 @@ public class Invocation {
                 response = neow.invokeFunction(scriptHash.toString(), this.function,
                         this.parameters, signers).send();
             }
-            // The GAS amount is returned in fractions (10^8) by the preview private network node
-            // for Neo 3. But in Neo 2 the amount was given as decimals of whole GAS tokens (e.g.
-            // 0.12).
-            // TODO: Remove above comment once it is clear which format Neo 3 returns here.
-//            String gasConsumed = response.getInvocationResult().getGasConsumed();
-//            BigDecimal fee = new BigDecimal(gasConsumed).multiply(GasToken.FACTOR);
-//            return fee.longValue();
-            return Long.parseLong(response.getInvocationResult().getGasConsumed());
+            // The GAS amount is returned in fractions (10^8)
+            long systemFee = Long.parseLong(response.getInvocationResult().getGasConsumed());
+            if (this.failOnFalse) {
+                // The `invokefunction` call does not add the ASSERT OpCode at the end of the
+                // script. Therefore, the fetched GAS systemfee needs to be adjusted.
+                systemFee += OpCode.ASSERT.getPrice();
+            }
+            return systemFee;
         }
 
         /*
@@ -333,7 +324,6 @@ public class Invocation {
             // Base transaction size
             int size = Transaction.HEADER_SIZE // constant header size
                     + IOUtils.getVarSize(this.txBuilder.getAttributes()) // attributes
-                    + IOUtils.getVarSize(this.txBuilder.getCosigners()) // cosigners
                     + IOUtils.getVarSize(this.txBuilder.getScript()) // script
                     + IOUtils.getVarSize(cosigAccs.size()); // varInt for all necessary witnesses
 

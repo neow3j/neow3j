@@ -18,9 +18,7 @@ import java.util.Objects;
 
 /**
  * An invocation script used in the script/witness part of a transaction.
- * It can hold an arbitrary byte array. In the case of a witness, the invocation script is
- * constructed from the OpCode {@link io.neow3j.constants.OpCode#PUSHBYTES64} and the transaction
- * signature.
+ * It can hold an arbitrary byte array.
  */
 public class InvocationScript extends NeoSerializable {
 
@@ -32,9 +30,11 @@ public class InvocationScript extends NeoSerializable {
 
     /**
      * Creates an invocation script with the given script.
-     * If the script represents a signature make sure that it starts with the {@link
-     * io.neow3j.constants.OpCode#PUSHBYTES64}. The opcode is not added automatically. Better even,
-     * use {@link InvocationScript#fromSignature(Sign.SignatureData)} or {@link
+     * If the script represents a signature make sure that it starts with either of the following
+     * opcodes, dynamically: {@link io.neow3j.constants.OpCode#PUSHDATA1},
+     * {@link io.neow3j.constants.OpCode#PUSHDATA2}, and
+     * {@link io.neow3j.constants.OpCode#PUSHDATA4}. The opcode is not added automatically.
+     * It's recommended to use {@link InvocationScript#fromSignature(Sign.SignatureData)} or {@link
      * InvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need
      * a signature invocation script.
      *

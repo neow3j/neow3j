@@ -103,16 +103,24 @@ public class InvocationTest {
     @Test
     public void testAutomaticSettingOfSystemFee() throws IOException {
         Wallet wallet = Wallet.createWallet();
-        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        ScriptHash neoToken = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        Invocation i = new InvocationBuilder(neow, contract, method)
+        Invocation i = new InvocationBuilder(neow, neoToken, method)
                 .withWallet(wallet)
                 .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSystemFee(), is(1_007_270L));
+        assertThat(i.getTransaction().getSystemFee(), is(1007390L));
+
+        i = new InvocationBuilder(neow, neoToken, method)
+                .withWallet(wallet)
+                .validUntilBlock(1000)
+                .failOnFalse()
+                .build();
+
+        assertThat(i.getTransaction().getSystemFee(), is(1007420L));
     }
 
     @Test
@@ -162,7 +170,9 @@ public class InvocationTest {
         List<SignatureData> sigs = new ArrayList<>();
         sigs.add(Sign.signMessage(txBytes, keyPair1));
         sigs.add(Sign.signMessage(txBytes, keyPair2));
-        i.addSignatures(sigs);
+        Witness w = Witness.createMultiSigWitness(m, sigs,
+                Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey()));
+        i.addWitnesses(w);
         int signedTxSize = i.getTransaction().getSize();
         long sizeFee = signedTxSize * NeoConstants.GAS_PER_BYTE;
         // PUSHDATA1 * m + PUSH2 + PUSHDATA1 * n + PUSH2 + PUSHNULL + ECDsaVerify * n
@@ -170,57 +180,6 @@ public class InvocationTest {
 
         assertThat(i.getTransaction().getNetworkFee(),
                 is(sizeFee + verificationFee + additionalFee));
-    }
-
-    @Test(expected = InvocationConfigurationException.class)
-    public void failTryingToAddTooManySignatures() throws Exception {
-        String method = "name";
-        // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair3 = ECKeyPair.createEcKeyPair();
-        List<ECPublicKey> keys = Arrays.asList(
-                keyPair1.getPublicKey(), keyPair2.getPublicKey(), keyPair3.getPublicKey());
-        int signingThreshold = 2;
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(multiSigAcc.getScriptHash())
-                .validUntilBlock(1000)
-                .build();
-
-        byte[] txBytes = i.getTransactionForSigning();
-        List<SignatureData> sigs = new ArrayList<>();
-        sigs.add(Sign.signMessage(txBytes, keyPair1));
-        sigs.add(Sign.signMessage(txBytes, keyPair2));
-        sigs.add(Sign.signMessage(txBytes, keyPair3));
-        i.addSignatures(sigs);
-    }
-
-    @Test(expected = InvocationConfigurationException.class)
-    public void failTryingToAddTooFewSignatures() throws Exception {
-        String method = "name";
-        // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair3 = ECKeyPair.createEcKeyPair();
-        List<ECPublicKey> keys = Arrays.asList(
-                keyPair1.getPublicKey(), keyPair2.getPublicKey(), keyPair3.getPublicKey());
-        int signingThreshold = 3;
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, signingThreshold).build();
-        Invocation i = new InvocationBuilder(neow, sh, method)
-                .withSender(multiSigAcc.getScriptHash())
-                .validUntilBlock(1000)
-                .build();
-
-        byte[] txBytes = i.getTransactionForSigning();
-        List<SignatureData> sigs = new ArrayList<>();
-        sigs.add(Sign.signMessage(txBytes, keyPair1));
-        sigs.add(Sign.signMessage(txBytes, keyPair2));
-        i.addSignatures(sigs);
     }
 
     @Test(expected = InvocationConfigurationException.class)
@@ -273,7 +232,7 @@ public class InvocationTest {
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
-                .withCosigners(cosigner)
+                .withAttributes(cosigner)
                 .validUntilBlock(1000)
                 .build();
 
@@ -295,7 +254,7 @@ public class InvocationTest {
         ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
-                .withCosigners(Cosigner.calledByEntry(acc.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(acc.getScriptHash()))
                 .validUntilBlock(1000)
                 .build();
 
@@ -347,7 +306,7 @@ public class InvocationTest {
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
-                .withCosigners(cosigner)
+                .withAttributes(cosigner)
                 .validUntilBlock(1000)
                 .build();
 
@@ -372,7 +331,7 @@ public class InvocationTest {
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
-                .withCosigners(Cosigner.calledByEntry(senderAcc.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(senderAcc.getScriptHash()))
                 .validUntilBlock(1000)
                 .build();
 
@@ -392,7 +351,7 @@ public class InvocationTest {
         w.addAccount(cosigner);
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(w)
-                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build()
                 .sign();
@@ -418,7 +377,7 @@ public class InvocationTest {
         Account cosigner = Account.createAccount();
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(w)
-                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
     }
@@ -436,7 +395,7 @@ public class InvocationTest {
         w.addAccount(cosigner);
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(w)
-                .withCosigners(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
         w.removeAccount(cosigner.getScriptHash());

@@ -23,19 +23,15 @@ public class NeoConstants {
     public static final int FIXED8_SCALE = 8;
 
     public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
+
     /**
      * Length of a Fixed8 byte array.
      */
-
     public static final int FIXED8_LENGTH = 8;
 
     //endregion
 
     //region Accounts, Addresses, Keys
-
-    public static final byte DEFAULT_ADDRESS_VERSION = 0x17;
-
-    public static final byte PRIVATENET_ADDRESS_VERSION = 0x37;
 
     /**
      * The maximum number of public keys that can take part in a multi-signature address. Taken from
@@ -137,9 +133,9 @@ public class NeoConstants {
     public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
 
     /**
-     * The maximum number of cosigners that a transaction can have.
+     * The maximum number of contracts or groups a cosigner scope can contian
      */
-    public static final int MAX_COSIGNERS = 16;
+    public static final int MAX_COSIGNER_SUBITEMS = 16;
 
     /**
      * The maximum value for the 'validUntilBlock' transaction property.

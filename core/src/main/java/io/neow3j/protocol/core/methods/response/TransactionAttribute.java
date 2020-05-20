@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import io.neow3j.model.types.TransactionAttributeUsageType;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Numeric;
 
 import java.util.Arrays;
@@ -14,7 +14,7 @@ import java.util.Objects;
 public class TransactionAttribute {
 
     @JsonProperty("usage")
-    private TransactionAttributeUsageType usage;
+    public TransactionAttributeType usage;
 
     @JsonProperty("data")
     private byte[] data;
@@ -22,18 +22,18 @@ public class TransactionAttribute {
     public TransactionAttribute() {
     }
 
-    public TransactionAttribute(TransactionAttributeUsageType usage, byte[] data) {
+    public TransactionAttribute(TransactionAttributeType usage, byte[] data) {
         this.usage = usage;
         this.data = data;
     }
 
-    public TransactionAttribute(TransactionAttributeUsageType usage, String data) {
+    public TransactionAttribute(TransactionAttributeType usage, String data) {
         this.usage = usage;
         this.data = (data != null ? Numeric.hexStringToByteArray(data) : null);
     }
 
     @JsonGetter
-    public TransactionAttributeUsageType getUsage() {
+    public TransactionAttributeType getUsage() {
         return usage;
     }
 

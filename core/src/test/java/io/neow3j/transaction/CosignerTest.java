@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
@@ -10,9 +11,11 @@ import static org.junit.Assert.assertTrue;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.transaction.Cosigner.Builder;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
@@ -111,26 +114,26 @@ public class CosignerTest {
 
 
     @Test(expected = CosignerConfigurationException.class)
-    public void tryBuildEmptyCosigner() {
+    public void failBuildingEmptyCosigner() {
         new Cosigner.Builder().build();
     }
 
     @Test(expected = CosignerConfigurationException.class)
-    public void tryBuildCosignerWithoutScopes() {
+    public void failBuildingCosignerWithoutScopes() {
         new Cosigner.Builder()
                 .account(this.acctScriptHash)
                 .build();
     }
 
     @Test(expected = CosignerConfigurationException.class)
-    public void tryBuildCosignerWithoutAccount() {
+    public void failBuildingCosignerWithoutAccount() {
         new Cosigner.Builder()
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
     }
 
     @Test(expected = CosignerConfigurationException.class)
-    public void tryBuildCosignerWithGlobalAndAnyOtherScope() {
+    public void failBuildingCosignerWithGlobalAndAnyOtherScope() {
         try {
             new Cosigner.Builder()
                     .account(this.acctScriptHash)
@@ -159,7 +162,7 @@ public class CosignerTest {
     }
 
     @Test(expected = CosignerConfigurationException.class)
-    public void tryBuildCustomContractsCosignerWithoutSpecifyingAllowedContracts() {
+    public void failBuildingCustomContractsCosignerWithoutSpecifyingAllowedContracts() {
         new Cosigner.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
@@ -167,11 +170,67 @@ public class CosignerTest {
     }
 
     @Test(expected = CosignerConfigurationException.class)
-    public void tryBuildCustomGroupsCosignerWithoutSpecifyingAllowedContracts() {
+    public void failBuildingCustomGroupsCosignerWithoutSpecifyingAllowedContracts() {
         new Cosigner.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_GROUPS)
                 .build();
+    }
+
+    @Test(expected = CosignerConfigurationException.class)
+    public void failBuildingCosignerWithTooManyContracts() {
+        ScriptHash[] contracts = new ScriptHash[17];
+        for (int i = 0; i <= 16; i++) {
+            contracts[i] = new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88");
+        }
+        new Cosigner.Builder()
+                .account(this.acctScriptHash)
+                .scopes(WitnessScope.CUSTOM_CONTRACTS)
+                .allowedContracts(contracts)
+                .build();
+    }
+
+    @Test(expected = CosignerConfigurationException.class)
+    public void failBuildingCosignerWithTooManyContractsAddedSeparately() {
+        Builder b = new Cosigner.Builder()
+                .account(this.acctScriptHash)
+                .scopes(WitnessScope.CUSTOM_CONTRACTS)
+                .allowedContracts(new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88"));
+        ScriptHash[] contracts = new ScriptHash[16];
+        for (int i = 0; i <= 15; i++) {
+            contracts[i] = new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88");
+        }
+        b.allowedContracts(contracts).build();
+    }
+
+    @Test(expected = CosignerConfigurationException.class)
+    public void failBuildingCosignerWithTooManyGroups() {
+        ECPublicKey publicKey = new ECPublicKey(Numeric.hexStringToByteArray(
+                "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
+        ECPublicKey[] groups = new ECPublicKey[17];
+        for (int i = 0; i <= 16; i++) {
+            groups[i] = publicKey;
+        }
+        new Cosigner.Builder()
+                .account(this.acctScriptHash)
+                .scopes(WitnessScope.CUSTOM_CONTRACTS)
+                .allowedGroups(groups)
+                .build();
+    }
+
+    @Test(expected = CosignerConfigurationException.class)
+    public void failBuildingCosignerWithTooManyGroupsAddedSeparately() {
+        ECPublicKey publicKey = new ECPublicKey(Numeric.hexStringToByteArray(
+                "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
+        Builder b = new Cosigner.Builder()
+                .account(this.acctScriptHash)
+                .scopes(WitnessScope.CUSTOM_CONTRACTS)
+                .allowedGroups(publicKey);
+        ECPublicKey[] groups = new ECPublicKey[16];
+        for (int i = 0; i <= 15; i++) {
+            groups[i] = publicKey;
+        }
+        b.allowedGroups(groups).build();
     }
 
     @Test
@@ -180,10 +239,11 @@ public class CosignerTest {
         BinaryWriter writer = new BinaryWriter(outStream);
         Cosigner.global(acctScriptHash).serialize(writer);
         byte[] actual = outStream.toByteArray();
-        byte[] expected = Numeric.hexStringToByteArray(""
+        String expected = ""
+                + "01" // attribute type: cosigner
                 + "23ba2703c53263e8d6e522dc32203339dcd8eee9" // script hash LE
-                + "00"); // global scope
-        assertArrayEquals(expected, actual);
+                + "00"; // global scope
+        assertThat(Numeric.toHexStringNoPrefix(actual), is(expected));
     }
 
     @Test
@@ -197,6 +257,7 @@ public class CosignerTest {
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
+                + "01" // attribute type: cosigner
                 + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
                 + "10" // custom contracts scope
                 + "02" // array length 2
@@ -217,6 +278,7 @@ public class CosignerTest {
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
+                + "01" // attribute type: cosigner
                 + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
                 + "20" // custom groups scope
                 + "02" // array length 2
@@ -238,6 +300,7 @@ public class CosignerTest {
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
+                + "01" // attribute type: cosigner
                 + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
@@ -252,6 +315,7 @@ public class CosignerTest {
     @Test
     public void deserialize() throws DeserializationException {
         byte[] data = Numeric.hexStringToByteArray(""
+                + "01" // attribute type: cosigner
                 + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
@@ -270,23 +334,65 @@ public class CosignerTest {
         assertThat(c.getAllowedGroups(), containsInAnyOrder(groupPubKey1, groupPubKey2));
     }
 
+    @Test(expected = DeserializationException.class)
+    public void failDeserializingWithTooManyContracts() throws DeserializationException {
+        StringBuilder serialized = new StringBuilder("01" // attribute type: cosigner
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
+                + "11" // calledByEntry, custom contracts
+                + "11"); // array length 17 (0x11)
+        // Add one too many contract script hashes.
+        for (int i = 0; i <= 17; i++) {
+            serialized.append("3ab0be8672e25cf475219d018ded961ec684ca88"); // contract
+        }
+        byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
+        NeoSerializableInterface.from(serializedBytes, Cosigner.class);
+    }
+
+    @Test(expected = DeserializationException.class)
+    public void failDeserializingWithTooManyContractGroups() throws DeserializationException {
+        StringBuilder serialized = new StringBuilder("01" // attribute type: cosigner
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
+                + "21" // calledByEntry, custom contracts
+                + "11"); // array length 17 (0x11)
+        // Add one too many contract group public keys.
+        for (int i = 0; i <= 17; i++) {
+            serialized.append("0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7");
+        }
+        byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
+        NeoSerializableInterface.from(serializedBytes, Cosigner.class);
+    }
+
     @Test
     public void getSize() {
         Cosigner c = new Cosigner.Builder()
-            .account(acctScriptHash)
-            .allowedGroups(groupPubKey1, groupPubKey2)
-            .allowedContracts(contract1, contract2)
-            .scopes(WitnessScope.CALLED_BY_ENTRY)
-            .build();
+                .account(acctScriptHash)
+                .allowedGroups(groupPubKey1, groupPubKey2)
+                .allowedContracts(contract1, contract2)
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .build();
 
-        int expectedSize = 20 + // Account script hash
-            + 1 // Scope byte
-            + 1 // length byte of allowed contracts list
-            + 20 + 20 // Script hashes of two allowed contracts
-            + 1 // length byte of allowed groups list
-            + 33 + 33; // Public keys of two allowed groups
+        int expectedSize = 1 // attribute type
+                + 20 // Account script hash
+                + 1 // Scope byte
+                + 1 // length byte of allowed contracts list
+                + 20 + 20 // Script hashes of two allowed contracts
+                + 1 // length byte of allowed groups list
+                + 33 + 33; // Public keys of two allowed groups
 
         assertThat(c.getSize(), is(expectedSize));
     }
 
+    @Test
+    public void equals() {
+        Cosigner c1 = Cosigner.calledByEntry(acctScriptHash);
+        Cosigner c2 = Cosigner.calledByEntry(acctScriptHash);
+        assertThat(c1, equalTo(c2));
+
+        Cosigner c = new Cosigner.Builder()
+                .account(acctScriptHash)
+                .allowedGroups(groupPubKey1, groupPubKey2)
+                .allowedContracts(contract1, contract2)
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .build();
+    }
 }
