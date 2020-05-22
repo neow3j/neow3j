@@ -290,7 +290,6 @@ public class Invocation {
             }
             this.txBuilder.script(createScript());
             this.txBuilder.systemFee(fetchSystemFee());
-            // TODO: Maybe check if the sender has enough coin to do the invocation.
             this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
 
             this.tx = this.txBuilder.build();

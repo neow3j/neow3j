@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -33,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -447,14 +445,13 @@ public class InvocationTest {
         assertArrayEquals(expectedTx, i.getTransaction().toArray());
     }
 
-    @Ignore("This test currently fails because the network fee is not correctly set on the "
-            + "transaction. Requires further investigation into the calculation of the network "
-            + "fee.")
     @Test
     public void transferNeoWithMutliSigAccount() throws IOException {
-        // Reference transaction created with address version 0x17.
+        // Reference transaction created with address version 0x17. The signature produced by
+        // neo-core was replaced by the signature created by neow3j because neo-core doesn't
+        // produce deterministic signatures.
         byte[] expectedTx = Numeric.hexStringToByteArray(
-                "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c40d176ed0fe45864ed2a0d867832aff452e747be2bce53dd7ccd7d90711a83ceb8baceb1d1796d8fddc5e2606d6884475846891753b0c07624021b505e0808a6c92b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
+                "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c406fded85ee546f0283e4dfd8c70c4d514139b0516de6d8a2d569b73e6da8468c21c2e8c18a1d3c8a7d5160960cf89d48fc433df7ddafb602f716ca11043eccb8e2b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
         // Required for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction("transfer",
                 "invokefunction_transfer.json");
@@ -475,7 +472,8 @@ public class InvocationTest {
                 .withParameters(
                         ContractParameter.hash160(sender.getScriptHash()),
                         ContractParameter.hash160(receiver),
-                        ContractParameter.integer(1))
+                        // The GAS (1 GAS) amount needs to be specified in fractions.
+                        ContractParameter.integer(100000000))
                 .failOnFalse()
                 .build();
         i.sign();
@@ -492,6 +490,5 @@ public class InvocationTest {
         assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
                 is(expectedVerificationScript));
         assertArrayEquals(expectedTx, i.getTransaction().toArray());
-        fail();
     }
 }
