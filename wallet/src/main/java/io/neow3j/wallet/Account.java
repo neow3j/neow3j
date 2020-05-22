@@ -12,24 +12,18 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("unchecked")
@@ -45,7 +39,6 @@ public class Account {
     private boolean isDefault;
     private boolean isLocked;
     private VerificationScript verificationScript;
-    private Map<ScriptHash, BigDecimal> balances;
 
     private Account() {
     }
@@ -59,7 +52,6 @@ public class Account {
         this.address = b.address;
         this.encryptedPrivateKey = b.encryptedPrivateKey;
         this.verificationScript = b.verificationScript;
-        this.balances = new HashMap<>();
     }
 
     public String getAddress() {
@@ -121,20 +113,6 @@ public class Account {
 
     public String getEncryptedPrivateKey() {
         return encryptedPrivateKey;
-    }
-
-    public Map<ScriptHash, BigDecimal> getBalances() {
-        return balances;
-    }
-
-    public BigDecimal getBalance(ScriptHash token) {
-        return balances.get(token);
-    }
-
-    public void updateAssetBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
-    }
-
-    public void updateTokenBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
     }
 
     /**

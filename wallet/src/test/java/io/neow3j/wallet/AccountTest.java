@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
@@ -14,15 +13,10 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
-import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.nep6.NEP6Account;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import okhttp3.OkHttpClient;
 import org.junit.Test;
 
 
@@ -33,7 +27,6 @@ public class AccountTest {
         Account a = Account.createAccount();
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
-        assertThat(a.getBalances(), notNullValue());
         assertThat(a.getVerificationScript(), notNullValue());
         assertThat(a.getECKeyPair(), notNullValue());
         assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
@@ -53,7 +46,6 @@ public class AccountTest {
 
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
-        assertThat(a.getBalances(), notNullValue());
         assertThat(a.getVerificationScript(), notNullValue());
         assertThat(a.getECKeyPair(), notNullValue());
         assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
@@ -130,20 +122,5 @@ public class AccountTest {
         a.decryptPrivateKey(password);
         assertThat(a.getPrivateKey(), is(privateKey));
     }
-
-    @Test
-    public void testUpdateAccountBalances() throws IOException, ErrorResponseException {
-        // TODO: Adapt to new account model
-        String address = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .addInterceptor(new ResponseInterceptor(address)).build();
-        HttpService httpService = new HttpService(httpClient);
-        Neow3j neow3j = Neow3j.build(httpService);
-
-        Account a = Account.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y").build();
-        a.updateAssetBalances(neow3j);
-        fail();
-    }
-
 
 }
