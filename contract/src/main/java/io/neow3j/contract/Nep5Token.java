@@ -128,8 +128,7 @@ public class Nep5Token extends SmartContract {
      *
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
-     * @param amount The amount to transfer as a decimal number, i.e. not in fractions but token
-     *               units.
+     * @param amount The amount to transfer as a decimal number (not token fractions).
      * @return The transaction id.
      * @throws ErrorResponseException
      * @throws IOException            if there was a problem fetching information from the Neo
@@ -138,31 +137,39 @@ public class Nep5Token extends SmartContract {
     public String transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws ErrorResponseException, IOException {
 
+        Invocation invocation = buildTransferInvocation(wallet, to, amount);
+
+        NeoSendRawTransaction response = invocation.send();
+        response.throwOnError();
+        return response.getResult().getHash();
+    }
+
+    Invocation buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
+            throws IOException {
+
         Account acc = wallet.getDefaultAccount();
         BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
         BigInteger fractions = amount.multiply(factor).toBigInteger();
-        // TODO: Extend balance checking to other accounts in the wallet.
-        // TODO: Move balance checking to the Wallet and Accounts.
+        // TODO: As long as the specified amount is not fully covered, go through the accounts
+        //  available in the wallet and use their tokens.
         BigInteger accBalance = getBalanceOf(acc.getScriptHash());
         if (accBalance.compareTo(fractions) < 0) {
-            throw new InsufficientFundsException("The wallet's default account does not hold enough "
-                    + "tokens. Transfer amount is " + fractions.toString() + " but account only "
-                    + "holds " + accBalance.toString() + " (in token fractions).");
+            throw new InsufficientFundsException(
+                    "The wallet's default account does not hold enough "
+                            + "tokens. Transfer amount is " + fractions.toString()
+                            + " but account only "
+                            + "holds " + accBalance.toString() + " (in token fractions).");
         }
-        NeoSendRawTransaction response = invoke(NEP5_TRANSFER)
+        return invoke(NEP5_TRANSFER)
                 .withWallet(wallet)
                 .withParameters(
                         ContractParameter.hash160(acc.getScriptHash()),
                         ContractParameter.hash160(to),
-                        ContractParameter.integer(amount.toBigInteger())
+                        ContractParameter.integer(fractions)
                 )
                 .failOnFalse()
                 .build()
-                .sign()
-                .send();
-
-        response.throwOnError();
-        return response.getResult().getHash();
+                .sign();
     }
 
 }
