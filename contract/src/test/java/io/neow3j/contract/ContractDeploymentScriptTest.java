@@ -6,6 +6,7 @@ import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
 import org.apache.commons.compress.utils.IOUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,6 +16,8 @@ import java.util.Arrays;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@Ignore("Depend on the feature: "
+        + "https://github.com/neow3j/neow3j/issues/101")
 public class ContractDeploymentScriptTest {
 
     private byte[] contract;

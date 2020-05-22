@@ -12,8 +12,11 @@ import io.neow3j.contract.abi.model.NeoContractMethod;
 import io.neow3j.model.types.ContractParameterType;
 import java.util.Arrays;
 import java.util.Collections;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Depend on the feature: "
+        + "https://github.com/neow3j/neow3j/issues/101")
 public class ContractAbiLoaderTest {
 
     private static final String TEST1_SMARTCONTRACT_ABI_FILENAME = "/test1-smartcontract.abi.json";
