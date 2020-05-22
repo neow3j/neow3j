@@ -11,8 +11,11 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
 import java.util.Arrays;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Depend on the feature: "
+        + "https://github.com/neow3j/neow3j/issues/101")
 public class ContractFunctionPropertiesTest {
 
     @Test

@@ -70,7 +70,7 @@ public class InvocationTest {
                 .withWallet(wallet)
                 .build();
         assertThat(i.getTransaction().getValidUntilBlock(),
-                is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT + 1000));
+                is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT + 1000 - 1));
     }
 
     @Test

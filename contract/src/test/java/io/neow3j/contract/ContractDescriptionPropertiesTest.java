@@ -1,11 +1,14 @@
 package io.neow3j.contract;
 
 import io.neow3j.utils.Numeric;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+@Ignore("Depend on the feature: "
+        + "https://github.com/neow3j/neow3j/issues/101")
 public class ContractDescriptionPropertiesTest {
 
     @Test
