@@ -71,7 +71,7 @@ public class InvocationTest {
                 .build();
         assertThat(i.getTransaction().getValidUntilBlock(),
                 is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT
-                        + ContractTestUtils.GETBLOCKCOUNT_RESPONSE));
+                        + ContractTestUtils.GETBLOCKCOUNT_RESPONSE - 1));
     }
 
     @Test
