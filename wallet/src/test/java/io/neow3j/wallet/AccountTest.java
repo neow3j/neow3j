@@ -40,8 +40,7 @@ public class AccountTest {
     @Test
     public void testFromNewECKeyPair() {
         Account a = Account.fromNewECKeyPair()
-                .isDefault(true)
-                .isLocked(false)
+                .isDefault()
                 .build();
 
         assertThat(a, notNullValue());

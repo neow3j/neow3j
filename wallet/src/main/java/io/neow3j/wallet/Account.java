@@ -99,8 +99,16 @@ public class Account {
         return isDefault;
     }
 
-    void setIsDefault(boolean isDefault) {
-        this.isDefault = isDefault;
+    // This method is required by the Wallet but must not be available to the developer because
+    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
+    void setDefault() {
+        this.isDefault = true;
+    }
+
+    // This method is required by the Wallet but must not be available to the developer because
+    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
+    void unsetDefault() {
+        this.isDefault = false;
     }
 
     public Boolean isLocked() {
@@ -338,13 +346,13 @@ public class Account {
             return (B) this;
         }
 
-        public B isDefault(boolean isDefault) {
-            this.isDefault = isDefault;
+        public B isDefault() {
+            this.isDefault = true;
             return (B) this;
         }
 
-        public B isLocked(boolean isLocked) {
-            this.isLocked = isLocked;
+        public B isLocked() {
+            this.isLocked = true;
             return (B) this;
         }
 

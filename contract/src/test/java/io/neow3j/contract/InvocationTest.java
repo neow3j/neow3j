@@ -153,7 +153,7 @@ public class InvocationTest {
         List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey());
         int m = 2; // signingThreshold
         int n = 2; // total number of participating keys
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, m).isDefault(true).build();
+        Account multiSigAcc = Account.fromMultiSigKeys(keys, m).isDefault().build();
         Wallet wallet = new Wallet.Builder().accounts(multiSigAcc).build();
         long additionalFee = 100_000_000;
         // This is needed because the builder will invoke the contract for fetching the system fee.
@@ -244,7 +244,7 @@ public class InvocationTest {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account acc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault(true).build();
+                .isDefault().build();
         Wallet wallet = new Wallet.Builder().accounts(acc).build();
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
@@ -266,9 +266,8 @@ public class InvocationTest {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault(true).build();
-        Wallet wallet = Wallet.createWallet();
-        wallet.addAccount(senderAcc);
+                .isDefault().build();
+        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
@@ -291,9 +290,8 @@ public class InvocationTest {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault(true).build();
-        Wallet wallet = Wallet.createWallet();
-        wallet.addAccount(senderAcc);
+                .isDefault().build();
+        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
         Account other = Account.createAccount();
         wallet.addAccount(other);
         Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
@@ -318,10 +316,9 @@ public class InvocationTest {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault(true).build();
+                .isDefault().build();
 
-        Wallet wallet = Wallet.createWallet();
-        wallet.addAccount(senderAcc);
+        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
@@ -413,7 +410,7 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault(true).build();
+        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
         Wallet w = new Wallet.Builder().accounts(sender).build();
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
@@ -458,7 +455,7 @@ public class InvocationTest {
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = Account.fromMultiSigKeys(Arrays.asList(senderPair.getPublicKey()), 1)
-                .build();
+                .isDefault().build();
         Account singleSigAcc = Account.fromECKeyPair(senderPair).build();
         Wallet w = new Wallet.Builder().accounts(sender, singleSigAcc).build();
         ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");

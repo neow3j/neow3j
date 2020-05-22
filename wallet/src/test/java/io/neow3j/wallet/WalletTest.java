@@ -34,10 +34,10 @@ public class WalletTest {
 
     @Test
     public void testCreateDefaultWallet() {
-        Wallet w = new Wallet.Builder().build();
+        Wallet w = Wallet.createWallet();
         assertEquals(w.getName(), "neow3jWallet");
         assertEquals(w.getVersion(), Wallet.CURRENT_VERSION);
-        assertTrue(w.getAccounts().isEmpty());
+        assertFalse(w.getAccounts().isEmpty());
     }
 
     @Test
@@ -82,18 +82,18 @@ public class WalletTest {
     public void testAddAccount() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Wallet w = new Wallet.Builder().build();
+        Wallet w = Wallet.createWallet();
         Account acct = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct);
-        assertTrue(!w.getAccounts().isEmpty());
-        assertEquals(w.getAccounts().get(0), acct);
+        assertTrue(w.getAccounts().size() == 2);
+        assertEquals(w.getAccount(acct.getScriptHash()), acct);
     }
 
     @Test
     public void testAddDuplicateAccount() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Wallet w = new Wallet.Builder().build();
+        Wallet w = Wallet.createWallet();
         Account acct = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         assertTrue(w.addAccount(acct));
         assertFalse(w.addAccount(acct));
@@ -104,7 +104,7 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         final String address = "AUcY65mkxygUB5bXZqYhNKsrq1khuncqr3";
-        Wallet w = new Wallet.Builder().build();
+        Wallet w = Wallet.createWallet();
         assertFalse(w.removeAccount(ScriptHash.fromAddress(address)));
         Account acct1 = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
         w.addAccount(acct1);
@@ -119,9 +119,11 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException, CipherException {
 
         String walletName = "TestWallet";
-        Wallet w = new Wallet.Builder().name(walletName).build();
-        Account a = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
-        w.addAccount(a);
+        Account a = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).isDefault().build();
+        Wallet w = new Wallet.Builder()
+                .accounts(a)
+                .name(walletName)
+                .build();
         w.encryptAllAccounts("12345678");
 
         NEP6Account nep6acct = new NEP6Account(a.getAddress(), a.getLabel(), false, false,
@@ -137,8 +139,8 @@ public class WalletTest {
             throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Wallet w = new Wallet.Builder().build();
-        Account a = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).build();
+        Account a = Account.fromECKeyPair(ECKeyPair.createEcKeyPair()).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(a).build();
         w.addAccount(a);
         w.toNEP6Wallet();
     }
