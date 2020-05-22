@@ -231,7 +231,7 @@ public class Invocation {
          */
         private String[] getSigners() {
             Set<String> signersSet = this.txBuilder.getCosigners().stream()
-                    .map(c -> c.getAccount().toString())
+                    .map(c -> c.getScriptHash().toString())
                     .collect(Collectors.toSet());
             if (this.txBuilder.getSender() != null) {
                 signersSet.add(this.txBuilder.getSender().toString());
@@ -247,7 +247,7 @@ public class Invocation {
             if (this.txBuilder.getValidUntilBlock() == null) {
                 // If validUntilBlock is not set explicitly set it to the current max.
                 this.txBuilder.validUntilBlock(
-                        fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT);
+                        fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT - 1);
             }
             if (this.txBuilder.getSender() == null) {
                 // If sender is not set explicitly set it to the default account of the wallet.
@@ -268,7 +268,7 @@ public class Invocation {
 
         private boolean senderCosignerExists() {
             return this.txBuilder.getCosigners().stream()
-                    .anyMatch(c -> c.getAccount().equals(this.txBuilder.getSender()));
+                    .anyMatch(c -> c.getScriptHash().equals(this.txBuilder.getSender()));
         }
 
         private long fetchCurrentBlockNr() throws IOException {
@@ -343,10 +343,10 @@ public class Invocation {
         private List<Account> getCosignerAccounts() {
             List<Account> accounts = new ArrayList<>();
             for (Cosigner cosigner : txBuilder.getCosigners()) {
-                Account account = this.wallet.getAccount(cosigner.getAccount());
+                Account account = this.wallet.getAccount(cosigner.getScriptHash());
                 if (account == null) {
                     throw new InvocationConfigurationException("Wallet does not contain the "
-                            + "account for cosigner with script hash " + cosigner.getAccount());
+                            + "account for cosigner with script hash " + cosigner.getScriptHash());
                 }
                 accounts.add(account);
             }

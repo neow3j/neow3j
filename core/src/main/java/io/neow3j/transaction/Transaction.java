@@ -389,7 +389,7 @@ public class Transaction extends NeoSerializable {
         private boolean containsDuplicateCosigners(TransactionAttribute... newAttributes) {
             List<ScriptHash> newCosignersList = Stream.of(newAttributes)
                     .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getAccount())
+                    .map(a -> ((Cosigner) a).getScriptHash())
                     .collect(Collectors.toList());
             Set<ScriptHash> newCosignersSet = new HashSet<>(newCosignersList);
             if (newCosignersList.size() != newCosignersSet.size()) {
@@ -398,7 +398,7 @@ public class Transaction extends NeoSerializable {
             }
             return this.attributes.stream()
                     .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getAccount())
+                    .map(a -> ((Cosigner) a).getScriptHash())
                     .anyMatch(newCosignersSet::contains);
         }
 
