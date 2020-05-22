@@ -276,7 +276,10 @@ public class Invocation {
                         + "wallet.");
             }
             if (this.txBuilder.getValidUntilBlock() == null) {
-                // If validUntilBlock is not set explicitly set it to the current max.
+                // If validUntilBlock is not set explicitly set, then set it to the current max.
+                // It can happen that the neo-node refuses the valid until block because of
+                // it being over the max. Therefore, we decrement it by 1, to make sure that
+                // the node doesn't reject the transaction.
                 this.txBuilder.validUntilBlock(
                         fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT - 1);
             }

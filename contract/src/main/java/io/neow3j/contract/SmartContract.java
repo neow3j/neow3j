@@ -29,8 +29,10 @@ public class SmartContract {
     }
 
     /**
-     * @param function
-     * @return
+     * Initializes an invocation of the given function on this contract.
+     *
+     * @param function The function to invoke.
+     * @return An {@link InvocationBuilder} allowing to set further details of the invocation.
      */
     public InvocationBuilder invoke(String function) {
         if (function == null || function.isEmpty()) {
