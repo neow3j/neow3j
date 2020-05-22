@@ -88,13 +88,12 @@ public class Invocation {
     }
 
     /**
-     * Gets the invocation transaction bytes for signing. No witnesses are included in the returned
-     * byte array.
+     * Gets the invocation transaction in a format for signing.
      *
-     * @return the transaction as a byte array
+     * @return the transaction data ready for creating a signature.
      */
     public byte[] getTransactionForSigning() {
-        return this.transaction.toArrayWithoutWitnesses();
+        return this.transaction.getHashData();
     }
 
     /**

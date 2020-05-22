@@ -316,4 +316,9 @@ public class TransactionTest {
         assertThat(tx.toArrayWithoutWitnesses(), is(txBytesUnsigned));
     }
 
+    @Test
+    public void getHashData() {
+        fail();
+    }
+
 }
