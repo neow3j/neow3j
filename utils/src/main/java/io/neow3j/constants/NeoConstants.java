@@ -106,8 +106,6 @@ public class NeoConstants {
      */
     public static final int CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE = 500;
 
-    // TODO: Clarify if we can get the FeePerByte from the Policy contract as it is done
-    //  in neo-core. `NativeContract.Policy.GetFeePerByte(snapshot)`
     /**
      * The network fee per byte of a transaction. Amount is in GAS.
      */
