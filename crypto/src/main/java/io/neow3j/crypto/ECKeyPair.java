@@ -53,7 +53,6 @@ public class ECKeyPair {
         return privateKey;
     }
 
-    // TODO: Rename after removing the above method.
     public ECPublicKey getPublicKey() {
         return publicKey;
     }

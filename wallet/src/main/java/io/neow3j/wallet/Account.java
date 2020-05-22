@@ -76,7 +76,8 @@ public class Account {
         } else if (privateKey != null) {
             return ECKeyPair.create(privateKey);
         } else {
-            throw new AccountStateException("Account does not hold a decrypted private key.");
+            throw new AccountStateException("Account with script hash " + getScriptHash() + " does"
+                    + " not hold a decrypted private key.");
         }
     }
 

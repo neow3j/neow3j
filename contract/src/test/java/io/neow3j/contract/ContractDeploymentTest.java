@@ -7,8 +7,11 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.wallet.Account;
 import java.io.IOException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Depend on the feature: "
+        + "https://github.com/neow3j/neow3j/issues/101")
 public class ContractDeploymentTest {
 
     private static final String ICO_CONTRACT_AVM_FILENAME = "/contracts/ico-test1.avm";

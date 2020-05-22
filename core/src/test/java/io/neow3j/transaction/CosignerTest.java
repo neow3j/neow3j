@@ -45,7 +45,7 @@ public class CosignerTest {
     @Test
     public void createCosignerWithCallByEntryWitnessScope() {
         Cosigner cos = Cosigner.calledByEntry(acctScriptHash);
-        assertThat(cos.getAccount(), is(acctScriptHash));
+        assertThat(cos.getScriptHash(), is(acctScriptHash));
         assertThat(cos.getScopes(), hasSize(1));
         assertThat(cos.getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
         assertTrue(cos.getAllowedContracts().isEmpty());
@@ -55,7 +55,7 @@ public class CosignerTest {
     @Test
     public void createCosignerWithGlobalWitnessScope() {
         Cosigner cos = Cosigner.global(acctScriptHash);
-        assertThat(cos.getAccount(), is(acctScriptHash));
+        assertThat(cos.getScriptHash(), is(acctScriptHash));
         assertThat(cos.getScopes(), hasSize(1));
         assertThat(cos.getScopes(), contains(WitnessScope.GLOBAL));
         assertTrue(cos.getAllowedContracts().isEmpty());
@@ -70,7 +70,7 @@ public class CosignerTest {
                 .allowedContracts(this.contract1, this.contract2)
                 .build();
 
-        assertThat(cos.getAccount(), is(this.acctScriptHash));
+        assertThat(cos.getScriptHash(), is(this.acctScriptHash));
         assertThat(cos.getScopes(), hasSize(2));
         assertThat(cos.getScopes(),
                 containsInAnyOrder(WitnessScope.CUSTOM_CONTRACTS, WitnessScope.CALLED_BY_ENTRY));
@@ -87,7 +87,7 @@ public class CosignerTest {
                 .allowedContracts(this.contract1, this.contract2)
                 .build();
 
-        assertThat(cos.getAccount(), is(this.acctScriptHash));
+        assertThat(cos.getScriptHash(), is(this.acctScriptHash));
         assertThat(cos.getScopes(), hasSize(1));
         assertThat(cos.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_CONTRACTS));
         assertThat(cos.getAllowedContracts(), hasSize(2));
@@ -103,7 +103,7 @@ public class CosignerTest {
                 .allowedGroups(this.groupPubKey1, this.groupPubKey2)
                 .build();
 
-        assertThat(cos.getAccount(), is(this.acctScriptHash));
+        assertThat(cos.getScriptHash(), is(this.acctScriptHash));
         assertThat(cos.getScopes(), hasSize(1));
         assertThat(cos.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_GROUPS));
         assertThat(cos.getAllowedGroups(), hasSize(2));
@@ -325,7 +325,7 @@ public class CosignerTest {
                 + "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7" // group 1
                 + "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60"); // group 2
         Cosigner c = NeoSerializableInterface.from(data, Cosigner.class);
-        assertThat(c.getAccount(), is(acctScriptHash));
+        assertThat(c.getScriptHash(), is(acctScriptHash));
         assertThat(c.getScopes(), containsInAnyOrder(
                 WitnessScope.CUSTOM_CONTRACTS,
                 WitnessScope.CALLED_BY_ENTRY,

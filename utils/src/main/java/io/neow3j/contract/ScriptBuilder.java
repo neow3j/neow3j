@@ -305,10 +305,10 @@ public class ScriptBuilder {
     }
 
     /**
-     * TODO: Write documentation
+     * Builds a verification script for the given public key.
      *
-     * @param encodedPublicKey
-     * @return
+     * @param encodedPublicKey The public key encoded in compressed format.
+     * @return the script.
      */
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
@@ -319,11 +319,12 @@ public class ScriptBuilder {
     }
 
     /**
-     * TODO: Write documentation
+     * Builds a verification script for a multi signature account from the given public keys.
      *
-     * @param encodedPublicKeys
-     * @param signingThreshold
-     * @return
+     * @param encodedPublicKeys The public keys encoded in compressed format.
+     * @param signingThreshold The desired minimum number of signatures required when using the
+     *                         multi-sig account.
+     * @return the script.
      */
     public static byte[] buildVerificationScript(List<byte[]> encodedPublicKeys,
             int signingThreshold) {

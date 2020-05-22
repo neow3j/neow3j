@@ -86,7 +86,7 @@ public class Cosigner extends TransactionAttribute {
                 .build();
     }
 
-    public ScriptHash getAccount() {
+    public ScriptHash getScriptHash() {
         return account;
     }
 

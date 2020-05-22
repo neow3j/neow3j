@@ -123,8 +123,7 @@ public class Transaction extends NeoSerializable {
     }
 
     public String getTxId() {
-        byte[] data = ArrayUtils.concatenate(NeoConfig.magicNumber(), toArrayWithoutWitnesses());
-        byte[] hash = Hash.sha256(Hash.sha256(data));
+        byte[] hash = Hash.sha256(Hash.sha256(getHashData()));
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 
@@ -201,6 +200,18 @@ public class Transaction extends NeoSerializable {
         } catch (IOException ex) {
             throw new UnsupportedOperationException(ex);
         }
+    }
+
+    /**
+     * Gets this transaction's data in the format used to produce the transaction's hash. E.g.,
+     * for producing the transaction ID or a transaction signature.
+     * <p>
+     * The returned value depends on the configuration of {@link NeoConfig#magicNumber()}.
+     *
+     * @return the transaction data ready for hashing.
+     */
+    public byte[] getHashData() {
+        return ArrayUtils.concatenate(NeoConfig.magicNumber(), toArrayWithoutWitnesses());
     }
 
     /**
@@ -378,7 +389,7 @@ public class Transaction extends NeoSerializable {
         private boolean containsDuplicateCosigners(TransactionAttribute... newAttributes) {
             List<ScriptHash> newCosignersList = Stream.of(newAttributes)
                     .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getAccount())
+                    .map(a -> ((Cosigner) a).getScriptHash())
                     .collect(Collectors.toList());
             Set<ScriptHash> newCosignersSet = new HashSet<>(newCosignersList);
             if (newCosignersList.size() != newCosignersSet.size()) {
@@ -387,7 +398,7 @@ public class Transaction extends NeoSerializable {
             }
             return this.attributes.stream()
                     .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getAccount())
+                    .map(a -> ((Cosigner) a).getScriptHash())
                     .anyMatch(newCosignersSet::contains);
         }
 

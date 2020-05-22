@@ -5,6 +5,9 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.InvocationConfigurationException;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.crypto.Sign;
+import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -64,37 +67,64 @@ public class Invocation {
     public Invocation sign() {
         byte[] txBytes = getTransactionForSigning();
         for (Cosigner c : this.transaction.getCosigners()) {
-            Account a = this.wallet.getAccount(c.getAccount());
-            if (a == null) {
-                throw new InvocationConfigurationException("Wallet does not contain the account "
-                        + "for cosigner with script hash " + c.getAccount());
+            Account cosignerAcc = this.wallet.getAccount(c.getScriptHash());
+            if (cosignerAcc == null) {
+                throw new InvocationConfigurationException("Can't create transaction "
+                        + "signature. Wallet does not contain the cosigner account with script "
+                        + "hash " + c.getScriptHash());
             }
-            if (a.isMultiSig()) {
-                // TODO 13.05.20 claude: Add the possiblity to automatically sign with a mutli-sig
-                //  account. For this to work the participating accounts need to be in the wallet.
-                throw new InvocationConfigurationException("Automatic signing with a "
-                        + "multi-signature account is not supported. Create and add a signature "
-                        + "manually. ");
-            }
-            try {
-                ECKeyPair keyPair = a.getECKeyPair();
-                this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
-            } catch (AccountStateException e) {
-                throw new InvocationConfigurationException("Cannot sign transaction with account "
-                        + "with script hash " + c.getAccount(), e);
+            if (cosignerAcc.isMultiSig()) {
+                signWithMultiSigAccount(txBytes, cosignerAcc);
+            } else {
+                signWithNormalAccount(txBytes, cosignerAcc);
             }
         }
         return this;
     }
 
+    private void signWithNormalAccount(byte[] txBytes, Account acc) {
+        try {
+            ECKeyPair keyPair = acc.getECKeyPair();
+            this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
+        } catch (AccountStateException e) {
+            throw new InvocationConfigurationException("Can't create transaction signature.", e);
+        }
+    }
+
+    private void signWithMultiSigAccount(byte[] txBytes, Account cosignerAcc) {
+        List<SignatureData> sigs = new ArrayList<>();
+        VerificationScript multiSigVerifScript = cosignerAcc.getVerificationScript();
+        for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
+            ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
+            Account a = this.wallet.getAccount(accScriptHash);
+            if (a == null) {
+                continue;
+            }
+            try {
+                ECKeyPair keyPair = a.getECKeyPair();
+                sigs.add(Sign.signMessage(txBytes, keyPair));
+            } catch (AccountStateException e) {
+                // Account didn't have private key. Ignore.
+            }
+        }
+        int m = multiSigVerifScript.getSigningThreshold();
+        if (sigs.size() < m) {
+            throw new InvocationConfigurationException("Can't create transaction "
+                    + "signature. Wallet does not contain enough accounts (with decrypted "
+                    + "private keys) that are part of the multi-sig account with script "
+                    + "hash " + cosignerAcc.getScriptHash() + ".");
+        }
+        this.transaction.addWitness(Witness.createMultiSigWitness(sigs,
+                multiSigVerifScript));
+    }
+
     /**
-     * Gets the invocation transaction bytes for signing. No witnesses are included in the returned
-     * byte array.
+     * Gets the invocation transaction in a format for signing.
      *
-     * @return the transaction as a byte array
+     * @return the transaction data ready for creating a signature.
      */
     public byte[] getTransactionForSigning() {
-        return this.transaction.toArrayWithoutWitnesses();
+        return this.transaction.getHashData();
     }
 
     /**
@@ -232,7 +262,7 @@ public class Invocation {
          */
         private String[] getSigners() {
             Set<String> signersSet = this.txBuilder.getCosigners().stream()
-                    .map(c -> c.getAccount().toString())
+                    .map(c -> c.getScriptHash().toString())
                     .collect(Collectors.toSet());
             if (this.txBuilder.getSender() != null) {
                 signersSet.add(this.txBuilder.getSender().toString());
@@ -248,7 +278,7 @@ public class Invocation {
             if (this.txBuilder.getValidUntilBlock() == null) {
                 // If validUntilBlock is not set explicitly set it to the current max.
                 this.txBuilder.validUntilBlock(
-                        fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT);
+                        fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT - 1);
             }
             if (this.txBuilder.getSender() == null) {
                 // If sender is not set explicitly set it to the default account of the wallet.
@@ -260,7 +290,6 @@ public class Invocation {
             }
             this.txBuilder.script(createScript());
             this.txBuilder.systemFee(fetchSystemFee());
-            // TODO: Maybe check if the sender has enough coin to do the invocation.
             this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
 
             this.tx = this.txBuilder.build();
@@ -269,7 +298,7 @@ public class Invocation {
 
         private boolean senderCosignerExists() {
             return this.txBuilder.getCosigners().stream()
-                    .anyMatch(c -> c.getAccount().equals(this.txBuilder.getSender()));
+                    .anyMatch(c -> c.getScriptHash().equals(this.txBuilder.getSender()));
         }
 
         private long fetchCurrentBlockNr() throws IOException {
@@ -344,10 +373,10 @@ public class Invocation {
         private List<Account> getCosignerAccounts() {
             List<Account> accounts = new ArrayList<>();
             for (Cosigner cosigner : txBuilder.getCosigners()) {
-                Account account = this.wallet.getAccount(cosigner.getAccount());
+                Account account = this.wallet.getAccount(cosigner.getScriptHash());
                 if (account == null) {
                     throw new InvocationConfigurationException("Wallet does not contain the "
-                            + "account for cosigner with script hash " + cosigner.getAccount());
+                            + "account for cosigner with script hash " + cosigner.getScriptHash());
                 }
                 accounts.add(account);
             }

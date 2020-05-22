@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -72,7 +71,7 @@ public class InvocationTest {
                 .build();
         assertThat(i.getTransaction().getValidUntilBlock(),
                 is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT
-                        + ContractTestUtils.GETBLOCKCOUNT_RESPONSE));
+                        + ContractTestUtils.GETBLOCKCOUNT_RESPONSE - 1));
     }
 
     @Test
@@ -403,27 +402,27 @@ public class InvocationTest {
     }
 
     @Test
-    @Ignore("Test is ignored because the neo-core is not stable and therefore no valid reference "
-            + "transaction can be produced.")
-    public void testNeoTransfer() throws IOException {
-        // Used address version 23 (0x17)
-        // Reference transaction created with neo-node.
+    public void transferNeoWithNormalAccount() throws IOException {
+        // Reference transaction created with address version 0x17. The signature produced by
+        // neo-core was replaced by the signature created by neow3j because neo-core doesn't
+        // produce deterministic signatures.
         byte[] expectedTx = Numeric.hexStringToByteArray(
-                "004f211c3fbff3224963185dd8767494f8b7cd201346f0131400e1f50500000000064b130000000000891420000001bff3224963185dd8767494f8b7cd201346f013140155110c140fac870f5f898f68b2b769da8c2c9fd156618e0f0c14bff3224963185dd8767494f8b7cd201346f0131413c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4057a75d45013a32d758a10f5355668367761a5d5968d9a19a923fca5e6893fb6036825e9ca87abcde22f65f289434625066121c16e3002d4c5a8f7e24934d2a56290c21027824fe1f368614d83fbce6cfb84b068113cb08e45181741d29f83acacfb79a890b410a906ad4");
+                "00c0f5586b941343239213fa0e765f1027ce742f48db779a96c272890000000000064b1300000000003f2720000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c408283bd3ef1d925c135fc44cb87e7213920fdff7bcf98d76718729937b07217df306806927173a86a0136b386aa306f3aa70cfc0658a238c9855806e226892059290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        // Required for fetching the system fee.
         ContractTestUtils.setUpWireMockForInvokeFunction("transfer",
                 "invokefunction_transfer.json");
-        String senderWif = "KzaTU6vRwLCYfAcWScBWX6sMMfZ7tdfk4SmTNgXSBkUgbaRGJqGz";
-        ECKeyPair senderPair = ECKeyPair.create(WIF.getPrivateKeyFromWIF(senderWif));
+
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = Account.fromECKeyPair(senderPair).isDefault(true).build();
         Wallet w = new Wallet.Builder().accounts(sender).build();
-
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
-        ScriptHash receiver = new ScriptHash("3d952ba848992ca5dc8b968a3d11af543601c1e6");
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
         Invocation i = new InvocationBuilder(neow, neo, "transfer")
                 .withWallet(w)
-                .withNonce(1058808143)
-                .validUntilBlock(2102409)
+                .withNonce(1800992192)
+                .validUntilBlock(2107199)
                 .withParameters(
                         ContractParameter.hash160(sender.getScriptHash()),
                         ContractParameter.hash160(receiver),
@@ -432,6 +431,64 @@ public class InvocationTest {
                 .build();
         i.sign();
 
+        assertThat(i.getTransaction().getNonce(), is(1800992192L));
+        assertThat(i.getTransaction().getValidUntilBlock(), is(2107199L));
+        assertThat(i.getTransaction().getNetworkFee(), is(1264390L));
+        assertThat(i.getTransaction().getSystemFee(), is(9007810L));
+        byte[] expectedScript = Numeric.hexStringToByteArray(
+                "150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238");
+        assertThat(i.getTransaction().getScript(), is(expectedScript));
+        byte[] expectedVerificationScript = Numeric.hexStringToByteArray(
+                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
+                is(expectedVerificationScript));
+        assertArrayEquals(expectedTx, i.getTransaction().toArray());
+    }
+
+    @Test
+    public void transferNeoWithMutliSigAccount() throws IOException {
+        // Reference transaction created with address version 0x17. The signature produced by
+        // neo-core was replaced by the signature created by neow3j because neo-core doesn't
+        // produce deterministic signatures.
+        byte[] expectedTx = Numeric.hexStringToByteArray(
+                "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c406fded85ee546f0283e4dfd8c70c4d514139b0516de6d8a2d569b73e6da8468c21c2e8c18a1d3c8a7d5160960cf89d48fc433df7ddafb602f716ca11043eccb8e2b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
+        // Required for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction("transfer",
+                "invokefunction_transfer.json");
+
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        Account sender = Account.fromMultiSigKeys(Arrays.asList(senderPair.getPublicKey()), 1)
+                .build();
+        Account singleSigAcc = Account.fromECKeyPair(senderPair).build();
+        Wallet w = new Wallet.Builder().accounts(sender, singleSigAcc).build();
+        ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        Invocation i = new InvocationBuilder(neow, neo, "transfer")
+                .withWallet(w)
+                .withNonce(1683161834)
+                .validUntilBlock(2102564)
+                .withParameters(
+                        ContractParameter.hash160(sender.getScriptHash()),
+                        ContractParameter.hash160(receiver),
+                        // The GAS (1 GAS) amount needs to be specified in fractions.
+                        ContractParameter.integer(100000000))
+                .failOnFalse()
+                .build();
+        i.sign();
+
+        assertThat(i.getTransaction().getNonce(), is(1683161834L));
+        assertThat(i.getTransaction().getValidUntilBlock(), is(2102564L));
+        assertThat(i.getTransaction().getNetworkFee(), is(1270450L));
+        assertThat(i.getTransaction().getSystemFee(), is(9007810L));
+        byte[] expectedScript = Numeric.hexStringToByteArray(
+                "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238");
+        assertThat(i.getTransaction().getScript(), is(expectedScript));
+        byte[] expectedVerificationScript = Numeric.hexStringToByteArray(
+                "110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
+        assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
+                is(expectedVerificationScript));
         assertArrayEquals(expectedTx, i.getTransaction().toArray());
     }
 }
