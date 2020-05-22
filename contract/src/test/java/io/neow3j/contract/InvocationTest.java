@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -445,6 +446,52 @@ public class InvocationTest {
                 is(expectedVerificationScript));
         assertArrayEquals(expectedTx, i.getTransaction().toArray());
     }
+
+    @Ignore("This test currently fails because the network fee is not correctly set on the "
+            + "transaction. Requires further investigation into the calculation of the network "
+            + "fee.")
+    @Test
+    public void transferNeoWithMutliSigAccount() throws IOException {
+        // Reference transaction created with address version 0x17.
+        byte[] expectedTx = Numeric.hexStringToByteArray(
+                "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c40d176ed0fe45864ed2a0d867832aff452e747be2bce53dd7ccd7d90711a83ceb8baceb1d1796d8fddc5e2606d6884475846891753b0c07624021b505e0808a6c92b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
+        // Required for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction("transfer",
+                "invokefunction_transfer.json");
+
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        Account sender = Account.fromMultiSigKeys(Arrays.asList(senderPair.getPublicKey()), 1)
+                .build();
+        Account singleSigAcc = Account.fromECKeyPair(senderPair).build();
+        Wallet w = new Wallet.Builder().accounts(sender, singleSigAcc).build();
+        ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        Invocation i = new InvocationBuilder(neow, neo, "transfer")
+                .withWallet(w)
+                .withNonce(1683161834)
+                .validUntilBlock(2102564)
+                .withParameters(
+                        ContractParameter.hash160(sender.getScriptHash()),
+                        ContractParameter.hash160(receiver),
+                        ContractParameter.integer(1))
+                .failOnFalse()
+                .build();
+        i.sign();
+
+        assertThat(i.getTransaction().getNonce(), is(1683161834L));
+        assertThat(i.getTransaction().getValidUntilBlock(), is(2102564L));
+        assertThat(i.getTransaction().getNetworkFee(), is(1270450L));
+        assertThat(i.getTransaction().getSystemFee(), is(9007810L));
+        byte[] expectedScript = Numeric.hexStringToByteArray(
+                "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238");
+        assertThat(i.getTransaction().getScript(), is(expectedScript));
+        byte[] expectedVerificationScript = Numeric.hexStringToByteArray(
+                "110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
+        assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
+                is(expectedVerificationScript));
         assertArrayEquals(expectedTx, i.getTransaction().toArray());
+        fail();
     }
 }
