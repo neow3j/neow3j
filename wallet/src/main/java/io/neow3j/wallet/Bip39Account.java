@@ -54,7 +54,7 @@ public class Bip39Account extends Account {
     public static Builder fromBip39Mnemonic(String password, String mnemonic) {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair ecKeyPair = ECKeyPair.create(sha256(seed));
-        return fromECKeyPair(ecKeyPair);
+        return fromECKeyPair(ecKeyPair).mnemonic(mnemonic);
     }
 
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
