@@ -28,11 +28,7 @@ import java.util.stream.IntStream;
 @SuppressWarnings("unchecked")
 public class Account {
 
-    // Private and public key are stored separately because the private key is not necessarily
-    // available in every account instance.
     private ECKeyPair keyPair;
-//    private ECPrivateKey privateKey;
-//    private ECPublicKey publicKey;
     private String address;
     private String encryptedPrivateKey;
     private String label;
@@ -46,8 +42,6 @@ public class Account {
     protected Account(Builder b) {
         this.label = b.label;
         this.keyPair = b.keyPair;
-//        this.privateKey = b.privateKey;
-//        this.publicKey = b.publicKey;
         this.isDefault = b.isDefault;
         this.isLocked = b.isLocked;
         this.address = b.address;
@@ -71,24 +65,6 @@ public class Account {
     public ECKeyPair getECKeyPair() {
         return this.keyPair;
     }
-
-//    /**
-//     * Gets this account's EC private key.
-//     *
-//     * @return The private key.
-//     */
-//    public ECPrivateKey getPrivateKey() {
-//        return this.privateKey;
-//    }
-//
-//    /**
-//     * Gets this account's EC public key.
-//     *
-//     * @return The public key.
-//     */
-//    public ECPublicKey getPublicKey() {
-//        return this.publicKey;
-//    }
 
     public ECKeyPair getKeyPair() {
         return this.keyPair;
@@ -173,13 +149,6 @@ public class Account {
             throw new AccountStateException("The account does not hold an encrypted private key.");
         }
         this.keyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
-//        this.privateKey = ecKeyPair.getPrivateKey();
-//        if (this.publicKey != null && !this.publicKey.equals(ecKeyPair.getPublicKey())) {
-//            throw new AccountStateException(
-//                    "The public key derived from the decrypted private key does "
-//                            + "not equal the public key that was already set on the account.");
-//        }
-//        publicKey = ecKeyPair.getPublicKey();
     }
 
     /**
