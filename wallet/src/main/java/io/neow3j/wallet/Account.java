@@ -191,11 +191,9 @@ public class Account {
     }
 
     public NEP6Account toNEP6Account() {
-        if (encryptedPrivateKey == null) {
-            throw new AccountStateException("Private key is not encrypted. Encrypt private key "
-                    + "first.");
+        if (this.keyPair != null && this.encryptedPrivateKey == null) {
+            throw new AccountStateException("Account private key is available but not encrypted.");
         }
-
         if (this.verificationScript == null) {
             return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
                     this.encryptedPrivateKey, null, null);

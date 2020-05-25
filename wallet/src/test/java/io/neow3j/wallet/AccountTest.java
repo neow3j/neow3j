@@ -9,13 +9,16 @@ import static org.junit.Assert.assertFalse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import java.io.File;
 import java.io.FileInputStream;
@@ -110,6 +113,12 @@ public class AccountTest {
         assertThat(a.getEncryptedPrivateKey(), is(expectedNep2Encrypted));
     }
 
+    @Test(expected = AccountStateException.class)
+    public void failEncryptAccountWithoutPrivateKey() throws CipherException {
+        Account a = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").build();
+        a.encryptPrivateKey("pwd");
+    }
+
     @Test
     public void decryptWithStandardScryptParams() throws NEP2InvalidFormat, CipherException,
             NEP2InvalidPassphrase {
@@ -140,6 +149,60 @@ public class AccountTest {
         byte[] expectedScript = Numeric.hexStringToByteArray(
                 "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
         assertThat(a.getVerificationScript().getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void toNep6AccountWithMultiSigAccount() throws URISyntaxException, IOException {
+        String publicKey = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
+        ECPublicKey key = new ECPublicKey(Numeric.hexStringToByteArray(publicKey));
+        Account a = Account.fromMultiSigKeys(Arrays.asList(key), 1).build();
+        NEP6Account nep6 = a.toNEP6Account();
+
+        String expectedScript = Base64.encode(Numeric.hexStringToByteArray(
+                "110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e"));
+        assertThat(nep6.getContract().getScript(), is(expectedScript));
+        assertFalse(nep6.getDefault());
+        assertFalse(nep6.getLock());
+        assertThat(nep6.getAddress(), is("AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF"));
+        assertThat(nep6.getLabel(), is("AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF"));
+        assertThat(nep6.getKey(), is(nullValue()));
+        assertThat(nep6.getContract().getParameters().get(0).getParamName(), is("signature0"));
+        assertThat(nep6.getContract().getParameters().get(0).getParamType(), is(
+                ContractParameterType.SIGNATURE));
+    }
+
+    @Test
+    public void createAccountFromWIF()
+            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+        String wif = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
+        Account a = Account.fromWIF(wif).build();
+        byte[] expectedPrivKey = Numeric.hexStringToByteArray(
+                "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3");
+        ECKeyPair expectedKeyPair = ECKeyPair.create(expectedPrivKey);
+        assertThat(a.getECKeyPair(), is(expectedKeyPair));
+        assertThat(a.getAddress(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(a.getLabel(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
+        assertThat(a.getScriptHash().toString(), is("969a77db482f74ce27105f760efa139223431394"));
+        assertThat(a.isDefault(), is(false));
+        assertThat(a.isLocked(), is(false));
+        byte[] verifScript = Numeric.hexStringToByteArray(
+                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        assertThat(a.getVerificationScript().getScript(), is(verifScript));
+    }
+
+    @Test
+    public void createAccountFromAddress() {
+        String address = "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm";
+        Account a = Account.fromAddress(address).build();
+        assertThat(a.getECKeyPair(), is(nullValue()));
+        assertThat(a.getAddress(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(a.getLabel(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
+        assertThat(a.getScriptHash().toString(), is("969a77db482f74ce27105f760efa139223431394"));
+        assertThat(a.isDefault(), is(false));
+        assertThat(a.isLocked(), is(false));
+        assertThat(a.getVerificationScript(), is(nullValue()));
     }
 
 }
