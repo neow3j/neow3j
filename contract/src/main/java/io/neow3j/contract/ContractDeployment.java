@@ -53,7 +53,7 @@ public class ContractDeployment {
             throw new IllegalStateException("No account provided. Can't automatically sign " +
                     "transaction without account.");
         }
-        if (account.getPrivateKey() == null) {
+        if (account.getECKeyPair() == null) {
             throw new IllegalStateException("Account does not hold a decrypted private key for " +
                     "signing the transaction. Decrypt the private key before attempting to sign " +
                     "with it.");

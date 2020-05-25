@@ -3,7 +3,6 @@ package io.neow3j.wallet;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
@@ -31,8 +30,9 @@ public class Account {
 
     // Private and public key are stored separately because the private key is not necessarily
     // available in every account instance.
-    private ECPrivateKey privateKey;
-    private ECPublicKey publicKey;
+    private ECKeyPair keyPair;
+//    private ECPrivateKey privateKey;
+//    private ECPublicKey publicKey;
     private String address;
     private String encryptedPrivateKey;
     private String label;
@@ -45,8 +45,9 @@ public class Account {
 
     protected Account(Builder b) {
         this.label = b.label;
-        this.privateKey = b.privateKey;
-        this.publicKey = b.publicKey;
+        this.keyPair = b.keyPair;
+//        this.privateKey = b.privateKey;
+//        this.publicKey = b.publicKey;
         this.isDefault = b.isDefault;
         this.isLocked = b.isLocked;
         this.address = b.address;
@@ -62,33 +63,35 @@ public class Account {
         return ScriptHash.fromAddress(address);
     }
 
+    /**
+     * Gets this account's EC key pair if available.
+     *
+     * @return the key pair.
+     */
     public ECKeyPair getECKeyPair() {
-        if (this.privateKey != null && this.publicKey != null) {
-            return new ECKeyPair(this.privateKey, this.publicKey);
-        } else if (privateKey != null) {
-            return ECKeyPair.create(privateKey);
-        } else {
-            throw new AccountStateException("Account with script hash " + getScriptHash() + " does"
-                    + " not hold a decrypted private key.");
-        }
+        return this.keyPair;
     }
 
-    /**
-     * Gets this account's EC private key.
-     *
-     * @return The private key.
-     */
-    public ECPrivateKey getPrivateKey() {
-        return this.privateKey;
-    }
+//    /**
+//     * Gets this account's EC private key.
+//     *
+//     * @return The private key.
+//     */
+//    public ECPrivateKey getPrivateKey() {
+//        return this.privateKey;
+//    }
+//
+//    /**
+//     * Gets this account's EC public key.
+//     *
+//     * @return The public key.
+//     */
+//    public ECPublicKey getPublicKey() {
+//        return this.publicKey;
+//    }
 
-    /**
-     * Gets this account's EC public key.
-     *
-     * @return The public key.
-     */
-    public ECPublicKey getPublicKey() {
-        return this.publicKey;
+    public ECKeyPair getKeyPair() {
+        return this.keyPair;
     }
 
     public String getLabel() {
@@ -163,22 +166,20 @@ public class Account {
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
-        // TODO: Remove this check and just return without doing anything in this case.
-        if (this.privateKey != null) {
-            throw new AccountStateException(
-                    "The account does already hold a decrypted private key.");
+        if (this.keyPair != null) {
+            return;
         }
         if (this.encryptedPrivateKey == null) {
             throw new AccountStateException("The account does not hold an encrypted private key.");
         }
-        ECKeyPair ecKeyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
-        this.privateKey = ecKeyPair.getPrivateKey();
-        if (this.publicKey != null && !this.publicKey.equals(ecKeyPair.getPublicKey())) {
-            throw new AccountStateException(
-                    "The public key derived from the decrypted private key does "
-                            + "not equal the public key that was already set on the account.");
-        }
-        publicKey = ecKeyPair.getPublicKey();
+        this.keyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
+//        this.privateKey = ecKeyPair.getPrivateKey();
+//        if (this.publicKey != null && !this.publicKey.equals(ecKeyPair.getPublicKey())) {
+//            throw new AccountStateException(
+//                    "The public key derived from the decrypted private key does "
+//                            + "not equal the public key that was already set on the account.");
+//        }
+//        publicKey = ecKeyPair.getPublicKey();
     }
 
     /**
@@ -202,14 +203,13 @@ public class Account {
     public void encryptPrivateKey(String password, ScryptParams scryptParams)
             throws CipherException {
 
-        if (privateKey == null) {
+        if (this.keyPair == null) {
             throw new AccountStateException("The account does not hold a decrypted private key.");
         }
-        this.encryptedPrivateKey = NEP2.encrypt(password, getECKeyPair(), scryptParams);
-        // TODO: 2019-07-14 Guil:
-        // Is it the safest way of overwriting a variable on the JVM?
-        // I don't think so. ;-)
-        this.privateKey = null;
+        this.encryptedPrivateKey = NEP2.encrypt(password, this.keyPair, scryptParams);
+        // TODO 25.05.20 claude: Clarify if it is necessary to destroy the private key in a
+        //  safer way than we are doing here.
+        this.keyPair = null;
     }
 
     public boolean isMultiSig() {
@@ -268,8 +268,7 @@ public class Account {
         BigInteger privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
         Builder b = new Builder();
-        b.privateKey = keyPair.getPrivateKey();
-        b.publicKey = keyPair.getPublicKey();
+        b.keyPair = keyPair;
         b.address = keyPair.getAddress();
         b.label = keyPair.getAddress();
         b.verificationScript = new VerificationScript(keyPair.getPublicKey());
@@ -286,8 +285,7 @@ public class Account {
 
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
-        b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey();
+        b.keyPair = ecKeyPair;
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
         b.verificationScript = new VerificationScript(ecKeyPair.getPublicKey());
@@ -329,8 +327,7 @@ public class Account {
 
         VerificationScript verificationScript;
         String label;
-        ECPrivateKey privateKey;
-        ECPublicKey publicKey;
+        ECKeyPair keyPair;
         boolean isDefault;
         boolean isLocked;
         String address;

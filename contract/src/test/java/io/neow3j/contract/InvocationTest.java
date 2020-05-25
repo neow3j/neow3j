@@ -357,7 +357,8 @@ public class InvocationTest {
                 .map(wit -> wit.getVerificationScript().getPublicKeys().get(0))
                 .collect(Collectors.toList());
         assertThat(signers, containsInAnyOrder(
-                w.getDefaultAccount().getPublicKey(), cosigner.getPublicKey()));
+                w.getDefaultAccount().getECKeyPair().getPublicKey(),
+                cosigner.getECKeyPair().getPublicKey()));
     }
 
     @Test(expected = InvocationConfigurationException.class)
