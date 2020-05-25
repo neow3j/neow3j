@@ -43,10 +43,6 @@ public class Transaction {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<TransactionAttribute> attributes;
 
-    @JsonProperty("cosigners")
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<TransactionCosigner> cosigners;
-
     @JsonProperty("script")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String script;
@@ -76,8 +72,7 @@ public class Transaction {
 
     public Transaction(String hash, long size, int version, Long nonce, String sender,
             String sysFee, String netFee, Long validUntilBlock,
-            List<TransactionAttribute> attributes,
-            List<TransactionCosigner> cosigners, String script,
+            List<TransactionAttribute> attributes, String script,
             List<NeoWitness> witnesses) {
         this.hash = hash;
         this.size = size;
@@ -88,15 +83,13 @@ public class Transaction {
         this.netFee = netFee;
         this.validUntilBlock = validUntilBlock;
         this.attributes = attributes;
-        this.cosigners = cosigners;
         this.script = script;
         this.witnesses = witnesses;
     }
 
     public Transaction(String hash, long size, int version, Long nonce, String sender,
                        String sysFee, String netFee, Long validUntilBlock,
-                       List<TransactionAttribute> attributes,
-                       List<TransactionCosigner> cosigners, String script,
+                       List<TransactionAttribute> attributes, String script,
                        List<NeoWitness> witnesses, String blockHash, int confirmations,
                        long blockTime, String vmState) {
         this.hash = hash;
@@ -108,7 +101,6 @@ public class Transaction {
         this.netFee = netFee;
         this.validUntilBlock = validUntilBlock;
         this.attributes = attributes;
-        this.cosigners = cosigners;
         this.script = script;
         this.witnesses = witnesses;
         this.blockHash = blockHash;
@@ -153,10 +145,6 @@ public class Transaction {
         return attributes;
     }
 
-    public List<TransactionCosigner> getCosigners() {
-        return cosigners;
-    }
-
     public String getScript() {
         return script;
     }
@@ -199,7 +187,6 @@ public class Transaction {
                 Objects.equals(getNetFee(), that.getNetFee()) &&
                 Objects.equals(getValidUntilBlock(), that.getValidUntilBlock()) &&
                 Objects.equals(getAttributes(), that.getAttributes()) &&
-                Objects.equals(getCosigners(), that.getCosigners()) &&
                 Objects.equals(getScript(), that.getScript()) &&
                 Objects.equals(getWitnesses(), that.getWitnesses()) &&
                 Objects.equals(getBlockHash(), that.getBlockHash()) &&
@@ -212,9 +199,8 @@ public class Transaction {
     public int hashCode() {
         return Objects
                 .hash(getHash(), getSize(), getVersion(), getNonce(), getSender(), getSysFee(),
-                        getNetFee(), getValidUntilBlock(), getAttributes(), getCosigners(),
-                        getScript(), getWitnesses(), getBlockHash(), getConfirmations(),
-                        getBlockTime(),
+                        getNetFee(), getValidUntilBlock(), getAttributes(), getScript(),
+                        getWitnesses(), getBlockHash(), getConfirmations(), getBlockTime(),
                         getVMState());
     }
 
@@ -230,7 +216,6 @@ public class Transaction {
                 ", netFee='" + netFee + '\'' +
                 ", validUntilBlock=" + validUntilBlock +
                 ", attributes=" + attributes +
-                ", cosigners=" + cosigners +
                 ", script='" + script + '\'' +
                 ", witnesses=" + witnesses +
                 ", blockHash=" + blockHash +

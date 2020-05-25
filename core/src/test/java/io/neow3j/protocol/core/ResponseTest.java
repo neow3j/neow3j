@@ -17,6 +17,7 @@ import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.core.methods.response.*;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
@@ -141,9 +142,9 @@ public class ResponseTest extends ResponseTester {
                         "                \"sys_fee\": \"0\",\n" +
                         "                \"net_fee\": \"0\",\n" +
                         "                \"valid_until_block\": 2107425,\n" +
-                        "                \"attributes\": [],\n" +
-                        "                \"cosigners\": [\n" +
+                        "                \"attributes\": [\n" +
                         "                    {\n" +
+                        "                        \"type\": \"Cosigner\",\n" +
                         "                        \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                        \"scopes\": \"CalledByEntry\"\n" +
                         "                    }\n" +
@@ -166,9 +167,9 @@ public class ResponseTest extends ResponseTester {
                         "                \"sys_fee\": \"0\",\n" +
                         "                \"net_fee\": \"0\",\n" +
                         "                \"valid_until_block\": 2107425,\n" +
-                        "                \"attributes\": [],\n" +
-                        "                \"cosigners\": [\n" +
+                        "                \"attributes\": [\n" +
                         "                    {\n" +
+                        "                        \"type\": \"Cosigner\",\n" +
                         "                        \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                        \"scopes\": \"CalledByEntry\"\n" +
                         "                    }\n" +
@@ -237,7 +238,6 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                Arrays.asList(),
                                 Arrays.asList(
                                         new TransactionCosigner(
                                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
@@ -261,7 +261,6 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                Arrays.asList(),
                                 Arrays.asList(
                                         new TransactionCosigner(
                                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
@@ -801,9 +800,9 @@ public class ResponseTest extends ResponseTester {
                         "        \"sys_fee\": \"9007810\",\n" +
                         "        \"net_fee\": \"1267450\",\n" +
                         "        \"valid_until_block\": 2103622,\n" +
-                        "        \"attributes\": [],\n" +
-                        "        \"cosigners\": [\n" +
+                        "        \"attributes\": [" +
                         "            {\n" +
+                        "                \"type\": \"Cosigner\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -835,12 +834,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(getTransaction.getTransaction().getNetFee(), is("1267450"));
         assertThat(getTransaction.getTransaction().getValidUntilBlock(), is(2103622L));
         assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(0));
 
-        assertThat(getTransaction.getTransaction().getCosigners(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getCosigners(), hasSize(1));
-        assertThat(
-                getTransaction.getTransaction().getCosigners(),
+        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(1));
+        assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
+        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().type,
+                is(TransactionAttributeType.COSIGNER));
+        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+                is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+                is(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(getTransaction.getTransaction().getAttributes(),
                 containsInAnyOrder(
                         new TransactionCosigner(
                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
@@ -1640,9 +1643,9 @@ public class ResponseTest extends ResponseTester {
                         "        \"sys_fee\": \"9007810\",\n" +
                         "        \"net_fee\": \"1266450\",\n" +
                         "        \"valid_until_block\": 2106392,\n" +
-                        "        \"attributes\": [],\n" +
-                        "        \"cosigners\": [\n" +
+                        "        \"attributes\": [" +
                         "            {\n" +
+                        "                \"type\": \"Cosigner\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -1671,15 +1674,23 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendFrom.getSendFrom().getNetFee(), is("1266450"));
         assertThat(sendFrom.getSendFrom().getValidUntilBlock(), is(2106392L));
         assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
-        assertThat(sendFrom.getSendFrom().getAttributes(), hasSize(0));
 
-        assertThat(sendFrom.getSendFrom().getCosigners(), is(notNullValue()));
-        assertThat(sendFrom.getSendFrom().getCosigners(), hasSize(1));
-        assertThat(sendFrom.getSendFrom().getCosigners(),
+        assertThat(sendFrom.getSendFrom().getAttributes(), hasSize(1));
+        assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getType(), is(TransactionAttributeType.COSIGNER));
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().type,
+                is(TransactionAttributeType.COSIGNER));
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+                is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+                is(WitnessScope.CALLED_BY_ENTRY));
+
+        assertThat(sendFrom.getSendFrom().getAttributes(),
                 containsInAnyOrder(
                         new TransactionCosigner("0xf68f181731a47036a99f04dad90043a744edec0f",
                                 WitnessScope.CALLED_BY_ENTRY)
                 ));
+
         assertThat(sendFrom.getSendFrom().getScript(),
                 is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA=="));
 
@@ -1709,9 +1720,14 @@ public class ResponseTest extends ResponseTester {
                         "        \"sys_fee\": \"18015620\",\n" +
                         "        \"net_fee\": \"1352450\",\n" +
                         "        \"valid_until_block\": 2106840,\n" +
-                        "        \"attributes\": [],\n" +
-                        "        \"cosigners\": [\n" +
+                        "        \"attributes\": [\n" +
                         "            {\n" +
+                        "                \"type\": \"Cosigner\",\n" +
+                        "                \"account\": \"0xbe175fb771d5782282b7598b56c26a2f5ebf2d24\",\n" +
+                        "                \"scopes\": \"CalledByEntry\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"type\": \"Cosigner\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -1739,16 +1755,25 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany().getSysFee(), is("18015620"));
         assertThat(sendMany.getSendMany().getNetFee(), is("1352450"));
         assertThat(sendMany.getSendMany().getValidUntilBlock(), is(2106840L));
-        assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
-        assertThat(sendMany.getSendMany().getAttributes(), hasSize(0));
 
-        assertThat(sendMany.getSendMany().getCosigners(), is(notNullValue()));
-        assertThat(sendMany.getSendMany().getCosigners(), hasSize(1));
-        assertThat(sendMany.getSendMany().getCosigners(),
+        assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
+        assertThat(sendMany.getSendMany().getAttributes(), hasSize(2));
+        assertThat(sendMany.getSendMany().getAttributes(),
                 containsInAnyOrder(
-                        new TransactionCosigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                WitnessScope.CALLED_BY_ENTRY)
+                        new TransactionCosigner(
+                                "0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
+                                WitnessScope.CALLED_BY_ENTRY),
+                        new TransactionCosigner(
+                                "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                WitnessScope.CALLED_BY_ENTRY
+                        )
                 ));
+        assertThat(sendMany.getSendMany().getAttributes().get(0).getType(), is(TransactionAttributeType.COSIGNER));
+        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+                is("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24"));
+        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+                is(WitnessScope.CALLED_BY_ENTRY));
+
         assertThat(sendMany.getSendMany().getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjgaDBQP7O1Ep0MA2doEn6k2cKQxFxiP9gwUD+ztRKdDANnaBJ+pNnCkMRcYj/YTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4"));
 
@@ -1795,9 +1820,9 @@ public class ResponseTest extends ResponseTester {
                         "        \"sys_fee\": \"9007810\",\n" +
                         "        \"net_fee\": \"2375840\",\n" +
                         "        \"valid_until_block\": 2106930,\n" +
-                        "        \"attributes\": [],\n" +
-                        "        \"cosigners\": [\n" +
+                        "        \"attributes\": [" +
                         "            {\n" +
+                        "                \"type\": \"Cosigner\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -1829,17 +1854,25 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendToAddress.getSendToAddress().getNetFee(), is("2375840"));
         assertThat(sendToAddress.getSendToAddress().getValidUntilBlock(), is(2106930L));
         assertThat(sendToAddress.getSendToAddress().getAttributes(), is(notNullValue()));
-        assertThat(sendToAddress.getSendToAddress().getAttributes(), hasSize(0));
 
-        assertThat(sendToAddress.getSendToAddress().getCosigners(), is(notNullValue()));
-        assertThat(sendToAddress.getSendToAddress().getCosigners(), hasSize(1));
-        assertThat(sendToAddress.getSendToAddress().getCosigners(),
+        assertThat(sendToAddress.getSendToAddress().getAttributes(), is(notNullValue()));
+        assertThat(sendToAddress.getSendToAddress().getAttributes(), hasSize(1));
+        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getType(),
+                is(TransactionAttributeType.COSIGNER));
+        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().type,
+                is(TransactionAttributeType.COSIGNER));
+        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+                is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+                is(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(sendToAddress.getSendToAddress().getAttributes(),
                 containsInAnyOrder(
                         new TransactionCosigner(
                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
                                 WitnessScope.CALLED_BY_ENTRY
                         )
                 ));
+
         assertThat(sendToAddress.getSendToAddress().getScript(),
                 is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA=="));
         assertThat(sendToAddress.getSendToAddress().getWitnesses(), is(notNullValue()));
