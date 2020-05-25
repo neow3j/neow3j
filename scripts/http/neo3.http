@@ -32,6 +32,21 @@ Content-Type: application/javascript'
 }
 
 ####################
+# getapplicationlog
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getapplicationlog",
+ "params": [
+  "0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109"
+ ],
+ "id": 1
+}
+
+####################
 # invokefunction
 ####################
 POST http://localhost:40332
