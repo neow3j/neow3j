@@ -191,6 +191,8 @@ public class StackItem {
                 return new StackItem(null, valueNode.asText());
             }
             switch (type) {
+                case ANY:
+                    return new AnyStackItem();
                 case BYTE_STRING:
                     return new ByteStringStackItem(Base64.decode(valueNode.asText()));
                 case BOOLEAN:

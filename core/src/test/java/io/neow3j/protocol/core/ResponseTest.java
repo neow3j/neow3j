@@ -1171,7 +1171,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"ByteString\",\n" +
-                        "                \"value\": \"576f6f6c6f6e67\"\n" +
+                        "                \"value\": \"dHJhbnNmZXI=\"\n" +
                         "            },\n" +
                         "            {\n" +
                         "                \"type\": \"Map\",\n" +
@@ -1179,7 +1179,7 @@ public class ResponseTest extends ResponseTester {
                         "                    {\n" +
                         "                        \"key\": {\n" +
                         "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"6964\"\n" +
+                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
                         "                        },\n" +
                         "                        \"value\": {\n" +
                         "                            \"type\": \"Integer\",\n" +
@@ -1201,16 +1201,19 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
-        HashMap<StackItem, StackItem> stackMap = new HashMap<>();
-        stackMap.put(new ByteStringStackItem(Numeric.hexStringToByteArray("6964")),
-                new IntegerStackItem(new BigInteger("1")));
-        assertThat(invokeFunction.getInvocationResult().getStack(),
-                containsInAnyOrder(new ByteStringStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67"))));
-//                containsInAnyOrder(
-//                        new ByteStringStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67"))
-//                        new MapStackItem(stackMap)
-//                )
-//        );
+
+        StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
+        assertThat(stackItem0.getType(), is(StackItemType.BYTE_STRING));
+        assertThat(stackItem0.asByteString().getAsString(), is("transfer"));
+
+        StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
+        assertThat(stackItem1.getType(), is(StackItemType.MAP));
+        assertThat(stackItem1.asMap().size(), equalTo(1));
+        BigInteger value = stackItem1.asMap()
+                .get(Numeric.hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96"))
+                .asInteger()
+                .getValue();
+        assertThat(value, is(new BigInteger("1")));
     }
 
     @Test
@@ -1277,7 +1280,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"ByteString\",\n" +
-                        "                \"value\": \"4e45503520474153\"\n" +
+                        "                \"value\": \"VHJhbnNmZXI=\"\n" +
                         "            }\n" +
                         "        ]\n" +
                         "    }\n" +
@@ -1294,7 +1297,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
         assertThat(invokeScript.getInvocationResult().getStack(),
                 hasItem(
-                        new ByteStringStackItem(Numeric.hexStringToByteArray("4e45503520474153"))
+                        new ByteStringStackItem("Transfer".getBytes())
                 ));
     }
 
@@ -2056,99 +2059,63 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"hash\": \"0xd5c8ef090ba0d2796feb34d623c9dda1890d96bee7e72f5f2df33c62602fd4d4\",\n" +
-                        "        \"size\": 490,\n" +
-                        "        \"version\": 0,\n" +
-                        "        \"previousblockhash\": \"0x2b0c8faf19a1a928702f133fa9617c57c640b46b6114977ce1fdca74772b863b\",\n" +
-                        "        \"merkleroot\": \"0x04a1e17a5ba899520655b64152831c9e04ad4e8404aa0d74e7c16436e665a9ad\",\n" +
-                        "        \"time\": 1589975301959,\n" +
-                        "        \"index\": 5719,\n" +
-                        "        \"nextconsensus\": \"AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF\",\n" +
-                        "        \"witnesses\": [\n" +
+                        "        \"txid\": \"0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109\",\n" +
+                        "        \"trigger\": \"Application\",\n" +
+                        "        \"vmstate\": \"HALT\",\n" +
+                        "        \"gas_consumed\": \"9007810\",\n" +
+                        "        \"stack\": [\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DEA0TG+n7QJM3sUOqedqi5RU2bI1FfNw6S8GCaM4GM/eBzi8dyRZGF3e8900y2LVdOu5Au+Q0JO8XnwHOoYgh4St\",\n" +
-                        "                \"verification\": \"EQwhAsC2DJlbwJLoZvFaN8F2u1m366zwabqUwOv1YcuPlWI4EQtBwzAYHg==\"\n" +
+                        "                \"type\": \"Integer\",\n" +
+                        "                \"value\": \"1\"\n" +
                         "            }\n" +
                         "        ],\n" +
-                        "        \"consensus_data\": {\n" +
-                        "            \"primary\": 0,\n" +
-                        "            \"nonce\": \"7d418a31fa4f3377\"\n" +
-                        "        },\n" +
-                        "        \"tx\": [\n" +
+                        "        \"notifications\": [\n" +
                         "            {\n" +
-                        "                \"hash\": \"0x3f88cd444ffdb7457afe58129a6beba25961000194ccd67b9220033afa5953cb\",\n" +
-                        "                \"size\": 268,\n" +
-                        "                \"version\": 0,\n" +
-                        "                \"nonce\": 77258969,\n" +
-                        "                \"sender\": \"AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF\",\n" +
-                        "                \"sys_fee\": \"9007810\",\n" +
-                        "                \"net_fee\": \"1268450\",\n" +
-                        "                \"valid_until_block\": 2108118,\n" +
-                        "                \"attributes\": [\n" +
-                        "                    {\n" +
-                        "                        \"type\": \"Cosigner\",\n" +
-                        "                        \"account\": \"0x55b842d631f43f23257a27992ac2b53169a4fe00\",\n" +
-                        "                        \"scopes\": \"CalledByEntry\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"script\": \"AegDDBTmwQE2VK8RPYqWi9ylLJlIqCuVPQwUAP6kaTG1wiqZJ3olIz/0MdZCuFUTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4\",\n" +
-                        "                \"witnesses\": [\n" +
-                        "                    {\n" +
-                        "                        \"invocation\": \"DEA6IYS+aiffy/dM++lc9CDBOWdDDU2mt8+emiiJ8+sNa90K+dOszuqXBn15Ug2aBYMli2MuBh7b4l1r6TrJNZHk\",\n" +
-                        "                        \"verification\": \"EQwhAsC2DJlbwJLoZvFaN8F2u1m366zwabqUwOv1YcuPlWI4EQtBwzAYHg==\"\n" +
-                        "                    }\n" +
-                        "                ]\n" +
-                        "            }\n" +
-                        "        ],\n" +
-                        "        \"confirmations\": 7253,\n" +
-                        "        \"nextblockhash\": \"0x7cd209f2c1dd48997f45a001fdfe8b619be33f9a5b6ffbdb0946486065754b50\"\n" +
-                        "    }\n" +
-                        "}"
-        );
-        buildResponse(
-                "{\n" +
-                        "    \"jsonrpc\": \"2.0\",\n" +
-                        "    \"id\": 1,\n" +
-                        "    \"result\": {\n" +
-                        "        \"txid\": \"0x92b1ecc0e8ca8d6b03db7fe6297ed38aa5578b3e6316c0526b414b453c89e20d\",\n" +
-                        "        \"executions\": [\n" +
-                        "            {\n" +
-                        "                \"trigger\": \"Application\",\n" +
-                        "                \"contract\": \"0x6ec33f0d370617dd85e51d31c483b6967074249d\",\n" +
-                        "                \"vmstate\": \"HALT\",\n" +
-                        "                \"gas_consumed\": \"2.912\",\n" +
-                        "                \"stack\": [\n" +
-                        "                    {\n" +
-                        "                        \"type\": \"Integer\",\n" +
-                        "                        \"value\": \"1\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"notifications\": [\n" +
-                        "                    {\n" +
-                        "                        \"contract\": \"0x78e6d16b914fe15bc16150aeb11d0c2a8e532bdd\",\n" +
-                        "                        \"state\": {\n" +
-                        "                            \"type\": \"Array\",\n" +
-                        "                            \"value\": [\n" +
-                        "                                {\n" +
-                        "                                    \"type\": \"ByteString\",\n" +
-                        "                                    \"value\": \"7472616e73666572\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"type\": \"ByteString\",\n" +
-                        "                                    \"value\": \"d086ac0ed3e578a1afd3c0a2c0d8f0a180405be2\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"type\": \"ByteString\",\n" +
-                        "                                    \"value\": \"002ba7f83fd4d3975dedb84de27345684bea2996\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"type\": \"ByteString\",\n" +
-                        "                                    \"value\": \"0065cd1d00000000\"\n" +
-                        "                                }\n" +
-                        "                            ]\n" +
+                        "                \"contract\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "                \"state\": {\n" +
+                        "                    \"type\": \"Array\",\n" +
+                        "                    \"value\": [\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"VHJhbnNmZXI=\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"Any\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"Integer\",\n" +
+                        "                            \"value\": \"600000000\"\n" +
                         "                        }\n" +
-                        "                    }\n" +
-                        "                ]\n" +
+                        "                    ]\n" +
+                        "                }\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"contract\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\n" +
+                        "                \"state\": {\n" +
+                        "                    \"type\": \"Array\",\n" +
+                        "                    \"value\": [\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"VHJhbnNmZXI=\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"5sEBNlSvET2KlovcpSyZSKgrlT0=\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"Integer\",\n" +
+                        "                            \"value\": \"100\"\n" +
+                        "                        }\n" +
+                        "                    ]\n" +
+                        "                }\n" +
                         "            }\n" +
                         "        ]\n" +
                         "    }\n" +
@@ -2156,41 +2123,56 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetApplicationLog getApplicationLog = deserialiseResponse(NeoGetApplicationLog.class);
-        List<NeoApplicationLog.Execution> executions = getApplicationLog.getApplicationLog().getExecutions();
-        assertThat(executions, is(notNullValue()));
-        assertThat(executions, hasSize(1));
-        assertThat(executions.get(0).getTrigger(), is("Application"));
-        assertThat(executions.get(0).getContract(),
-                is("0x6ec33f0d370617dd85e51d31c483b6967074249d"));
-        assertThat(executions.get(0).getState(), is("HALT"));
-        assertThat(executions.get(0).getGasConsumed(), is("2.912"));
+        NeoApplicationLog neoAppLog = getApplicationLog.getApplicationLog();
+        assertThat(neoAppLog, is(notNullValue()));
+        assertThat(neoAppLog.getTrigger(), is("Application"));
+        assertThat(neoAppLog.getState(), is("HALT"));
+        assertThat(neoAppLog.getGasConsumed(), is("9007810"));
 
-        assertThat(executions.get(0).getStack(), is(notNullValue()));
-        assertThat(executions.get(0).getStack(), hasSize(1));
-        assertThat(executions.get(0).getStack().get(0).getType(),
+        assertThat(neoAppLog.getStack(), is(notNullValue()));
+        assertThat(neoAppLog.getStack(), hasSize(1));
+        assertThat(neoAppLog.getStack().get(0).getType(),
                 is(StackItemType.INTEGER));
-        assertThat(executions.get(0).getStack().get(0).getValue(),
+        assertThat(neoAppLog.getStack().get(0).getValue(),
                 is(BigInteger.valueOf(1)));
 
-        assertThat(executions.get(0).getNotifications(), is(notNullValue()));
-        assertThat(executions.get(0).getNotifications(), hasSize(1));
+        assertThat(neoAppLog.getNotifications(), is(notNullValue()));
+        assertThat(neoAppLog.getNotifications(), hasSize(2));
 
-        // Notification
-        NeoApplicationLog.Notification notification = executions.get(0).getNotifications().get(0);
+        // Notification 0
+        NeoApplicationLog.Notification notification0 = neoAppLog.getNotifications().get(0);
 
-        assertThat(notification.getContract(), is("0x78e6d16b914fe15bc16150aeb11d0c2a8e532bdd"));
-        assertThat(notification.getState().getType(), is(StackItemType.ARRAY));
+        assertThat(notification0.getContract(), is("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"));
+        assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
 
-        ArrayStackItem array = notification.getState().asArray();
+        ArrayStackItem notification0Array = notification0.getState().asArray();
 
-        String eventName = array.get(0).asByteString().getAsString();
-        String from = array.get(1).asByteString().getAsAddress();
-        String to = array.get(2).asByteString().getAsAddress();
-        BigInteger amount = array.get(3).asByteString().getAsNumber();
+        String eventName0 = notification0Array.get(0).asByteString().getAsString();
+        Object from0 = notification0Array.get(1).getValue();
+        String to0 = notification0Array.get(2).asByteString().getAsAddress();
+        BigInteger amount0 = notification0Array.get(3).asInteger().getValue();
 
-        assertThat(eventName, is("transfer"));
-        assertThat(from, is("AanTXadhgdHzGbmy5ZBPXxR4iPHMivzVPZ"));
-        assertThat(to, is("AFnmwnAcknFeDGXLdMrkJXC7GChFVNRhCw"));
-        assertThat(amount, is(BigInteger.valueOf(500000000)));
+        assertThat(eventName0, is("Transfer"));
+        assertThat(from0, is(nullValue()));
+        assertThat(to0, is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(amount0, is(BigInteger.valueOf(600000000)));
+
+        // Notification 1
+        NeoApplicationLog.Notification notification1 = neoAppLog.getNotifications().get(1);
+
+        assertThat(notification1.getContract(), is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+        assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
+
+        ArrayStackItem notification1Array = notification1.getState().asArray();
+
+        String eventName1 = notification1Array.get(0).asByteString().getAsString();
+        Object from1 = notification1Array.get(1).asByteString().getAsAddress();
+        String to1 = notification1Array.get(2).asByteString().getAsAddress();
+        BigInteger amount1 = notification1Array.get(3).asInteger().getValue();
+
+        assertThat(eventName1, is("Transfer"));
+        assertThat(from1, is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(to1, is("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"));
+        assertThat(amount1, is(BigInteger.valueOf(100)));
     }
 }

@@ -2,6 +2,7 @@ package io.neow3j.protocol.core.methods.response;
 
 import io.neow3j.model.types.StackItemType;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -34,6 +35,26 @@ public class MapStackItem extends StackItem {
         for (Entry<StackItem, StackItem> e : getValue().entrySet()) {
             if (e.getKey() instanceof ByteStringStackItem &&
                     e.getKey().asByteString().getAsString().equals(key)) {
+                return e.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * <p>Gets the item that corresponds to the given key.</p>
+     * <br>
+     * <p>This method only checks map entries which have a key of type {@link ByteStringStackItem}
+     * because this is the usual type of the keys in a map stack item.</p>
+     *
+     * @param key the key whose associated value is to be returned.
+     * @return the value to which the given key is mapped, or null if this map stack item
+     * contains no mapping for the key.
+     */
+    public StackItem get(byte[] key) {
+        for (Entry<StackItem, StackItem> e : getValue().entrySet()) {
+            if (e.getKey() instanceof ByteStringStackItem &&
+                    Arrays.equals(e.getKey().asByteString().getValue(), key)) {
                 return e.getValue();
             }
         }
