@@ -56,10 +56,10 @@ public class SmartContract {
             throws UnexpectedReturnTypeException, IOException {
 
         StackItem item = callFunction(function, params);
-        if (item.getType().equals(StackItemType.BYTE_ARRAY)) {
-            return item.asByteArray().getAsString();
+        if (item.getType().equals(StackItemType.BYTE_STRING)) {
+            return item.asByteString().getAsString();
         }
-        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BYTE_ARRAY);
+        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BYTE_STRING);
     }
 
     /**
@@ -81,11 +81,11 @@ public class SmartContract {
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue();
         }
-        if (item.getType().equals(StackItemType.BYTE_ARRAY)) {
-            return item.asByteArray().getAsNumber();
+        if (item.getType().equals(StackItemType.BYTE_STRING)) {
+            return item.asByteString().getAsNumber();
         }
         throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
-                StackItemType.BYTE_ARRAY);
+                StackItemType.BYTE_STRING);
     }
 
 

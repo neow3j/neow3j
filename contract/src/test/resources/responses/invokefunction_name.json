@@ -7,7 +7,7 @@
     "gas_consumed": "1007390",
     "stack": [
       {
-        "type": "ByteArray",
+        "type": "ByteString",
         "value": "TkVP"
       }
     ]

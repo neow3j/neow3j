@@ -148,12 +148,12 @@ public class NeoToken extends Nep5Token {
     }
 
     private ECPublicKey extractPublicKey(StackItem keyItem) {
-        if (!keyItem.getType().equals(StackItemType.BYTE_ARRAY)) {
+        if (!keyItem.getType().equals(StackItemType.BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(keyItem.getType(),
-                    StackItemType.BYTE_ARRAY);
+                    StackItemType.BYTE_STRING);
         }
         try {
-            return new ECPublicKey(keyItem.asByteArray().getValue());
+            return new ECPublicKey(keyItem.asByteString().getValue());
         } catch (IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException("Byte array return type did not contain "
                     + "public key in expected format.", e);

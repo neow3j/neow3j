@@ -23,7 +23,7 @@ public class MapStackItem extends StackItem {
     /**
      * <p>Gets the item that corresponds to the given key.</p>
      * <br>
-     * <p>This method only checks map entries which have a key of type {@link ByteArrayStackItem}
+     * <p>This method only checks map entries which have a key of type {@link ByteStringStackItem}
      * because this is the usual type of the keys in a map stack item.</p>
      *
      * @param key the key whose associated value is to be returned.
@@ -32,8 +32,8 @@ public class MapStackItem extends StackItem {
      */
     public StackItem get(String key) {
         for (Entry<StackItem, StackItem> e : getValue().entrySet()) {
-            if (e.getKey() instanceof ByteArrayStackItem &&
-                    e.getKey().asByteArray().getAsString().equals(key)) {
+            if (e.getKey() instanceof ByteStringStackItem &&
+                    e.getKey().asByteString().getAsString().equals(key)) {
                 return e.getValue();
             }
         }

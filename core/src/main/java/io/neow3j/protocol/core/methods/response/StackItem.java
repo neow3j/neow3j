@@ -69,18 +69,18 @@ public class StackItem {
     }
 
     /**
-     * Casts this stack item to a {@link ByteArrayStackItem}, if possible, and returns it.
+     * Casts this stack item to a {@link ByteStringStackItem}, if possible, and returns it.
      *
-     * @return this stack item as a {@link ByteArrayStackItem}.
+     * @return this stack item as a {@link ByteStringStackItem}.
      * @throws IllegalStateException if this stack item is not an instance of
-     *                               {@link ByteArrayStackItem}.
+     *                               {@link ByteStringStackItem}.
      */
-    public ByteArrayStackItem asByteArray() {
-        if (this instanceof ByteArrayStackItem) {
-            return (ByteArrayStackItem) this;
+    public ByteStringStackItem asByteString() {
+        if (this instanceof ByteStringStackItem) {
+            return (ByteStringStackItem) this;
         }
         throw new IllegalStateException("This stack item is not of type " +
-                StackItemType.BYTE_ARRAY.jsonValue() + " but of " + this.type.jsonValue());
+                StackItemType.BYTE_STRING.jsonValue() + " but of " + this.type.jsonValue());
     }
 
     /**
@@ -191,8 +191,8 @@ public class StackItem {
                 return new StackItem(null, valueNode.asText());
             }
             switch (type) {
-                case BYTE_ARRAY:
-                    return new ByteArrayStackItem(Base64.decode(valueNode.asText()));
+                case BYTE_STRING:
+                    return new ByteStringStackItem(Base64.decode(valueNode.asText()));
                 case BOOLEAN:
                     return new BooleanStackItem(valueNode.asBoolean());
                 case INTEGER:
