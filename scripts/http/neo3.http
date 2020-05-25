@@ -1,4 +1,37 @@
 ####################
+# openwallet
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "openwallet",
+ "params":[
+  "wallet.json",
+  "neo"
+  ],
+ "id": 1
+}
+
+####################
+# sendtoaddress
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "sendtoaddress",
+ "params": [
+  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+  100
+ ],
+ "id": 1
+}
+
+####################
 # invokefunction
 ####################
 POST http://localhost:40332
