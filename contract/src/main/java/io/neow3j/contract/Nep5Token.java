@@ -102,12 +102,15 @@ public class Nep5Token extends SmartContract {
     }
 
     /**
-     * Gets the token balance for the given script hash in fractions.
+     * Gets the token balance for the given account script hash.
      * <p>
-     * The balance is not saved locally. Calling this method multiple times for the same script hash
-     * causes a new RPC call in every invocation.
+     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * The balance is not cached locally. Every time this method is called requests are send to the
+     * neo-node.
      *
-     * @param scriptHash The script hash to fetch the balance for.
+     * @param scriptHash The script hash of the account to fetch the balance for.
      * @return the token balance.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -119,6 +122,32 @@ public class Nep5Token extends SmartContract {
 
         ContractParameter ofParam = ContractParameter.hash160(scriptHash);
         return callFuncReturningInt(NEP5_BALANCE_OF, ofParam);
+    }
+
+    /**
+     * Gets the token balance for the given wallet, i.e., all accounts in the wallet.
+     * <p>
+     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * The balance is not cached locally. Every time this method is called requests are send to the
+     * neo-node.
+     *
+     * @param wallet The wallet to fetch the balance for.
+     * @return the token balance.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a number.
+     */
+    public BigInteger getBalanceOf(Wallet wallet) throws IOException,
+            UnexpectedReturnTypeException {
+
+        BigInteger sum = BigInteger.ZERO;
+        for (Account a : wallet.getAccounts()) {
+            sum = sum.add(getBalanceOf(a.getScriptHash()));
+        }
+        return sum;
     }
 
     /**

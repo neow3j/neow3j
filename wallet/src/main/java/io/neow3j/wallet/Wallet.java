@@ -9,6 +9,7 @@ import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.protocol.Neow3j;
 import io.neow3j.wallet.exceptions.WalletStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -141,8 +143,7 @@ public class Wallet {
      * Removes the account with the given script hash (address) from this wallet.
      *
      * @param scriptHash The {@link ScriptHash} of the account to be removed.
-     * @return true if an account was removed, false if no account with the given
-     * address was found.
+     * @return true if an account was removed, false if no account with the given address was found.
      */
     public boolean removeAccount(ScriptHash scriptHash) {
         return accounts.remove(scriptHash) != null;
@@ -214,6 +215,30 @@ public class Wallet {
         NEP6Wallet nep6Wallet = toNEP6Wallet();
         OBJECT_MAPPER.writeValue(destination, nep6Wallet);
         return this;
+    }
+
+    /**
+     * Gets the balances of all NEP-5 tokens that this wallet owns.
+     * <p>
+     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * Requires on a neo-node with the RpcNep5Tracker plugin installed. The balances are not cached
+     * locally. Every time this method is called requests are send to the neo-node for all contained
+     * accounts.
+     *
+     * @param neow3j The {@link Neow3j} object used to call a neo-node.
+     * @return the map of token script hashes to token amounts.
+     * @throws IOException If something goes wrong when communicating with the neo-node.
+     */
+    public Map<ScriptHash, BigInteger> getNep5TokenBalances(Neow3j neow3j) throws IOException {
+        Map<ScriptHash, BigInteger> balances = new HashMap<>();
+        for (Account a : this.accounts.values()) {
+            for (Entry<ScriptHash, BigInteger> e : a.getNep5Balances(neow3j).entrySet()) {
+                balances.merge(e.getKey(), e.getValue(), BigInteger::add);
+            }
+        }
+        return balances;
     }
 
     /**

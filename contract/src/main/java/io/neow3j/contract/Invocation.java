@@ -20,7 +20,6 @@ import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
-import io.neow3j.wallet.exceptions.AccountStateException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,12 +82,13 @@ public class Invocation {
     }
 
     private void signWithNormalAccount(byte[] txBytes, Account acc) {
-        try {
-            ECKeyPair keyPair = acc.getECKeyPair();
-            this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
-        } catch (AccountStateException e) {
-            throw new InvocationConfigurationException("Can't create transaction signature.", e);
+        ECKeyPair keyPair = acc.getECKeyPair();
+        if (keyPair == null) {
+            throw new InvocationConfigurationException("Can't create transaction signature "
+                    + "because account with script " + acc.getScriptHash() + " doesn't hold a "
+                    + "private key.");
         }
+        this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
     }
 
     private void signWithMultiSigAccount(byte[] txBytes, Account cosignerAcc) {
@@ -97,15 +97,10 @@ public class Invocation {
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
             ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
             Account a = this.wallet.getAccount(accScriptHash);
-            if (a == null) {
+            if (a == null || a.getECKeyPair() == null) {
                 continue;
             }
-            try {
-                ECKeyPair keyPair = a.getECKeyPair();
-                sigs.add(Sign.signMessage(txBytes, keyPair));
-            } catch (AccountStateException e) {
-                // Account didn't have private key. Ignore.
-            }
+            sigs.add(Sign.signMessage(txBytes, a.getECKeyPair()));
         }
         int m = multiSigVerifScript.getSigningThreshold();
         if (sigs.size() < m) {

@@ -3,6 +3,8 @@ package io.neow3j.wallet;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -11,23 +13,31 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.wallet.Wallet.Builder;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Collections;
+import java.util.Map;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class WalletTest {
@@ -79,7 +89,7 @@ public class WalletTest {
     }
 
     @Test
-    public void testAddAccount() throws InvalidAlgorithmParameterException,
+    public void addAccount() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Wallet w = Wallet.createWallet();
@@ -87,6 +97,18 @@ public class WalletTest {
         w.addAccount(acct);
         assertTrue(w.getAccounts().size() == 2);
         assertEquals(w.getAccount(acct.getScriptHash()), acct);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void failAddingSecondDefaultAccountToWalletWithDefaultAccount()
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            NoSuchProviderException {
+
+        Wallet w = Wallet.createWallet();
+        Account acct = Account.fromECKeyPair(ECKeyPair.createEcKeyPair())
+                .isDefault()
+                .build();
+        w.addAccount(acct);
     }
 
     @Test
@@ -146,22 +168,9 @@ public class WalletTest {
     }
 
     @Test
-    public void testFromNEP6WalletToNEP6Wallet() throws IOException, URISyntaxException {
+    public void fromNEP6WalletToNEP6Wallet() throws IOException, URISyntaxException {
         URL nep6WalletFile = WalletTest.class.getClassLoader().getResource("wallet.json");
         Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile.toURI()).build();
-
-        ObjectMapper mapper = new ObjectMapper();
-        NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
-
-        assertEquals(nep6Wallet, w.toNEP6Wallet());
-    }
-
-    @Test
-    public void testFromNEP6WalletFileToNEP6Wallet() throws IOException, URISyntaxException {
-        // TODO: Update the wallet file. It's not up to date with Neo 3.
-        URL nep6WalletFileUrl = WalletTest.class.getClassLoader().getResource("wallet.json");
-        File nep6WalletFile = new File(nep6WalletFileUrl.toURI());
-        Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile).build();
 
         ObjectMapper mapper = new ObjectMapper();
         NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
@@ -195,7 +204,7 @@ public class WalletTest {
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
         assertThat(tempFile.exists(), is(true));
-        assertThat(w1.getAccounts().get(0).getPrivateKey(), is(nullValue()));
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), is(nullValue()));
 
         Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
         w2.decryptAllAccounts("12345678");
@@ -216,7 +225,7 @@ public class WalletTest {
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
         assertThat(tempFile.exists(), is(true));
-        assertThat(w1.getAccounts().get(0).getPrivateKey(), is(nullValue()));
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), is(nullValue()));
 
         Wallet w2 = Wallet.fromNEP6Wallet(tempFile.toURI()).build();
         w2.decryptAllAccounts("12345678");
@@ -225,8 +234,7 @@ public class WalletTest {
         assertThat(w1.getVersion(), is(w2.getVersion()));
         assertThat(w1.getScryptParams(), is(w2.getScryptParams()));
         assertThat(w1.getAccounts().size(), is(w2.getAccounts().size()));
-        assertThat(w1.getAccounts().get(0).getPublicKey(),
-                is(w2.getAccounts().get(0).getPublicKey()));
+        assertThat(w2.getAccounts().get(0).getECKeyPair(), is(notNullValue()));
         assertThat(tempFile.exists(), is(true));
 
         assertThat(w2.toNEP6Wallet(), is(w1.toNEP6Wallet()));
@@ -250,11 +258,11 @@ public class WalletTest {
         assertThat(w1.getAccounts().size(), is(1));
         assertThat(w1.getAccounts(), not(empty()));
         assertThat(w1.getAccounts().get(0).getEncryptedPrivateKey(), notNullValue());
-        assertThat(w1.getAccounts().get(0).getPrivateKey(), is(nullValue()));
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), is(nullValue()));
 
         w1.decryptAllAccounts("12345678");
         assertThat(w1.getAccounts().get(0).getECKeyPair(), notNullValue());
-        assertThat(w1.getAccounts().get(0).getPrivateKey(), notNullValue());
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), notNullValue());
         assertThat(w1.getAccounts().get(0).getEncryptedPrivateKey(), notNullValue());
     }
 
@@ -270,15 +278,47 @@ public class WalletTest {
         assertThat(w.getDefaultAccount(), is(a));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void failSettingDefaultAccountNotContainedInWallet() {
+        Wallet w = Wallet.createWallet();
+        Account a = Account.createAccount();
+        w.setDefaultAccount(a.getScriptHash());
+    }
+
     @Test
     public void encryptWallet() throws CipherException {
         Wallet w = Wallet.createWallet();
         w.addAccount(Account.createAccount());
-        assertThat(w.getAccounts().get(0).getPrivateKey().getInt(), notNullValue());
-        assertThat(w.getAccounts().get(1).getPrivateKey().getInt(), notNullValue());
+        assertThat(w.getAccounts().get(0).getECKeyPair(), notNullValue());
+        assertThat(w.getAccounts().get(1).getECKeyPair(), notNullValue());
         w.encryptAllAccounts("pw");
-        assertThat(w.getAccounts().get(0).getPrivateKey(), nullValue());
-        assertThat(w.getAccounts().get(1).getPrivateKey(), nullValue());
+        assertThat(w.getAccounts().get(0).getECKeyPair(), nullValue());
+        assertThat(w.getAccounts().get(1).getECKeyPair(), nullValue());
+    }
+
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule();
+
+    @Test
+    public void getNep5Balances() throws IOException {
+        WireMock.configure();
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:8080"));
+        Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").isDefault().build();
+        Account a2 = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").isDefault().build();
+        WalletTestHelper.setUpWireMockForCall("getnep5balances",
+                "getnep5balances_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json",
+                "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm");
+        WalletTestHelper.setUpWireMockForCall("getnep5balances",
+                "getnep5balances_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
+                "Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ");
+        Wallet w = new Builder().accounts(a1, a2).build();
+        Map<ScriptHash, BigInteger> balances = w.getNep5TokenBalances(neow);
+        assertThat(balances.keySet(), contains(
+                new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"),
+                new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789")));
+        assertThat(balances.values(), containsInAnyOrder(
+                new BigInteger("411285799730"),
+                new BigInteger("50000000")));
     }
 
 }

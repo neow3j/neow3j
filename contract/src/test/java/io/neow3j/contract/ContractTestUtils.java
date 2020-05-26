@@ -53,6 +53,21 @@ public class ContractTestUtils {
                         .withBody(responseBody)));
     }
 
+    public static void setUpWireMockForBalanceOf(ScriptHash account, String responseFile)
+            throws IOException {
+
+        String responseBody = loadFile("/responses/" + responseFile);
+
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(""
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":.*\"balanceOf\".*"
+                        + ".*\"" + account.toString() + "\".*"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+    }
+
     public static String loadFile(String fileName) throws IOException {
         String absFileName = ContractTestUtils.class.getResource(fileName).getFile();
         FileInputStream inStream = new FileInputStream(new File(absFileName));

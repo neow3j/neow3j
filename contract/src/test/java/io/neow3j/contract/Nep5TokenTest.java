@@ -11,6 +11,7 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -100,7 +101,7 @@ public class Nep5TokenTest {
     }
 
     @Test
-    public void getBalanceOf() throws Exception {
+    public void getBalanceOfAccount() throws Exception {
         ScriptHash acc = ScriptHash.fromAddress("AMRZWegpH58nwY3iSDbmbBGg3kfGH6RgRt");
         ContractTestUtils.setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf.json");
@@ -108,4 +109,16 @@ public class Nep5TokenTest {
         assertThat(nep5.getBalanceOf(acc), is(new BigInteger("3000000000000000")));
     }
 
+    @Test
+    public void getBalanceOfWallet() throws Exception {
+        Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").isDefault().build();
+        Account a2 = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").build();
+        ContractTestUtils.setUpWireMockForBalanceOf(a1.getScriptHash(),
+                "invokefunction_balanceOf_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json");
+        ContractTestUtils.setUpWireMockForBalanceOf(a2.getScriptHash(),
+                "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json");
+        Wallet w = new Wallet.Builder().accounts(a1, a2).build();
+        Nep5Token token = new Nep5Token(GasToken.SCRIPT_HASH, this.neow);
+        assertThat(token.getBalanceOf(w), is(new BigInteger("411285799730")));
+    }
 }
