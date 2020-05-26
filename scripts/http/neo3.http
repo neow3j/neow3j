@@ -119,3 +119,16 @@ Content-Type: application/javascript'
  "params": [ 32, 1 ],
  "id": 1
 }
+
+####################
+# invokefunction - getNextBlockValidators
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [ "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "getNextBlockValidators" ],
+ "id": 1
+}
