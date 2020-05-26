@@ -166,13 +166,10 @@ public interface Neo {
 
     // RpcNep5Tracker
 
-    // test missing
     Request<?, NeoGetNep5Transfers> getNep5Transfers(String address);
 
-    // test missing
     Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date until);
 
-    // test missing
     Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date from, Date to);
 
     Request<?, NeoGetNep5Balances> getNep5Balances(String address);

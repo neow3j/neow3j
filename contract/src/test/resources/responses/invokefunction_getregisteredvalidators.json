@@ -13,7 +13,7 @@
             "type": "Array",
             "value": [
               {
-                "type": "ByteArray",
+                "type": "ByteString",
                 "value": "A/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3y"
               },
               {

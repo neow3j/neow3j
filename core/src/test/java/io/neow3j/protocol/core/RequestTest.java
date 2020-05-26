@@ -9,6 +9,7 @@ import io.neow3j.protocol.http.HttpService;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Date;
 
 public class RequestTest extends RequestTester {
 
@@ -266,7 +267,8 @@ public class RequestTest extends RequestTester {
                 "balanceOf",
                 Arrays.asList(
                         ContractParameter.hash160(new ScriptHash("91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
-                )
+                ),
+                "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"
         ).send();
 
         verifyResult(
@@ -275,7 +277,8 @@ public class RequestTest extends RequestTester {
                         + "\"balanceOf\","
                         + "["
                         + "{\"type\":\"Hash160\",\"value\":\"91b83e96f2a7c4fdf0c1688441ec61986c7cae26\"}"
-                        + "]"
+                        + "],"
+                        + "[\"0xcadb3dc2faa3ef14a13b619c9a43124755aa2569\"]"
                         + "],\"id\":1}"
         );
     }
@@ -284,13 +287,13 @@ public class RequestTest extends RequestTester {
     public void testInvokeFunction_without_Params() throws Exception {
         neow3j.invokeFunction(
                 "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
-                "balanceOf"
+                "decimals"
         ).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokefunction\","
                         + "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\","
-                        + "\"balanceOf\""
+                        + "\"decimals\""
                         + "],\"id\":1}"
         );
     }
@@ -299,15 +302,15 @@ public class RequestTest extends RequestTester {
     public void testInvokeFunction_empty_Params() throws Exception {
         neow3j.invokeFunction(
                 "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
-                "balanceOf",
+                "decimals",
                 Arrays.asList()
         ).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokefunction\","
                         + "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\","
-                        + "\"balanceOf\","
-                        + "[]"
+                        + "\"decimals\","
+                        + "[],[]"
                         + "],\"id\":1}"
         );
     }
@@ -636,6 +639,29 @@ public class RequestTest extends RequestTester {
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5transfers\","
                         + "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep5Transfers_Date() throws Exception {
+        neow3j.getNep5Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb", new Date(1553105830L)).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5transfers\","
+                        + "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep5Transfers_DateFromTo() throws Exception {
+        neow3j.getNep5Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+                new Date(1553105830),
+                new Date(1557305830)
+        ).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5transfers\","
+                        + "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830,1557305830],\"id\":1}"
         );
     }
 

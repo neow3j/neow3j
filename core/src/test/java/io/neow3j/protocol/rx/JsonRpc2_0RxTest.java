@@ -126,6 +126,7 @@ public class JsonRpc2_0RxTest {
     }
 
     @Test
+    @Ignore("Ignored due to malfunctioning according to issue #129.")
     public void testCatchUpToLatestAndSubscribeToNewBlockObservable() throws Exception {
 
         List<NeoGetBlock> expected = Arrays.asList(

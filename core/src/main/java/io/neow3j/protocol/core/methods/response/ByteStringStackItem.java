@@ -9,10 +9,10 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ByteArrayStackItem extends StackItem {
+public class ByteStringStackItem extends StackItem {
 
-    public ByteArrayStackItem(byte[] value) {
-        super(StackItemType.BYTE_ARRAY, value);
+    public ByteStringStackItem(byte[] value) {
+        super(StackItemType.BYTE_STRING, value);
     }
 
     /**
@@ -64,7 +64,7 @@ public class ByteArrayStackItem extends StackItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || this.getClass() != o.getClass()) return false;
-        ByteArrayStackItem other = (ByteArrayStackItem) o;
+        ByteStringStackItem other = (ByteStringStackItem) o;
         return this.type == other.type && Arrays.equals(this.getValue(), other.getValue());
     }
 

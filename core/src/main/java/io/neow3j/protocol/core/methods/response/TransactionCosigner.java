@@ -2,11 +2,12 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TransactionCosigner {
+public class TransactionCosigner extends TransactionAttribute {
 
     @JsonProperty("account")
     private String account;
@@ -15,9 +16,11 @@ public class TransactionCosigner {
     private WitnessScope scopes;
 
     public TransactionCosigner() {
+        super(TransactionAttributeType.COSIGNER);
     }
 
     public TransactionCosigner(String account, WitnessScope scopes) {
+        super(TransactionAttributeType.COSIGNER);
         this.account = account;
         this.scopes = scopes;
     }
