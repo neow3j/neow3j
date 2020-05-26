@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -40,27 +41,28 @@ public class NeoTokenTest {
 
     @Test
     public void getName() {
-        assertThat(new NeoToken(neow).getName(), is(NeoToken.NAME));
+        assertThat(new NeoToken(neow).getName(), is("NEO"));
     }
 
     @Test
     public void getSymbol() {
-        assertThat(new NeoToken(neow).getSymbol(), is(NeoToken.SYMBOL));
+        assertThat(new NeoToken(neow).getSymbol(), is("neo"));
     }
 
     @Test
     public void getTotalSupply() {
-        assertThat(new NeoToken(neow).getTotalSupply(), is(NeoToken.TOTAL_SUPPLY));
+        assertThat(new NeoToken(neow).getTotalSupply(), is(new BigInteger("100000000")));
     }
 
     @Test
     public void getDecimals() {
-        assertThat(new NeoToken(neow).getDecimals(), is(NeoToken.DECIMALS));
+        assertThat(new NeoToken(neow).getDecimals(), is(0));
     }
 
     @Test
     public void getUnclaimedGas() throws IOException {
-        String responseBody = ContractTestUtils.loadFile("/responses/invokefunction_unclaimedgas.json");
+        String responseBody = ContractTestUtils.loadFile(
+                "/responses/invokefunction_unclaimedgas.json");
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
@@ -79,6 +81,9 @@ public class NeoTokenTest {
         assertThat(result, is(new BigInteger("60000000000")));
     }
 
+    @Ignore("A sensible test of the `registerValidator()` method requires access to the "
+            + "transaction data produced by the method. Maybe the method can be broken down into "
+            + "two parts to make it testable.")
     @Test
     public void registerValidator() {
         fail();
@@ -86,7 +91,8 @@ public class NeoTokenTest {
 
     @Test
     public void getValidators() throws IOException {
-        String responseBody = ContractTestUtils.loadFile("/responses/invokefunction_getvalidators.json");
+        String responseBody = ContractTestUtils.loadFile(
+                "/responses/invokefunction_getvalidators.json");
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
@@ -104,9 +110,12 @@ public class NeoTokenTest {
         assertThat(result, contains(expKey));
     }
 
+    @Ignore("At the time of writing this test the neo-node only replied to the RPC with a FAULT VM "
+            + "state. Try to produce a reference response at a later time.")
     @Test
     public void getRegisteredValidators() throws IOException {
-        String responseBody = ContractTestUtils.loadFile("/responses/invokefunction_getregisteredvalidators.json");
+        String responseBody = ContractTestUtils.loadFile(
+                "/responses/invokefunction_getregisteredvalidators.json");
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
@@ -120,9 +129,32 @@ public class NeoTokenTest {
 
         Map<ECPublicKey, Integer> result = new NeoToken(neow).getRegisteredValidators();
         fail();
-        // TODO: Implement test
-//        String expKeyHex = "03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2";
-//        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
-//        assertThat(result, contains(expKey));
+    }
+
+    @Test
+    public void getNextBlockValidators() throws IOException {
+        String responseBody = ContractTestUtils.loadFile("/responses"
+                + "/invokefunction_getnextblockvalidators.json");
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(""
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"getNextBlockValidators\".*" // function
+                ))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+
+        List<ECPublicKey> result = new NeoToken(neow).getNextBlockValidators();
+        String expKeyHex = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
+        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
+        assertThat(result, contains(expKey));
+    }
+
+    @Ignore("The vote function call is not yet implemented in the NeoToken class.")
+    @Test
+    public void vote() {
+        fail();
     }
 }

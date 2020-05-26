@@ -317,8 +317,14 @@ public class TransactionTest {
     }
 
     @Test
-    public void getHashData() {
-        fail();
+    public void getHashData() throws DeserializationException {
+        NeoConfig.setMagicNumber(new byte[]{0x4e, 0x45, 0x4F, 0x00});
+        byte[] txBytes = Numeric.hexStringToByteArray(
+                "001dbfc570941343239213fa0e765f1027ce742f48db779a96c272890000000000064b130000000000b81920000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c406fcb8f6811ac85ed7a1308d14c7197531e83b2d7959c61cc980f30d78f4a9af5c5282272243ec1b51e399fc252caa00ca5fb332a107649adb8f5f8e746b12013290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        Transaction tx = NeoSerializableInterface.from(txBytes, Transaction.class);
+        byte[] expectedData = Numeric.hexStringToByteArray(
+                "4e454f00001dbfc570941343239213fa0e765f1027ce742f48db779a96c272890000000000064b130000000000b81920000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238");
+        assertThat(tx.getHashData(), is(expectedData));
     }
 
 }

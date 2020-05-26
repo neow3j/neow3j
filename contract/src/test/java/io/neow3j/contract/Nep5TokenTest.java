@@ -1,19 +1,21 @@
 package io.neow3j.contract;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.WitnessScope;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -33,26 +35,38 @@ public class Nep5TokenTest {
         this.contract = new ScriptHash(ContractTestUtils.CONTRACT_1_SCRIPT_HASH);
     }
 
-    @Ignore
     @Test
     public void transferToken() throws Exception {
         ContractTestUtils.setUpWireMockForSendRawTransaction();
-        ContractTestUtils
-                .setUpWireMockForInvokeFunction("transfer", "invokefunction_transfer.json");
-        ContractTestUtils
-                .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
-        ContractTestUtils.setUpWireMockForGetBlockCount();
-
-        // Block count will be NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT
-        // + ContractTestUtils.GETBLOCKCOUNT_RESPONSE;
+        // Required for fetching of system fee of the invocation.
+        ContractTestUtils.setUpWireMockForInvokeFunction(
+                "transfer", "invokefunction_transfer_gas.json");
+        // Required for fetching the token's decimals.
+        ContractTestUtils.setUpWireMockForInvokeFunction(
+                "decimals", "invokefunction_decimals_gas.json");
+        // Required for fetching the block height used for setting the validUntilBlock.
+        ContractTestUtils.setUpWireMockForGetBlockCount(1000);
+        // Required when checking the senders token balance.
+        ContractTestUtils.setUpWireMockForInvokeFunction("balanceOf",
+                "invokefunction_balanceOf.json");
 
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         Wallet w = Wallet.createWallet();
-        nep5.transfer(w, new ScriptHash("0f2b7a6ee34db32d9151c6028960ab2a8babea52"),
-                BigDecimal.ONE);
-        // TODO: Setup a raw transaction that contains the expected transaction bytes for a
-        //  transfer.
-        fail();
+        ScriptHash gas = new ScriptHash("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
+        Invocation i = nep5.buildTransferInvocation(w, gas, BigDecimal.ONE);
+
+        Transaction tx = i.getTransaction();
+        assertThat(tx.getNetworkFee(), is(1268390L));
+        assertThat(tx.getSystemFee(), is(9007810L));
+        assertThat(tx.getSender(), is(w.getDefaultAccount().getScriptHash()));
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getCosigners(), hasSize(1));
+        Cosigner c = tx.getCosigners().get(0);
+        assertThat(c.getScriptHash(), is(w.getDefaultAccount().getScriptHash()));
+        assertThat(c.getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getWitnesses(), hasSize(1));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript(),
+                is(w.getDefaultAccount().getVerificationScript()));
     }
 
     @Test
@@ -72,7 +86,7 @@ public class Nep5TokenTest {
     @Test
     public void getDecimals() throws Exception {
         ContractTestUtils
-                .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+                .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getDecimals(), is(8));
     }

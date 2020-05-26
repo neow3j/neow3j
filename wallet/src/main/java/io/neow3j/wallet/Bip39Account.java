@@ -40,7 +40,7 @@ public class Bip39Account extends Account {
 
         return fromECKeyPair(keyPair)
                 .mnemonic(mnemonic)
-                .isDefault(true)
+                .isDefault()
                 .build();
     }
 

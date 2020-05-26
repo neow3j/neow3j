@@ -29,7 +29,7 @@ public class NeoToken extends Nep5Token {
     public static final String REGISTER_VALIDATOR = "registerValidator";
     public static final String GET_VALIDATORS = "getValidators";
     public static final String GET_REGISTERED_VALIDATORS = "getRegisteredValidators";
-    public static final String GET_NEXT_BLOCK_VALIDATOR = "getNextBlockValidators";
+    public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
     public static final String VOTE = "vote";
 
     public NeoToken(Neow3j neow) {
@@ -101,23 +101,16 @@ public class NeoToken extends Nep5Token {
      * @return the validators' public keys.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
-     * @throws UnexpectedReturnTypeException If the return type is not an array or the array
-     *                                       elements are not public keys.
+     * @throws UnexpectedReturnTypeException If the return type is not an array or the returned
+     *                                       array's elements are not public keys.
      */
     public List<ECPublicKey> getValidators() throws IOException {
-        StackItem arrayItem = callFunction(GET_VALIDATORS);
-        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
-            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
-        }
-        List<ECPublicKey> valKeys = new ArrayList<>();
-        for (StackItem keyItem : arrayItem.asArray().getValue()) {
-            valKeys.add(extractPublicKey(keyItem));
-        }
-        return valKeys;
+        return callFunctionReturningListOfPublicKeys(GET_VALIDATORS);
     }
 
     /**
-     * Gets the public keys of currently registered validators and the number of their backup nodes.
+     * Gets the public keys of currently registered validators and the number of their backup
+     * nodes.
      *
      * @return the registered validators public keys and the number of their backup nodes.
      * @throws IOException                   if there was a problem fetching information from the
@@ -147,6 +140,33 @@ public class NeoToken extends Nep5Token {
         return validators;
     }
 
+    /**
+     * Gets the public keys of the next block's validators.
+     *
+     * @return the validators' public keys.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException If the return type is not an array or the returned
+     *                                       array's elements are not public keys.
+     */
+    public List<ECPublicKey> getNextBlockValidators() throws IOException {
+        return callFunctionReturningListOfPublicKeys(GET_NEXT_BLOCK_VALIDATORS);
+    }
+
+    private List<ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
+            throws IOException {
+
+        StackItem arrayItem = callFunction(function);
+        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
+            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
+        }
+        List<ECPublicKey> valKeys = new ArrayList<>();
+        for (StackItem keyItem : arrayItem.asArray().getValue()) {
+            valKeys.add(extractPublicKey(keyItem));
+        }
+        return valKeys;
+    }
+
     private ECPublicKey extractPublicKey(StackItem keyItem) {
         if (!keyItem.getType().equals(StackItemType.BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(keyItem.getType(),
@@ -160,8 +180,8 @@ public class NeoToken extends Nep5Token {
         }
     }
 
-    // TODO: Implement method for GET_NEXT_BLOCK_VALIDATOR
-
-    // TODO: Implement method for VOTE
+    public boolean vote() {
+        throw new UnsupportedOperationException();
+    }
 }
 

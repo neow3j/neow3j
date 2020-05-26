@@ -19,11 +19,8 @@ public class ContractTestUtils {
     // Script hash of contract_1 in big-endian format.
     public static final String CONTRACT_1_SCRIPT_HASH = "12aa18b1dfc127d34087de01c5db334f3274d77a";
 
-    // The block count set in the 'getblockcount.json' response.
-    public static final int GETBLOCKCOUNT_RESPONSE = 1000;
-
-    public static void setUpWireMockForGetBlockCount() throws IOException {
-        String responseBody = loadFile("/responses/getblockcount.json");
+    public static void setUpWireMockForGetBlockCount(long blockCount) throws IOException {
+        String responseBody = loadFile("/responses/getblockcount_" + blockCount + ".json");
 
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new ContainsPattern("\"method\":\"getblockcount\""))

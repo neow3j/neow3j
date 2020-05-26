@@ -12,24 +12,18 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("unchecked")
@@ -45,7 +39,6 @@ public class Account {
     private boolean isDefault;
     private boolean isLocked;
     private VerificationScript verificationScript;
-    private Map<ScriptHash, BigDecimal> balances;
 
     private Account() {
     }
@@ -59,7 +52,6 @@ public class Account {
         this.address = b.address;
         this.encryptedPrivateKey = b.encryptedPrivateKey;
         this.verificationScript = b.verificationScript;
-        this.balances = new HashMap<>();
     }
 
     public String getAddress() {
@@ -107,8 +99,16 @@ public class Account {
         return isDefault;
     }
 
-    void setIsDefault(boolean isDefault) {
-        this.isDefault = isDefault;
+    // This method is required by the Wallet but must not be available to the developer because
+    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
+    void setDefault() {
+        this.isDefault = true;
+    }
+
+    // This method is required by the Wallet but must not be available to the developer because
+    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
+    void unsetDefault() {
+        this.isDefault = false;
     }
 
     public Boolean isLocked() {
@@ -121,20 +121,6 @@ public class Account {
 
     public String getEncryptedPrivateKey() {
         return encryptedPrivateKey;
-    }
-
-    public Map<ScriptHash, BigDecimal> getBalances() {
-        return balances;
-    }
-
-    public BigDecimal getBalance(ScriptHash token) {
-        return balances.get(token);
-    }
-
-    public void updateAssetBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
-    }
-
-    public void updateTokenBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
     }
 
     /**
@@ -360,13 +346,13 @@ public class Account {
             return (B) this;
         }
 
-        public B isDefault(boolean isDefault) {
-            this.isDefault = isDefault;
+        public B isDefault() {
+            this.isDefault = true;
             return (B) this;
         }
 
-        public B isLocked(boolean isLocked) {
-            this.isLocked = isLocked;
+        public B isLocked() {
+            this.isLocked = true;
             return (B) this;
         }
 

@@ -249,10 +249,4 @@ public class ContractParameterTest {
         int result = contractParameter.hashCode();
         assertThat(result, not(eq(0)));
     }
-
-    @Test
-    public void testToString() {
-        String result = contractParameter.toString();
-        assertThat(result, is("ContractParameter{paramName='null', paramType=STRING, value=value}"));
-    }
 }
