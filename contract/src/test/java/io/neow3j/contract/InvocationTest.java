@@ -398,6 +398,25 @@ public class InvocationTest {
         i.sign();
     }
 
+    @Test(expected = InvocationConfigurationException.class)
+    public void failSendingInvocationBecauseItDoesntContainSignaturesForAllCosigners()
+            throws IOException {
+
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Wallet w = Wallet.createWallet();
+        Account cosigner = Account.createAccount();
+        w.addAccount(cosigner);
+        new InvocationBuilder(neow, contract, method)
+                .withWallet(w)
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
+                .build()
+                .send();
+    }
+
     @Test
     public void transferNeoWithNormalAccount() throws IOException {
         // Reference transaction created with address version 0x17. The signature produced by
