@@ -163,14 +163,10 @@ public class Nep5Token extends SmartContract {
      * @throws IOException            if there was a problem fetching information from the Neo
      *                                node.
      */
-    public String transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
+    public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws ErrorResponseException, IOException {
 
-        Invocation invocation = buildTransferInvocation(wallet, to, amount);
-
-        NeoSendRawTransaction response = invocation.send();
-        response.throwOnError();
-        return response.getResult().getHash();
+        return buildTransferInvocation(wallet, to, amount).send();
     }
 
     Invocation buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
