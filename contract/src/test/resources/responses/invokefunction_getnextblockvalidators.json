@@ -10,7 +10,7 @@
         "type": "Array",
         "value": [
           {
-            "type": "ByteArray",
+            "type": "ByteString",
             "value": "AsC2DJlbwJLoZvFaN8F2u1m366zwabqUwOv1YcuPlWI4"
           }
         ]
