@@ -11,18 +11,23 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 @SuppressWarnings("unchecked")
@@ -106,7 +111,7 @@ public class Account {
      * Decrypts this account's private key, according to the NEP-2 standard, if not already
      * decrypted. Uses the default Scrypt parameters.
      *
-     * @param password     The passphrase used to decrypt this account's private key.
+     * @param password The passphrase used to decrypt this account's private key.
      * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
      * @throws CipherException       throws if failed encrypt the created wallet.
      * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
@@ -122,6 +127,7 @@ public class Account {
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
         decryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
     }
+
     /**
      * Decrypts this account's private key, according to the NEP-2 standard, if not already
      * decrypted.
@@ -188,6 +194,29 @@ public class Account {
                             + "needed to determine if it is a multi-sig account.");
         }
         return this.verificationScript.isMultiSigScript();
+    }
+
+    /**
+     * Gets the balances of all NEP-5 tokens that this account owns.
+     * <p>
+     * The token amounts are returned in token fractions. I.e., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * Requires on a neo-node with the RpcNep5Tracker plugin installed. The balances are not cached
+     * locally. Every time this method is called a request is send to the neo-node.
+     *
+     * @param neow3j The {@link Neow3j} object used to call a neo-node.
+     * @return the map of token script hashes to token amounts.
+     * @throws IOException If something goes wrong when communicating with the neo-node.
+     */
+    public Map<ScriptHash, BigInteger> getNep5Balances(Neow3j neow3j)
+            throws IOException {
+
+        NeoGetNep5Balances result = neow3j.getNep5Balances(getAddress()).send();
+        Map<ScriptHash, BigInteger> balances = new HashMap<>();
+        result.getBalances().getBalances().forEach(b ->
+                balances.put(new ScriptHash(b.getAssetHash()), new BigInteger(b.getAmount())));
+        return balances;
     }
 
     public NEP6Account toNEP6Account() {
