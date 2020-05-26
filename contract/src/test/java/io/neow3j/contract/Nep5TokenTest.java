@@ -6,11 +6,13 @@ import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
@@ -37,7 +39,7 @@ public class Nep5TokenTest {
     }
 
     @Test
-    public void transferToken() throws Exception {
+    public void transferGas() throws Exception {
         ContractTestUtils.setUpWireMockForSendRawTransaction();
         // Required for fetching of system fee of the invocation.
         ContractTestUtils.setUpWireMockForInvokeFunction(
@@ -51,10 +53,15 @@ public class Nep5TokenTest {
         ContractTestUtils.setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf.json");
 
-        Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
-        Wallet w = Wallet.createWallet();
-        ScriptHash gas = new ScriptHash("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
-        Invocation i = nep5.buildTransferInvocation(w, gas, BigDecimal.ONE);
+        Nep5Token gas = new Nep5Token(
+                new ScriptHash("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"), this.neow);
+        byte[] privateKey = Numeric.hexStringToByteArray(
+                "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3");
+        Account a = Account.fromECKeyPair(ECKeyPair.create(privateKey))
+                .isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(a).build();
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        Invocation i = gas.buildTransferInvocation(w, receiver, BigDecimal.ONE);
 
         Transaction tx = i.getTransaction();
         assertThat(tx.getNetworkFee(), is(1268390L));
@@ -66,6 +73,9 @@ public class Nep5TokenTest {
         assertThat(c.getScriptHash(), is(w.getDefaultAccount().getScriptHash()));
         assertThat(c.getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
         assertThat(tx.getWitnesses(), hasSize(1));
+        byte[] expectedScript = Numeric.hexStringToByteArray(
+                "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238");
+        assertThat(tx.getScript(), is(expectedScript));
         assertThat(tx.getWitnesses().get(0).getVerificationScript(),
                 is(w.getDefaultAccount().getVerificationScript()));
     }
