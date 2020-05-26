@@ -3,12 +3,16 @@ package io.neow3j.wallet;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
@@ -17,16 +21,21 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import org.junit.Rule;
 import org.junit.Test;
 
 
@@ -203,6 +212,26 @@ public class AccountTest {
         assertThat(a.isDefault(), is(false));
         assertThat(a.isLocked(), is(false));
         assertThat(a.getVerificationScript(), is(nullValue()));
+    }
+
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule();
+
+    @Test
+    public void getNep5Balances() throws IOException {
+        WireMock.configure();
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:8080"));
+        Account a = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").isDefault().build();
+        WalletTestHelper.setUpWireMockForCall("getnep5balances",
+                "getnep5balances_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
+                "Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ");
+        Map<ScriptHash, BigInteger> balances = a.getNep5Balances(neow);
+        assertThat(balances.keySet(), contains(
+                new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"),
+                new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789")));
+        assertThat(balances.values(), contains(
+                new BigInteger("300000000"),
+                new BigInteger("5")));
     }
 
 }

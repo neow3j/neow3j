@@ -220,12 +220,12 @@ public class Wallet {
     /**
      * Gets the balances of all NEP-5 tokens that this wallet owns.
      * <p>
-     * The token amounts are returned in token fractions. I.e., an amount of 1 GAS is returned as
+     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
      * Requires on a neo-node with the RpcNep5Tracker plugin installed. The balances are not cached
-     * locally. Every time this method is called a requests are send to the neo-node for all
-     * contained accounts.
+     * locally. Every time this method is called requests are send to the neo-node for all contained
+     * accounts.
      *
      * @param neow3j The {@link Neow3j} object used to call a neo-node.
      * @return the map of token script hashes to token amounts.

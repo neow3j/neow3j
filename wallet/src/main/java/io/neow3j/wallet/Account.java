@@ -199,7 +199,7 @@ public class Account {
     /**
      * Gets the balances of all NEP-5 tokens that this account owns.
      * <p>
-     * The token amounts are returned in token fractions. I.e., an amount of 1 GAS is returned as
+     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
      * Requires on a neo-node with the RpcNep5Tracker plugin installed. The balances are not cached

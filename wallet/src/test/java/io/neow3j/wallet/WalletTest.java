@@ -3,6 +3,8 @@ package io.neow3j.wallet;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -11,23 +13,31 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.wallet.Wallet.Builder;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Collections;
+import java.util.Map;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class WalletTest {
@@ -284,6 +294,31 @@ public class WalletTest {
         w.encryptAllAccounts("pw");
         assertThat(w.getAccounts().get(0).getECKeyPair(), nullValue());
         assertThat(w.getAccounts().get(1).getECKeyPair(), nullValue());
+    }
+
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule();
+
+    @Test
+    public void getNep5Balances() throws IOException {
+        WireMock.configure();
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:8080"));
+        Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").isDefault().build();
+        Account a2 = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").isDefault().build();
+        WalletTestHelper.setUpWireMockForCall("getnep5balances",
+                "getnep5balances_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json",
+                "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm");
+        WalletTestHelper.setUpWireMockForCall("getnep5balances",
+                "getnep5balances_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
+                "Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ");
+        Wallet w = new Builder().accounts(a1, a2).build();
+        Map<ScriptHash, BigInteger> balances = w.getNep5TokenBalances(neow);
+        assertThat(balances.keySet(), contains(
+                new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"),
+                new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789")));
+        assertThat(balances.values(), containsInAnyOrder(
+                new BigInteger("411285799730"),
+                new BigInteger("50000000")));
     }
 
 }
