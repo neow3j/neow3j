@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class NeoToken extends Nep5Token {
 
@@ -180,8 +182,31 @@ public class NeoToken extends Nep5Token {
         }
     }
 
-    public boolean vote() {
-        throw new UnsupportedOperationException();
+    /**
+     * Creates and sends a transaction that votes for the given validators.
+     *
+     * @param voter      The account that casts the vote.
+     * @param wallet     The wallet that contains the vote-casting account.
+     * @param validators The validators for which to vote for.
+     * @return the response from the neo-node.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
+     */
+    public NeoSendRawTransaction vote(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
+            throws IOException {
+        // TODO: Update this method once the neo-node implementation is more stable. At the time
+        //  of writing the call did not work as described in the dev guide.
+        List<ContractParameter> keys = Stream.of(validators)
+                .map(v -> ContractParameter.publicKey(v.getEncoded(true)))
+                .collect(Collectors.toList());
+        return invoke(VOTE)
+                .withSender(voter)
+                .withWallet(wallet)
+                .withParameters(
+                        ContractParameter.hash160(voter),
+                        ContractParameter.array(keys))
+                .build()
+                .sign()
+                .send();
     }
 }
 

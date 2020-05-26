@@ -152,9 +152,10 @@ public class NeoTokenTest {
         assertThat(result, contains(expKey));
     }
 
-    @Ignore("The vote function call is not yet implemented in the NeoToken class.")
+    @Ignore("The vote function on the NeoToken was not yet properly implemented on the "
+            + "neo-node at the time of writing.")
     @Test
-    public void vote() {
+    public void vote() throws IOException {
         fail();
     }
 }
