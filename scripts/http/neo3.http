@@ -132,3 +132,64 @@ Content-Type: application/javascript'
  "params": [ "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "getNextBlockValidators" ],
  "id": 1
 }
+
+####################
+# invokefunction - vote
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [
+	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "vote",
+	 [
+		 {"type": "Hash160","value": "0xdf133e846b1110843ac357fc8bbf05b4a32e17c8"},
+		 {"type": "PublicKey", "value": "02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c"},
+		 {"type": "PublicKey", "value": "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"}
+
+	 ],
+     ["0xdf133e846b1110843ac357fc8bbf05b4a32e17c8"]
+ ],
+ "id": 1
+}
+
+####################
+# invokefunction - registerCandidate
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [
+	 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "registerCandidate",
+	 [
+		 {"type": "PublicKey", "value": "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"}
+	 ],
+	 ["969a77db482f74ce27105f760efa139223431394"]
+ ],
+ "id": 1
+}
+
+####################
+# invokefunction - getCandidates
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [
+	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "getCandidates"
+ ],
+ "id": 1
+}
+
+###
