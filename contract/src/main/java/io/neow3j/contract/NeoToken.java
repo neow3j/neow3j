@@ -7,7 +7,7 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.transaction.Cosigner;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NeoToken extends Nep5Token {
@@ -28,9 +27,9 @@ public class NeoToken extends Nep5Token {
             new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
-    public static final String REGISTER_VALIDATOR = "registerValidator";
+    public static final String REGISTER_CANDIDATE = "registerCandidate";
     public static final String GET_VALIDATORS = "getValidators";
-    public static final String GET_REGISTERED_VALIDATORS = "getRegisteredValidators";
+    public static final String GET_CANDIDATES = "getCandidates";
     public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
     public static final String VOTE = "vote";
 
@@ -73,28 +72,33 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
-     * Creates and sends a transaction registering a validator candidate
+     * Creates and sends a transaction registering a validator candidate.
      *
-     * @param wallet       The wallet paying the transaction fees.
-     * @param validatorKey The public key to register as a candidate.
+     * @param candidate    The script hash of the candidate's account.
+     * @param wallet       The wallet containing the candidate's account.
+     * @param candidateKey The public key to register as a candidate.
      * @return the hash of the created transaction.
-     * @throws IOException            if there was a problem fetching information from the Neo
-     *                                node.
-     * @throws ErrorResponseException if the registration was unsuccessful.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public String registerValidator(Wallet wallet, ECPublicKey validatorKey)
-            throws IOException, ErrorResponseException {
-        NeoSendRawTransaction response = invoke(REGISTER_VALIDATOR)
+    public NeoSendRawTransaction registerCandidate(ScriptHash candidate, Wallet wallet,
+            ECPublicKey candidateKey)
+            throws IOException {
+
+        return buildRegisterInvocation(candidate, wallet, candidateKey).send();
+    }
+
+    // Method extracted for testability.
+    Invocation buildRegisterInvocation(ScriptHash candidate, Wallet wallet,
+            ECPublicKey candidateKey)
+            throws IOException {
+
+        return invoke(REGISTER_CANDIDATE)
+                .withSender(candidate)
                 .withWallet(wallet)
-                .withParameters(ContractParameter.publicKey(validatorKey.getEncoded(true)))
-                .failOnFalse()
+                .withParameters(ContractParameter.publicKey(candidateKey.getEncoded(true)))
+                .withAttributes(Cosigner.global(candidate))
                 .build()
-                .sign()
-                .send();
-
-        response.throwOnError();
-
-        return response.getResult().getHash();
+                .sign();
     }
 
     /**
@@ -111,17 +115,17 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
-     * Gets the public keys of currently registered validators and the number of their backup
-     * nodes.
+     * Gets the public keys of currently registered validator candidates and their NEO
+     * balances.
      *
-     * @return the registered validators public keys and the number of their backup nodes.
+     * @return the candidate public keys and their NEO balances.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
      * @throws UnexpectedReturnTypeException If the return type is not an array or the array
      *                                       elements are not public keys and node counts.
      */
-    public Map<ECPublicKey, Integer> getRegisteredValidators() throws IOException {
-        StackItem arrayItem = callFunction(GET_REGISTERED_VALIDATORS);
+    public Map<ECPublicKey, Integer> getCandidates() throws IOException {
+        StackItem arrayItem = callFunction(GET_CANDIDATES);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }
@@ -135,9 +139,7 @@ public class NeoToken extends Nep5Token {
             if (!nrItem.getType().equals(StackItemType.INTEGER)) {
                 throw new UnexpectedReturnTypeException(nrItem.getType(), StackItemType.INTEGER);
             }
-            BigInteger nr = nrItem.asInteger().getValue();
-
-            validators.put(key, nr.intValue());
+            validators.put(key, nrItem.asInteger().getValue().intValue());
         }
         return validators;
     }
@@ -193,20 +195,26 @@ public class NeoToken extends Nep5Token {
      */
     public NeoSendRawTransaction vote(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
             throws IOException {
-        // TODO: Update this method once the neo-node implementation is more stable. At the time
-        //  of writing the call did not work as described in the dev guide.
-        List<ContractParameter> keys = Stream.of(validators)
+
+        return buildVoteInvocation(voter, wallet, validators).send();
+    }
+
+    // Method extracted for testability.
+    Invocation buildVoteInvocation(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
+            throws IOException {
+
+        ContractParameter[] validatorParams = Stream.of(validators)
                 .map(v -> ContractParameter.publicKey(v.getEncoded(true)))
-                .collect(Collectors.toList());
+                .toArray(ContractParameter[]::new);
+
         return invoke(VOTE)
                 .withSender(voter)
                 .withWallet(wallet)
-                .withParameters(
-                        ContractParameter.hash160(voter),
-                        ContractParameter.array(keys))
+                .withParameters(ContractParameter.hash160(voter))
+                .withParameters(validatorParams)
+                .withAttributes(Cosigner.global(voter))
                 .build()
-                .sign()
-                .send();
+                .sign();
     }
 }
 
