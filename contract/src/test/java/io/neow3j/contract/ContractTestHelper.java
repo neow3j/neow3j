@@ -13,11 +13,30 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-public class ContractTestUtils {
+public class ContractTestHelper {
 
     public static final String CONTRACT_1_REL_PATH = "./test/resources/contracts/contract_1.py";
     // Script hash of contract_1 in big-endian format.
     public static final String CONTRACT_1_SCRIPT_HASH = "12aa18b1dfc127d34087de01c5db334f3274d77a";
+
+
+    public static void setUpWireMockForCall(String call, String responseFile, String... params)
+            throws IOException {
+
+        String responseBody = loadFile("/responses/" + responseFile);
+
+        StringBuilder regexPattern = new StringBuilder()
+                .append(".*\"method\":\"").append(call).append("\".*")
+                .append(".*\"params\":.*");
+        for (String param : params) {
+            regexPattern.append(".*\"").append(param).append("\".*");
+        }
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(regexPattern.toString()))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+    }
 
     public static void setUpWireMockForGetBlockCount(long blockCount) throws IOException {
         String responseBody = loadFile("/responses/getblockcount_" + blockCount + ".json");
@@ -69,7 +88,7 @@ public class ContractTestUtils {
     }
 
     public static String loadFile(String fileName) throws IOException {
-        String absFileName = ContractTestUtils.class.getResource(fileName).getFile();
+        String absFileName = ContractTestHelper.class.getResource(fileName).getFile();
         FileInputStream inStream = new FileInputStream(new File(absFileName));
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
                 .reduce((a, b) -> a + b).get();

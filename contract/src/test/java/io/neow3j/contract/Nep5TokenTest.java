@@ -35,22 +35,22 @@ public class Nep5TokenTest {
         // Configuring WireMock to use default host and port "localhost:8080".
         WireMock.configure();
         neow = Neow3j.build(new HttpService("http://localhost:8080"));
-        this.contract = new ScriptHash(ContractTestUtils.CONTRACT_1_SCRIPT_HASH);
+        this.contract = new ScriptHash(ContractTestHelper.CONTRACT_1_SCRIPT_HASH);
     }
 
     @Test
     public void transferGas() throws Exception {
-        ContractTestUtils.setUpWireMockForSendRawTransaction();
+        ContractTestHelper.setUpWireMockForSendRawTransaction();
         // Required for fetching of system fee of the invocation.
-        ContractTestUtils.setUpWireMockForInvokeFunction(
+        ContractTestHelper.setUpWireMockForInvokeFunction(
                 "transfer", "invokefunction_transfer_gas.json");
         // Required for fetching the token's decimals.
-        ContractTestUtils.setUpWireMockForInvokeFunction(
+        ContractTestHelper.setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");
         // Required for fetching the block height used for setting the validUntilBlock.
-        ContractTestUtils.setUpWireMockForGetBlockCount(1000);
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
         // Required when checking the senders token balance.
-        ContractTestUtils.setUpWireMockForInvokeFunction("balanceOf",
+        ContractTestHelper.setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf.json");
 
         Nep5Token gas = new Nep5Token(
@@ -82,21 +82,21 @@ public class Nep5TokenTest {
 
     @Test
     public void getName() throws IOException {
-        ContractTestUtils.setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
         Nep5Token nep5 = new Nep5Token(NeoToken.SCRIPT_HASH, this.neow);
         assertThat(nep5.getName(), is("NEO"));
     }
 
     @Test
     public void getSymbol() throws IOException {
-        ContractTestUtils.setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getSymbol(), is("neo"));
     }
 
     @Test
     public void getDecimals() throws Exception {
-        ContractTestUtils
+        ContractTestHelper
                 .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getDecimals(), is(8));
@@ -104,7 +104,7 @@ public class Nep5TokenTest {
 
     @Test
     public void getTotalSupply() throws Exception {
-        ContractTestUtils
+        ContractTestHelper
                 .setUpWireMockForInvokeFunction("totalSupply", "invokefunction_totalSupply.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getTotalSupply(), is(new BigInteger("3000000000000000")));
@@ -113,7 +113,7 @@ public class Nep5TokenTest {
     @Test
     public void getBalanceOfAccount() throws Exception {
         ScriptHash acc = ScriptHash.fromAddress("AMRZWegpH58nwY3iSDbmbBGg3kfGH6RgRt");
-        ContractTestUtils.setUpWireMockForInvokeFunction("balanceOf",
+        ContractTestHelper.setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf.json");
         Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
         assertThat(nep5.getBalanceOf(acc), is(new BigInteger("3000000000000000")));
@@ -123,9 +123,9 @@ public class Nep5TokenTest {
     public void getBalanceOfWallet() throws Exception {
         Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").isDefault().build();
         Account a2 = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").build();
-        ContractTestUtils.setUpWireMockForBalanceOf(a1.getScriptHash(),
+        ContractTestHelper.setUpWireMockForBalanceOf(a1.getScriptHash(),
                 "invokefunction_balanceOf_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json");
-        ContractTestUtils.setUpWireMockForBalanceOf(a2.getScriptHash(),
+        ContractTestHelper.setUpWireMockForBalanceOf(a2.getScriptHash(),
                 "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json");
         Wallet w = new Wallet.Builder().accounts(a1, a2).build();
         Nep5Token token = new Nep5Token(GasToken.SCRIPT_HASH, this.neow);

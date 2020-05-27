@@ -169,6 +169,7 @@ public class Nep5Token extends SmartContract {
         return buildTransferInvocation(wallet, to, amount).send();
     }
 
+    // Method extracted for testability.
     Invocation buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
 
