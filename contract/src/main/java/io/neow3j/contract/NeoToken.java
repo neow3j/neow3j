@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+/**
+ * Represents the NeoToken native contract and provides methods to invoke all its functions.
+ */
 public class NeoToken extends Nep5Token {
 
     public final static int DECIMALS = 0;
@@ -33,6 +36,11 @@ public class NeoToken extends Nep5Token {
     public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
     public static final String VOTE = "vote";
 
+    /**
+     * Constructs a new <tt>NeoToken</tt> which will use the given {@link Neow3j} for all
+     * interactions with the contract.
+     * @param neow The {@link Neow3j} instance to use for invocations.
+     */
     public NeoToken(Neow3j neow) {
         super(SCRIPT_HASH, neow);
     }
