@@ -19,6 +19,74 @@ Visit http://docs.neow3j.io for more information on neow3j and the technical doc
 
 Neow3j is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
 
+## Import neow3j to your project
+
+To get all neow3j features, add the `io.neow3j:contract` project to your dependencies. Since neow3j is split into multiple project modules, you can also depend on a subset of the functionality, e.g. if you only require certain utility methods. Check out the concept and structure of the library [here]("https://neow3j.io/#/overview/concepts_and_structure).
+
+### Releases
+
+__Gradle__
+
+```groovy
+compile 'io.neow3j:contract:2.+'
+```
+__Maven__
+
+```xml
+<dependency>
+    <groupId>io.neow3j</groupId>
+    <artifactId>contract</artifactId>
+    <version>[2.0.0,3.0.0)</version>
+</dependency>
+```
+
+### Development Snapshots
+
+If you would like to test `SNAPSHOT` versions, which preview the most recent features but are unstable and not ready for production, use the following repository. You can check out [here]("https://oss.sonatype.org/content/repositories/snapshots/io/neow3j/") what snapshots are available. The '3.0.1-SNAPSHOT' as used in the example below interacts with Neo3 nodes. You can run a Neo3 node locally e.g. [here]("https://github.com/AxLabs/neo3-privatenet-docker").
+
+__Gradle__
+
+```groovy
+repositories {
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+    mavenCentral()
+}
+```
+
+```groovy
+dependencies {
+    compile 'io.neow3j:contract:3.0.1-SNAPSHOT'
+}
+```
+
+__Maven__
+
+```xml
+<repositories>
+    <repository>
+        <id>sonatype-snapshots</id>
+        <name>OSS Sonatype Snapshots</name>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
+
+```xml
+<dependency>
+    <groupId>io.neow3j</groupId>
+    <artifactId>contract</artifactId>
+    <version>3.0.1-SNAPSHOT</version>
+</dependency>
+```
+
 
 ## Donate
 
