@@ -19,6 +19,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
+import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Cosigner;
@@ -419,6 +420,7 @@ public class InvocationTest {
 
     @Test
     public void transferNeoWithNormalAccount() throws IOException {
+        NeoConfig.setMagicNumber(new byte[]{0x4e, 0x45, 0x4F, 0x00});
         // Reference transaction created with address version 0x17. The signature produced by
         // neo-core was replaced by the signature created by neow3j because neo-core doesn't
         // produce deterministic signatures.
@@ -463,6 +465,7 @@ public class InvocationTest {
 
     @Test
     public void transferNeoWithMutliSigAccount() throws IOException {
+        NeoConfig.setMagicNumber(new byte[]{0x4e, 0x45, 0x4F, 0x00});
         // Reference transaction created with address version 0x17. The signature produced by
         // neo-core was replaced by the signature created by neow3j because neo-core doesn't
         // produce deterministic signatures.
