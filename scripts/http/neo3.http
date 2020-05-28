@@ -192,4 +192,17 @@ Content-Type: application/javascript'
  "id": 1
 }
 
+####################
+# getcontractstate
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+  "jsonrpc": "2.0",
+  "method": "getcontractstate",
+  "params":["0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"],
+  "id": 1
+}
+
 ###
