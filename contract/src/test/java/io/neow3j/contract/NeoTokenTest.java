@@ -88,7 +88,7 @@ public class NeoTokenTest {
     @Test
     public void registerCandidate() throws IOException {
         ContractTestHelper.setUpWireMockForCall("invokefunction",
-                "invokefunction_registerCandidate.json",
+                "invokefunction_registercandidate.json",
                 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "registerCandidate");
         ContractTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
@@ -116,7 +116,7 @@ public class NeoTokenTest {
     @Test
     public void getValidators() throws IOException {
         String responseBody = ContractTestHelper.loadFile(
-                "/responses/invokefunction_getValidators.json");
+                "/responses/invokefunction_getvalidators.json");
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
