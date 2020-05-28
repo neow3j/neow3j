@@ -18,9 +18,10 @@ public class SmartContract {
 
     /**
      * Constructs a <tt>SmartContract</tt> representing the smart contract with the given script
-     * hash. Uses the given {@link Neow3j} instance for all interactions with the smart contract.
+     * hash. Uses the given {@link Neow3j} instance for all invocations.
+     *
      * @param scriptHash The smart contract's script hash.
-     * @param neow The {@link Neow3j} instance to use for invocations.
+     * @param neow       The {@link Neow3j} instance to use for invocations.
      */
     public SmartContract(ScriptHash scriptHash, Neow3j neow) {
         if (scriptHash == null) {

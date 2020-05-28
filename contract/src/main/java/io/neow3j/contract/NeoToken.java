@@ -37,29 +37,50 @@ public class NeoToken extends Nep5Token {
     public static final String VOTE = "vote";
 
     /**
-     * Constructs a new <tt>NeoToken</tt> which will use the given {@link Neow3j} for all
-     * interactions with the contract.
+     * Constructs a new <tt>NeoToken</tt> that uses the given {@link Neow3j} instance for
+     * invocations.
+     *
      * @param neow The {@link Neow3j} instance to use for invocations.
      */
     public NeoToken(Neow3j neow) {
         super(SCRIPT_HASH, neow);
     }
 
+    /**
+     * Returns the name of the NeoToken contract. Doesn't require a call to the neo-node.
+     *
+     * @return the name.
+     */
     @Override
     public String getName() {
         return NAME;
     }
 
+    /**
+     * Returns the symbol of the NeoToken contract. Doesn't require a call to the neo-node.
+     *
+     * @return the symbol.
+     */
     @Override
     public String getSymbol() {
         return SYMBOL;
     }
 
+    /**
+     * Returns the total supply of the NeoToken contract. Doesn't require a call to the neo-node.
+     *
+     * @return the total supply.
+     */
     @Override
     public BigInteger getTotalSupply() {
         return TOTAL_SUPPLY;
     }
 
+    /**
+     * Returns the number of decimals of the NEO token. Doesn't require a call to the neo-node.
+     *
+     * @return the number of decimals.
+     */
     @Override
     public int getDecimals() {
         return DECIMALS;
@@ -123,8 +144,7 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
-     * Gets the public keys of currently registered validator candidates and their NEO
-     * balances.
+     * Gets the public keys of currently registered validator candidates and their NEO balances.
      *
      * @return the candidate public keys and their NEO balances.
      * @throws IOException                   if there was a problem fetching information from the

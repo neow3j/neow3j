@@ -31,9 +31,10 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Constructs a new <tt>Nep5Token</tt> representing the token contract with the given script
-     * hash. Uses the given {@link Neow3j} instance for all interactions with the token contract.
+     * hash. Uses the given {@link Neow3j} instance for all invocations.
+     *
      * @param scriptHash The token contract's script hash
-     * @param neow The {@link Neow3j} instance to use for invocations.
+     * @param neow       The {@link Neow3j} instance to use for invocations.
      */
     public Nep5Token(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
@@ -43,6 +44,7 @@ public class Nep5Token extends SmartContract {
      * Gets the name of this token.
      * <p>
      * The return value is retrieved form the neo-node only once and then cached.
+     *
      * @return the name.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -58,6 +60,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the symbol of this token.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the symbol.
      * @throws IOException                   if there was a problem fetching information from the
@@ -74,6 +78,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the total supply of this token in fractions.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the total supply.
      * @throws IOException                   if there was a problem fetching information from the
@@ -90,6 +96,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the number of fractions that one unit of this token can be divided into.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the the number of fractions.
      * @throws IOException                   if there was a problem fetching information from the
