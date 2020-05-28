@@ -27,6 +27,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Can be used for invoking smart contracts on the Neo blockchain. An invocation is configured with
+ * the <tt>Invocation.Builder</tt>, which checks if the configuration is correct.
+ */
 public class Invocation {
 
     private Transaction transaction;
@@ -40,13 +44,13 @@ public class Invocation {
     }
 
     /**
-     * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
-     * <p>
-     * Before sending, make sure to sign the transaction by calling {@link Invocation#sign()} or by
-     * adding signatures manually with {@link Invocation#addWitnesses(Witness...)}.
+     * Sends this invocation transaction to the neo-node via the `sendrawtransaction` RPC.
      *
      * @return the Neo node's response.
-     * @throws IOException if a problem in communicating with the Neo node occurs.
+     * @throws IOException                      if a problem in communicating with the Neo node
+     *                                          occurs.
+     * @throws InvocationConfigurationException if signatures are missing for one or more cosigners
+     *                                          of the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
         // TODO 14.05.20 claude: Consider checking for sufficient witnesses.
@@ -59,7 +63,8 @@ public class Invocation {
      * Creates signatures for every cosigner of the invocation transaction and adds them to the
      * transaction as witnesses.
      * <p>
-     * For each cosigner set on the transaction corresponding account must exist in the wallet.
+     * For each cosigner set on the transaction a corresponding account with an EC key pair must
+     * exist in the wallet set on the builder.
      *
      * @return this.
      */
@@ -114,7 +119,7 @@ public class Invocation {
     }
 
     /**
-     * Gets the invocation transaction in a format for signing.
+     * Gets the invocation transaction for signing it.
      *
      * @return the transaction data ready for creating a signature.
      */
@@ -124,6 +129,8 @@ public class Invocation {
 
     /**
      * Gets the invocation transaction.
+     *
+     * @return the transaction.
      */
     public Transaction getTransaction() {
         return this.transaction;
@@ -133,7 +140,7 @@ public class Invocation {
      * Adds the given witnesses to the invocation transaction.
      * <p>
      * Use this method if you can't use the automatic signing method {@link Invocation#sign()},
-     * e.g., because one of the cosigners is a multi-signature account.
+     * e.g., because the configured wallet does not contain all accounts needed for signing.
      *
      * @param witnesses The witnesses to add.
      */
@@ -166,8 +173,11 @@ public class Invocation {
         }
 
         /**
-         * @param parameters
-         * @return
+         * Configures the invocation with the given parameters. (Optional, depending on the invoked
+         * function)
+         *
+         * @param parameters The contract parameters.
+         * @return this.
          */
         public InvocationBuilder withParameters(ContractParameter... parameters) {
             this.parameters.addAll(Arrays.asList(parameters));
@@ -175,8 +185,10 @@ public class Invocation {
         }
 
         /**
-         * @param attributes
-         * @return
+         * Configures the invocation with the given attributes. (Optional)
+         *
+         * @param attributes The attributes.
+         * @return this.
          */
         public InvocationBuilder withAttributes(TransactionAttribute... attributes) {
             this.txBuilder.attributes(attributes);
@@ -184,8 +196,13 @@ public class Invocation {
         }
 
         /**
-         * @param blockNr
-         * @return
+         * Configures the invocation such that it is valid until the given block number. (Optional)
+         * <p>
+         * By default it is set to the maximum.
+         *
+         * @param blockNr The black number
+         * @return this.
+         * @see Transaction.Builder#validUntilBlock(long)
          */
         public InvocationBuilder validUntilBlock(long blockNr) {
             this.txBuilder.validUntilBlock(blockNr);
@@ -193,8 +210,13 @@ public class Invocation {
         }
 
         /**
-         * @param nonce
-         * @return
+         * Configures the invocation with the given nonce. (Optional)
+         * <p>
+         * By default the nonce is set to a random value.
+         *
+         * @param nonce The nonce.
+         * @return this.
+         * @see Transaction.Builder#nonce(Long)
          */
         public InvocationBuilder withNonce(long nonce) {
             this.txBuilder.nonce(nonce);
@@ -202,22 +224,37 @@ public class Invocation {
         }
 
         /**
-         * @param fee
-         * @return
+         * Configures the invocation with an additional network fee. (Optional)
+         * <p>
+         * The basic network fee required to send this invocation is added automatically.
+         *
+         * @param fee The additional network fee.
+         * @return this.
          */
         public InvocationBuilder withAdditionalNetworkFee(long fee) {
             this.additionalNetworkFee = fee;
             return this;
         }
 
+        /**
+         * Configures the invocation to use the given wallet. (Mandatory)
+         * <p>
+         * The wallet's default account is used as the transaction sender if no sender is specified
+         * explicitly.
+         *
+         * @param wallet The wallet.
+         * @return this.
+         */
         public InvocationBuilder withWallet(Wallet wallet) {
             this.wallet = wallet;
             return this;
         }
 
         /**
-         * @param sender
-         * @return
+         * Configures the invocation to use the given sender. (Optional)
+         *
+         * @param sender the sender account's script hash.
+         * @return this.
          */
         public InvocationBuilder withSender(ScriptHash sender) {
             txBuilder.sender(sender);
@@ -225,8 +262,8 @@ public class Invocation {
         }
 
         /**
-         * Sets the invocation up so that it fails (NeoVM exits with state FAULT) if the return
-         * value of the invocation is "False".
+         * Configures the invocation such that it fails (NeoVM exits with state FAULT) if the return
+         * value of the invocation is "False". (Optional)
          *
          * @return this
          */
@@ -236,8 +273,11 @@ public class Invocation {
         }
 
         /**
-         * @return
-         * @throws IOException
+         * Sends the invocation in its current configuration in an `incokefunction` call to
+         * the neo-node. I.e., no changes are made to the blockchain state.
+         *
+         * @return the call's response.
+         * @throws IOException if something goes wrong when communicating with the neo-node.
          */
         public NeoInvokeFunction call() throws IOException {
             // This list is required for `invokescript` calls that will hit ChecekWitness checks
@@ -265,6 +305,13 @@ public class Invocation {
             return signersSet.toArray(new String[]{});
         }
 
+        /**
+         * Builds the invocation, enforces correct configuration, fetches the system fee and
+         * calculates the network fee.
+         *
+         * @return the <tt>Invocation</tt> transaction ready for signing and sending.
+         * @throws IOException if something goes wrong when communicating with the neo-node.
+         */
         public Invocation build() throws IOException {
             if (this.wallet == null) {
                 throw new InvocationConfigurationException("Cannot create an invocation without a "
