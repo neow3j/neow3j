@@ -46,7 +46,7 @@ public class WIFTest {
     @Test
     public void privateKeyToWif() {
         final String privateKey = "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3";
-        String result = WIF.getWIFFromPublicKey(Numeric.hexStringToByteArray(privateKey));
+        String result = WIF.getWIFFromPrivateKey(Numeric.hexStringToByteArray(privateKey));
         String expected = "L25kgAQJXNHnhc7Sx9bomxxwVSMsZdkaNQ3m2VfHrnLzKWMLP13A";
         assertThat(result, is(expected));
     }
@@ -54,6 +54,6 @@ public class WIFTest {
     @Test(expected = IllegalArgumentException.class)
     public void failUsingWrongSizePrivateKey() {
         final String privateKey = "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3";
-        WIF.getWIFFromPublicKey(Numeric.hexStringToByteArray(privateKey));
+        WIF.getWIFFromPrivateKey(Numeric.hexStringToByteArray(privateKey));
     }
 }
