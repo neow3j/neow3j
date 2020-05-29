@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-public class ContractTestUtils {
+public class ContractTestHelper {
 
     public static final String CONTRACT_1_REL_PATH = "./test/resources/contracts/contract_1.py";
     // Script hash of contract_1 in big-endian format.
@@ -87,7 +87,7 @@ public class ContractTestUtils {
     }
 
     public static String loadFile(String fileName) throws IOException {
-        String absFileName = ContractTestUtils.class.getResource(fileName).getFile();
+        String absFileName = ContractTestHelper.class.getResource(fileName).getFile();
         FileInputStream inStream = new FileInputStream(new File(absFileName));
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
                 .reduce((a, b) -> a + b).get();

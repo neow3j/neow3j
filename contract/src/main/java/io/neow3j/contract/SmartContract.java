@@ -8,14 +8,20 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
 import java.math.BigInteger;
 
+/**
+ * Represents a smart contract on the Neo blockchain and provides methods to invoke it.
+ */
 public class SmartContract {
 
     protected ScriptHash scriptHash;
     protected Neow3j neow;
 
     /**
-     * @param scriptHash
-     * @param neow
+     * Constructs a <tt>SmartContract</tt> representing the smart contract with the given script
+     * hash. Uses the given {@link Neow3j} instance for all invocations.
+     *
+     * @param scriptHash The smart contract's script hash.
+     * @param neow       The {@link Neow3j} instance to use for invocations.
      */
     public SmartContract(ScriptHash scriptHash, Neow3j neow) {
         if (scriptHash == null) {

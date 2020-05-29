@@ -34,7 +34,7 @@ public class WIF {
         return privateKey;
     }
 
-    public static String getWIFFromPublicKey(byte[] key) {
+    public static String getWIFFromPrivateKey(byte[] key) {
         if (key.length != NeoConstants.PRIVATE_KEY_SIZE) {
             throw new IllegalArgumentException("Given key is not of expected length ("
                     + NeoConstants.PRIVATE_KEY_SIZE + " bytes).");
