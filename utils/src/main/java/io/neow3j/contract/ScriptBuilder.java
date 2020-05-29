@@ -113,6 +113,7 @@ public class ScriptBuilder {
         switch (param.getParamType()) {
             case BYTE_ARRAY:
             case SIGNATURE:
+            case PUBLIC_KEY:
                 pushData((byte[]) value);
                 break;
             case BOOLEAN:
@@ -131,8 +132,6 @@ public class ScriptBuilder {
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
-            case PUBLIC_KEY:
-                // TODO 10.07.19 claude: Implement public key push operation.
             default:
                 throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
                         "' not supported.");
