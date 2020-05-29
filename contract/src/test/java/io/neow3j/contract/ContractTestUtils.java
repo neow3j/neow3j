@@ -19,6 +19,24 @@ public class ContractTestUtils {
     // Script hash of contract_1 in big-endian format.
     public static final String CONTRACT_1_SCRIPT_HASH = "12aa18b1dfc127d34087de01c5db334f3274d77a";
 
+    public static void setUpWireMockForCall(String call, String responseFile, String... params)
+            throws IOException {
+
+        String responseBody = loadFile("/responses/" + responseFile);
+
+        StringBuilder regexPattern = new StringBuilder()
+                .append(".*\"method\":\"").append(call).append("\".*")
+                .append(".*\"params\":.*");
+        for (String param : params) {
+            regexPattern.append(".*").append(param).append(".*");
+        }
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(regexPattern.toString()))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+    }
+
     public static void setUpWireMockForGetBlockCount(long blockCount) throws IOException {
         String responseBody = loadFile("/responses/getblockcount_" + blockCount + ".json");
 

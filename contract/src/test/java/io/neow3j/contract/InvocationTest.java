@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -20,6 +21,7 @@ import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Witness;
@@ -487,5 +489,65 @@ public class InvocationTest {
         assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
                 is(expectedVerificationScript));
         assertArrayEquals(expectedTx, i.getTransaction().toArray());
+    }
+
+    @Test
+    public void callWithParams() throws IOException {
+        ContractTestUtils.setUpWireMockForCall("invokefunction",
+                "invokefunction_transfer_neo.json",
+                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "transfer",
+                "\"type\":\"Hash160\",\"value\":\"969a77db482f74ce27105f760efa139223431394\"",
+                "\"type\":\"Hash160\",\"value\":\"df133e846b1110843ac357fc8bbf05b4a32e17c8\"",
+                "\"type\":\"Integer\",\"value\":\"5\"",
+                "[\"969a77db482f74ce27105f760efa139223431394\"]"
+                );
+
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(sender).build();
+        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        NeoInvokeFunction i = new InvocationBuilder(neow, neo, "transfer")
+                .withWallet(w)
+                .withParameters(
+                        ContractParameter.hash160(sender.getScriptHash()),
+                        ContractParameter.hash160(receiver),
+                        ContractParameter.integer(5))
+                .failOnFalse()
+                .call();
+
+        assertTrue(i.getResult().getStack().get(0).asBoolean().getValue());
+        String expectedScript =
+                "150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238";
+        assertThat(i.getResult().getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void callWithoutParams() throws IOException {
+        ContractTestUtils.setUpWireMockForCall("invokefunction",
+                "invokefunction_name.json",
+                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "name",
+                "[\"969a77db482f74ce27105f760efa139223431394\"]"
+        );
+
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(sender).build();
+        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+
+        NeoInvokeFunction i = new InvocationBuilder(neow, neo, "name")
+                .withWallet(w)
+                .failOnFalse()
+                .call();
+
+        assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), is("NEO"));
+        String expectedScript =
+                "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
+        assertThat(i.getResult().getScript(), is(expectedScript));
     }
 }
