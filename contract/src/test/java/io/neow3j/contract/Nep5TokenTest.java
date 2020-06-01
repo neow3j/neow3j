@@ -15,6 +15,7 @@ import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -130,5 +131,33 @@ public class Nep5TokenTest {
         Wallet w = new Wallet.Builder().accounts(a1, a2).build();
         Nep5Token token = new Nep5Token(GasToken.SCRIPT_HASH, this.neow);
         assertThat(token.getBalanceOf(w), is(new BigInteger("411285799730")));
+    }
+
+    @Test(expected = InsufficientFundsException.class)
+    public void failTransferringGasBecauseOfInsufficientBalance() throws Exception {
+        ContractTestHelper.setUpWireMockForSendRawTransaction();
+        // Required for fetching of system fee of the invocation.
+        ContractTestHelper.setUpWireMockForInvokeFunction(
+                "transfer", "invokefunction_transfer_gas.json");
+        // Required for fetching the token's decimals.
+        ContractTestHelper.setUpWireMockForInvokeFunction(
+                "decimals", "invokefunction_decimals_gas.json");
+        // Required for fetching the block height used for setting the validUntilBlock.
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+        // Required for checking the senders token balance.
+        ContractTestHelper.setUpWireMockForCall("invokefunction",
+                "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
+                "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b",
+                "balanceOf",
+                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        Nep5Token gas = new Nep5Token(GasToken.SCRIPT_HASH, this.neow);
+        byte[] privateKey = Numeric.hexStringToByteArray(
+                "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
+        Account a = Account.fromECKeyPair(ECKeyPair.create(privateKey))
+                .isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(a).build();
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        Invocation i = gas.buildTransferInvocation(w, receiver, new BigDecimal("4"));
     }
 }
