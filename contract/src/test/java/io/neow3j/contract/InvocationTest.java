@@ -1,6 +1,6 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractTestUtils.CONTRACT_1_SCRIPT_HASH;
+import static io.neow3j.contract.ContractTestHelper.CONTRACT_1_SCRIPT_HASH;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -19,6 +19,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.crypto.WIF;
+import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Cosigner;
@@ -63,9 +64,9 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         // This is needed because the builder should fetch the current block number.
-        ContractTestUtils.setUpWireMockForGetBlockCount(1000);
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .build();
@@ -79,7 +80,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .validUntilBlock(1000)
@@ -104,7 +105,7 @@ public class InvocationTest {
         ScriptHash neoToken = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, neoToken, method)
                 .withWallet(wallet)
                 .validUntilBlock(1000)
@@ -128,7 +129,7 @@ public class InvocationTest {
         String method = "name";
         long additionalFee = 100_000_000; // Additional fee of 1 GAS.
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .validUntilBlock(1000)
@@ -157,7 +158,7 @@ public class InvocationTest {
         Wallet wallet = new Wallet.Builder().accounts(multiSigAcc).build();
         long additionalFee = 100_000_000;
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .validUntilBlock(1000)
@@ -184,7 +185,7 @@ public class InvocationTest {
     public void failTryingToSignInvocationWithAccountMissingAPrivateKey() throws Exception {
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
         ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
@@ -205,7 +206,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .validUntilBlock(1000)
@@ -227,7 +228,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withAttributes(cosigner)
@@ -249,7 +250,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withAttributes(Cosigner.calledByEntry(acc.getScriptHash()))
@@ -271,7 +272,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
@@ -298,7 +299,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
@@ -322,7 +323,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Invocation i = new InvocationBuilder(neow, contract, method)
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
@@ -340,7 +341,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
         w.addAccount(cosigner);
@@ -368,7 +369,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
         Invocation i = new InvocationBuilder(neow, contract, method)
@@ -385,7 +386,7 @@ public class InvocationTest {
         ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
         w.addAccount(cosigner);
@@ -398,15 +399,35 @@ public class InvocationTest {
         i.sign();
     }
 
+    @Test(expected = InvocationConfigurationException.class)
+    public void failSendingInvocationBecauseItDoesntContainSignaturesForAllCosigners()
+            throws IOException {
+
+        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
+        Wallet w = Wallet.createWallet();
+        Account cosigner = Account.createAccount();
+        w.addAccount(cosigner);
+        new InvocationBuilder(neow, contract, method)
+                .withWallet(w)
+                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
+                .build()
+                .send();
+    }
+
     @Test
     public void transferNeoWithNormalAccount() throws IOException {
+        NeoConfig.setMagicNumber(new byte[]{0x4e, 0x45, 0x4F, 0x00});
         // Reference transaction created with address version 0x17. The signature produced by
         // neo-core was replaced by the signature created by neow3j because neo-core doesn't
         // produce deterministic signatures.
         byte[] expectedTx = Numeric.hexStringToByteArray(
                 "00c0f5586b941343239213fa0e765f1027ce742f48db779a96c272890000000000064b1300000000003f2720000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c408283bd3ef1d925c135fc44cb87e7213920fdff7bcf98d76718729937b07217df306806927173a86a0136b386aa306f3aa70cfc0658a238c9855806e226892059290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
         // Required for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction("transfer",
+        ContractTestHelper.setUpWireMockForInvokeFunction("transfer",
                 "invokefunction_transfer_neo.json");
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
@@ -444,13 +465,14 @@ public class InvocationTest {
 
     @Test
     public void transferNeoWithMutliSigAccount() throws IOException {
+        NeoConfig.setMagicNumber(new byte[]{0x4e, 0x45, 0x4F, 0x00});
         // Reference transaction created with address version 0x17. The signature produced by
         // neo-core was replaced by the signature created by neow3j because neo-core doesn't
         // produce deterministic signatures.
         byte[] expectedTx = Numeric.hexStringToByteArray(
                 "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c406fded85ee546f0283e4dfd8c70c4d514139b0516de6d8a2d569b73e6da8468c21c2e8c18a1d3c8a7d5160960cf89d48fc433df7ddafb602f716ca11043eccb8e2b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
         // Required for fetching the system fee.
-        ContractTestUtils.setUpWireMockForInvokeFunction("transfer",
+        ContractTestHelper.setUpWireMockForInvokeFunction("transfer",
                 "invokefunction_transfer_neo.json");
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";

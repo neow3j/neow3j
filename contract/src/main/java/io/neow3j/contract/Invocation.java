@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Can be used for invoking smart contracts on the Neo blockchain. An invocation is configured with
@@ -55,10 +56,15 @@ public class Invocation {
      *                                          of the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
-        // TODO 14.05.20 claude: Consider checking for sufficient witnesses.
-        String hex = Numeric.toHexStringNoPrefix(transaction.toArray());
-        NeoSendRawTransaction response = neow.sendRawTransaction(hex).send();
-        return response;
+        Stream<Witness> witnesses = this.transaction.getWitnesses().stream();
+        for (Cosigner cosigner : this.transaction.getCosigners()) {
+            if (witnesses.noneMatch(w -> w.getScriptHash().equals(cosigner.getScriptHash()))) {
+                throw new InvocationConfigurationException("The transaction does not have a "
+                        + "signature for each of its cosigners.");
+            }
+        }
+        String hex = Numeric.toHexStringNoPrefix(this.transaction.toArray());
+        return neow.sendRawTransaction(hex).send();
     }
 
     /**

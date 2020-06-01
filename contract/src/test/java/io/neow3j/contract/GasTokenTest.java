@@ -2,14 +2,12 @@ package io.neow3j.contract;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -42,10 +40,4 @@ public class GasTokenTest {
         assertThat(new GasToken(neow).getDecimals(), is(8));
     }
 
-    @Ignore("The GasToken function `getSysFeeAmount` was not yet supported by the neo-node at the"
-            + " time of writing.")
-    @Test
-    public void getSysFeeAmount() {
-        fail();
-    }
 }

@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
@@ -12,10 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * Represents a NEP-5 token contract.
- * <p>
- * The first time that the getters are used, RPC calls need to be made to fetch the information from
- * a Neo node.
+ * Represents a NEP-5 token contract and provides methods to invoke it.
  */
 public class Nep5Token extends SmartContract {
 
@@ -33,12 +29,21 @@ public class Nep5Token extends SmartContract {
     private Integer decimals;
     private String symbol;
 
+    /**
+     * Constructs a new <tt>Nep5Token</tt> representing the token contract with the given script
+     * hash. Uses the given {@link Neow3j} instance for all invocations.
+     *
+     * @param scriptHash The token contract's script hash
+     * @param neow       The {@link Neow3j} instance to use for invocations.
+     */
     public Nep5Token(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 
     /**
      * Gets the name of this token.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the name.
      * @throws IOException                   if there was a problem fetching information from the
@@ -55,6 +60,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the symbol of this token.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the symbol.
      * @throws IOException                   if there was a problem fetching information from the
@@ -71,6 +78,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the total supply of this token in fractions.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the total supply.
      * @throws IOException                   if there was a problem fetching information from the
@@ -87,6 +96,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the number of fractions that one unit of this token can be divided into.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the the number of fractions.
      * @throws IOException                   if there was a problem fetching information from the
@@ -159,35 +170,26 @@ public class Nep5Token extends SmartContract {
      * @param to     The script hash of the receiver.
      * @param amount The amount to transfer as a decimal number (not token fractions).
      * @return The transaction id.
-     * @throws ErrorResponseException
-     * @throws IOException            if there was a problem fetching information from the Neo
-     *                                node.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public String transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
-            throws ErrorResponseException, IOException {
+    public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
+            throws IOException {
 
-        Invocation invocation = buildTransferInvocation(wallet, to, amount);
-
-        NeoSendRawTransaction response = invocation.send();
-        response.throwOnError();
-        return response.getResult().getHash();
+        return buildTransferInvocation(wallet, to, amount).send();
     }
 
+    // Method extracted for testability.
     Invocation buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
 
         Account acc = wallet.getDefaultAccount();
         BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
         BigInteger fractions = amount.multiply(factor).toBigInteger();
-        // TODO: As long as the specified amount is not fully covered, go through the accounts
-        //  available in the wallet and use their tokens.
         BigInteger accBalance = getBalanceOf(acc.getScriptHash());
         if (accBalance.compareTo(fractions) < 0) {
-            throw new InsufficientFundsException(
-                    "The wallet's default account does not hold enough "
-                            + "tokens. Transfer amount is " + fractions.toString()
-                            + " but account only "
-                            + "holds " + accBalance.toString() + " (in token fractions).");
+            throw new InsufficientFundsException("The wallet's default account does not hold enough"
+                    + " tokens. Transfer amount is " + fractions.toString() + " but account"
+                    + " only holds " + accBalance.toString() + " (in token fractions).");
         }
         return invoke(NEP5_TRANSFER)
                 .withWallet(wallet)
