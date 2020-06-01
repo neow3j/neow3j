@@ -4,6 +4,7 @@ import static io.neow3j.contract.ContractTestHelper.CONTRACT_1_SCRIPT_HASH;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +24,7 @@ import io.neow3j.crypto.WIF;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Witness;
@@ -37,11 +39,15 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class InvocationTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule();
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Neow3j neow;
 
@@ -183,21 +189,46 @@ public class InvocationTest {
                 is(sizeFee + verificationFee + additionalFee));
     }
 
-    @Test(expected = InvocationConfigurationException.class)
+    @Test
     public void failTryingToSignInvocationWithAccountMissingAPrivateKey() throws Exception {
+        String method = "name";
+        // This is needed because the builder will invoke the contract for fetching the system fee.
+        ContractTestHelper.setUpWireMockForCall("invokefunction", "invokefunction_name.json",
+                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "name");
+        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        Wallet w = Wallet.createWallet("neo");
+        Invocation i = new InvocationBuilder(neow, neo, method)
+                .withSender(w.getAccounts().get(0).getScriptHash())
+                .withWallet(w)
+                .validUntilBlock(1000)
+                .build();
+
+        exceptionRule.expect(InvocationConfigurationException.class);
+        i.sign();
+    }
+
+    @Test
+    public void failTryingToSignInvocationWithMultiSigAccountMissingAPrivateKey() throws Exception {
         String method = "name";
         // This is needed because the builder will invoke the contract for fetching the system fee.
         ContractTestHelper.setUpWireMockForInvokeFunction(method, "invokefunction_name.json");
         ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        ECKeyPair keyPair1 = ECKeyPair.createEcKeyPair();
-        ECKeyPair keyPair2 = ECKeyPair.createEcKeyPair();
-        List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey());
+        Wallet w = Wallet.createWallet();
+        Account a2 = Account.createAccount();
+        List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
+                a2.getECKeyPair().getPublicKey());
         Account multiSigAcc = Account.fromMultiSigKeys(keys, 2).build();
-        new InvocationBuilder(neow, sh, method)
+        w.addAccount(a2);
+        w.addAccount(multiSigAcc);
+        a2.encryptPrivateKey("neo");
+        Invocation i = new InvocationBuilder(neow, sh, method)
+                .withWallet(w)
                 .withSender(multiSigAcc.getScriptHash())
                 .validUntilBlock(1000)
-                .build()
-                .sign();
+                .build();
+
+        exceptionRule.expect(InvocationConfigurationException.class);
+        i.sign();
     }
 
     @Test
@@ -421,6 +452,48 @@ public class InvocationTest {
     }
 
     @Test
+    public void sendingInvocation() throws IOException {
+
+        ContractTestHelper.setUpWireMockForCall("invokefunction",
+                "invokefunction_transfer_neo.json",
+                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "transfer",
+                "\"type\":\"Hash160\",\"value\":\"969a77db482f74ce27105f760efa139223431394\"",
+                "\"type\":\"Hash160\",\"value\":\"df133e846b1110843ac357fc8bbf05b4a32e17c8\"",
+                "\"type\":\"Integer\",\"value\":\"5\"",
+                "[\"969a77db482f74ce27105f760efa139223431394\"]"
+        );
+        ContractTestHelper.setUpWireMockForCall("sendrawtransaction",
+                "sendrawtransaction.json",
+                // verification script, part of the transaction hex.
+                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75"
+        );
+        ContractTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(sender).build();
+        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        NeoSendRawTransaction i = new InvocationBuilder(neow, neo, "transfer")
+                .withWallet(w)
+                .withParameters(
+                        ContractParameter.hash160(sender.getScriptHash()),
+                        ContractParameter.hash160(receiver),
+                        ContractParameter.integer(5))
+                .build()
+                .sign()
+                .send();
+
+        assertThat(i.getError(), nullValue());
+        // This is not the actual transaction id of the above built transaction but merely the
+        // one used in the file `responses/sendrawtransaction.json`.
+        assertThat(i.getSendRawTransaction().getHash(), is(
+                "0x830816f0c801bcabf919dfa1a90d7b9a4f867482cb4d18d0631a5aa6daefab6a"));
+    }
+
+    @Test
     public void transferNeoWithNormalAccount() throws IOException {
         NeoConfig.setMagicNumber(new byte[]{0x4e, 0x45, 0x4F, 0x00});
         // Reference transaction created with address version 0x17. The signature produced by
@@ -523,7 +596,7 @@ public class InvocationTest {
                 "\"type\":\"Hash160\",\"value\":\"df133e846b1110843ac357fc8bbf05b4a32e17c8\"",
                 "\"type\":\"Integer\",\"value\":\"5\"",
                 "[\"969a77db482f74ce27105f760efa139223431394\"]"
-                );
+        );
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
