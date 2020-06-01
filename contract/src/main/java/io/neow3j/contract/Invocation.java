@@ -20,7 +20,6 @@ import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
-import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -158,6 +157,20 @@ public class Invocation {
         }
     }
 
+    /**
+     * Checks if the sender account of this invocation can cover the network and system fees.
+     *
+     * @return true if the sender can cover the GAS fees.
+     * @throws IOException if something goes wrong in the communication with the neo-node.
+     */
+    public boolean canSenderCoverFees() throws IOException {
+        BigInteger fees = BigInteger.valueOf(
+                this.transaction.getSystemFee() + this.transaction.getNetworkFee());
+        BigInteger senderGasBalance = new GasToken(this.neow)
+                .getBalanceOf(this.transaction.getSender());
+        return fees.compareTo(senderGasBalance) < 0;
+    }
+
     public static class InvocationBuilder {
 
         private String function;
@@ -281,8 +294,8 @@ public class Invocation {
         }
 
         /**
-         * Sends the invocation in its current configuration in an `incokefunction` call to
-         * the neo-node. I.e., no changes are made to the blockchain state.
+         * Sends the invocation in its current configuration in an `incokefunction` call to the
+         * neo-node. I.e., no changes are made to the blockchain state.
          *
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
@@ -344,15 +357,6 @@ public class Invocation {
             this.txBuilder.script(createScript());
             this.txBuilder.systemFee(fetchSystemFee());
             this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
-            BigInteger fees = BigInteger.valueOf(
-                    this.txBuilder.getSystemFee() + this.txBuilder.getNetworkFee());
-            BigInteger senderGasBalance = new GasToken(this.neow)
-                    .getBalanceOf(this.txBuilder.getSender());
-            if (fees.compareTo(senderGasBalance) > 0) {
-                throw new InsufficientFundsException("The sender account does not have enough GAS"
-                        + " to do the invocation. Balance is " + senderGasBalance.toString() + ","
-                        + " but invocation requires " + fees.toString() +".");
-            }
             this.tx = this.txBuilder.build();
             return new Invocation(this);
         }
