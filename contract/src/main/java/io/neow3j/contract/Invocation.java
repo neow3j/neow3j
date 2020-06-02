@@ -300,36 +300,37 @@ public class Invocation {
         }
 
         /**
-         * Sends the invocation in its current configuration in an `incokefunction` call to the
-         * neo-node. I.e., no changes are made to the blockchain state.
+         * Makes an <tt>invokefunction</tt> call to the neo-node with the invocation in its current
+         * configuration. No changes are made to the blockchain state.
+         * <p>
+         * Make sure to add all necessary cosigners to the builder before making this call. They
+         * are required for a successful <tt>invokefunction</tt> call.
          *
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
          */
         public NeoInvokeFunction call() throws IOException {
-            // This list is required for `invokescript` calls that will hit ChecekWitness checks
-            // in the smart contract.
-            String[] signers = getSigners();
+            // The list of signers is required for `invokefunction` calls that will hit
+            // a ChecekWitness check in the smart contract. We add the signers even if that is
+            // not the case. We cannot know if the invoked function needs it or not and it doesn't
+            // lead to failures if we add them.
+            Set<String> signerSet = this.txBuilder.getCosigners().stream()
+                    .map(c -> c.getScriptHash().toString())
+                    .collect(Collectors.toSet());
+            if (this.txBuilder.getSender() != null) {
+                // If the sender account is not in the cosigners then add it here.
+                signerSet.add(this.txBuilder.getSender().toString());
+            } else if (wallet != null){
+                // If the sender is not set, then take the default account form the wallet
+                signerSet.add(this.wallet.getDefaultAccount().getScriptHash().toString());
+            }
+            String[] signers = signerSet.toArray(new String[]{});
             if (this.parameters.isEmpty()) {
                 return neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
                         .send();
             }
             return neow.invokeFunction(scriptHash.toString(), this.function, this.parameters,
                     signers).send();
-        }
-
-        /*
-         * Get scripthashes of all cosigners. If cosigners have not yet been set explicitely
-         * this method adds the sender scripthash to the set.
-         */
-        private String[] getSigners() {
-            Set<String> signersSet = this.txBuilder.getCosigners().stream()
-                    .map(c -> c.getScriptHash().toString())
-                    .collect(Collectors.toSet());
-            if (this.txBuilder.getSender() != null) {
-                signersSet.add(this.txBuilder.getSender().toString());
-            }
-            return signersSet.toArray(new String[]{});
         }
 
         /**
@@ -390,9 +391,10 @@ public class Invocation {
          * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
          */
         private long fetchSystemFee() throws IOException {
-            // The signers are required for `invokescript` calls that will hit ChecekWitness checks
-            // in the smart contract.
-            String[] signers = getSigners();
+            // The signers are required for `invokescript` calls that will hit a ChecekWitness
+            // check in the smart contract.
+            String[] signers = this.txBuilder.getCosigners().stream()
+                    .map(c -> c.getScriptHash().toString()).toArray(String[]::new);
             NeoInvokeFunction response;
             if (this.parameters.isEmpty()) {
                 response = neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
@@ -486,6 +488,6 @@ public class Invocation {
                     + OpCode.PUSHNULL.getPrice()
                     + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getPrice(n);
         }
-
     }
+
 }

@@ -19,7 +19,6 @@ public class ContractTestHelper {
     // Script hash of contract_1 in big-endian format.
     public static final String CONTRACT_1_SCRIPT_HASH = "12aa18b1dfc127d34087de01c5db334f3274d77a";
 
-
     public static void setUpWireMockForCall(String call, String responseFile, String... params)
             throws IOException {
 
@@ -29,7 +28,7 @@ public class ContractTestHelper {
                 .append(".*\"method\":\"").append(call).append("\".*")
                 .append(".*\"params\":.*");
         for (String param : params) {
-            regexPattern.append(".*\"").append(param).append("\".*");
+            regexPattern.append(".*").append(param).append(".*");
         }
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(regexPattern.toString()))

@@ -189,9 +189,8 @@ public class Account {
 
     public boolean isMultiSig() {
         if (this.verificationScript == null) {
-            throw new AccountStateException(
-                    "This account does not have a verification script, which is "
-                            + "needed to determine if it is a multi-sig account.");
+            throw new AccountStateException("The account with script hash " + this.getScriptHash() +
+                    " does not have a verification script.");
         }
         return this.verificationScript.isMultiSigScript();
     }
