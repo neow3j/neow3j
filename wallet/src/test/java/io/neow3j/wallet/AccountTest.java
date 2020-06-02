@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -35,11 +36,16 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class AccountTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void testCreateGenericAccount() {
@@ -59,6 +65,8 @@ public class AccountTest {
     public void testFromNewECKeyPair() {
         Account a = Account.fromNewECKeyPair()
                 .isDefault()
+                .label("example")
+                .isLocked()
                 .build();
 
         assertThat(a, notNullValue());
@@ -66,10 +74,10 @@ public class AccountTest {
         assertThat(a.getVerificationScript(), notNullValue());
         assertThat(a.getECKeyPair(), notNullValue());
         assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
-        assertThat(a.getLabel(), notNullValue());
+        assertThat(a.getLabel(), is("example"));
         assertThat(a.getECKeyPair(), notNullValue());
-        assertThat(a.isDefault(), is(true));
-        assertThat(a.isLocked(), is(false));
+        assertTrue(a.isDefault());
+        assertTrue(a.isLocked());
     }
 
     @Test
@@ -122,9 +130,10 @@ public class AccountTest {
         assertThat(a.getEncryptedPrivateKey(), is(expectedNep2Encrypted));
     }
 
-    @Test(expected = AccountStateException.class)
+    @Test
     public void failEncryptAccountWithoutPrivateKey() throws CipherException {
         Account a = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").build();
+        expectedException.expect(AccountStateException.class);
         a.encryptPrivateKey("pwd");
     }
 
@@ -142,6 +151,17 @@ public class AccountTest {
         Account a = Account.fromNEP6Account(nep6Acct).build();
         a.decryptPrivateKey(password);
         assertThat(a.getECKeyPair().getPrivateKey(), is(privateKey));
+        a.decryptPrivateKey(password); // This shouldn't do or change anything.
+        assertThat(a.getECKeyPair().getPrivateKey(), is(privateKey));
+    }
+
+    @Test
+    public void failDecryptingAccountWithoutDecryptedPrivateKey()
+            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+
+        Account a = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").build();
+        expectedException.expect(AccountStateException.class);
+        a.decryptPrivateKey("neo");
     }
 
     @Test
@@ -161,7 +181,46 @@ public class AccountTest {
     }
 
     @Test
-    public void toNep6AccountWithMultiSigAccount() throws URISyntaxException, IOException {
+    public void toNep6AccountWithOnlyAnAddress() {
+        Account a = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").build();
+        NEP6Account nep6 = a.toNEP6Account();
+
+        assertThat(nep6.getContract(), nullValue());
+        assertFalse(nep6.getDefault());
+        assertFalse(nep6.getLock());
+        assertThat(nep6.getAddress(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(nep6.getLabel(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(nep6.getKey(), is(nullValue()));
+    }
+
+    @Test
+    public void toNep6AccountWithUnencryptedPrivateKey() {
+        String wif = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
+        Account a = Account.fromWIF(wif).build();
+        expectedException.expect(AccountStateException.class);
+        expectedException.expectMessage(new StringContains("private key"));
+        a.toNEP6Account();
+    }
+
+    @Test
+    public void toNep6AccountWithEncryptedPrivateKey() throws CipherException {
+        String wif = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
+        Account a = Account.fromWIF(wif).build();
+        a.encryptPrivateKey("neo");
+        NEP6Account nep6 = a.toNEP6Account();
+
+        String expectedScript = Base64.encode(Numeric.hexStringToByteArray(
+                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75"));
+        assertThat(nep6.getContract().getScript(), is(expectedScript));
+        assertThat(nep6.getKey(), is("6PYV39zSDnpCb9ecybeL3z6XrLTpKy1AugUGd6DYFFNELHv9aLj6M7KGD2"));
+        assertFalse(nep6.getDefault());
+        assertFalse(nep6.getLock());
+        assertThat(nep6.getAddress(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(nep6.getLabel(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+    }
+
+    @Test
+    public void toNep6AccountWithMultiSigAccount() {
         String publicKey = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
         ECPublicKey key = new ECPublicKey(Numeric.hexStringToByteArray(publicKey));
         Account a = Account.fromMultiSigKeys(Arrays.asList(key), 1).build();
@@ -181,8 +240,7 @@ public class AccountTest {
     }
 
     @Test
-    public void createAccountFromWIF()
-            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+    public void createAccountFromWIF() {
         String wif = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
         Account a = Account.fromWIF(wif).build();
         byte[] expectedPrivKey = Numeric.hexStringToByteArray(
@@ -234,4 +292,11 @@ public class AccountTest {
                 new BigInteger("5")));
     }
 
+    @Test
+    public void isMultiSig() {
+        Account a = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").isDefault().build();
+        expectedException.expect(AccountStateException.class);
+        expectedException.expectMessage("verification script");
+        a.isMultiSig();
+    }
 }

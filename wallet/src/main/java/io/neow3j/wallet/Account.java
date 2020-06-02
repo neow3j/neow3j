@@ -71,10 +71,6 @@ public class Account {
         return this.keyPair;
     }
 
-    public ECKeyPair getKeyPair() {
-        return this.keyPair;
-    }
-
     public String getLabel() {
         return label;
     }
