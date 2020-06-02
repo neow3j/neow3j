@@ -4,6 +4,7 @@ import io.neow3j.contract.Invocation.InvocationBuilder;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -63,7 +64,7 @@ public class SmartContract {
     public String callFuncReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
 
-        StackItem item = callFunction(function, params);
+        StackItem item = callFunction(function, params).getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.BYTE_STRING)) {
             return item.asByteString().getAsString();
         }
@@ -85,28 +86,25 @@ public class SmartContract {
     public BigInteger callFuncReturningInt(String function, ContractParameter... params)
             throws IOException, UnexpectedReturnTypeException {
 
-        StackItem item = callFunction(function, params);
+        StackItem item = callFunction(function, params).getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue();
-        }
-        if (item.getType().equals(StackItemType.BYTE_STRING)) {
-            return item.asByteString().getAsNumber();
         }
         throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
                 StackItemType.BYTE_STRING);
     }
 
-
-    protected StackItem callFunction(String function, ContractParameter... params)
+    protected NeoInvokeFunction callFunction(String function, ContractParameter... params)
             throws IOException {
 
         if (params.length > 0) {
-            return invoke(function).withParameters(params).call()
-                    .getInvocationResult().getStack().get(0);
+            return invoke(function).withParameters(params).call();
         } else {
-            return invoke(function).call().getInvocationResult().getStack().get(0);
+            return invoke(function).call();
         }
     }
 
-
+    public ScriptHash getScriptHash() {
+        return this.scriptHash;
+    }
 }
