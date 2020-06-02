@@ -29,12 +29,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * // TODO: Update class docs.
- * <p>NEO wallet file management. For reference, refer to
- * <a href="https://github.com/neo-project/proposals/blob/master/nep-6.mediawiki">
- * Wallet Standards (NEP-6)</a> or the
- * <a href="https://github.com/neo-project/proposals/blob/master/nep-2.mediawiki">
- * Passphrase-protected Private Key Standard (NEP-2)</a>.</p>
+ * The wallet manages a collection of accounts. It holds a default account at all times, which is
+ * used, e.g., when doing contract invocations and no account is mentioned specifically.
  */
 public class Wallet {
 
