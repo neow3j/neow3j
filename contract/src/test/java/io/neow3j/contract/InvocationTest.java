@@ -32,6 +32,7 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -645,4 +646,80 @@ public class InvocationTest {
                 "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         assertThat(i.getResult().getScript(), is(expectedScript));
     }
+
+    @Test
+    public void doIfSenderCannotCoverFees() throws IOException {
+        ContractTestHelper.setUpWireMockForCall("invokefunction",
+                "invokefunction_transfer_neo.json",
+                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "transfer"
+        );
+        ContractTestHelper.setUpWireMockForCall("invokefunction",
+                "invokefunction_balanceOf_0.01gas.json",
+                "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b",
+                "balanceOf",
+                "969a77db482f74ce27105f760efa139223431394"
+        );
+
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(sender).build();
+        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        long netFee = 1_264_390L;
+        long sysFee = 9_007_810L;
+        BigInteger expectedFees = BigInteger.valueOf(netFee + sysFee);
+        BigInteger expectedBalance = BigInteger.valueOf(1_000_000L);
+        Invocation i = new InvocationBuilder(neow, neo, "transfer")
+                .withWallet(w)
+                .validUntilBlock(2000000)
+                .withParameters(
+                        ContractParameter.hash160(sender.getScriptHash()),
+                        ContractParameter.hash160(receiver),
+                        ContractParameter.integer(5))
+                .failOnFalse()
+                .build()
+                .doIfSenderCannotCoverFees((fee, balance) -> {
+                    assertThat(fee, is(expectedFees));
+                    assertThat(balance, is(expectedBalance));
+                });
+    }
+
+    @Test
+    public void throwIfSenderCannotCoverFees() throws IOException {
+        ContractTestHelper.setUpWireMockForCall("invokefunction",
+                "invokefunction_transfer_neo.json",
+                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "transfer"
+        );
+        ContractTestHelper.setUpWireMockForCall("invokefunction",
+                "invokefunction_balanceOf_0.01gas.json",
+                "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b",
+                "balanceOf",
+                "969a77db482f74ce27105f760efa139223431394"
+        );
+
+        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
+        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(sender).build();
+        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        Invocation i = new InvocationBuilder(neow, neo, "transfer")
+                .withWallet(w)
+                .validUntilBlock(2000000)
+                .withParameters(
+                        ContractParameter.hash160(sender.getScriptHash()),
+                        ContractParameter.hash160(receiver),
+                        ContractParameter.integer(5))
+                .failOnFalse()
+                .build();
+
+        exceptionRule.expect(IllegalStateException.class);
+        i.throwIfSenderCannotCoverFees(IllegalStateException::new);
+    }
+
 }

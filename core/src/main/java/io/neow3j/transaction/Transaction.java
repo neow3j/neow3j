@@ -87,10 +87,20 @@ public class Transaction extends NeoSerializable {
         return sender;
     }
 
+    /**
+     * Gets the system fee of this transaction.
+     *
+     * @return the system fee in GAS fractions.
+     */
     public long getSystemFee() {
         return systemFee;
     }
 
+    /**
+     * Gets the network fee of this transaction.
+     *
+     * @return the network fee in GAS fractions.
+     */
     public long getNetworkFee() {
         return networkFee;
     }
