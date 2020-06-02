@@ -82,7 +82,7 @@ public class SmartContractTest {
     public void invoke() throws IOException {
         // Required for fetching of system fee of the invocation.
         ContractTestHelper.setUpWireMockForCall("invokefunction",
-                "invokefunction_transfer_gas.json",
+                "invokefunction_transfer_neo.json",
                 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", // NEO script hash
                 "transfer", // method
                 "969a77db482f74ce27105f760efa139223431394", // sender script hash
