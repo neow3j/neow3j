@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -29,6 +28,7 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -513,7 +513,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void canSenderCoverFeesTrue() throws IOException {
+    public void doIfSenderCannotCoverFees() throws IOException {
         ContractTestHelper.setUpWireMockForCall("invokefunction",
                 "invokefunction_transfer_neo.json",
                 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
@@ -531,6 +531,11 @@ public class InvocationTest {
         Wallet w = new Wallet.Builder().accounts(sender).build();
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+
+        long netFee = 1_264_390L;
+        long sysFee = 9_007_810L;
+        BigInteger expectedFees = BigInteger.valueOf(netFee + sysFee);
+        BigInteger expectedBalance = BigInteger.valueOf(1_000_000L);
         Invocation i = new InvocationBuilder(neow, neo, "transfer")
                 .withWallet(w)
                 .validUntilBlock(2000000)
@@ -539,7 +544,10 @@ public class InvocationTest {
                         ContractParameter.hash160(receiver),
                         ContractParameter.integer(5))
                 .failOnFalse()
-                .build();
-        assertFalse(i.canSenderCoverFees());
+                .build()
+                .doIfSenderCannotCoverFees((fee, balance) -> {
+                    assertThat(fee, is(expectedFees));
+                    assertThat(balance, is(expectedBalance));
+                });
     }
 }

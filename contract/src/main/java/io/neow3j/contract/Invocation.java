@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -158,17 +159,22 @@ public class Invocation {
     }
 
     /**
-     * Checks if the sender account of this invocation can cover the network and system fees.
+     * Checks if the sender account of this invocation can cover the network and system fees. If
+     * not, executes the given consumer supplying it with the required fee and the sender's GAS
+     * balance.
      *
-     * @return true if the sender can cover the GAS fees.
+     * @return this.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public boolean canSenderCoverFees() throws IOException {
+    public Invocation doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer) throws IOException {
         BigInteger fees = BigInteger.valueOf(
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
                 .getBalanceOf(this.transaction.getSender());
-        return fees.compareTo(senderGasBalance) < 0;
+        if (fees.compareTo(senderGasBalance) < 0) {
+            consumer.accept(fees, senderGasBalance);
+        }
+        return this;
     }
 
     public static class InvocationBuilder {
