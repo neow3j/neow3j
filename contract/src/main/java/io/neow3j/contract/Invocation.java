@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -166,7 +167,8 @@ public class Invocation {
      * @return this.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public Invocation doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer) throws IOException {
+    public Invocation doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer)
+            throws IOException {
         BigInteger fees = BigInteger.valueOf(
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
@@ -175,6 +177,30 @@ public class Invocation {
             consumer.accept(fees, senderGasBalance);
         }
         return this;
+    }
+
+    /**
+     * Checks if the sender account of this invocation can cover the network and system fees. If
+     * not, otherwise throw an exception created by the provided supplier.
+     *
+     * @return this.
+     * @throws IOException if something goes wrong in the communication with the neo-node.
+     */
+    public <T extends Throwable> Invocation throwIfSenderCannotCoverFees(
+            Supplier<? extends T> exceptionSupplier) throws IOException, T {
+
+        if (!canSenderCoverFees()) {
+            throw exceptionSupplier.get();
+        }
+        return this;
+    }
+
+    private boolean canSenderCoverFees() throws IOException {
+        BigInteger fees = BigInteger.valueOf(
+                this.transaction.getSystemFee() + this.transaction.getNetworkFee());
+        BigInteger senderGasBalance = new GasToken(this.neow)
+                .getBalanceOf(this.transaction.getSender());
+        return fees.compareTo(senderGasBalance) < 0;
     }
 
     public static class InvocationBuilder {
@@ -303,8 +329,8 @@ public class Invocation {
          * Makes an <tt>invokefunction</tt> call to the neo-node with the invocation in its current
          * configuration. No changes are made to the blockchain state.
          * <p>
-         * Make sure to add all necessary cosigners to the builder before making this call. They
-         * are required for a successful <tt>invokefunction</tt> call.
+         * Make sure to add all necessary cosigners to the builder before making this call. They are
+         * required for a successful <tt>invokefunction</tt> call.
          *
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
@@ -320,7 +346,7 @@ public class Invocation {
             if (this.txBuilder.getSender() != null) {
                 // If the sender account is not in the cosigners then add it here.
                 signerSet.add(this.txBuilder.getSender().toString());
-            } else if (wallet != null){
+            } else if (wallet != null) {
                 // If the sender is not set, then take the default account form the wallet
                 signerSet.add(this.wallet.getDefaultAccount().getScriptHash().toString());
             }
