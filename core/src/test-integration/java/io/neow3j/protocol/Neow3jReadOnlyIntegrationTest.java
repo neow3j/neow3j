@@ -38,17 +38,11 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         return privateNetContainer;
     }
 
-    @Test
-    public void testGetVersion() throws IOException {
-        NeoGetVersion version = getNeow3j().getVersion().send();
-        NeoGetVersion.Result versionResult = version.getVersion();
-        assertNotNull(versionResult);
-        assertThat(versionResult.getUserAgent(), not(isEmptyString()));
-        assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
-        assertThat(versionResult.getTCPPort(), is(greaterThanOrEqualTo(0)));
-        assertThat(versionResult.getWSPort(), is(greaterThanOrEqualTo(0)));
-    }
+    // Blockchain Methods
 
+    @Test
+    public void testGetBestBlockHash() {
+    }
 //    @Test
 //    public void testGetBestBlockHash() throws IOException {
 //        NeoBlockHash getBestBlockHash = getNeow3j().getBestBlockHash().send();
@@ -56,7 +50,10 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertNotNull(blockHash);
 //        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
 //    }
-//
+
+    @Test
+    public void testGetBlockHash() {
+    }
 //    @Test
 //    public void testGetBlockHash() throws IOException {
 //        NeoBlockHash getBestBlockHash = getNeow3j().getBlockHash(new BlockParameterIndex(1)).send();
@@ -64,69 +61,10 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertNotNull(blockHash);
 //        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
 //    }
-//
-//    @Test
-//    public void testGetConnectionCount() throws IOException {
-//        NeoConnectionCount getConnectionCount = getNeow3j().getConnectionCount().send();
-//        Integer connectionCount = getConnectionCount.getCount();
-//        assertNotNull(connectionCount);
-//        assertThat(connectionCount, greaterThanOrEqualTo(0));
-//    }
-//
-//    @Test
-//    public void testListAddress() throws IOException {
-//        NeoListAddress listAddress = getNeow3j().listAddress().send();
-//        List<Address> addresses = listAddress.getAddresses();
-//        assertNotNull(addresses);
-//        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
-//    }
-//
-//    @Test
-//    public void testGetPeers() throws IOException {
-//        NeoGetPeers getPeers = getNeow3j().getPeers().send();
-//        NeoGetPeers.Peers peers = getPeers.getPeers();
-//        assertNotNull(peers);
-//        assertThat(peers.getBad(), hasSize(greaterThanOrEqualTo(0)));
-//        assertThat(peers.getConnected(), hasSize(greaterThanOrEqualTo(0)));
-//        assertThat(peers.getUnconnected(), hasSize(greaterThanOrEqualTo(0)));
-//    }
-//
-//    @Test
-//    public void testGetRawMemPool() throws IOException {
-//        NeoGetRawMemPool getRawMemPool = getNeow3j().getRawMemPool().send();
-//        List<String> addresses = getRawMemPool.getAddresses();
-//        assertNotNull(addresses);
-//        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
-//    }
-//
-//    @Test
-//    public void testGetValidators() throws IOException {
-//        NeoGetValidators getValidators = getNeow3j().getValidators().send();
-//        List<NeoGetValidators.Validator> validators = getValidators.getValidators();
-//        assertNotNull(validators);
-//        assertThat(validators, hasSize(greaterThanOrEqualTo(0)));
-//    }
-//
-//    @Test
-//    public void testValidateAddress() throws IOException {
-//        NeoValidateAddress validateAddress = getNeow3j().validateAddress(ADDRESS_1).send();
-//        NeoValidateAddress.Result validation = validateAddress.getValidation();
-//        assertNotNull(validation);
-//        assertThat(validation.getValid(), is(true));
-//        assertThat(validation.getAddress(), is(ADDRESS_1));
-//    }
-//
-//    @Test
-//    public void testGetBlock_Index_fullTransactionObjects() throws IOException {
-//        NeoGetBlock neoGetBlock = getNeow3j()
-//                .getBlock(new BlockParameterIndex(BLOCK_2001_IDX), true)
-//                .send();
-//        NeoBlock block = neoGetBlock.getBlock();
-//        assertNotNull(block);
-//        assertThat(block.getIndex(), is(BLOCK_2001_IDX));
-//        assertThat(block.getTransactions(), not(empty()));
-//    }
-//
+
+    @Test
+    public void testGetBlock_Index() {
+    }
 //    @Test
 //    public void testGetBlock_Index() throws IOException {
 //        NeoGetBlock neoGetBlock = getNeow3j()
@@ -137,27 +75,10 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertThat(block.getIndex(), equalTo(BLOCK_2001_IDX));
 //        assertThat(block.getTransactions(), is(nullValue()));
 //    }
-//
-//    @Test
-//    public void testGetRawBlock_Index() throws IOException {
-//        NeoGetRawBlock neoGetRawBlock = getNeow3j()
-//                .getRawBlock(new BlockParameterIndex(BLOCK_2001_IDX))
-//                .send();
-//        String rawBlock = neoGetRawBlock.getRawBlock();
-//        assertThat(rawBlock, not(isEmptyOrNullString()));
-//    }
-//
-//    @Test
-//    public void testGetBlock_Hash_fullTransactionObjects() throws IOException {
-//        NeoGetBlock neoGetBlock = getNeow3j()
-//                .getBlock(BLOCK_2001_HASH, true)
-//                .send();
-//        NeoBlock block = neoGetBlock.getBlock();
-//        assertNotNull(block);
-//        assertThat(block.getIndex(), equalTo(BLOCK_2001_IDX));
-//        assertThat(block.getTransactions(), not(empty()));
-//    }
-//
+
+    @Test
+    public void testGetBlock_Hash() {
+    }
 //    @Test
 //    public void testGetBlock_Hash() throws IOException {
 //        NeoGetBlock neoGetBlock = getNeow3j()
@@ -168,7 +89,22 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertThat(block.getIndex(), greaterThanOrEqualTo(BLOCK_2001_IDX));
 //        assertThat(block.getTransactions(), is(nullValue()));
 //    }
-//
+
+    @Test
+    public void testGetRawBlock_Index() {
+    }
+//    @Test
+//    public void testGetRawBlock_Index() throws IOException {
+//        NeoGetRawBlock neoGetRawBlock = getNeow3j()
+//                .getRawBlock(new BlockParameterIndex(BLOCK_2001_IDX))
+//                .send();
+//        String rawBlock = neoGetRawBlock.getRawBlock();
+//        assertThat(rawBlock, not(isEmptyOrNullString()));
+//    }
+
+    @Test
+    public void testGetRawBlock_Hash() {
+    }
 //    @Test
 //    public void testGetRawBlock_Hash() throws IOException {
 //        NeoGetRawBlock neoGetRawBlock = getNeow3j()
@@ -177,7 +113,10 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        String rawBlock = neoGetRawBlock.getRawBlock();
 //        assertThat(rawBlock, not(isEmptyOrNullString()));
 //    }
-//
+
+    @Test
+    public void testGetBlockCount() {
+    }
 //    @Test
 //    public void testGetBlockCount() throws Exception {
 //        NeoBlockCount neoBlockCount = getNeow3j().getBlockCount().send();
@@ -185,7 +124,10 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertNotNull(blockIndex);
 //        assertThat(neoBlockCount.getBlockIndex(), greaterThan(BigInteger.valueOf(0)));
 //    }
-//
+
+    @Test
+    public void testGetBlockHeader_Hash() {
+    }
 //    @Test
 //    public void testGetBlockHeader_Hash() throws IOException {
 //        NeoBlock block = getNeow3j().getBlockHeader(BLOCK_2001_HASH).send().getBlock();
@@ -194,7 +136,10 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertThat(block.getIndex(), is(notNullValue()));
 //        assertThat(block.getHash(), is(BLOCK_2001_HASH));
 //    }
-//
+
+    @Test
+    public void testGetBlockHeader_Index() {
+    }
 //    @Test
 //    public void testGetBlockHeader_Index() throws IOException {
 //        NeoBlock block = getNeow3j().getBlockHeader(new BlockParameterIndex(BLOCK_2001_IDX)).send()
@@ -203,14 +148,20 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertThat(block.getIndex(), is(BLOCK_2001_IDX));
 //        assertThat(block.getHash(), is(BLOCK_2001_HASH));
 //    }
-//
+
+    @Test
+    public void testGetRawBlockHeader_Hash() {
+    }
 //    @Test
 //    public void testGetRawBlockHeader_Hash() throws IOException {
 //        NeoGetRawBlock getRawBlockHeader = getNeow3j().getRawBlockHeader(BLOCK_2001_HASH).send();
 //        assertThat(getRawBlockHeader.getRawBlock(), is(notNullValue()));
 //        assertThat(getRawBlockHeader.getRawBlock(), is(BLOCK_2001_RAW_STRING));
 //    }
-//
+
+    @Test
+    public void testGetRawBlockHeader_Index() {
+    }
 //    @Test
 //    public void testGetRawBlockHeader_Index() throws IOException {
 //        NeoGetRawBlock getRawBlockHeader = getNeow3j()
@@ -218,15 +169,10 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertThat(getRawBlockHeader.getRawBlock(), is(notNullValue()));
 //        assertThat(getRawBlockHeader.getRawBlock(), is(BLOCK_2001_RAW_STRING));
 //    }
-//
-//    @Test
-//    public void testGetWalletHeight() throws IOException {
-//        NeoGetWalletHeight getWalletHeight = getNeow3j().getWalletHeight().send();
-//        BigInteger height = getWalletHeight.getHeight();
-//        assertNotNull(height);
-//        assertTrue(height.longValueExact() > 0);
-//    }
-//
+
+    @Test
+    public void testGetBlockSysFee() {
+    }
 //    @Test
 //    public void testGetBlockSysFee() throws IOException {
 //        NeoGetBlockSysFee getBlockSysFee = getNeow3j()
@@ -234,7 +180,25 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        String fee = getBlockSysFee.getFee();
 //        assertThat(fee, not(isEmptyOrNullString()));
 //    }
-//
+
+    @Test
+    public void testGetContractState() {
+    }
+
+    @Test
+    public void testGetRawMemPool() {
+    }
+//    @Test
+//    public void testGetRawMemPool() throws IOException {
+//        NeoGetRawMemPool getRawMemPool = getNeow3j().getRawMemPool().send();
+//        List<String> addresses = getRawMemPool.getAddresses();
+//        assertNotNull(addresses);
+//        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
+//    }
+
+    @Test
+    public void testGetTransaction() {
+    }
 //    @Test
 //    public void testGetTransaction() throws IOException {
 //        NeoGetTransaction getTransaction = getNeow3j().getTransaction(UTXO_TX_HASH).send();
@@ -306,14 +270,125 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //                greaterThanOrEqualTo(1547956859L)
 //        );
 //    }
-//
+
+    @Test
+    public void testGetRawTransaction() {
+    }
 //    @Test
 //    public void testGetRawTransaction() throws IOException {
 //        NeoGetRawTransaction getRawTransaction = getNeow3j().getRawTransaction(UTXO_TX_HASH).send();
 //        assertThat(getRawTransaction.getRawTransaction(),
 //                is("8000012023ba2703c53263e8d6e522dc32203339dcd8eee901b5a0deb999e835a8cb7f87f7678590f3e576f8a9d0f789270bb6fc85d08bdf830000019b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc50000c16ff286230023ba2703c53263e8d6e522dc32203339dcd8eee9014140a3799c78dec17823fde75233793a7039bf2b1dbca4383a6eef1ac829460ba14c1e6a50ab1f2174e689bebfc0bb7accc965a6fe3e46d517b317bba1325b7fdaca2321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac"));
 //    }
-//
+
+    @Test
+    public void testGetStorage() {
+    }
+
+    @Test
+    public void testGetStorage_with_HexParameter() {
+    }
+
+    @Test
+    public void testGetTransactionHeight() {
+    }
+
+    @Test
+    public void testGetValidators() {
+    }
+//    @Test
+//    public void testGetValidators() throws IOException {
+//        NeoGetValidators getValidators = getNeow3j().getValidators().send();
+//        List<NeoGetValidators.Validator> validators = getValidators.getValidators();
+//        assertNotNull(validators);
+//        assertThat(validators, hasSize(greaterThanOrEqualTo(0)));
+//    }
+
+    // Node Methods
+
+    @Test
+    public void testGetConnectionCount() {
+    }
+//    @Test
+//    public void testGetConnectionCount() throws IOException {
+//        NeoConnectionCount getConnectionCount = getNeow3j().getConnectionCount().send();
+//        Integer connectionCount = getConnectionCount.getCount();
+//        assertNotNull(connectionCount);
+//        assertThat(connectionCount, greaterThanOrEqualTo(0));
+//    }
+
+    @Test
+    public void testGetPeers() {
+    }
+//    @Test
+//    public void testGetPeers() throws IOException {
+//        NeoGetPeers getPeers = getNeow3j().getPeers().send();
+//        NeoGetPeers.Peers peers = getPeers.getPeers();
+//        assertNotNull(peers);
+//        assertThat(peers.getBad(), hasSize(greaterThanOrEqualTo(0)));
+//        assertThat(peers.getConnected(), hasSize(greaterThanOrEqualTo(0)));
+//        assertThat(peers.getUnconnected(), hasSize(greaterThanOrEqualTo(0)));
+//    }
+
+    @Test
+    public void testGetVersion() throws IOException {
+        NeoGetVersion version = getNeow3j().getVersion().send();
+        NeoGetVersion.Result versionResult = version.getVersion();
+        assertNotNull(versionResult);
+        assertThat(versionResult.getUserAgent(), not(isEmptyString()));
+        assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
+        assertThat(versionResult.getTCPPort(), is(greaterThanOrEqualTo(0)));
+        assertThat(versionResult.getWSPort(), is(greaterThanOrEqualTo(0)));
+    }
+
+    // SmartContract Methods
+
+    @Test
+    public void testInvokeFunction_empty_Params() {
+    }
+
+    // Utilities Methods
+
+    @Test
+    public void testListPlugins() {
+    }
+
+    @Test
+    public void testValidateAddress() {
+    }
+//    @Test
+//    public void testValidateAddress() throws IOException {
+//        NeoValidateAddress validateAddress = getNeow3j().validateAddress(ADDRESS_1).send();
+//        NeoValidateAddress.Result validation = validateAddress.getValidation();
+//        assertNotNull(validation);
+//        assertThat(validation.getValid(), is(true));
+//        assertThat(validation.getAddress(), is(ADDRESS_1));
+//    }
+
+    // Wallet Methods
+
+    @Test
+    public void testCloseWallet() {
+    }
+
+    @Test
+    public void testOpenWallet() {
+    }
+
+    @Test
+    public void testDumpPrivKey() {
+    }
+//    @Test
+//    public void testDumpPrivKey() throws IOException {
+//        NeoDumpPrivKey neoDumpPrivKey = getNeow3j().dumpPrivKey(ADDRESS_1).send();
+//        String privKey = neoDumpPrivKey.getDumpPrivKey();
+//        assertThat(privKey, not(isEmptyOrNullString()));
+//        assertThat(privKey, is(ADDR1_WIF));
+//    }
+
+    @Test
+    public void testGetBalance() {
+    }
 //    @Test
 //    public void testGetBalance() throws IOException {
 //        NeoGetBalance getBalance = getNeow3j().getBalance(NEO_HASH.toString()).send();
@@ -327,31 +402,88 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 //        assertThat(Integer.parseInt(getBalance.getBalance().getBalance()),
 //                is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
 //    }
+
+    @Test
+    public void testGetBalance_with_Prefix() {
+    }
+
+    @Test
+    public void testGetNewAddress() {
+    }
+
+    @Test
+    public void testGetUnclaimedGas() {
+    }
+
+    @Test
+    public void testImportPrivKey() {
+    }
+
+    @Test
+    public void testListAddress() {
+    }
+//    @Test
+//    public void testListAddress() throws IOException {
+//        NeoListAddress listAddress = getNeow3j().listAddress().send();
+//        List<Address> addresses = listAddress.getAddresses();
+//        assertNotNull(addresses);
+//        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
+//    }
+
+    // RpcNep5Tracker
+
+    @Test
+    public void testGetNep5Transfers() {
+    }
+
+    @Test
+    public void testGetNep5Transfers_Date() {
+    }
+
+    @Test
+    public void testGetNep5Transfers_DateFromTo() {
+    }
+
+    @Test
+    public void testGetNep5Balances() {
+    }
+
+    // ApplicationLogs
+
+    @Test
+    public void testGetApplicationLog() {
+    }
+
+// Neo 2 tests
 //
 //    @Test
-//    public void testDumpPrivKey() throws IOException {
-//        NeoDumpPrivKey neoDumpPrivKey = getNeow3j().dumpPrivKey(ADDRESS_1).send();
-//        String privKey = neoDumpPrivKey.getDumpPrivKey();
-//        assertThat(privKey, not(isEmptyOrNullString()));
-//        assertThat(privKey, is(ADDR1_WIF));
+//    public void testGetBlock_Index_fullTransactionObjects() throws IOException {
+//        NeoGetBlock neoGetBlock = getNeow3j()
+//                .getBlock(new BlockParameterIndex(BLOCK_2001_IDX), true)
+//                .send();
+//        NeoBlock block = neoGetBlock.getBlock();
+//        assertNotNull(block);
+//        assertThat(block.getIndex(), is(BLOCK_2001_IDX));
+//        assertThat(block.getTransactions(), not(empty()));
 //    }
 //
 //    @Test
-//    public void testGetStorage() throws IOException {
-//        // TODO: 2019-02-28 Guil:
-//        // to be implemented
+//    public void testGetBlock_Hash_fullTransactionObjects() throws IOException {
+//        NeoGetBlock neoGetBlock = getNeow3j()
+//                .getBlock(BLOCK_2001_HASH, true)
+//                .send();
+//        NeoBlock block = neoGetBlock.getBlock();
+//        assertNotNull(block);
+//        assertThat(block.getIndex(), equalTo(BLOCK_2001_IDX));
+//        assertThat(block.getTransactions(), not(empty()));
 //    }
 //
 //    @Test
-//    public void testGetContractState() throws IOException {
-//        // TODO: 2019-03-17 Guil:
-//        // to be implemented
-//    }
-//
-//    @Test
-//    public void testGetNep5Balances() throws IOException {
-//        // TODO 2019-08-08 claude:
-//        // Implement
+//    public void testGetWalletHeight() throws IOException {
+//        NeoGetWalletHeight getWalletHeight = getNeow3j().getWalletHeight().send();
+//        BigInteger height = getWalletHeight.getHeight();
+//        assertNotNull(height);
+//        assertTrue(height.longValueExact() > 0);
 //    }
 //
 //    @Test
