@@ -1,11 +1,19 @@
 package io.neow3j.contract;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.Invocation.InvocationBuilder;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.wallet.Wallet;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
@@ -13,6 +21,8 @@ import java.math.BigInteger;
  * Represents a smart contract on the Neo blockchain and provides methods to invoke it.
  */
 public class SmartContract {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     protected ScriptHash scriptHash;
     protected Neow3j neow;
@@ -106,5 +116,47 @@ public class SmartContract {
 
     public ScriptHash getScriptHash() {
         return this.scriptHash;
+    }
+
+    public NeoSendRawTransaction deploy(File nefFile, File manifestFile, ScriptHash sender,
+            Wallet wallet) throws IOException {
+        byte[] nefBytes = readNefFile(nefFile);
+
+        ContractManifest manifest = objectMapper.readValue(new FileInputStream(manifestFile),
+                ContractManifest.class);
+
+        if (!ScriptHash.fromScript(nefBytes).toString().equals(manifest.getAbi().getHash())) {
+            throw new IllegalArgumentException("Script hash of given NEF file does not equal the "
+                    + "script hash from the given manifest file.");
+        }
+        byte[] manifestBytes = objectMapper.writeValueAsBytes(manifest);
+        if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
+            throw new IllegalArgumentException("The given contract manifest is to long. Manifest "
+                    + "was " + manifestBytes.length + " bytes big, but a max of "
+                    + NeoConstants.MAX_MANIFEST_SIZE + " is allowed.");
+        }
+        byte[] script = new ScriptBuilder()
+                .pushData(manifestBytes)
+                .pushData(nefBytes)
+                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CREATE)
+                .toArray();
+
+        // TODO: Build and send a transaction.
+        return null;
+    }
+
+    private byte[] readNefFile(File nefFile) throws IOException {
+        int nefFileSize = (int) nefFile.length();
+        if (nefFileSize > 0x100000) {
+            // This maximum size was taken from the neo-core code.
+            throw new IllegalArgumentException(
+                    "The given NEF file is too long. File was " + nefFileSize + " bytes big, but a "
+                            + "max of 2^20 bytes is allowed.");
+        }
+        byte[] nefBytes = new byte[nefFileSize];
+        try (FileInputStream nefStream = new FileInputStream(nefFile)) {
+            nefStream.read(nefBytes);
+        }
+        return nefBytes;
     }
 }
