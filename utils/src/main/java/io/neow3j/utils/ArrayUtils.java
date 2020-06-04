@@ -85,6 +85,16 @@ public class ArrayUtils {
         return trimLeadingBytes(bytes, (byte) 0);
     }
 
+    public static byte[] trimTrailingBytes(byte[] bytes, byte b) {
+        int offset = bytes.length - 1;
+        for (; offset > 0; offset--) {
+            if (bytes[offset] != b) {
+                break;
+            }
+        }
+        return Arrays.copyOfRange(bytes, 0, offset + 1);
+    }
+
     public static byte[] toPrimitive(final Byte[] array) {
         if (array == null) {
             return null;
@@ -102,5 +112,8 @@ public class ArrayUtils {
         return ByteBuffer.allocate(4).putInt(v).array();
     }
 
+    public static byte[] toByteArray(long v) {
+        return ByteBuffer.allocate(8).putLong(v).array();
+    }
 
 }
