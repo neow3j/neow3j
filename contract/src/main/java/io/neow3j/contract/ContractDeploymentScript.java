@@ -62,15 +62,10 @@ public class ContractDeploymentScript extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
-        try {
-            this.descriptionProperties = reader.readSerializable(
-                    ContractDescriptionProperties.class);
-            this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
-            this.scriptBinary = reader.readPushData();
-            this.contractScriptHash = ScriptHash.fromScript(this.scriptBinary);
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new DeserializationException(e);
-        }
+        this.descriptionProperties = reader.readSerializable(ContractDescriptionProperties.class);
+        this.functionProperties = reader.readSerializable(ContractFunctionProperties.class);
+        this.scriptBinary = reader.readPushData();
+        this.contractScriptHash = ScriptHash.fromScript(this.scriptBinary);
     }
 
     @Override

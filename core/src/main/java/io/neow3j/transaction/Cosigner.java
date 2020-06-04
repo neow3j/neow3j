@@ -123,7 +123,7 @@ public class Cosigner extends TransactionAttribute {
                             + "contained " + this.allowedGroups.size() + " groups.");
                 }
             }
-        } catch (IllegalAccessException | InstantiationException | IOException e) {
+        } catch (IOException e) {
             throw new DeserializationException(e);
         }
     }
