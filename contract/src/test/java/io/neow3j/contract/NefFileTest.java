@@ -22,17 +22,17 @@ public class NefFileTest {
     @Test
     public void readFromFileThatIsTooLarge() throws URISyntaxException, DeserializationException,
             IOException {
-        File nef = new File(Main.class.getClassLoader().getResource("contracts/too_large.nef")
-                .toURI());
+        File file = new File(NefFileTest.class.getClassLoader()
+                .getResource("contracts/too_large.nef").toURI());
         expectedException.expect(IllegalArgumentException.class);
-        NefFile.readFromFile(nef);
+        NefFile.readFromFile(file);
     }
 
     @Test
     public void readFromFile() throws URISyntaxException, DeserializationException,
             IOException {
-        File file = new File(Main.class.getClassLoader().getResource("contracts/hello_world.nef")
-                .toURI());
+        File file = new File(NefFileTest.class.getClassLoader()
+                .getResource("contracts/hello_world.nef").toURI());
         NefFile nef = NefFile.readFromFile(file);
         assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is("7898d2a8"));
     }
