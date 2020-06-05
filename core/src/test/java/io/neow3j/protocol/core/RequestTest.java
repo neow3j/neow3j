@@ -299,29 +299,27 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testInvokeFunction_empty_Params() throws Exception {
-        neow3j.invokeFunction(
-                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
-                "decimals",
-                Arrays.asList()
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"invokefunction\","
-                        + "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\","
-                        + "\"decimals\","
-                        + "[],[]"
-                        + "],\"id\":1}"
-        );
-    }
-
-    @Test
     public void testInvokeScript() throws Exception {
         neow3j.invokeScript("00046e616d656724058e5e1b6008847cd662728549088a9ee82191").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokescript\","
-                        + "\"params\":[\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\"],\"id\":1}"
+                        + "\"params\":[\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\"],"
+                        + "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testInvokeScriptWithWitness() throws Exception {
+        neow3j.invokeScript("00046e616d656724058e5e1b6008847cd662728549088a9ee82191",
+                "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"invokescript\","
+                        + "\"params\":["
+                        +       "\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\","
+                        +       "[\"0xcadb3dc2faa3ef14a13b619c9a43124755aa2569\"]"
+                        + "],\"id\":1}"
         );
     }
 
