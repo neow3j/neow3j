@@ -126,6 +126,14 @@ public class SmartContractTest {
     }
 
     @Test
+    public void tryDeployAfterUsingWrongConstructor() throws IOException {
+        SmartContract sc = new SmartContract(
+                new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"), this.neow);
+        expectedException.expect(IllegalStateException.class);
+        sc.deploy();
+    }
+
+    @Test
     public void invokeWithNullString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("null"));

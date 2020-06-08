@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 /**
- * Represents a smart contract on the Neo blockchain and provides methods to invoke it.
+ * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
  */
 public class SmartContract {
 
@@ -47,7 +47,8 @@ public class SmartContract {
     }
 
     /**
-     * Constructs a <tt>SmartContract</tt> from a NEF file and a manifest.
+     * Constructs a <tt>SmartContract</tt> with a NEF file and a manifest file for deployment
+     * with {@link SmartContract#deploy()}.
      *
      * @param neow         The {@link Neow3j} instance to use for deploying and invoking the
      *                     contract.
@@ -94,7 +95,7 @@ public class SmartContract {
                     "The invocation function must not be null or empty.");
         }
         return new Invocation.Builder(neow)
-                .withContract(scriptHash)
+                .withContract(this.scriptHash)
                 .withFunction(function)
                 .withParameters(contractParameters);
     }
@@ -163,15 +164,17 @@ public class SmartContract {
     }
 
     /**
-     * Initializes an {@link Invocation.Builder} for deploying this contract. The builder needs
-     * to be
+     * Initializes an {@link Invocation.Builder} for deploying this contract.
      * Deploys this contract by creating a deployment transaction and sending it to the neo-node
      *
      * @return The Neo node's response.
      * @throws IOException If something goes wrong when communicating with the Neo node.
      */
     public Invocation.Builder deploy() throws IOException {
-
+        if (this.nefFile == null) {
+            throw new IllegalStateException("This smart contract instance was not constructed for"
+                    + " deployment. It is missing its NEF file.");
+        }
         byte[] script = new ScriptBuilder()
                 .pushData(objectMapper.writeValueAsBytes(this.manifest))
                 .pushData(this.nefFile.getScript())
