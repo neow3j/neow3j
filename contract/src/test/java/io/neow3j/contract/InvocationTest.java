@@ -35,8 +35,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.hamcrest.core.StringContains;
+import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,13 +61,22 @@ public class InvocationTest {
         neow = Neow3j.build(new HttpService("http://localhost:8080"));
     }
 
-    @Test(expected = InvocationConfigurationException.class)
-    public void failWithoutSettingSenderAccount() throws IOException {
+    @Test
+    public void failWithoutSettingSenderAccount() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        new Invocation.Builder(null);
+    }
+
+    @Test
+    public void failWithoutSettingWallet() throws IOException {
         ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
         String method = "name";
-        new Invocation.Builder(neow)
+        Invocation.Builder b = new Invocation.Builder(neow)
                 .withContract(sh)
-                .withFunction(method).build();
+                .withFunction(method);
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage("wallet");
+        b.build();
     }
 
     @Test
@@ -127,8 +138,6 @@ public class InvocationTest {
     @Test
     public void testAutomaticSettingOfNetworkFeeWithSingleSigAccount() throws Exception {
         Wallet wallet = Wallet.createWallet();
-        ScriptHash contract = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
-        String method = "name";
         long additionalFee = 100_000_000; // Additional fee of 1 GAS.
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
@@ -187,7 +196,6 @@ public class InvocationTest {
 
     @Test
     public void failTryingToSignInvocationWithAccountMissingAPrivateKey() throws Exception {
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         Wallet w = Wallet.createWallet("neo");
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
@@ -391,6 +399,7 @@ public class InvocationTest {
                 cosigner.getECKeyPair().getPublicKey()));
     }
 
+    @Test
     public void failBuildingInvocationBecauseWalletDoesntContainCosignerAccount()
             throws IOException {
 
@@ -761,4 +770,49 @@ public class InvocationTest {
                 .invokeScript();
     }
 
+    @Test
+    public void invokeFunctionWithoutSettingContract() throws IOException {
+        Invocation.Builder b = new Invocation.Builder(neow)
+                .withFunction("transfer")
+                .withWallet(Wallet.createWallet());
+
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage("contract");
+        b.invokeFunction();
+    }
+
+    @Test
+    public void invokeFunctionWithoutSettingFunction() throws IOException {
+        Invocation.Builder b = new Invocation.Builder(neow)
+                .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
+                .withWallet(Wallet.createWallet());
+
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage("function");
+        b.invokeFunction();
+    }
+
+    @Test
+    public void buildWithoutSettingScriptNorContract() throws IOException {
+        Invocation.Builder b = new Invocation.Builder(neow)
+                .withWallet(Wallet.createWallet())
+                .withValidUntilBlock(1000);
+
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList("script", "contract")));
+        b.build();
+    }
+
+    @Test
+    public void buildWithSettingContractButNoFunction() throws IOException {
+        Invocation.Builder b = new Invocation.Builder(neow)
+                .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
+                .withWallet(Wallet.createWallet())
+                .withValidUntilBlock(1000);
+
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList("contract",
+                "function")));
+        b.build();
+    }
 }
