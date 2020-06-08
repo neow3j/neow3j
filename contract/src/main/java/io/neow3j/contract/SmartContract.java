@@ -9,10 +9,8 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
-import io.neow3j.wallet.Wallet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -83,17 +81,22 @@ public class SmartContract {
     }
 
     /**
-     * Initializes an invocation of the given function on this contract.
+     * Initializes an {@link Invocation.Builder} for a function invocation of this contract with
+     * the provided function and parameters. The order of the parameters is relevant.
      *
      * @param function The function to invoke.
+     * @param contractParameters The parameters to pass with the invocation.
      * @return An {@link Invocation} allowing to set further details of the invocation.
      */
-    public Invocation.Builder invoke(String function) {
+    public Invocation.Builder invoke(String function, ContractParameter... contractParameters) {
         if (function == null || function.isEmpty()) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        return new Invocation.Builder(neow).withContract(scriptHash).withFunction(function);
+        return new Invocation.Builder(neow)
+                .withContract(scriptHash)
+                .withFunction(function)
+                .withParameters(contractParameters);
     }
 
     /**
@@ -144,15 +147,19 @@ public class SmartContract {
     protected NeoInvokeFunction invokeFunction(String function, ContractParameter... params)
             throws IOException {
 
-        if (params.length > 0) {
-            return invoke(function).withParameters(params).invokeFunction();
-        } else {
-            return invoke(function).invokeFunction();
-        }
+        return invoke(function, params).invokeFunction();
     }
 
     public ScriptHash getScriptHash() {
         return this.scriptHash;
+    }
+
+    public NefFile getNefFile() {
+        return nefFile;
+    }
+
+    public ContractManifest getManifest() {
+        return manifest;
     }
 
     /**
