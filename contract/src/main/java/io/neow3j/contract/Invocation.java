@@ -32,6 +32,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Used to invoke Neo VM scripts and contract functions. Uses the {@link Invocation.Builder} to
+ * configure an invocation and do calls via the <tt>invokescript</tt> and <tt>invokefunction</tt>
+ * RPC. When building the <tt>Invocation</tt>, a transaction is created that can be signed
+ * and sent to the Neo node.
+ */
 public class Invocation {
 
     protected Neow3j neow;
@@ -223,7 +229,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation with the given attributes. (Optional)
+         * Configures the invocation with the given attributes. 
          *
          * @param attributes The attributes.
          * @return this.
@@ -234,7 +240,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation such that it is valid until the given block number. (Optional)
+         * Configures the invocation such that it is valid until the given block number. 
          * <p>
          * By default it is set to the maximum.
          *
@@ -248,7 +254,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation with the given nonce. (Optional)
+         * Configures the invocation with the given nonce. 
          * <p>
          * By default the nonce is set to a random value.
          *
@@ -262,11 +268,11 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation with an additional network fee. (Optional)
+         * Configures the invocation with an additional network fee. 
          * <p>
          * The basic network fee required to send this invocation is added automatically.
          *
-         * @param fee The additional network fee.
+         * @param fee The additional network fee in fractions of GAS.
          * @return this.
          */
         public Builder withAdditionalNetworkFee(long fee) {
@@ -275,7 +281,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation to use the given wallet. (Mandatory)
+         * Configures the invocation to use the given wallet.
          * <p>
          * The wallet's default account is used as the transaction sender if no sender is specified
          * explicitly.
@@ -289,7 +295,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation to use the given sender. (Optional)
+         * Configures the invocation to use the given sender.
          *
          * @param sender the sender account's script hash.
          * @return this.
@@ -348,7 +354,7 @@ public class Invocation {
 
         /**
          * Configures the invocation such that it fails (NeoVM exits with state FAULT) if the return
-         * value of the invocation is "False". (Optional)
+         * value of the invocation is "False". 
          *
          * @return this
          */
@@ -394,11 +400,11 @@ public class Invocation {
         public NeoInvokeFunction invokeFunction() throws IOException {
             if (this.contract == null) {
                 throw new InvocationConfigurationException("Cannot make an 'invokefunction' call "
-                        + "without the contract to call being configured.");
+                        + "without having configured the contract to call.");
             }
             if (this.contractFunction == null) {
                 throw new InvocationConfigurationException("Cannot make an 'invokefunction' call "
-                        + "without the function to call being configured.");
+                        + "without having a configured function to call.");
             }
 
             // The list of signers is required for `invokefunction` calls that will hit a
