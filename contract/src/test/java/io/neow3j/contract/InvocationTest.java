@@ -672,7 +672,8 @@ public class InvocationTest {
         long sysFee = 9_007_810L;
         BigInteger expectedFees = BigInteger.valueOf(netFee + sysFee);
         BigInteger expectedBalance = BigInteger.valueOf(1_000_000L);
-        Invocation i = new Invocation.Builder(neow)
+        AtomicBoolean tested = new AtomicBoolean(false);
+        new Invocation.Builder(neow)
                 .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
                 .withFunction("transfer")
                 .withWallet(w)
@@ -686,7 +687,9 @@ public class InvocationTest {
                 .doIfSenderCannotCoverFees((fee, balance) -> {
                     assertThat(fee, is(expectedFees));
                     assertThat(balance, is(expectedBalance));
+                    tested.set(true);
                 });
+        assertTrue(tested.get());
     }
 
     @Test

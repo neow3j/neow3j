@@ -170,7 +170,7 @@ public class Invocation {
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
                 .getBalanceOf(this.transaction.getSender());
-        if (fees.compareTo(senderGasBalance) < 0) {
+        if (fees.compareTo(senderGasBalance) > 0) {
             consumer.accept(fees, senderGasBalance);
         }
         return this;
