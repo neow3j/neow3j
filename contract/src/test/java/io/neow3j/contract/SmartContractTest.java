@@ -249,7 +249,7 @@ public class SmartContractTest {
             throws IOException, DeserializationException, URISyntaxException {
         File nef = new File(this.getClass().getClassLoader()
                 .getResource("contracts/hello_world.nef").toURI());
-        File manifest = new File(Main.class.getClassLoader()
+        File manifest = new File(this.getClass().getClassLoader()
                 .getResource("contracts/hello_world.manifest.json").toURI());
 
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
@@ -275,7 +275,7 @@ public class SmartContractTest {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
         File nef = new File(this.getClass().getClassLoader()
                 .getResource("contracts/hello_world.nef").toURI());
-        File manifest = new File(Main.class.getClassLoader()
+        File manifest = new File(this.getClass().getClassLoader()
                 .getResource("contracts/hello_world.manifest.json").toURI());
 
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
