@@ -42,9 +42,10 @@ public class Nep5TokenTest {
     @Test
     public void transferGas() throws Exception {
         ContractTestHelper.setUpWireMockForSendRawTransaction();
-        // Required for fetching of system fee of the invocation.
-        ContractTestHelper.setUpWireMockForInvokeFunction(
-                "transfer", "invokefunction_transfer_gas.json");
+        String script =
+                "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238";
+        ContractTestHelper.setUpWireMockForCall("invokescript", "invokescript_transfer_1_gas.json",
+                script, "969a77db482f74ce27105f760efa139223431394");
         // Required for fetching the token's decimals.
         ContractTestHelper.setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");
@@ -74,9 +75,7 @@ public class Nep5TokenTest {
         assertThat(c.getScriptHash(), is(w.getDefaultAccount().getScriptHash()));
         assertThat(c.getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
         assertThat(tx.getWitnesses(), hasSize(1));
-        byte[] expectedScript = Numeric.hexStringToByteArray(
-                "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238");
-        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         assertThat(tx.getWitnesses().get(0).getVerificationScript(),
                 is(w.getDefaultAccount().getVerificationScript()));
     }
@@ -138,7 +137,7 @@ public class Nep5TokenTest {
         ContractTestHelper.setUpWireMockForSendRawTransaction();
         // Required for fetching of system fee of the invocation.
         ContractTestHelper.setUpWireMockForInvokeFunction(
-                "transfer", "invokefunction_transfer_gas.json");
+                "transfer", "invokescript_transfer_1_gas.json");
         // Required for fetching the token's decimals.
         ContractTestHelper.setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");

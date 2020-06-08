@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -16,7 +17,6 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
-import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,7 +31,7 @@ public class SmartContractTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule();
 
-    Neow3j neow;
+    private Neow3j neow;
 
     @Before
     public void setUp() {
@@ -80,16 +80,10 @@ public class SmartContractTest {
 
     @Test
     public void invoke() throws IOException {
-        // Required for fetching of system fee of the invocation.
-        ContractTestHelper.setUpWireMockForCall("invokefunction",
-                "invokefunction_transfer_neo.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", // NEO script hash
-                "transfer", // method
-                "969a77db482f74ce27105f760efa139223431394", // sender script hash
-                "df133e846b1110843ac357fc8bbf05b4a32e17c8", // receiver script hash
-                "5", // amount
-                "969a77db482f74ce27105f760efa139223431394" // witness script hash
-        );
+        String script =
+                "150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238";
+        setUpWireMockForCall("invokescript", "invokescript_transfer_5_neo.json", script,
+                "969a77db482f74ce27105f760efa139223431394"); // witness script hash
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
@@ -104,27 +98,25 @@ public class SmartContractTest {
                         ContractParameter.hash160(receiver),
                         ContractParameter.integer(5))
                 .withNonce(1800992192)
-                .validUntilBlock(2107199)
+                .withValidUntilBlock(2107199)
                 .failOnFalse()
                 .build()
                 .sign();
 
-        assertThat(i.getTransaction().getNonce(), Matchers.is(1800992192L));
-        assertThat(i.getTransaction().getValidUntilBlock(), Matchers.is(2107199L));
-        assertThat(i.getTransaction().getNetworkFee(), Matchers.is(1264390L));
-        assertThat(i.getTransaction().getSystemFee(), Matchers.is(9007810L));
-        byte[] expectedScript = Numeric.hexStringToByteArray(
-                "150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238");
-        assertThat(i.getTransaction().getScript(), Matchers.is(expectedScript));
+        assertThat(i.getTransaction().getNonce(), is(1800992192L));
+        assertThat(i.getTransaction().getValidUntilBlock(), is(2107199L));
+        assertThat(i.getTransaction().getNetworkFee(), is(1264390L));
+        assertThat(i.getTransaction().getSystemFee(), is(9007810L));
+        assertThat(i.getTransaction().getScript(), is(Numeric.hexStringToByteArray(script)));
         byte[] expectedVerificationScript = Numeric.hexStringToByteArray(
                 "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
         assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
-                Matchers.is(expectedVerificationScript));
+                is(expectedVerificationScript));
     }
 
     @Test
     public void callFunctionReturningString() throws IOException {
-        ContractTestHelper.setUpWireMockForCall("invokefunction", "invokefunction_name.json",
+        setUpWireMockForCall("invokefunction", "invokefunction_name.json",
                 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "name");
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         SmartContract sc = new SmartContract(neo, this.neow);
@@ -134,7 +126,7 @@ public class SmartContractTest {
 
     @Test
     public void callFunctionReturningNonString() throws IOException {
-        ContractTestHelper.setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
+        setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
                 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "name");
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         SmartContract sc = new SmartContract(neo, this.neow);
@@ -145,7 +137,7 @@ public class SmartContractTest {
 
     @Test
     public void callFunctionReturningInt() throws IOException {
-        ContractTestHelper.setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
+        setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
                 "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b", "totalSupply");
         ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
         SmartContract sc = new SmartContract(neo, this.neow);
@@ -155,8 +147,8 @@ public class SmartContractTest {
 
     @Test
     public void callFunctionReturningNonInt() throws IOException {
-        ContractTestHelper.setUpWireMockForCall("invokefunction",
-                "invokefunction_registercandidate.json",
+        setUpWireMockForCall("invokefunction",
+                "invokescript_registercandidate.json",
                 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "totalSupply");
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         SmartContract sc = new SmartContract(neo, this.neow);
@@ -167,7 +159,7 @@ public class SmartContractTest {
 
     @Test
     public void callFunctionWithParams() throws IOException {
-        ContractTestHelper.setUpWireMockForCall("invokefunction",
+        setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf.json",
                 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
                 "balanceOf",
@@ -176,7 +168,7 @@ public class SmartContractTest {
         SmartContract sc = new SmartContract(neo, this.neow);
 
         ScriptHash acc = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
-        NeoInvokeFunction response = sc.callFunction("balanceOf", ContractParameter.hash160(acc));
+        NeoInvokeFunction response = sc.invokeFunction("balanceOf", ContractParameter.hash160(acc));
         assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(3000000000000000L)));
     }
