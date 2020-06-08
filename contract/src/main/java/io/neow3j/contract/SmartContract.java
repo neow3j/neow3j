@@ -27,8 +27,8 @@ public class SmartContract {
 
     protected ScriptHash scriptHash;
     protected Neow3j neow;
-    private NefFile nefFile;
-    private ContractManifest manifest;
+    protected NefFile nefFile;
+    protected ContractManifest manifest;
 
     /**
      * Constructs a <tt>SmartContract</tt> representing the smart contract with the given script
@@ -58,8 +58,11 @@ public class SmartContract {
      * @throws IOException              If there is a problem reading the provided files.
      * @throws DeserializationException If the NEF file cannot be deserialized properly.
      */
-    public SmartContract(Neow3j neow, File nef, File manifestFile)
+    public SmartContract(File nef, File manifestFile, Neow3j neow)
             throws IOException, DeserializationException {
+        if (neow == null) {
+            throw new IllegalArgumentException("The Neow3j object must not be null.");
+        }
         this.neow = neow;
         this.nefFile = NefFile.readFromFile(nef);
         this.scriptHash = this.nefFile.getScriptHash();
@@ -73,7 +76,7 @@ public class SmartContract {
         }
         byte[] manifestBytes = objectMapper.writeValueAsBytes(this.manifest);
         if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
-            throw new IllegalArgumentException("The given contract manifest is to long. Manifest "
+            throw new IllegalArgumentException("The given contract manifest is too long. Manifest "
                     + "was " + manifestBytes.length + " bytes big, but a max of "
                     + NeoConstants.MAX_MANIFEST_SIZE + " is allowed.");
         }
@@ -153,14 +156,14 @@ public class SmartContract {
     }
 
     /**
+     * Initializes an {@link Invocation.Builder} for deploying this contract. The builder needs
+     * to be
      * Deploys this contract by creating a deployment transaction and sending it to the neo-node
      *
-     * @param sender The account paying for the deployment fees.
-     * @param wallet The wallet containing the sender account.
      * @return The Neo node's response.
      * @throws IOException If something goes wrong when communicating with the Neo node.
      */
-    public NeoSendRawTransaction deploy(ScriptHash sender, Wallet wallet) throws IOException {
+    public Invocation.Builder deploy() throws IOException {
 
         byte[] script = new ScriptBuilder()
                 .pushData(objectMapper.writeValueAsBytes(this.manifest))
@@ -169,11 +172,6 @@ public class SmartContract {
                 .toArray();
 
         return new Invocation.Builder(neow)
-                .withScript(script)
-                .withSender(sender)
-                .withWallet(wallet)
-                .build()
-                .sign()
-                .send();
+                .withScript(script);
     }
 }

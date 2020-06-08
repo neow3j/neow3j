@@ -8,16 +8,23 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.model.NeoConfig;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
+import java.util.Arrays;
 import org.hamcrest.core.StringContains;
+import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +67,62 @@ public class SmartContractTest {
                 new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"), this.neow);
         assertThat(sc.getScriptHash(),
                 is(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789")));
+    }
+
+    @Test
+    public void constructSmartContractForDeploymentWithoutNewo3j() throws IOException,
+            DeserializationException, URISyntaxException {
+
+        File nef = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.nef").toURI());
+        File manifest = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.manifest.json").toURI());
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(new StringContains("Neow3j"));
+        new SmartContract(nef, manifest, null);
+    }
+
+    @Test
+    public void constructSmartContractForDeployment() throws IOException,
+            DeserializationException, URISyntaxException {
+
+        File nef = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.nef").toURI());
+        File manifest = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.manifest.json").toURI());
+        SmartContract c = new SmartContract(nef, manifest, this.neow);
+        assertThat(c.getScriptHash().toString(), is("b1872e12d6151da6312d0ff6617df37a98a48591"));
+        assertThat(Numeric.cleanHexPrefix(c.getManifest().getAbi().getHash()),
+                is("b1872e12d6151da6312d0ff6617df37a98a48591"));
+        assertThat(c.getNefFile().getScriptHash().toString(),
+                is("b1872e12d6151da6312d0ff6617df37a98a48591"));
+    }
+
+    @Test
+    public void constructSmartContractForDeploymentWithUnequalScriptHashInNefAndManifest()
+            throws IOException, DeserializationException, URISyntaxException {
+        File nef = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.nef").toURI());
+        File manifest = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world_different_scripthash.manifest.json").toURI());
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(
+                new StringContainsInOrder(Arrays.asList("NEF", "script hash", "manifest")));
+        new SmartContract(nef, manifest, this.neow);
+    }
+
+    @Test
+    public void constructSmartContractForDeploymentWithTooLongManifest()
+            throws IOException, DeserializationException, URISyntaxException {
+        File nef = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.nef").toURI());
+        File manifest = new File(this.getClass().getClassLoader()
+                .getResource("contracts/too_large.manifest.json").toURI());
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("manifest is too long");
+        new SmartContract(nef, manifest, this.neow);
     }
 
     @Test
@@ -171,5 +234,68 @@ public class SmartContractTest {
         NeoInvokeFunction response = sc.invokeFunction("balanceOf", ContractParameter.hash160(acc));
         assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(3000000000000000L)));
+    }
+
+    @Test
+    public void invokeScriptOnDeployment()
+            throws IOException, DeserializationException, URISyntaxException {
+        File nef = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.nef").toURI());
+        File manifest = new File(Main.class.getClassLoader()
+                .getResource("contracts/hello_world.manifest.json").toURI());
+
+        ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
+                "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9"));
+        Account a = Account.fromECKeyPair(pair).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(a).build();
+        String script =
+                "0db8017b2267726f757073223a5b5d2c226665617475726573223a7b2273746f72616765223a747275652c2270617961626c65223a66616c73657d2c22616269223a7b2268617368223a22307862313837326531326436313531646136333132643066663636313764663337613938613438353931222c226d6574686f6473223a5b7b226e616d65223a226d61696e222c22706172616d6574657273223a5b7b226e616d65223a226f7065726174696f6e222c2274797065223a22537472696e67227d2c7b226e616d65223a2261726773222c2274797065223a224172726179227d5d2c226f6666736574223a302c2272657475726e54797065223a22426f6f6c65616e227d5d2c226576656e7473223a5b5d7d2c227065726d697373696f6e73223a5b7b22636f6e7472616374223a222a222c226d6574686f6473223a222a227d5d2c22747275737473223a5b5d2c22736166654d6574686f6473223a5b5d2c226578747261223a7b22417574686f72223a224e656f222c22456d61696c223a22646576406e656f2e6f7267222c224465736372697074696f6e223a2254686973206973206120636f6e7472616374206578616d706c65227d7d0c1f5700020c0548656c6c6f0c05576f726c642150419bf667ce41e63f1884114041ce352c85";
+        setUpWireMockForCall("invokescript", "invokescript_deploy.json");
+
+        NeoInvokeScript response = new SmartContract(nef, manifest, neow).deploy()
+                .withSender(a.getScriptHash())
+                .withWallet(w)
+                .invokeScript();
+
+        assertThat(response.getInvocationResult().getScript(), is(script));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(),
+                is(StackItemType.INTEROP_INTERFACE));
+    }
+
+    @Test
+    public void deploy() throws IOException, DeserializationException, URISyntaxException {
+        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
+        File nef = new File(this.getClass().getClassLoader()
+                .getResource("contracts/hello_world.nef").toURI());
+        File manifest = new File(Main.class.getClassLoader()
+                .getResource("contracts/hello_world.manifest.json").toURI());
+
+        ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
+                "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9"));
+        Account a = Account.fromECKeyPair(pair).isDefault().build();
+        Wallet w = new Wallet.Builder().accounts(a).build();
+        String script =
+                "0db8017b2267726f757073223a5b5d2c226665617475726573223a7b2273746f72616765223a747275652c2270617961626c65223a66616c73657d2c22616269223a7b2268617368223a22307862313837326531326436313531646136333132643066663636313764663337613938613438353931222c226d6574686f6473223a5b7b226e616d65223a226d61696e222c22706172616d6574657273223a5b7b226e616d65223a226f7065726174696f6e222c2274797065223a22537472696e67227d2c7b226e616d65223a2261726773222c2274797065223a224172726179227d5d2c226f6666736574223a302c2272657475726e54797065223a22426f6f6c65616e227d5d2c226576656e7473223a5b5d7d2c227065726d697373696f6e73223a5b7b22636f6e7472616374223a222a222c226d6574686f6473223a222a227d5d2c22747275737473223a5b5d2c22736166654d6574686f6473223a5b5d2c226578747261223a7b22417574686f72223a224e656f222c22456d61696c223a22646576406e656f2e6f7267222c224465736372697074696f6e223a2254686973206973206120636f6e7472616374206578616d706c65227d7d0c1f5700020c0548656c6c6f0c05576f726c642150419bf667ce41e63f1884114041ce352c85";
+        setUpWireMockForCall("invokescript", "invokescript_deploy.json", script,
+                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        String verificationScript =
+                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75";
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json", script,
+                verificationScript); // verification script, part of the transaction hex.
+
+        Invocation i = new SmartContract(nef, manifest, neow).deploy()
+                .withSender(a.getScriptHash())
+                .withWallet(w)
+                .withValidUntilBlock(1000)
+                .build()
+                .sign();
+
+        assertThat(i.getTransaction().getSender(),
+                is(new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8")));
+        assertThat(i.getTransaction().getSystemFee(), is(47113180L));
+        assertThat(i.getTransaction().getNetworkFee(), is(1662390L));
+        assertThat(i.getTransaction().getScript(), is(Numeric.hexStringToByteArray(script)));
+        assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
+                is(Numeric.hexStringToByteArray(verificationScript)));
     }
 }
