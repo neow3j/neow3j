@@ -78,4 +78,9 @@ public class NefFileTest {
         assertThat(nef.getSize(), is(108));
     }
 
+    @Test
+    public void getVersionSize() {
+        assertThat(new NefFile.Version().getSize(), is(4 * 32));
+    }
+
 }
