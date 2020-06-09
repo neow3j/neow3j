@@ -113,7 +113,7 @@ public class NeoConstants {
 
     //endregion
 
-    //region Transactions
+    //region Transactions & Contracts
 
     /**
      * The current version used for Neo transaction.
@@ -139,6 +139,11 @@ public class NeoConstants {
      * The maximum value for the 'validUntilBlock' transaction property.
      */
     public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT = 2102400;
+
+    /**
+     * Max byte length for a valid contract manifest.
+     */
+    public static final int MAX_MANIFEST_SIZE = 4096;
 
     //endregion
 

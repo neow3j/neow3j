@@ -329,27 +329,38 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
-            String functionName) {
-        return invokeFunction(contractScriptHash, functionName, null, (String[]) null);
+            String functionName, String... witnesses) {
+        return invokeFunction(contractScriptHash, functionName, null, witnesses);
     }
 
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
-            String functionName, List<ContractParameter> params, String... witnesses) {
+            String functionName, List<ContractParameter> contractParams, String... witnesses) {
+
+        List<?> params;
+        if (witnesses.length > 0) {
+            params = asList(contractScriptHash, functionName, contractParams, witnesses);
+        } else {
+            params = asList(contractScriptHash, functionName, contractParams);
+        }
         return new Request<>(
                 "invokefunction",
-                asList(contractScriptHash, functionName, params, witnesses).stream()
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()),
+                params.stream().filter(Objects::nonNull).collect(Collectors.toList()),
                 neow3jService,
                 NeoInvokeFunction.class);
     }
 
     @Override
-    public Request<?, NeoInvokeScript> invokeScript(String script) {
+    public Request<?, NeoInvokeScript> invokeScript(String script, String... witnesses) {
+        List<?> params;
+        if (witnesses.length > 0) {
+            params = asList(script, witnesses);
+        } else {
+            params = asList(script);
+        }
         return new Request<>(
                 "invokescript",
-                asList(script),
+                params,
                 neow3jService,
                 NeoInvokeScript.class);
     }

@@ -153,13 +153,9 @@ public class Witness extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
-        try {
-            this.invocationScript = reader.readSerializable(InvocationScript.class);
-            this.verificationScript = reader.readSerializable(VerificationScript.class);
-            this.scriptHash = verificationScript.getScriptHash();
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new DeserializationException(e);
-        }
+        this.invocationScript = reader.readSerializable(InvocationScript.class);
+        this.verificationScript = reader.readSerializable(VerificationScript.class);
+        this.scriptHash = verificationScript.getScriptHash();
     }
 
     @Override

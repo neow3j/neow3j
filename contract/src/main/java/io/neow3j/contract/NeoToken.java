@@ -153,7 +153,8 @@ public class NeoToken extends Nep5Token {
      *                                       elements are not public keys and node counts.
      */
     public Map<ECPublicKey, Integer> getCandidates() throws IOException {
-        StackItem arrayItem = callFunction(GET_CANDIDATES).getInvocationResult().getStack().get(0);
+        StackItem arrayItem = invokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(
+                0);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }
@@ -188,7 +189,7 @@ public class NeoToken extends Nep5Token {
     private List<ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
             throws IOException {
 
-        StackItem arrayItem = callFunction(function).getInvocationResult().getStack().get(0);
+        StackItem arrayItem = invokeFunction(function).getInvocationResult().getStack().get(0);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }

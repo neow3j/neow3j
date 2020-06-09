@@ -421,39 +421,29 @@ public class ResponseTest extends ResponseTester {
                         "            },\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
-                        "                \"entryPoint\": {\n" +
-                        "                    \"name\": \"Main\",\n" +
-                        "                    \"parameters\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"operation\",\n" +
-                        "                            \"type\": \"String\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"args\",\n" +
-                        "                            \"type\": \"Array\"\n" +
-                        "                        }\n" +
-                        "                    ],\n" +
-                        "                    \"returnType\": \"Void\"\n" +
-                        "                },\n" +
                         "                \"methods\": [\n" +
                         "                    {\n" +
                         "                        \"name\": \"name\",\n" +
                         "                        \"parameters\": [],\n" +
+                        "                        \"offset\": 0,\n" +
                         "                        \"returnType\": \"String\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"symbol\",\n" +
                         "                        \"parameters\": [],\n" +
+                        "                        \"offset\": 0,\n" +
                         "                        \"returnType\": \"String\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"decimals\",\n" +
                         "                        \"parameters\": [],\n" +
+                        "                        \"offset\": 0,\n" +
                         "                        \"returnType\": \"Integer\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"totalSupply\",\n" +
                         "                        \"parameters\": [],\n" +
+                        "                        \"offset\": 0,\n" +
                         "                        \"returnType\": \"Integer\"\n" +
                         "                    },\n" +
                         "                    {\n" +
@@ -464,6 +454,7 @@ public class ResponseTest extends ResponseTester {
                         "                                \"type\": \"Hash160\"\n" +
                         "                            }\n" +
                         "                        ],\n" +
+                        "                        \"offset\": 0,\n" +
                         "                        \"returnType\": \"Integer\"\n" +
                         "                    }\n" +
                         "                ],\n" +
@@ -537,13 +528,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
         assertThat(abi.getHash(), is("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"));
-
-        assertThat(abi.getEntryPoint(), is(notNullValue()));
-        assertThat(abi.getEntryPoint().getName(), is("Main"));
-        assertThat(abi.getEntryPoint().getParameters(), is(notNullValue()));
-        assertThat(abi.getEntryPoint().getParameters(), hasSize(2));
-        assertThat(abi.getEntryPoint().getParameters().get(0).getParamName(), is("operation"));
-        assertThat(abi.getEntryPoint().getParameters().get(0).getParamType(), is(ContractParameterType.STRING));
 
         assertThat(abi.getMethods(), is(notNullValue()));
         assertThat(abi.getMethods(), hasSize(5));

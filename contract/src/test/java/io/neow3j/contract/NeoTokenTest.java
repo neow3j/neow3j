@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
@@ -87,11 +88,12 @@ public class NeoTokenTest {
 
     @Test
     public void registerCandidate() throws IOException {
-        ContractTestHelper.setUpWireMockForCall("invokefunction",
-                "invokefunction_registercandidate.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "registerCandidate");
-        ContractTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
+        String script =
+                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c11c00c11726567697374657243616e6469646174650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
+        setUpWireMockForCall("invokescript", "invokescript_registercandidate.json", script,
+                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
@@ -105,9 +107,7 @@ public class NeoTokenTest {
         assertThat(tx.getSystemFee(), is(6007570L));
         assertThat(tx.getNetworkFee(), is(1262390L));
         assertThat(tx.getCosigners(), contains(Cosigner.global(a.getScriptHash())));
-        byte[] script = Numeric.hexStringToByteArray(
-                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c11c00c11726567697374657243616e6469646174650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52");
-        assertThat(tx.getScript(), is(script));
+        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         byte[] verifScript = Numeric.hexStringToByteArray(
                 "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(verifScript));
@@ -182,10 +182,12 @@ public class NeoTokenTest {
 
     @Test
     public void vote() throws IOException {
-        ContractTestHelper.setUpWireMockForCall("invokefunction", "invokefunction_vote.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "vote");
-        ContractTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
+        String script =
+                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0c14c8172ea3b405bf8bfc57c33a8410116b843e13df13c00c04766f74650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
+        setUpWireMockForCall("invokescript", "invokescript_vote.json", script,
+                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
@@ -203,9 +205,7 @@ public class NeoTokenTest {
         assertThat(tx.getSystemFee(), is(501007930L));
         assertThat(tx.getNetworkFee(), is(1306390L));
         assertThat(tx.getCosigners(), contains(Cosigner.global(a.getScriptHash())));
-        byte[] script = Numeric.hexStringToByteArray(
-                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0c14c8172ea3b405bf8bfc57c33a8410116b843e13df13c00c04766f74650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52");
-        assertThat(tx.getScript(), is(script));
+        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         byte[] verifScript = Numeric.hexStringToByteArray(
                 "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(verifScript));

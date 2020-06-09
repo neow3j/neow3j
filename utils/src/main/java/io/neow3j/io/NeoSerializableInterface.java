@@ -40,7 +40,7 @@ public interface NeoSerializableInterface {
             try (BinaryReader reader = new BinaryReader(ms)) {
                 return reader.readSerializable(t);
             }
-        } catch (IllegalAccessException | InstantiationException | IOException e) {
+        } catch (IOException e) {
             throw new DeserializationException(e);
         }
     }
@@ -52,7 +52,7 @@ public interface NeoSerializableInterface {
             try (BinaryReader reader = new BinaryReader(ms)) {
                 return reader.readSerializableListVarBytes(t);
             }
-        } catch (IllegalAccessException | InstantiationException | IOException e) {
+        } catch (IOException e) {
             throw new DeserializationException(e);
         }
     }
