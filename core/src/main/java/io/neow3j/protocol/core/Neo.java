@@ -71,8 +71,6 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex);
 
-    Request<?, NeoGetBlockSysFee> getBlockSysFee(BlockParameterIndex blockIndex);
-
     Request<?, NeoGetContractState> getContractState(String scriptHash);
 
     Request<?, NeoGetMemPool> getMemPool();
