@@ -32,6 +32,21 @@ Content-Type: application/javascript'
 }
 
 ####################
+# getbalance
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getbalance",
+ "params": [
+  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+ ],
+ "id": 1
+}
+
+####################
 # getapplicationlog
 ####################
 POST http://localhost:40332

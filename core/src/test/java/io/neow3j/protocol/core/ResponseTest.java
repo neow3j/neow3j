@@ -1458,8 +1458,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"balance\": \"200\",\n" +
-                        "        \"confirmed\": \"100\"" +
+                        "        \"balance\": \"200\"\n" +
                         "    }\n" +
                         "}"
         );
@@ -1467,7 +1466,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
         assertThat(getBalance.getBalance(), is(notNullValue()));
         assertThat(getBalance.getBalance().getBalance(), is("200"));
-        assertThat(getBalance.getBalance().getConfirmed(), is("100"));
     }
 
     @Test
@@ -1477,8 +1475,7 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"Balance\": \"199999990.0\",\n"
-                        + "      \"Confirmed\": \"99999990.0\"\n"
+                        + "      \"balance\": \"199999990.0\"\n"
                         + "  }\n"
                         + "}"
         );
@@ -1486,7 +1483,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
         assertThat(getBalance.getBalance(), is(notNullValue()));
         assertThat(getBalance.getBalance().getBalance(), is("199999990.0"));
-        assertThat(getBalance.getBalance().getConfirmed(), is("99999990.0"));
     }
 
     @Test
@@ -1504,7 +1500,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
         assertThat(getBalance.getBalance(), is(notNullValue()));
         assertThat(getBalance.getBalance().getBalance(), is("199999990.0"));
-        assertThat(getBalance.getBalance().getConfirmed(), is(nullValue()));
     }
 
     @Test
