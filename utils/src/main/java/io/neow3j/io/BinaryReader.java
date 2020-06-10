@@ -232,39 +232,54 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getLong(0);
     }
 
-    public <T extends NeoSerializable> T readSerializable(Class<T> t) throws InstantiationException,
-            IllegalAccessException, DeserializationException {
-        T obj = t.newInstance();
-        obj.deserialize(this);
-        return obj;
+    public <T extends NeoSerializable> T readSerializable(Class<T> t)
+            throws DeserializationException {
+
+        try {
+            T obj = t.newInstance();
+            obj.deserialize(this);
+            return obj;
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new DeserializationException(e);
+        }
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t) throws
-            IOException, IllegalAccessException, InstantiationException, DeserializationException {
-        int length = (int) readVarInt(0x10000000);
-        int bytesRead = 0;
-        int initialOffset = getPosition();
-        List<T> list = new ArrayList<>();
-        while (bytesRead < length) {
-            T objInstance = t.newInstance();
-            list.add(objInstance);
-            objInstance.deserialize(this);
-            int currentOffset = getPosition();
-            bytesRead = (currentOffset - initialOffset);
+    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t)
+            throws DeserializationException {
+
+        try {
+            int length = (int) readVarInt(0x10000000);
+            int bytesRead = 0;
+            int initialOffset = getPosition();
+            List<T> list = new ArrayList<>();
+            while (bytesRead < length) {
+                T objInstance = t.newInstance();
+                list.add(objInstance);
+                objInstance.deserialize(this);
+                int currentOffset = getPosition();
+                bytesRead = (currentOffset - initialOffset);
+            }
+            return list;
+        } catch (IOException | IllegalAccessException | InstantiationException e) {
+            throw new DeserializationException(e);
         }
-        return list;
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t) throws IOException,
-            IllegalAccessException, InstantiationException, DeserializationException {
-        int length = (int) readVarInt(0x10000000);
-        List<T> list = new ArrayList<>(length);
-        for (int i = 0; i < length; i++) {
-            T objInstance = t.newInstance();
-            list.add(objInstance);
-            objInstance.deserialize(this);
+    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t)
+            throws DeserializationException {
+
+        try {
+            int length = (int) readVarInt(0x10000000);
+            List<T> list = new ArrayList<>(length);
+            for (int i = 0; i < length; i++) {
+                T objInstance = t.newInstance();
+                list.add(objInstance);
+                objInstance.deserialize(this);
+            }
+            return list;
+        } catch (IOException | IllegalAccessException | InstantiationException e) {
+            throw new DeserializationException(e);
         }
-        return list;
     }
 
     public short readShort() throws IOException {
@@ -274,7 +289,7 @@ public class BinaryReader implements AutoCloseable {
     }
 
     public byte[] readVarBytes() throws IOException {
-        return readVarBytes(0x7fffffc7);
+        return readVarBytes(0x1000000);
     }
 
     /**

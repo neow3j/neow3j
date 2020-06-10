@@ -310,19 +310,16 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             // TODO: 13.05.20 Michael: This ContractABI class is currently mainly copied from contract module abi/model classes.
             //  These need to be restructured and/or new positioned - same for ContractParameter
             @JsonIgnoreProperties(ignoreUnknown = true)
-            @JsonPropertyOrder({"hash", "entryPoint", "methods", "events"})
+            @JsonPropertyOrder({"hash", "methods", "events"})
             public static class ContractABI {
 
                 @JsonProperty("hash")
                 private String hash;
 
-                @JsonProperty("entryPoint")
-                private ContractMethod entryPoint;
-
                 @JsonProperty("methods")
                 @JsonAlias({"functions"})
                 @JsonSetter(nulls = Nulls.AS_EMPTY)
-                private List<ContractMethod> functions;
+                private List<ContractMethod> methods;
 
                 @JsonProperty("events")
                 @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -331,10 +328,9 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                 public ContractABI() {
                 }
 
-                public ContractABI(String hash, ContractMethod entryPoint, List<ContractMethod> functions, List<ContractEvent> events) {
+                public ContractABI(String hash, List<ContractMethod> methods, List<ContractEvent> events) {
                     this.hash = hash;
-                    this.entryPoint = entryPoint;
-                    this.functions = functions != null ? functions : new ArrayList<>();
+                    this.methods = methods != null ? methods : new ArrayList<>();
                     this.events = events != null ? events : new ArrayList<>();
                 }
 
@@ -342,12 +338,8 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     return hash;
                 }
 
-                public ContractMethod getEntryPoint() {
-                    return entryPoint;
-                }
-
                 public List<ContractMethod> getMethods() {
-                    return functions;
+                    return methods;
                 }
 
                 public List<ContractEvent> getEvents() {
@@ -360,22 +352,20 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     if (!(o instanceof ContractABI)) return false;
                     ContractABI that = (ContractABI) o;
                     return Objects.equals(getHash(), that.getHash()) &&
-                            Objects.equals(getEntryPoint(), that.getEntryPoint()) &&
                             Objects.equals(getMethods(), that.getMethods()) &&
                             Objects.equals(getEvents(), that.getEvents());
                 }
 
                 @Override
                 public int hashCode() {
-                    return Objects.hash(getHash(), getEntryPoint(), getMethods(), getEvents());
+                    return Objects.hash(getHash(), getMethods(), getEvents());
                 }
 
                 @Override
                 public String toString() {
                     return "NeoContractInterface{" +
                             "hash='" + hash + '\'' +
-                            ", entryPoint='" + entryPoint + '\'' +
-                            ", functions=" + functions +
+                            ", methods=" + methods +
                             ", events=" + events +
                             '}';
                 }
@@ -389,6 +379,9 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     @JsonProperty("parameters")
                     @JsonSetter(nulls = Nulls.AS_EMPTY)
                     private List<ContractParameter> parameters;
+
+                    @JsonProperty("offset")
+                    private int offset;
 
                     @JsonProperty("returnType")
                     private ContractParameterType returnType;
@@ -508,7 +501,8 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                 private String contract;
 
                 @JsonProperty("methods")
-                @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+                @JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY,
+                        JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
                 private List<String> methods;
 
                 public ContractPermission() {

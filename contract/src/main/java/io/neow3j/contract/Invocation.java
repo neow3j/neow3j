@@ -11,6 +11,7 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Transaction;
@@ -32,19 +33,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Can be used for invoking smart contracts on the Neo blockchain. An invocation is configured with
- * the <tt>Invocation.Builder</tt>, which checks if the configuration is correct.
+ * Used to invoke Neo VM scripts and contract functions. Uses the {@link Invocation.Builder} to
+ * configure an invocation and do calls via the <tt>invokescript</tt> and <tt>invokefunction</tt>
+ * RPC. When building the <tt>Invocation</tt>, a transaction is created that can be signed
+ * and sent to the Neo node.
  */
 public class Invocation {
 
-    private Transaction transaction;
-    private Wallet wallet;
-    private Neow3j neow;
+    protected Neow3j neow;
+    protected Wallet wallet;
+    protected Transaction transaction;
 
-    protected Invocation(InvocationBuilder builder) {
+    protected Invocation(Builder builder) {
         this.neow = builder.neow;
         this.wallet = builder.wallet;
-        this.transaction = builder.tx;
+        this.transaction = builder.transaction;
     }
 
     /**
@@ -173,7 +176,7 @@ public class Invocation {
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
                 .getBalanceOf(this.transaction.getSender());
-        if (fees.compareTo(senderGasBalance) < 0) {
+        if (fees.compareTo(senderGasBalance) > 0) {
             consumer.accept(fees, senderGasBalance);
         }
         return this;
@@ -203,53 +206,41 @@ public class Invocation {
         return fees.compareTo(senderGasBalance) < 0;
     }
 
-    public static class InvocationBuilder {
+    public static class Builder {
 
-        private String function;
-        private List<ContractParameter> parameters;
         private long additionalNetworkFee;
-        private ScriptHash scriptHash;
-        private Neow3j neow;
-        private Wallet wallet;
-        private Transaction.Builder txBuilder;
-        private Transaction tx;
-        private boolean failOnFalse;
+        protected Neow3j neow;
+        protected Wallet wallet;
+        private String contractFunction;
+        private List<ContractParameter> contractParams;
+        private ScriptHash contract;
+        protected Transaction.Builder txBuilder;
+        protected Transaction transaction;
+        protected boolean failOnFalse;
 
-        // Should only be called by the SmartContract class. Therefore no checks on the arguments.
-        protected InvocationBuilder(Neow3j neow, ScriptHash scriptHash, String function) {
-            this.neow = neow;
-            this.scriptHash = scriptHash;
-            this.function = function;
-            this.parameters = new ArrayList<>();
+        // TODO: Add javadoc.
+        protected Builder(Neow3j neow) {
+            if (neow == null) {
+                throw new IllegalArgumentException("Neow3j instance must not be null.");
+            }
             this.txBuilder = new Transaction.Builder();
-            this.failOnFalse = false;
+            this.contractParams = new ArrayList<>();
+            this.neow = neow;
         }
 
         /**
-         * Configures the invocation with the given parameters. (Optional, depending on the invoked
-         * function)
-         *
-         * @param parameters The contract parameters.
-         * @return this.
-         */
-        public InvocationBuilder withParameters(ContractParameter... parameters) {
-            this.parameters.addAll(Arrays.asList(parameters));
-            return this;
-        }
-
-        /**
-         * Configures the invocation with the given attributes. (Optional)
+         * Configures the invocation with the given attributes. 
          *
          * @param attributes The attributes.
          * @return this.
          */
-        public InvocationBuilder withAttributes(TransactionAttribute... attributes) {
+        public Builder withAttributes(TransactionAttribute... attributes) {
             this.txBuilder.attributes(attributes);
             return this;
         }
 
         /**
-         * Configures the invocation such that it is valid until the given block number. (Optional)
+         * Configures the invocation such that it is valid until the given block number. 
          * <p>
          * By default it is set to the maximum.
          *
@@ -257,13 +248,13 @@ public class Invocation {
          * @return this.
          * @see Transaction.Builder#validUntilBlock(long)
          */
-        public InvocationBuilder validUntilBlock(long blockNr) {
+        public Builder withValidUntilBlock(long blockNr) {
             this.txBuilder.validUntilBlock(blockNr);
             return this;
         }
 
         /**
-         * Configures the invocation with the given nonce. (Optional)
+         * Configures the invocation with the given nonce. 
          * <p>
          * By default the nonce is set to a random value.
          *
@@ -271,26 +262,26 @@ public class Invocation {
          * @return this.
          * @see Transaction.Builder#nonce(Long)
          */
-        public InvocationBuilder withNonce(long nonce) {
+        public Builder withNonce(long nonce) {
             this.txBuilder.nonce(nonce);
             return this;
         }
 
         /**
-         * Configures the invocation with an additional network fee. (Optional)
+         * Configures the invocation with an additional network fee. 
          * <p>
          * The basic network fee required to send this invocation is added automatically.
          *
-         * @param fee The additional network fee.
+         * @param fee The additional network fee in fractions of GAS.
          * @return this.
          */
-        public InvocationBuilder withAdditionalNetworkFee(long fee) {
+        public Builder withAdditionalNetworkFee(long fee) {
             this.additionalNetworkFee = fee;
             return this;
         }
 
         /**
-         * Configures the invocation to use the given wallet. (Mandatory)
+         * Configures the invocation to use the given wallet.
          * <p>
          * The wallet's default account is used as the transaction sender if no sender is specified
          * explicitly.
@@ -298,31 +289,102 @@ public class Invocation {
          * @param wallet The wallet.
          * @return this.
          */
-        public InvocationBuilder withWallet(Wallet wallet) {
+        public Builder withWallet(Wallet wallet) {
             this.wallet = wallet;
             return this;
         }
 
         /**
-         * Configures the invocation to use the given sender. (Optional)
+         * Configures the invocation to use the given sender.
          *
          * @param sender the sender account's script hash.
          * @return this.
          */
-        public InvocationBuilder withSender(ScriptHash sender) {
+        public Builder withSender(ScriptHash sender) {
             txBuilder.sender(sender);
             return this;
         }
 
         /**
+         * Configures the invocation to call the function (configured via {@link
+         * Invocation.Builder#withFunction(String)}) with the provided parameters. The order of the
+         * parameters is relevant.
+         *
+         * @param parameters The contract parameters.
+         * @return this.
+         */
+        public Builder withParameters(ContractParameter... parameters) {
+            this.contractParams.addAll(Arrays.asList(parameters));
+            return this;
+        }
+
+        /**
+         * Configures the invocation to call the provided function on the contract configured via
+         * {@link Invocation.Builder#withContract(ScriptHash)}.
+         *
+         * @param function The contract function to call.
+         * @return this.
+         */
+        public Builder withFunction(String function) {
+            this.contractFunction = function;
+            return this;
+        }
+
+        /**
+         * Configures the invocation to call the given contract.
+         *
+         * @param contract The script hash of the contract to call.
+         * @return this.
+         */
+        public Builder withContract(ScriptHash contract) {
+            this.contract = contract;
+            return this;
+        }
+
+        /**
+         * Configures the invocation to run the given script.
+         *
+         * @param script The script to invoke.
+         * @return this.
+         */
+        public Builder withScript(byte[] script) {
+            this.txBuilder.script(script);
+            return this;
+        }
+
+        /**
          * Configures the invocation such that it fails (NeoVM exits with state FAULT) if the return
-         * value of the invocation is "False". (Optional)
+         * value of the invocation is "False". 
          *
          * @return this
          */
-        public InvocationBuilder failOnFalse() {
+        public Builder failOnFalse() {
             this.failOnFalse = true;
             return this;
+        }
+
+        /**
+         * Makes an <tt>invokescript</tt> call to the neo-node with the invocation in its current
+         * configuration. No changes are made to the blockchain state.
+         * <p>
+         * Make sure to add all necessary cosigners to the builder before making this call. They are
+         * required for a successful <tt>invokescript</tt> call.
+         *
+         * @return the call's response.
+         * @throws IOException if something goes wrong when communicating with the neo-node.
+         */
+        public NeoInvokeScript invokeScript() throws IOException {
+            if (this.txBuilder.getScript() == null || this.txBuilder.getScript().length == 0) {
+                throw new InvocationConfigurationException("Cannot make an 'invokescript' call "
+                        + "without the script being configured.");
+            }
+            // The list of signers is required for `invokescript` calls that will hit a
+            // ChecekWitness check in the smart contract. We add the signers even if that
+            // is not the case because we cannot know if the invoked script needs it or not and it
+            // doesn't lead to failures if we add them in any case.
+            String[] signers = getSigners().toArray(new String[]{});
+            String script = Numeric.toHexStringNoPrefix(this.txBuilder.getScript());
+            return neow.invokeScript(script, signers).send();
         }
 
         /**
@@ -335,11 +397,30 @@ public class Invocation {
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
          */
-        public NeoInvokeFunction call() throws IOException {
-            // The list of signers is required for `invokefunction` calls that will hit
-            // a ChecekWitness check in the smart contract. We add the signers even if that is
-            // not the case. We cannot know if the invoked function needs it or not and it doesn't
-            // lead to failures if we add them.
+        public NeoInvokeFunction invokeFunction() throws IOException {
+            if (this.contract == null) {
+                throw new InvocationConfigurationException("Cannot make an 'invokefunction' call "
+                        + "without having configured the contract to call.");
+            }
+            if (this.contractFunction == null) {
+                throw new InvocationConfigurationException("Cannot make an 'invokefunction' call "
+                        + "without having a configured function to call.");
+            }
+
+            // The list of signers is required for `invokefunction` calls that will hit a
+            // ChecekWitness check in the smart contract. We add the signers even if that is not the
+            // case because we cannot know if the invoked function needs it or not and it doesn't
+            // lead to failures if we add them in any case.
+            String[] signers = getSigners().toArray(new String[]{});
+            if (this.contractParams.isEmpty()) {
+                return neow.invokeFunction(this.contract.toString(), this.contractFunction, null,
+                        signers).send();
+            }
+            return neow.invokeFunction(this.contract.toString(), this.contractFunction,
+                    this.contractParams, signers).send();
+        }
+
+        private Set<String> getSigners() {
             Set<String> signerSet = this.txBuilder.getCosigners().stream()
                     .map(c -> c.getScriptHash().toString())
                     .collect(Collectors.toSet());
@@ -350,25 +431,19 @@ public class Invocation {
                 // If the sender is not set, then take the default account form the wallet
                 signerSet.add(this.wallet.getDefaultAccount().getScriptHash().toString());
             }
-            String[] signers = signerSet.toArray(new String[]{});
-            if (this.parameters.isEmpty()) {
-                return neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
-                        .send();
-            }
-            return neow.invokeFunction(scriptHash.toString(), this.function, this.parameters,
-                    signers).send();
+            return signerSet;
         }
 
         /**
          * Builds the invocation, enforces correct configuration, fetches the system fee and
          * calculates the network fee.
          *
-         * @return the <tt>Invocation</tt> transaction ready for signing and sending.
+         * @return the <tt>Invocation</tt> ready for signing and sending.
          * @throws IOException if something goes wrong when communicating with the neo-node.
          */
         public Invocation build() throws IOException {
             if (this.wallet == null) {
-                throw new InvocationConfigurationException("Cannot create an invocation without a "
+                throw new InvocationConfigurationException("Cannot build a transaction without a "
                         + "wallet.");
             }
             if (this.txBuilder.getValidUntilBlock() == null) {
@@ -387,11 +462,35 @@ public class Invocation {
                 // Set the standard cosigner if none has been specified.
                 this.txBuilder.attributes(Cosigner.calledByEntry(this.txBuilder.getSender()));
             }
-            this.txBuilder.script(createScript());
-            this.txBuilder.systemFee(fetchSystemFee());
+            if (this.txBuilder.getScript() == null || this.txBuilder.getScript().length == 0) {
+                // The builder was not configured with a script. Therefore, try to construct one
+                // from the contract, function, and parameters.
+                this.txBuilder.script(buildScript());
+            }
+            this.txBuilder.systemFee(getSystemFeeForScript());
             this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
-            this.tx = this.txBuilder.build();
+            this.transaction = this.txBuilder.build();
             return new Invocation(this);
+        }
+
+        // Tries to build a script from the properties contract, function and parameters
+        // configured on this builder.
+        private byte[] buildScript() {
+            if (this.contract == null) {
+                throw new InvocationConfigurationException("The invocation doesn't have a script to"
+                        + " invoke and can't generate one from because the contract to invoke was "
+                        + "not set.");
+            }
+            if (this.contractFunction == null) {
+                throw new InvocationConfigurationException("The invocation is configured to call a "
+                        + "contract but is missing a specific function to call.");
+            }
+            ScriptBuilder b = new ScriptBuilder()
+                    .contractCall(this.contract, this.contractFunction, this.contractParams);
+            if (this.failOnFalse) {
+                b.opCode(OpCode.ASSERT);
+            }
+            return b.toArray();
         }
 
         private boolean senderCosignerExists() {
@@ -403,40 +502,19 @@ public class Invocation {
             return neow.getBlockCount().send().getBlockIndex().longValue();
         }
 
-        private byte[] createScript() {
-            ScriptBuilder b = new ScriptBuilder()
-                    .contractCall(this.scriptHash, this.function, this.parameters);
-            if (failOnFalse) {
-                b.opCode(OpCode.ASSERT);
-            }
-            return b.toArray();
-        }
-
         /*
          * Fetches the GAS consumed by this invocation. It does this by making an RPC call to the
          * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
          */
-        private long fetchSystemFee() throws IOException {
+        private long getSystemFeeForScript() throws IOException {
             // The signers are required for `invokescript` calls that will hit a ChecekWitness
             // check in the smart contract.
             String[] signers = this.txBuilder.getCosigners().stream()
                     .map(c -> c.getScriptHash().toString()).toArray(String[]::new);
-            NeoInvokeFunction response;
-            if (this.parameters.isEmpty()) {
-                response = neow.invokeFunction(scriptHash.toString(), this.function, null, signers)
-                        .send();
-            } else {
-                response = neow.invokeFunction(scriptHash.toString(), this.function,
-                        this.parameters, signers).send();
-            }
+            String script = Numeric.toHexStringNoPrefix(this.txBuilder.getScript());
+            NeoInvokeScript response = neow.invokeScript(script, signers).send();
             // The GAS amount is returned in fractions (10^8)
-            long systemFee = Long.parseLong(response.getInvocationResult().getGasConsumed());
-            if (this.failOnFalse) {
-                // The `invokefunction` call does not add the ASSERT OpCode at the end of the
-                // script. Therefore, the fetched GAS systemfee needs to be adjusted.
-                systemFee += OpCode.ASSERT.getPrice();
-            }
-            return systemFee;
+            return Long.parseLong(response.getInvocationResult().getGasConsumed());
         }
 
         /*
@@ -515,5 +593,4 @@ public class Invocation {
                     + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getPrice(n);
         }
     }
-
 }

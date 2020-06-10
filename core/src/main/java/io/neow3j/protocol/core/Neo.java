@@ -106,12 +106,13 @@ public interface Neo {
 
     // SmartContract Methods
 
-    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName);
+    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
+            String... witnesses);
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
             List<ContractParameter> params, String... witnesses);
 
-    Request<?, NeoInvokeScript> invokeScript(String script);
+    Request<?, NeoInvokeScript> invokeScript(String script, String... witnesses);
 
     // Utilities Methods
 

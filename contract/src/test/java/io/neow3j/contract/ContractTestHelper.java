@@ -15,10 +15,6 @@ import java.nio.file.Files;
 
 public class ContractTestHelper {
 
-    public static final String CONTRACT_1_REL_PATH = "./test/resources/contracts/contract_1.py";
-    // Script hash of contract_1 in big-endian format.
-    public static final String CONTRACT_1_SCRIPT_HASH = "12aa18b1dfc127d34087de01c5db334f3274d77a";
-
     public static void setUpWireMockForCall(String call, String responseFile, String... params)
             throws IOException {
 
