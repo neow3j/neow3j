@@ -1,16 +1,21 @@
 package io.neow3j.protocol;
 
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.core.BlockParameterIndex;
+import io.neow3j.protocol.core.methods.response.*;
+import io.neow3j.transaction.WitnessScope;
 
-import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Calendar;
+import java.util.List;
+
+import static org.junit.Assert.*;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
+import static org.hamcrest.Matchers.*;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -41,299 +46,298 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     // Blockchain Methods
 
     @Test
-    public void testGetBestBlockHash() {
-    }
-//    @Test
-//    public void testGetBestBlockHash() throws IOException {
-//        NeoBlockHash getBestBlockHash = getNeow3j().getBestBlockHash().send();
-//        String blockHash = getBestBlockHash.getBlockHash();
-//        assertNotNull(blockHash);
-//        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
-//    }
+    public void testGetBestBlockHash() throws IOException {
+        NeoBlockHash getBestBlockHash = getNeow3j().getBestBlockHash().send();
+        String blockHash = getBestBlockHash.getBlockHash();
 
-    @Test
-    public void testGetBlockHash() {
-    }
-//    @Test
-//    public void testGetBlockHash() throws IOException {
-//        NeoBlockHash getBestBlockHash = getNeow3j().getBlockHash(new BlockParameterIndex(1)).send();
-//        String blockHash = getBestBlockHash.getBlockHash();
-//        assertNotNull(blockHash);
-//        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
-//    }
-
-    @Test
-    public void testGetBlock_Index() {
-    }
-//    @Test
-//    public void testGetBlock_Index() throws IOException {
-//        NeoGetBlock neoGetBlock = getNeow3j()
-//                .getBlock(new BlockParameterIndex(BLOCK_2001_IDX), false)
-//                .send();
-//        NeoBlock block = neoGetBlock.getBlock();
-//        assertNotNull(block);
-//        assertThat(block.getIndex(), equalTo(BLOCK_2001_IDX));
-//        assertThat(block.getTransactions(), is(nullValue()));
-//    }
-
-    @Test
-    public void testGetBlock_Hash() {
-    }
-//    @Test
-//    public void testGetBlock_Hash() throws IOException {
-//        NeoGetBlock neoGetBlock = getNeow3j()
-//                .getBlock(BLOCK_2001_HASH, false)
-//                .send();
-//        NeoBlock block = neoGetBlock.getBlock();
-//        assertNotNull(block);
-//        assertThat(block.getIndex(), greaterThanOrEqualTo(BLOCK_2001_IDX));
-//        assertThat(block.getTransactions(), is(nullValue()));
-//    }
-
-    @Test
-    public void testGetRawBlock_Index() {
-    }
-//    @Test
-//    public void testGetRawBlock_Index() throws IOException {
-//        NeoGetRawBlock neoGetRawBlock = getNeow3j()
-//                .getRawBlock(new BlockParameterIndex(BLOCK_2001_IDX))
-//                .send();
-//        String rawBlock = neoGetRawBlock.getRawBlock();
-//        assertThat(rawBlock, not(isEmptyOrNullString()));
-//    }
-
-    @Test
-    public void testGetRawBlock_Hash() {
-    }
-//    @Test
-//    public void testGetRawBlock_Hash() throws IOException {
-//        NeoGetRawBlock neoGetRawBlock = getNeow3j()
-//                .getRawBlock(BLOCK_2001_HASH)
-//                .send();
-//        String rawBlock = neoGetRawBlock.getRawBlock();
-//        assertThat(rawBlock, not(isEmptyOrNullString()));
-//    }
-
-    @Test
-    public void testGetBlockCount() {
-    }
-//    @Test
-//    public void testGetBlockCount() throws Exception {
-//        NeoBlockCount neoBlockCount = getNeow3j().getBlockCount().send();
-//        BigInteger blockIndex = neoBlockCount.getBlockIndex();
-//        assertNotNull(blockIndex);
-//        assertThat(neoBlockCount.getBlockIndex(), greaterThan(BigInteger.valueOf(0)));
-//    }
-
-    @Test
-    public void testGetBlockHeader_Hash() {
-    }
-//    @Test
-//    public void testGetBlockHeader_Hash() throws IOException {
-//        NeoBlock block = getNeow3j().getBlockHeader(BLOCK_2001_HASH).send().getBlock();
-//        assertThat(block, not(nullValue()));
-//        assertThat(block.getTransactions(), is(nullValue()));
-//        assertThat(block.getIndex(), is(notNullValue()));
-//        assertThat(block.getHash(), is(BLOCK_2001_HASH));
-//    }
-
-    @Test
-    public void testGetBlockHeader_Index() {
-    }
-//    @Test
-//    public void testGetBlockHeader_Index() throws IOException {
-//        NeoBlock block = getNeow3j().getBlockHeader(new BlockParameterIndex(BLOCK_2001_IDX)).send()
-//                .getBlock();
-//        assertThat(block.getTransactions(), is(nullValue()));
-//        assertThat(block.getIndex(), is(BLOCK_2001_IDX));
-//        assertThat(block.getHash(), is(BLOCK_2001_HASH));
-//    }
-
-    @Test
-    public void testGetRawBlockHeader_Hash() {
-    }
-//    @Test
-//    public void testGetRawBlockHeader_Hash() throws IOException {
-//        NeoGetRawBlock getRawBlockHeader = getNeow3j().getRawBlockHeader(BLOCK_2001_HASH).send();
-//        assertThat(getRawBlockHeader.getRawBlock(), is(notNullValue()));
-//        assertThat(getRawBlockHeader.getRawBlock(), is(BLOCK_2001_RAW_STRING));
-//    }
-
-    @Test
-    public void testGetRawBlockHeader_Index() {
-    }
-//    @Test
-//    public void testGetRawBlockHeader_Index() throws IOException {
-//        NeoGetRawBlock getRawBlockHeader = getNeow3j()
-//                .getRawBlockHeader(new BlockParameterIndex(BLOCK_2001_IDX)).send();
-//        assertThat(getRawBlockHeader.getRawBlock(), is(notNullValue()));
-//        assertThat(getRawBlockHeader.getRawBlock(), is(BLOCK_2001_RAW_STRING));
-//    }
-
-    @Test
-    public void testGetBlockSysFee() {
-    }
-//    @Test
-//    public void testGetBlockSysFee() throws IOException {
-//        NeoGetBlockSysFee getBlockSysFee = getNeow3j()
-//                .getBlockSysFee(new BlockParameterIndex(BigInteger.ONE)).send();
-//        String fee = getBlockSysFee.getFee();
-//        assertThat(fee, not(isEmptyOrNullString()));
-//    }
-
-    @Test
-    public void testGetContractState() {
+        assertNotNull(blockHash);
+        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
     }
 
     @Test
-    public void testGetRawMemPool() {
-    }
-//    @Test
-//    public void testGetRawMemPool() throws IOException {
-//        NeoGetRawMemPool getRawMemPool = getNeow3j().getRawMemPool().send();
-//        List<String> addresses = getRawMemPool.getAddresses();
-//        assertNotNull(addresses);
-//        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
-//    }
+    public void testGetBlockHash() throws IOException {
+        NeoBlockHash getBlockHash = getNeow3j().getBlockHash(new BlockParameterIndex(1)).send();
+        String blockHash = getBlockHash.getBlockHash();
 
-    @Test
-    public void testGetTransaction() {
-    }
-//    @Test
-//    public void testGetTransaction() throws IOException {
-//        NeoGetTransaction getTransaction = getNeow3j().getTransaction(UTXO_TX_HASH).send();
-//        assertThat(getTransaction.getTransaction(), is(notNullValue()));
-//        assertThat(
-//                getTransaction.getTransaction().getTransactionId(),
-//                is(UTXO_TX_HASH)
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getSize(),
-//                is(223L)
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getType(),
-//                is(TransactionType.CONTRACT_TRANSACTION)
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getVersion(),
-//                is(0)
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getAttributes(),
-//                hasItem(
-//                        new TransactionAttribute(TransactionAttributeUsageType.SCRIPT,
-//                                ADDR1_SCRIPT_HASH)
-//                )
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getOutputs(),
-//                hasItems(
-//                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()),
-//                                ADDR1_INIT_NEO_BALANCE, ADDRESS_1)
-//                )
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getInputs(),
-//                hasItem(
-//                        new TransactionInput(
-//                                "0x83df8bd085fcb60b2789f7d0a9f876e5f3908567f7877fcba835e899b9dea0b5",
-//                                0)
-//                )
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getSysFee(),
-//                is("0")
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getNetFee(),
-//                is("0")
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getScripts(),
-//                hasItems(
-//                        new NeoWitness(
-//                                "40a3799c78dec17823fde75233793a7039bf2b1dbca4383a6eef1ac829460ba14c1e6a50ab1f2174e689bebfc0bb7accc965a6fe3e46d517b317bba1325b7fdaca",
-//                                "21031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac")
-//                )
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getBlockHash(),
-//                is(BLOCK_2008_HASH)
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getConfirmations(),
-//                greaterThanOrEqualTo(1L)
-//        );
-//        assertThat(
-//                getTransaction.getTransaction().getBlockTime(),
-//                greaterThanOrEqualTo(1547956859L)
-//        );
-//    }
-
-    @Test
-    public void testGetRawTransaction() {
-    }
-//    @Test
-//    public void testGetRawTransaction() throws IOException {
-//        NeoGetRawTransaction getRawTransaction = getNeow3j().getRawTransaction(UTXO_TX_HASH).send();
-//        assertThat(getRawTransaction.getRawTransaction(),
-//                is("8000012023ba2703c53263e8d6e522dc32203339dcd8eee901b5a0deb999e835a8cb7f87f7678590f3e576f8a9d0f789270bb6fc85d08bdf830000019b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc50000c16ff286230023ba2703c53263e8d6e522dc32203339dcd8eee9014140a3799c78dec17823fde75233793a7039bf2b1dbca4383a6eef1ac829460ba14c1e6a50ab1f2174e689bebfc0bb7accc965a6fe3e46d517b317bba1325b7fdaca2321031a6c6fbbdf02ca351745fa86b9ba5a9452d785ac4f7fc2b7548ca2a46c4fcf4aac"));
-//    }
-
-    @Test
-    public void testGetStorage() {
+        assertNotNull(blockHash);
+        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
     }
 
     @Test
-    public void testGetStorage_with_HexParameter() {
+    public void testGetBlock_Index() throws IOException {
+        NeoGetBlock getBlock = getNeow3j()
+                .getBlock(new BlockParameterIndex(BLOCK_0_IDX), false)
+                .send();
+        NeoBlock block = getBlock.getBlock();
+
+        assertNotNull(block);
+        assertThat(block.getIndex(), is(BLOCK_0_IDX));
+        assertNull(block.getTransactions());
     }
 
     @Test
-    public void testGetTransactionHeight() {
+    public void testGetBlock_Index_fullTransactionObjects() throws IOException {
+        NeoGetBlock getBlock = getNeow3j()
+                .getBlock(new BlockParameterIndex(BLOCK_0_IDX), true)
+                .send();
+        NeoBlock block = getBlock.getBlock();
+
+        assertNotNull(block);
+        assertThat(block.getIndex(), is(BLOCK_0_IDX));
+        assertNotNull(block.getTransactions());
+        assertFalse(block.getTransactions().isEmpty());
     }
 
     @Test
-    public void testGetValidators() {
-    }
-//    @Test
-//    public void testGetValidators() throws IOException {
-//        NeoGetValidators getValidators = getNeow3j().getValidators().send();
-//        List<NeoGetValidators.Validator> validators = getValidators.getValidators();
-//        assertNotNull(validators);
-//        assertThat(validators, hasSize(greaterThanOrEqualTo(0)));
-//    }
+    public void testGetBlock_Hash_fullTransactionObjects() throws IOException {
+        NeoGetBlock getBlock = getNeow3j().getBlock(BLOCK_0_HASH, true).send();
+        NeoBlock block = getBlock.getBlock();
 
-    // Node Methods
+        assertNotNull(block);
+        assertThat(block.getIndex(), greaterThanOrEqualTo(BLOCK_0_IDX));
+        assertNotNull(block.getTransactions());
+        assertFalse(block.getTransactions().isEmpty());
+    }
 
     @Test
-    public void testGetConnectionCount() {
+    public void testGetRawBlock_Index() throws IOException {
+        NeoGetRawBlock getRawBlock = getNeow3j().getRawBlock(new BlockParameterIndex(BLOCK_0_IDX)).send();
+        String rawBlock = getRawBlock.getRawBlock();
+
+        assertThat(rawBlock, not(isEmptyOrNullString()));
     }
-//    @Test
-//    public void testGetConnectionCount() throws IOException {
-//        NeoConnectionCount getConnectionCount = getNeow3j().getConnectionCount().send();
-//        Integer connectionCount = getConnectionCount.getCount();
-//        assertNotNull(connectionCount);
-//        assertThat(connectionCount, greaterThanOrEqualTo(0));
-//    }
 
     @Test
-    public void testGetPeers() {
+    public void testGetRawBlock_Hash() throws IOException {
+        NeoGetRawBlock getRawBlock = getNeow3j().getRawBlock(BLOCK_0_HASH).send();
+        String rawBlock = getRawBlock.getRawBlock();
+
+        assertThat(rawBlock, not(isEmptyOrNullString()));
     }
-//    @Test
-//    public void testGetPeers() throws IOException {
-//        NeoGetPeers getPeers = getNeow3j().getPeers().send();
-//        NeoGetPeers.Peers peers = getPeers.getPeers();
-//        assertNotNull(peers);
-//        assertThat(peers.getBad(), hasSize(greaterThanOrEqualTo(0)));
-//        assertThat(peers.getConnected(), hasSize(greaterThanOrEqualTo(0)));
-//        assertThat(peers.getUnconnected(), hasSize(greaterThanOrEqualTo(0)));
-//    }
+
+    @Test
+    public void testGetBlockCount() throws IOException {
+        NeoBlockCount blockCount = getNeow3j().getBlockCount().send();
+        BigInteger blockIndex = blockCount.getBlockIndex();
+
+        assertNotNull(blockIndex);
+        assertThat(blockCount.getBlockIndex(), greaterThan(BigInteger.valueOf(0)));
+    }
+
+    @Test
+    public void testGetBlockHeader_Hash() throws IOException {
+        NeoGetBlock getBlock = getNeow3j().getBlockHeader(BLOCK_0_HASH).send();
+        NeoBlock block = getBlock.getBlock();
+
+        assertNotNull(block);
+        assertNull(block.getTransactions());
+        assertThat(block.getIndex(), is(BLOCK_0_IDX));
+        assertThat(block.getHash(), is(BLOCK_0_HASH));
+    }
+
+    @Test
+    public void testGetBlockHeader_Index() throws IOException {
+        NeoGetBlock getBlock = getNeow3j().getBlockHeader(new BlockParameterIndex(BLOCK_0_IDX)).send();
+        NeoBlock block = getBlock.getBlock();
+
+        assertNotNull(block);
+        assertNull(block.getTransactions());
+        assertThat(block.getIndex(), is(BLOCK_0_IDX));
+        assertThat(block.getHash(), is(BLOCK_0_HASH));
+    }
+
+    @Test
+    public void testGetRawBlockHeader_Hash() throws IOException {
+        NeoGetRawBlock getRawBlock = getNeow3j().getRawBlockHeader(BLOCK_0_HASH).send();
+        String rawBlock = getRawBlock.getRawBlock();
+
+        assertThat(rawBlock, is(notNullValue()));
+        assertThat(rawBlock, is(BLOCK_0_RAW_STRING));
+    }
+
+    @Test
+    public void testGetRawBlockHeader_Index() throws IOException {
+        NeoGetRawBlock getRawBlock = getNeow3j().getRawBlockHeader(new BlockParameterIndex(BLOCK_0_IDX)).send();
+        String rawBlock = getRawBlock.getRawBlock();
+
+        assertThat(rawBlock, is(notNullValue()));
+        assertThat(rawBlock, is(BLOCK_0_RAW_STRING));
+    }
+
+    @Test
+    public void testGetContractState() throws IOException {
+        NeoGetContractState getContractState = getNeow3j().getContractState(NEO_HASH).send();
+        NeoGetContractState.ContractState contractState = getContractState.getContractState();
+
+        assertNotNull(contractState);
+        assertThat(contractState.getId(), is(-1));
+        assertThat(contractState.getHash(), is(NEO_HASH_WITH_PREFIX));
+        assertThat(contractState.getScript(), is("QUXEkoQ="));
+
+        NeoGetContractState.ContractState.ContractManifest manifest = contractState.getManifest();
+        assertThat(manifest, is(notNullValue()));
+        assertThat(manifest.getGroups(), is(notNullValue()));
+        assertThat(manifest.getGroups(), hasSize(0));
+        assertThat(manifest.getFeatures(), is(notNullValue()));
+        assertTrue(manifest.getFeatures().getStorage());
+        assertFalse(manifest.getFeatures().getPayable());
+
+        NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
+        assertThat(abi, is(notNullValue()));
+        assertThat(abi.getHash(), is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+
+        assertThat(abi.getMethods(), is(notNullValue()));
+        assertThat(abi.getMethods(), hasSize(16));
+        assertThat(abi.getMethods().get(1).getName(), is("registerCandidate"));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(), is("pubkey"));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamType(),
+                is(ContractParameterType.PUBLIC_KEY));
+        assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.BOOLEAN));
+
+        assertThat(abi.getEvents(), is(notNullValue()));
+        assertThat(abi.getEvents(), hasSize(1));
+        assertThat(abi.getEvents().get(0).getName(), is("Transfer"));
+        assertThat(abi.getEvents().get(0).getParameters(), hasSize(3));
+        assertThat(abi.getEvents().get(0).getParameters().get(0).getParamName(), is("from"));
+        assertThat(abi.getEvents().get(0).getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
+        assertThat(abi.getEvents().get(0).getReturnType(), is(ContractParameterType.SIGNATURE));
+
+        assertThat(manifest.getPermissions(), is(notNullValue()));
+        assertThat(manifest.getPermissions(), hasSize(1));
+        assertThat(manifest.getPermissions().get(0).getContract(), is("*"));
+        assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(1));
+        assertThat(manifest.getPermissions().get(0).getMethods().get(0), is("*"));
+
+        assertThat(manifest.getTrusts(), is(notNullValue()));
+        assertThat(manifest.getTrusts(), hasSize(0));
+
+        assertThat(manifest.getSafeMethods(), is(notNullValue()));
+        assertThat(manifest.getSafeMethods(), hasSize(11));
+        assertThat(manifest.getSafeMethods(),
+                containsInAnyOrder(
+                        "unclaimedGas",
+                        "getCandidates",
+                        "getValidators",
+                        "getCommittee",
+                        "getNextBlockValidators",
+                        "name",
+                        "symbol",
+                        "decimals",
+                        "totalSupply",
+                        "balanceOf",
+                        "supportedStandards"
+                ));
+        assertThat(manifest.getExtra(), is(nullValue()));
+    }
+
+    @Test
+    public void testGetRawMemPool() throws IOException {
+        NeoGetRawMemPool getRawMemPool = getNeow3j().getRawMemPool().send();
+        List<String> addresses = getRawMemPool.getAddresses();
+
+        assertNotNull(addresses);
+        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
+    }
+
+    @Test
+    public void testGetTransaction() throws IOException {
+        NeoGetTransaction getTransaction = getNeow3j().getTransaction(TX_HASH).send();
+        Transaction transaction = getTransaction.getTransaction();
+
+        assertNotNull(transaction);
+        assertThat(transaction.getHash(), is(TX_HASH));
+        assertThat(transaction.getSize(), is(TX_SIZE));
+        assertThat(transaction.getVersion(), is(TX_VERSION));
+        assertThat(transaction.getNonce(), is(notNullValue()));
+        assertThat(transaction.getSender(), is(ADDRESS_2));
+        assertThat(transaction.getSysFee(), is(notNullValue()));
+        assertThat(transaction.getNetFee(), is(notNullValue()));
+        assertThat(transaction.getValidUntilBlock(), is(notNullValue()));
+        assertThat(transaction.getAttributes(), is(notNullValue()));
+        assertThat(transaction.getAttributes(), hasSize(1));
+        assertThat(transaction.getAttributes().get(0).getAsTransactionCosigner(),
+                is(new TransactionCosigner(TX_COSIGNER, WitnessScope.CALLED_BY_ENTRY)));
+        assertThat(transaction.getScript(), is(TX_SCRIPT));
+        assertThat(transaction.getWitnesses(), is(notNullValue()));
+//        assertThat(transaction.getBlockHash().length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
+        assertThat(transaction.getConfirmations(), greaterThanOrEqualTo(0));
+        assertThat(transaction.getBlockTime(), greaterThanOrEqualTo(0L));
+//        assertThat(transaction.getVMState(), is(VM_STATE_HALT));
+    }
+
+    @Test
+    public void testGetRawTransaction() throws IOException {
+        NeoGetRawTransaction getRawTransaction = getNeow3j().getRawTransaction(TX_HASH).send();
+        String rawTransaction = getRawTransaction.getRawTransaction();
+
+        assertThat(rawTransaction.length(), is(RAW_TX_LENGTH));
+    }
+
+    // TODO: 10.06.20 Michael: returns null - check why.
+    //  Manually with the neo3-privatenet-docker, it works as expected.
+    @Ignore("Ignored due to failing. Returns null within test, but manually it works.")
+    @Test
+    public void testGetStorage() throws IOException {
+        NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH, KEY_TO_LOOKUP_AS_HEX).send();
+        String storage = getStorage.getStorage();
+
+        assertThat(storage, is("4c696e"));
+    }
+
+    // TODO: 10.06.20 Michael: returns null - check why.
+    //  Manually with the neo3-privatenet-docker, it works as expected.
+    @Ignore("Ignored due to failing. Returns null within test, but manually it works.")
+    @Test
+    public void testGetStorage_with_HexParameter() throws IOException {
+        NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH_WITH_PREFIX, KEY_TO_LOOKUP_AS_HEX).send();
+        String storage = getStorage.getStorage();
+
+        assertThat(storage, is("4c696e"));
+    }
+
+    @Ignore
+    @Test
+    public void testGetTransactionHeight() throws IOException {
+        NeoGetTransactionHeight getTransactionHeight = getNeow3j().getTransactionHeight(TX_HASH).send();
+        BigInteger height = getTransactionHeight.getHeight();
+
+        assertThat(height, is(TX_HEIGTH));
+    }
+
+    @Test
+    public void testGetValidators() throws IOException {
+        NeoGetValidators getValidators = getNeow3j().getValidators().send();
+        List<NeoGetValidators.Validator> validators = getValidators.getValidators();
+
+        assertNotNull(validators);
+        assertThat(validators, hasSize(greaterThanOrEqualTo(0)));
+    }
+
+    @Test
+    public void testGetConnectionCount() throws IOException {
+        NeoConnectionCount getConnectionCount = getNeow3j().getConnectionCount().send();
+        Integer count = getConnectionCount.getCount();
+
+        assertNotNull(count);
+        assertThat(count, greaterThanOrEqualTo(0));
+    }
+
+    @Test
+    public void testGetPeers() throws IOException {
+        NeoGetPeers getPeers = getNeow3j().getPeers().send();
+        NeoGetPeers.Peers peers = getPeers.getPeers();
+
+        assertNotNull(peers);
+        assertThat(peers.getBad(), hasSize(greaterThanOrEqualTo(0)));
+        assertThat(peers.getConnected(), hasSize(greaterThanOrEqualTo(0)));
+        assertThat(peers.getUnconnected(), hasSize(greaterThanOrEqualTo(0)));
+    }
 
     @Test
     public void testGetVersion() throws IOException {
         NeoGetVersion version = getNeow3j().getVersion().send();
         NeoGetVersion.Result versionResult = version.getVersion();
+
         assertNotNull(versionResult);
         assertThat(versionResult.getUserAgent(), not(isEmptyString()));
         assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
@@ -343,159 +347,219 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     // SmartContract Methods
 
+    @Ignore("Ignored due to ByteArray not comopletely replaced by ByteString yet.")
     @Test
-    public void testInvokeFunction_empty_Params() {
+    public void testInvokeFunction_empty_Params() throws IOException {
+        NeoInvokeFunction invokeFunction = getNeow3j().invokeFunction(NEO_HASH, INVOKE_SYMBOL).send();
+        InvocationResult invocationResult = invokeFunction.getInvocationResult();
+        // TODO: 10.06.20 Michael: write test as soon as ByteArray is completely replaces by ByteString.
     }
 
     // Utilities Methods
 
     @Test
-    public void testListPlugins() {
+    public void testListPlugins() throws IOException {
+        NeoListPlugins listPlugins = getNeow3j().listPlugins().send();
+        List<NeoListPlugins.Plugin> plugins = listPlugins.getPlugins();
+
+        assertThat(plugins, is(notNullValue()));
+        assertThat(plugins, hasSize(7));
+        System.out.println(plugins.get(0).getName());
     }
 
     @Test
-    public void testValidateAddress() {
-    }
-//    @Test
-//    public void testValidateAddress() throws IOException {
-//        NeoValidateAddress validateAddress = getNeow3j().validateAddress(ADDRESS_1).send();
-//        NeoValidateAddress.Result validation = validateAddress.getValidation();
-//        assertNotNull(validation);
-//        assertThat(validation.getValid(), is(true));
-//        assertThat(validation.getAddress(), is(ADDRESS_1));
-//    }
+    public void testValidateAddress() throws IOException {
+        NeoValidateAddress validateAddress = getNeow3j().validateAddress(ADDRESS_1).send();
+        NeoValidateAddress.Result validation = validateAddress.getValidation();
 
-    // Wallet Methods
-
-    @Test
-    public void testCloseWallet() {
+        assertThat(validation.getAddress(), is(ADDRESS_1));
+        assertTrue(validation.getValid());
+        assertTrue(validation.isValid());
     }
 
     @Test
-    public void testOpenWallet() {
+    public void testCloseWallet() throws IOException {
+        NeoCloseWallet closeWallet = getNeow3j().closeWallet().send();
+
+        assertTrue(closeWallet.getCloseWallet());
     }
 
     @Test
-    public void testDumpPrivKey() {
-    }
-//    @Test
-//    public void testDumpPrivKey() throws IOException {
-//        NeoDumpPrivKey neoDumpPrivKey = getNeow3j().dumpPrivKey(ADDRESS_1).send();
-//        String privKey = neoDumpPrivKey.getDumpPrivKey();
-//        assertThat(privKey, not(isEmptyOrNullString()));
-//        assertThat(privKey, is(ADDR1_WIF));
-//    }
+    public void testOpenWallet() throws IOException {
+        NeoOpenWallet openWallet = getNeow3j().openWallet("wallet.json", "neo").send();
 
-    @Test
-    public void testGetBalance() {
-    }
-//    @Test
-//    public void testGetBalance() throws IOException {
-//        NeoGetBalance getBalance = getNeow3j().getBalance(NEO_HASH.toString()).send();
-//        assertThat(getBalance.getBalance(), is(notNullValue()));
-//        assertThat(Integer.parseInt(getBalance.getBalance().getConfirmed()),
-//                is(greaterThanOrEqualTo(0)));
-//        assertThat(Integer.parseInt(getBalance.getBalance().getConfirmed()),
-//                is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
-//        assertThat(Integer.parseInt(getBalance.getBalance().getBalance()),
-//                is(greaterThanOrEqualTo(0)));
-//        assertThat(Integer.parseInt(getBalance.getBalance().getBalance()),
-//                is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
-//    }
-
-    @Test
-    public void testGetBalance_with_Prefix() {
+        assertTrue(openWallet.getOpenWallet());
     }
 
     @Test
-    public void testGetNewAddress() {
+    public void testDumpPrivKey() throws IOException {
+        NeoDumpPrivKey dumpPrivKey = getNeow3j().dumpPrivKey(ADDRESS_1).send();
+
+        assertThat(dumpPrivKey.getDumpPrivKey(), not(isEmptyOrNullString()));
+        assertThat(dumpPrivKey.getDumpPrivKey(), is(ADDR1_WIF));
     }
 
     @Test
-    public void testGetUnclaimedGas() {
+    public void testGetBalance() throws IOException {
+        NeoGetBalance getBalance = getNeow3j().getBalance(NEO_HASH).send();
+        NeoGetBalance.Balance balance = getBalance.getBalance();
+
+        assertNotNull(balance.getBalance());
+        assertThat(Integer.parseInt(balance.getBalance()),
+                is(greaterThanOrEqualTo(0)));
+        assertThat(Integer.parseInt(balance.getBalance()),
+                is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
     }
 
     @Test
-    public void testImportPrivKey() {
+    public void testGetBalance_with_Prefix() throws IOException {
+        NeoGetBalance getBalance = getNeow3j().getBalance(NEO_HASH_WITH_PREFIX).send();
+        NeoGetBalance.Balance balance = getBalance.getBalance();
+
+        assertNotNull(balance.getBalance());
+        assertThat(Integer.parseInt(balance.getBalance()),
+                is(greaterThanOrEqualTo(0)));
+        assertThat(Integer.parseInt(balance.getBalance()),
+                is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
+    }
+
+    // TODO: 10.06.20 Michael: GetNewAddress returns null as result - check why.
+    //  Manually with the neo3-privatenet-docker, it works as expected.
+    @Ignore("Ignored due to failing. Returns null within test, but manually it works.")
+    @Test
+    public void testGetNewAddress() throws IOException {
+        NeoGetNewAddress getNewAddress = getNeow3j().getNewAddress().send();
+        assertThat(ScriptHash.fromAddress(getNewAddress.getAddress()), instanceOf(ScriptHash.class));
     }
 
     @Test
-    public void testListAddress() {
-    }
-//    @Test
-//    public void testListAddress() throws IOException {
-//        NeoListAddress listAddress = getNeow3j().listAddress().send();
-//        List<Address> addresses = listAddress.getAddresses();
-//        assertNotNull(addresses);
-//        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
-//    }
+    public void testGetUnclaimedGas() throws IOException {
+        NeoGetUnclaimedGas getUnclaimedGas = getNeow3j().getUnclaimedGas().send();
 
-    // RpcNep5Tracker
-
-    @Test
-    public void testGetNep5Transfers() {
+        assertThat(getUnclaimedGas.getUnclaimedGas(), is(UNCLAIMED_GAS));
     }
 
+    // TODO: 10.06.20 Michael: ImportPrivKey returns null as result, check why.
+    //  Manually with the neo3-privatenet-docker, it works as expected.
+    @Ignore("Ignored due to failing. Returns null within test, but manually it works.")
     @Test
-    public void testGetNep5Transfers_Date() {
-    }
+    public void testImportPrivKey() throws IOException {
+        NeoImportPrivKey importPrivKey = getNeow3j()
+                .importPrivKey("KwYRSjqmEhK4nPuUZZz1LEUSxvSzSRCv3SVePoe67hjcdPGLRJY5").send();
+        NeoAddress privKey = importPrivKey.getAddresses();
 
-    @Test
-    public void testGetNep5Transfers_DateFromTo() {
+        assertThat(privKey.getAddress(), is(IMPORT_ADDRESS));
+        assertTrue(privKey.getHasKey());
+        assertNull(privKey.getLabel());
+        assertFalse(privKey.getWatchOnly());
     }
 
     @Test
-    public void testGetNep5Balances() {
+    public void testListAddress() throws IOException {
+        NeoListAddress listAddress = getNeow3j().listAddress().send();
+        List<NeoAddress> addresses = listAddress.getAddresses();
+
+        assertNotNull(addresses);
+        assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
+    }
+
+    @Test
+    public void testGetNep5Transfers() throws IOException {
+        NeoGetNep5Transfers getNep5Transfers = getNeow3j().getNep5Transfers(ADDRESS_2).send();
+        NeoGetNep5Transfers.Nep5TransferWrapper nep5TransferWrapper = getNep5Transfers.getNep5Transfer();
+
+        assertNotNull(nep5TransferWrapper.getSent());
+        assertThat(nep5TransferWrapper.getSent().size(), greaterThanOrEqualTo(1));
+        NeoGetNep5Transfers.Nep5Transfer transfer = nep5TransferWrapper.getSent().get(0);
+        assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
+        assertThat(transfer.getAssetHash(), is(NEO_HASH_WITH_PREFIX));
+        assertThat(transfer.getTransferAddress(), is(RECIPIENT_ADDRESS));
+        assertThat(transfer.getAmount(), is(TX_AMOUNT));
+        assertThat(transfer.getBlockIndex(), is(TX_BLOCK_IDX));
+        assertThat(transfer.getTransferNotifyIndex(), is(1L));
+
+        assertNotNull(nep5TransferWrapper.getReceived());
+        assertThat(nep5TransferWrapper.getReceived().size(), greaterThanOrEqualTo(1));
+        transfer = nep5TransferWrapper.getReceived().get(0);
+        assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
+        assertThat(transfer.getAssetHash(), is(GAS_HASH_WITH_PREFIX));
+        assertThat(transfer.getTransferAddress(), is(TX_GAS_ADDRESS));
+        assertThat(transfer.getAmount(), is(TX_GAS_AMOUNT));
+        assertThat(transfer.getBlockIndex(), is(TX_BLOCK_IDX));
+        assertThat(transfer.getTransferNotifyIndex(), is(0L));
+        assertThat(transfer.getTxHash().length(), is(TX_HASH_LENGTH_WITH_PREFIX));
+    }
+
+    @Test
+    public void testGetNep5Transfers_Date() throws IOException {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -1);
+        NeoGetNep5Transfers getNep5Transfers = getNeow3j().getNep5Transfers(ADDRESS_2, calendar.getTime()).send();
+        NeoGetNep5Transfers.Nep5TransferWrapper nep5TransferWrapper = getNep5Transfers.getNep5Transfer();
+
+        assertNotNull(nep5TransferWrapper.getSent());
+        assertThat(nep5TransferWrapper.getSent().size(), greaterThanOrEqualTo(1));
+        NeoGetNep5Transfers.Nep5Transfer transfer = nep5TransferWrapper.getSent().get(0);
+        assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
+    }
+
+    @Test
+    public void testGetNep5Transfers_DateFromTo() throws IOException {
+        Calendar from = Calendar.getInstance();
+        from.add(Calendar.HOUR_OF_DAY, -1);
+        Calendar to = Calendar.getInstance();
+        to.add(Calendar.HOUR_OF_DAY, 1);
+        NeoGetNep5Transfers getNep5Transfers = getNeow3j()
+                .getNep5Transfers(ADDRESS_2, from.getTime(), to.getTime())
+                .send();
+        NeoGetNep5Transfers.Nep5TransferWrapper nep5TransferWrapper = getNep5Transfers.getNep5Transfer();
+
+        assertNotNull(nep5TransferWrapper.getSent());
+        assertThat(nep5TransferWrapper.getSent().size(), greaterThanOrEqualTo(1));
+        NeoGetNep5Transfers.Nep5Transfer transfer = nep5TransferWrapper.getSent().get(0);
+        assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
+    }
+
+    @Test
+    public void testGetNep5Balances() throws IOException {
+        NeoGetNep5Balances nep5Balances = getNeow3j().getNep5Balances(ADDRESS_2).send();
+        NeoGetNep5Balances.Balances balances = nep5Balances.getBalances();
+
+        assertNotNull(balances);
+        assertThat(balances.getAddress(), is(ADDRESS_2));
+        assertNotNull(balances.getBalances());
+        assertThat(balances.getBalances(), hasSize(2));
+        assertThat(balances.getBalances().get(0).getAssetHash(), is(GAS_HASH_WITH_PREFIX));
+        assertThat(balances.getBalances().get(0).getAmount(), is(ADDRESS_2_GAS_AMOUNT));
+        assertThat(balances.getBalances().get(0).getLastUpdatedBlock(), is(BigInteger.valueOf(2)));
+        assertThat(balances.getBalances().get(1).getAssetHash(), is(NEO_HASH_WITH_PREFIX));
+        assertThat(balances.getBalances().get(1).getAmount(), is(ADDRESS_2_NEO_AMOUNT));
+        assertThat(balances.getBalances().get(1).getLastUpdatedBlock(), is(BigInteger.valueOf(2)));
     }
 
     // ApplicationLogs
 
+    // TODO: 10.06.20 Michael: testGetApplicationLog fails - check why.
+    @Ignore("Ignored due to failing. It seems that the applicationLog can not be fetched at all," +
+            "this may be a problem with the tx hash")
     @Test
-    public void testGetApplicationLog() {
+    public void testGetApplicationLog() throws IOException {
+        NeoGetApplicationLog getApplicationLog = getNeow3j().getApplicationLog(TX_HASH).send();
+        NeoApplicationLog applicationLog = getApplicationLog.getApplicationLog();
+
+        assertNotNull(applicationLog);
+        assertThat(applicationLog.getTransactionId(), is(TX_HASH));
+        assertThat(applicationLog.getTrigger(), is(APPLICATION_LOG_TRIGGER));
+        assertThat(applicationLog.getState(), is(VM_STATE_HALT));
+        assertThat(applicationLog.getGasConsumed(), is(TX_GAS_CONSUMED));
+        assertNotNull(applicationLog.getStack());
+        assertThat(applicationLog.getStack(), hasSize(0));
+
+        assertNotNull(applicationLog.getNotifications());
+        assertThat(applicationLog.getNotifications(), hasSize(2));
+        assertThat(applicationLog.getNotifications().get(0).getContract(), is(GAS_HASH_WITH_PREFIX));
+        assertFalse(applicationLog.getNotifications().get(0).getState().asArray().isEmpty());
+        assertThat(applicationLog.getNotifications().get(1).getContract(), is(NEO_HASH_WITH_PREFIX));
+        assertFalse(applicationLog.getNotifications().get(1).getState().asArray().isEmpty());
     }
-
-// Neo 2 tests
-//
-//    @Test
-//    public void testGetBlock_Index_fullTransactionObjects() throws IOException {
-//        NeoGetBlock neoGetBlock = getNeow3j()
-//                .getBlock(new BlockParameterIndex(BLOCK_2001_IDX), true)
-//                .send();
-//        NeoBlock block = neoGetBlock.getBlock();
-//        assertNotNull(block);
-//        assertThat(block.getIndex(), is(BLOCK_2001_IDX));
-//        assertThat(block.getTransactions(), not(empty()));
-//    }
-//
-//    @Test
-//    public void testGetBlock_Hash_fullTransactionObjects() throws IOException {
-//        NeoGetBlock neoGetBlock = getNeow3j()
-//                .getBlock(BLOCK_2001_HASH, true)
-//                .send();
-//        NeoBlock block = neoGetBlock.getBlock();
-//        assertNotNull(block);
-//        assertThat(block.getIndex(), equalTo(BLOCK_2001_IDX));
-//        assertThat(block.getTransactions(), not(empty()));
-//    }
-//
-//    @Test
-//    public void testGetWalletHeight() throws IOException {
-//        NeoGetWalletHeight getWalletHeight = getNeow3j().getWalletHeight().send();
-//        BigInteger height = getWalletHeight.getHeight();
-//        assertNotNull(height);
-//        assertTrue(height.longValueExact() > 0);
-//    }
-//
-//    @Test
-//    public void testGetClaimable() throws IOException {
-//        // TODO: 2019-05-31 Claude:
-//        // Implement
-//    }
-//
-//    @Test
-//    public void testListInputs() throws IOException {
-//        // TODO: 2019-06-12 Claude:
-//        // Implement
-//    }
-
 }

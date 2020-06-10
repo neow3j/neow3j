@@ -6,10 +6,11 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import io.neow3j.protocol.http.HttpService;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Date;
+
+import org.junit.Test;
 
 public class RequestTest extends RequestTester {
 

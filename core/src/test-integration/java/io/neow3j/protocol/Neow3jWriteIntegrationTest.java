@@ -6,7 +6,9 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
+
 import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;

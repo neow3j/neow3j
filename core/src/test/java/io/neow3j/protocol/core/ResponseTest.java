@@ -20,10 +20,10 @@ import io.neow3j.protocol.core.methods.response.*;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
+
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+
 import org.junit.Test;
 
 /**
