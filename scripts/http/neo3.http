@@ -32,6 +32,37 @@ Content-Type: application/javascript'
 }
 
 ####################
+# listaddress
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "listaddress",
+ "params": [],
+ "id": 1
+}
+
+####################
+# sendfron
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "sendfrom",
+ "params": [
+  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",
+  "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+  "100.0"
+ ],
+ "id": 1
+}
+
+####################
 # getbalance
 ####################
 POST http://localhost:40332
@@ -208,6 +239,22 @@ Content-Type: application/javascript'
 }
 
 ####################
+# invokefunction - getSymbol
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [
+	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "symbol"
+ ],
+ "id": 1
+}
+
+####################
 # getcontractstate
 ####################
 POST http://localhost:40332
@@ -217,6 +264,32 @@ Content-Type: application/javascript'
   "jsonrpc": "2.0",
   "method": "getcontractstate",
   "params":["0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"],
+  "id": 1
+}
+
+####################
+# getnewaddress
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+  "jsonrpc": "2.0",
+  "method": "getnewaddress",
+  "params":[],
+  "id": 1
+}
+
+####################
+# importprivkey
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+  "jsonrpc": "2.0",
+  "method": "importprivkey",
+  "params":["KwYRSjqmEhK4nPuUZZz1LEUSxvSzSRCv3SVePoe67hjcdPGLRJY5"],
   "id": 1
 }
 
