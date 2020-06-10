@@ -1,27 +1,28 @@
 package io.neow3j.wallet;
 
-import io.neow3j.crypto.ECKeyPair;
-import org.junit.Test;
-
 import static io.neow3j.wallet.Bip39Account.fromBip39Mnemonic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 
-public class Bip39AccountTest extends BaseTest {
+import io.neow3j.crypto.ECKeyPair;
+import org.junit.Test;
+
+public class Bip39AccountTest {
 
     @Test
     public void testGenerateAndRecoverBip39Account() throws Exception {
 
-        Bip39Account a1 = Bip39Account.createAccount(SampleKeys.PASSWORD_1);
+        final String pw = "Insecure Pa55w0rd";
 
-        Bip39Account a2 = fromBip39Mnemonic(SampleKeys.PASSWORD_1, a1.getMnemonic()).build();
+        Bip39Account a1 = Bip39Account.createAccount(pw);
+
+        Bip39Account a2 = fromBip39Mnemonic(pw, a1.getMnemonic()).build();
 
         assertThat(a1.getAddress(), is(a2.getAddress()));
         assertThat(a1.getECKeyPair(), is(a2.getECKeyPair()));
-        assertThat(a1.getMnemonic(), notNullValue());
+        assertThat(a1.getMnemonic(), is(a2.getMnemonic()));
         assertThat(a1.getMnemonic().length(), greaterThan(0));
     }
 

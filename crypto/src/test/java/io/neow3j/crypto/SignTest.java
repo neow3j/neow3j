@@ -1,22 +1,27 @@
 package io.neow3j.crypto;
 
-import io.neow3j.utils.Numeric;
-import org.junit.Test;
-
-import java.math.BigInteger;
-import java.security.SignatureException;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.utils.Numeric;
+import java.security.SignatureException;
+import org.junit.Test;
+
 public class SignTest {
 
     private static final byte[] TEST_MESSAGE = "A test message".getBytes();
+    static final ECPrivateKey PRIVATE_KEY = new ECPrivateKey(Numeric.toBigIntNoPrefix(
+            "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3"));
+    static final ECPublicKey PUBLIC_KEY = new ECPublicKey(Numeric.toBigIntNoPrefix(
+            "0265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6"));
+    static final ECKeyPair KEY_PAIR = new ECKeyPair(PRIVATE_KEY, PUBLIC_KEY);
 
     @Test
     public void testSignMessage() {
-        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, SampleKeys.KEY_PAIR_1);
+        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, KEY_PAIR);
 
         Sign.SignatureData expected = new Sign.SignatureData(
                 (byte) 27,
@@ -31,16 +36,15 @@ public class SignTest {
 
     @Test
     public void testSignedMessageToKey() throws SignatureException {
-        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, SampleKeys.KEY_PAIR_1);
+        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, KEY_PAIR);
         System.out.println(Numeric.toHexStringNoPrefix(signatureData.getConcatenated()));
-        BigInteger key = Sign.signedMessageToKey(TEST_MESSAGE, signatureData);
-        assertThat(key, equalTo(SampleKeys.PUBLIC_KEY_1));
+        ECPublicKey key = Sign.signedMessageToKey(TEST_MESSAGE, signatureData);
+        assertThat(key, equalTo(PUBLIC_KEY));
     }
 
     @Test
     public void testPublicKeyFromPrivateKey() {
-        assertThat(Sign.publicKeyFromPrivate(SampleKeys.PRIVATE_KEY_1),
-                equalTo(SampleKeys.PUBLIC_KEY_1));
+        assertThat(Sign.publicKeyFromPrivate(PRIVATE_KEY), equalTo(PUBLIC_KEY));
     }
 
     @Test(expected = RuntimeException.class)

@@ -9,49 +9,46 @@ import java.math.BigInteger;
 
 public class NeoConstants {
 
+    //region Cryptography
+
     public static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256r1");
     public static final ECDomainParameters CURVE = new ECDomainParameters(
             CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
     public static final BigInteger HALF_CURVE_ORDER = CURVE_PARAMS.getN().shiftRight(1);
 
-    public static final byte COIN_VERSION = 0x17;
+    //endregion
 
-    /**
-     * The maximum number of public keys that can take part in a multi-signature address.
-     * Taken from Neo.SmartContract.Contract.CreateMultiSigRedeemScript(...) in the C# neo repo
-     * at https://github.com/neo-project/neo.
-     */
-    public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
+    //region Data Types
 
     public static final int FIXED8_SCALE = 8;
+
     public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
+
     /**
      * Length of a Fixed8 byte array.
      */
     public static final int FIXED8_LENGTH = 8;
 
+    //endregion
 
-    public static final int SCRIPTHASH_LENGHT_BITS = 160;
-    public static final int SCRIPTHASH_LENGHT_BYTES = SCRIPTHASH_LENGHT_BITS / 8;
-    public static final int SCRIPTHASH_LENGHT_HEXSTRING = SCRIPTHASH_LENGHT_BYTES * 2;
-
-    /**
-     * Size of a global asset id in bits.
-     */
-    public static final int ASSET_ID_LENGHT_BITS = 256;
-    public static final int ASSET_ID_LENGHT_BYTES = ASSET_ID_LENGHT_BITS / 8;
-    public static final int ASSET_ID_LENGHT_HEXSTRING = ASSET_ID_LENGHT_BYTES * 2;
+    //region Accounts, Addresses, Keys
 
     /**
-     * The amount of GAS that is free in every execution/invocation of a smart contract.
+     * The maximum number of public keys that can take part in a multi-signature address. Taken from
+     * Neo.SmartContract.Contract.CreateMultiSigRedeemScript(...) in the C# neo repo at
+     * https://github.com/neo-project/neo.
      */
-    public static final BigDecimal FREE_GAS_AMOUNT = BigDecimal.TEN;
+    public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
+
+    /**
+     * The byte size of a script hash.
+     */
+    public static final int SCRIPTHASH_SIZE = 20;
 
     /**
      * Size of a private key in bytes
      */
     public static final int PRIVATE_KEY_SIZE = 32;
-    public static final int PRIVATE_KEY_LENGTH_IN_HEX = PRIVATE_KEY_SIZE << 1;
 
     /**
      * Size of a public key in bytes
@@ -64,10 +61,35 @@ public class NeoConstants {
     public static final int ADDRESS_SIZE = 34;
 
     /**
-     * Standard size of a signature used in NEO.
+     * Size of a signature in bytes.
      */
-    public static final int SIGNATURE_SIZE_BYTES = 64;
-    public static final int SIGNATURE_SIZE_HEXSTRING = SIGNATURE_SIZE_BYTES * 2;
+    public static final int SIGNATURE_SIZE = 64;
+
+    /**
+     * Size of an invocation (signature) script in bytes.
+     * <p>
+     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 66
+     */
+    public static final int INVOCATION_SCRIPT_SIZE = 66;
+
+    /**
+     * Size of a serialized invocation (signature) script in bytes.
+     * <p>
+     * 1 (byte for VarInt) + 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 67
+     */
+    public static final int SERIALIZED_INVOCATION_SCRIPT_SIZE = 67;
+
+    /**
+     * Size of a verification script in bytes.
+     * <p>
+     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 33 (public key) + 1 (PUSHNULL OpCode) + 1
+     * (SYSCALL Opcode) + 4 (InteropServiceCode) = 41
+     */
+    public static final int VERIFICATION_SCRIPT_SIZE = 41;
+
+    //endregion
+
+    //region Fees
 
     /**
      * The basic GAS fee to be paid when deploying or migrating a contract.
@@ -85,27 +107,44 @@ public class NeoConstants {
     public static final int CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE = 500;
 
     /**
-     * The amount of GAS that is free in every contract execution (invocation or deployment).
+     * The network fee per byte of a transaction. Amount is in GAS.
      */
-    public static final int FREE_OF_CHARGE_EXECUTION_COST = 10;
+    public static final long GAS_PER_BYTE = 1000;
+
+    //endregion
+
+    //region Transactions & Contracts
 
     /**
-     * The maximum transaction size in bytes up to that a transaction is free. Transactions larger
-     * need to add a network fee according to the formula (transaction size - 1024) * 0.00001 GAS +
-     * 0.001 GAS. See <a href="https://neo.org/blog/details/4148">this</a> blog entry.
+     * The current version used for Neo transaction.
      */
-    public static final int MAX_FREE_TRANSACTION_SIZE = 1024;
+    public static final byte CURRENT_TX_VERSION = 0;
 
     /**
-     * The network fee per byte for transactions bigger than
-     * {@link NeoConstants#MAX_FREE_TRANSACTION_SIZE} bytes.
+     * The maximum size of a transaction in bytes.
      */
-    public static final BigDecimal FEE_PER_EXTRA_BYTE = new BigDecimal("0.00001");
+    public static final int MAX_TRANSACTION_SIZE = 102400;
 
     /**
-     * The network fee threshold above which a transaction becomes a high priority transaction.
-     * A transaction with a network fee below this threshold must not be bigger than 1024 bytes.
+     * The maximum number of attributes that a transaction can have.
      */
-    public static final BigDecimal PRIORITY_THRESHOLD_FEE = new BigDecimal("0.001");
+    public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
+
+    /**
+     * The maximum number of contracts or groups a cosigner scope can contian
+     */
+    public static final int MAX_COSIGNER_SUBITEMS = 16;
+
+    /**
+     * The maximum value for the 'validUntilBlock' transaction property.
+     */
+    public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT = 2102400;
+
+    /**
+     * Max byte length for a valid contract manifest.
+     */
+    public static final int MAX_MANIFEST_SIZE = 4096;
+
+    //endregion
 
 }

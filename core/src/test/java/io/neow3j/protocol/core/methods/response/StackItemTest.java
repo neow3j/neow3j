@@ -1,103 +1,102 @@
 package io.neow3j.protocol.core.methods.response;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class StackItemTest extends ResponseTester {
 
     private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private final static String BYTEARRAY_JSON = ""
+    private final static String BYTESTRING_JSON = ""
             + " {"
-            + "   \"type\": \"ByteArray\",\n"
-            + "   \"value\": \"576f6f6c6f6e67\"\n"
+            + "   \"type\": \"ByteString\",\n"
+            + "   \"value\": \"V29vbG9uZw==\"\n"
             + " }";
 
     @Test(expected = IllegalStateException.class)
-    public void testThrowOnWrongCastByteArray() throws IOException {
+    public void testThrowOnWrongCastByteString() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
-        rawItem.asByteArray();
+        rawItem.asByteString();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastInteger() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
         rawItem.asInteger();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastBoolean() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
         rawItem.asBoolean();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastArray() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
         rawItem.asArray();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastMap() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
         rawItem.asMap();
     }
 
     @Test(expected = IllegalStateException.class)
     public void testThrowOnWrongCastStruct() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
         rawItem.asStruct();
     }
 
     @Test
-    public void testDeserializeByteArrayStackItem() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue(BYTEARRAY_JSON, StackItem.class);
-        assertEquals(StackItemType.BYTE_ARRAY, rawItem.getType());
-        ByteArrayStackItem item = rawItem.asByteArray();
+    public void testDeserializeByteStringStackItem() throws IOException {
+        StackItem rawItem = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
+        assertEquals(StackItemType.BYTE_STRING, rawItem.getType());
+        ByteStringStackItem item = rawItem.asByteString();
         assertArrayEquals(Numeric.hexStringToByteArray("576f6f6c6f6e67"), item.getValue());
         assertEquals("Woolong", item.getAsString());
 
         String json = ""
                 + " {"
-                + "   \"type\": \"ByteArray\",\n"
-                + "   \"value\": \"6964\"\n"
+                + "   \"type\": \"ByteString\",\n"
+                + "   \"value\": \"aWQ=\"\n"
                 + " }";
 
-        item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteArray();
+        item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteString();
         assertArrayEquals(Numeric.hexStringToByteArray("6964"), item.getValue());
         assertEquals(new BigInteger("25705"), item.getAsNumber());
 
         json = ""
                 + " {"
-                + "   \"type\": \"ByteArray\",\n"
+                + "   \"type\": \"ByteString\",\n"
                 // The script hash hex string in littel-endian format
-                + "   \"value\": \"d42cf7a931ce3c46550fd90de482583fc5ea701a\"\n"
+                + "   \"value\": \"1Cz3qTHOPEZVD9kN5IJYP8XqcBo=\"\n"
                 + " }";
 
-        item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteArray();
+        item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteString();
         assertArrayEquals(
                 Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a"),
                 item.getValue()
         );
         assertEquals("Ab7kmZJw2yJDNREnyBByt1QEZGbzj9uBf1", item.getAsAddress());
 
-        ByteArrayStackItem other = new ByteArrayStackItem(
+        ByteStringStackItem other = new ByteStringStackItem(
                 Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
@@ -210,8 +209,8 @@ public class StackItemTest extends ResponseTester {
                 + "  \"value\": ["
                 + "    {"
                 + "      \"key\": {"
-                + "        \"type\": \"ByteArray\","
-                + "        \"value\": \"746573745f6b65795f61\""
+                + "        \"type\": \"ByteString\","
+                + "        \"value\": \"dGVzdF9rZXlfYQ==\""
                 + "      },"
                 + "      \"value\": {"
                 + "        \"type\": \"Boolean\","
@@ -220,8 +219,8 @@ public class StackItemTest extends ResponseTester {
                 + "    },"
                 + "    {"
                 + "      \"key\": {"
-                + "        \"type\": \"ByteArray\","
-                + "        \"value\": \"746573745f6b65795f62\""
+                + "        \"type\": \"ByteString\","
+                + "        \"value\": \"dGVzdF9rZXlfYg==\""
                 + "      },"
                 + "      \"value\": {"
                 + "        \"type\": \"Integer\","
@@ -240,9 +239,9 @@ public class StackItemTest extends ResponseTester {
         assertEquals(StackItemType.INTEGER, item.get("test_key_b").getType());
         assertEquals(BigInteger.valueOf(12345), item.get("test_key_b").asInteger().getValue());
 
-        ByteArrayStackItem key1 = new ByteArrayStackItem(Numeric.hexStringToByteArray("746573745f6b65795f61"));
+        ByteStringStackItem key1 = new ByteStringStackItem(Numeric.hexStringToByteArray("746573745f6b65795f61"));
         assertFalse(item.get(key1).asBoolean().getValue());
-        ByteArrayStackItem key2 = new ByteArrayStackItem(Numeric.hexStringToByteArray("746573745f6b65795f62"));
+        ByteStringStackItem key2 = new ByteStringStackItem(Numeric.hexStringToByteArray("746573745f6b65795f62"));
         assertEquals(BigInteger.valueOf(12345), item.get(key2).asInteger().getValue());
 
         Map<StackItem, StackItem> map = new HashMap<>();

@@ -9,10 +9,10 @@ import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.polling.BlockPolling;
 import io.neow3j.utils.Observables;
-import rx.Observable;
-import rx.Scheduler;
-import rx.schedulers.Schedulers;
-import rx.subscriptions.Subscriptions;
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -39,7 +39,7 @@ public class JsonRpc2_0Rx {
         return Observable.create(subscriber -> {
             BlockPolling blockPolling = new BlockPolling(neow3j, subscriber::onNext);
             blockPolling.run(scheduledExecutorService, pollingInterval);
-            subscriber.add(Subscriptions.create(blockPolling::cancel));
+            subscriber.setDisposable(Disposables.fromAction(blockPolling::cancel));
         });
     }
 

@@ -1,9 +1,11 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.OpCode;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.BigIntegers;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.OpCode;
+import io.neow3j.utils.BigIntegers;
+import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,8 +13,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ScriptBuilder {
 
@@ -38,165 +38,73 @@ public class ScriptBuilder {
     }
 
     /**
-     * Appends an app call to the script.
+     * Appends an OpCode and a belonging argument to the script.
      *
-     * @param scriptHash The script hash of the contract to call.
-     * @param operation  The operation to call.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
+     * @param opCode   The OpCode to append.
+     * @param argument The argument of the OpCode.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder appCall(ScriptHash scriptHash, String operation,
-                                 List<ContractParameter> params) {
+    public ScriptBuilder opCode(OpCode opCode, byte[] argument) {
+        writeByte(opCode.getValue());
+        write(argument);
+        return this;
+    }
 
-        if (params == null || params.isEmpty()) {
-            if (operation == null) {
-                return appCall(scriptHash);
-            } else {
-                return appCall(scriptHash, operation);
-            }
-        } else if (operation == null) {
-            return appCall(scriptHash, params);
+    /**
+     * Appends a call to the contract denoted by the given script hash.
+     *
+     * @param scriptHash The script hash of the contract to call.
+     * @param method     The method to call.
+     * @param params     The parameters that will be used in the call. Need to be in correct order.
+     * @return this ScriptBuilder object.
+     */
+    public ScriptBuilder contractCall(ScriptHash scriptHash, String method,
+            List<ContractParameter> params) {
+
+        pushParams(params);
+        if (method != null) {
+            pushData(method);
         }
+        pushData(scriptHash.toArray());
+        sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL);
+        return this;
+    }
 
+    public ScriptBuilder sysCall(InteropServiceCode operation) {
+        writeByte(OpCode.SYSCALL.getValue());
+        write(Numeric.hexStringToByteArray(operation.getHash()));
+        return this;
+    }
+
+    /**
+     * Adds the given contract parameters to the script.
+     * <p>
+     * Example with two parameters in the list:
+     * <pre>
+     *  PUSHBYTES4 a3b00183
+     *  PUSHBYTES20 0100000000000000000000000000000000000000
+     *  PUSH2
+     *  PACK
+     * </pre>
+     * <p>
+     * This method should also be used if the parameters list is empty. In that case the script
+     * looks like the following:
+     * <pre>
+     *  PUSH0
+     *  PACK
+     * </pre>
+     *
+     * @param params The list of parameters to add.
+     * @return this
+     */
+    public ScriptBuilder pushParams(List<ContractParameter> params) {
+        // Push params in reverse order.
         for (int i = params.size() - 1; i >= 0; i--) {
             pushParam(params.get(i));
         }
+        // Even if the parameter list is empty we need to push PUSH0 and PACK OpCodes.
         pushInteger(params.size());
         opCode(OpCode.PACK);
-        pushData(operation);
-        appCall(scriptHash);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
-     * @return this ScriptBuilder object.
-     */
-    private ScriptBuilder appCall(ScriptHash scriptHash, List<ContractParameter> params) {
-        for (int i = params.size() - 1; i >= 0; i--) {
-            pushParam(params.get(i));
-        }
-        appCall(scriptHash);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call.
-     * @param operation  The operation to call.
-     * @return this ScriptBuilder object.
-     */
-    private ScriptBuilder appCall(ScriptHash scriptHash, String operation) {
-        pushBoolean(false);
-        pushData(operation);
-        appCall(scriptHash);
-        return this;
-    }
-
-    private ScriptBuilder appCall(ScriptHash scriptHash) {
-        return call(scriptHash, OpCode.APPCALL);
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param operation  The operation to call.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, String, List)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash, String operation,
-                                 List<ContractParameter> params) {
-
-        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), operation, params);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param params     The parameters that will be used in the app call. Need to be in correct order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, List)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash, List<ContractParameter> params) {
-        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), params);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @param operation  The operation to call.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash, String)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash, String operation) {
-        appCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), operation);
-        return this;
-    }
-
-    /**
-     * Appends an app call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#appCall(ScriptHash)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder appCall(byte[] scriptHash) {
-        return call(new ScriptHash(ArrayUtils.reverseArray(scriptHash)), OpCode.APPCALL);
-    }
-
-    /**
-     * Appends a tail call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call in big-endian order.
-     * @return this ScriptBuilder object.
-     * @deprecated User {@link ScriptBuilder#tailCall(ScriptHash)} instead.
-     */
-    @Deprecated
-    public ScriptBuilder tailCall(byte[] scriptHash) {
-        return tailCall(new ScriptHash(ArrayUtils.reverseArray(scriptHash)));
-    }
-
-    /**
-     * Appends a tail call to the script.
-     *
-     * @param scriptHash The script hash of the contract to call.
-     * @return this ScriptBuilder object.
-     */
-    public ScriptBuilder tailCall(ScriptHash scriptHash) {
-        return call(scriptHash, OpCode.TAILCALL);
-    }
-
-    private ScriptBuilder call(ScriptHash scriptHash, OpCode opCode) {
-        writeByte(opCode.getValue());
-        write(scriptHash.toArray());
-        return this;
-    }
-
-    public ScriptBuilder sysCall(String operation) {
-        if (operation.length() == 0)
-            throw new IllegalArgumentException("Provided operation string is empty.");
-
-        byte[] operationBytes = operation.getBytes(UTF_8);
-        if (operationBytes.length > 252)
-            throw new IllegalArgumentException("Provided operation is too long.");
-
-        byte[] callArgument = ArrayUtils.concatenate((byte) operationBytes.length, operationBytes);
-        writeByte(OpCode.SYSCALL.getValue());
-        write(callArgument);
         return this;
     }
 
@@ -205,6 +113,7 @@ public class ScriptBuilder {
         switch (param.getParamType()) {
             case BYTE_ARRAY:
             case SIGNATURE:
+            case PUBLIC_KEY:
                 pushData((byte[]) value);
                 break;
             case BOOLEAN:
@@ -223,40 +132,80 @@ public class ScriptBuilder {
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
-            case PUBLIC_KEY:
-                // TODO 10.07.19 claude: Implement public key push operation.
             default:
-                throw new IllegalArgumentException("Parameter type \'" + param.getParamType() +
-                        "\' not supported.");
+                throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
+                        "' not supported.");
         }
         return this;
     }
 
+
+    /**
+     * Adds a push operation with the given integer to the script.
+     *
+     * @param v The number to push.
+     * @return this.
+     * @throws IllegalArgumentException if the given number is smaller than -1.
+     */
     public ScriptBuilder pushInteger(int v) {
         return pushInteger(BigInteger.valueOf(v));
     }
 
-    public ScriptBuilder pushInteger(BigInteger number) {
-        if (number.intValue() == -1) {
-            writeByte(OpCode.PUSHM1.getValue());
-        } else if (number.intValue() == 0) {
-            writeByte(OpCode.PUSH0.getValue());
-        } else if (number.intValue() >= 1 && number.intValue() <= 16) {
-            // OpCodes PUSH1 to PUSH16
-            int base = (OpCode.PUSH1.getValue() - 1);
-            writeByte(base + number.intValue());
-        } else {
-            // If the number is larger than 16, it needs to be pushed as a data array.
-            pushData(BigIntegers.toLittleEndianByteArray(number));
+    /**
+     * Adds a push operation with the given integer to the script. The integer is encoded in its
+     * two's complement and in little-endian order.
+     * <p>
+     * The integer can be up to 32 bytes long.
+     *
+     * @param v The integer to push.
+     * @return this.
+     * @throws IllegalArgumentException if the given integer is smaller than -1 or takes more space
+     *                                  than 32 bytes.
+     */
+    public ScriptBuilder pushInteger(BigInteger v) {
+        int i = v.intValue();
+        if (i >= -1 && i <= 16) {
+            byte opCodeByte = (byte)(OpCode.PUSH0.getValue() + i);
+            return this.opCode(OpCode.valueOf(opCodeByte));
         }
-        return this;
+
+        byte[] bytes = BigIntegers.toLittleEndianByteArray(v);
+        if (bytes.length == 1) {
+            return this.opCode(OpCode.PUSHINT8, bytes);
+        }
+        if (bytes.length == 2) {
+            return this.opCode(OpCode.PUSHINT16, bytes);
+        }
+        if (bytes.length <= 4) {
+            return this.opCode(OpCode.PUSHINT32, padRight(bytes, 4));
+        }
+        if (bytes.length <= 8) {
+            return this.opCode(OpCode.PUSHINT64, padRight(bytes, 8));
+        }
+        if (bytes.length <= 16) {
+            return this.opCode(OpCode.PUSHINT128, padRight(bytes, 16));
+        }
+        if (bytes.length <= 32) {
+            return this.opCode(OpCode.PUSHINT256, padRight(bytes, 32));
+        }
+        throw new IllegalArgumentException("The given number (" + v.toString() + ") is out of "
+                + "range.");
+    }
+
+    private byte[] padRight(byte[] data, int desiredLenght) {
+        if (data.length >= desiredLenght) {
+            return data;
+        }
+        byte[] paddedData = new byte[desiredLenght];
+        System.arraycopy(data, 0, paddedData, 0, data.length);
+        return paddedData;
     }
 
     public ScriptBuilder pushBoolean(boolean bool) {
         if (bool) {
-            writeByte(OpCode.PUSHT.getValue());
+            writeByte(OpCode.PUSH1.getValue());
         } else {
-            writeByte(OpCode.PUSHF.getValue());
+            writeByte(OpCode.PUSH0.getValue());
         }
         return this;
     }
@@ -283,27 +232,21 @@ public class ScriptBuilder {
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder pushData(byte[] data) {
-        pushDataLength(data.length);
-        write(data);
-        return this;
-    }
-
-    public ScriptBuilder pushDataLength(int length) {
-        if (length <= OpCode.PUSHBYTES75.getValue()) {
-            // For up to 75 bytes of data we can use the OpCodes PUSHBYTES01 to PUSHBYTES75 directly.
-            writeByte(length);
-        } else if (length <= 255) {
-            // If the data is 76 to 255 (0xff) bytes long then write PUSHDATA1 + uint8
-            writeByte(OpCode.PUSHDATA1.getValue());
-            writeByte(length);
-        } else if (length <= 65535) {
-            // If the data is 256 to 65535 (0xffff) bytes long then write PUSHDATA2 + uint16
-            writeByte(OpCode.PUSHDATA2.getValue());
-            writeShort(length);
+        if (data == null) {
+            throw new IllegalArgumentException("Data must not be null.");
+        }
+        if (data.length < 256) {
+            this.opCode(OpCode.PUSHDATA1);
+            this.writeByte((byte) data.length);
+            this.write(data);
+        } else if (data.length < 65536) {
+            this.opCode(OpCode.PUSHDATA2);
+            this.writeShort(data.length);
+            this.write(data);
         } else {
-            // If the data is bigger than 65536 then write PUSHDATA4 + uint32
-            writeByte(OpCode.PUSHDATA4.getValue());
-            writeInt(length);
+            this.opCode(OpCode.PUSHDATA4);
+            this.writeInt(data.length);
+            this.write(data);
         }
         return this;
     }
@@ -351,14 +294,6 @@ public class ScriptBuilder {
         }
     }
 
-    private void writeReversed(byte[] data) {
-        try {
-            stream.write(ArrayUtils.reverseArray(data));
-        } catch (IOException e) {
-            throw new IllegalStateException("Got IOException without doing IO.");
-        }
-    }
-
     public byte[] toArray() {
         try {
             stream.flush();
@@ -366,5 +301,39 @@ public class ScriptBuilder {
             throw new IllegalStateException("Got IOException without doing IO.");
         }
         return byteStream.toByteArray();
+    }
+
+    /**
+     * Builds a verification script for the given public key.
+     *
+     * @param encodedPublicKey The public key encoded in compressed format.
+     * @return the script.
+     */
+    public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
+        return new ScriptBuilder()
+                .pushData(encodedPublicKey)
+                .opCode(OpCode.PUSHNULL)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY)
+                .toArray();
+    }
+
+    /**
+     * Builds a verification script for a multi signature account from the given public keys.
+     *
+     * @param encodedPublicKeys The public keys encoded in compressed format.
+     * @param signingThreshold The desired minimum number of signatures required when using the
+     *                         multi-sig account.
+     * @return the script.
+     */
+    public static byte[] buildVerificationScript(List<byte[]> encodedPublicKeys,
+            int signingThreshold) {
+        ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);
+        encodedPublicKeys.forEach(builder::pushData);
+        return builder
+                .pushInteger(encodedPublicKeys.size())
+                .opCode(OpCode.PUSHNULL)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG)
+                .toArray();
+
     }
 }

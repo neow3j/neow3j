@@ -1,8 +1,10 @@
 rootProject.name = 'neow3j'
 
+include 'compiler'
 include 'contract'
 include 'core'
 include 'crypto'
+include 'devpack'
 include 'model'
 include 'utils'
 include 'wallet'

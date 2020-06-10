@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.utils.Async;
-import rx.Observable;
+import io.reactivex.Observable;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -48,7 +48,7 @@ public class RemoteCall<T> {
                 subscriber -> {
                     try {
                         subscriber.onNext(send());
-                        subscriber.onCompleted();
+                        subscriber.onComplete();
                     } catch (Exception e) {
                         subscriber.onError(e);
                     }

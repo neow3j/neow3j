@@ -1,23 +1,21 @@
 package io.neow3j.contract;
 
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
-import org.hamcrest.core.Is;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.eq;
+
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.utils.Numeric;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import org.hamcrest.core.Is;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ContractParameterTest {
 
@@ -55,23 +53,6 @@ public class ContractParameterTest {
     public void testByteArrayParamCreationFromInvalidString() {
         String value = "value";
         ContractParameter.byteArray(value);
-    }
-
-    @Test
-    public void testByteArrayParamCreationFromValidAddress() {
-        String validAddress = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
-        ScriptHash scriptHash = ScriptHash.fromAddress(validAddress);
-
-        ContractParameter p = ContractParameter.byteArrayFromAddress(validAddress);
-        assertArrayEquals(scriptHash.toArray(), (byte[]) p.getValue());
-        assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
-    }
-
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testByteArrayParamCreationFromInvalidAddress() {
-        String invalidAddress = "K2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
-        ContractParameter.byteArrayFromAddress(invalidAddress);
     }
 
     @Test
@@ -205,38 +186,10 @@ public class ContractParameterTest {
     @Test
     public void testHash160ParameterCreationFromValidString() {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f";
-        ContractParameter p = ContractParameter.hash160(hashValue);
+        ContractParameter p = ContractParameter.hash160(new ScriptHash(hashValue));
 
         assertEquals(ContractParameterType.HASH160, p.getParamType());
         assertEquals(hashValue, p.getValue().toString());
-    }
-
-    @Test
-    public void testHash160ParameterCreationFromValidByteArray() {
-        String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f";
-        ContractParameter p = ContractParameter.hash160(ArrayUtils.reverseArray(
-                Numeric.hexStringToByteArray(hashValue)));
-
-        assertEquals(ContractParameterType.HASH160, p.getParamType());
-        assertEquals(hashValue, p.getValue().toString());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testHash160ParamCreationFromTooShortString() {
-        String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6";
-        ContractParameter.hash160(sig);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testHash160ParamCreationFromTooLongString() {
-        String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6faa";
-        ContractParameter.hash160(sig);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testHash160ParamCreationFromNoHexString() {
-        String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6g";
-        ContractParameter.hash160(sig);
     }
 
     @Test
@@ -245,17 +198,16 @@ public class ContractParameterTest {
         ContractParameter p = ContractParameter.hash256(hashValue);
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, p.getValue().toString());
+        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[])(p.getValue())));
     }
 
     @Test
     public void testHash256ParameterCreationFromValidByteArray() {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf";
-        ContractParameter p = ContractParameter.hash256(
-                ArrayUtils.reverseArray(Numeric.hexStringToByteArray(hashValue)));
+        ContractParameter p = ContractParameter.hash256(Numeric.hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, p.getValue().toString());
+        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[])(p.getValue())));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -296,11 +248,5 @@ public class ContractParameterTest {
     public void testHashCode() {
         int result = contractParameter.hashCode();
         assertThat(result, not(eq(0)));
-    }
-
-    @Test
-    public void testToString() {
-        String result = contractParameter.toString();
-        assertThat(result, is("ContractParameter{paramName='null', paramType=STRING, value=value}"));
     }
 }

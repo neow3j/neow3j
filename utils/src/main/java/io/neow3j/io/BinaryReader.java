@@ -26,9 +26,8 @@ package io.neow3j.io;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.BigIntegers;
-import org.bouncycastle.math.ec.ECPoint;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -36,10 +35,10 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.neow3j.utils.Numeric.toBigInt;
+import org.bouncycastle.math.ec.ECPoint;
 
 public class BinaryReader implements AutoCloseable {
 
@@ -127,6 +126,30 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getDouble(0);
     }
 
+    /**
+     * Tries to read an encoded EC point from the underlying stream.
+     *
+     * @return the encoded EC point byte array
+     * @throws DeserializationException if an the stream does not contain an EC point or an
+     *                                  IOException occurs.
+     */
+    public byte[] readEncodedECPoint() throws DeserializationException {
+        byte[] ecPoint = new byte[33];
+        try {
+            byte encoded = reader.readByte();
+            position += Byte.BYTES;
+            if (encoded == 0x02 || encoded == 0x03) {
+                ecPoint[0] = encoded;
+                reader.readFully(ecPoint, 1, 32);
+                position += 32;
+                return ecPoint;
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
+        throw new DeserializationException("Failed parsing encoded EC point.");
+    }
+
     public ECPoint readECPoint() throws IOException {
         // based on: https://tools.ietf.org/html/rfc5480#section-2.2
         byte[] encoded;
@@ -167,42 +190,96 @@ public class BinaryReader implements AutoCloseable {
         return buffer.getInt(0);
     }
 
-    public long readLong() throws IOException {
+    /**
+     * Reads a 16-bit unsigned integer from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a
+     * int.
+     *
+     * @return the 16-bit unsigned integer as a normal Java int.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public int readUInt16() throws IOException {
+        reader.readFully(array, 0, 2);
+        position += 2;
+        return Short.toUnsignedInt(buffer.getShort(0));
+    }
+
+    /**
+     * Reads a 32-bit unsigned integer from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a
+     * long.
+     *
+     * @return the 32-bit unsigned integer.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readUInt32() throws IOException {
+        reader.readFully(array, 0, 4);
+        position += 4;
+        return Integer.toUnsignedLong(buffer.getInt(0));
+    }
+
+    /**
+     * Reads a 64-bit signed integer from the underlying input stream.
+     *
+     * @return the 34-bit unsigned integer represented as a long.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readInt64() throws IOException {
         reader.readFully(array, 0, 8);
         position += 8;
         return buffer.getLong(0);
     }
 
-    public <T extends NeoSerializable> T readSerializable(Class<T> t) throws InstantiationException, IllegalAccessException, IOException {
-        T obj = t.newInstance();
-        obj.deserialize(this);
-        return obj;
+    public <T extends NeoSerializable> T readSerializable(Class<T> t)
+            throws DeserializationException {
+
+        try {
+            T obj = t.newInstance();
+            obj.deserialize(this);
+            return obj;
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new DeserializationException(e);
+        }
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t) throws IOException, IllegalAccessException, InstantiationException {
-        int length = (int) readVarInt(0x10000000);
-        int bytesRead = 0;
-        int initialOffset = getPosition();
-        List<T> list = new ArrayList<>();
-        while (bytesRead < length) {
-            T objInstance = t.newInstance();
-            list.add(objInstance);
-            objInstance.deserialize(this);
-            int currentOffset = getPosition();
-            bytesRead = (currentOffset - initialOffset);
+    public <T extends NeoSerializable> List<T> readSerializableListVarBytes(Class<T> t)
+            throws DeserializationException {
+
+        try {
+            int length = (int) readVarInt(0x10000000);
+            int bytesRead = 0;
+            int initialOffset = getPosition();
+            List<T> list = new ArrayList<>();
+            while (bytesRead < length) {
+                T objInstance = t.newInstance();
+                list.add(objInstance);
+                objInstance.deserialize(this);
+                int currentOffset = getPosition();
+                bytesRead = (currentOffset - initialOffset);
+            }
+            return list;
+        } catch (IOException | IllegalAccessException | InstantiationException e) {
+            throw new DeserializationException(e);
         }
-        return list;
     }
 
-    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t) throws IOException, IllegalAccessException, InstantiationException {
-        int length = (int) readVarInt(0x10000000);
-        List<T> list = new ArrayList<>(length);
-        for (int i = 0; i < length; i++) {
-            T objInstance = t.newInstance();
-            list.add(objInstance);
-            objInstance.deserialize(this);
+    public <T extends NeoSerializable> List<T> readSerializableList(Class<T> t)
+            throws DeserializationException {
+
+        try {
+            int length = (int) readVarInt(0x10000000);
+            List<T> list = new ArrayList<>(length);
+            for (int i = 0; i < length; i++) {
+                T objInstance = t.newInstance();
+                list.add(objInstance);
+                objInstance.deserialize(this);
+            }
+            return list;
+        } catch (IOException | IllegalAccessException | InstantiationException e) {
+            throw new DeserializationException(e);
         }
-        return list;
     }
 
     public short readShort() throws IOException {
@@ -212,32 +289,36 @@ public class BinaryReader implements AutoCloseable {
     }
 
     public byte[] readVarBytes() throws IOException {
-        return readVarBytes(0x7fffffc7);
+        return readVarBytes(0x1000000);
     }
 
-    public byte[] readPushData() throws IOException {
-        byte singleByte = readByte();
-        int size = 0;
-        if (singleByte == OpCode.PUSHDATA1.getValue()) {
-            // read the next byte (as the data size)
-            size = readUnsignedByte();
-        } else if (singleByte == OpCode.PUSHDATA2.getValue()) {
-            // read the next 2 bytes (as the data size)
-            // short is 2 bytes
-            size = readShort();
-        } else if (singleByte == OpCode.PUSHDATA4.getValue()) {
-            // read the next 4 bytes (as the data size)
-            // int is 4 bytes
-            size = readInt();
-        } else {
-            // the singleByte is actually the data size already
-            size = singleByte;
+    /**
+     * Tries to read a PUSHDATA OpCode and the following data from the underlying byte stream.
+     *
+     * @return The data read
+     */
+    public byte[] readPushData() throws DeserializationException {
+        try {
+            byte singleByte = readByte();
+            int size = 0;
+            if (singleByte == OpCode.PUSHDATA1.getValue()) {
+                size = readUnsignedByte();
+            } else if (singleByte == OpCode.PUSHDATA2.getValue()) {
+                size = readShort();
+            } else if (singleByte == OpCode.PUSHDATA4.getValue()) {
+                size = readInt();
+            } else {
+                throw new DeserializationException("Stream did not contain a PUSHDATA OpCode at "
+                        + "the current position.");
+            }
+            // read the buffer based on the data's byte size
+            if (size == 1) {
+                return new byte[]{readByte()};
+            }
+            return readBytes(size);
+        } catch (IOException e) {
+            throw new DeserializationException(e);
         }
-        // read the buffer based on the data size
-        if (size == 1) {
-            return new byte[]{readByte()};
-        }
-        return readBytes(size);
     }
 
     public byte[] readVarBytes(int max) throws IOException {
@@ -256,7 +337,7 @@ public class BinaryReader implements AutoCloseable {
         } else if (fb == 0xFE) {
             value = Integer.toUnsignedLong(readInt());
         } else if (fb == 0xFF) {
-            value = readLong();
+            value = readInt64();
         } else {
             value = fb;
         }
@@ -266,31 +347,47 @@ public class BinaryReader implements AutoCloseable {
         return value;
     }
 
-    public String readPushString() throws IOException {
-        return new String(readPushData(), "UTF-8");
+    public String readPushString() throws DeserializationException {
+        return new String(readPushData(), StandardCharsets.UTF_8);
     }
 
-    public int readPushInteger() throws IOException {
+    public int readPushInteger() throws DeserializationException {
         return readPushBigInteger().intValue();
     }
 
-    public BigInteger readPushBigInteger() throws IOException {
-        mark(2);
-        byte read = readByte();
-        if (read == OpCode.PUSHM1.getValue()) {
-            return BigInteger.ONE.negate();
-        } else if (read == OpCode.PUSH0.getValue()) {
-            return BigInteger.ZERO;
-        } else if (read >= OpCode.PUSH1.getValue() && read <= OpCode.PUSH16.getValue()) {
-            int base = (OpCode.PUSH1.getValue() - (byte) 0x01);
-            return BigInteger.valueOf(read - base);
-        } else {
-            // If the value is larger than the PUSH16 opcode then read as data array.
-            // The same byte that has just been read needs to be read again in pushData(), so we
-            // reset the stream to the mark.
-            reset();
-            return BigIntegers.fromLittleEndianByteArray(readPushData());
+    public BigInteger readPushBigInteger() throws DeserializationException {
+        try {
+            byte opCode = readByte();
+            if (opCode >= OpCode.PUSHM1.getValue() && opCode <= OpCode.PUSH16.getValue()) {
+                return BigInteger.valueOf(opCode - OpCode.PUSH0.getValue());
+            } else if (opCode == OpCode.PUSHINT8.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(new byte[]{readByte()});
+            } else if (opCode == OpCode.PUSHINT16.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(2));
+            } else if (opCode == OpCode.PUSHINT32.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(4));
+            } else if (opCode == OpCode.PUSHINT64.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(8));
+            } else if (opCode == OpCode.PUSHINT128.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(16));
+            } else if (opCode == OpCode.PUSHINT256.getValue()) {
+                return BigIntegers.fromLittleEndianByteArray(readBytes(32));
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
         }
+        throw new DeserializationException("Couldn't parse PUSHINT OpCode");
     }
 
+
+    public static int readUInt16(byte[] bytes) {
+        try (ByteArrayInputStream ms = new ByteArrayInputStream(bytes)) {
+            try (BinaryReader reader = new BinaryReader(ms)) {
+                return reader.readUInt16();
+            }
+        } catch (IOException e) {
+            // Shouldn't happen because the underlying stream is a ByteArrayInputStream.
+            throw new RuntimeException(e);
+        }
+    }
 }

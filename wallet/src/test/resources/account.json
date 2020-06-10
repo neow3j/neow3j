@@ -1,0 +1,18 @@
+{
+  "address": "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm",
+  "label": null,
+  "isDefault": false,
+  "lock": false,
+  "key": "6PYV39zSDnpCb9ecybeL3z6XrLTpKy1AugUGd6DYFFNELHv9aLj6M7KGD2",
+  "contract": {
+    "script": "DCECwLYMmVvAkuhm8Vo3wXa7WbfrrPBpupTA6/Vhy4+VYjgLQYprHnU=",
+    "parameters": [
+      {
+        "name": "signature",
+        "type": "Signature"
+      }
+    ],
+    "deployed": false
+  },
+  "extra": null
+}

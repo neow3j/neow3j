@@ -1,5 +1,7 @@
 package io.neow3j.crypto;
 
+import io.neow3j.constants.NeoConstants;
+import io.neow3j.utils.ArrayUtils;
 import java.util.Arrays;
 
 /**
@@ -15,14 +17,14 @@ public class WIF {
         byte[] data = Base58.decode(wif);
 
         if (data.length != 38 || data[0] != (byte) 0x80 || data[33] != 0x01) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Incorrect WIF format.");
         }
 
         byte[] checksum = Hash.sha256(Hash.sha256(data, 0, data.length - 4));
 
         for (int i = 0; i < 4; i++) {
             if (data[data.length - 4 + i] != checksum[i]) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Incorrect WIF checksum.");
             }
         }
 
@@ -32,4 +34,16 @@ public class WIF {
         return privateKey;
     }
 
+    public static String getWIFFromPrivateKey(byte[] key) {
+        if (key.length != NeoConstants.PRIVATE_KEY_SIZE) {
+            throw new IllegalArgumentException("Given key is not of expected length ("
+                    + NeoConstants.PRIVATE_KEY_SIZE + " bytes).");
+        }
+
+        byte[] extendenKey = ArrayUtils.concatenate(
+                ArrayUtils.concatenate((byte) 0x80, key), (byte) 0x01);
+        byte[] hash = Hash.sha256(Hash.sha256(extendenKey));
+        byte[] checksum = ArrayUtils.getFirstNBytes(hash, 4);
+        return Base58.encode(ArrayUtils.concatenate(extendenKey, checksum));
+    }
 }

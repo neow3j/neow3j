@@ -1,10 +1,10 @@
 package io.neow3j.wallet;
 
+import static io.neow3j.crypto.Hash.sha256;
+
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.MnemonicUtils;
 import io.neow3j.crypto.SecureRandomUtils;
-
-import static io.neow3j.crypto.Hash.sha256;
 
 /**
  * Class encapsulating a BIP-39 compatible NEO account.
@@ -39,7 +39,6 @@ public class Bip39Account extends Account {
         ECKeyPair keyPair = ECKeyPair.create(sha256(seed));
 
         return fromECKeyPair(keyPair)
-                .isDefault(true)
                 .mnemonic(mnemonic)
                 .build();
     }
@@ -54,13 +53,12 @@ public class Bip39Account extends Account {
     public static Builder fromBip39Mnemonic(String password, String mnemonic) {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair ecKeyPair = ECKeyPair.create(sha256(seed));
-        return fromECKeyPair(ecKeyPair);
+        return fromECKeyPair(ecKeyPair).mnemonic(mnemonic);
     }
 
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
-        b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey();
+        b.keyPair = ecKeyPair;
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;
@@ -85,21 +83,5 @@ public class Bip39Account extends Account {
         public Bip39Account build() {
             return new Bip39Account(this);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Bip39Account{" +
-                "privateKey=" + getPrivateKey() +
-                ", publicKey=" + getPublicKey() +
-                ", address='" + getAddress() + '\'' +
-                ", encryptedPrivateKey='" + getEncryptedPrivateKey() + '\'' +
-                ", label='" + getLabel() + '\'' +
-                ", isDefault=" + isDefault() +
-                ", isLocked=" + isLocked() +
-                ", contract=" + getContract() +
-                ", balances=" + getBalances() +
-                ", mnemonic='" + mnemonic + '\'' +
-                '}';
     }
 }

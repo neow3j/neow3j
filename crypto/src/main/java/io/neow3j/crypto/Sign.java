@@ -1,21 +1,21 @@
 package io.neow3j.crypto;
 
+import static io.neow3j.utils.Assertions.verifyPrecondition;
+
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.transaction.RawTransaction;
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Keys;
 import io.neow3j.utils.Numeric;
+import java.math.BigInteger;
+import java.security.SignatureException;
+import java.util.Arrays;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.math.ec.ECAlgorithms;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
-
-import java.math.BigInteger;
-import java.security.SignatureException;
-import java.util.Arrays;
-
-import static io.neow3j.utils.Assertions.verifyPrecondition;
 
 /**
  * <p>Transaction signing logic.</p>
@@ -35,7 +35,6 @@ public class Sign {
     }
 
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair, boolean needToHash) {
-        BigInteger publicKey = keyPair.getPublicKey();
         byte[] messageHash;
         if (needToHash) {
             messageHash = Hash.sha256(message);
@@ -47,8 +46,8 @@ public class Sign {
         // Now we have to work backwards to figure out the recId needed to recover the signature.
         int recId = -1;
         for (int i = 0; i < 4; i++) {
-            BigInteger k = recoverFromSignature(i, sig, messageHash);
-            if (k != null && k.equals(publicKey)) {
+            ECPublicKey k = recoverFromSignature(i, sig, messageHash);
+            if (k != null && k.equals(keyPair.getPublicKey())) {
                 recId = i;
                 break;
             }
@@ -74,23 +73,22 @@ public class Sign {
      * <br>
      * <p>The recId is an index from 0 to 3 which indicates which of the 4 possible keys is the
      * correct one. Because the key recovery operation yields multiple potential keys, the correct
-     * key must either be stored alongside the
-     * signature, or you must be willing to try each recId in turn until you find one that outputs
-     * the key you are expecting.</p>
+     * key must either be stored alongside the signature, or you must be willing to try each recId
+     * in turn until you find one that outputs the key you are expecting.</p>
      * <br>
      * <p>If this method returns null it means recovery was not possible and recId should be
      * iterated.</p>
      * <br>
      * <p>Given the above two points, a correct usage of this method is inside a for loop from
-     * 0 to 3, and if the output is null OR a key that is not the one you expect, you try again
-     * with the next recId.</p>
+     * 0 to 3, and if the output is null OR a key that is not the one you expect, you try again with
+     * the next recId.</p>
      *
      * @param recId   Which possible key to recover.
      * @param sig     the R and S components of the signature, wrapped.
      * @param message Hash of the data that was signed.
      * @return An ECKey containing only the public part, or null if recovery wasn't possible.
      */
-    public static BigInteger recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
+    public static ECPublicKey recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
         verifyPrecondition(recId >= 0, "recId must be positive");
         verifyPrecondition(sig.r.signum() >= 0, "r must be positive");
         verifyPrecondition(sig.s.signum() >= 0, "s must be positive");
@@ -143,8 +141,7 @@ public class Sign {
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
         ECPoint q = ECAlgorithms.sumOfTwoMultiplies(NeoConstants.CURVE.getG(), eInvrInv, R, srInv);
 
-        byte[] qBytes = q.getEncoded(true);
-        return new BigInteger(1, qBytes);
+        return new ECPublicKey(q);
     }
 
     /**
@@ -154,15 +151,16 @@ public class Sign {
      */
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
         X9IntegerConverter x9 = new X9IntegerConverter();
-        byte[] compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(NeoConstants.CURVE.getCurve()));
+        byte[] compEnc = x9.integerToBytes(xBN,
+                1 + x9.getByteLength(NeoConstants.CURVE.getCurve()));
         compEnc[0] = (byte) (yBit ? 0x03 : 0x02);
         return NeoConstants.CURVE.getCurve().decodePoint(compEnc);
     }
 
     /**
-     * Given an arbitrary piece of text and an NEO message signature encoded in bytes,
-     * returns the public key that was used to sign it. This can then be compared to the expected
-     * public key to determine if the signature was correct.
+     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the
+     * public key that was used to sign it. This can then be compared to the expected public key to
+     * determine if the signature was correct.
      *
      * @param message       encoded message.
      * @param signatureData The message signature components
@@ -170,7 +168,7 @@ public class Sign {
      * @throws SignatureException If the public key could not be recovered or if there was a
      *                            signature format error.
      */
-    public static BigInteger signedMessageToKey(
+    public static ECPublicKey signedMessageToKey(
             byte[] message, SignatureData signatureData) throws SignatureException {
 
         byte[] r = signatureData.getR();
@@ -192,7 +190,7 @@ public class Sign {
 
         byte[] messageHash = Hash.sha256(message);
         int recId = header - 27;
-        BigInteger key = recoverFromSignature(recId, sig, messageHash);
+        ECPublicKey key = recoverFromSignature(recId, sig, messageHash);
         if (key == null) {
             throw new SignatureException("Could not recover public key from signature");
         }
@@ -205,10 +203,8 @@ public class Sign {
      * @param privKey the private key to derive the public key from
      * @return BigInteger encoded public key
      */
-    public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
-        ECPoint point = publicPointFromPrivateKey(privKey);
-        byte[] encoded = point.getEncoded(true);
-        return Numeric.toBigInt(encoded);
+    public static ECPublicKey publicKeyFromPrivate(ECPrivateKey privKey) {
+        return new ECPublicKey(publicPointFromPrivateKey(privKey));
     }
 
     /**
@@ -217,36 +213,41 @@ public class Sign {
      * @param privKey The private key as BigInteger
      * @return The ECPoint object representation of the public key based on the given private key
      */
-    public static ECPoint publicPointFromPrivateKey(BigInteger privKey) {
+    public static ECPoint publicPointFromPrivateKey(ECPrivateKey privKey) {
+        BigInteger key = privKey.getInt();
         /*
          * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
          * order, but that could change in future versions.
          */
-        if (privKey.bitLength() > NeoConstants.CURVE.getN().bitLength()) {
-            privKey = privKey.mod(NeoConstants.CURVE.getN());
+        if (key.bitLength() > NeoConstants.CURVE.getN().bitLength()) {
+            key = key.mod(NeoConstants.CURVE.getN());
         }
-        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), privKey).normalize();
+        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), key)
+                                             .normalize();
     }
 
     /**
-     * Recovers the address that created the given signature from the given transaction.
+     * Recovers the address that created the given signature on the given message.
+     * <p>
+     * If the message is a Neo transaction, then make sure that it was serialized without the
+     * verification and invocation script attached (i.e. without the signature).
      *
      * @param signatureData The signature.
-     * @param tx            The signed transaction.
-     * @return the address that produced the siganture data from the transaction.
+     * @param message       The message for which the signature was created.
+     * @return the address that produced the signature data from the transaction.
      * @throws SignatureException throws if the signature is invalid.
      */
-    public static String recoverSigningAddress(RawTransaction tx, SignatureData signatureData)
+    public static String recoverSigningAddress(byte[] message, SignatureData signatureData)
             throws SignatureException {
 
-        byte[] encodedTransaction = tx.toArrayWithoutScripts();
         byte v = signatureData.getV();
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
         SignatureData signatureDataV = new Sign.SignatureData(getRealV(v), r, s);
-        BigInteger key = Sign.signedMessageToKey(encodedTransaction, signatureDataV);
-        return Keys.getAddress(key);
+        ECPublicKey key = Sign.signedMessageToKey(message, signatureDataV);
+        return ScriptHash.fromPublicKey(key.getEncoded(true)).toAddress();
     }
+
 
     private static byte getRealV(byte v) {
         if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {

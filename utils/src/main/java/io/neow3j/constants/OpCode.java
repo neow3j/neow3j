@@ -3,211 +3,354 @@ package io.neow3j.constants;
 import io.neow3j.utils.Numeric;
 
 /**
- * <p>This class represents a <b>subset</b> of NEO VM opcodes.</p>
- * <br>
- * <p>Based on: https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs</p>
+ * This enum contains a <b>subset</b> of NEO VM opcodes.
+ * <p>
+ * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs">here</a> for
+ * a complete list.
  */
 public enum OpCode {
 
-    // Constants
+    //region Constants
+
+    // Push a signed integer of the given bit length in its two's complement and little-endian
+    // order.
+    PUSHINT8(0x00, 30),
+    PUSHINT16(0x01, 30),
+    PUSHINT32(0x02, 30),
+    PUSHINT64(0x03, 30),
+    PUSHINT128(0x04, 120),
+    PUSHINT256(0x05, 120),
 
     /**
-     * <p>An empty array of bytes is pushed onto the stack.</p>
+     * Convert the next four bytes to an address, and push the address onto the stack.
      */
-    PUSH0((byte) 0x00),
-    PUSHF((byte) 0x00),
-    /**
-     * <p>0x01-0x4B The next opcode bytes is data to be pushed onto the stack.</p>
-     */
-    PUSHBYTES1((byte) 0x01),
-    PUSHBYTES33((byte) 0x21),
-    PUSHBYTES64((byte) 0x40),
-    PUSHBYTES75((byte) 0x4B),
-    /**
-     * <p>The next byte contains the number of bytes to be pushed onto the stack.</p>
-     */
-    PUSHDATA1((byte) 0x4C),
-    /**
-     * <p>The next two bytes contain the number of bytes to be pushed onto the stack.</p>
-     */
-    PUSHDATA2((byte) 0x4D),
-    /**
-     * <p>The next four bytes contain the number of bytes to be pushed onto the stack.</p>
-     */
-    PUSHDATA4((byte) 0x4E),
-    /**
-     * <p>The number -1 is pushed onto the stack.</p>
-     */
-    PUSHM1((byte) 0x4F),
-    /**
-     * <p>The number 1 is pushed onto the stack.</p>
-     */
-    PUSH1((byte) 0x51),
-    PUSHT((byte) 0x51),
-    /**
-     * <p>The number 2 is pushed onto the stack.</p>
-     */
-    PUSH2((byte) 0x52),
-    /**
-     * <p>The number 3 is pushed onto the stack.</p>
-     */
-    PUSH3((byte) 0x53),
-    /**
-     * <p>The number 4 is pushed onto the stack.</p>
-     */
-    PUSH4((byte) 0x54),
-    /**
-     * <p>The number 5 is pushed onto the stack.</p>
-     */
-    PUSH5((byte) 0x55),
-    /**
-     * <p>The number 6 is pushed onto the stack.</p>
-     */
-    PUSH6((byte) 0x56),
-    /**
-     * <p>The number 7 is pushed onto the stack.</p>
-     */
-    PUSH7((byte) 0x57),
-    /**
-     * <p>The number 8 is pushed onto the stack.</p>
-     */
-    PUSH8((byte) 0x58),
-    /**
-     * <p>The number 9 is pushed onto the stack.</p>
-     */
-    PUSH9((byte) 0x59),
-    /**
-     * <p>The number 10 is pushed onto the stack.</p>
-     */
-    PUSH10((byte) 0x5A),
-    /**
-     * <p>The number 11 is pushed onto the stack.</p>
-     */
-    PUSH11((byte) 0x5B),
-    /**
-     * <p>The number 12 is pushed onto the stack.</p>
-     */
-    PUSH12((byte) 0x5C),
-    /**
-     * <p>The number 13 is pushed onto the stack.</p>
-     */
-    PUSH13((byte) 0x5D),
-    /**
-     * <p>The number 14 is pushed onto the stack.</p>
-     */
-    PUSH14((byte) 0x5E),
-    /**
-     * <p>The number 15 is pushed onto the stack.</p>
-     */
-    PUSH15((byte) 0x5F),
-    /**
-     * <p>The number 16 is pushed onto the stack.</p>
-     */
-    PUSH16((byte) 0x60),
-
-
-    // Flow control
+    PUSHA(0x0A, 120),
 
     /**
-     * <p>No operation. Nothing is done.</p>
+     * The item "null" is pushed onto the stack.
      */
-    NOP((byte) 0x61),
-    /**
-     * <p>Reads a 2-byte value n and a jump is performed to relative position n-3.</p>
-     */
-    JMP((byte) 0x62),
-    /**
-     * <p>A boolean value b is taken from main stack and reads a 2-byte value n,
-     * if b is True then a jump is performed to relative position n-3.</p>
-     */
-    JMPIF((byte) 0x63),
-    /**
-     * <p>A boolean value b is taken from main stack and reads a 2-byte value n,
-     * if b is False then a jump is performed to relative position n-3.</p>
-     */
-    JMPIFNOT((byte) 0x64),
-    /**
-     * <p>Current context is copied to the invocation stack.
-     * Reads a 2-byte value n and a jump is performed to relative position n-3.</p>
-     */
-    CALL((byte) 0x65),
-    /**
-     * <p>Stops the execution if invocation stack is empty.</p>
-     */
-    RET((byte) 0x66),
-    /**
-     * <p>Reads a script hash and executes the corresponding contract.
-     * If script hash is zero, performs dynamic invoke by taking script hash from main stack.</p>
-     */
-    APPCALL((byte) 0x67),
-    /**
-     * <p>Reads a string and executes the corresponding operation.</p>
-     */
-    SYSCALL((byte) 0x68),
-    /**
-     * <p>Reads a script hash and executes the corresponding contract.
-     * If script hash is zero, performs dynamic invoke by taking script hash from main stack.
-     * Disposes the top item on invocation stack.</p>
-     */
-    TAILCALL((byte) 0x69),
-
-
-    // Crypto
+    PUSHNULL(0x0B, 30),
 
     /**
-     * <p>The input is hashed using SHA-1.</p>
+     * The next 1 byte contains the number of bytes to be pushed onto the stack.
      */
-    SHA1((byte) 0xA7),
-    /**
-     * <p>The input is hashed using SHA-256.</p>
-     */
-    SHA256((byte) 0xA8),
-    /**
-     * <p>The input is hashed using Hash160: first with SHA-256 and then with RIPEMD-160.</p>
-     */
-    HASH160((byte) 0xA9),
-    /**
-     * <p>The input is hashed using Hash256: twice with SHA-256.</p>
-     */
-    HASH256((byte) 0xAA),
-    /**
-     * <p>The publickey and signature are taken from main stack.</p>
-     * <br>
-     * <p>Verifies if transaction was signed by given publickey and a boolean output is put on top of the main stack.</p>
-     */
-    CHECKSIG((byte) 0xAC),
-    /**
-     * <p>The publickey, signature and message are taken from main stack.</p>
-     * <br>
-     * <p>Verifies if given message was signed by given publickey and a boolean output is put on top of the main stack.</p>
-     */
-    VERIFY((byte) 0xAD),
-    /**
-     * <p>A set of n public keys (an array or value n followed by n pubkeys) is validated
-     * against a set of m signatures (an array or value m followed by m signatures).</p>
-     * <br>
-     * <p>Verify transaction as multisig and a boolean output is put on top of the main stack.</p>
-     */
-    CHECKMULTISIG((byte) 0xAE),
+    PUSHDATA1(0x0C, 180),
 
     /**
-     * <p>A value n is taken from top of main stack. The next n items on main stack are removed,
-     * put inside n-sized array and this array is put on top of the main stack.</p>
+     * The next 2 bytes contain the number of bytes to be pushed onto the stack.
      */
-    PACK((byte) 0xC1);
+    PUSHDATA2(0x0D, 13000),
+
+    /**
+     * The next 4 bytes contain the number of bytes to be pushed onto the stack.
+     */
+    PUSHDATA4(0x0E, 110000),
+
+    /**
+     * The number -1 is pushed onto the stack.
+     */
+    PUSHM1(0x0F, 30),
+
+    /**
+     * The number 0 is pushed onto the stack.
+     */
+    PUSH0(0x10, 30),
+
+    /**
+     * The number 1 is pushed onto the stack.
+     */
+    PUSH1(0x11, 30),
+
+    /**
+     * The number 2 is pushed onto the stack.
+     */
+    PUSH2(0x12, 30),
+
+    /**
+     * The number 3 is pushed onto the stack.
+     */
+    PUSH3(0x13, 30),
+
+    /**
+     * The number 4 is pushed onto the stack.
+     */
+    PUSH4(0x14, 30),
+
+    /**
+     * The number 5 is pushed onto the stack.
+     */
+    PUSH5(0x15, 30),
+
+    /**
+     * The number 6 is pushed onto the stack.
+     */
+    PUSH6(0x16, 30),
+
+    /**
+     * The number 7 is pushed onto the stack.
+     */
+    PUSH7(0x17, 30),
+
+    /**
+     * The number 8 is pushed onto the stack.
+     */
+    PUSH8(0x18, 30),
+
+    /**
+     * The number 9 is pushed onto the stack.
+     */
+    PUSH9(0x19, 30),
+
+    /**
+     * The number 10 is pushed onto the stack.
+     */
+    PUSH10(0x1A, 30),
+
+    /**
+     * The number 11 is pushed onto the stack.
+     */
+    PUSH11(0x1B, 30),
+
+    /**
+     * The number 12 is pushed onto the stack.
+     */
+    PUSH12(0x1C, 30),
+
+    /**
+     * The number 13 is pushed onto the stack.
+     */
+    PUSH13(0x1D, 30),
+
+    /**
+     * The number 14 is pushed onto the stack.
+     */
+    PUSH14(0x1E, 30),
+
+    /**
+     * The number 15 is pushed onto the stack.
+     */
+    PUSH15(0x1F, 30),
+
+    /**
+     * The number 16 is pushed onto the stack.
+     */
+    PUSH16(0x20, 30),
+
+    //endregion
+
+    //region Flow control
+
+    /**
+     * The NOP operation does nothing. It is intended to fill in space if opcodes are patched.
+     */
+    NOP(0x21, 30),
+
+    /**
+     * Unconditionally transfers control to a target instruction. The target instruction is
+     * represented as a 1-byte signed offset from the beginning of the current instruction.
+     */
+    JMP(0x22, 70),
+
+    /**
+     * Unconditionally transfers control to a target instruction. The target instruction is
+     * represented as a 4-bytes signed offset from the beginning of the current instruction.
+     */
+    JMP_L(0x23, 70),
+
+    /**
+     * Transfers control to a target instruction if the value is "true", not "null", or non-zero.
+     * The target instruction is represented as a 1-byte signed offset from the beginning of the
+     * current instruction.
+     */
+    JMPIF(0x24, 70),
+
+    /**
+     * Transfers control to a target instruction if the value is "true", not "null", or non-zero.
+     * The target instruction is represented as a 4-bytes signed offset from the beginning of the
+     * current instruction.
+     */
+    JMPIF_L(0x25, 70),
+
+    /**
+     * Transfers control to a target instruction if the value is "false", a "null" reference, or
+     * zero. The target instruction is represented as a 1-byte signed offset from the beginning of
+     * the current instruction.
+     */
+    JMPIFNOT(0x26, 70),
+
+    /**
+     * Transfers control to a target instruction if the value is "false", a "null" reference, or
+     * zero. The target instruction is represented as a 4-bytes signed offset from the beginning of
+     * the current instruction.
+     */
+    JMPIFNOT_L(0x27, 70),
+
+    /**
+     * Transfers control to a target instruction if two values are equal. The target instruction is
+     * represented as a 1-byte signed offset from the beginning of the current instruction.
+     */
+    JMPEQ(0x28, 70),
+
+    /**
+     * Transfers control to a target instruction if two values are equal. The target instruction is
+     * represented as a 4-bytes signed offset from the beginning of the current instruction.
+     */
+    JMPEQ_L(0x29, 70),
+
+    /**
+     * Transfers control to a target instruction when two values are not equal. The target
+     * instruction is represented as a 1-byte signed offset from the beginning of the current
+     * instruction.
+     */
+    JMPNE(0x2A, 70),
+
+    /**
+     * Transfers control to a target instruction when two values are not equal. The target
+     * instruction is represented as a 4-bytes signed offset from the beginning of the current
+     * instruction.
+     */
+    JMPNE_L(0x2B, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is greater than the second
+     * value. The target instruction is represented as a 1-byte signed offset from the beginning of
+     * the current instruction.
+     */
+    JMPGT(0x2C, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is greater than the second
+     * value. The target instruction is represented as a 4-bytes signed offset from the beginning of
+     * the current instruction.
+     */
+    JMPGT_L(0x2D, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is greater than or equal to the
+     * second value. The target instruction is represented as a 1-byte signed offset from the
+     * beginning of the current instruction.
+     */
+    JMPGE(0x2E, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is greater than or equal to the
+     * second value. The target instruction is represented as a 4-bytes signed offset from the
+     * beginning of the current instruction.
+     */
+    JMPGE_L(0x2F, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is less than the second value.
+     * The target instruction is represented as a 1-byte signed offset from the beginning of the
+     * current instruction.
+     */
+    JMPLT(0x30, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is less than the second value.
+     * The target instruction is represented as a 4-bytes signed offset from the beginning of the
+     * current instruction.
+     */
+    JMPLT_L(0x31, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is less than or equal to the
+     * second value. The target instruction is represented as a 1-byte signed offset from the
+     * beginning of the current instruction.
+     */
+    JMPLE(0x32, 70),
+
+    /**
+     * Transfers control to a target instruction if the first value is less than or equal to the
+     * second value. The target instruction is represented as a 4-bytes signed offset from the
+     * beginning of the current instruction.
+     */
+    JMPLE_L(0x33, 70),
+
+    /**
+     * Calls the function at the target address which is represented as a 1-byte signed offset from
+     * the beginning of the current instruction.
+     */
+    CALL(0x34, 22000),
+
+    /**
+     * Calls the function at the target address which is represented as a 4-bytes signed offset from
+     * the beginning of the current instruction.
+     */
+    CALL_L(0x35, 22000),
+
+    /**
+     * Pop the address of a function from the stack, and call the function.
+     */
+    CALLA(0x36, 22000),
+
+    /**
+     * Turn the vm state to FAULT immediately, and cannot be caught.
+     */
+    ABORT(0x37, 30),
+
+    /**
+     * Pop the top value of the stack, if it false, then exit vm execution and set vm state to
+     * FAULT.
+     */
+    ASSERT(0x38, 30),
+
+    /**
+     * Pop the top value of the stack, and throw it.
+     */
+    THROW(0x3A, 30),
+
+    /**
+     * Returns from the current method.
+     */
+    RET(0x40, 0),
+
+    /**
+     * Calls to an interop service.
+     */
+    SYSCALL(0x41, 0),
+
+    //endregion
+
+    //region Compound-type
+
+    /**
+     * A value n is taken from top of main stack. The next n items on main stack are removed, put
+     * inside n-sized array and this array is put on top of the main stack.
+     */
+    PACK(0xC0, 7000);
+
+    //endregion
+
 
     private byte opCode;
+    private Long price;
 
-    OpCode(byte opCode) {
-        this.opCode = opCode;
+    OpCode(int opCode, int price) {
+        this.opCode = (byte) opCode;
+        this.price = (long) price;
     }
 
     public byte getValue() {
         return opCode;
     }
 
+    public long getPrice() {
+        return this.price;
+    }
+
     public static String toHexString(OpCode opCode) {
         return Numeric.toHexStringNoPrefix(opCode.getValue());
+    }
+
+    public static OpCode valueOf(byte code) {
+        for (OpCode c : OpCode.values()) {
+            if (c.opCode == code) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException("No Opcode found for byte value " +
+                Numeric.toHexString(code) + ".");
     }
 
     @Override
