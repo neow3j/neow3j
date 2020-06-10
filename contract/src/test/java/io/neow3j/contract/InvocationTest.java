@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractTestHelper.CONTRACT_1_SCRIPT_HASH;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -69,10 +68,10 @@ public class InvocationTest {
 
     @Test
     public void failWithoutSettingWallet() throws IOException {
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        ScriptHash neo = new ScriptHash("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         String method = "name";
         Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(sh)
+                .withContract(neo)
                 .withFunction(method);
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("wallet");
