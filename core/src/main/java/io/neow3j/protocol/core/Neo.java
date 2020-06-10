@@ -9,7 +9,6 @@ import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
