@@ -34,16 +34,19 @@ public enum OpCode {
     /**
      * The next 1 byte contains the number of bytes to be pushed onto the stack.
      */
+    @OperandSize(prefixSize = 1)
     PUSHDATA1(0x0C, 180),
 
     /**
      * The next 2 bytes contain the number of bytes to be pushed onto the stack.
      */
+    @OperandSize(prefixSize = 2)
     PUSHDATA2(0x0D, 13000),
 
     /**
      * The next 4 bytes contain the number of bytes to be pushed onto the stack.
      */
+    @OperandSize(prefixSize = 4)
     PUSHDATA4(0x0E, 110000),
 
     /**
