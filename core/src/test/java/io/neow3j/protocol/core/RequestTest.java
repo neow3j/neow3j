@@ -121,15 +121,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetBlockSysFee() throws Exception {
-        neow3j.getBlockSysFee(new BlockParameterIndex(12345)).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getblocksysfee\","
-                        + "\"params\":[12345],\"id\":1}");
-    }
-
-    @Test
     public void testGetContractState() throws Exception {
         neow3j.getContractState("dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f").send();
 

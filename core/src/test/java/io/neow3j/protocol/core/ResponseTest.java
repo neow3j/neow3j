@@ -383,22 +383,6 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetBlockSysFee() {
-        buildResponse(
-                "{\n" +
-                        "  \"jsonrpc\":\"2.0\",\n" +
-                        "  \"id\":67,\n" +
-                        "  \"result\": \"200\"\n" +
-                        "}"
-        );
-
-        NeoGetBlockSysFee getBlockSysFee = deserialiseResponse(NeoGetBlockSysFee.class);
-        assertThat(getBlockSysFee.getFee(), is(notNullValue()));
-
-        assertThat(getBlockSysFee.getFee(), is("200"));
-    }
-
-    @Test
     public void testGetContractState() {
         buildResponse(
                 "{\n" +
