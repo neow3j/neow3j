@@ -37,6 +37,7 @@ public class ScriptReader {
                 builder.append(code.name());
                 OperandSize operandSize = getOperandSize(code);
                 if (operandSize == null) {
+                    builder.append("\n");
                     continue;
                 }
                 if (operandSize.size() > 0) {
