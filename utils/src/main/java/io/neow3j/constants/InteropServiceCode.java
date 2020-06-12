@@ -111,14 +111,25 @@ public enum InteropServiceCode {
     }
 
     /**
-     * Gets the short hash (4 bytes) of the code's name as a little endian hex string.
+     * Gets this <tt>InteropServiceCode</tt>'s hash (4 bytes) as a hex string.
      *
-     * @return the hashed code name
+     * @return the hash.
      */
     public String getHash() {
         byte[] sha256 = Hash.sha256(this.getName().getBytes(StandardCharsets.US_ASCII));
         return Numeric.toHexStringNoPrefix(ArrayUtils.getFirstNBytes(sha256, 4));
     }
+
+    /**
+     * Gets the hash (4 bytes) of the given <tt>InteropServiceCode</tt>'s name.
+     *
+     * @return the hash.
+     */
+    public static byte[] getInteropCodeHash(String interopCodeName) {
+        byte[] sha256 = Hash.sha256(interopCodeName.getBytes(StandardCharsets.US_ASCII));
+        return ArrayUtils.getFirstNBytes(sha256, 4);
+    }
+
 
     /**
      * Get the price in fractions of GAS of this interop service.
