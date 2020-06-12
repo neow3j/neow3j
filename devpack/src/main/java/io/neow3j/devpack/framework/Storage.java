@@ -1,14 +1,19 @@
 package io.neow3j.devpack.framework;
 
+@Syscall("System.Storage")
 public class Storage {
 
-    @Syscall("Neo.Storage.Get")
+    @Syscall("System.Storage.Get")
     public static native Object get(String key);
 
-    @Syscall("Neo.Storage.Put")
+    @Syscall("System.Storage.Put")
     public static native void put(StorageContext ctx, String key, Object value);
 
-    @Syscall("Neo.Storage.GetContext")
+    @Syscall("System.Storage.GetContext")
+    @Syscall("System.Storage.Put")
+    public static native void put(String key, Object value);
+
+    @Syscall("System.Storage.GetContext")
     public static native StorageContext getStorageContext();
 
     public static class StorageContext {

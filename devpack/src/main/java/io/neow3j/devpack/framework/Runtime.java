@@ -1,11 +1,11 @@
 package io.neow3j.devpack.framework;
 
-@Syscall("Neo.Runtime")
+@Syscall("System.Runtime")
 public class Runtime {
 
-    @Syscall("Neo.Runtime.CheckWitness")
+    @Syscall("System.Runtime.CheckWitness")
     public static native boolean checkWitness(byte[] hashOrKey);
 
-    @Syscall("Neo.Runtime.Notify")
+    @Syscall("System.Runtime.Notify")
     public static native void notify(String s, Object value);
 }
