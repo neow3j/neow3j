@@ -1,5 +1,60 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.NodePluginType;
+import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
+import io.neow3j.protocol.core.methods.response.ConsensusData;
+import io.neow3j.protocol.core.methods.response.NeoAddress;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoBlockCount;
+import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
+import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
+import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
+import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.methods.response.NeoGetPeers;
+import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetStorage;
+import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetVersion;
+import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
+import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoListPlugins;
+import io.neow3j.protocol.core.methods.response.NeoOpenWallet;
+import io.neow3j.protocol.core.methods.response.NeoSendFrom;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.NeoWitness;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.methods.response.TransactionCosigner;
+import io.neow3j.protocol.ResponseTester;
+import io.neow3j.transaction.TransactionAttributeType;
+import io.neow3j.transaction.WitnessScope;
+import io.neow3j.utils.Numeric;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -7,23 +62,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.*;
-
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.model.types.NodePluginType;
-import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.ResponseTester;
-import io.neow3j.protocol.core.methods.response.*;
-import io.neow3j.transaction.TransactionAttributeType;
-import io.neow3j.transaction.WitnessScope;
-import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
