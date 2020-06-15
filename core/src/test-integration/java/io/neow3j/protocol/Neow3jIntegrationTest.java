@@ -1,10 +1,9 @@
 package io.neow3j.protocol;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.*;
-
+import io.neow3j.protocol.core.Neo;
+import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
-import io.neow3j.protocol.core.methods.response.*;
 import io.neow3j.protocol.http.HttpService;
 
 import java.io.IOException;
@@ -13,8 +12,13 @@ import java.math.BigInteger;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.hamcrest.Matcher;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThan;
+
 import org.junit.Before;
+import org.hamcrest.Matcher;
+import org.junit.BeforeClass;
 import org.testcontainers.containers.GenericContainer;
 
 abstract class Neow3jIntegrationTest {
@@ -42,8 +46,10 @@ abstract class Neow3jIntegrationTest {
     protected static final BigInteger TX_HEIGTH = BigInteger.valueOf(2);
     protected static final int RAW_TX_LENGTH = 532;//754;
     protected static final String VM_STATE_HALT = "HALT";
-    protected static final String KEY_TO_LOOKUP_AS_HEX = "616e797468696e67";
+    protected static final String KEY_TO_LOOKUP_AS_HEX = "14941343239213fa0e765f1027ce742f48db779a96";
+    protected static final int STORAGE_LENGTH = 92;
     protected static final String APPLICATION_LOG_TRIGGER = "Application";
+    protected static final int UNCLAIMED_GAS_INT_LENGTH = 10;
 
     // Invoke function variables
     protected static final String INVOKE_SYMBOL = "symbol";
@@ -72,7 +78,9 @@ abstract class Neow3jIntegrationTest {
     // The address from which Address 2 receives gas when sending Neo to the recipient address.
     protected static final String TX_GAS_ADDRESS = "AFmseVrdL9f9oyCzZefL9tG6UbvhPbdYzM";
     protected static final String TX_GAS_AMOUNT = "600000000";
-    protected static final String UNCLAIMED_GAS = "1799865000";
+
+    protected static final int INVALID_PARAMS_CODE = -32602;
+    protected static final String INVALID_PARAMS_MESSAGE = "Invalid params";
 
     protected static long BLOCK_0_IDX = 0;
     protected static String BLOCK_0_HASH = "0x8c7a4aa82d504bf25f1aae5783f391a6cfbb6ba97803e45ab2a7276ce75a48ce";
@@ -94,7 +102,7 @@ abstract class Neow3jIntegrationTest {
         // ensure that the wallet with NEO/GAS is initialized for the tests
         neow3jWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
         // make a transaction that can be used for the tests
-        neow3jWrapper.makeTransaction();
+        neow3jWrapper.performSendToAddressTransaction();
     }
 
     protected abstract GenericContainer getPrivateNetContainer();
@@ -137,16 +145,21 @@ abstract class Neow3jIntegrationTest {
             };
         }
 
-        private void makeTransaction() throws IOException {
+        private void performSendToAddressTransaction() throws IOException, InterruptedException {
             NeoSendToAddress send = super.sendToAddress(NEO_HASH, RECIPIENT_ADDRESS, TX_AMOUNT, TX_FEE).send();
             // ensure that the transaction is sent
-            waitUntilTransactionHasBeenExecuted();
+            waitUntilSendToAddressTransactionHasBeenExecuted();
             // store the transaction hash to use this transaction in the tests
-            TX_HASH = send.getSendToAddress().getHash();
+            setTxHash(send.getSendToAddress().getHash());
+            Thread.sleep(15000);
         }
 
-        public void waitUntilTransactionHasBeenExecuted() {
+        public void waitUntilSendToAddressTransactionHasBeenExecuted() {
             waitUntilWalletHasBalance(lessThan(BigDecimal.valueOf(TOTAL_NEO_SUPPLY)));
+        }
+
+        private void setTxHash(String txHash) {
+            TX_HASH = txHash;
         }
     }
 
