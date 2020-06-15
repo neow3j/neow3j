@@ -39,9 +39,9 @@ public class Compiler {
                                 .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class))))
                 .toArray(MethodNode[]::new);
         if (entryPoints.length > 1) {
-            throw new Exception("Multiple entry points found.");
+            throw new CompilerException("Multiple entry points found.");
         } else if (entryPoints.length == 0) {
-            throw new Exception("No entry point found.");
+            throw new CompilerException("No entry point found.");
         }
         MethodNode entryPoint = entryPoints[0];
         Iterator<AbstractInsnNode> it = entryPoint.instructions.iterator();
