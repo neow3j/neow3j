@@ -29,10 +29,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -40,7 +38,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 // This test class uses a static container which is reused in every test to avoid the long startup
 // time of the container. Therefore only tests that perform read-only operations should be added
 // here.
-//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @ClassRule
