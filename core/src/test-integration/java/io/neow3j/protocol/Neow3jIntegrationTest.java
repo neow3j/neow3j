@@ -1,7 +1,7 @@
 package io.neow3j.protocol;
 
-import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.http.HttpService;
@@ -18,7 +18,6 @@ import static org.hamcrest.Matchers.lessThan;
 
 import org.junit.Before;
 import org.hamcrest.Matcher;
-import org.junit.BeforeClass;
 import org.testcontainers.containers.GenericContainer;
 
 abstract class Neow3jIntegrationTest {
@@ -44,7 +43,7 @@ abstract class Neow3jIntegrationTest {
     protected static final String TX_SCRIPT = "AcQJDBTXhdxFuBA/Rv+5MO5//k7/XYa79wwUlBNDI5IT+g52XxAnznQvSNt3mpYTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4";
     protected static final String TX_COSIGNER = "0x969a77db482f74ce27105f760efa139223431394";
     protected static final BigInteger TX_HEIGTH = BigInteger.valueOf(2);
-    protected static final int RAW_TX_LENGTH = 532;//754;
+    protected static final int RAW_TX_LENGTH = 532;
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String KEY_TO_LOOKUP_AS_HEX = "14941343239213fa0e765f1027ce742f48db779a96";
     protected static final int STORAGE_LENGTH = 92;
@@ -87,7 +86,7 @@ abstract class Neow3jIntegrationTest {
     // block at index 1 changes at each setup
     protected static String BLOCK_0_RAW_STRING =
             "0000000000000000000000000000000000000000000000000000000000000000000000006cdb3e9875fd7ac171c7f22c230585820253891fadf6e55fbbed022def012c2e88ea19ef550100000000000000fea46931b5c22a99277a25233ff431d642b8550100011100";
-    private Neow3jWrapper neow3jWrapper;
+    protected static Neow3jWrapper neow3jWrapper;
 
     protected static String getNodeUrl(GenericContainer container) {
         return "http://" + container.getContainerIpAddress() +
@@ -107,7 +106,7 @@ abstract class Neow3jIntegrationTest {
 
     protected abstract GenericContainer getPrivateNetContainer();
 
-    protected Neow3j getNeow3j() {
+    protected static Neow3j getNeow3j() {
         return neow3jWrapper;
     }
 
@@ -129,6 +128,25 @@ abstract class Neow3jIntegrationTest {
             waitUntil(callableGetBalance(), matcher);
         }
 
+        protected void waitUntilTxHash(String txHash) {
+            waitUntil(callableGetTxHash(txHash), greaterThanOrEqualTo(1));
+        }
+
+        // as soon as the transaction txHash appears in a block, the according block number is returned
+        private Callable<Integer> callableGetTxHash(String txHash) {
+            return () -> {
+                try {
+                    NeoGetTransactionHeight tx = super.getTransactionHeight(txHash).send();
+                    if (tx.hasError()) {
+                        return null;
+                    }
+                    return tx.getHeight().intValue();
+                } catch (IOException e) {
+                    return 0;
+                }
+            };
+        }
+
         private void waitUntil(Callable<?> callable, Matcher matcher) {
             await().timeout(30, TimeUnit.SECONDS).until(callable, matcher);
         }
@@ -145,13 +163,12 @@ abstract class Neow3jIntegrationTest {
             };
         }
 
-        private void performSendToAddressTransaction() throws IOException, InterruptedException {
+        private void performSendToAddressTransaction() throws IOException {
             NeoSendToAddress send = super.sendToAddress(NEO_HASH, RECIPIENT_ADDRESS, TX_AMOUNT, TX_FEE).send();
             // ensure that the transaction is sent
             waitUntilSendToAddressTransactionHasBeenExecuted();
             // store the transaction hash to use this transaction in the tests
             setTxHash(send.getSendToAddress().getHash());
-            Thread.sleep(15000);
         }
 
         public void waitUntilSendToAddressTransactionHasBeenExecuted() {
