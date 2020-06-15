@@ -268,6 +268,35 @@ Content-Type: application/javascript'
 }
 
 ####################
+# getstorage
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getstorage",
+ "params": [
+	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "14941343239213fa0e765f1027ce742f48db779a96"
+ ],
+ "id": 1
+}
+
+####################
+# gettransactionheight
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+  "jsonrpc": "2.0",
+  "method": "gettransactionheight",
+  "params":["0x68b30037e53280c8c687cae33013b177aa7fe7339d932d2beaff84cf098e4f0b"],
+  "id": 1
+}
+
+####################
 # getnewaddress
 ####################
 POST http://localhost:40332
