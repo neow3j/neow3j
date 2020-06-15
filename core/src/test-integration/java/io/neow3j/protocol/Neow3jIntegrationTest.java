@@ -1,5 +1,7 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
@@ -8,7 +10,6 @@ import io.neow3j.protocol.http.HttpService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -25,11 +26,9 @@ abstract class Neow3jIntegrationTest {
     // Wallet password for node-config/wallet.json
     protected static final String NODE_WALLET_PASSWORD = "neo";
     protected static final String NEO_HASH = "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789";
-    protected static final String GAS_HASH = "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b";
     protected static final String NEO_HASH_WITH_PREFIX = "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789";
     protected static final String GAS_HASH_WITH_PREFIX = "0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b";
     protected static final int TOTAL_NEO_SUPPLY = 100000000;
-    protected static final String ADDR1_WIF = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
 
     // The transaction information that is initially sent
     protected static final String TX_AMOUNT = "2500";
@@ -38,20 +37,19 @@ abstract class Neow3jIntegrationTest {
     protected static final long TX_BLOCK_IDX = 2L;
     protected static String TX_HASH;
     protected static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
-    protected static final long TX_SIZE = 266L;
     protected static final int TX_VERSION = 0;
     protected static final String TX_SCRIPT = "AcQJDBTXhdxFuBA/Rv+5MO5//k7/XYa79wwUlBNDI5IT+g52XxAnznQvSNt3mpYTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4";
     protected static final String TX_COSIGNER = "0x969a77db482f74ce27105f760efa139223431394";
-    protected static final BigInteger TX_HEIGTH = BigInteger.valueOf(2);
     protected static final int RAW_TX_LENGTH = 532;
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String KEY_TO_LOOKUP_AS_HEX = "14941343239213fa0e765f1027ce742f48db779a96";
     protected static final int STORAGE_LENGTH = 92;
     protected static final String APPLICATION_LOG_TRIGGER = "Application";
-    protected static final int UNCLAIMED_GAS_INT_LENGTH = 10;
 
     // Invoke function variables
     protected static final String INVOKE_SYMBOL = "symbol";
+    protected static final String INVOKE_BALANCE = "balanceOf";
+    protected static final String INVOKE_TRANSFER = "transfer";
 
     // This is the last unspent transaction of address AK2nJJ... after a clean start of the container.
 //    protected static final String UTXO_TX_HASH = "0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff";
@@ -63,13 +61,11 @@ abstract class Neow3jIntegrationTest {
     protected static int BLOCK_HASH_LENGTH_WITH_PREFIX = 66;
     // First address held in wallet
     protected static String ADDRESS_1 = "AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF";
-    protected static final String ADDRESS_1_NEO_AMOUNT = "50000000";
-    protected static final String ADDRESS_1_GAS_AMOUNT = "2999999988614350";
+    protected static final String ADDR1_WIF = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
+    protected static final ContractParameter ADDRESS_1_HASH160 =
+            ContractParameter.hash160(ScriptHash.fromAddress(ADDRESS_1));
     // Second address held in wallet
     protected static String ADDRESS_2 = "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm";
-    // The amounts after the transaction
-    protected static final String ADDRESS_2_NEO_AMOUNT = "49997500";
-    protected static final String ADDRESS_2_GAS_AMOUNT = "602377840";
     // Before the tests Neo is sent to this address to test GetTransaction method.
     protected static String RECIPIENT_ADDRESS = "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2";
     // The address that is imported to the wallet

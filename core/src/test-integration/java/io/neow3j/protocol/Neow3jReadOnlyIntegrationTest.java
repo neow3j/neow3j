@@ -1,5 +1,7 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.methods.response.*;
@@ -8,19 +10,19 @@ import io.neow3j.transaction.WitnessScope;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -33,6 +35,7 @@ import org.junit.Test;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
 
 // This test class uses a static container which is reused in every test to avoid the long startup
 // time of the container. Therefore only tests that perform read-only operations should be added
@@ -45,8 +48,8 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
                     "/neo-cli/config.json", BindMode.READ_ONLY)
             .withClasspathResourceMapping("/node-config/protocol.json",
                     "/neo-cli/protocol.json", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("/node-config/wallet.json",
-                    "/neo-cli/wallet.json", BindMode.READ_ONLY)
+            .withCopyFileToContainer(MountableFile.forClasspathResource("/node-config/wallet.json", 777),
+                    "/neo-cli/wallet.json")
             .withClasspathResourceMapping("/node-config/rpcserver.config.json",
                     "/neo-cli/Plugins/RpcServer/config.json", BindMode.READ_ONLY)
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
@@ -165,7 +168,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         NeoGetRawBlock getRawBlock = getNeow3j().getRawBlockHeader(BLOCK_0_HASH).send();
         String rawBlock = getRawBlock.getRawBlock();
 
-        assertThat(rawBlock, is(notNullValue()));
+        assertNotNull(rawBlock);
         assertThat(rawBlock, is(BLOCK_0_RAW_STRING));
     }
 
@@ -174,7 +177,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         NeoGetRawBlock getRawBlock = getNeow3j().getRawBlockHeader(new BlockParameterIndex(BLOCK_0_IDX)).send();
         String rawBlock = getRawBlock.getRawBlock();
 
-        assertThat(rawBlock, is(notNullValue()));
+        assertNotNull(rawBlock);
         assertThat(rawBlock, is(BLOCK_0_RAW_STRING));
     }
 
@@ -189,18 +192,18 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(contractState.getScript(), is("QUXEkoQ="));
 
         NeoGetContractState.ContractState.ContractManifest manifest = contractState.getManifest();
-        assertThat(manifest, is(notNullValue()));
-        assertThat(manifest.getGroups(), is(notNullValue()));
+        assertNotNull(manifest);
+        assertNotNull(manifest.getGroups());
         assertThat(manifest.getGroups(), hasSize(0));
-        assertThat(manifest.getFeatures(), is(notNullValue()));
+        assertNotNull(manifest.getFeatures());
         assertTrue(manifest.getFeatures().getStorage());
         assertFalse(manifest.getFeatures().getPayable());
 
         NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
-        assertThat(abi, is(notNullValue()));
+        assertNotNull(abi);
         assertThat(abi.getHash(), is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
 
-        assertThat(abi.getMethods(), is(notNullValue()));
+        assertNotNull(abi.getMethods());
         assertThat(abi.getMethods(), hasSize(16));
         assertThat(abi.getMethods().get(1).getName(), is("registerCandidate"));
         assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(), is("pubkey"));
@@ -208,7 +211,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
                 is(ContractParameterType.PUBLIC_KEY));
         assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.BOOLEAN));
 
-        assertThat(abi.getEvents(), is(notNullValue()));
+        assertNotNull(abi.getEvents());
         assertThat(abi.getEvents(), hasSize(1));
         assertThat(abi.getEvents().get(0).getName(), is("Transfer"));
         assertThat(abi.getEvents().get(0).getParameters(), hasSize(3));
@@ -216,16 +219,16 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(abi.getEvents().get(0).getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
         assertThat(abi.getEvents().get(0).getReturnType(), is(ContractParameterType.SIGNATURE));
 
-        assertThat(manifest.getPermissions(), is(notNullValue()));
+        assertNotNull(manifest.getPermissions());
         assertThat(manifest.getPermissions(), hasSize(1));
         assertThat(manifest.getPermissions().get(0).getContract(), is("*"));
         assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(1));
         assertThat(manifest.getPermissions().get(0).getMethods().get(0), is("*"));
 
-        assertThat(manifest.getTrusts(), is(notNullValue()));
+        assertNotNull(manifest.getTrusts());
         assertThat(manifest.getTrusts(), hasSize(0));
 
-        assertThat(manifest.getSafeMethods(), is(notNullValue()));
+        assertNotNull(manifest.getSafeMethods());
         assertThat(manifest.getSafeMethods(), hasSize(11));
         assertThat(manifest.getSafeMethods(),
                 containsInAnyOrder(
@@ -241,7 +244,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
                         "balanceOf",
                         "supportedStandards"
                 ));
-        assertThat(manifest.getExtra(), is(nullValue()));
+        assertNull(manifest.getExtra());
     }
 
     @Test
@@ -255,28 +258,29 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetTransaction() throws IOException {
+        neow3jWrapper.waitUntilTxHash(TX_HASH);
+
         NeoGetTransaction getTransaction = getNeow3j().getTransaction(TX_HASH).send();
         Transaction transaction = getTransaction.getTransaction();
 
         assertNotNull(transaction);
         assertThat(transaction.getHash(), is(TX_HASH));
-        assertThat(transaction.getSize(), is(TX_SIZE));
         assertThat(transaction.getVersion(), is(TX_VERSION));
-        assertThat(transaction.getNonce(), is(notNullValue()));
-        assertThat(transaction.getSender(), is(ADDRESS_2));
-        assertThat(transaction.getSysFee(), is(notNullValue()));
-        assertThat(transaction.getNetFee(), is(notNullValue()));
-        assertThat(transaction.getValidUntilBlock(), is(notNullValue()));
-        assertThat(transaction.getAttributes(), is(notNullValue()));
+        assertNotNull(transaction.getNonce());
+        assertNotNull(transaction.getSender());
+        assertNotNull(transaction.getSysFee());
+        assertNotNull(transaction.getNetFee());
+        assertNotNull(transaction.getValidUntilBlock());
+        assertNotNull(transaction.getAttributes());
         assertThat(transaction.getAttributes(), hasSize(1));
         assertThat(transaction.getAttributes().get(0).getAsTransactionCosigner(),
                 is(new TransactionCosigner(TX_COSIGNER, WitnessScope.CALLED_BY_ENTRY)));
         assertThat(transaction.getScript(), is(TX_SCRIPT));
-        assertThat(transaction.getWitnesses(), is(notNullValue()));
-//        assertThat(transaction.getBlockHash().length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
+        assertNotNull(transaction.getWitnesses());
+        assertNotNull(transaction.getBlockHash());
         assertThat(transaction.getConfirmations(), greaterThanOrEqualTo(0));
         assertThat(transaction.getBlockTime(), greaterThanOrEqualTo(0L));
-//        assertThat(transaction.getVMState(), is(VM_STATE_HALT));
+        assertThat(transaction.getVMState(), is(VM_STATE_HALT));
     }
 
     @Test
@@ -301,6 +305,16 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         String storage = getStorage.getStorage();
 
         assertThat(storage.length(), is(STORAGE_LENGTH));
+    }
+
+    @Test
+    public void testGetTransactionHeight() throws IOException {
+        neow3jWrapper.waitUntilTxHash(TX_HASH);
+
+        NeoGetTransactionHeight getTransactionHeight = getNeow3j().getTransactionHeight(TX_HASH).send();
+        BigInteger height = getTransactionHeight.getHeight();
+
+        assertThat(height.intValue(), is(greaterThanOrEqualTo(2)));
     }
 
     @Test
@@ -346,12 +360,22 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     // SmartContract Methods
 
-    @Ignore("Ignored due to ByteArray not comopletely replaced by ByteString yet.")
+    @Ignore("Ignored due to ByteArray not completely replaced by ByteString yet.")
     @Test
     public void testInvokeFunction_empty_Params() throws IOException {
         NeoInvokeFunction invokeFunction = getNeow3j().invokeFunction(NEO_HASH, INVOKE_SYMBOL).send();
         InvocationResult invocationResult = invokeFunction.getInvocationResult();
-        // TODO: 10.06.20 Michael: write test as soon as ByteArray is completely replaces by ByteString.
+        // TODO: 10.06.20 Michael: write test as soon as ByteArray is completely replaced by ByteString.
+    }
+
+    @Test
+    public void testInvokeFunction() throws IOException {
+        List<ContractParameter> parameters = Collections.singletonList(ADDRESS_1_HASH160);
+        NeoInvokeFunction invokeFunction = getNeow3j()
+                .invokeFunction(NEO_HASH_WITH_PREFIX, INVOKE_BALANCE, parameters)
+                .send();
+
+        assertNotNull(invokeFunction.getInvocationResult());
     }
 
     // Utilities Methods
@@ -361,7 +385,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         NeoListPlugins listPlugins = getNeow3j().listPlugins().send();
         List<NeoListPlugins.Plugin> plugins = listPlugins.getPlugins();
 
-        assertThat(plugins, is(notNullValue()));
+        assertNotNull(plugins);
         assertThat(plugins, hasSize(7));
     }
 
@@ -422,10 +446,29 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
+    public void testGetNewAddress() throws IOException {
+        NeoGetNewAddress getNewAddress = getNeow3j().getNewAddress().send();
+
+        assertThat(ScriptHash.fromAddress(getNewAddress.getAddress()), instanceOf(ScriptHash.class));
+    }
+
+    @Test
     public void testGetUnclaimedGas() throws IOException {
         NeoGetUnclaimedGas getUnclaimedGas = getNeow3j().getUnclaimedGas().send();
 
         assertNotNull(getUnclaimedGas.getUnclaimedGas());
+    }
+
+    @Test
+    public void testImportPrivKey() throws IOException {
+        NeoImportPrivKey importPrivKey = getNeow3j()
+                .importPrivKey("KwYRSjqmEhK4nPuUZZz1LEUSxvSzSRCv3SVePoe67hjcdPGLRJY5").send();
+        NeoAddress privKey = importPrivKey.getAddresses();
+
+        assertThat(privKey.getAddress(), is(IMPORT_ADDRESS));
+        assertTrue(privKey.getHasKey());
+        assertNull(privKey.getLabel());
+        assertFalse(privKey.getWatchOnly());
     }
 
     @Test
