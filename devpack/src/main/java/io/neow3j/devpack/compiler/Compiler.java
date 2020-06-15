@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptReader;
 import io.neow3j.devpack.framework.EntryPoint;
 import io.neow3j.devpack.framework.Syscall;
@@ -128,17 +129,7 @@ public class Compiler {
     }
 
     private static void pushDataArray(byte[] data, BinaryWriter writer) throws IOException {
-        if (data.length <= 255) {
-            writer.writeByte(OpCode.PUSHDATA1.getValue());
-            writer.writeByte((byte) data.length);
-        } else if (data.length < 65536) {
-            writer.writeByte(OpCode.PUSHDATA2.getValue());
-            writer.writeUInt16(data.length);
-        } else {
-            writer.writeByte(OpCode.PUSHDATA4.getValue());
-            writer.writeUInt32(data.length);
-        }
-        writer.write(data);
+        writer.write(new ScriptBuilder().pushData(data).toArray());
     }
 
 
