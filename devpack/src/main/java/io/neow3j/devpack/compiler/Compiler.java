@@ -5,13 +5,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptReader;
 import io.neow3j.devpack.framework.EntryPoint;
 import io.neow3j.devpack.framework.Syscall;
 import io.neow3j.devpack.framework.Syscall.Syscalls;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.utils.BigIntegers;
-import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -29,8 +27,12 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 public class Compiler {
 
-    public static void main(String[] args) throws Exception {
-        ClassReader reader = new ClassReader("io.neow3j.devpack.template.HelloWorldContract");
+    /**
+     * Compiles the class with the given name to NeoVM code.
+     * @param name the fully qualified name of the class.
+     */
+    public static byte[] compileClass(String name) throws IOException {
+        ClassReader reader = new ClassReader(name);
         ClassNode n = new ClassNode();
         reader.accept(n, 0);
         MethodNode[] entryPoints = n.methods.stream()
@@ -45,8 +47,8 @@ public class Compiler {
         }
         MethodNode entryPoint = entryPoints[0];
         Iterator<AbstractInsnNode> it = entryPoint.instructions.iterator();
-        ByteArrayOutputStream ms = new ByteArrayOutputStream();
-        BinaryWriter writer = new BinaryWriter(ms);
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        BinaryWriter writer = new BinaryWriter(outStream);
         while (it.hasNext()) {
             AbstractInsnNode insn = it.next();
             JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
@@ -83,9 +85,7 @@ public class Compiler {
                     break;
             }
         }
-        System.out.println(Numeric.toHexStringNoPrefix(ms.toByteArray()));
-        System.out.println(ScriptReader.convertToOpCodeString(
-                Numeric.toHexStringNoPrefix(ms.toByteArray())));
+        return outStream.toByteArray();
     }
 
     private static void handleLoadVariable(AbstractInsnNode insn, BinaryWriter writer)
