@@ -584,9 +584,9 @@ public class Invocation {
             int n = verifScript.getNrOfAccounts();
 
             return OpCode.PUSHDATA1.getPrice() * m
-                    + OpCode.valueOf(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
+                    + OpCode.get(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
                     + OpCode.PUSHDATA1.getPrice() * n
-                    + OpCode.valueOf(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
+                    + OpCode.get(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
                     // Push null because we don't want to verify a particular message but the
                     // transaction itself.
                     + OpCode.PUSHNULL.getPrice()

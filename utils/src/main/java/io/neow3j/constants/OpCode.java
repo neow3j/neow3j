@@ -1051,30 +1051,43 @@ public enum OpCode {
 
 //endregion
 
-
-    private byte opCode;
+    private int opcode;
     private Long price;
+    private static OpCode[] opcodes = new OpCode[220];
 
-    OpCode(int opCode, int price) {
-        this.opCode = (byte) opCode;
+    static {
+        for (OpCode code : values()) {
+            opcodes[code.opcode] = code;
+        }
+    }
+
+    OpCode(int opcode, int price) {
+        this.opcode = opcode;
         this.price = (long) price;
     }
 
-    public byte getValue() {
-        return opCode;
+    public int getCode() {
+        return opcode;
     }
 
     public long getPrice() {
         return this.price;
     }
 
-    public static String toHexString(OpCode opCode) {
-        return Numeric.toHexStringNoPrefix(opCode.getValue());
+    public static OpCode get(byte opcode) {
+        return get(Byte.toUnsignedInt(opcode));
+    }
+
+    public static OpCode get(int opcode) {
+        if (opcode < 0 || opcode > 219) {
+            return null;
+        }
+        return opcodes[opcode];
     }
 
     public static OpCode valueOf(byte code) {
         for (OpCode c : OpCode.values()) {
-            if (c.opCode == code) {
+            if (c.opcode == code) {
                 return c;
             }
         }
@@ -1084,6 +1097,6 @@ public enum OpCode {
 
     @Override
     public String toString() {
-        return Numeric.toHexStringNoPrefix(this.getValue());
+        return Numeric.toHexStringNoPrefix((byte) this.getCode());
     }
 }

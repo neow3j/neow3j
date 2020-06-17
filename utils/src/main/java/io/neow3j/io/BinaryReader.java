@@ -301,11 +301,11 @@ public class BinaryReader implements AutoCloseable {
         try {
             byte singleByte = readByte();
             int size = 0;
-            if (singleByte == OpCode.PUSHDATA1.getValue()) {
+            if (singleByte == OpCode.PUSHDATA1.getCode()) {
                 size = readUnsignedByte();
-            } else if (singleByte == OpCode.PUSHDATA2.getValue()) {
+            } else if (singleByte == OpCode.PUSHDATA2.getCode()) {
                 size = readShort();
-            } else if (singleByte == OpCode.PUSHDATA4.getValue()) {
+            } else if (singleByte == OpCode.PUSHDATA4.getCode()) {
                 size = readInt();
             } else {
                 throw new DeserializationException("Stream did not contain a PUSHDATA OpCode at "
@@ -358,19 +358,19 @@ public class BinaryReader implements AutoCloseable {
     public BigInteger readPushBigInteger() throws DeserializationException {
         try {
             byte opCode = readByte();
-            if (opCode >= OpCode.PUSHM1.getValue() && opCode <= OpCode.PUSH16.getValue()) {
-                return BigInteger.valueOf(opCode - OpCode.PUSH0.getValue());
-            } else if (opCode == OpCode.PUSHINT8.getValue()) {
+            if (opCode >= OpCode.PUSHM1.getCode() && opCode <= OpCode.PUSH16.getCode()) {
+                return BigInteger.valueOf(opCode - OpCode.PUSH0.getCode());
+            } else if (opCode == OpCode.PUSHINT8.getCode()) {
                 return BigIntegers.fromLittleEndianByteArray(new byte[]{readByte()});
-            } else if (opCode == OpCode.PUSHINT16.getValue()) {
+            } else if (opCode == OpCode.PUSHINT16.getCode()) {
                 return BigIntegers.fromLittleEndianByteArray(readBytes(2));
-            } else if (opCode == OpCode.PUSHINT32.getValue()) {
+            } else if (opCode == OpCode.PUSHINT32.getCode()) {
                 return BigIntegers.fromLittleEndianByteArray(readBytes(4));
-            } else if (opCode == OpCode.PUSHINT64.getValue()) {
+            } else if (opCode == OpCode.PUSHINT64.getCode()) {
                 return BigIntegers.fromLittleEndianByteArray(readBytes(8));
-            } else if (opCode == OpCode.PUSHINT128.getValue()) {
+            } else if (opCode == OpCode.PUSHINT128.getCode()) {
                 return BigIntegers.fromLittleEndianByteArray(readBytes(16));
-            } else if (opCode == OpCode.PUSHINT256.getValue()) {
+            } else if (opCode == OpCode.PUSHINT256.getCode()) {
                 return BigIntegers.fromLittleEndianByteArray(readBytes(32));
             }
         } catch (IOException e) {

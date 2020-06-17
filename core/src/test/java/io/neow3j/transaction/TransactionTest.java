@@ -158,7 +158,7 @@ public class TransactionTest {
             .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
             .networkFee(1L) // 1 fraction of GAS
             .validUntilBlock(0x01020304L)
-            .script(new byte[]{OpCode.PUSH1.getValue()})
+            .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
             .build();
 
         byte[] actual = tx.toArray();
@@ -186,7 +186,7 @@ public class TransactionTest {
             .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
             .networkFee(1L) // 1 fraction of GAS
             .validUntilBlock(0x01020304L)
-            .script(new byte[]{OpCode.PUSH1.getValue()})
+            .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
             .attributes(
                 Cosigner.global(account1),
                 Cosigner.calledByEntry(account2))
@@ -236,7 +236,7 @@ public class TransactionTest {
         assertThat(tx.getValidUntilBlock(), is(2106265L));
         assertThat(tx.getCosigners(), contains(
                 Cosigner.calledByEntry(new ScriptHash("969a77db482f74ce27105f760efa139223431394"))));
-        assertArrayEquals(new byte[]{OpCode.PUSH1.getValue()}, tx.getScript());
+        assertArrayEquals(new byte[]{(byte)OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
             Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
     }
@@ -250,7 +250,7 @@ public class TransactionTest {
             .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
             .networkFee(1L) // 1 fraction of GAS
             .validUntilBlock(0x01020304L)
-            .script(new byte[]{OpCode.PUSH1.getValue()})
+            .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
             .attributes(
                 Cosigner.global(account1),
                 Cosigner.calledByEntry(account2))
