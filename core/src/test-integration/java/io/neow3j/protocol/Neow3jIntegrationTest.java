@@ -31,11 +31,11 @@ abstract class Neow3jIntegrationTest {
     protected static final int TOTAL_NEO_SUPPLY = 100000000;
 
     // The transaction information that is initially sent
+    protected static String TX_HASH;
     protected static final String TX_AMOUNT = "2500";
     protected static final String TX_FEE = "1";
     protected static final String TX_GAS_CONSUMED = "9007810";
     protected static final long TX_BLOCK_IDX = 2L;
-    protected static String TX_HASH;
     protected static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     protected static final int TX_VERSION = 0;
     protected static final String TX_SCRIPT = "AcQJDBTXhdxFuBA/Rv+5MO5//k7/XYa79wwUlBNDI5IT+g52XxAnznQvSNt3mpYTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4";
@@ -51,25 +51,34 @@ abstract class Neow3jIntegrationTest {
     protected static final String INVOKE_BALANCE = "balanceOf";
     protected static final String INVOKE_TRANSFER = "transfer";
 
+    // Invoke script
+    protected static final String INVOKE_SCRIPT = "0c142bf173f849d1d59123d097c009aa31624d39e73911c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
+
     // This is the last unspent transaction of address AK2nJJ... after a clean start of the container.
-//    protected static final String UTXO_TX_HASH = "0x4ba4d1f1acf7c6648ced8824aa2cd3e8f836f59e7071340e0c440d099a508cff";
-    protected static String NEO3_PRIVATENET_CONTAINER_IMG = "docker.pkg.github.com" +
+    protected static final String NEO3_PRIVATENET_CONTAINER_IMG = "docker.pkg.github.com" +
             "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
 
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     protected static int EXPOSED_JSONRPC_PORT = 40332;
     protected static int BLOCK_HASH_LENGTH_WITH_PREFIX = 66;
     // First address held in wallet
-    protected static String ADDRESS_1 = "AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF";
+    protected static final String ADDRESS_1 = "AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF";
     protected static final String ADDR1_WIF = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
     protected static final ContractParameter ADDRESS_1_HASH160 =
             ContractParameter.hash160(ScriptHash.fromAddress(ADDRESS_1));
     // Second address held in wallet
-    protected static String ADDRESS_2 = "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm";
+    protected static final String ADDRESS_2 = "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm";
+    protected static final ContractParameter ADDRESS_2_HASH160 =
+            ContractParameter.hash160(ScriptHash.fromAddress(ADDRESS_2));
     // Before the tests Neo is sent to this address to test GetTransaction method.
-    protected static String RECIPIENT_ADDRESS = "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2";
+    protected static final String RECIPIENT_ADDRESS_1 = "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2";
+    protected static final ContractParameter RECIPIENT_ADDRESS_HASH160 =
+            ContractParameter.hash160(ScriptHash.fromAddress(RECIPIENT_ADDRESS_1));
+    protected static final String RECIPIENT_ADDRESS_2 = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
     // The address that is imported to the wallet
     protected static final String IMPORT_ADDRESS = "ARoUkgQcUGnt8QJD7zumk12xtQhjy1smqG";
+    // The witness for the invokeFunction transfer
+    protected static final String WITNESS = "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569";
     // The address from which Address 2 receives gas when sending Neo to the recipient address.
     protected static final String TX_GAS_ADDRESS = "AFmseVrdL9f9oyCzZefL9tG6UbvhPbdYzM";
     protected static final String TX_GAS_AMOUNT = "600000000";
@@ -160,7 +169,7 @@ abstract class Neow3jIntegrationTest {
         }
 
         private void performSendToAddressTransaction() throws IOException {
-            NeoSendToAddress send = super.sendToAddress(NEO_HASH, RECIPIENT_ADDRESS, TX_AMOUNT, TX_FEE).send();
+            NeoSendToAddress send = super.sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, TX_AMOUNT, TX_FEE).send();
             // ensure that the transaction is sent
             waitUntilSendToAddressTransactionHasBeenExecuted();
             // store the transaction hash to use this transaction in the tests

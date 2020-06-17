@@ -490,7 +490,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         NeoGetNep5Transfers.Nep5Transfer transfer = nep5TransferWrapper.getSent().get(0);
         assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
         assertThat(transfer.getAssetHash(), is(NEO_HASH_WITH_PREFIX));
-        assertThat(transfer.getTransferAddress(), is(RECIPIENT_ADDRESS));
+        assertThat(transfer.getTransferAddress(), is(RECIPIENT_ADDRESS_1));
         assertThat(transfer.getAmount(), is(TX_AMOUNT));
         assertThat(transfer.getBlockIndex(), is(TX_BLOCK_IDX));
         assertThat(transfer.getTransferNotifyIndex(), is(1L));
