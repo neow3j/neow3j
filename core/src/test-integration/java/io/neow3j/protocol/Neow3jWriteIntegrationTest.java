@@ -165,38 +165,6 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testSendMany_Fee() throws IOException {
-        NeoSendMany sendMany = getNeow3j().sendMany(
-                Arrays.asList(
-                        new TransactionSendAsset(NEO_HASH, "100", RECIPIENT_ADDRESS_1)
-                ),
-                "1"
-        ).send();
-        Transaction tx = sendMany.getSendMany();
-
-        assertNotNull(tx);
-        assertThat(sendMany.getSendMany().getNetFee(), is("1265390")); // I
-        assertThat(sendMany.getSendMany().getSysFee(), is("9007810")); // I
-    }
-
-    @Test
-    public void testSendMany_Fee_And_ChangeAddress() throws IOException {
-        NeoSendMany sendMany = getNeow3j().sendMany(
-                Arrays.asList(
-                        new TransactionSendAsset(NEO_HASH, "100", RECIPIENT_ADDRESS_1),
-                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_2)
-                ),
-                "1",
-                ADDRESS_1
-        ).send();
-        Transaction tx = sendMany.getSendMany();
-
-        assertNotNull(tx);
-        assertThat(tx.getNetFee(), is("1350390")); // II
-        assertThat(tx.getSysFee(), is("18015620")); // I
-    }
-
-    @Test
     public void testSendToAddress() throws IOException {
         NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, "10").send();
         Transaction tx = sendToAddress.getSendToAddress();
@@ -211,51 +179,5 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
         Transaction tx = sendToAddress.getSendToAddress();
 
         assertNotNull(tx);
-    }
-
-    @Test
-    public void testSendToAddress_Fee() throws IOException {
-        NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, "10", "1")
-                .send();
-        Transaction tx = sendToAddress.getSendToAddress();
-
-        assertNotNull(tx);
-        assertThat(tx.getNetFee(), is("1264390")); // -
-        assertThat(tx.getSysFee(), is("9007810")); // -
-    }
-
-    @Test
-    public void testSendToAddress_TransactionSendAsset_Fee() throws IOException {
-        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_1);
-        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(transactionSendAsset, "1").send();
-        Transaction tx = sendToAddress.getSendToAddress();
-
-        assertNotNull(tx);
-        assertThat(tx.getNetFee(), is("1264390"));
-        assertThat(tx.getSysFee(), is("9007810"));
-    }
-
-    @Test
-    public void testSendToAddress_Fee_And_ChangeAddress() throws IOException {
-        NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, "10", "1", ADDRESS_1)
-                .send();
-        Transaction tx = sendToAddress.getSendToAddress();
-
-        assertNotNull(tx);
-        assertThat(tx.getNetFee(), is("1264390"));
-        assertThat(tx.getSysFee(), is("9007810"));
-    }
-
-    @Test
-    public void testSendToAddress_TransactionSendAsset_Fee_And_ChangeAddress() throws IOException {
-        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_1);
-        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(transactionSendAsset, "1", ADDRESS_1).send();
-        Transaction tx = sendToAddress.getSendToAddress();
-
-        assertNotNull(tx);
-        assertThat(tx.getNetFee(), is("1264390"));
-        assertThat(tx.getSysFee(), is("9007810"));
     }
 }

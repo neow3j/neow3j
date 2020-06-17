@@ -33,7 +33,6 @@ abstract class Neow3jIntegrationTest {
     // The transaction information that is initially sent
     protected static String TX_HASH;
     protected static final String TX_AMOUNT = "2500";
-    protected static final String TX_FEE = "1";
     protected static final String TX_GAS_CONSUMED = "9007810";
     protected static final long TX_BLOCK_IDX = 2L;
     protected static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
@@ -169,7 +168,7 @@ abstract class Neow3jIntegrationTest {
         }
 
         private void performSendToAddressTransaction() throws IOException {
-            NeoSendToAddress send = super.sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, TX_AMOUNT, TX_FEE).send();
+            NeoSendToAddress send = super.sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, TX_AMOUNT).send();
             // ensure that the transaction is sent
             waitUntilSendToAddressTransactionHasBeenExecuted();
             // store the transaction hash to use this transaction in the tests

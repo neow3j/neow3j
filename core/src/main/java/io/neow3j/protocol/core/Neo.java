@@ -142,25 +142,9 @@ public interface Neo {
 
     Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
 
-    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee);
-
-    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee,
-            String changeAddress);
-
     Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
-
-    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value,
-            String fee);
-
-    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset, String fee);
-
-    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value,
-            String fee, String changeAddress);
-
-    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset, String fee,
-            String changeAddress);
 
     // RpcNep5Tracker
 

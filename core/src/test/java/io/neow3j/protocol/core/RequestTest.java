@@ -483,50 +483,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testSendMany_Fee() throws Exception {
-        neow3j.sendMany(
-                Arrays.asList(
-                        new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "100", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
-                        new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "10", "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4")
-                ),
-                "50"
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"sendmany\","
-                        + "\"params\":["
-                        + "["
-                        + "{\"asset\":\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\"value\":\"100\",\"address\":\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"},"
-                        + "{\"asset\":\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\"value\":\"10\",\"address\":\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"}"
-                        + "],"
-                        + "\"50\""
-                        + "],\"id\":1}");
-    }
-
-    @Test
-    public void testSendMany_Fee_And_ChangeAddress() throws Exception {
-        neow3j.sendMany(
-                Arrays.asList(
-                        new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "100", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
-                        new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "10", "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4")
-                ),
-                "50",
-                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"sendmany\","
-                        + "\"params\":["
-                        + "["
-                        + "{\"asset\":\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\"value\":\"100\",\"address\":\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"},"
-                        + "{\"asset\":\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\"value\":\"10\",\"address\":\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"}"
-                        + "],"
-                        + "\"50\","
-                        + "\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\""
-                        + "],\"id\":1}");
-    }
-
-    @Test
     public void testSendToAddress() throws Exception {
         neow3j.sendToAddress(
                 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
@@ -550,74 +506,6 @@ public class RequestTest extends RequestTester {
                 "{\"jsonrpc\":\"2.0\",\"method\":\"sendtoaddress\","
                         + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
                         + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",\"10.0\"],\"id\":1}");
-    }
-
-    @Test
-    public void testSendToAddress_Fee() throws Exception {
-        neow3j.sendToAddress(
-                "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
-                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
-                "10.0",
-                "0.01"
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"sendtoaddress\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
-                        + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\","
-                        + "\"10.0\","
-                        + "\"0.01\"],\"id\":1}");
-    }
-
-    @Test
-    public void testSendToAddress_TransactionSendAsset_Fee() throws Exception {
-        neow3j.sendToAddress(
-                new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "10.0", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
-                "0.01"
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"sendtoaddress\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
-                        + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\","
-                        + "\"10.0\","
-                        + "\"0.01\"],\"id\":1}");
-    }
-
-    @Test
-    public void testSendToAddress_Fee_And_ChangeAddress() throws Exception {
-        neow3j.sendToAddress(
-                "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
-                "AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ",
-                "10.0",
-                "0.01",
-                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"sendtoaddress\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
-                        + "\"AKYdmtzCD6DtGx16KHzSTKY8ji29sMTbEZ\","
-                        + "\"10.0\","
-                        + "\"0.01\","
-                        + "\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}");
-    }
-
-    @Test
-    public void testSendToAddress_TransactionSendAsset_Fee_And_ChangeAddress() throws Exception {
-        neow3j.sendToAddress(
-                new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "10.0", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
-                "0.01",
-                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
-        ).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"sendtoaddress\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
-                        + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\","
-                        + "\"10.0\","
-                        + "\"0.01\","
-                        + "\"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"],\"id\":1}");
     }
 
     // RpcNep5Tracker

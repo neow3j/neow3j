@@ -461,30 +461,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     @Override
     public Request<?, NeoSendFrom> sendFrom(String fromAddress, TransactionSendAsset txSendAsset) {
-        return new Request<>(
-                "sendfrom",
-                asList(txSendAsset.getAsset(), fromAddress,
-                        txSendAsset.getAddress(), txSendAsset.getValue()),
-                neow3jService,
-                NeoSendFrom.class);
+        return sendFrom(fromAddress, txSendAsset.getAsset(), txSendAsset.getAddress(),
+                txSendAsset.getValue());
     }
 
     @Override
     public Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset) {
-        return sendMany(txSendAsset, null, null);
-    }
-
-    @Override
-    public Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee) {
-        return sendMany(txSendAsset, fee, null);
-    }
-
-    @Override
-    public Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee,
-            String changeAddress) {
         return new Request<>(
                 "sendmany",
-                asList(txSendAsset, fee, changeAddress).stream()
+                asList(txSendAsset).stream()
                         .filter((param) -> (param != null))
                         .collect(Collectors.toList()),
                 neow3jService,
@@ -494,34 +479,9 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     @Override
     public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress,
             String value) {
-        return sendToAddress(assetId, toAddress, value, null, null);
-    }
-
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset) {
-        return sendToAddress(txSendAsset.getAsset(), txSendAsset.getAddress(),
-                txSendAsset.getValue(), null, null);
-    }
-
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress,
-            String value, String fee) {
-        return sendToAddress(assetId, toAddress, value, fee, null);
-    }
-
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset,
-            String fee) {
-        return sendToAddress(txSendAsset.getAsset(), txSendAsset.getAddress(),
-                txSendAsset.getValue(), fee, null);
-    }
-
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress,
-            String value, String fee, String changeAddress) {
         return new Request<>(
                 "sendtoaddress",
-                asList(assetId, toAddress, value, fee, changeAddress).stream()
+                asList(assetId, toAddress, value).stream()
                         .filter((param) -> (param != null && !isEmpty(param)))
                         .collect(Collectors.toList()),
                 neow3jService,
@@ -529,10 +489,9 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset,
-            String fee, String changeAddress) {
+    public Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset) {
         return sendToAddress(txSendAsset.getAsset(), txSendAsset.getAddress(),
-                txSendAsset.getValue(), fee, changeAddress);
+                txSendAsset.getValue());
     }
 
     // RpcNep5Tracker
