@@ -25,11 +25,11 @@ import io.neow3j.devpack.framework.Storage.StorageContext;
 public class ExampleContract extends SmartContract {
 
     @EntryPoint
-    public static byte[] entryPoint(String method, Object[] params) {
+    public static boolean entryPoint(String method, Object[] params) {
         StorageContext context = Storage.getStorageContext();
-        Storage.put(context, "key", "value");
-        byte[] value = Storage.get(context, "key");
-        return value;
+        byte[] b = new byte[]{0x01};
+        Storage.put(context, b, "value");
+        return true;
     }
 
 }
