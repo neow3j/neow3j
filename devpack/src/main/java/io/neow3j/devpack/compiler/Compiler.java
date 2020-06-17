@@ -8,12 +8,8 @@ import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.framework.EntryPoint;
 import io.neow3j.devpack.framework.Syscall;
 import io.neow3j.devpack.framework.Syscall.Syscalls;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.utils.BigIntegers;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
@@ -24,17 +20,34 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Compiler {
 
+    private static final Logger log = LoggerFactory.getLogger(Compiler.class);
+
+    public static final int MAX_PARAMS_COUNT = 255;
+    public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
+//    public static final int MAX_STATIC_FIELDS_COUNT = 255;
+
+    private int currentNeoAddr;
+
     /**
      * Compiles the class with the given name to NeoVM code.
+     *
      * @param name the fully qualified name of the class.
      */
-    public static byte[] compileClass(String name) throws IOException {
+    public byte[] compileClass(String name) throws IOException {
         ClassReader reader = new ClassReader(name);
         ClassNode n = new ClassNode();
         reader.accept(n, 0);
+        MethodNode entryPoint = getEntryPoint(n);
+        NeoMethod neoMethod = handleMethod(entryPoint);
+        return neoMethod.toByteArray();
+    }
+
+    private MethodNode getEntryPoint(ClassNode n) {
         MethodNode[] entryPoints = n.methods.stream()
                 .filter(m -> m.invisibleAnnotations != null &&
                         m.invisibleAnnotations.stream()
@@ -45,95 +58,137 @@ public class Compiler {
         } else if (entryPoints.length == 0) {
             throw new CompilerException("No entry point found.");
         }
-        MethodNode entryPoint = entryPoints[0];
-        Iterator<AbstractInsnNode> it = entryPoint.instructions.iterator();
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        BinaryWriter writer = new BinaryWriter(outStream);
-        while (it.hasNext()) {
-            AbstractInsnNode insn = it.next();
+        return entryPoints[0];
+    }
+
+    private NeoMethod handleMethod(MethodNode method) throws IOException {
+        NeoMethod neoMethod = new NeoMethod();
+        addMethodBeginCode(method, neoMethod);
+        for (AbstractInsnNode insn : method.instructions) {
             JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
             if (opcode == null) {
                 continue;
             }
+            log.info(opcode.toString());
             switch (opcode) {
                 case INVOKESTATIC:
-                    handleMethod(insn, writer);
+                    handleMethodInstruction(insn, neoMethod);
                     break;
                 case LDC:
-                    handleLoadConstant(insn, writer);
+                    handleLoadConstant(insn, neoMethod);
                     break;
+                case ICONST_M1:
+                case ICONST_0:
                 case ICONST_1:
-                    writer.writeByte(OpCode.PUSH1.getValue());
+                case ICONST_2:
+                case ICONST_3:
+                case ICONST_4:
+                case ICONST_5:
+                    addPushNumber(opcode.getOpcode() - 3, neoMethod);
                     break;
+                case RETURN:
                 case IRETURN:
-                    writer.writeByte(OpCode.RET.getValue());
+                case ARETURN:
+                case FRETURN:
+                case DRETURN:
+                case LRETURN:
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.RET, this.currentNeoAddr++));
                     break;
                 case ASTORE:
                 case ASTORE_0:
                 case ASTORE_1:
                 case ASTORE_2:
                 case ASTORE_3:
-                    handleStoreVariable(insn, writer);
+                    addStoreLocalVariable(insn, neoMethod);
                     break;
                 case ALOAD:
                 case ALOAD_1:
                 case ALOAD_2:
                 case ALOAD_3:
-                    handleLoadVariable(insn, writer);
+                    addLoadLocalVariable(insn, neoMethod);
                     break;
+                case NEWARRAY:
+
                 default:
                     break;
             }
         }
-        return outStream.toByteArray();
+        return neoMethod;
     }
 
-    private static void handleLoadVariable(AbstractInsnNode insn, BinaryWriter writer)
-            throws IOException {
+    private void addMethodBeginCode(MethodNode method, NeoMethod neoMethod) {
+        int paramCount = Type.getArgumentTypes(method.desc).length;
+        int localVarCount = method.localVariables.size() - paramCount;
+        if (paramCount > MAX_PARAMS_COUNT) {
+            throw new CompilerException("The method has more than the max number of "
+                    + "parameters.");
+        }
+        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("The method has more than the max number of local "
+                    + "variables.");
+        }
+        if (paramCount + localVarCount > 0) {
+            NeoInstruction neoInsn = new NeoInstruction(OpCode.INITSLOT,
+                    new byte[]{(byte) localVarCount, (byte) paramCount}, currentNeoAddr);
+            neoMethod.addInstruction(neoInsn);
+            currentNeoAddr++;
+        }
+    }
+
+    private void addLoadLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
         assert insn.getType() == AbstractInsnNode.VAR_INSN : "Instruction type doesn't match "
                 + "opcode.";
         VarInsnNode varInsn = (VarInsnNode) insn;
         assert varInsn.var <= 255 : "Local variable index to high.";
+        NeoInstruction neoInsn;
         if (varInsn.var <= 6) {
-            writer.writeByte((byte) (OpCode.LDLOC0.getValue() + (byte) varInsn.var));
+            OpCode storeCode = OpCode.get(OpCode.LDLOC0.getCode() + (byte) varInsn.var);
+            neoInsn = new NeoInstruction(storeCode, this.currentNeoAddr++);
         } else {
-            writer.writeByte(OpCode.LDLOC.getValue());
-            writer.writeByte((byte) varInsn.var);
+            byte[] operand = new byte[]{(byte) varInsn.var};
+            neoInsn = new NeoInstruction(OpCode.LDLOC, operand, this.currentNeoAddr);
+            this.currentNeoAddr += 2;
         }
+        neoMethod.addInstruction(neoInsn);
     }
 
-    private static void handleStoreVariable(AbstractInsnNode insn, BinaryWriter writer)
-            throws IOException {
+    private void addStoreLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
         assert insn.getType() == AbstractInsnNode.VAR_INSN : "Instruction type doesn't match "
                 + "opcode.";
         VarInsnNode varInsn = (VarInsnNode) insn;
         assert varInsn.var <= 255 : "Local variable index to high.";
+        NeoInstruction neoInsn;
         if (varInsn.var <= 6) {
-            writer.writeByte((byte) (OpCode.STLOC0.getValue() + (byte) varInsn.var));
+            OpCode storeCode = OpCode.get(OpCode.STLOC0.getCode() + (byte) varInsn.var);
+            neoInsn = new NeoInstruction(storeCode, this.currentNeoAddr++);
         } else {
-            writer.writeByte(OpCode.STLOC.getValue());
-            writer.writeByte((byte) varInsn.var);
+            byte[] operand = new byte[]{(byte) varInsn.var};
+            neoInsn = new NeoInstruction(OpCode.STLOC, operand, this.currentNeoAddr);
+            this.currentNeoAddr += 2;
         }
+        neoMethod.addInstruction(neoInsn);
     }
 
-    private static void handleLoadConstant(AbstractInsnNode insn, BinaryWriter writer)
-            throws IOException {
+    private void handleLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
         assert insn.getType() == AbstractInsnNode.LDC_INSN : "Instruction type doesn't match "
                 + "opcode.";
-
         LdcInsnNode ldcInsn = (LdcInsnNode) insn;
         if (ldcInsn.cst instanceof String) {
-            pushDataArray(((String) ldcInsn.cst).getBytes(UTF_8), writer);
+            addPushDataArray(((String) ldcInsn.cst).getBytes(UTF_8), neoMethod);
         }
         // TODO: Handle other types.
     }
 
-    private static void pushDataArray(byte[] data, BinaryWriter writer) throws IOException {
-        writer.write(new ScriptBuilder().pushData(data).toArray());
+    private void addPushDataArray(byte[] data, NeoMethod neoMethod) {
+        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
+        byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
+        neoMethod.addInstruction(new NeoInstruction(
+                OpCode.get(insnBytes[0]), operand, this.currentNeoAddr));
+        this.currentNeoAddr += insnBytes.length;
     }
 
 
-    private static void handleMethod(AbstractInsnNode insn, BinaryWriter writer)
+    private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod neoMethod)
             throws IOException {
         assert insn.getType() == AbstractInsnNode.METHOD_INSN : "Instruction type doesn't match "
                 + "opcode.";
@@ -150,37 +205,38 @@ public class Compiler {
         // This assumes that all methods inside of a Syscall call class are syscalls. Might not
         // hold in the future, when we add helper methods to the Syscall classes.
         if (isSyscallClass(owner)) {
-            handleSyscall(owner, methodInsn, writer);
+            addSyscall(owner, methodInsn, neoMethod);
         }
         // TODO: Handle other kinds of methods.
     }
 
-    private static boolean isSyscallClass(ClassNode classNode) {
+    private boolean isSyscallClass(ClassNode classNode) {
         return classNode.invisibleAnnotations.stream()
                 .anyMatch(a -> a.desc.equals(Type.getDescriptor(Syscall.class)));
     }
 
-    private static void handleSyscall(ClassNode owner, MethodInsnNode methodInsn,
-            BinaryWriter writer) throws IOException {
-
+    private void addSyscall(ClassNode owner, MethodInsnNode methodInsn, NeoMethod neoMethod) {
         MethodNode method = owner.methods.stream()
                 .filter(m -> m.desc.equals(methodInsn.desc))
                 .findFirst().get();
 
-        // Before doing the syscall the arguments have to be reversed. Additionally the Opcode
+        // Before doing the syscall the arguments have to be reversed. Additionally, the Opcode
         // NOP is inserted before every Syscall.
-        writer.writeByte(OpCode.NOP.getValue());
+        neoMethod.addInstruction(new NeoInstruction(OpCode.NOP, this.currentNeoAddr++));
         int paramsCount = Type.getMethodType(method.desc).getArgumentTypes().length;
+        NeoInstruction neoInsn = null;
         if (paramsCount == 2) {
-            writer.writeByte(OpCode.SWAP.getValue());
+            neoInsn = new NeoInstruction(OpCode.SWAP, this.currentNeoAddr);
         } else if (paramsCount == 3) {
-            writer.writeByte(OpCode.REVERSE3.getValue());
+            neoInsn = new NeoInstruction(OpCode.REVERSE3, this.currentNeoAddr);
         } else if (paramsCount == 4) {
-            writer.writeByte(OpCode.REVERSE4.getValue());
+            neoInsn = new NeoInstruction(OpCode.REVERSE4, this.currentNeoAddr);
         } else if (paramsCount > 4) {
-            handlePushNumber(paramsCount, writer);
-            writer.writeByte(OpCode.REVERSEN.getValue());
+            addPushNumber(paramsCount, neoMethod);
+            neoInsn = new NeoInstruction(OpCode.REVERSEN, this.currentNeoAddr);
         }
+        neoMethod.addInstruction(neoInsn);
+        this.currentNeoAddr++;
 
         // Annotation has to be either Syscalls or Syscall.
         AnnotationNode syscallAnnotation = method.invisibleAnnotations.stream()
@@ -191,35 +247,28 @@ public class Compiler {
             // handle multiple syscalls
             assert syscallAnnotation.values.size() == 2;
             for (Object a : (List<?>) syscallAnnotation.values.get(1)) {
-                addSyscall((AnnotationNode) a, writer);
+                addSingleSyscall((AnnotationNode) a, neoMethod);
             }
         } else {
             // handle single syscall
-            addSyscall(syscallAnnotation, writer);
+            addSingleSyscall(syscallAnnotation, neoMethod);
         }
     }
 
-    private static void addSyscall(AnnotationNode syscallAnnotation, BinaryWriter writer)
-            throws IOException {
-
+    private void addSingleSyscall(AnnotationNode syscallAnnotation, NeoMethod neoMethod) {
         assert syscallAnnotation.values.size() == 2;
         String syscall = (String) syscallAnnotation.values.get(1);
-        writer.writeByte(OpCode.SYSCALL.getValue());
-        writer.write(InteropServiceCode.getInteropCodeHash(syscall));
+        byte[] hash = InteropServiceCode.getInteropCodeHash(syscall);
+        neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash, this.currentNeoAddr));
+        this.currentNeoAddr += 1 + hash.length;
     }
 
-
-    private static void handlePushNumber(int number, BinaryWriter writer) throws IOException {
-        if (number == 0) {
-            writer.writeByte(OpCode.PUSH0.getValue());
-        } else if (number == -1) {
-            writer.writeByte(OpCode.PUSHM1.getValue());
-        } else if (number > 0 && number <= 16) {
-            writer.writeByte((byte) (OpCode.PUSH0.getValue() + (byte) number));
-        } else {
-            byte[] data = BigIntegers.toLittleEndianByteArray(BigInteger.valueOf(number));
-            pushDataArray(data, writer);
-        }
+    private void addPushNumber(int number, NeoMethod neoMethod) {
+        byte[] insnBytes = new ScriptBuilder().pushInteger(number).toArray();
+        byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
+        neoMethod.addInstruction(new NeoInstruction(
+                OpCode.get(insnBytes[0]), operand, this.currentNeoAddr));
+        this.currentNeoAddr += insnBytes.length;
     }
 
 }
