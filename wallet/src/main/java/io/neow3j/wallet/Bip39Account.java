@@ -40,7 +40,6 @@ public class Bip39Account extends Account {
 
         return fromECKeyPair(keyPair)
                 .mnemonic(mnemonic)
-                .isDefault(true)
                 .build();
     }
 
@@ -54,13 +53,12 @@ public class Bip39Account extends Account {
     public static Builder fromBip39Mnemonic(String password, String mnemonic) {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair ecKeyPair = ECKeyPair.create(sha256(seed));
-        return fromECKeyPair(ecKeyPair);
+        return fromECKeyPair(ecKeyPair).mnemonic(mnemonic);
     }
 
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
-        b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey();
+        b.keyPair = ecKeyPair;
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
         return b;

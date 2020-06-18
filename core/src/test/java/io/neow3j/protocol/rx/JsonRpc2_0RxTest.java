@@ -126,6 +126,7 @@ public class JsonRpc2_0RxTest {
     }
 
     @Test
+    @Ignore("Ignored due to malfunctioning according to issue #129.")
     public void testCatchUpToLatestAndSubscribeToNewBlockObservable() throws Exception {
 
         List<NeoGetBlock> expected = Arrays.asList(
@@ -283,9 +284,9 @@ public class JsonRpc2_0RxTest {
 
     private NeoGetBlock createBlock(int number) {
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock("", 0, 0, "",
+        NeoBlock block = new NeoBlock("", 0L, 0, "",
             "", 123456789, number, "nonce",
-            "next", null, null, 1, "next");
+            null, null, null, 1, "next");
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }

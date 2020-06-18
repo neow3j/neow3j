@@ -5,8 +5,9 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.transaction.Cosigner;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -14,7 +15,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+/**
+ * Represents the NeoToken native contract and provides methods to invoke all its functions.
+ */
 public class NeoToken extends Nep5Token {
 
     public final static int DECIMALS = 0;
@@ -25,31 +30,57 @@ public class NeoToken extends Nep5Token {
             new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
-    public static final String REGISTER_VALIDATOR = "registerValidator";
+    public static final String REGISTER_CANDIDATE = "registerCandidate";
     public static final String GET_VALIDATORS = "getValidators";
-    public static final String GET_REGISTERED_VALIDATORS = "getRegisteredValidators";
-    public static final String GET_NEXT_BLOCK_VALIDATOR = "getNextBlockValidators";
+    public static final String GET_CANDIDATES = "getCandidates";
+    public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
     public static final String VOTE = "vote";
 
+    /**
+     * Constructs a new <tt>NeoToken</tt> that uses the given {@link Neow3j} instance for
+     * invocations.
+     *
+     * @param neow The {@link Neow3j} instance to use for invocations.
+     */
     public NeoToken(Neow3j neow) {
         super(SCRIPT_HASH, neow);
     }
 
+    /**
+     * Returns the name of the NeoToken contract. Doesn't require a call to the neo-node.
+     *
+     * @return the name.
+     */
     @Override
     public String getName() {
         return NAME;
     }
 
+    /**
+     * Returns the symbol of the NeoToken contract. Doesn't require a call to the neo-node.
+     *
+     * @return the symbol.
+     */
     @Override
     public String getSymbol() {
         return SYMBOL;
     }
 
+    /**
+     * Returns the total supply of the NeoToken contract. Doesn't require a call to the neo-node.
+     *
+     * @return the total supply.
+     */
     @Override
     public BigInteger getTotalSupply() {
         return TOTAL_SUPPLY;
     }
 
+    /**
+     * Returns the number of decimals of the NEO token. Doesn't require a call to the neo-node.
+     *
+     * @return the number of decimals.
+     */
     @Override
     public int getDecimals() {
         return DECIMALS;
@@ -64,30 +95,39 @@ public class NeoToken extends Nep5Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getUnclaimedGas(ScriptHash scriptHash, long blockHeight) throws IOException {
-        ContractParameter accParam = ContractParameter.byteArrayFromAddress(scriptHash.toAddress());
+        ContractParameter accParam = ContractParameter.hash160(scriptHash);
         ContractParameter heightParam = ContractParameter.integer(BigInteger.valueOf(blockHeight));
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }
 
     /**
-     * Creates and sends a transaction registering a validator candidate
+     * Creates and sends a transaction registering a validator candidate.
      *
-     * @param wallet       The wallet paying the transaction fees.
-     * @param validatorKey The public key to register as a candidate.
+     * @param candidate    The script hash of the candidate's account.
+     * @param wallet       The wallet containing the candidate's account.
+     * @param candidateKey The public key to register as a candidate.
      * @return the hash of the created transaction.
-     * @throws IOException            if there was a problem fetching information from the Neo
-     *                                node.
-     * @throws ErrorResponseException if the registration was unsuccessful.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public String registerValidator(Wallet wallet, ECPublicKey validatorKey)
-            throws IOException, ErrorResponseException {
-        return invoke(REGISTER_VALIDATOR)
+    public NeoSendRawTransaction registerCandidate(ScriptHash candidate, Wallet wallet,
+            ECPublicKey candidateKey)
+            throws IOException {
+
+        return buildRegisterInvocation(candidate, wallet, candidateKey).send();
+    }
+
+    // Method extracted for testability.
+    Invocation buildRegisterInvocation(ScriptHash candidate, Wallet wallet,
+            ECPublicKey candidateKey)
+            throws IOException {
+
+        return invoke(REGISTER_CANDIDATE)
+                .withSender(candidate)
                 .withWallet(wallet)
-                .withParameters(ContractParameter.publicKey(validatorKey.getEncoded(true)))
-                .failOnFalse()
+                .withParameters(ContractParameter.publicKey(candidateKey.getEncoded(true)))
+                .withAttributes(Cosigner.global(candidate))
                 .build()
-                .sign()
-                .send();
+                .sign();
     }
 
     /**
@@ -96,32 +136,25 @@ public class NeoToken extends Nep5Token {
      * @return the validators' public keys.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
-     * @throws UnexpectedReturnTypeException If the return type is not an array or the array
-     *                                       elements are not public keys.
+     * @throws UnexpectedReturnTypeException If the return type is not an array or the returned
+     *                                       array's elements are not public keys.
      */
     public List<ECPublicKey> getValidators() throws IOException {
-        StackItem arrayItem = callFunction(GET_VALIDATORS);
-        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
-            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
-        }
-        List<ECPublicKey> valKeys = new ArrayList<>();
-        for (StackItem keyItem : arrayItem.asArray().getValue()) {
-            valKeys.add(extractPublicKey(keyItem));
-        }
-        return valKeys;
+        return callFunctionReturningListOfPublicKeys(GET_VALIDATORS);
     }
 
     /**
-     * Gets the public keys of currently registered validators and the number of their backup nodes.
+     * Gets the public keys of currently registered validator candidates and their NEO balances.
      *
-     * @return the registered validators public keys and the number of their backup nodes.
+     * @return the candidate public keys and their NEO balances.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
      * @throws UnexpectedReturnTypeException If the return type is not an array or the array
      *                                       elements are not public keys and node counts.
      */
-    public Map<ECPublicKey, Integer> getRegisteredValidators() throws IOException {
-        StackItem arrayItem = callFunction(GET_REGISTERED_VALIDATORS);
+    public Map<ECPublicKey, Integer> getCandidates() throws IOException {
+        StackItem arrayItem = invokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(
+                0);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }
@@ -135,30 +168,82 @@ public class NeoToken extends Nep5Token {
             if (!nrItem.getType().equals(StackItemType.INTEGER)) {
                 throw new UnexpectedReturnTypeException(nrItem.getType(), StackItemType.INTEGER);
             }
-            BigInteger nr = nrItem.asInteger().getValue();
-
-            validators.put(key, nr.intValue());
+            validators.put(key, nrItem.asInteger().getValue().intValue());
         }
         return validators;
     }
 
-    private ECPublicKey extractPublicKey(StackItem keyItem) {
-        if (!keyItem.getType().equals(StackItemType.BYTE_ARRAY)) {
-            throw new UnexpectedReturnTypeException(keyItem.getType(),
-                    StackItemType.BYTE_ARRAY);
+    /**
+     * Gets the public keys of the next block's validators.
+     *
+     * @return the validators' public keys.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException If the return type is not an array or the returned
+     *                                       array's elements are not public keys.
+     */
+    public List<ECPublicKey> getNextBlockValidators() throws IOException {
+        return callFunctionReturningListOfPublicKeys(GET_NEXT_BLOCK_VALIDATORS);
+    }
+
+    private List<ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
+            throws IOException {
+
+        StackItem arrayItem = invokeFunction(function).getInvocationResult().getStack().get(0);
+        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
+            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }
-        ECPublicKey key;
+        List<ECPublicKey> valKeys = new ArrayList<>();
+        for (StackItem keyItem : arrayItem.asArray().getValue()) {
+            valKeys.add(extractPublicKey(keyItem));
+        }
+        return valKeys;
+    }
+
+    private ECPublicKey extractPublicKey(StackItem keyItem) {
+        if (!keyItem.getType().equals(StackItemType.BYTE_STRING)) {
+            throw new UnexpectedReturnTypeException(keyItem.getType(),
+                    StackItemType.BYTE_STRING);
+        }
         try {
-            key = new ECPublicKey(keyItem.asByteArray().getValue());
+            return new ECPublicKey(keyItem.asByteString().getValue());
         } catch (IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException("Byte array return type did not contain "
                     + "public key in expected format.", e);
         }
-        return key;
     }
 
-    // TODO: Implement method for GET_NEXT_BLOCK_VALIDATOR
+    /**
+     * Creates and sends a transaction that votes for the given validators.
+     *
+     * @param voter      The account that casts the vote.
+     * @param wallet     The wallet that contains the vote-casting account.
+     * @param validators The validators for which to vote for.
+     * @return the response from the neo-node.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
+     */
+    public NeoSendRawTransaction vote(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
+            throws IOException {
 
-    // TODO: Implement method for VOTE
+        return buildVoteInvocation(voter, wallet, validators).send();
+    }
+
+    // Method extracted for testability.
+    Invocation buildVoteInvocation(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
+            throws IOException {
+
+        ContractParameter[] validatorParams = Stream.of(validators)
+                .map(v -> ContractParameter.publicKey(v.getEncoded(true)))
+                .toArray(ContractParameter[]::new);
+
+        return invoke(VOTE)
+                .withSender(voter)
+                .withWallet(wallet)
+                .withParameters(ContractParameter.hash160(voter))
+                .withParameters(validatorParams)
+                .withAttributes(Cosigner.global(voter))
+                .build()
+                .sign();
+    }
 }
 

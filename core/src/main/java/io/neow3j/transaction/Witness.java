@@ -70,19 +70,6 @@ public class Witness extends NeoSerializable {
      * Use this if you don't need a verification script.
      *
      * @param invocationScript the invocation script
-     * @param scriptHash       a script hash in big-endian order.
-     * @deprecated Use {@link Witness#Witness(byte[], ScriptHash)} instead.
-     */
-    @Deprecated
-    public Witness(byte[] invocationScript, String scriptHash) {
-        this(invocationScript, new ScriptHash(scriptHash));
-    }
-
-    /**
-     * Creates a new script from the given invocation script and script hash.
-     * Use this if you don't need a verification script.
-     *
-     * @param invocationScript the invocation script
      * @param scriptHash       a script hash instead of a verification script.
      */
     public Witness(byte[] invocationScript, ScriptHash scriptHash) {
@@ -166,13 +153,9 @@ public class Witness extends NeoSerializable {
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
-        try {
-            this.invocationScript = reader.readSerializable(InvocationScript.class);
-            this.verificationScript = reader.readSerializable(VerificationScript.class);
-            this.scriptHash = verificationScript.getScriptHash();
-        } catch (IllegalAccessException | InstantiationException e) {
-            throw new DeserializationException(e);
-        }
+        this.invocationScript = reader.readSerializable(InvocationScript.class);
+        this.verificationScript = reader.readSerializable(VerificationScript.class);
+        this.scriptHash = verificationScript.getScriptHash();
     }
 
     @Override

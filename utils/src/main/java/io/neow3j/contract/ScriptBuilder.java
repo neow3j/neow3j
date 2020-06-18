@@ -113,6 +113,7 @@ public class ScriptBuilder {
         switch (param.getParamType()) {
             case BYTE_ARRAY:
             case SIGNATURE:
+            case PUBLIC_KEY:
                 pushData((byte[]) value);
                 break;
             case BOOLEAN:
@@ -131,8 +132,6 @@ public class ScriptBuilder {
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
-            case PUBLIC_KEY:
-                // TODO 10.07.19 claude: Implement public key push operation.
             default:
                 throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
                         "' not supported.");
@@ -305,25 +304,26 @@ public class ScriptBuilder {
     }
 
     /**
-     * TODO: Write documentation
+     * Builds a verification script for the given public key.
      *
-     * @param encodedPublicKey
-     * @return
+     * @param encodedPublicKey The public key encoded in compressed format.
+     * @return the script.
      */
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
                 .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY)
                 .toArray();
     }
 
     /**
-     * TODO: Write documentation
+     * Builds a verification script for a multi signature account from the given public keys.
      *
-     * @param encodedPublicKeys
-     * @param signingThreshold
-     * @return
+     * @param encodedPublicKeys The public keys encoded in compressed format.
+     * @param signingThreshold The desired minimum number of signatures required when using the
+     *                         multi-sig account.
+     * @return the script.
      */
     public static byte[] buildVerificationScript(List<byte[]> encodedPublicKeys,
             int signingThreshold) {
@@ -332,7 +332,7 @@ public class ScriptBuilder {
         return builder
                 .pushInteger(encodedPublicKeys.size())
                 .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG)
                 .toArray();
 
     }

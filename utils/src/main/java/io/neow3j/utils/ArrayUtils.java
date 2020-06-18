@@ -85,6 +85,16 @@ public class ArrayUtils {
         return trimLeadingBytes(bytes, (byte) 0);
     }
 
+    public static byte[] trimTrailingBytes(byte[] bytes, byte b) {
+        int offset = bytes.length - 1;
+        for (; offset > 0; offset--) {
+            if (bytes[offset] != b) {
+                break;
+            }
+        }
+        return Arrays.copyOfRange(bytes, 0, offset + 1);
+    }
+
     public static byte[] toPrimitive(final Byte[] array) {
         if (array == null) {
             return null;
@@ -98,9 +108,22 @@ public class ArrayUtils {
         return result;
     }
 
+    /**
+     * Gets the given int as a byte array of length 4 in big-endian format.
+     * @param v The integer.
+     * @return byte array of length 4.
+     */
     public static byte[] toByteArray(int v) {
         return ByteBuffer.allocate(4).putInt(v).array();
     }
 
+    /**
+     * Gets the given long as a byte array of length 8 in big-endian format.
+     * @param v The long.
+     * @return byte array of length 8.
+     */
+    public static byte[] toByteArray(long v) {
+        return ByteBuffer.allocate(8).putLong(v).array();
+    }
 
 }

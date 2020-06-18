@@ -9,20 +9,21 @@ import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
+// Used neo-core to generate the test data, i.e., NEP2 encrypted private keys. Look at method
+// TestGetPrivateKeyFromNEP2() in test class UT_Wallet.cs for a hint on how to create example data
+// for this test. Make sure to also set the AddressVersion in ProtocolSettings.cs to match the
+// version in neow3j.
 public class NEP2Test {
 
     @Test
     public void decryptWithDefaultScryptParams() throws NEP2InvalidFormat, CipherException,
             NEP2InvalidPassphrase {
 
-        // Used neo-core with address version 0x17 to generate the encrypted key.
-        String nep2Encrypted = "6PYX9GMW3WgtYcivcWgrqzk2igqY8jhnMcysgFw4npoLqRnxZ16yj8V6V1";
+        String nep2Encrypted = "6PYMGfNyeJAf8bLXmPh8MbJxLB8uvQqtnZje1RUhhUcDDucj55dZsvbk8k";
         String password = "pwd";
-        // WIF created from private key
-        // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
-        String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         ECKeyPair pair = NEP2.decrypt(password, nep2Encrypted);
-        assertThat(pair.exportAsWIF(), is(wif));
+        String expected = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+        assertThat(pair.getPrivateKey().getBytes(), is(Numeric.hexStringToByteArray(expected)));
     }
 
     @Test
@@ -30,38 +31,32 @@ public class NEP2Test {
             NEP2InvalidPassphrase {
 
         ScryptParams nonDefaultScryptParams = new ScryptParams(256, 1, 1);
-        // Used neo-core with address version 0x17 to generate the encrypted key.
-        String nep2Encrypted = "6PYX9GMW4X3KpzPss9CsQsTS4g8mvm2HuKtFNbW67jrG8CE7t5jEX8yVwA";
+        String nep2Encrypted = "6PYMGfNyeTuzqgST1hwqKtHo8EKCQGD2vG4gihSg6EskG9DMDE3x1Xd4si";
         String password = "pwd";
-        // WIF created from private key
-        // 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
-        String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-
         ECKeyPair pair = NEP2.decrypt(password, nep2Encrypted, nonDefaultScryptParams);
-        assertThat(pair.exportAsWIF(), is(wif));
+        String expected = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+        assertThat(pair.getPrivateKey().getBytes(), is(Numeric.hexStringToByteArray(expected)));
     }
 
     @Test
     public void encryptWithDefaultScryptParams() throws CipherException {
         byte[] privKey = Numeric.hexStringToByteArray(
-                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
-        String password = "pwd";
-        // Used neo-core with address version 0x17 to generate the encrypted key.
-        String expectedNep2Encrypted = "6PYX9GMW3WgtYcivcWgrqzk2igqY8jhnMcysgFw4npoLqRnxZ16yj8V6V1";
+                "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3");
+        String pw = "neo";
+        String expectedNep2Encrypted = "6PYV39zSDnpCb9ecybeL3z6XrLTpKy1AugUGd6DYFFNELHv9aLj6M7KGD2";
         ECKeyPair keyPair = ECKeyPair.create(privKey);
-        assertThat(NEP2.encrypt(password, keyPair), is(expectedNep2Encrypted));
+        assertThat(NEP2.encrypt(pw, keyPair), is(expectedNep2Encrypted));
     }
 
     @Test
     public void encryptWithNonDefaultScryptParams() throws CipherException {
         ScryptParams nonDefaultScryptParams = new ScryptParams(256, 1, 1);
-        // Used neo-core with address version 0x17 to generate the encrypted key.
         byte[] privKey = Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
         String pw = "pwd";
-        String expectedNep2Encrypted = "6PYX9GMW4X3KpzPss9CsQsTS4g8mvm2HuKtFNbW67jrG8CE7t5jEX8yVwA";
+        String expected = "6PYMGfNyeTuzqgST1hwqKtHo8EKCQGD2vG4gihSg6EskG9DMDE3x1Xd4si";
         ECKeyPair keyPair = ECKeyPair.create(privKey);
-        assertThat(NEP2.encrypt(pw, keyPair, nonDefaultScryptParams), is(expectedNep2Encrypted));
+        assertThat(NEP2.encrypt(pw, keyPair, nonDefaultScryptParams), is(expected));
     }
 
 }

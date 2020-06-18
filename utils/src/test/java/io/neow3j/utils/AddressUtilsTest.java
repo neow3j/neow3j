@@ -7,14 +7,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Hash;
+import io.neow3j.model.NeoConfig;
 import org.junit.Test;
 
 public class AddressUtilsTest {
 
     @Test
     public void scriptHashToAddress() {
+        NeoConfig.setAddressVersion((byte) 0x17);
         String script =
             "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
         byte[] scriptHash = Hash.sha256AndThenRipemd160(Numeric.hexStringToByteArray(script));
@@ -31,7 +32,7 @@ public class AddressUtilsTest {
         byte[] scriptHash = Hash.sha256AndThenRipemd160(Numeric.hexStringToByteArray(script));
         System.out.println(Numeric.toHexString(scriptHash));
         String address =
-            AddressUtils.scriptHashToAddress(scriptHash, NeoConstants.PRIVATENET_ADDRESS_VERSION);
+            AddressUtils.scriptHashToAddress(scriptHash);
         String expectedAddress = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
         assertThat(address, is(expectedAddress));
     }
@@ -59,9 +60,10 @@ public class AddressUtilsTest {
 
     @Test
     public void testScriptHashToAddressWithVersion() {
+        NeoConfig.setAddressVersion((byte) 0x37);
         byte[] scriptHash = Numeric.hexStringToByteArray("bbf14c0d508108e56402116aede9942a064f7dc6");
         String address = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
-        assertThat(AddressUtils.scriptHashToAddress(scriptHash, NeoConstants.PRIVATENET_ADDRESS_VERSION), is(address));
+        assertThat(AddressUtils.scriptHashToAddress(scriptHash), is(address));
     }
 
     @Test
@@ -84,8 +86,4 @@ public class AddressUtilsTest {
         fail();
     }
 
-    @Test
-    public void test() {
-
-    }
 }

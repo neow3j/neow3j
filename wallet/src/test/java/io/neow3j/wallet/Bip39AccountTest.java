@@ -4,7 +4,6 @@ import static io.neow3j.wallet.Bip39Account.fromBip39Mnemonic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 
 import io.neow3j.crypto.ECKeyPair;
@@ -23,7 +22,7 @@ public class Bip39AccountTest {
 
         assertThat(a1.getAddress(), is(a2.getAddress()));
         assertThat(a1.getECKeyPair(), is(a2.getECKeyPair()));
-        assertThat(a1.getMnemonic(), notNullValue());
+        assertThat(a1.getMnemonic(), is(a2.getMnemonic()));
         assertThat(a1.getMnemonic().length(), greaterThan(0));
     }
 

@@ -15,24 +15,35 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Result {
 
-        @JsonProperty("port")
-        private int port;
+        @JsonProperty("tcp_port")
+        private int tcpPort;
+
+        @JsonProperty("ws_port")
+        private int wsPort;
 
         @JsonProperty("nonce")
         private long nonce;
 
-        @JsonProperty("useragent")
+        @JsonProperty("user_agent")
         private String userAgent;
 
         public Result() {
         }
 
-        public int getPort() {
-            return port;
+        public int getTCPPort() {
+            return tcpPort;
         }
 
-        public void setPort(int port) {
-            this.port = port;
+        public int getWSPort() {
+            return wsPort;
+        }
+
+        public void setTCPPort(int tcpPort) {
+            this.tcpPort = tcpPort;
+        }
+
+        public void setWSPort(int wsPort) {
+            this.wsPort = wsPort;
         }
 
         public long getNonce() {
@@ -56,20 +67,22 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
             if (this == o) return true;
             if (!(o instanceof Result)) return false;
             Result result = (Result) o;
-            return getPort() == result.getPort() &&
+            return getTCPPort() == result.getTCPPort() &&
+                    getWSPort() == result.getWSPort() &&
                     getNonce() == result.getNonce() &&
                     Objects.equals(getUserAgent(), result.getUserAgent());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getPort(), getNonce(), getUserAgent());
+            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent());
         }
 
         @Override
         public String toString() {
             return "Result{" +
-                    "port=" + port +
+                    "tcpPort=" + tcpPort +
+                    ", wsPort=" + wsPort +
                     ", nonce=" + nonce +
                     ", userAgent='" + userAgent + '\'' +
                     '}';

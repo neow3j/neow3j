@@ -112,7 +112,7 @@ public class ScriptHashTest {
                 + key // public key
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash()
+                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash()
         );
 
         ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(key));
@@ -123,11 +123,12 @@ public class ScriptHashTest {
     public void fromPublicKeyByteArrays() {
         final String key1 = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
         final String key2 = "03eda286d19f7ee0b472afd1163d803d620a961e1581a8f2704b52c0285f6e022d";
-        String expectedScriptHash = "e8691a3bf757e3d522b85f2c2f7b22785cf15e9d";
+        String expectedScriptHash = "aa20dc2168d66d5edb5de8de34da4cf3a16864c8";
+        String address = "Aa3T5PGGMiSyJUzUXyJSCUUFYH1aWcrT53";
         List<byte[]> keys = Arrays.asList(
                 Numeric.hexStringToByteArray(key1), Numeric.hexStringToByteArray(key2));
         ScriptHash sh = ScriptHash.fromPublicKeys(keys, 2);
-        assertThat(sh.toArray(), is(Numeric.hexStringToByteArray(expectedScriptHash)));
+        assertThat(sh.toString(), is(expectedScriptHash));
     }
 
     @Test
@@ -145,9 +146,9 @@ public class ScriptHashTest {
 
     @Test
     public void toAddress() {
-        final String key = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
+        final String key = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
         // Address generated from the above key, with address version 0x17.
-        final String expectedAddress = "AbBUMCKvHqok5xKeD82zU9sDXdVkFzzFYj";
+        final String expectedAddress = "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm";
         ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(key));
         assertThat(sh.toAddress(), is(expectedAddress));
     }

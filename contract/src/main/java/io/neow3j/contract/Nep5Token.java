@@ -2,7 +2,7 @@ package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
@@ -12,10 +12,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * Represents a NEP-5 token contract.
- * <p>
- * The first time that the getters are used, RPC calls need to be made to fetch the information from
- * a Neo node.
+ * Represents a NEP-5 token contract and provides methods to invoke it.
  */
 public class Nep5Token extends SmartContract {
 
@@ -33,12 +30,21 @@ public class Nep5Token extends SmartContract {
     private Integer decimals;
     private String symbol;
 
+    /**
+     * Constructs a new <tt>Nep5Token</tt> representing the token contract with the given script
+     * hash. Uses the given {@link Neow3j} instance for all invocations.
+     *
+     * @param scriptHash The token contract's script hash
+     * @param neow       The {@link Neow3j} instance to use for invocations.
+     */
     public Nep5Token(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 
     /**
      * Gets the name of this token.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the name.
      * @throws IOException                   if there was a problem fetching information from the
@@ -55,6 +61,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the symbol of this token.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the symbol.
      * @throws IOException                   if there was a problem fetching information from the
@@ -71,6 +79,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the total supply of this token in fractions.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the total supply.
      * @throws IOException                   if there was a problem fetching information from the
@@ -87,6 +97,8 @@ public class Nep5Token extends SmartContract {
 
     /**
      * Gets the number of fractions that one unit of this token can be divided into.
+     * <p>
+     * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the the number of fractions.
      * @throws IOException                   if there was a problem fetching information from the
@@ -102,12 +114,15 @@ public class Nep5Token extends SmartContract {
     }
 
     /**
-     * Gets the token balance for the given script hash in fractions.
+     * Gets the token balance for the given account script hash.
      * <p>
-     * The balance is not saved locally. Calling this method multiple times for the same script hash
-     * causes a new RPC call in every invocation.
+     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * The balance is not cached locally. Every time this method is called requests are send to the
+     * neo-node.
      *
-     * @param scriptHash The script hash to fetch the balance for.
+     * @param scriptHash The script hash of the account to fetch the balance for.
      * @return the token balance.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -122,44 +137,71 @@ public class Nep5Token extends SmartContract {
     }
 
     /**
+     * Gets the token balance for the given wallet, i.e., all accounts in the wallet.
+     * <p>
+     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * The balance is not cached locally. Every time this method is called requests are send to the
+     * neo-node.
+     *
+     * @param wallet The wallet to fetch the balance for.
+     * @return the token balance.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a number.
+     */
+    public BigInteger getBalanceOf(Wallet wallet) throws IOException,
+            UnexpectedReturnTypeException {
+
+        BigInteger sum = BigInteger.ZERO;
+        for (Account a : wallet.getAccounts()) {
+            sum = sum.add(getBalanceOf(a.getScriptHash()));
+        }
+        return sum;
+    }
+
+    /**
      * Creates and sends a transfer transaction.
      * <p>
      * Currently only the wallet's default account is used to cover the token amount.
      *
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
-     * @param amount The amount to transfer as a decimal number, i.e. not in fractions but token
-     *               units.
-     * @return The transaction hash.
-     * @throws ErrorResponseException
-     * @throws IOException            if there was a problem fetching information from the Neo
-     *                                node.
+     * @param amount The amount to transfer as a decimal number (not token fractions).
+     * @return The transaction id.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public String transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
-            throws ErrorResponseException, IOException {
+    public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
+            throws IOException {
+
+        return buildTransferInvocation(wallet, to, amount).send();
+    }
+
+    // Method extracted for testability.
+    Invocation buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
+            throws IOException {
 
         Account acc = wallet.getDefaultAccount();
         BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
         BigInteger fractions = amount.multiply(factor).toBigInteger();
-        // TODO: Extend balance checking to other accounts in the wallet.
-        // TODO: Move balance checking to the Wallet and Accounts.
-        BigInteger defaultAccBalance = getBalanceOf(acc.getScriptHash());
-        if (defaultAccBalance.compareTo(fractions) < 0) {
-            throw new InsufficientFundsException("Default account does not hold enough tokens. "
-                    + "Transfer amount is " + fractions.toString() + " but account only holds "
-                    + defaultAccBalance.toString() + " (in token fractions).");
+        BigInteger accBalance = getBalanceOf(acc.getScriptHash());
+        if (accBalance.compareTo(fractions) < 0) {
+            throw new InsufficientFundsException("The wallet's default account does not hold enough"
+                    + " tokens. Transfer amount is " + fractions.toString() + " but account"
+                    + " only holds " + accBalance.toString() + " (in token fractions).");
         }
         return invoke(NEP5_TRANSFER)
                 .withWallet(wallet)
                 .withParameters(
-                        ContractParameter.byteArrayFromAddress(acc.getAddress()),
-                        ContractParameter.byteArrayFromAddress(to.toAddress()),
+                        ContractParameter.hash160(acc.getScriptHash()),
+                        ContractParameter.hash160(to),
                         ContractParameter.integer(fractions)
                 )
                 .failOnFalse()
                 .build()
-                .sign()
-                .send();
+                .sign();
     }
 
     public String transferFromURI(Wallet wallet, NeoURI neoURI) throws IOException, ErrorResponseException {

@@ -1,8 +1,8 @@
 package io.neow3j.wallet;
 
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
@@ -12,7 +12,7 @@ import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
@@ -20,7 +20,6 @@ import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -30,36 +29,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
-import org.java_websocket.util.Base64;
 
 @SuppressWarnings("unchecked")
 public class Account {
 
-    // Private and public key are stored separately because the private key is not necessarily
-    // available in every account instance.
-    private ECPrivateKey privateKey;
-    private ECPublicKey publicKey;
+    private ECKeyPair keyPair;
     private String address;
     private String encryptedPrivateKey;
     private String label;
     private boolean isDefault;
     private boolean isLocked;
     private VerificationScript verificationScript;
-    private Map<ScriptHash, BigDecimal> balances;
 
     private Account() {
     }
 
     protected Account(Builder b) {
         this.label = b.label;
-        this.privateKey = b.privateKey;
-        this.publicKey = b.publicKey;
+        this.keyPair = b.keyPair;
         this.isDefault = b.isDefault;
         this.isLocked = b.isLocked;
         this.address = b.address;
         this.encryptedPrivateKey = b.encryptedPrivateKey;
         this.verificationScript = b.verificationScript;
-        this.balances = new HashMap<>();
     }
 
     public String getAddress() {
@@ -70,32 +62,13 @@ public class Account {
         return ScriptHash.fromAddress(address);
     }
 
+    /**
+     * Gets this account's EC key pair if available.
+     *
+     * @return the key pair.
+     */
     public ECKeyPair getECKeyPair() {
-        if (this.privateKey != null && this.publicKey != null) {
-            return new ECKeyPair(this.privateKey, this.publicKey);
-        } else if (privateKey != null) {
-            return ECKeyPair.create(privateKey);
-        } else {
-            throw new AccountStateException("Account does not hold a decrypted private key.");
-        }
-    }
-
-    /**
-     * Gets this account's EC private key.
-     *
-     * @return The private key.
-     */
-    public ECPrivateKey getPrivateKey() {
-        return this.privateKey;
-    }
-
-    /**
-     * Gets this account's EC public key.
-     *
-     * @return The public key.
-     */
-    public ECPublicKey getPublicKey() {
-        return this.publicKey;
+        return this.keyPair;
     }
 
     public String getLabel() {
@@ -106,8 +79,16 @@ public class Account {
         return isDefault;
     }
 
-    void setIsDefault(boolean isDefault) {
-        this.isDefault = isDefault;
+    // This method is required by the Wallet but must not be available to the developer because
+    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
+    void setDefault() {
+        this.isDefault = true;
+    }
+
+    // This method is required by the Wallet but must not be available to the developer because
+    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
+    void unsetDefault() {
+        this.isDefault = false;
     }
 
     public Boolean isLocked() {
@@ -122,18 +103,25 @@ public class Account {
         return encryptedPrivateKey;
     }
 
-    public Map<ScriptHash, BigDecimal> getBalances() {
-        return balances;
-    }
-
-    public BigDecimal getBalance(ScriptHash token) {
-        return balances.get(token);
-    }
-
-    public void updateAssetBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
-    }
-
-    public void updateTokenBalances(Neow3j neow3j) throws IOException, ErrorResponseException {
+    /**
+     * Decrypts this account's private key, according to the NEP-2 standard, if not already
+     * decrypted. Uses the default Scrypt parameters.
+     *
+     * @param password The passphrase used to decrypt this account's private key.
+     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       throws if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
+     * @throws AccountStateException if
+     *                               <ul>
+     *                               <li>the account doesn't hold an encrypted private key
+     *                               <li>the account does already hold a decrypted private key
+     *                               <li>the public key derived from the decrypted private key is
+     *                               not equal to the already set public key.
+     *                               </ul>
+     */
+    public void decryptPrivateKey(String password)
+            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+        decryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
     }
 
     /**
@@ -156,22 +144,24 @@ public class Account {
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
-        // TODO: Remove this check and just return without doing anything in this case.
-        if (this.privateKey != null) {
-            throw new AccountStateException(
-                    "The account does already hold a decrypted private key.");
+        if (this.keyPair != null) {
+            return;
         }
         if (this.encryptedPrivateKey == null) {
             throw new AccountStateException("The account does not hold an encrypted private key.");
         }
-        ECKeyPair ecKeyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
-        this.privateKey = ecKeyPair.getPrivateKey();
-        if (this.publicKey != null && !this.publicKey.equals(ecKeyPair.getPublicKey())) {
-            throw new AccountStateException(
-                    "The public key derived from the decrypted private key does "
-                            + "not equal the public key that was already set on the account.");
-        }
-        publicKey = ecKeyPair.getPublicKey();
+        this.keyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
+    }
+
+    /**
+     * Encrypts this account's private key according to the NEP-2 standard using the default Scrypt
+     * parameters.
+     *
+     * @param password The passphrase used to encrypt this account's private key.
+     * @throws CipherException if failed encrypt the created wallet.
+     */
+    public void encryptPrivateKey(String password) throws CipherException {
+        encryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
     }
 
     /**
@@ -179,36 +169,55 @@ public class Account {
      *
      * @param password     The passphrase used to encrypt this account's private key.
      * @param scryptParams The Scrypt parameters used for encryption.
-     * @throws CipherException throws if failed encrypt the created wallet.
+     * @throws CipherException if failed encrypt the created wallet.
      */
     public void encryptPrivateKey(String password, ScryptParams scryptParams)
             throws CipherException {
 
-        if (privateKey == null) {
+        if (this.keyPair == null) {
             throw new AccountStateException("The account does not hold a decrypted private key.");
         }
-        this.encryptedPrivateKey = NEP2.encrypt(password, getECKeyPair(), scryptParams);
-        // TODO: 2019-07-14 Guil:
-        // Is it the safest way of overwriting a variable on the JVM?
-        // I don't think so. ;-)
-        this.privateKey = null;
+        this.encryptedPrivateKey = NEP2.encrypt(password, this.keyPair, scryptParams);
+        // TODO 25.05.20 claude: Clarify if it is necessary to destroy the private key in a
+        //  safer way than we are doing here.
+        this.keyPair = null;
     }
 
     public boolean isMultiSig() {
         if (this.verificationScript == null) {
-            throw new AccountStateException(
-                    "This account does not have a verification script, which is "
-                            + "needed to determine if it is a multi-sig account.");
+            throw new AccountStateException("The account with script hash " + this.getScriptHash() +
+                    " does not have a verification script.");
         }
         return this.verificationScript.isMultiSigScript();
     }
 
-    public NEP6Account toNEP6Account() {
-        if (encryptedPrivateKey == null) {
-            throw new AccountStateException("Private key is not encrypted. Encrypt private key "
-                    + "first.");
-        }
+    /**
+     * Gets the balances of all NEP-5 tokens that this account owns.
+     * <p>
+     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * Requires on a neo-node with the RpcNep5Tracker plugin installed. The balances are not cached
+     * locally. Every time this method is called a request is send to the neo-node.
+     *
+     * @param neow3j The {@link Neow3j} object used to call a neo-node.
+     * @return the map of token script hashes to token amounts.
+     * @throws IOException If something goes wrong when communicating with the neo-node.
+     */
+    public Map<ScriptHash, BigInteger> getNep5Balances(Neow3j neow3j)
+            throws IOException {
 
+        NeoGetNep5Balances result = neow3j.getNep5Balances(getAddress()).send();
+        Map<ScriptHash, BigInteger> balances = new HashMap<>();
+        result.getBalances().getBalances().forEach(b ->
+                balances.put(new ScriptHash(b.getAssetHash()), new BigInteger(b.getAmount())));
+        return balances;
+    }
+
+    public NEP6Account toNEP6Account() {
+        if (this.keyPair != null && this.encryptedPrivateKey == null) {
+            throw new AccountStateException("Account private key is available but not encrypted.");
+        }
         if (this.verificationScript == null) {
             return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
                     this.encryptedPrivateKey, null, null);
@@ -221,7 +230,7 @@ public class Account {
         } else if (this.verificationScript.isSingleSigScript()) {
             parameters.add(new NEP6Parameter("signature", ContractParameterType.SIGNATURE));
         }
-        String script = Base64.encodeBytes(this.verificationScript.getScript());
+        String script = Base64.encode(this.verificationScript.getScript());
         NEP6Contract contract = new NEP6Contract(script, parameters, false);
         return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
                 this.encryptedPrivateKey, contract, null);
@@ -250,8 +259,7 @@ public class Account {
         BigInteger privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
         Builder b = new Builder();
-        b.privateKey = keyPair.getPrivateKey();
-        b.publicKey = keyPair.getPublicKey();
+        b.keyPair = keyPair;
         b.address = keyPair.getAddress();
         b.label = keyPair.getAddress();
         b.verificationScript = new VerificationScript(keyPair.getPublicKey());
@@ -268,8 +276,7 @@ public class Account {
 
     public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
         Builder b = new Builder();
-        b.privateKey = ecKeyPair.getPrivateKey();
-        b.publicKey = ecKeyPair.getPublicKey();
+        b.keyPair = ecKeyPair;
         b.address = ecKeyPair.getAddress();
         b.label = b.address;
         b.verificationScript = new VerificationScript(ecKeyPair.getPublicKey());
@@ -285,12 +292,8 @@ public class Account {
         b.isDefault = nep6Acct.getDefault();
         NEP6Contract contr = nep6Acct.getContract();
         if (contr != null && contr.getScript() != null && !contr.getScript().isEmpty()) {
-            try {
-                byte[] script = Base64.decode(contr.getScript());
-                b.verificationScript = new VerificationScript(script);
-            } catch (IOException e) {
-                // Will not happen because no I/O is going on.
-            }
+            byte[] script = Base64.decode(contr.getScript());
+            b.verificationScript = new VerificationScript(script);
         }
         return b;
     }
@@ -315,8 +318,7 @@ public class Account {
 
         VerificationScript verificationScript;
         String label;
-        ECPrivateKey privateKey;
-        ECPublicKey publicKey;
+        ECKeyPair keyPair;
         boolean isDefault;
         boolean isLocked;
         String address;
@@ -332,13 +334,13 @@ public class Account {
             return (B) this;
         }
 
-        public B isDefault(boolean isDefault) {
-            this.isDefault = isDefault;
+        public B isDefault() {
+            this.isDefault = true;
             return (B) this;
         }
 
-        public B isLocked(boolean isLocked) {
-            this.isLocked = isLocked;
+        public B isLocked() {
+            this.isLocked = true;
             return (B) this;
         }
 

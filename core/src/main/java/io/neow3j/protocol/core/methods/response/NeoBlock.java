@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -33,14 +32,15 @@ public class NeoBlock {
     @JsonProperty("index")
     private long index;
 
-    @JsonProperty("nonce")
-    private String nonce;
-
     @JsonProperty("nextconsensus")
     private String nextConsensus;
 
-    @JsonProperty("script")
-    private Script script;
+    @JsonProperty("witnesses")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<NeoWitness> witnesses;
+
+    @JsonProperty("consensus_data")
+    private ConsensusData consensusData;
 
     @JsonProperty("tx")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -57,7 +57,11 @@ public class NeoBlock {
     public NeoBlock() {
     }
 
-    public NeoBlock(String hash, long size, int version, String prevBlockHash, String merkleRootHash, long time, long index, String nonce, String nextConsensus, Script script, List<Transaction> transactions, int confirmations, String nextBlockHash) {
+    public NeoBlock(String hash, long size, int version, String prevBlockHash,
+            String merkleRootHash, long time, long index, String nextConsensus,
+            List<NeoWitness> witnesses,
+            ConsensusData consensusData,
+            List<Transaction> transactions, int confirmations, String nextBlockHash) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -65,9 +69,9 @@ public class NeoBlock {
         this.merkleRootHash = merkleRootHash;
         this.time = time;
         this.index = index;
-        this.nonce = nonce;
         this.nextConsensus = nextConsensus;
-        this.script = script;
+        this.witnesses = witnesses;
+        this.consensusData = consensusData;
         this.transactions = transactions;
         this.confirmations = confirmations;
         this.nextBlockHash = nextBlockHash;
@@ -101,16 +105,16 @@ public class NeoBlock {
         return index;
     }
 
-    public String getNonce() {
-        return nonce;
-    }
-
     public String getNextConsensus() {
         return nextConsensus;
     }
 
-    public Script getScript() {
-        return script;
+    public List<NeoWitness> getWitnesses() {
+        return witnesses;
+    }
+
+    public ConsensusData getConsensusData() {
+        return consensusData;
     }
 
     public List<Transaction> getTransactions() {
@@ -127,8 +131,12 @@ public class NeoBlock {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NeoBlock)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof NeoBlock)) {
+            return false;
+        }
         NeoBlock neoBlock = (NeoBlock) o;
         return getSize() == neoBlock.getSize() &&
                 getVersion() == neoBlock.getVersion() &&
@@ -138,16 +146,20 @@ public class NeoBlock {
                 Objects.equals(getHash(), neoBlock.getHash()) &&
                 Objects.equals(getPrevBlockHash(), neoBlock.getPrevBlockHash()) &&
                 Objects.equals(getMerkleRootHash(), neoBlock.getMerkleRootHash()) &&
-                Objects.equals(getNonce(), neoBlock.getNonce()) &&
                 Objects.equals(getNextConsensus(), neoBlock.getNextConsensus()) &&
-                Objects.equals(getScript(), neoBlock.getScript()) &&
+                Objects.equals(getWitnesses(), neoBlock.getWitnesses()) &&
+                Objects.equals(getConsensusData(), neoBlock.getConsensusData()) &&
                 Objects.equals(getTransactions(), neoBlock.getTransactions()) &&
                 Objects.equals(getNextBlockHash(), neoBlock.getNextBlockHash());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHash(), getSize(), getVersion(), getPrevBlockHash(), getMerkleRootHash(), getTime(), getIndex(), getNonce(), getNextConsensus(), getScript(), getTransactions(), getConfirmations(), getNextBlockHash());
+        return Objects
+                .hash(getHash(), getSize(), getVersion(), getPrevBlockHash(), getMerkleRootHash(),
+                        getTime(), getIndex(), getNextConsensus(), getWitnesses(),
+                        getConsensusData(),
+                        getTransactions(), getConfirmations(), getNextBlockHash());
     }
 
     @Override
@@ -160,9 +172,9 @@ public class NeoBlock {
                 ", merkleRootHash='" + merkleRootHash + '\'' +
                 ", time=" + time +
                 ", index=" + index +
-                ", nonce='" + nonce + '\'' +
                 ", nextConsensus='" + nextConsensus + '\'' +
-                ", script=" + script +
+                ", witnesses=" + witnesses +
+                ", consensusData=" + consensusData +
                 ", transactions=" + transactions +
                 ", confirmations=" + confirmations +
                 ", nextBlockHash='" + nextBlockHash + '\'' +

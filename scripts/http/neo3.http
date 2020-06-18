@@ -1,0 +1,208 @@
+####################
+# openwallet
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "openwallet",
+ "params":[
+  "wallet.json",
+  "neo"
+  ],
+ "id": 1
+}
+
+####################
+# sendtoaddress
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "sendtoaddress",
+ "params": [
+  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+  100
+ ],
+ "id": 1
+}
+
+####################
+# getapplicationlog
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getapplicationlog",
+ "params": [
+  "0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109"
+ ],
+ "id": 1
+}
+
+####################
+# invokefunction
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params":[
+  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "transfer",
+  [
+    {"type": "Hash160","value": "0x3d952ba848992ca5dc8b968a3d11af543601c1e6"},
+ {"type": "Hash160","value": "0xf68f181731a47036a99f04dad90043a744edec0f"},
+    {"type": "Integer", "value": "1"}
+  ],
+  ["0x3d952ba848992ca5dc8b968a3d11af543601c1e6"]
+  ],
+ "id": 1
+}
+
+####################
+# getblockcount
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getblockcount",
+ "params": [ ],
+ "id": 1
+}
+
+####################
+# sendrawtransaction
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "sendrawtransaction",
+ "params": [ "00fde9020c00fea46931b5c22a99277a25233ff431d642b855c27289000000000088442400000000009f1420000101941343239213fa0e765f1027ce742f48db779a96015600640c14e6c1013654af113d8a968bdca52c9948a82b953d0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523802420c40b7e850a00d6184b3a9ce405ea4913c6a2790c5eb7230103c6cd978ce5a118c0fa37006ee6e1c42086189fa5a1f66e7ddeae977e024a2c181397345da9f6622762b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e420c40afc6c138eadf472826f64b410a45e4c917af3acedfa0ccacdc2641024d28d307d1619564d65bb485edd258b54ae0840e16e01bfbcb5b0ca6b06f13c1b56a3a02290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75" ],
+ "id": 1
+}
+
+####################
+# getrawtransaction
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getrawtransaction",
+ "params": [ "0x508c11ed02e31cec8d05df60efe3bb52fb7349b487033e5f4d8fea132489b2eb", 0 ],
+ "id": 1
+}
+
+####################
+# getblock
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "getblock",
+ "params": [ 32, 1 ],
+ "id": 1
+}
+
+####################
+# invokefunction - getNextBlockValidators
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [ "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "getNextBlockValidators" ],
+ "id": 1
+}
+
+####################
+# invokefunction - vote
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [
+	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "vote",
+	 [
+		 {"type": "Hash160","value": "0xdf133e846b1110843ac357fc8bbf05b4a32e17c8"},
+		 {"type": "PublicKey", "value": "02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c"},
+		 {"type": "PublicKey", "value": "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"}
+
+	 ],
+     ["0xdf133e846b1110843ac357fc8bbf05b4a32e17c8"]
+ ],
+ "id": 1
+}
+
+####################
+# invokefunction - registerCandidate
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [
+	 "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "registerCandidate",
+	 [
+		 {"type": "PublicKey", "value": "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"}
+	 ],
+	 ["969a77db482f74ce27105f760efa139223431394"]
+ ],
+ "id": 1
+}
+
+####################
+# invokefunction - getCandidates
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [
+	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "getCandidates"
+ ],
+ "id": 1
+}
+
+####################
+# getcontractstate
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+  "jsonrpc": "2.0",
+  "method": "getcontractstate",
+  "params":["0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"],
+  "id": 1
+}
+
+###

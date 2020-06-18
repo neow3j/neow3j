@@ -7,13 +7,18 @@ import java.nio.charset.StandardCharsets;
 
 public enum InteropServiceCode {
 
-    SYSTEM_CONTRACT_CREATE("System.Contract.Create", null), // (Script.Size + Manifest.Size) * GasPerByte
+    SYSTEM_CONTRACT_CREATE("System.Contract.Create",
+            null), // (Script.Size + Manifest.Size) * GasPerByte
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1000000),
 
-    NEO_CRYPTO_ECDSACHECKMULTISIG("Neo.Crypto.ECDsaCheckMultiSig", null), // ECDsaVerify * NumberOfSignatures
-    NEO_CRYPTO_ECDSAVERIFY("Neo.Crypto.ECDsaVerify", 1_000_000),
+    NEO_CRYPTO_ECDSA_SECP256R1_VERIFY("Neo.Crypto.ECDsa.Secp256r1.Verify", 1_000_000),
+    NEO_CRYPTO_ECDSA_SECP256K1_VERIFY("Neo.Crypto.ECDsa.Secp256k1.Verify", 1_000_000),
+    // The price for check multisig is the price for Secp256r1.Verify times the number of signatures
+    NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG("Neo.Crypto.ECDsa.Secp256r1.CheckMultiSig", null),
+    // The price for check multisig is the price for Secp256k1.Verify times the number of signatures
+    NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG("Neo.Crypto.ECDsa.Secp256k1.CheckMultiSig", null),
 
-    // Native tokens, needed to derive the script hashes of the native token contracts.
+    // Native tokens. Their script hashes are derived from their names.
     NEO_NATIVE_TOKENS_NEO("Neo.Native.Tokens.NEO", null),
     NEO_NATIVE_TOKENS_GAS("Neo.Native.Tokens.GAS", null);
 
@@ -106,14 +111,25 @@ public enum InteropServiceCode {
     }
 
     /**
-     * Gets the short hash (4 bytes) of the code's name as a little endian hex string.
+     * Gets this <tt>InteropServiceCode</tt>'s hash (4 bytes) as a hex string.
      *
-     * @return the hashed code name
+     * @return the hash.
      */
     public String getHash() {
         byte[] sha256 = Hash.sha256(this.getName().getBytes(StandardCharsets.US_ASCII));
         return Numeric.toHexStringNoPrefix(ArrayUtils.getFirstNBytes(sha256, 4));
     }
+
+    /**
+     * Gets the hash (4 bytes) of the given <tt>InteropServiceCode</tt>'s name.
+     *
+     * @return the hash.
+     */
+    public static byte[] getInteropCodeHash(String interopCodeName) {
+        byte[] sha256 = Hash.sha256(interopCodeName.getBytes(StandardCharsets.US_ASCII));
+        return ArrayUtils.getFirstNBytes(sha256, 4);
+    }
+
 
     /**
      * Get the price in fractions of GAS of this interop service.
@@ -130,10 +146,11 @@ public enum InteropServiceCode {
                 throw new UnsupportedOperationException("The price of the interop service "
                         + "System.Contract.Create is not fixed but depends on the contract's "
                         + "script and manifest size.");
-            case NEO_CRYPTO_ECDSACHECKMULTISIG:
+            case NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG:
+            case NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG:
                 throw new UnsupportedOperationException("The price of the interop service "
-                        + "Neo.Crypto.ECDsaCheckMultiSig is not fixed but depends on the "
-                        + "number of signatures.");
+                        + this.getName() + " is not fixed but depends on the number of "
+                        + "signatures.");
             default:
                 return this.price;
         }
@@ -148,14 +165,19 @@ public enum InteropServiceCode {
      * @return the price
      */
     public long getPrice(int param) {
+        if (this.price != null) {
+            return this.price;
+        }
         switch (this) {
             case SYSTEM_CONTRACT_CREATE:
                 return param * NeoConstants.GAS_PER_BYTE;
-            case NEO_CRYPTO_ECDSACHECKMULTISIG:
-                return param * NEO_CRYPTO_ECDSAVERIFY.price;
+            case NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG:
+                return param * NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.price;
+            case NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG:
+                return param * NEO_CRYPTO_ECDSA_SECP256K1_VERIFY.price;
             default:
-                // For all others the price is fixed.
-                return this.price;
+                throw new UnsupportedOperationException("The price for " + this.toString() + " is "
+                        + "not defined.");
         }
     }
 

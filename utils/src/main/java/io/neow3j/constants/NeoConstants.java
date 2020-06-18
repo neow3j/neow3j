@@ -23,19 +23,15 @@ public class NeoConstants {
     public static final int FIXED8_SCALE = 8;
 
     public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
+
     /**
      * Length of a Fixed8 byte array.
      */
-
     public static final int FIXED8_LENGTH = 8;
 
     //endregion
 
     //region Accounts, Addresses, Keys
-
-    public static final byte DEFAULT_ADDRESS_VERSION = 0x17;
-
-    public static final byte PRIVATENET_ADDRESS_VERSION = 0x37;
 
     /**
      * The maximum number of public keys that can take part in a multi-signature address. Taken from
@@ -110,8 +106,6 @@ public class NeoConstants {
      */
     public static final int CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE = 500;
 
-    // TODO: Clarify if we can get the FeePerByte from the Policy contract as it is done
-    //  in neo-core. `NativeContract.Policy.GetFeePerByte(snapshot)`
     /**
      * The network fee per byte of a transaction. Amount is in GAS.
      */
@@ -119,7 +113,7 @@ public class NeoConstants {
 
     //endregion
 
-    //region Transactions
+    //region Transactions & Contracts
 
     /**
      * The current version used for Neo transaction.
@@ -137,14 +131,19 @@ public class NeoConstants {
     public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
 
     /**
-     * The maximum number of cosigners that a transaction can have.
+     * The maximum number of contracts or groups a cosigner scope can contian
      */
-    public static final int MAX_COSIGNERS = 16;
+    public static final int MAX_COSIGNER_SUBITEMS = 16;
 
     /**
      * The maximum value for the 'validUntilBlock' transaction property.
      */
     public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT = 2102400;
+
+    /**
+     * Max byte length for a valid contract manifest.
+     */
+    public static final int MAX_MANIFEST_SIZE = 4096;
 
     //endregion
 

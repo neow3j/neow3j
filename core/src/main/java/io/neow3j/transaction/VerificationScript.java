@@ -62,9 +62,8 @@ public class VerificationScript extends NeoSerializable {
      *                         the given public keys.
      */
     public VerificationScript(List<ECPublicKey> publicKeys, int signingThreshold) {
-        // TODO: Allow multi sig accounts with only one signing key.
-        if (signingThreshold < 2 || signingThreshold > publicKeys.size()) {
-            throw new IllegalArgumentException("Signing threshold must be at least 2 and not " +
+        if (signingThreshold < 1 || signingThreshold > publicKeys.size()) {
+            throw new IllegalArgumentException("Signing threshold must be at least 1 and not " +
                     "higher than the number of public keys.");
         }
         if (publicKeys.size() > MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
@@ -163,7 +162,8 @@ public class VerificationScript extends NeoSerializable {
                 && script[1] == 33 // 33 bytes of public key
                 && script[35] == OpCode.PUSHNULL.getValue()
                 && script[36] == OpCode.SYSCALL.getValue()
-                && interopService.equals(InteropServiceCode.NEO_CRYPTO_ECDSAVERIFY.getHash());
+                && interopService.equals(
+                        InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash());
     }
 
     /**
@@ -217,7 +217,7 @@ public class VerificationScript extends NeoSerializable {
             byte[] interopServiceCode = new byte[4];
             reader.read(interopServiceCode, 0, 4);
             if (!Numeric.toHexStringNoPrefix(interopServiceCode)
-                    .equals(InteropServiceCode.NEO_CRYPTO_ECDSACHECKMULTISIG.getHash())) {
+                    .equals(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getHash())) {
                 return false;
             }
         } catch (DeserializationException | IOException e) {
@@ -242,8 +242,7 @@ public class VerificationScript extends NeoSerializable {
                 keys.add(new ECPublicKey(reader.readECPoint()));
                 return keys;
             } else if (isMultiSigScript()) {
-                int n = reader.readPushInteger(); // Signing Threshold (n of m)
-                int m = 0; // Number of participating keys
+                reader.readPushInteger(); // Signing Threshold (n of m)
                 while (reader.readByte() == OpCode.PUSHDATA1.getValue()) {
                     reader.readByte(); // size byte
                     keys.add(new ECPublicKey(reader.readECPoint()));

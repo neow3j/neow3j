@@ -1,9 +1,8 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.model.types.TransactionAttributeUsageType.SCRIPT;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertArrayEquals;
@@ -13,19 +12,13 @@ import static org.junit.Assert.fail;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.TransactionAttributeUsageType;
+import io.neow3j.model.NeoConfig;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +29,7 @@ public class TransactionTest {
     private ScriptHash account2;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         account1 = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
         account2 = ScriptHash.fromAddress("APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL");
     }
@@ -52,7 +45,7 @@ public class TransactionTest {
         assertThat(t.getVersion(), is(NeoConstants.CURRENT_TX_VERSION));
         assertThat(t.getNetworkFee(), is(0L));
         assertThat(t.getSystemFee(), is(0L));
-        assertThat(t.getAttributes(), empty());
+        assertThat(t.getAttributes(), containsInAnyOrder(Cosigner.calledByEntry(account1)));
         assertThat(t.getCosigners(), containsInAnyOrder(Cosigner.calledByEntry(account1)));
         assertThat(t.getScript().length, is(0));
         assertThat(t.getNonce(), notNullValue());
@@ -132,63 +125,26 @@ public class TransactionTest {
             .build();
     }
 
-    @Test
-    public void buildTxWithUpToMaxCosigners() throws InvalidAlgorithmParameterException,
-        NoSuchAlgorithmException, NoSuchProviderException {
-
-        Transaction.Builder b = new Transaction.Builder()
-            .sender(account1)
-            .validUntilBlock(1L);
-
-        // Add two cosigners via varargs method.
-        ScriptHash account1 = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-        ScriptHash account2 = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-        b.cosigners(Cosigner.calledByEntry(account1), Cosigner.global(account2));
-
-        // Add the rest of cosigners via method taking a set argument.
-        List<Cosigner> cosigners = new ArrayList<>();
-        for (int i = 3; i <= NeoConstants.MAX_COSIGNERS; i++) {
-            ScriptHash account = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-            cosigners.add(Cosigner.global(account));
-        }
-        Transaction tx = b.cosigners(cosigners).build();
-        assertThat(tx.getCosigners(), hasSize(NeoConstants.MAX_COSIGNERS));
-    }
-
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount1() {
         Transaction.Builder b = new Transaction.Builder();
-        b.cosigners(Cosigner.global(account1), Cosigner.calledByEntry(account1));
+        b.attributes(Cosigner.global(account1), Cosigner.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount2() {
         Transaction.Builder b = new Transaction.Builder();
-        b.cosigners(Cosigner.global(account1));
-        b.cosigners(Cosigner.calledByEntry(account1));
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMoreThanMaxCosignersToTxBuilder() throws
-        InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
-        List<Cosigner> cosigners = new ArrayList<>();
-        // Create one too many cosigners
-        for (int i = 0; i <= NeoConstants.MAX_COSIGNERS; i++) {
-            ScriptHash account = ScriptHash.fromPublicKey(ECKeyPair.createEcKeyPair().getPublicKey().getEncoded(true));
-            cosigners.add(Cosigner.global(account));
-        }
-        new Transaction.Builder()
-            .sender(account1)
-            .validUntilBlock(1L)
-            .cosigners(cosigners);
+        b.attributes(Cosigner.global(account1));
+        b.attributes(Cosigner.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMoreThanMaxAttributesToTxBuilder() {
-        List<TransactionAttribute> attrs = new ArrayList<>();
-        // Create one too many attributes.
+        // Add one too many attributes.
+        TransactionAttribute[] attrs =
+                new TransactionAttribute[NeoConstants.MAX_TRANSACTION_ATTRIBUTES + 1];
         for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
-            attrs.add(new TransactionAttribute(TransactionAttributeUsageType.DESCRIPTION, "" + i));
+            attrs[i] = new Cosigner();
         }
         new Transaction.Builder().attributes(attrs);
     }
@@ -213,9 +169,8 @@ public class TransactionTest {
             + "00e1f50500000000"  // system fee (1 GAS)
             + "0100000000000000"  // network fee (1 GAS fraction)
             + "04030201"  // valid until block
-            + "00"  // no attributes
-            + "01"  // one default cosigners
-            + "23ba2703c53263e8d6e522dc32203339dcd8eee901" // calledByEntry cosigner
+            + "01"  // one attribute
+            + "0123ba2703c53263e8d6e522dc32203339dcd8eee901" // calledByEntry cosigner
             + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
             + "00"); // no witnesses
 
@@ -233,9 +188,6 @@ public class TransactionTest {
             .validUntilBlock(0x01020304L)
             .script(new byte[]{OpCode.PUSH1.getValue()})
             .attributes(
-                new TransactionAttribute(SCRIPT, account1.toArray()),
-                new TransactionAttribute(SCRIPT, account2.toArray()))
-            .cosigners(
                 Cosigner.global(account1),
                 Cosigner.calledByEntry(account2))
             .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
@@ -249,12 +201,9 @@ public class TransactionTest {
             + "00e1f50500000000"  // system fee (1 GAS)
             + "0100000000000000"  // network fee (1 GAS fraction)
             + "04030201"  // valid until block
-            + "02"  // 2 attributes
-            + "2023ba2703c53263e8d6e522dc32203339dcd8eee9" // Script attribute 1
-            + "2052eaab8b2aab608902c651912db34de36e7a2b0f" // Script attribute 2
             + "02"  // 2 cosigners
-            + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
-            + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
+            + "0123ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
+            + "0152eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
             + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
             + "01" // 1 witness
             + "01000100" // witness
@@ -267,39 +216,31 @@ public class TransactionTest {
     public void deserialize() throws DeserializationException {
         byte[] data = Numeric.hexStringToByteArray(""
             + "00" // version
-            + "04030201"  // nonce
-            + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash
-            + "00e1f50500000000"  // system fee (1 GAS)
-            + "0100000000000000"  // network fee (1 GAS fraction)
-            + "04030201"  // valid until block
-            + "02"  // 2 attributes
-            + "2023ba2703c53263e8d6e522dc32203339dcd8eee9" // Script attribute 1
-            + "2052eaab8b2aab608902c651912db34de36e7a2b0f" // Script attribute 2
-            + "02"  // 2 cosigners
-            + "23ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
-            + "52eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
+            + "62bdaa0e"  // nonce
+            + "941343239213fa0e765f1027ce742f48db779a96"// account script hash
+            + "c272890000000000"  // system fee
+            + "a65a130000000000"  // network fee
+            + "99232000"  // valid until block
+            + "01" // one attribute
+            + "01941343239213fa0e765f1027ce742f48db779a9601" // cosigner
             + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
             + "01" // 1 witness
             + "01000100"); /* witness*/
 
         Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
         assertThat(tx.getVersion(), is((byte) 0));
-        assertThat(tx.getNonce(), is(16_909_060L));
-        assertThat(tx.getSender(), is(account1));
-        assertThat(tx.getSystemFee(), is((long) Math.pow(10, 8)));
-        assertThat(tx.getNetworkFee(), is(1L));
-        assertThat(tx.getValidUntilBlock(), is(16_909_060L));
-        assertThat(tx.getAttributes(), containsInAnyOrder(
-            new TransactionAttribute(SCRIPT, account1.toArray()),
-            new TransactionAttribute(SCRIPT, account2.toArray())));
-        assertThat(tx.getCosigners(), containsInAnyOrder(
-            Cosigner.global(account1),
-            Cosigner.calledByEntry(account2)));
+        assertThat(tx.getNonce(), is(246070626L));
+        assertThat(tx.getSender(), is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSystemFee(), is(9007810L));
+        assertThat(tx.getNetworkFee(), is(1268390L));
+        assertThat(tx.getValidUntilBlock(), is(2106265L));
+        assertThat(tx.getCosigners(), contains(
+                Cosigner.calledByEntry(new ScriptHash("969a77db482f74ce27105f760efa139223431394"))));
         assertArrayEquals(new byte[]{OpCode.PUSH1.getValue()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
             Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
     }
-    
+
     @Test
     public void getSize() {
         Transaction tx = new Transaction.Builder()
@@ -311,9 +252,6 @@ public class TransactionTest {
             .validUntilBlock(0x01020304L)
             .script(new byte[]{OpCode.PUSH1.getValue()})
             .attributes(
-                new TransactionAttribute(SCRIPT, account1.toArray()),
-                new TransactionAttribute(SCRIPT, account2.toArray()))
-            .cosigners(
                 Cosigner.global(account1),
                 Cosigner.calledByEntry(account2))
             .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
@@ -326,17 +264,67 @@ public class TransactionTest {
             8 +  // Network fee
             4 + // Valid until block
             1 + // Byte for attributes list size
-            1 + 20 +  // Attribute type byte and length of script hash attribute
-            1 + 20 +  // Attribute type byte and length of script hash attribute
-            1 + // Byte for cosigners list size
-            1 + 20 + // Cosigner scope byte and cosigner script hash
-            1 + 20 + // Cosigner scope byte and cosigner script hash
+            1 + 1 + 20 + // Attribute type, Cosigner scope and cosigner script hash
+            1 + 1 + 20 + // Attribute type, Cosigner scope and cosigner script hash
             1 + 1 + // Byte for script length and the actual length
             1 + // Byte for witnesses list size
             1 + 1 + // Byte for invocation script length and the actual length.
             1 + 1; // Byte for verifiaction script length and the actual length.
 
         assertThat(tx.getSize(), is(expectedSize));
+    }
+
+    @Test(expected = DeserializationException.class)
+    public void failDeserializingWithTooManyTransactionAttributes()
+            throws DeserializationException {
+        StringBuilder txString = new StringBuilder(""
+                + "00" // version
+                + "62bdaa0e"  // nonce
+                + "941343239213fa0e765f1027ce742f48db779a96"// account script hash
+                + "c272890000000000"  // system fee
+                + "a65a130000000000"  // network fee
+                + "99232000"  // valid until block
+                + "17"); // one attribute
+        for (int i = 0; i <= 16; i++) {
+            txString.append("01941343239213fa0e765f1027ce742f48db779a9601"); // cosigner
+        }
+        txString.append(""
+                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
+                + "01" // 1 witness
+                + "01000100"); /* witness*/
+        byte[] txBytes = Numeric.hexStringToByteArray(txString.toString());
+        NeoSerializableInterface.from(txBytes, Transaction.class);
+    }
+
+    @Test
+    public void getTxId() throws DeserializationException {
+        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
+        byte[] txBytes = Numeric.hexStringToByteArray(
+                "0081bda92e941343239213fa0e765f1027ce742f48db779a96c272890000000000064b130000000000132620000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4086c0799939fae59efd4fc8d0b4d0be8fecf8d0c4d1715d84193f0c173ba42b5655b454ca58c866f65608e3744643cef8fbbab2855ce806f3e0ccb18872e05398290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        Transaction tx = NeoSerializableInterface.from(txBytes, Transaction.class);
+        assertThat(tx.getTxId(),
+                is("6876017ef8e845a5c659e556bf612e6d37ddd80f64eb8797fc8697909ba6a197"));
+    }
+
+    @Test
+    public void toArrayWithoutWitness() throws DeserializationException {
+        byte[] txBytes = Numeric.hexStringToByteArray(
+                "0081bda92e941343239213fa0e765f1027ce742f48db779a96c272890000000000064b130000000000132620000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4086c0799939fae59efd4fc8d0b4d0be8fecf8d0c4d1715d84193f0c173ba42b5655b454ca58c866f65608e3744643cef8fbbab2855ce806f3e0ccb18872e05398290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        byte[] txBytesUnsigned = Numeric.hexStringToByteArray(
+                "0081bda92e941343239213fa0e765f1027ce742f48db779a96c272890000000000064b130000000000132620000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238");
+        Transaction tx = NeoSerializableInterface.from(txBytes, Transaction.class);
+        assertThat(tx.toArrayWithoutWitnesses(), is(txBytesUnsigned));
+    }
+
+    @Test
+    public void getHashData() throws DeserializationException {
+        NeoConfig.setMagicNumber(new byte[]{0x4e, 0x45, 0x4F, 0x00});
+        byte[] txBytes = Numeric.hexStringToByteArray(
+                "001dbfc570941343239213fa0e765f1027ce742f48db779a96c272890000000000064b130000000000b81920000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c406fcb8f6811ac85ed7a1308d14c7197531e83b2d7959c61cc980f30d78f4a9af5c5282272243ec1b51e399fc252caa00ca5fb332a107649adb8f5f8e746b12013290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        Transaction tx = NeoSerializableInterface.from(txBytes, Transaction.class);
+        byte[] expectedData = Numeric.hexStringToByteArray(
+                "4e454f00001dbfc570941343239213fa0e765f1027ce742f48db779a96c272890000000000064b130000000000b81920000101941343239213fa0e765f1027ce742f48db779a960155150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238");
+        assertThat(tx.getHashData(), is(expectedData));
     }
 
 }

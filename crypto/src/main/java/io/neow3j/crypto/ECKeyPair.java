@@ -53,33 +53,20 @@ public class ECKeyPair {
         return privateKey;
     }
 
-    // TODO: Rename after removing the above method.
     public ECPublicKey getPublicKey() {
         return publicKey;
     }
 
     /**
-     * Constructs the NEO address from this key pairs public key, specifying the address version
-     * prefix and the address version. The address is constructed ad hoc each time this method is
-     * called.
-     *
-     * @param addressVersion The address version to use.
-     * @return the NEO address of the public key.
-     */
-    public String getAddress(byte addressVersion) {
-        byte[] script = ScriptBuilder.buildVerificationScript(this.publicKey.getEncoded(true));
-        return ScriptHash.fromScript(script).toAddress(addressVersion);
-    }
-
-    /**
-     * Constructs the NEO address from this key pairs public key. The address is constructed ad hoc
-     * each time this method is called. It uses the default address version {@link
-     * NeoConstants#DEFAULT_ADDRESS_VERSION}.
+     * Constructs the NEO address from this key pairs public key.
+     * <p>
+     * The address is constructed ad hoc each time this method is called.
      *
      * @return the NEO address of the public key.
      */
     public String getAddress() {
-        return getAddress(NeoConstants.DEFAULT_ADDRESS_VERSION);
+        byte[] script = ScriptBuilder.buildVerificationScript(this.publicKey.getEncoded(true));
+        return ScriptHash.fromScript(script).toAddress();
     }
 
     /**
