@@ -22,25 +22,15 @@ public class NeoGetBalance extends Response<NeoGetBalance.Balance> {
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private String balance;
 
-        @JsonProperty("confirmed")
-        @JsonAlias("Confirmed")
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        private String confirmed;
-
         public Balance() {
         }
 
-        public Balance(String balance, String confirmed) {
+        public Balance(String balance) {
             this.balance = balance;
-            this.confirmed = confirmed;
         }
 
         public String getBalance() {
             return balance;
-        }
-
-        public String getConfirmed() {
-            return confirmed;
         }
 
         @Override
@@ -48,20 +38,18 @@ public class NeoGetBalance extends Response<NeoGetBalance.Balance> {
             if (this == o) return true;
             if (!(o instanceof Balance)) return false;
             Balance balance1 = (Balance) o;
-            return Objects.equals(getBalance(), balance1.getBalance()) &&
-                    Objects.equals(getConfirmed(), balance1.getConfirmed());
+            return Objects.equals(getBalance(), balance1.getBalance());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getBalance(), getConfirmed());
+            return Objects.hash(getBalance());
         }
 
         @Override
         public String toString() {
             return "Balance{" +
                     "balance='" + balance + '\'' +
-                    ", confirmed='" + confirmed + '\'' +
                     '}';
         }
     }

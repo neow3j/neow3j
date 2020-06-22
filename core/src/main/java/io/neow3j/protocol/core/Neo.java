@@ -9,7 +9,6 @@ import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetBlockSysFee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
@@ -70,8 +69,6 @@ public interface Neo {
     Request<?, NeoGetRawBlock> getRawBlockHeader(String hash);
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex);
-
-    Request<?, NeoGetBlockSysFee> getBlockSysFee(BlockParameterIndex blockIndex);
 
     Request<?, NeoGetContractState> getContractState(String scriptHash);
 
@@ -145,25 +142,9 @@ public interface Neo {
 
     Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
 
-    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee);
-
-    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset, String fee,
-            String changeAddress);
-
     Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
-
-    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value,
-            String fee);
-
-    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset, String fee);
-
-    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value,
-            String fee, String changeAddress);
-
-    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset, String fee,
-            String changeAddress);
 
     // RpcNep5Tracker
 
