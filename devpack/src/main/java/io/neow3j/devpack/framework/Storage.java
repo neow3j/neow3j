@@ -1,5 +1,6 @@
 package io.neow3j.devpack.framework;
 
+import io.neow3j.devpack.framework.annotations.Syscall;
 import java.math.BigInteger;
 
 @Syscall("System.Storage")

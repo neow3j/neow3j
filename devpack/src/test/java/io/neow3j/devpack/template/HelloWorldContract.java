@@ -1,9 +1,9 @@
 package io.neow3j.devpack.template;
 
-import io.neow3j.devpack.framework.EntryPoint;
 import io.neow3j.devpack.framework.Manifest;
 import io.neow3j.devpack.framework.SmartContract;
 import io.neow3j.devpack.framework.Storage;
+import io.neow3j.devpack.framework.annotations.EntryPoint;
 
 /*
  * Goals of the prototype iteration:

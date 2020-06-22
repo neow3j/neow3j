@@ -1,5 +1,7 @@
 package io.neow3j.devpack.framework;
 
+import io.neow3j.devpack.framework.annotations.Syscall;
+
 @Syscall("System.Runtime")
 public class Runtime {
 

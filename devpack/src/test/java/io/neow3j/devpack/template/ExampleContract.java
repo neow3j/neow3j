@@ -1,10 +1,10 @@
 package io.neow3j.devpack.template;
 
-import io.neow3j.devpack.framework.EntryPoint;
-import io.neow3j.devpack.framework.Manifest;
 import io.neow3j.devpack.framework.SmartContract;
 import io.neow3j.devpack.framework.Storage;
 import io.neow3j.devpack.framework.Storage.StorageContext;
+import io.neow3j.devpack.framework.annotations.EntryPoint;
+import io.neow3j.devpack.framework.annotations.Manifest;
 
 /*
  * Goals of the prototype iteration:
