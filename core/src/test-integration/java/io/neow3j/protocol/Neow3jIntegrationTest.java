@@ -146,7 +146,7 @@ abstract class Neow3jIntegrationTest {
                     }
                     return tx.getHeight().intValue();
                 } catch (IOException e) {
-                    return 0;
+                    return null;
                 }
             };
         }
