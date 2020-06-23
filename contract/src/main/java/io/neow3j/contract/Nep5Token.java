@@ -203,20 +203,4 @@ public class Nep5Token extends SmartContract {
                 .build()
                 .sign();
     }
-
-    public String transferFromURI(Wallet wallet, NeoURI neoURI) throws IOException, ErrorResponseException {
-        ScriptHash to = neoURI.getAddress();
-        BigDecimal amount = neoURI.getAmount();
-        ScriptHash asset = neoURI.getAsset();
-
-        if (asset == null || amount == null) {
-            return "";
-        }
-
-        if (this.scriptHash.equals(asset)) {
-            return transfer(wallet, to, amount);
-        }
-
-        return "";
-    }
 }

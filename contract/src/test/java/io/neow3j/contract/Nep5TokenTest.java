@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.contract.ContractTestHelper.setUpWireMockForSendRawTransaction;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
@@ -42,7 +44,7 @@ public class Nep5TokenTest {
 
     @Test
     public void transferGas() throws Exception {
-        ContractTestHelper.setUpWireMockForSendRawTransaction();
+        setUpWireMockForSendRawTransaction();
         String script =
                 "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238";
         ContractTestHelper.setUpWireMockForCall("invokescript", "invokescript_transfer_1_gas.json",
@@ -51,7 +53,7 @@ public class Nep5TokenTest {
         setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");
         // Required for fetching the block height used for setting the validUntilBlock.
-        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForGetBlockCount(1000);
         // Required when checking the senders token balance.
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf.json");
@@ -84,20 +86,18 @@ public class Nep5TokenTest {
     @Ignore
     @Test
     public void transferTokenFromURI() throws IOException, ErrorResponseException {
-        ContractTestUtils.setUpWireMockForSendRawTransaction();
-        ContractTestUtils
-                .setUpWireMockForInvokeFunction("transfer", "invokefunction_transfer.json");
-        ContractTestUtils
-                .setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
-        ContractTestUtils.setUpWireMockForGetBlockCount();;
+        setUpWireMockForSendRawTransaction();
+        setUpWireMockForInvokeFunction("transfer", "invokefunction_transfer.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+//        setUpWireMockForGetBlockCount();
 
-        Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
-        Wallet w = Wallet.createWallet();
-        String s = this.contract.toString();
-        // TODO: 22.04.20 Michael: reverse transaction from transferToken() test, so that same mock json can be used.
-        NeoURI neoURI = NeoURI.fromURI("neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=" + s + "&amount=");
-        nep5.transferFromURI(w, neoURI);
-        fail();
+//        Nep5Token nep5 = new Nep5Token(this.contract, this.neow);
+//        Wallet w = Wallet.createWallet();
+//        String s = this.contract.toString();
+//        // TODO: 22.04.20 Michael: reverse transaction from transferToken() test, so that same mock json can be used.
+//        NeoURI neoURI = NeoURI.fromURI("neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=" + s + "&amount=");
+//        nep5.transferFromURI(w, neoURI);
+//        fail();
     }
 
     @Test
@@ -155,7 +155,7 @@ public class Nep5TokenTest {
 
     @Test(expected = InsufficientFundsException.class)
     public void failTransferringGasBecauseOfInsufficientBalance() throws Exception {
-        ContractTestHelper.setUpWireMockForSendRawTransaction();
+        setUpWireMockForSendRawTransaction();
         // Required for fetching of system fee of the invocation.
         setUpWireMockForInvokeFunction(
                 "transfer", "invokescript_transfer_1_gas.json");
@@ -163,7 +163,7 @@ public class Nep5TokenTest {
         setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");
         // Required for fetching the block height used for setting the validUntilBlock.
-        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForGetBlockCount(1000);
         // Required for checking the senders token balance.
         ContractTestHelper.setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
