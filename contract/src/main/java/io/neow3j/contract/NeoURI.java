@@ -45,8 +45,8 @@ public class NeoURI {
      * @throws IllegalFormatException if the provided URI has an invalid format.
      */
     public static NeoURI fromURI(String uriString) throws IllegalFormatException {
-        String[] base_and_query = uriString.split("\\?");
-        String[] beginTx = base_and_query[0].split(":");
+        String[] baseAndQuery = uriString.split("\\?");
+        String[] beginTx = baseAndQuery[0].split(":");
 
         if (beginTx.length != 2 || !beginTx[0].equals(NEO_SCHEME)) {
             throw new IllegalStateException("Invalid uri.");
@@ -57,8 +57,8 @@ public class NeoURI {
         neoURI.toAddress(beginTx[1]);
 
         // Add the optional parts of the uri - asset and amount.
-        if (base_and_query.length == 2) {
-            String[] query = base_and_query[1].split("&");
+        if (baseAndQuery.length == 2) {
+            String[] query = baseAndQuery[1].split("&");
             for (String singleQuery : query) {
                 String[] singleQueryParts = singleQuery.split("=", 2);
                 if (singleQueryParts.length != 2) throw new IllegalStateException("This uri contains invalid queries.");

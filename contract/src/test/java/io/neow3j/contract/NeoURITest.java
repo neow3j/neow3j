@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.wallet.Wallet;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.junit.Assert.assertThat;
@@ -17,6 +18,8 @@ public class NeoURITest {
 
     private static final String BEGIN_TX = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
     private static final String BEGIN_TX_ASSET_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1";
+    private static final String BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS =
+            "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1&asset=gas&amount=80";
 
     private static final Neow3j NEOW3J = Neow3j.build(new HttpService("http://localhost:40332"));
     private static final Wallet WALLET = Wallet.createWallet();
@@ -34,6 +37,13 @@ public class NeoURITest {
     @Test
     public void testGenerateFromURI() {
         URI uri = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT).buildURI().getURI();
+
+        assertThat(uri, is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
+    }
+
+    @Test
+    public void testGenerateFromURI_MULTIPLE_ASSETS_AND_AMOUNTS() {
+        URI uri = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS).buildURI().getURI();
 
         assertThat(uri, is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
     }
@@ -181,6 +191,20 @@ public class NeoURITest {
     }
 
     @Test
+    public void testGenerateURI_Asset_Amount_AddMultipleTimes() {
+        NeoURI neoURI = new NeoURI()
+                .toAddress(ADDRESS)
+                .asset("gas")
+                .asset("neo")
+                .amount("90")
+                .amount(AMOUNT)
+                .buildURI();
+
+        assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
+        assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_ASSET_AMOUNT));
+    }
+
+    @Test
     public void testURI_InvocationBuilder() throws IOException {
         new NeoURI(NEOW3J)
                 .asset(NeoToken.SCRIPT_HASH)
@@ -192,23 +216,25 @@ public class NeoURITest {
 
     @Test
     public void testURI_InvocationBuilder_Neow3j() throws IOException {
-        new NeoURI()
+        assertThat(new NeoURI()
                 .neow3j(NEOW3J)
                 .asset(NeoToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
-                .invocationBuilder();
+                .invocationBuilder(),
+                is(instanceOf(Invocation.Builder.class)));
     }
 
     @Test
     public void testURI_InvocationBuilder_Gas() throws IOException {
-        new NeoURI(NEOW3J)
+        assertThat(new NeoURI(NEOW3J)
                 .asset(GasToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
-                .invocationBuilder();
+                .invocationBuilder(),
+                is(instanceOf(Invocation.Builder.class)));
     }
 
     @Test(expected = IllegalStateException.class)
