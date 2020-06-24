@@ -1,18 +1,12 @@
 package io.neow3j.devpack.framework;
 
-public enum StorageFlag {
+/**
+ * <tt>StorageFlags</tt> define attributes of data that is written to a contract's storage. E.g. one
+ * can define if data should be read-only.
+ */
+public class StorageFlag {
 
-    None((byte) 0x00),
-    Constant((byte) 0x01);
-
-    private byte code;
-
-    StorageFlag(byte code) {
-        this.code = code;
-    }
-
-    public byte getCode() {
-        return code;
-    }
+    public static final byte NONE = 0x00;
+    public static final byte CONSTANT = 0x01;
 
 }

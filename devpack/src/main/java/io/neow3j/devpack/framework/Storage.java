@@ -1,7 +1,6 @@
 package io.neow3j.devpack.framework;
 
 import io.neow3j.devpack.framework.annotations.Syscall;
-import java.math.BigInteger;
 
 @Syscall("System.Storage")
 public class Storage {
@@ -42,6 +41,12 @@ public class Storage {
     @Syscall("System.Storage.Put")
     public static native void put(StorageContext context, byte[] key, int value);
 
+    /**
+     * Stores the given key-value pair using the current storage context.
+     */
+    @Syscall("System.Storage.Put")
+    public static native void put(StorageContext context, byte[] key, long value);
+
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     */
@@ -65,6 +70,12 @@ public class Storage {
      */
     @Syscall("System.Storage.Put")
     public static native void put(StorageContext context, String key, int value);
+
+    /**
+     * Stores the given key-value pair using the current storage context.
+     */
+    @Syscall("System.Storage.Put")
+    public static native void put(StorageContext context, String key, long value);
 
 //    /**
 //     * Stores the given key-value pair using the current storage context.
@@ -140,6 +151,15 @@ public class Storage {
     @Syscall("System.Storage.Put")
     public static native void put(byte[] key, int value);
 
+    /**
+     * Stores the given key-value pair using the current storage context.
+     * <p>
+     * Needs to get the current storage context first.
+     */
+    @Syscall("System.Storage.GetContext")
+    @Syscall("System.Storage.Put")
+    public static native void put(byte[] key, long value);
+
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     * <p>
@@ -157,7 +177,7 @@ public class Storage {
      */
     @Syscall("System.Storage.GetContext")
     @Syscall("System.Storage.PutEx")
-    public static native void putEx(byte[] key, byte[] value, StorageFlag flag);
+    public static native void putEx(byte[] key, byte[] value, byte storageFlag);
 
     /**
      * Stores the given key-value pair using the current storage context and the given storage
@@ -167,7 +187,17 @@ public class Storage {
      */
     @Syscall("System.Storage.GetContext")
     @Syscall("System.Storage.PutEx")
-    public static native void putEx(byte[] key, int value, StorageFlag flag);
+    public static native void putEx(byte[] key, int value, byte storageFlag);
+
+    /**
+     * Stores the given key-value pair using the current storage context and the given storage
+     * flags.
+     * <p>
+     * Needs to get the current storage context first.
+     */
+    @Syscall("System.Storage.GetContext")
+    @Syscall("System.Storage.PutEx")
+    public static native void putEx(byte[] key, long value, byte storageFlag);
 
 //    /**
 //     * Stores the given key-value pair using the current storage context.
@@ -195,7 +225,7 @@ public class Storage {
      */
     @Syscall("System.Storage.GetContext")
     @Syscall("System.Storage.PutEx")
-    public static native void putEx(byte[] key, String value, StorageFlag flag);
+    public static native void putEx(byte[] key, String value, byte storageFlag);
 
     /**
      * Stores the given key-value pair using the current storage context.
@@ -214,7 +244,27 @@ public class Storage {
      */
     @Syscall("System.Storage.GetContext")
     @Syscall("System.Storage.PutEx")
-    public static native void putEx(String key, byte[] value, StorageFlag flag);
+    public static native void putEx(String key, byte[] value, byte storageFlag);
+
+    /**
+     * Stores the given key-value pair using the current storage context and the given storage
+     * flags.
+     * <p>
+     * Needs to get the current storage context first.
+     */
+    @Syscall("System.Storage.GetContext")
+    @Syscall("System.Storage.PutEx")
+    public static native void putEx(String key, int value, byte storageFlag);
+
+    /**
+     * Stores the given key-value pair using the current storage context and the given storage
+     * flags.
+     * <p>
+     * Needs to get the current storage context first.
+     */
+    @Syscall("System.Storage.GetContext")
+    @Syscall("System.Storage.PutEx")
+    public static native void putEx(String key, long value, byte storageFlag);
 
     /**
      * Stores the given key-value pair using the current storage context.
@@ -225,6 +275,15 @@ public class Storage {
     @Syscall("System.Storage.Put")
     public static native void put(String key, int value);
 
+    /**
+     * Stores the given key-value pair using the current storage context.
+     * <p>
+     * Needs to get the current storage context first.
+     */
+    @Syscall("System.Storage.GetContext")
+    @Syscall("System.Storage.Put")
+    public static native void put(String key, long value);
+
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     * <p>
@@ -234,15 +293,15 @@ public class Storage {
 //    @Syscall("System.Storage.Put")
 //    public static native void put(String key, BigInteger value);
 
-    /**
-     * Stores the given key-value pair using the current storage context and the given storage
-     * flags.
-     * <p>
-     * Needs to get the current storage context first.
-     */
-    @Syscall("System.Storage.GetContext")
-    @Syscall("System.Storage.PutEx")
-    public static native void putEx(String key, BigInteger value, StorageFlag flag);
+//    /**
+//     * Stores the given key-value pair using the current storage context and the given storage
+//     * flags.
+//     * <p>
+//     * Needs to get the current storage context first.
+//     */
+//    @Syscall("System.Storage.GetContext")
+//    @Syscall("System.Storage.PutEx")
+//    public static native void putEx(String key, BigInteger value, byte storageFlag);
 
     /**
      * Stores the given key-value pair using the current storage context.
@@ -261,7 +320,7 @@ public class Storage {
      */
     @Syscall("System.Storage.GetContext")
     @Syscall("System.Storage.PutEx")
-    public static native void putEx(String key, String value, StorageFlag flag);
+    public static native void putEx(String key, String value, byte storageFlag);
 
     /**
      * Deletes the entry with the given key from the current storage context.
