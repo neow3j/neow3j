@@ -41,6 +41,16 @@ public class NeoURITest {
         assertThat(uri, is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testGenerateFromURI_null() {
+        NeoURI.fromURI("").buildURI();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGenerateFromURI_emptyString() {
+        NeoURI.fromURI("").buildURI();
+    }
+
     @Test
     public void testGenerateFromURI_MULTIPLE_ASSETS_AND_AMOUNTS() {
         URI uri = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS).buildURI().getURI();
@@ -71,9 +81,9 @@ public class NeoURITest {
         assertThat("getAssetAsAddress()", neoURI.getAssetAsAddress(), is(GAS_ADDRESS));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGenerateFromURI_InvalidURI() {
-        NeoURI.fromURI("neo").buildURI().getURI();
+        NeoURI.fromURI("neo").buildURI();
     }
 
     @Test
@@ -95,7 +105,7 @@ public class NeoURITest {
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGenerateURI_InvalidAddress() {
         String invalidAddress = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp";
         new NeoURI().toAddress(invalidAddress);

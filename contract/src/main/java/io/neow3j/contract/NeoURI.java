@@ -45,11 +45,12 @@ public class NeoURI {
      * @throws IllegalFormatException if the provided URI has an invalid format.
      */
     public static NeoURI fromURI(String uriString) throws IllegalFormatException {
+        if (uriString == null) throw new IllegalArgumentException("The provided String is null.");
         String[] baseAndQuery = uriString.split("\\?");
         String[] beginTx = baseAndQuery[0].split(":");
 
         if (beginTx.length != 2 || !beginTx[0].equals(NEO_SCHEME)) {
-            throw new IllegalStateException("Invalid uri.");
+            throw new IllegalArgumentException("Invalid uri.");
         }
         NeoURI neoURI = new NeoURI();
 
@@ -61,7 +62,7 @@ public class NeoURI {
             String[] query = baseAndQuery[1].split("&");
             for (String singleQuery : query) {
                 String[] singleQueryParts = singleQuery.split("=", 2);
-                if (singleQueryParts.length != 2) throw new IllegalStateException("This uri contains invalid queries.");
+                if (singleQueryParts.length != 2) throw new IllegalArgumentException("This uri contains invalid queries.");
                 if (singleQueryParts[0].equals("asset") && neoURI.asset == null) {
                     neoURI.asset = singleQueryParts[1];
                 } else if (singleQueryParts[0].equals("amount") && neoURI.amount == null) {
@@ -150,7 +151,7 @@ public class NeoURI {
 
     public NeoURI toAddress(String address) {
         if (!AddressUtils.isValidAddress(address)) {
-            throw new IllegalStateException("Invalid address used.");
+            throw new IllegalArgumentException("Invalid address used.");
         }
 
         this.address = ScriptHash.fromAddress(address);
@@ -159,7 +160,7 @@ public class NeoURI {
 
     public NeoURI toAddress(ScriptHash address) {
         if (!AddressUtils.isValidAddress(address.toAddress())) {
-            throw new IllegalStateException("Invalid address used.");
+            throw new IllegalArgumentException("Invalid address used.");
         }
 
         this.address = address;
