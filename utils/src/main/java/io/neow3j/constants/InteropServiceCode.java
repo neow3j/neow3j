@@ -20,7 +20,8 @@ public enum InteropServiceCode {
 
     // Native tokens. Their script hashes are derived from their names.
     NEO_NATIVE_TOKENS_NEO("Neo.Native.Tokens.NEO", null),
-    NEO_NATIVE_TOKENS_GAS("Neo.Native.Tokens.GAS", null);
+    NEO_NATIVE_TOKENS_GAS("Neo.Native.Tokens.GAS", null),
+    NEO_NATIVE_POLICY("Neo.Native.Policy", null); // TODO: 24.06.20 Michael: Is price null?
 
     // Note that the below commented Interop Service Codes are not up to date.
 //    SYSTEM_BINARY_SERIALIZE("ee83bbc8", 100_000),
