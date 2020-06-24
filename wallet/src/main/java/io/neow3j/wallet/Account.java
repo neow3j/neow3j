@@ -14,6 +14,7 @@ import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
 import io.neow3j.transaction.VerificationScript;
+import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
@@ -37,21 +38,18 @@ public class Account {
     private String address;
     private String encryptedPrivateKey;
     private String label;
-    private boolean isDefault;
     private boolean isLocked;
     private VerificationScript verificationScript;
+    private Wallet wallet;
 
-    private Account() {
+    public Account() {
     }
 
-    protected Account(Builder b) {
-        this.label = b.label;
-        this.keyPair = b.keyPair;
-        this.isDefault = b.isDefault;
-        this.isLocked = b.isLocked;
-        this.address = b.address;
-        this.encryptedPrivateKey = b.encryptedPrivateKey;
-        this.verificationScript = b.verificationScript;
+    public Account(ECKeyPair ecKeyPair) {
+        this.keyPair = ecKeyPair;
+        this.address = ecKeyPair.getAddress();
+        this.label = this.address;
+        this.verificationScript = new VerificationScript(ecKeyPair.getPublicKey());
     }
 
     public String getAddress() {
@@ -75,24 +73,52 @@ public class Account {
         return label;
     }
 
+    public Account setLabel(String label) {
+        this.label = label;
+        return this;
+    }
+
+    public Wallet getWallet() {
+        return this.wallet;
+    }
+
+    /**
+     * Checks if the account is default in the linked wallet.
+     *
+     * @return whether the account is default.
+     */
     public Boolean isDefault() {
-        return isDefault;
+        if (this.wallet == null) return false;
+        return this.wallet.isDefault(this.getScriptHash());
     }
 
     // This method is required by the Wallet but must not be available to the developer because
     // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
-    void setDefault() {
-        this.isDefault = true;
-    }
+//    void setDefault() {
+//        this.isDefault = true;
+//    }
 
     // This method is required by the Wallet but must not be available to the developer because
     // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
-    void unsetDefault() {
-        this.isDefault = false;
-    }
+//    void unsetDefault() {
+//        this.isDefault = false;
+//    }
 
     public Boolean isLocked() {
         return isLocked;
+    }
+
+    public Account setLocked() {
+        this.isLocked = true;
+        return this;
+    }
+
+    public void unsetLocked() {
+        this.isLocked = false;
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
     }
 
     public VerificationScript getVerificationScript() {
@@ -219,7 +245,7 @@ public class Account {
             throw new AccountStateException("Account private key is available but not encrypted.");
         }
         if (this.verificationScript == null) {
-            return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
+            return new NEP6Account(this.address, this.label, this.isDefault(), this.isLocked,
                     this.encryptedPrivateKey, null, null);
         }
         List<NEP6Parameter> parameters = new ArrayList<>();
@@ -232,7 +258,7 @@ public class Account {
         }
         String script = Base64.encode(this.verificationScript.getScript());
         NEP6Contract contract = new NEP6Contract(script, parameters, false);
-        return new NEP6Account(this.address, this.label, this.isDefault, this.isLocked,
+        return new NEP6Account(this.address, this.label, this.isDefault(), this.isLocked,
                 this.encryptedPrivateKey, contract, null);
     }
 
@@ -245,64 +271,55 @@ public class Account {
      *                           transactions.
      * @return the multi-sig account builder;
      */
-    public static Builder fromMultiSigKeys(List<ECPublicKey> publicKeys, int signatureThreshold) {
+    public static Account fromMultiSigKeys(List<ECPublicKey> publicKeys, int signatureThreshold) {
         VerificationScript script = new VerificationScript(publicKeys, signatureThreshold);
         String address = ScriptHash.fromScript(script.getScript()).toAddress();
-        Builder b = new Builder();
-        b.address = address;
-        b.label = address;
-        b.verificationScript = script;
-        return b;
+        Account account = new Account();
+        account.address = address;
+        account.label = address;
+        account.verificationScript = script;
+        return account;
     }
 
-    public static Builder fromWIF(String wif) {
+    public static Account fromWIF(String wif) {
         BigInteger privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
-        Builder b = new Builder();
-        b.keyPair = keyPair;
-        b.address = keyPair.getAddress();
-        b.label = keyPair.getAddress();
-        b.verificationScript = new VerificationScript(keyPair.getPublicKey());
-        return b;
+        Account account = new Account();
+        account.keyPair = keyPair;
+        account.address = keyPair.getAddress();
+        account.label = keyPair.getAddress();
+        account.verificationScript = new VerificationScript(keyPair.getPublicKey());
+        return account;
     }
 
-    public static Builder fromNewECKeyPair() {
+    public static Account fromNewECKeyPair() {
         try {
-            return fromECKeyPair(ECKeyPair.createEcKeyPair());
+            return new Account(ECKeyPair.createEcKeyPair());
         } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
             throw new RuntimeException("Failed to create a new EC key pair.", e);
         }
     }
 
-    public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
-        Builder b = new Builder();
-        b.keyPair = ecKeyPair;
-        b.address = ecKeyPair.getAddress();
-        b.label = b.address;
-        b.verificationScript = new VerificationScript(ecKeyPair.getPublicKey());
-        return b;
-    }
-
-    public static Builder fromNEP6Account(NEP6Account nep6Acct) {
-        Builder b = new Builder();
-        b.address = nep6Acct.getAddress();
-        b.label = nep6Acct.getLabel();
-        b.encryptedPrivateKey = nep6Acct.getKey();
-        b.isLocked = nep6Acct.getLock();
-        b.isDefault = nep6Acct.getDefault();
+    public static Account fromNEP6Account(NEP6Account nep6Acct) {
+        Account account = new Account();
+        account.address = nep6Acct.getAddress();
+        account.label = nep6Acct.getLabel();
+        account.encryptedPrivateKey = nep6Acct.getKey();
+        account.isLocked = nep6Acct.getLock();
         NEP6Contract contr = nep6Acct.getContract();
         if (contr != null && contr.getScript() != null && !contr.getScript().isEmpty()) {
             byte[] script = Base64.decode(contr.getScript());
-            b.verificationScript = new VerificationScript(script);
+            account.verificationScript = new VerificationScript(script);
         }
-        return b;
+        return account;
     }
 
-    public static Builder fromAddress(String address) {
-        Builder b = new Builder();
-        b.address = address;
-        b.label = address;
-        return b;
+    public static Account fromAddress(String address) {
+        if (!AddressUtils.isValidAddress(address)) throw new IllegalArgumentException("Invalid address.");
+        Account account = new Account();
+        account.address = address;
+        account.label = address;
+        return account;
     }
 
     /**
@@ -311,41 +328,6 @@ public class Account {
      * @return the new account.
      */
     public static Account createAccount() {
-        return fromNewECKeyPair().build();
-    }
-
-    public static class Builder<T extends Account, B extends Builder<T, B>> {
-
-        VerificationScript verificationScript;
-        String label;
-        ECKeyPair keyPair;
-        boolean isDefault;
-        boolean isLocked;
-        String address;
-        String encryptedPrivateKey;
-
-        protected Builder() {
-            isDefault = false;
-            isLocked = false;
-        }
-
-        public B label(String label) {
-            this.label = label;
-            return (B) this;
-        }
-
-        public B isDefault() {
-            this.isDefault = true;
-            return (B) this;
-        }
-
-        public B isLocked() {
-            this.isLocked = true;
-            return (B) this;
-        }
-
-        public T build() {
-            return (T) new Account(this);
-        }
+        return fromNewECKeyPair();
     }
 }

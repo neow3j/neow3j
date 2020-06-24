@@ -19,13 +19,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -42,20 +39,16 @@ public class Wallet {
     private String version;
     private Map<ScriptHash, Account> accounts = new HashMap<>();
     private ScryptParams scryptParams;
+    private ScriptHash defaultAccount;
 
     static {
         addBouncyCastle();
     }
 
-    private Wallet() {
-    }
-
-    protected Wallet(Builder builder) {
-        this.name = builder.name;
-        this.version = builder.version;
-        this.scryptParams = builder.scryptParams;
-        this.accounts = builder.accounts.stream().collect(
-                Collectors.toMap(Account::getScriptHash, Function.identity()));
+    public Wallet() {
+        this.name = DEFAULT_WALLET_NAME;
+        this.version = CURRENT_VERSION;
+        this.scryptParams = NEP2.DEFAULT_SCRYPT_PARAMS;
     }
 
     public String getName() {
@@ -85,8 +78,7 @@ public class Wallet {
                     + "not contain the account with script hash "
                     + accountScriptHash.toString() + ".");
         }
-        getDefaultAccount().unsetDefault();
-        this.accounts.get(accountScriptHash).setDefault();
+        this.defaultAccount = accountScriptHash;
     }
 
     public ScryptParams getScryptParams() {
@@ -100,19 +92,40 @@ public class Wallet {
      * @throws WalletStateException if the wallet does not contain a default account.
      */
     public Account getDefaultAccount() {
-        return this.accounts.values().stream()
-                .filter(Account::isDefault)
-                .findFirst()
-                .orElseThrow(() -> new WalletStateException("The wallet does not contain a "
-                        + "default account."));
+        if (!hasDefaultAccount()) {
+            throw new IllegalStateException("Can't get default account on wallet. Wallet does "
+                    + "not contain a default Account.");
+        }
+        return this.accounts.get(this.defaultAccount);
     }
 
-    public void setName(String name) {
+    public Boolean hasDefaultAccount() {
+        return this.defaultAccount != null;
+    }
+
+    /**
+     * Checks whether an account is the default account in the wallet.
+     *
+     * @param accountScriptHash the account to be checked.
+     * @return Whether the given account is the default account in this wallet.
+     */
+    public Boolean isDefault(ScriptHash accountScriptHash) {
+        return accountScriptHash == getDefaultAccount().getScriptHash();
+    }
+
+    public Wallet setName(String name) {
         this.name = name;
+        return this;
     }
 
-    public void setVersion(String version) {
+    public Wallet setVersion(String version) {
         this.version = version;
+        return this;
+    }
+
+    public Wallet setScryptParams(ScryptParams scryptParams) {
+        this.scryptParams = scryptParams;
+        return this;
     }
 
     /**
@@ -120,19 +133,50 @@ public class Wallet {
      * address.
      *
      * @param account The account to add.
-     * @return true if the account was added, false if an account with the same address was already
-     * in the wallet.
+     * @return This wallet instance.
      */
-    public boolean addAccount(Account account) {
-        if (this.accounts.containsKey(account.getScriptHash())) {
-            return false;
+    public Wallet addAccount(Account account) {
+        if (!this.accounts.containsKey(account.getScriptHash())) {
+            // An account is only allowed to be in one wallet at a time.
+            if (account.getWallet() != null) throw new IllegalArgumentException("The account " + account.getAddress() +
+                    " is already contained in a wallet. Please remove this account from its containing wallet" +
+                    " before adding it to another wallet.");
+            this.accounts.put(account.getScriptHash(), account);
         }
-        if (account.isDefault() && this.accounts.values().stream().anyMatch(Account::isDefault)) {
-            throw new IllegalArgumentException("Can't add a default account to a wallet that "
-                    + "already has a default account.");
+        // Wallet cannot contain any accounts while none are default.
+        // Therefore, the first added account is set default.
+        if (!this.hasDefaultAccount()) {
+            setDefaultAccount(account.getScriptHash());
         }
-        this.accounts.put(account.getScriptHash(), account);
-        return true;
+        return this;
+    }
+
+    /**
+     * Adds the given accounts to this wallet, if it doesn't contain an account with the same
+     * address.
+     *
+     * @param accounts The accounts to add.
+     * @return This wallet instance.
+     */
+    public Wallet addAccounts(Account... accounts) {
+        for (Account acct : accounts) {
+            if (this.accounts.containsKey(acct.getScriptHash())) {
+                continue;
+            }
+            // An account is only allowed to be in one wallet at a time.
+            if (acct.getWallet() != null) throw new IllegalArgumentException("The account " + acct.getAddress() +
+                    " is already contained in a wallet. Please remove this account from its containing wallet" +
+                    " before adding it to another wallet.");
+            this.accounts.put(acct.getScriptHash(), acct);
+            // Create a link for the account
+            acct.setWallet(this);
+            // Wallet cannot contain any accounts while none are default.
+            // Therefore, the first added account is set default.
+            if (!hasDefaultAccount()) {
+                setDefaultAccount(acct.getScriptHash());
+            }
+        }
+        return this;
     }
 
     /**
@@ -142,6 +186,11 @@ public class Wallet {
      * @return true if an account was removed, false if no account with the given address was found.
      */
     public boolean removeAccount(ScriptHash scriptHash) {
+        if (scriptHash == this.getDefaultAccount().getScriptHash()
+                && this.accounts.size() > 1) {
+            ScriptHash newDefaultAccount = this.accounts.entrySet().iterator().next().getKey();
+            this.setDefaultAccount(this.accounts.get(newDefaultAccount).getScriptHash());
+        }
         return accounts.remove(scriptHash) != null;
     }
 
@@ -166,35 +215,35 @@ public class Wallet {
         return new NEP6Wallet(name, version, scryptParams, accts, null);
     }
 
-    public static Builder fromNEP6Wallet(String nep6WalletFileName) throws IOException {
+    public static Wallet fromNEP6Wallet(String nep6WalletFileName) throws IOException {
         return fromNEP6Wallet(
                 Wallet.class.getClassLoader().getResourceAsStream(nep6WalletFileName));
     }
 
-    public static Builder fromNEP6Wallet(URI nep6WalletFileUri) throws IOException {
+    public static Wallet fromNEP6Wallet(URI nep6WalletFileUri) throws IOException {
         return fromNEP6Wallet(nep6WalletFileUri.toURL().openStream());
     }
 
-    public static Builder fromNEP6Wallet(File nep6WalletFile) throws IOException {
+    public static Wallet fromNEP6Wallet(File nep6WalletFile) throws IOException {
         return fromNEP6Wallet(new FileInputStream(nep6WalletFile));
     }
 
-    public static Builder fromNEP6Wallet(InputStream nep6WalletFileInputStream) throws IOException {
+    public static Wallet fromNEP6Wallet(InputStream nep6WalletFileInputStream) throws IOException {
         NEP6Wallet nep6Wallet = OBJECT_MAPPER
                 .readValue(nep6WalletFileInputStream, NEP6Wallet.class);
         return fromNEP6Wallet(nep6Wallet);
     }
 
-    public static Builder fromNEP6Wallet(NEP6Wallet nep6Wallet) {
+    public static Wallet fromNEP6Wallet(NEP6Wallet nep6Wallet) {
         Account[] accs = nep6Wallet.getAccounts().stream()
-                .map(nep6Acc -> Account.fromNEP6Account(nep6Acc).build())
+                .map(Account::fromNEP6Account)
                 .toArray(Account[]::new);
 
-        return new Builder()
-                .name(nep6Wallet.getName())
-                .version(nep6Wallet.getVersion())
-                .scryptParams(nep6Wallet.getScrypt())
-                .accounts(accs);
+        return new Wallet()
+                .setName(nep6Wallet.getName())
+                .setVersion(nep6Wallet.getVersion())
+                .setScryptParams(nep6Wallet.getScrypt())
+                .addAccounts(accs);
     }
 
     /**
@@ -238,13 +287,13 @@ public class Wallet {
     }
 
     /**
-     * Creates a new wallet with one account that is set as the default account.
+     * Creates a new wallet with one account.
      *
      * @return the new wallet.
      */
     public static Wallet createWallet() {
-        Account a = Account.fromNewECKeyPair().isDefault().build();
-        return new Builder().accounts(a).build();
+        Account a = Account.fromNewECKeyPair();
+        return new Wallet().addAccount(a);
     }
 
     /**
@@ -282,55 +331,4 @@ public class Wallet {
     public Account getAccount(ScriptHash account) {
         return this.accounts.get(account);
     }
-
-    public static class Builder {
-
-        String name;
-        String version;
-        List<Account> accounts;
-        ScryptParams scryptParams;
-
-        public Builder() {
-            this.name = DEFAULT_WALLET_NAME;
-            this.version = CURRENT_VERSION;
-            this.accounts = new ArrayList<>();
-            this.scryptParams = NEP2.DEFAULT_SCRYPT_PARAMS;
-        }
-
-        public Builder name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Builder version(String version) {
-            this.version = version;
-            return this;
-        }
-
-        /**
-         * Adds the given accounts to the wallet.
-         *
-         * @param accounts The accounts to add.
-         * @return this.
-         */
-        public Builder accounts(Account... accounts) {
-            this.accounts.addAll(Arrays.asList(accounts));
-            return this;
-        }
-
-        public Builder scryptParams(ScryptParams scryptParams) {
-            this.scryptParams = scryptParams;
-            return this;
-        }
-
-        public Wallet build() {
-            this.accounts.stream()
-                    .filter(Account::isDefault)
-                    .findFirst()
-                    .orElseThrow(() -> new WalletStateException("Can't build wallet without a "
-                            + "default account."));
-            return new Wallet(this);
-        }
-    }
-
 }

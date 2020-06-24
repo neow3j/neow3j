@@ -18,7 +18,7 @@ public class Bip39AccountTest {
 
         Bip39Account a1 = Bip39Account.createAccount(pw);
 
-        Bip39Account a2 = fromBip39Mnemonic(pw, a1.getMnemonic()).build();
+        Bip39Account a2 = fromBip39Mnemonic(pw, a1.getMnemonic());
 
         assertThat(a1.getAddress(), is(a2.getAddress()));
         assertThat(a1.getECKeyPair(), is(a2.getECKeyPair()));
@@ -29,7 +29,7 @@ public class Bip39AccountTest {
     @Test
     public void testBuildBip39AccountFromKeyPair() throws Exception {
         ECKeyPair ecKeyPair = ECKeyPair.createEcKeyPair();
-        Bip39Account a = Bip39Account.fromECKeyPair(ecKeyPair).build();
+        Bip39Account a = new Bip39Account(ecKeyPair);
         assertEquals(ecKeyPair, a.getECKeyPair());
     }
 
