@@ -389,10 +389,12 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     public ContractMethod() {
                     }
 
-                    public ContractMethod(String name, List<ContractParameter> parameters, ContractParameterType returnType) {
+                    public ContractMethod(String name, List<ContractParameter> parameters,
+                            ContractParameterType returnType, int offset) {
                         this.name = name;
                         this.parameters = parameters != null ? parameters : new ArrayList<>();
                         this.returnType = returnType;
+                        this.offset = offset;
                     }
 
                     public String getName() {
@@ -407,6 +409,10 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         return returnType;
                     }
 
+                    public int getOffset() {
+                        return this.offset;
+                    }
+
                     @Override
                     public boolean equals(Object o) {
                         if (this == o) return true;
@@ -414,12 +420,13 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         ContractMethod that = (ContractMethod) o;
                         return Objects.equals(getName(), that.getName()) &&
                                 Objects.equals(getParameters(), that.getParameters()) &&
-                                getReturnType() == that.getReturnType();
+                                getReturnType() == that.getReturnType() &&
+                                getOffset() == that.getOffset();
                     }
 
                     @Override
                     public int hashCode() {
-                        return Objects.hash(getName(), getParameters(), getReturnType());
+                        return Objects.hash(getName(), getParameters(), getReturnType(), getOffset());
                     }
 
                     @Override
@@ -428,6 +435,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                                 "name='" + name + '\'' +
                                 ", parameters=" + parameters +
                                 ", returnType=" + returnType +
+                                ", offset=" + offset +
                                 '}';
                     }
                 }

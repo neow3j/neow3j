@@ -2,34 +2,22 @@ package io.neow3j.devpack.template;
 
 import io.neow3j.devpack.framework.SmartContract;
 import io.neow3j.devpack.framework.Storage;
-import io.neow3j.devpack.framework.Storage.StorageContext;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
-import io.neow3j.devpack.framework.annotations.Manifest;
+import io.neow3j.devpack.framework.annotations.ManifestExtra;
+import io.neow3j.devpack.framework.annotations.ManifestFeature;
 
-/*
- * Goals of the prototype iteration:
- *   Supported types: Arrays, Strings, Integer, int, Boolean, boolean, Byte, byte, Object
- *   Supported functionality: Compile to VM script, entry point, Storage, CheckWitness, Events,
- *                            one class, one method, arithmetic.
- *
- * Later iterations include:
- *   Supported types: Long long, List<>, Map<>, BigInteger
- *   Supported functionality: Generate manifest, generate NEF, trigger types, all system calls,
- *                            if-else, for loops, multiple methods, multiple classes,
- *                            inheritance, exception throwing.
- *
- *   Design decisions:
- *      - All field variables and methods are static. Contracts are not meant to have instances.
- */
-@Manifest(name = "example", description = "An example contract.", author = "AxLabs")
+@ManifestExtra(key = "author", value = "AxLabs")
+@ManifestExtra(key = "name", value = "HelloWorld")
+@ManifestExtra(key = "description", value = "Hello world contract")
+@ManifestFeature(hasStorage = true)
 public class ExampleContract extends SmartContract {
 
     @EntryPoint
-    public static boolean entryPoint(String method, Object[] params) {
-        StorageContext context = Storage.getStorageContext();
-        byte[] b = new byte[]{0x01};
-        Storage.put(context, b, "value");
-        return true;
+    public static byte[] entryPoint(String key, long value) {
+        long l = 9_223_372_036_854_775_807L;
+        byte[] current = Storage.get(key);
+        Storage.put(key, value);
+        return current;
     }
 
 }

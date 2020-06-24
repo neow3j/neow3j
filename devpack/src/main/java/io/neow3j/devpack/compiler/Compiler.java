@@ -2,15 +2,37 @@ package io.neow3j.devpack.compiler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.NefFile;
+import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
+import io.neow3j.devpack.framework.annotations.ManifestExtra.ManifestExtras;
+import io.neow3j.devpack.framework.annotations.ManifestFeature;
 import io.neow3j.devpack.framework.annotations.Syscall;
 import io.neow3j.devpack.framework.annotations.Syscall.Syscalls;
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractFeatures;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractGroup;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractPermission;
+import io.neow3j.utils.BigIntegers;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -26,6 +48,7 @@ import org.slf4j.LoggerFactory;
 public class Compiler {
 
     private static final Logger log = LoggerFactory.getLogger(Compiler.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
@@ -44,7 +67,17 @@ public class Compiler {
         reader.accept(n, 0);
         MethodNode entryPoint = getEntryPoint(n);
         NeoMethod neoMethod = handleMethod(entryPoint);
-        return neoMethod.toByteArray();
+        byte[] script = neoMethod.toByteArray();
+        NefFile nef = new NefFile("neow3j", new Version(3, 0, 0, 0), script);
+        String userHome = System.getProperty("user.home");
+        try (FileOutputStream fos = new FileOutputStream(userHome + "/tmp/contract.nef")) {
+            fos.write(nef.toArray());
+        }
+        try (FileOutputStream fos = new FileOutputStream(
+                userHome + "/tmp/contract.manifest.json")) {
+            objectMapper.writeValue(fos, buildManifest(n, nef.getScriptHash()));
+        }
+        return script;
     }
 
     private MethodNode getEntryPoint(ClassNode n) {
@@ -263,12 +296,107 @@ public class Compiler {
         this.currentNeoAddr += 1 + hash.length;
     }
 
-    private void addPushNumber(int number, NeoMethod neoMethod) {
-        byte[] insnBytes = new ScriptBuilder().pushInteger(number).toArray();
+    private void addPushNumber(long number, NeoMethod neoMethod) {
+        byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number)).toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(
                 OpCode.get(insnBytes[0]), operand, this.currentNeoAddr));
         this.currentNeoAddr += insnBytes.length;
     }
 
+    private ContractManifest buildManifest(ClassNode classNode, ScriptHash scriptHash) {
+        List<ContractGroup> groups = new ArrayList<>();
+        ContractFeatures features = buildContractFeatures(classNode);
+        ContractABI abi = buildABI(classNode, scriptHash);
+        List<ContractPermission> permissions = Arrays.asList(
+                new ContractPermission("*", Arrays.asList("*")));
+        List<String> trusts = new ArrayList<>();
+        List<String> safeMethods = new ArrayList<>();
+        Map<String, String> extras = buildManifestExtra(classNode);
+        return new ContractManifest(groups, features, abi, permissions, trusts, safeMethods,
+                extras);
+    }
+
+    private ContractABI buildABI(ClassNode classNode, ScriptHash scriptHash) {
+        List<ContractMethod> methods = new ArrayList<>();
+        List<ContractEvent> events = new ArrayList<>();
+        // TODO: Fill events list.
+        for (MethodNode methodNode : classNode.methods) {
+            if (methodNode.name.equals("<init>")) {
+                continue; // Skip the constructor.
+            }
+            // TODO: Make this compatible with non-static methods too. In that case the first
+            //  local variable is the 'this' object.
+            int paramsCount = Type.getArgumentTypes(methodNode.desc).length;
+            ContractParameter[] params = new ContractParameter[paramsCount];
+            for (int i = 0; i < paramsCount; i++) {
+                LocalVariableNode varNode = methodNode.localVariables.get(i);
+                ContractParameterType paramType =
+                        mapTypeToParameterType(Type.getType(varNode.desc).getClassName());
+                params[i] = new ContractParameter(varNode.name, paramType, null);
+            }
+            ContractParameterType paramType = mapTypeToParameterType(
+                    Type.getMethodType(methodNode.desc).getReturnType().getClassName());
+            // TODO: Set the correct method offset.
+            methods.add(new ContractMethod(methodNode.name, Arrays.asList(params), paramType, 0));
+        }
+        return new ContractABI(scriptHash.toString(), methods, events);
+    }
+
+    private ContractParameterType mapTypeToParameterType(String className) {
+        // TODO: Add support for other types.
+        if (className.equals(String.class.getTypeName())) {
+            return ContractParameterType.STRING;
+        }
+        if (className.equals(Integer.class.getTypeName()) || className.equals("int") ||
+                className.equals(Long.class.getTypeName()) || className.equals("long")) {
+            return ContractParameterType.INTEGER;
+        }
+        if (className.equals(Object[].class.getTypeName())) {
+            return ContractParameterType.ARRAY;
+        }
+        if (className.equals(Boolean.class.getTypeName()) || className.equals("boolean")) {
+            return ContractParameterType.BOOLEAN;
+        }
+        if (className.equals(Byte[].class.getTypeName()) || className.equals("byte[]")) {
+            return ContractParameterType.BYTE_ARRAY;
+        }
+        throw new CompilerException("Unsupported type: " + className);
+    }
+
+    private ContractFeatures buildContractFeatures(ClassNode n) {
+        Optional<AnnotationNode> opt = n.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(ManifestFeature.class)))
+                .findFirst();
+        boolean payable = false, hasStorage = false;
+        if (opt.isPresent()) {
+            AnnotationNode ann = opt.get();
+            int i = ann.values.indexOf("payable");
+            payable = i != -1 && (boolean) ann.values.get(i + 1);
+            i = ann.values.indexOf("hasStorage");
+            hasStorage = i != -1 && (boolean) ann.values.get(i + 1);
+        }
+        return new ContractFeatures(hasStorage, payable);
+    }
+
+    private Map<String, String> buildManifestExtra(ClassNode classNode) {
+        Optional<AnnotationNode> opt = classNode.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(ManifestExtras.class)))
+                .findFirst();
+        if (!opt.isPresent()) {
+            return null;
+        }
+        AnnotationNode ann = opt.get();
+        Map<String, String> extras = new HashMap<>();
+        String key, value;
+        for (Object a : (List<?>) ann.values.get(1)) {
+            AnnotationNode manifestExtra = (AnnotationNode) a;
+            int i = manifestExtra.values.indexOf("key");
+            key = (String) manifestExtra.values.get(i + 1);
+            i = manifestExtra.values.indexOf("value");
+            value = (String) manifestExtra.values.get(i + 1);
+            extras.put(key, value);
+        }
+        return extras;
+    }
 }
