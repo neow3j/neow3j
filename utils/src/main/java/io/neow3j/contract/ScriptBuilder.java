@@ -151,6 +151,9 @@ public class ScriptBuilder {
         return pushInteger(BigInteger.valueOf(v));
     }
 
+    private static final BigInteger minusOne = BigInteger.valueOf(-1);
+    private static final BigInteger sixteen = BigInteger.valueOf(16);
+
     /**
      * Adds a push operation with the given integer to the script. The integer is encoded in its
      * two's complement and in little-endian order.
@@ -164,7 +167,7 @@ public class ScriptBuilder {
      */
     public ScriptBuilder pushInteger(BigInteger v) {
         int i = v.intValue();
-        if (i >= -1 && i <= 16) {
+        if (v.compareTo(minusOne) >= 0 && v.compareTo(sixteen) <= 0) {
             int opcode = OpCode.PUSH0.getCode() + i;
             return this.opCode(OpCode.get(opcode));
         }

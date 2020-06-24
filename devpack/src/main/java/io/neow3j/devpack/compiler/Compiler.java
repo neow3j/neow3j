@@ -38,7 +38,9 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
@@ -82,9 +84,8 @@ public class Compiler {
 
     private MethodNode getEntryPoint(ClassNode n) {
         MethodNode[] entryPoints = n.methods.stream()
-                .filter(m -> m.invisibleAnnotations != null &&
-                        m.invisibleAnnotations.stream()
-                                .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class))))
+                .filter(m -> m.invisibleAnnotations != null && m.invisibleAnnotations.stream()
+                        .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class))))
                 .toArray(MethodNode[]::new);
         if (entryPoints.length > 1) {
             throw new CompilerException("Multiple entry points found.");
@@ -94,10 +95,12 @@ public class Compiler {
         return entryPoints[0];
     }
 
-    private NeoMethod handleMethod(MethodNode method) throws IOException {
+    private NeoMethod handleMethod(MethodNode methodNode) throws IOException {
         NeoMethod neoMethod = new NeoMethod();
-        addMethodBeginCode(method, neoMethod);
-        for (AbstractInsnNode insn : method.instructions) {
+        collectLocalVariables(methodNode, neoMethod);
+        addMethodBeginCode(methodNode, neoMethod);
+        for (int insnAddr = 0; insnAddr < methodNode.instructions.size(); insnAddr++) {
+            AbstractInsnNode insn = methodNode.instructions.get(insnAddr);
             JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
             if (opcode == null) {
                 continue;
@@ -108,7 +111,7 @@ public class Compiler {
                     handleMethodInstruction(insn, neoMethod);
                     break;
                 case LDC:
-                    handleLoadConstant(insn, neoMethod);
+                    addLoadConstant(insn, neoMethod);
                     break;
                 case ICONST_M1:
                 case ICONST_0:
@@ -118,6 +121,10 @@ public class Compiler {
                 case ICONST_4:
                 case ICONST_5:
                     addPushNumber(opcode.getOpcode() - 3, neoMethod);
+                    break;
+                case BIPUSH:// Has an operand with an int value from -128 to 127.
+                case SIPUSH: // Has an operand with an int value from -32768 to 32767.
+                    addPushNumber(((IntInsnNode) insn).operand, neoMethod);
                     break;
                 case RETURN:
                 case IRETURN:
@@ -132,22 +139,97 @@ public class Compiler {
                 case ASTORE_1:
                 case ASTORE_2:
                 case ASTORE_3:
-                    addStoreLocalVariable(insn, neoMethod);
+                case ISTORE:
+                case ISTORE_0:
+                case ISTORE_1:
+                case ISTORE_2:
+                case ISTORE_3:
+                case LSTORE:
+                case LSTORE_0:
+                case LSTORE_1:
+                case LSTORE_2:
+                case LSTORE_3:
+                    addStoreLocalVariable(insn, methodNode, neoMethod);
                     break;
                 case ALOAD:
                 case ALOAD_1:
                 case ALOAD_2:
                 case ALOAD_3:
-                    addLoadLocalVariable(insn, neoMethod);
+                case ILOAD:
+                case ILOAD_1:
+                case ILOAD_2:
+                case ILOAD_3:
+                case LLOAD:
+                case LLOAD_1:
+                case LLOAD_2:
+                case LLOAD_3:
+                    addLoadLocalVariable(insn, methodNode, neoMethod);
                     break;
                 case NEWARRAY:
-
-                default:
+                    neoMethod.addInstruction(
+                            new NeoInstruction(OpCode.NEWARRAY, this.currentNeoAddr++));
+//                    addArray(insn, method, neoMethod);
                     break;
+                case DUP:
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.DUP, this.currentNeoAddr++));
+                    break;
+                case BASTORE:
+                case IASTORE:
+                    neoMethod.addInstruction(
+                            new NeoInstruction(OpCode.SETITEM, this.currentNeoAddr++));
+                    break;
+                default:
+                    throw new CompilerException("Unsupported instruction " + opcode + " in: " +
+                            methodNode.name + ".");
             }
         }
         return neoMethod;
     }
+
+    private void collectLocalVariables(MethodNode methodNode, NeoMethod neoMethod) {
+        if (methodNode.localVariables == null) {
+            return;
+        }
+        int paramCount = Type.getArgumentTypes(methodNode.desc).length;
+        for (int i = 0; i < paramCount; i++) {
+            LocalVariableNode varNode = methodNode.localVariables.get(i);
+            neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
+        }
+        for (int i = paramCount; i < methodNode.localVariables.size(); i++) {
+            LocalVariableNode varNode = methodNode.localVariables.get(i);
+            neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
+        }
+    }
+
+//    private int addArray(AbstractInsnNode arrayInsn, MethodNode methodNode, NeoMethod neoMethod) {
+//        assert arrayInsn.getType() == AbstractInsnNode.INT_INSN : "Instruction type doesn't
+//        match "
+//                + "opcode.";
+//
+//        // The neon compiler uses the NEWARRAY opcode for all types but byte. Therefore,
+//        // creation of byte arrays are converted to PUSHDATA OpCodes.
+//        neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY, this.currentNeoAddr++));
+//
+//        int arrayInsnIdx = methodNode.instructions.indexOf(arrayInsn);
+//        AbstractInsnNode insn = methodNode.instructions.get(arrayInsnIdx + 1);
+//        if (insn.getOpcode() == JVMOpcode.DUP.getOpcode()) {
+//
+//        }
+//        arrayInsn.getType();
+//    }
+
+    private int extractPushedNumber(NeoInstruction insn) {
+        if (insn.opcode.getCode() <= OpCode.PUSHINT256.getCode()) {
+            return BigIntegers.fromLittleEndianByteArray(insn.operand).intValue();
+        }
+        if (insn.opcode.getCode() >= OpCode.PUSHM1.getCode()
+                && insn.opcode.getCode() <= OpCode.PUSH16.getCode()) {
+            return insn.opcode.getCode() - OpCode.PUSHM1.getCode() - 1;
+        }
+        throw new CompilerException(
+                "Couldn't parse get number from instruction " + insn.toString());
+    }
+
 
     private void addMethodBeginCode(MethodNode method, NeoMethod neoMethod) {
         int paramCount = Type.getArgumentTypes(method.desc).length;
@@ -168,46 +250,54 @@ public class Compiler {
         }
     }
 
-    private void addLoadLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
-        assert insn.getType() == AbstractInsnNode.VAR_INSN : "Instruction type doesn't match "
-                + "opcode.";
+    private void addLoadLocalVariable(AbstractInsnNode insn, MethodNode methodNode,
+            NeoMethod neoMethod) {
+
         VarInsnNode varInsn = (VarInsnNode) insn;
         assert varInsn.var <= 255 : "Local variable index to high.";
-        NeoInstruction neoInsn;
-        if (varInsn.var <= 6) {
-            OpCode storeCode = OpCode.get(OpCode.LDLOC0.getCode() + (byte) varInsn.var);
-            neoInsn = new NeoInstruction(storeCode, this.currentNeoAddr++);
+        NeoVariable param = neoMethod.getParameterByJVMIndex(varInsn.var);
+        if (param != null) {
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.index, OpCode.LDARG));
         } else {
-            byte[] operand = new byte[]{(byte) varInsn.var};
-            neoInsn = new NeoInstruction(OpCode.LDLOC, operand, this.currentNeoAddr);
-            this.currentNeoAddr += 2;
+            NeoVariable var = neoMethod.getVariableByJVMIndex(varInsn.var);
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.index, OpCode.LDLOC));
         }
-        neoMethod.addInstruction(neoInsn);
     }
 
-    private void addStoreLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
-        assert insn.getType() == AbstractInsnNode.VAR_INSN : "Instruction type doesn't match "
-                + "opcode.";
+    private void addStoreLocalVariable(AbstractInsnNode insn, MethodNode methodNode,
+            NeoMethod neoMethod) {
+
         VarInsnNode varInsn = (VarInsnNode) insn;
         assert varInsn.var <= 255 : "Local variable index to high.";
-        NeoInstruction neoInsn;
-        if (varInsn.var <= 6) {
-            OpCode storeCode = OpCode.get(OpCode.STLOC0.getCode() + (byte) varInsn.var);
-            neoInsn = new NeoInstruction(storeCode, this.currentNeoAddr++);
-        } else {
-            byte[] operand = new byte[]{(byte) varInsn.var};
-            neoInsn = new NeoInstruction(OpCode.STLOC, operand, this.currentNeoAddr);
-            this.currentNeoAddr += 2;
-        }
-        neoMethod.addInstruction(neoInsn);
+        NeoVariable var = neoMethod.getVariableByJVMIndex(varInsn.var);
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.index, OpCode.STLOC));
     }
 
-    private void handleLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
+    private NeoInstruction buildStoreOrLoadVariableInsn(int index, OpCode opcode) {
+        NeoInstruction neoInsn;
+        if (index <= 6) {
+            OpCode storeCode = OpCode.get(opcode.getCode() - 7 + index);
+            neoInsn = new NeoInstruction(storeCode, this.currentNeoAddr++);
+        } else {
+            byte[] operand = new byte[]{(byte) index};
+            neoInsn = new NeoInstruction(opcode, operand, this.currentNeoAddr);
+            this.currentNeoAddr += 2;
+        }
+        return neoInsn;
+    }
+
+    private void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
         assert insn.getType() == AbstractInsnNode.LDC_INSN : "Instruction type doesn't match "
                 + "opcode.";
         LdcInsnNode ldcInsn = (LdcInsnNode) insn;
         if (ldcInsn.cst instanceof String) {
             addPushDataArray(((String) ldcInsn.cst).getBytes(UTF_8), neoMethod);
+        }
+        if (ldcInsn.cst instanceof Integer) {
+            addPushNumber(((Integer) ldcInsn.cst), neoMethod);
+        }
+        if (ldcInsn.cst instanceof Long) {
+            addPushNumber(((Long) ldcInsn.cst), neoMethod);
         }
         // TODO: Handle other types.
     }
@@ -219,7 +309,6 @@ public class Compiler {
                 OpCode.get(insnBytes[0]), operand, this.currentNeoAddr));
         this.currentNeoAddr += insnBytes.length;
     }
-
 
     private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod neoMethod)
             throws IOException {
@@ -257,19 +346,16 @@ public class Compiler {
         // NOP is inserted before every Syscall.
         neoMethod.addInstruction(new NeoInstruction(OpCode.NOP, this.currentNeoAddr++));
         int paramsCount = Type.getMethodType(method.desc).getArgumentTypes().length;
-        NeoInstruction neoInsn = null;
         if (paramsCount == 2) {
-            neoInsn = new NeoInstruction(OpCode.SWAP, this.currentNeoAddr);
+            neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP, this.currentNeoAddr++));
         } else if (paramsCount == 3) {
-            neoInsn = new NeoInstruction(OpCode.REVERSE3, this.currentNeoAddr);
+            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE3, this.currentNeoAddr++));
         } else if (paramsCount == 4) {
-            neoInsn = new NeoInstruction(OpCode.REVERSE4, this.currentNeoAddr);
+            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE4, this.currentNeoAddr++));
         } else if (paramsCount > 4) {
             addPushNumber(paramsCount, neoMethod);
-            neoInsn = new NeoInstruction(OpCode.REVERSEN, this.currentNeoAddr);
+            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSEN, this.currentNeoAddr++));
         }
-        neoMethod.addInstruction(neoInsn);
-        this.currentNeoAddr++;
 
         // Annotation has to be either Syscalls or Syscall.
         AnnotationNode syscallAnnotation = method.invisibleAnnotations.stream()

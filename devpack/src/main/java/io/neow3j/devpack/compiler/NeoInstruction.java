@@ -1,6 +1,7 @@
 package io.neow3j.devpack.compiler;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.utils.Numeric;
 
 public class NeoInstruction {
 
@@ -29,5 +30,10 @@ public class NeoInstruction {
 
     public int getByteSize() {
         return 1 + operand.length;
+    }
+
+    @Override
+    public String toString() {
+        return opcode.toString() + " " + Numeric.toHexStringNoPrefix(operand);
     }
 }
