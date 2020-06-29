@@ -105,7 +105,7 @@ public class AccountTest {
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
         List<ECPublicKey> keys = Arrays.asList(pair.getPublicKey(), pair.getPublicKey());
-        Account a = Account.fromMultiSigKeys(keys, 2);
+        Account a = Account.createMultiSigAccount(keys, 2);
         byte[] verScript = Numeric.hexStringToByteArray(
                 "120c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b20c21027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2120b41c330181e");
         assertThat(a.isMultiSig(), is(true));
@@ -220,7 +220,7 @@ public class AccountTest {
     public void toNep6AccountWithMultiSigAccount() {
         String publicKey = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
         ECPublicKey key = new ECPublicKey(Numeric.hexStringToByteArray(publicKey));
-        Account a = Account.fromMultiSigKeys(Arrays.asList(key), 1);
+        Account a = Account.createMultiSigAccount(Arrays.asList(key), 1);
         NEP6Account nep6 = a.toNEP6Account();
 
         String expectedScript = Base64.encode(Numeric.hexStringToByteArray(

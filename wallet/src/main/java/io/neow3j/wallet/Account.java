@@ -42,7 +42,7 @@ public class Account {
     private VerificationScript verificationScript;
     private Wallet wallet;
 
-    public Account() {
+    protected Account() {
     }
 
     public Account(ECKeyPair ecKeyPair) {
@@ -92,18 +92,6 @@ public class Account {
         return this.wallet.isDefault(this.getScriptHash());
     }
 
-    // This method is required by the Wallet but must not be available to the developer because
-    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
-//    void setDefault() {
-//        this.isDefault = true;
-//    }
-
-    // This method is required by the Wallet but must not be available to the developer because
-    // it might bring a wallet into inconsistent state, i.e. having multiple default accounts.
-//    void unsetDefault() {
-//        this.isDefault = false;
-//    }
-
     public Boolean isLocked() {
         return isLocked;
     }
@@ -117,7 +105,8 @@ public class Account {
         this.isLocked = false;
     }
 
-    public void setWallet(Wallet wallet) {
+
+    void setWallet(Wallet wallet) {
         this.wallet = wallet;
     }
 
@@ -263,15 +252,15 @@ public class Account {
     }
 
     /**
-     * Creates a multi-sig account builder from the given public keys. Mind that the ordering of the
+     * Creates a multi-sig account from the given public keys. Mind that the ordering of the
      * keys is important for later usage of the account.
      *
      * @param publicKeys         The public keys from which to derive the multi-sig account.
      * @param signatureThreshold The number of signatures needed when using this account for signing
      *                           transactions.
-     * @return the multi-sig account builder;
+     * @return the multi-sig account.
      */
-    public static Account fromMultiSigKeys(List<ECPublicKey> publicKeys, int signatureThreshold) {
+    public static Account createMultiSigAccount(List<ECPublicKey> publicKeys, int signatureThreshold) {
         VerificationScript script = new VerificationScript(publicKeys, signatureThreshold);
         String address = ScriptHash.fromScript(script.getScript()).toAddress();
         Account account = new Account();

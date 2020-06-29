@@ -164,7 +164,7 @@ public class InvocationTest {
         List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey());
         int m = 2; // signingThreshold
         int n = 2; // total number of participating keys
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, m);
+        Account multiSigAcc = Account.createMultiSigAccount(keys, m);
         Wallet wallet = new Wallet().addAccounts(multiSigAcc);
         long additionalFee = 100_000_000;
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
@@ -216,7 +216,7 @@ public class InvocationTest {
         Account a2 = Account.createAccount();
         List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, 2);
+        Account multiSigAcc = Account.createMultiSigAccount(keys, 2);
         w.addAccount(a2);
         w.addAccount(multiSigAcc);
         a2.encryptPrivateKey("neo");
@@ -550,7 +550,7 @@ public class InvocationTest {
                 "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c406fded85ee546f0283e4dfd8c70c4d514139b0516de6d8a2d569b73e6da8468c21c2e8c18a1d3c8a7d5160960cf89d48fc433df7ddafb602f716ca11043eccb8e2b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromMultiSigKeys(Arrays.asList(senderPair.getPublicKey()), 1);
+        Account sender = Account.createMultiSigAccount(Arrays.asList(senderPair.getPublicKey()), 1);
         Account singleSigAcc = new Account(senderPair);
         Wallet w = new Wallet().addAccounts(sender, singleSigAcc);
         ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
