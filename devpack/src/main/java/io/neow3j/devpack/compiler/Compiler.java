@@ -375,9 +375,9 @@ public class Compiler {
     }
 
     private void addSingleSyscall(AnnotationNode syscallAnnotation, NeoMethod neoMethod) {
-        assert syscallAnnotation.values.size() == 2;
-        String syscall = (String) syscallAnnotation.values.get(1);
-        byte[] hash = InteropServiceCode.getInteropCodeHash(syscall);
+        String syscallName = ((String[])syscallAnnotation.values.get(1))[1];
+        InteropServiceCode syscall = InteropServiceCode.valueOf(syscallName);
+        byte[] hash = Numeric.hexStringToByteArray(syscall.getHash());
         neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash, this.currentNeoAddr));
         this.currentNeoAddr += 1 + hash.length;
     }

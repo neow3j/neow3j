@@ -1,13 +1,13 @@
 package io.neow3j.devpack.framework;
 
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.devpack.framework.annotations.Syscall;
 
-@Syscall("System.Runtime")
 public class Runtime {
 
-    @Syscall("System.Runtime.CheckWitness")
+    @Syscall(InteropServiceCode.SYSTEM_RUNTIME_CHECKWITNESS)
     public static native boolean checkWitness(byte[] hashOrKey);
 
-    @Syscall("System.Runtime.Notify")
+    @Syscall(InteropServiceCode.SYSTEM_RUNTIME_NOTIFY)
     public static native void notify(String s, Object value);
 }
