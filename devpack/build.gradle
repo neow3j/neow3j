@@ -8,4 +8,6 @@ dependencies {
             "org.ow2.asm:asm:$asmVersion",
             project(':utils'),
             project(':contract')
+
+    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
 }
