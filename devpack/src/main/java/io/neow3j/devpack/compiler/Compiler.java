@@ -24,6 +24,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractStat
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractPermission;
 import io.neow3j.utils.BigIntegers;
+import io.neow3j.utils.Numeric;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -95,12 +96,12 @@ public class Compiler {
         return entryPoints[0];
     }
 
-    private NeoMethod handleMethod(MethodNode methodNode) throws IOException {
+    private NeoMethod handleMethod(MethodNode asmMethod) throws IOException {
         NeoMethod neoMethod = new NeoMethod();
-        collectLocalVariables(methodNode, neoMethod);
-        addMethodBeginCode(methodNode, neoMethod);
-        for (int insnAddr = 0; insnAddr < methodNode.instructions.size(); insnAddr++) {
-            AbstractInsnNode insn = methodNode.instructions.get(insnAddr);
+        collectLocalVariables(asmMethod, neoMethod);
+        addMethodBeginCode(asmMethod, neoMethod);
+        for (int insnAddr = 0; insnAddr < asmMethod.instructions.size(); insnAddr++) {
+            AbstractInsnNode insn = asmMethod.instructions.get(insnAddr);
             JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
             if (opcode == null) {
                 continue;
@@ -108,6 +109,7 @@ public class Compiler {
             log.info(opcode.toString());
             switch (opcode) {
                 case INVOKESTATIC:
+                case INVOKEVIRTUAL:
                     handleMethodInstruction(insn, neoMethod);
                     break;
                 case LDC:
@@ -149,7 +151,7 @@ public class Compiler {
                 case LSTORE_1:
                 case LSTORE_2:
                 case LSTORE_3:
-                    addStoreLocalVariable(insn, methodNode, neoMethod);
+                    addStoreLocalVariable(insn, asmMethod, neoMethod);
                     break;
                 case ALOAD:
                 case ALOAD_1:
@@ -163,7 +165,7 @@ public class Compiler {
                 case LLOAD_1:
                 case LLOAD_2:
                 case LLOAD_3:
-                    addLoadLocalVariable(insn, methodNode, neoMethod);
+                    addLoadLocalVariable(insn, asmMethod, neoMethod);
                     break;
                 case NEWARRAY:
                     neoMethod.addInstruction(
@@ -178,30 +180,42 @@ public class Compiler {
                     neoMethod.addInstruction(
                             new NeoInstruction(OpCode.SETITEM, this.currentNeoAddr++));
                     break;
+                case POP:
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.DROP,
+                            this.currentNeoAddr++));
+                    break;
+                case CHECKCAST:
+                    // Java compiler checks if object on the operand stack can be cast to a given
+                    // type. Nothing to do.
+                    break;
+                case I2B:
+                    // Integers and bytes are not handled differently by the NeoVM. Nothing to do.
+                    break;
                 default:
                     throw new CompilerException("Unsupported instruction " + opcode + " in: " +
-                            methodNode.name + ".");
+                            asmMethod.name + ".");
             }
         }
         return neoMethod;
     }
 
-    private void collectLocalVariables(MethodNode methodNode, NeoMethod neoMethod) {
-        if (methodNode.localVariables == null) {
+
+    private void collectLocalVariables(MethodNode asmMethod, NeoMethod neoMethod) {
+        if (asmMethod.localVariables == null) {
             return;
         }
-        int paramCount = Type.getArgumentTypes(methodNode.desc).length;
+        int paramCount = Type.getArgumentTypes(asmMethod.desc).length;
         for (int i = 0; i < paramCount; i++) {
-            LocalVariableNode varNode = methodNode.localVariables.get(i);
+            LocalVariableNode varNode = asmMethod.localVariables.get(i);
             neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
         }
-        for (int i = paramCount; i < methodNode.localVariables.size(); i++) {
-            LocalVariableNode varNode = methodNode.localVariables.get(i);
+        for (int i = paramCount; i < asmMethod.localVariables.size(); i++) {
+            LocalVariableNode varNode = asmMethod.localVariables.get(i);
             neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
         }
     }
 
-//    private int addArray(AbstractInsnNode arrayInsn, MethodNode methodNode, NeoMethod neoMethod) {
+//    private int addArray(AbstractInsnNode arrayInsn, MethodNode asmMethod, NeoMethod neoMethod) {
 //        assert arrayInsn.getType() == AbstractInsnNode.INT_INSN : "Instruction type doesn't
 //        match "
 //                + "opcode.";
@@ -210,8 +224,8 @@ public class Compiler {
 //        // creation of byte arrays are converted to PUSHDATA OpCodes.
 //        neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY, this.currentNeoAddr++));
 //
-//        int arrayInsnIdx = methodNode.instructions.indexOf(arrayInsn);
-//        AbstractInsnNode insn = methodNode.instructions.get(arrayInsnIdx + 1);
+//        int arrayInsnIdx = asmMethod.instructions.indexOf(arrayInsn);
+//        AbstractInsnNode insn = asmMethod.instructions.get(arrayInsnIdx + 1);
 //        if (insn.getOpcode() == JVMOpcode.DUP.getOpcode()) {
 //
 //        }
@@ -250,7 +264,7 @@ public class Compiler {
         }
     }
 
-    private void addLoadLocalVariable(AbstractInsnNode insn, MethodNode methodNode,
+    private void addLoadLocalVariable(AbstractInsnNode insn, MethodNode asmMethod,
             NeoMethod neoMethod) {
 
         VarInsnNode varInsn = (VarInsnNode) insn;
@@ -264,7 +278,7 @@ public class Compiler {
         }
     }
 
-    private void addStoreLocalVariable(AbstractInsnNode insn, MethodNode methodNode,
+    private void addStoreLocalVariable(AbstractInsnNode insn, MethodNode asmMethod,
             NeoMethod neoMethod) {
 
         VarInsnNode varInsn = (VarInsnNode) insn;
@@ -310,42 +324,36 @@ public class Compiler {
         this.currentNeoAddr += insnBytes.length;
     }
 
+    // Handles STATICINVOKE and VIRTUALINVOKE, i.e. calls to static and instance methods.
     private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod neoMethod)
             throws IOException {
-        assert insn.getType() == AbstractInsnNode.METHOD_INSN : "Instruction type doesn't match "
-                + "opcode.";
-        // The problem is that the `MethodInsnNode` does not carry all the information that the
-        // `MethodNode` carries, i.e. the method annotations. Therefore, we first lookup the class
-        // that contains the method and retrieve the `MethodeNode` from there.
-        // In C# with Mono.Cecil this information is looked up via the `ModuleDefinition` which
-        // at that point also holds the compiled `Neo.SmartContract.Framework` classes and can
-        // thereby find the method definition via a reference. Probably similar to how we do it
-        // in the following.
+
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
+        // TODO: Maybe we can load all necessary classes at compile begin.
         ClassNode owner = new ClassNode();
         new ClassReader(Type.getObjectType(methodInsn.owner).getClassName()).accept(owner, 0);
-        // This assumes that all methods inside of a Syscall call class are syscalls. Might not
-        // hold in the future, when we add helper methods to the Syscall classes.
-        if (isSyscallClass(owner)) {
-            addSyscall(owner, methodInsn, neoMethod);
-        }
-        // TODO: Handle other kinds of methods.
-    }
-
-    private boolean isSyscallClass(ClassNode classNode) {
-        return classNode.invisibleAnnotations.stream()
-                .anyMatch(a -> a.desc.equals(Type.getDescriptor(Syscall.class)));
-    }
-
-    private void addSyscall(ClassNode owner, MethodInsnNode methodInsn, NeoMethod neoMethod) {
-        MethodNode method = owner.methods.stream()
-                .filter(m -> m.desc.equals(methodInsn.desc))
+        MethodNode asmMethod = owner.methods.stream().filter(m -> m.desc.equals(methodInsn.desc))
                 .findFirst().get();
+        if (isSyscall(asmMethod)) {
+            addSyscall(asmMethod, neoMethod);
+        } else if (asmMethod.name.equals("intValue")) {
+            // Integer.intValue(): nothing to do
+            // Same for Long.longValue(), Byte.byteValue(), Boolean.booleanValue(),
+            // Character.charValue()
+        }
+    }
 
+    private boolean isSyscall(MethodNode asmMethod) {
+        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
+                .anyMatch(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
+                        || a.desc.equals(Type.getDescriptor(Syscall.class)));
+    }
+
+    private void addSyscall(MethodNode asmMethod, NeoMethod neoMethod) {
         // Before doing the syscall the arguments have to be reversed. Additionally, the Opcode
         // NOP is inserted before every Syscall.
         neoMethod.addInstruction(new NeoInstruction(OpCode.NOP, this.currentNeoAddr++));
-        int paramsCount = Type.getMethodType(method.desc).getArgumentTypes().length;
+        int paramsCount = Type.getMethodType(asmMethod.desc).getArgumentTypes().length;
         if (paramsCount == 2) {
             neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP, this.currentNeoAddr++));
         } else if (paramsCount == 3) {
@@ -358,7 +366,7 @@ public class Compiler {
         }
 
         // Annotation has to be either Syscalls or Syscall.
-        AnnotationNode syscallAnnotation = method.invisibleAnnotations.stream()
+        AnnotationNode syscallAnnotation = asmMethod.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
                         || a.desc.equals(Type.getDescriptor(Syscall.class)))
                 .findFirst().get();
@@ -407,47 +415,55 @@ public class Compiler {
         List<ContractMethod> methods = new ArrayList<>();
         List<ContractEvent> events = new ArrayList<>();
         // TODO: Fill events list.
-        for (MethodNode methodNode : classNode.methods) {
-            if (methodNode.name.equals("<init>")) {
+        for (MethodNode asmMethod : classNode.methods) {
+            if (asmMethod.name.equals("<init>")) {
                 continue; // Skip the constructor.
             }
             // TODO: Make this compatible with non-static methods too. In that case the first
             //  local variable is the 'this' object.
-            int paramsCount = Type.getArgumentTypes(methodNode.desc).length;
+            int paramsCount = Type.getArgumentTypes(asmMethod.desc).length;
             ContractParameter[] params = new ContractParameter[paramsCount];
             for (int i = 0; i < paramsCount; i++) {
-                LocalVariableNode varNode = methodNode.localVariables.get(i);
+                LocalVariableNode varNode = asmMethod.localVariables.get(i);
                 ContractParameterType paramType =
-                        mapTypeToParameterType(Type.getType(varNode.desc).getClassName());
+                        mapTypeToParameterType(Type.getType(varNode.desc));
                 params[i] = new ContractParameter(varNode.name, paramType, null);
             }
             ContractParameterType paramType = mapTypeToParameterType(
-                    Type.getMethodType(methodNode.desc).getReturnType().getClassName());
+                    Type.getMethodType(asmMethod.desc).getReturnType());
             // TODO: Set the correct method offset.
-            methods.add(new ContractMethod(methodNode.name, Arrays.asList(params), paramType, 0));
+            methods.add(new ContractMethod(asmMethod.name, Arrays.asList(params), paramType, 0));
         }
         return new ContractABI(scriptHash.toString(), methods, events);
     }
 
-    private ContractParameterType mapTypeToParameterType(String className) {
-        // TODO: Add support for other types.
-        if (className.equals(String.class.getTypeName())) {
+    private ContractParameterType mapTypeToParameterType(Type type) {
+        String typeName = type.getClassName();
+        if (typeName.equals(String.class.getTypeName())) {
             return ContractParameterType.STRING;
         }
-        if (className.equals(Integer.class.getTypeName()) || className.equals("int") ||
-                className.equals(Long.class.getTypeName()) || className.equals("long")) {
+        if (typeName.equals(Integer.class.getTypeName()) || typeName.equals(int.class.getTypeName())
+                || typeName.equals(Long.class.getTypeName())
+                || typeName.equals(long.class.getTypeName())) {
             return ContractParameterType.INTEGER;
         }
-        if (className.equals(Object[].class.getTypeName())) {
-            return ContractParameterType.ARRAY;
-        }
-        if (className.equals(Boolean.class.getTypeName()) || className.equals("boolean")) {
+        if (typeName.equals(Boolean.class.getTypeName())
+                || typeName.equals(boolean.class.getTypeName())) {
             return ContractParameterType.BOOLEAN;
         }
-        if (className.equals(Byte[].class.getTypeName()) || className.equals("byte[]")) {
+        if (typeName.equals(Byte[].class.getTypeName())
+                || typeName.equals(byte[].class.getTypeName())) {
             return ContractParameterType.BYTE_ARRAY;
         }
-        throw new CompilerException("Unsupported type: " + className);
+        try {
+            Class<?> clazz = Class.forName(type.getInternalName());
+            if (clazz.isArray()) {
+                return ContractParameterType.ARRAY;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new CompilerException(e);
+        }
+        throw new CompilerException("Unsupported type: " + type.getClassName());
     }
 
     private ContractFeatures buildContractFeatures(ClassNode n) {
