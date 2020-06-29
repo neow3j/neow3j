@@ -164,8 +164,8 @@ public class InvocationTest {
         List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey());
         int m = 2; // signingThreshold
         int n = 2; // total number of participating keys
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, m).isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(multiSigAcc).build();
+        Account multiSigAcc = Account.fromMultiSigKeys(keys, m);
+        Wallet wallet = new Wallet().addAccounts(multiSigAcc);
         long additionalFee = 100_000_000;
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
@@ -216,7 +216,7 @@ public class InvocationTest {
         Account a2 = Account.createAccount();
         List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, 2).build();
+        Account multiSigAcc = Account.fromMultiSigKeys(keys, 2);
         w.addAccount(a2);
         w.addAccount(multiSigAcc);
         a2.encryptPrivateKey("neo");
@@ -280,9 +280,8 @@ public class InvocationTest {
     public void dontAddDuplicateDefaultAccountCosignerIfAlreadySetExplicitly() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account acc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(acc).build();
+        Account acc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = new Wallet().addAccounts(acc);
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
 
@@ -302,9 +301,8 @@ public class InvocationTest {
     public void addSenderCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
+        Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = new Wallet().addAccounts(senderAcc);
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 script); // expected script
@@ -327,9 +325,8 @@ public class InvocationTest {
 
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
+        Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = new Wallet().addAccounts(senderAcc);
         Account other = Account.createAccount();
         wallet.addAccount(other);
         Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
@@ -353,9 +350,8 @@ public class InvocationTest {
     public void dontAddDuplicateSenderCosignerIfAlreadySetExplicitly() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
+        Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = new Wallet().addAccounts(senderAcc);
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
 
@@ -474,8 +470,8 @@ public class InvocationTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -513,8 +509,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -554,10 +550,9 @@ public class InvocationTest {
                 "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c406fded85ee546f0283e4dfd8c70c4d514139b0516de6d8a2d569b73e6da8468c21c2e8c18a1d3c8a7d5160960cf89d48fc433df7ddafb602f716ca11043eccb8e2b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromMultiSigKeys(Arrays.asList(senderPair.getPublicKey()), 1)
-                .isDefault().build();
-        Account singleSigAcc = Account.fromECKeyPair(senderPair).build();
-        Wallet w = new Wallet.Builder().accounts(sender, singleSigAcc).build();
+        Account sender = Account.fromMultiSigKeys(Arrays.asList(senderPair.getPublicKey()), 1);
+        Account singleSigAcc = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender, singleSigAcc);
         ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         String script =
@@ -606,8 +601,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -640,8 +635,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
 
         NeoInvokeFunction i = new Invocation.Builder(neow)
@@ -672,8 +667,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
         long netFee = 1_264_390L;
@@ -713,8 +708,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -741,8 +736,8 @@ public class InvocationTest {
                 "[\"969a77db482f74ce27105f760efa139223431394\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
 
         NeoInvokeScript response = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(script))
@@ -759,8 +754,8 @@ public class InvocationTest {
                 "[\"969a77db482f74ce27105f760efa139223431394\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = new Wallet().addAccounts(sender);
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("Cannot make an 'invokescript' call");
