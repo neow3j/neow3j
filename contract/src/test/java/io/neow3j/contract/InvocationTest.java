@@ -217,8 +217,8 @@ public class InvocationTest {
         List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
         Account multiSigAcc = Account.createMultiSigAccount(keys, 2);
-        w.addAccount(a2);
-        w.addAccount(multiSigAcc);
+        w.addAccounts(a2);
+        w.addAccounts(multiSigAcc);
         a2.encryptPrivateKey("neo");
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
@@ -259,7 +259,7 @@ public class InvocationTest {
 
         Wallet wallet = Wallet.createWallet();
         Account other = Account.createAccount();
-        wallet.addAccount(other);
+        wallet.addAccounts(other);
         Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
@@ -328,7 +328,7 @@ public class InvocationTest {
         Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
         Wallet wallet = new Wallet().addAccounts(senderAcc);
         Account other = Account.createAccount();
-        wallet.addAccount(other);
+        wallet.addAccounts(other);
         Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
@@ -372,7 +372,7 @@ public class InvocationTest {
     public void signTransactionWithAdditionalCosigners() throws IOException {
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
-        w.addAccount(cosigner);
+        w.addAccounts(cosigner);
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
 
@@ -419,7 +419,7 @@ public class InvocationTest {
 
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
-        w.addAccount(cosigner);
+        w.addAccounts(cosigner);
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
 
@@ -439,7 +439,7 @@ public class InvocationTest {
 
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
-        w.addAccount(cosigner);
+        w.addAccounts(cosigner);
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
 
