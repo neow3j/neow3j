@@ -164,7 +164,6 @@ public class Compiler {
                 case NEWARRAY:
                     neoMethod.addInstruction(
                             new NeoInstruction(OpCode.NEWARRAY, this.currentNeoAddr++));
-//                    addArray(insn, method, neoMethod);
                     break;
                 case DUP:
                     neoMethod.addInstruction(new NeoInstruction(OpCode.DUP, this.currentNeoAddr++));
@@ -222,7 +221,10 @@ public class Compiler {
         }
     }
 
-//    private int addArray(AbstractInsnNode arrayInsn, MethodNode asmMethod, NeoMethod neoMethod) {
+    // TODO: Array creation needs to make use of CONVERT instead of SETITEM whenever possible
+    //  because SETITEM is a very expensive NeoVM OpCode.
+//    private int addArray(AbstactInsnNode arrayInsn, MethodNode asmMethod, NeoMethod
+//    neoMethod) {
 //        assert arrayInsn.getType() == AbstractInsnNode.INT_INSN : "Instruction type doesn't
 //        match "
 //                + "opcode.";
