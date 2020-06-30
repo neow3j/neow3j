@@ -109,19 +109,19 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, String key);
 
-//    /**
-//     * Returns an iterator over the storage entries with the given prefix from the given storage
-//     * context.
-//     */
-//    @Syscall(SYSTEM_STORAGE_FIND)
-//    public static native Iterator<byte[], byte[]> find(StorageContext context, byte[] prefix);
+    /**
+     * Returns an iterator over the storage entries with the given prefix from the given storage
+     * context.
+     */
+    @Syscall(SYSTEM_STORAGE_FIND)
+    public static native Iterator<byte[], byte[]> find(StorageContext context, byte[] prefix);
 
-//    /**
-//     * Returns an iterator over the storage entries with the given prefix from the given storage
-//     * context.
-//     */
-//    @Syscall(SYSTEM_STORAGE_FIND)
-//    public static native Iterator<String, byte[]> find(StorageContext context, String prefix);
+    /**
+     * Returns an iterator over the storage entries with the given prefix from the given storage
+     * context.
+     */
+    @Syscall(SYSTEM_STORAGE_FIND)
+    public static native Iterator<String, byte[]> find(StorageContext context, String prefix);
 
     /**
      * Returns the value corresponding to the given key for the current storage context.
