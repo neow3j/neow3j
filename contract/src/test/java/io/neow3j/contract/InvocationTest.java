@@ -394,12 +394,13 @@ public class InvocationTest {
                 .withWallet(w)
                 .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(new StringContains("Account not found in the wallet."));
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage(new StringContains("Wallet does not contain the account for cosigner" +
+                " with script hash " + cosigner.getScriptHash()));
         b.build();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void failSigningInvocationBecauseWalletDoesntContainCosignerAccount()
             throws IOException {
 
@@ -415,6 +416,10 @@ public class InvocationTest {
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
         w.removeAccount(cosigner.getScriptHash());
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage(new StringContains("Can't create transaction "
+                + "signature. Wallet does not contain the cosigner account with script "
+                + "hash " + cosigner.getScriptHash()));
         i.sign();
     }
 

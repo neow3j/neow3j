@@ -334,6 +334,10 @@ public class Wallet {
                 .setDefaultAccount(accounts[0].getScriptHash());
     }
 
+    public boolean holdsAccount(ScriptHash scriptHash) {
+        return this.accounts.containsKey(scriptHash);
+    }
+
     public Account getAccount(ScriptHash scriptHash) {
         if (!this.accounts.containsKey(scriptHash)) {
             throw new IllegalArgumentException("Account not found in the wallet.");

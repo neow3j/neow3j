@@ -66,6 +66,18 @@ public class WalletTest {
     }
 
     @Test
+    public void testHoldsAccount() {
+        Account account = Account.createAccount();
+        Wallet wallet = Wallet.createWallet();
+        wallet.addAccounts(account);
+
+        assertTrue(wallet.holdsAccount(account.getScriptHash()));
+
+        wallet.removeAccount(account.getScriptHash());
+        assertFalse(wallet.holdsAccount(account.getScriptHash()));
+    }
+
+    @Test
     public void testCreateWalletFromNEP6File() throws IOException {
         Wallet w = Wallet.fromNEP6Wallet("wallet.json");
 
@@ -365,5 +377,4 @@ public class WalletTest {
                 new BigInteger("411285799730"),
                 new BigInteger("50000000")));
     }
-
 }
