@@ -499,7 +499,8 @@ public class Compiler {
             return ContractParameterType.BYTE_ARRAY;
         }
         try {
-            Class<?> clazz = Class.forName(type.getInternalName());
+            typeName = type.getDescriptor().replace("/", ".");
+            Class<?> clazz = Class.forName(typeName);
             if (clazz.isArray()) {
                 return ContractParameterType.ARRAY;
             }
