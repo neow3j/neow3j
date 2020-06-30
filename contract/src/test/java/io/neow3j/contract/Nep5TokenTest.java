@@ -61,7 +61,7 @@ public class Nep5TokenTest {
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3");
         Account a = new Account(ECKeyPair.create(privateKey));
-        Wallet w = new Wallet().addAccounts(a);
+        Wallet w = Wallet.withAccounts(a);
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         Invocation i = gas.buildTransferInvocation(w, receiver, BigDecimal.ONE);
 
@@ -128,7 +128,7 @@ public class Nep5TokenTest {
                 "invokefunction_balanceOf_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json");
         ContractTestHelper.setUpWireMockForBalanceOf(a2.getScriptHash(),
                 "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json");
-        Wallet w = new Wallet().addAccounts(a1, a2);
+        Wallet w = Wallet.withAccounts(a1, a2);
         Nep5Token token = new Nep5Token(GasToken.SCRIPT_HASH, this.neow);
         assertThat(token.getBalanceOf(w), is(new BigInteger("411285799730")));
     }
@@ -155,7 +155,7 @@ public class Nep5TokenTest {
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
         Account a = new Account(ECKeyPair.create(privateKey));
-        Wallet w = new Wallet().addAccounts(a);
+        Wallet w = Wallet.withAccounts(a);
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         Invocation i = gas.buildTransferInvocation(w, receiver, new BigDecimal("4"));
     }

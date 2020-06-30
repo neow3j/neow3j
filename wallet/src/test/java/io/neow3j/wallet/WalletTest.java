@@ -51,6 +51,21 @@ public class WalletTest {
     }
 
     @Test
+    public void testCreateWalletWithAccounts() {
+        Account acct1 = Account.createAccount();
+        Account acct2 = Account.createAccount();
+        Wallet wallet = Wallet.withAccounts(acct1, acct2);
+
+        assertEquals(acct1, wallet.getDefaultAccount());
+        assertThat(wallet.getAccounts(), containsInAnyOrder(acct1, acct2));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateWalletWithAccounts_noAccounts() {
+        Wallet.withAccounts();
+    }
+
+    @Test
     public void testCreateWalletFromNEP6File() throws IOException {
         Wallet w = Wallet.fromNEP6Wallet("wallet.json");
 
@@ -117,6 +132,15 @@ public class WalletTest {
         assertEquals(2, w.addAccounts(acct).getAccounts().size());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetAccountNotInWallet() throws InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException {
+        Account account = new Account(ECKeyPair.createEcKeyPair());
+        Wallet wallet = Wallet.createWallet();
+
+        wallet.getAccount(account.getScriptHash());
+    }
+
     @Test
     public void testRemoveAccounts() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
@@ -132,19 +156,30 @@ public class WalletTest {
         assertTrue(w.removeAccount(acct2.getScriptHash()));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
+    public void testRemoveAccounts_defaultAccount() {
+        Account acct1 = Account.createAccount();
+        Account acct2 = Account.createAccount();
+        Wallet wallet = Wallet.withAccounts(acct1, acct2);
+
+        assertEquals(2, wallet.getAccounts().size());
+        assertEquals(acct1, wallet.getDefaultAccount());
+
+        wallet.removeAccount(acct1.getScriptHash());
+
+        assertEquals(1, wallet.getAccounts().size());
+        assertEquals(acct2, wallet.getDefaultAccount());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testRemoveAccounts_lastRemainingAccount() {
 
-        final String address = "AUcY65mkxygUB5bXZqYhNKsrq1khuncqr3";
         Wallet w = Wallet.createWallet();
         Account lastRemainingAccount = w.getAccounts().get(0);
 
         assertEquals(w, lastRemainingAccount.getWallet());
         assertEquals(lastRemainingAccount, w.getDefaultAccount());
-        assertTrue(w.removeAccount(lastRemainingAccount.getScriptHash()));
-
-        // This should return null, since the wallet is empty.
-        w.getDefaultAccount();
+        w.removeAccount(lastRemainingAccount.getScriptHash());
     }
 
     @Test
@@ -153,8 +188,7 @@ public class WalletTest {
 
         String walletName = "TestWallet";
         Account a = new Account(ECKeyPair.createEcKeyPair());
-        Wallet w = new Wallet()
-                .addAccounts(a)
+        Wallet w = Wallet.withAccounts(a)
                 .setName(walletName);
         w.encryptAllAccounts("12345678");
 
@@ -172,7 +206,7 @@ public class WalletTest {
             NoSuchAlgorithmException, NoSuchProviderException {
 
         Account a = new Account(ECKeyPair.createEcKeyPair());
-        Wallet w = new Wallet().addAccounts(a);
+        Wallet w = Wallet.withAccounts(a);
         w.addAccounts(a);
         w.toNEP6Wallet();
     }
@@ -322,7 +356,7 @@ public class WalletTest {
         WalletTestHelper.setUpWireMockForCall("getnep5balances",
                 "getnep5balances_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
                 "Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ");
-        Wallet w = new Wallet().addAccounts(a1, a2);
+        Wallet w = Wallet.withAccounts(a1, a2);
         Map<ScriptHash, BigInteger> balances = w.getNep5TokenBalances(neow);
         assertThat(balances.keySet(), contains(
                 new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"),
