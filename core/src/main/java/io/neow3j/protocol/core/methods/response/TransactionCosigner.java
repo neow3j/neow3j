@@ -41,9 +41,9 @@ public class TransactionCosigner extends TransactionAttribute {
         if (!(o instanceof TransactionCosigner)) {
             return false;
         }
-        TransactionCosigner that = (TransactionCosigner) o;
-        return Objects.equals(getAccount(), that.getAccount()) &&
-                getScopes() == that.getScopes();
+        TransactionCosigner other = (TransactionCosigner) o;
+        return Objects.equals(getAccount(), other.getAccount()) &&
+                getScopes() == other.getScopes();
     }
 
     @Override

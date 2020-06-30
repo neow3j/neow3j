@@ -15,6 +15,17 @@ public enum StackItemType {
     MAP("Map", 0x48),
     INTEROP_INTERFACE("InteropInterface", 0x60);
 
+    public static final String ANY_VALUE = "Any";
+    public static final String POINTER_VALUE = "Pointer";
+    public static final String BOOLEAN_VALUE = "Boolean";
+    public static final String INTEGER_VALUE = "Integer";
+    public static final String BYTE_STRING_VALUE = "ByteString";
+    public static final String BUFFER_VALUE = "Buffer";
+    public static final String ARRAY_VALUE = "Array";
+    public static final String STRUCT_VALUE = "Struct";
+    public static final String MAP_VALUE = "Map";
+    public static final String INTEROP_INTERFACE_VALUE = "InteropInterface";
+
     private String jsonValue;
     private byte byteValue;
 
@@ -49,5 +60,4 @@ public enum StackItemType {
         }
         throw new IllegalArgumentException();
     }
-
 }
