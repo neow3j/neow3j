@@ -11,6 +11,8 @@ import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
+import io.neow3j.devpack.framework.annotations.Instruction;
+import io.neow3j.devpack.framework.annotations.Instruction.Instructions;
 import io.neow3j.devpack.framework.annotations.ManifestExtra.ManifestExtras;
 import io.neow3j.devpack.framework.annotations.ManifestFeature;
 import io.neow3j.devpack.framework.annotations.Syscall;
@@ -110,6 +112,7 @@ public class Compiler {
             switch (opcode) {
                 case INVOKESTATIC:
                 case INVOKEVIRTUAL:
+                case INVOKESPECIAL:
                     handleMethodInstruction(insn, neoMethod);
                     break;
                 case LDC:
@@ -191,12 +194,25 @@ public class Compiler {
                 case I2B:
                     // Integers and bytes are not handled differently by the NeoVM. Nothing to do.
                     break;
+                case NEW:
+                    insnAddr += handleNew(insn, asmMethod, neoMethod);
+                    break;
                 default:
                     throw new CompilerException("Unsupported instruction " + opcode + " in: " +
                             asmMethod.name + ".");
             }
         }
         return neoMethod;
+    }
+
+    private int handleNew(AbstractInsnNode insn, MethodNode asmMethod, NeoMethod neoMethod) {
+        // After the JVM NEW opcode a DUP may occur and then an INVOKESPECIAL, which is the call
+        // to the classes constructor. For Neo only the INVOKESPECIAL is of interest. Therefore,
+        // we don't add any Neo opcodes here and have to skip the DUP opcode if it is present.
+        if (JVMOpcode.get(insn.getNext().getOpcode()).equals(JVMOpcode.DUP)) {
+            return 1; // skip the DUP Opcode.
+        }
+        return 0;
     }
 
 
@@ -324,18 +340,19 @@ public class Compiler {
         this.currentNeoAddr += insnBytes.length;
     }
 
-    // Handles STATICINVOKE and VIRTUALINVOKE, i.e. calls to static and instance methods.
     private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod neoMethod)
             throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        // TODO: Maybe we can load all necessary classes at compile begin.
         ClassNode owner = new ClassNode();
         new ClassReader(Type.getObjectType(methodInsn.owner).getClassName()).accept(owner, 0);
-        MethodNode asmMethod = owner.methods.stream().filter(m -> m.desc.equals(methodInsn.desc))
+        MethodNode asmMethod = owner.methods.stream()
+                .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
                 .findFirst().get();
-        if (isSyscall(asmMethod)) {
+        if (hasSyscallAnnotation(asmMethod)) {
             addSyscall(asmMethod, neoMethod);
+        } else if (hasInstructionAnnotation(asmMethod)) {
+            addInstruction(asmMethod, neoMethod);
         } else if (asmMethod.name.equals("intValue")) {
             // Integer.intValue(): nothing to do
             // Same for Long.longValue(), Byte.byteValue(), Boolean.booleanValue(),
@@ -343,10 +360,16 @@ public class Compiler {
         }
     }
 
-    private boolean isSyscall(MethodNode asmMethod) {
+    private boolean hasSyscallAnnotation(MethodNode asmMethod) {
         return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
                 .anyMatch(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
                         || a.desc.equals(Type.getDescriptor(Syscall.class)));
+    }
+
+    private boolean hasInstructionAnnotation(MethodNode asmMethod) {
+        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
+                .anyMatch(a -> a.desc.equals(Type.getDescriptor(Instructions.class))
+                        || a.desc.equals(Type.getDescriptor(Instruction.class)));
     }
 
     private void addSyscall(MethodNode asmMethod, NeoMethod neoMethod) {
@@ -383,11 +406,37 @@ public class Compiler {
     }
 
     private void addSingleSyscall(AnnotationNode syscallAnnotation, NeoMethod neoMethod) {
-        String syscallName = ((String[])syscallAnnotation.values.get(1))[1];
+        String syscallName = ((String[]) syscallAnnotation.values.get(1))[1];
         InteropServiceCode syscall = InteropServiceCode.valueOf(syscallName);
         byte[] hash = Numeric.hexStringToByteArray(syscall.getHash());
         neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash, this.currentNeoAddr));
         this.currentNeoAddr += 1 + hash.length;
+    }
+
+    private void addInstruction(MethodNode asmMethod, NeoMethod neoMethod) {
+        AnnotationNode insnAnnotation = asmMethod.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(Instructions.class))
+                        || a.desc.equals(Type.getDescriptor(Instruction.class)))
+                .findFirst().get();
+        if (insnAnnotation.desc.equals(Type.getDescriptor(Instructions.class))) {
+            // handle multiple instructions
+            for (Object a : (List<?>) insnAnnotation.values.get(1)) {
+                addSingleInstruction((AnnotationNode) a, neoMethod);
+            }
+        } else {
+            // handle single instruction
+            addSingleInstruction(insnAnnotation, neoMethod);
+        }
+
+    }
+
+    private void addSingleInstruction(AnnotationNode insnAnnotation, NeoMethod neoMethod) {
+        String insnName = ((String[]) insnAnnotation.values.get(1))[1];
+        OpCode opCode = OpCode.valueOf(insnName);
+        // TODO: Get OpCode operand
+        byte[] operand = new byte[]{};
+        neoMethod.addInstruction(new NeoInstruction(opCode, operand, this.currentNeoAddr));
+        this.currentNeoAddr += 1 + operand.length;
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {
@@ -442,9 +491,12 @@ public class Compiler {
         if (typeName.equals(String.class.getTypeName())) {
             return ContractParameterType.STRING;
         }
-        if (typeName.equals(Integer.class.getTypeName()) || typeName.equals(int.class.getTypeName())
+        if (typeName.equals(Integer.class.getTypeName())
+                || typeName.equals(int.class.getTypeName())
                 || typeName.equals(Long.class.getTypeName())
-                || typeName.equals(long.class.getTypeName())) {
+                || typeName.equals(long.class.getTypeName())
+                || typeName.equals(Byte.class.getTypeName())
+                || typeName.equals(byte.class.getTypeName())) {
             return ContractParameterType.INTEGER;
         }
         if (typeName.equals(Boolean.class.getTypeName())
