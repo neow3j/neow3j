@@ -27,7 +27,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractStat
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractPermission;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -66,7 +65,7 @@ public class Compiler {
      *
      * @param name the fully qualified name of the class.
      */
-    public byte[] compileClass(String name) throws IOException {
+    public CompilationResult compileClass(String name) throws IOException {
         ClassReader reader = new ClassReader(name);
         ClassNode n = new ClassNode();
         reader.accept(n, 0);
@@ -74,15 +73,7 @@ public class Compiler {
         NeoMethod neoMethod = handleMethod(entryPoint);
         byte[] script = neoMethod.toByteArray();
         NefFile nef = new NefFile("neow3j", new Version(3, 0, 0, 0), script);
-        String userHome = System.getProperty("user.home");
-        try (FileOutputStream fos = new FileOutputStream(userHome + "/tmp/contract.nef")) {
-            fos.write(nef.toArray());
-        }
-        try (FileOutputStream fos = new FileOutputStream(
-                userHome + "/tmp/contract.manifest.json")) {
-            objectMapper.writeValue(fos, buildManifest(n, nef.getScriptHash()));
-        }
-        return script;
+        return new CompilationResult(nef, buildManifest(n, nef.getScriptHash()));
     }
 
     private MethodNode getEntryPoint(ClassNode n) {
@@ -552,5 +543,23 @@ public class Compiler {
             extras.put(key, value);
         }
         return extras;
+    }
+
+    public class CompilationResult {
+        private NefFile nef;
+        private ContractManifest manifest;
+
+        private CompilationResult(NefFile nef, ContractManifest manifest) {
+            this.nef = nef;
+            this.manifest = manifest;
+        }
+
+        public NefFile getNef() {
+            return nef;
+        }
+
+        public ContractManifest getManifest() {
+            return manifest;
+        }
     }
 }
