@@ -2,7 +2,6 @@ package io.neow3j.devpack.compiler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ContractParameter;
@@ -52,7 +51,6 @@ import org.slf4j.LoggerFactory;
 public class Compiler {
 
     private static final Logger log = LoggerFactory.getLogger(Compiler.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
@@ -145,7 +143,7 @@ public class Compiler {
                 case LSTORE_1:
                 case LSTORE_2:
                 case LSTORE_3:
-                    addStoreLocalVariable(insn, asmMethod, neoMethod);
+                    addStoreLocalVariable(insn, neoMethod);
                     break;
                 case ALOAD:
                 case ALOAD_1:
@@ -159,7 +157,7 @@ public class Compiler {
                 case LLOAD_1:
                 case LLOAD_2:
                 case LLOAD_3:
-                    addLoadLocalVariable(insn, asmMethod, neoMethod);
+                    addLoadLocalVariable(insn, neoMethod);
                     break;
                 case NEWARRAY:
                     neoMethod.addInstruction(
@@ -186,7 +184,7 @@ public class Compiler {
                     // Integers and bytes are not handled differently by the NeoVM. Nothing to do.
                     break;
                 case NEW:
-                    insnAddr += handleNew(insn, asmMethod, neoMethod);
+                    insnAddr += handleNew(insn);
                     break;
                 default:
                     throw new CompilerException("Unsupported instruction " + opcode + " in: " +
@@ -196,7 +194,7 @@ public class Compiler {
         return neoMethod;
     }
 
-    private int handleNew(AbstractInsnNode insn, MethodNode asmMethod, NeoMethod neoMethod) {
+    private int handleNew(AbstractInsnNode insn) {
         // After the JVM NEW opcode a DUP may occur and then an INVOKESPECIAL, which is the call
         // to the classes constructor. For Neo only the INVOKESPECIAL is of interest. Therefore,
         // we don't add any Neo opcodes here and have to skip the DUP opcode if it is present.
@@ -271,9 +269,7 @@ public class Compiler {
         }
     }
 
-    private void addLoadLocalVariable(AbstractInsnNode insn, MethodNode asmMethod,
-            NeoMethod neoMethod) {
-
+    private void addLoadLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
         VarInsnNode varInsn = (VarInsnNode) insn;
         assert varInsn.var <= 255 : "Local variable index to high.";
         NeoVariable param = neoMethod.getParameterByJVMIndex(varInsn.var);
@@ -285,9 +281,7 @@ public class Compiler {
         }
     }
 
-    private void addStoreLocalVariable(AbstractInsnNode insn, MethodNode asmMethod,
-            NeoMethod neoMethod) {
-
+    private void addStoreLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
         VarInsnNode varInsn = (VarInsnNode) insn;
         assert varInsn.var <= 255 : "Local variable index to high.";
         NeoVariable var = neoMethod.getVariableByJVMIndex(varInsn.var);
@@ -344,10 +338,6 @@ public class Compiler {
             addSyscall(asmMethod, neoMethod);
         } else if (hasInstructionAnnotation(asmMethod)) {
             addInstruction(asmMethod, neoMethod);
-        } else if (asmMethod.name.equals("intValue")) {
-            // Integer.intValue(): nothing to do
-            // Same for Long.longValue(), Byte.byteValue(), Boolean.booleanValue(),
-            // Character.charValue()
         }
     }
 
@@ -456,7 +446,7 @@ public class Compiler {
         List<ContractEvent> events = new ArrayList<>();
         // TODO: Fill events list.
         for (MethodNode asmMethod : classNode.methods) {
-            if (asmMethod.name.equals("<init>")) {
+            if ("<init>".equals(asmMethod.name)) {
                 continue; // Skip the constructor.
             }
             // TODO: Make this compatible with non-static methods too. In that case the first
@@ -514,7 +504,8 @@ public class Compiler {
         Optional<AnnotationNode> opt = n.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(ManifestFeature.class)))
                 .findFirst();
-        boolean payable = false, hasStorage = false;
+        boolean payable = false;
+        boolean hasStorage = false;
         if (opt.isPresent()) {
             AnnotationNode ann = opt.get();
             int i = ann.values.indexOf("payable");
@@ -534,7 +525,8 @@ public class Compiler {
         }
         AnnotationNode ann = opt.get();
         Map<String, String> extras = new HashMap<>();
-        String key, value;
+        String key;
+        String value;
         for (Object a : (List<?>) ann.values.get(1)) {
             AnnotationNode manifestExtra = (AnnotationNode) a;
             int i = manifestExtra.values.indexOf("key");
