@@ -55,6 +55,7 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, long value);
 
+    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     */
@@ -85,6 +86,7 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, long value);
 
+    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     */
@@ -168,6 +170,7 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(byte[] key, long value);
 
+    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     * <p>
@@ -207,6 +210,7 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUTEX)
     public static native void putEx(byte[] key, long value, byte storageFlag);
 
+    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     * <p>
@@ -292,6 +296,7 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(String key, long value);
 
+    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
 //    /**
 //     * Stores the given key-value pair using the current storage context.
 //     * <p>
@@ -301,6 +306,7 @@ public class Storage {
 //    @Syscall(SYSTEM_STORAGE_PUT)
 //    public static native void put(String key, BigInteger value);
 
+    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
 //    /**
 //     * Stores the given key-value pair using the current storage context and the given storage
 //     * flags.

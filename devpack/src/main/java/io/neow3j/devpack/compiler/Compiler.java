@@ -52,9 +52,11 @@ public class Compiler {
 
     private static final Logger log = LoggerFactory.getLogger(Compiler.class);
 
+    public static final String COMPILER_NAME = "neow3j";
+    public static final Version COMPILER_VERSION = new Version(0, 0, 0, 0);
+
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
-//    public static final int MAX_STATIC_FIELDS_COUNT = 255;
 
     private int currentNeoAddr;
 
@@ -70,7 +72,7 @@ public class Compiler {
         MethodNode entryPoint = getEntryPoint(n);
         NeoMethod neoMethod = handleMethod(entryPoint);
         byte[] script = neoMethod.toByteArray();
-        NefFile nef = new NefFile("neow3j", new Version(3, 0, 0, 0), script);
+        NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION, script);
         return new CompilationResult(nef, buildManifest(n, nef.getScriptHash()));
     }
 

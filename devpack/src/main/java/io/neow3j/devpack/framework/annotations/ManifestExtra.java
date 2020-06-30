@@ -10,10 +10,12 @@ import java.lang.annotation.Target;
 public @interface ManifestExtra {
 
     String key();
+
     String value();
 
     @Target(ElementType.TYPE)
     @interface ManifestExtras {
+
         ManifestExtra[] value();
     }
 
