@@ -39,6 +39,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LocalVariableNode;
@@ -159,6 +161,10 @@ public class Compiler {
                 case LLOAD_1:
                 case LLOAD_2:
                 case LLOAD_3:
+                    // Load a variable from the local variable pool. Such a variable can be a
+                    // method parameter or a normal variable in the method body. The index of the
+                    // variable in the pool is given in the instruction and not on the operand
+                    // stack.
                     addLoadLocalVariable(insn, neoMethod);
                     break;
                 case NEWARRAY:
@@ -181,8 +187,29 @@ public class Compiler {
                     // Java compiler checks if object on the operand stack can be cast to a given
                     // type. Nothing to do.
                     break;
+                case AALOAD:
+                case BALOAD:
+                case CALOAD:
+                case IALOAD:
+                case LALOAD:
+                case SALOAD:
+                    // Load an element from an array. Before calling this OpCode an array references
+                    // and an index must have been pushed onto the operand stack. JVM and NeoVM both
+                    // place the loaded element onto the operand stack. JVM opcodes `DALOAD` and
+                    // `FALOAD` are not covered because NeoVM does not support doubles and floats.
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM,
+                            this.currentNeoAddr++));
+                    break;
+                case GETFIELD:
+                    // Get a field variable from an object. The index of the field inside the
+                    // object is given with the instruction and the object itself must be on top
+                    // of the operand stack.
+                    addGetField(insn, neoMethod);
+                    break;
+
                 case I2B:
-                    // Integers and bytes are not handled differently by the NeoVM. Nothing to do.
+                    // Convert an integer to byte by truncating. Because integers and bytes are
+                    // handled equally by NeoVM there is nothing to do.
                     break;
                 case NEW:
                     insnAddr += handleNew(insn);
@@ -193,6 +220,24 @@ public class Compiler {
             }
         }
         return neoMethod;
+    }
+
+    private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) throws IOException {
+        // NeoVM gets fields of objects simply by calling PICKITEM. The operand stack has to have
+        // a index on top that is used in the PICKITEM opcode. We get this index from the class
+        // to which the field belongs to.
+        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+        ClassNode owner = new ClassNode();
+        new ClassReader(Type.getObjectType(fieldInsn.owner).getClassName()).accept(owner, 0);
+        int idx = 0;
+        for (FieldNode field : owner.fields) {
+            if (field.name.equals(fieldInsn.name)) {
+                break;
+            }
+            idx++;
+        }
+        addPushNumber(idx, neoMethod);
+        neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM, this.currentNeoAddr++));
     }
 
     private int handleNew(AbstractInsnNode insn) {
@@ -275,7 +320,14 @@ public class Compiler {
 
     private void addLoadLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
         VarInsnNode varInsn = (VarInsnNode) insn;
-        assert varInsn.var <= 255 : "Local variable index to high.";
+        if (varInsn.var >= MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("Local variable index to high. Was " + varInsn + " but "
+                    + "maximally " + MAX_LOCAL_VARIABLES_COUNT + " local variables are supported.");
+        }
+        // The local variable can either be a method parameter or a normal variable defined in
+        // the method body. The NeoMethod has been initialized with all the local variables.
+        // Therefore, we can check here if it is a parameter or a normal variable and treat it
+        // accordingly.
         NeoVariable param = neoMethod.getParameterByJVMIndex(varInsn.var);
         if (param != null) {
             neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.index, OpCode.LDARG));
@@ -543,6 +595,7 @@ public class Compiler {
     }
 
     public class CompilationResult {
+
         private NefFile nef;
         private ContractManifest manifest;
 

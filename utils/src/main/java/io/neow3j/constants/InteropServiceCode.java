@@ -21,8 +21,19 @@ public enum InteropServiceCode {
     SYSTEM_ITERATOR_VALUES("System.Iterator.Values", 400),
     SYSTEM_ITERATOR_CONCAT("System.Iterator.Concat", 400),
 
+    SYSTEM_RUNTIME_PLATFORM("System.Runtime.Platform", 250),
+    SYSTEM_RUNTIME_GETTRIGGER("System.Runtime.GetTrigger", 250),
+    SYSTEM_RUNTIME_GETTIME("System.Runtime.GetTime", 250),
+    SYSTEM_RUNTIME_GETSCRIPTCONTAINER("System.Runtime.GetScriptContainer", 250),
+    SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH("System.Runtime.GetExecutingScriptHash", 400),
+    SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH("System.Runtime.GetCallingScriptHash", 400),
+    SYSTEM_RUNTIME_GETENTRYSCRIPTHASH("System.Runtime.GetEntryScriptHash", 400),
     SYSTEM_RUNTIME_CHECKWITNESS("System.Runtine.CheckWitness", 30000),
+    SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 400),
+    SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1_000_000),
     SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1_000_000),
+    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", null), // dynamic calculation
+    SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 400),
 
     SYSTEM_STORAGE_GETCONTEXT("System.Storage.GetContext", 400),
     SYSTEM_STORAGE_GETREADONLYCONTEXT("System.Storage.GetReadOnlyContext", 400),
