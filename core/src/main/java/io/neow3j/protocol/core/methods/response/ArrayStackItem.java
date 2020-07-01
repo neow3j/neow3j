@@ -1,19 +1,29 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.model.types.StackItemType;
 
 import java.util.List;
+import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ArrayStackItem extends StackItem {
 
-    public ArrayStackItem(List<StackItem> value) {
-        super(StackItemType.ARRAY, value);
+    @JsonProperty("value")
+    private List<StackItem> value;
+
+    public ArrayStackItem() {
+        super(StackItemType.ARRAY);
     }
 
-    @Override
-    @SuppressWarnings(value = "unchecked")
+    public ArrayStackItem(List<StackItem> value) {
+        super(StackItemType.ARRAY);
+        this.value = value;
+    }
+
     public List<StackItem> getValue() {
-        return (List<StackItem>) this.value;
+        return this.value;
     }
 
     /**
@@ -44,4 +54,17 @@ public class ArrayStackItem extends StackItem {
         return getValue().isEmpty();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ArrayStackItem)) return false;
+        ArrayStackItem other = (ArrayStackItem) o;
+        return getType() == other.getType() &&
+                Objects.equals(getValue(), other.getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getValue());
+    }
 }

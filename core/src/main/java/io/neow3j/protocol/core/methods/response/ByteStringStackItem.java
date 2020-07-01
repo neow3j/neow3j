@@ -1,5 +1,7 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.contract.ScriptHash;
@@ -9,10 +11,19 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ByteStringStackItem extends StackItem {
 
+    @JsonProperty("value")
+    private byte[] value;
+
+    public ByteStringStackItem() {
+        super(StackItemType.BYTE_STRING);
+    }
+
     public ByteStringStackItem(byte[] value) {
-        super(StackItemType.BYTE_STRING, value);
+        super(StackItemType.BYTE_STRING);
+        this.value = value;
     }
 
     /**
@@ -20,9 +31,8 @@ public class ByteStringStackItem extends StackItem {
      *
      * @return the value of this stack item.
      */
-    @Override
     public byte[] getValue() {
-        return (byte[]) this.value;
+        return this.value;
     }
 
     /**
@@ -63,14 +73,13 @@ public class ByteStringStackItem extends StackItem {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (!(o instanceof ByteStringStackItem)) return false;
         ByteStringStackItem other = (ByteStringStackItem) o;
-        return this.type == other.type && Arrays.equals(this.getValue(), other.getValue());
+        return getType() == other.getType() && Arrays.equals(this.getValue(), other.getValue());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(type, Arrays.hashCode(getValue()));
     }
-
 }
