@@ -168,6 +168,7 @@ public class Compiler {
                     addLoadLocalVariable(insn, neoMethod);
                     break;
                 case NEWARRAY:
+                case ANEWARRAY:
                     neoMethod.addInstruction(
                             new NeoInstruction(OpCode.NEWARRAY, this.currentNeoAddr++));
                     break;
@@ -176,6 +177,14 @@ public class Compiler {
                     break;
                 case BASTORE:
                 case IASTORE:
+                case AASTORE:
+                case CASTORE:
+                case LASTORE:
+                case SASTORE:
+                    // Store an element in an array. Before calling this OpCode an array references
+                    // and an index must have been pushed onto the operand stack. JVM opcodes
+                    // `DASTORE` and `FASTORE` are not covered because NeoVM does not support
+                    // doubles and floats.
                     neoMethod.addInstruction(
                             new NeoInstruction(OpCode.SETITEM, this.currentNeoAddr++));
                     break;
@@ -184,8 +193,8 @@ public class Compiler {
                             this.currentNeoAddr++));
                     break;
                 case CHECKCAST:
-                    // Java compiler checks if object on the operand stack can be cast to a given
-                    // type. Nothing to do.
+                    // Check if the object on the operand stack can be cast to a given type.
+                    // There is no corresponding NeoVM opcode.
                     break;
                 case AALOAD:
                 case BALOAD:
@@ -339,7 +348,10 @@ public class Compiler {
 
     private void addStoreLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
         VarInsnNode varInsn = (VarInsnNode) insn;
-        assert varInsn.var <= 255 : "Local variable index to high.";
+        if (varInsn.var >= MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("Local variable index to high. Was " + varInsn + " but "
+                    + "maximally " + MAX_LOCAL_VARIABLES_COUNT + " local variables are supported.");
+        }
         NeoVariable var = neoMethod.getVariableByJVMIndex(varInsn.var);
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.index, OpCode.STLOC));
     }
