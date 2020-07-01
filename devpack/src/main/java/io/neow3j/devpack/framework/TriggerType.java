@@ -1,5 +1,9 @@
 package io.neow3j.devpack.framework;
 
+/**
+ * The <tt>TriggerType</tt> defines the mode in which a smart contract is invoked. This implies
+ * that a smart contract can be invoked in other ways than just the normal application mode.
+ */
 public enum TriggerType {
 
     System(0x01),

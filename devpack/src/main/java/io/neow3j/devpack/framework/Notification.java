@@ -22,23 +22,6 @@ public class Notification {
      */
     public final Object state;
 
-//    /**
-//     * Gets the script hash of this notification's sender.
-//     *
-//     * @return the sender script hash.
-//     */
-//    public byte[] getScriptHash() {
-//        return scriptHash;
-//    }
-//
-//    /**
-//     * Gets the state object of this notification.
-//     *
-//     * @return the state object.
-//     */
-//    public Object getState() {
-//        return state;
-//    }
 }
 
 

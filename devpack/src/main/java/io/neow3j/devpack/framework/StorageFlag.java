@@ -7,6 +7,11 @@ package io.neow3j.devpack.framework;
 public class StorageFlag {
 
     public static final byte NONE = 0x00;
+
+    /**
+     * Marks the stored data as constant, meaning that it cannot be modified or deleted once
+     * written.
+     */
     public static final byte CONSTANT = 0x01;
 
 }
