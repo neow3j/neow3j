@@ -33,7 +33,7 @@ public class ScriptReader {
         StringBuilder builder = new StringBuilder();
         try {
             while (r.getPosition() < script.length) {
-                OpCode code = OpCode.valueOf(r.readByte());
+                OpCode code = OpCode.get(r.readByte());
                 builder.append(code.name());
                 OperandSize operandSize = getOperandSize(code);
                 if (operandSize == null) {

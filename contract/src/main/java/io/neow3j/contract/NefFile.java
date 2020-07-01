@@ -52,6 +52,16 @@ public class NefFile extends NeoSerializable {
         this.script = new byte[]{};
     }
 
+    public NefFile(String compiler, Version version, byte[] script) {
+        this.compiler = compiler;
+        this.version = version;
+        this.script = script;
+        this.scriptHash = ScriptHash.fromScript(script);
+        // Need to initialize the check sum because it is required for calculating the check sum.
+        this.checkSum = new byte[]{};
+        this.checkSum = computeChecksum(this);
+    }
+
     public String getCompiler() {
         return compiler;
     }

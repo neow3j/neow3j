@@ -33,7 +33,7 @@ public class ScriptBuilder {
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder opCode(OpCode opCode) {
-        writeByte(opCode.getValue());
+        writeByte(opCode.getCode());
         return this;
     }
 
@@ -45,7 +45,7 @@ public class ScriptBuilder {
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder opCode(OpCode opCode, byte[] argument) {
-        writeByte(opCode.getValue());
+        writeByte(opCode.getCode());
         write(argument);
         return this;
     }
@@ -71,7 +71,7 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder sysCall(InteropServiceCode operation) {
-        writeByte(OpCode.SYSCALL.getValue());
+        writeByte(OpCode.SYSCALL.getCode());
         write(Numeric.hexStringToByteArray(operation.getHash()));
         return this;
     }
@@ -151,6 +151,9 @@ public class ScriptBuilder {
         return pushInteger(BigInteger.valueOf(v));
     }
 
+    private static final BigInteger minusOne = BigInteger.valueOf(-1);
+    private static final BigInteger sixteen = BigInteger.valueOf(16);
+
     /**
      * Adds a push operation with the given integer to the script. The integer is encoded in its
      * two's complement and in little-endian order.
@@ -164,9 +167,9 @@ public class ScriptBuilder {
      */
     public ScriptBuilder pushInteger(BigInteger v) {
         int i = v.intValue();
-        if (i >= -1 && i <= 16) {
-            byte opCodeByte = (byte)(OpCode.PUSH0.getValue() + i);
-            return this.opCode(OpCode.valueOf(opCodeByte));
+        if (v.compareTo(minusOne) >= 0 && v.compareTo(sixteen) <= 0) {
+            int opcode = OpCode.PUSH0.getCode() + i;
+            return this.opCode(OpCode.get(opcode));
         }
 
         byte[] bytes = BigIntegers.toLittleEndianByteArray(v);
@@ -203,9 +206,9 @@ public class ScriptBuilder {
 
     public ScriptBuilder pushBoolean(boolean bool) {
         if (bool) {
-            writeByte(OpCode.PUSH1.getValue());
+            writeByte(OpCode.PUSH1.getCode());
         } else {
-            writeByte(OpCode.PUSH0.getValue());
+            writeByte(OpCode.PUSH0.getCode());
         }
         return this;
     }
