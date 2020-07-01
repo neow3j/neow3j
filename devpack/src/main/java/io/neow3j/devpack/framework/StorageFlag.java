@@ -1,8 +1,8 @@
 package io.neow3j.devpack.framework;
 
 /**
- * <tt>StorageFlags</tt> define attributes of data that is written to a contract's storage. E.g. one
- * can define if data should be read-only.
+ * Defines attributes of data written to a contract's storage. E.g. one can define if data should be
+ * read-only.
  */
 public class StorageFlag {
 
