@@ -7,9 +7,6 @@ import java.nio.charset.StandardCharsets;
 
 public enum InteropServiceCode {
 
-    SYSTEM_CONTRACT_CREATE("System.Contract.Create", null), // dynamic calculation
-    SYSTEM_CONTRACT_CALL("System.Contract.Call", 1000000),
-
     SYSTEM_ENUMERATOR_CREATE("System.Enumerator.Create", 400),
     SYSTEM_ENUMERATOR_NEXT("System.Enumerator.Next", 1_000_000),
     SYSTEM_ENUMERATOR_VALUE("System.Enumerator.Value", 400),
@@ -46,6 +43,22 @@ public enum InteropServiceCode {
 
     SYSTEM_BINARY_SERIALIZE("System.Binary.Serialize", 100000),
     SYSTEM_BINARY_DESERIALIZE("System.Binary.Deserialize", 500000),
+
+    SYSTEM_BLOCKCHAIN_GETHEIGHT("System.Blockchain.GetHeight", 400),
+    SYSTEM_BLOCKCHAIN_GETBLOCK("System.Blockchain.GetBlock", 2500000),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTION("System.Blockchain.GetTransaction", 1000000),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1000000),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1000000),
+    SYSTEM_BLOCKCHAIN_GETCONTRACT("System.Blockchain.GetContract", 1000000),
+
+    SYSTEM_CONTRACT_CREATE("System.Contract.Create", null), // dynamic calculation
+    SYSTEM_CONTRACT_UPDATE("System.Contract.Update", null), // dynamic calculation
+    SYSTEM_CONTRACT_DESTROY("System.Contract.Destroy", 1000000),
+    SYSTEM_CONTRACT_CALL("System.Contract.Call", 1000000),
+    SYSTEM_CONTRACT_CALLEX("System.Contract.CallEx", 1000000),
+    SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 30000),
+    SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 30000),
+    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 10000),
 
     NEO_CRYPTO_ECDSA_SECP256R1_VERIFY("Neo.Crypto.ECDsa.Secp256r1.Verify", 1_000_000),
     NEO_CRYPTO_ECDSA_SECP256K1_VERIFY("Neo.Crypto.ECDsa.Secp256k1.Verify", 1_000_000),
