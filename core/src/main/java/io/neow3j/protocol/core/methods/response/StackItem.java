@@ -13,10 +13,14 @@ import io.neow3j.model.types.StackItemType;
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = AnyStackItem.class, name = StackItemType.ANY_VALUE),
 //        @JsonSubTypes.Type(value = PointerStackItem.class, name = StackItemType.POINTER_VALUE),
+        // TODO: 01.07.20 Michael: The library does not yet have a class to handle StackItems of type Pointer.
+        //  A class PointerStackItem should be added.
         @JsonSubTypes.Type(value = BooleanStackItem.class, name = StackItemType.BOOLEAN_VALUE),
         @JsonSubTypes.Type(value = IntegerStackItem.class, name = StackItemType.INTEGER_VALUE),
         @JsonSubTypes.Type(value = ByteStringStackItem.class, name = StackItemType.BYTE_STRING_VALUE),
 //        @JsonSubTypes.Type(value = BufferStackItem.class, name = StackItemType.BUFFER_VALUE),
+        // TODO: 01.07.20 Michael: The library does not yet have a class to handle StackItems of type Buffer.
+        //  A class BufferStackItem should be added.
         @JsonSubTypes.Type(value = ArrayStackItem.class, name = StackItemType.ARRAY_VALUE),
         @JsonSubTypes.Type(value = StructStackItem.class, name = StackItemType.STRUCT_VALUE),
         @JsonSubTypes.Type(value = MapStackItem.class, name = StackItemType.MAP_VALUE),
