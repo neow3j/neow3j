@@ -115,7 +115,6 @@ public class StackItemTest extends ResponseTester {
         IntegerStackItem item = rawItem.asInteger();
         assertEquals(new BigInteger("1124"), item.getValue());
 
-        // TODO: 23.06.20 Michael: set empty content to default value - here to BigInteger.ZERO
         json = ""
                 + " {"
                 + "   \"type\": \"Integer\",\n"
