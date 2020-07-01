@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.model.types.StackItemType;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 

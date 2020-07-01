@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum StackItemType {
 
-    ANY("Any", 0x00),
-    POINTER("Pointer", 0x10),
-    BOOLEAN("Boolean", 0x20),
-    INTEGER("Integer", 0x21),
-    BYTE_STRING("ByteString", 0x28),
-    BUFFER("Buffer", 0x30),
-    ARRAY("Array", 0x40),
-    STRUCT("Struct", 0x41),
-    MAP("Map", 0x48),
-    INTEROP_INTERFACE("InteropInterface", 0x60);
+    ANY(StackItemType.ANY_VALUE, 0x00),
+    POINTER(StackItemType.POINTER_VALUE, 0x10),
+    BOOLEAN(StackItemType.BOOLEAN_VALUE, 0x20),
+    INTEGER(StackItemType.INTEGER_VALUE, 0x21),
+    BYTE_STRING(StackItemType.BYTE_STRING_VALUE, 0x28),
+    BUFFER(StackItemType.BUFFER_VALUE, 0x30),
+    ARRAY(StackItemType.ARRAY_VALUE, 0x40),
+    STRUCT(StackItemType.STRUCT_VALUE, 0x41),
+    MAP(StackItemType.MAP_VALUE, 0x48),
+    INTEROP_INTERFACE(StackItemType.INTEROP_INTERFACE_VALUE, 0x60);
 
     public static final String ANY_VALUE = "Any";
     public static final String POINTER_VALUE = "Pointer";
@@ -32,6 +32,10 @@ public enum StackItemType {
     StackItemType(String jsonValue, int v) {
         this.jsonValue = jsonValue;
         this.byteValue = (byte) v;
+    }
+
+    public String getValue() {
+        return this.jsonValue;
     }
 
     @JsonValue
