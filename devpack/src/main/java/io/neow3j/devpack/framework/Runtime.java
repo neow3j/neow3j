@@ -18,12 +18,12 @@ import io.neow3j.devpack.framework.annotations.Syscall;
 public class Runtime {
 
     /**
-     * Gets the trigger type with which the the smart contract has been triggered.
+     * Gets the {@link TriggerType} with which the the smart contract has been triggered.
      *
-     * @return the trigger type.
+     * @return the {@link TriggerType}.
      */
     @Syscall(SYSTEM_RUNTIME_GETTRIGGER)
-    public static native TriggerType getTrigger();
+    public static native byte getTrigger();
 
     /**
      * Gets information of the platform on which the smart contract is currently executed.
