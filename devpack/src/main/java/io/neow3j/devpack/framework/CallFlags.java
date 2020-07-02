@@ -5,6 +5,8 @@ package io.neow3j.devpack.framework;
  */
 public class CallFlags {
 
+    // TODO: Clarify and document the meaning of these flags.
+
     public static final byte NONE = 0x00;
 
     public static final byte ALLOW_MODIFY_STATES = 0b00000001;

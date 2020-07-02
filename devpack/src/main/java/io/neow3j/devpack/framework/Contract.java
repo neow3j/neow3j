@@ -11,7 +11,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_UPDATE;
 import io.neow3j.devpack.framework.annotations.Syscall;
 
 /**
- * Represents a Neo smart contract.
+ * Represents a Neo smart contract and provides several contract-related methods.
  */
 public class Contract {
 
@@ -36,25 +36,85 @@ public class Contract {
         hasStorage = false;
     }
 
+    /**
+     * Makes a call to the given method of the contract with the given script hash with the given
+     * arguments.
+     *
+     * @param scriptHash The script hash of the contract to invoke.
+     * @param method     The method to call.
+     * @param arguments  The arguments to hand to the method.
+     * @return the value returned by the contract method call.
+     */
     @Syscall(SYSTEM_CONTRACT_CALL)
-    public static native Object call(byte[] scriptHash, String method, Object[] arguments);
+    public static native Object call(byte[] scriptHash, String method, Object... arguments);
 
+    /**
+     * Makes a call to the given method of the contract with the given script hash with the given
+     * arguments and {@link CallFlags}.
+     *
+     * @param scriptHash The script hash of the contract to invoke.
+     * @param method     The method to call.
+     * @param arguments  The arguments to hand to the method.
+     * @param callFlag   The {@link CallFlags} to apply to the contract call.
+     * @return the value returned by the contract method call.
+     */
     @Syscall(SYSTEM_CONTRACT_CALLEX)
-    public static native Object callEx(byte[] scriptHash, String method, Object[] arguments,
-            CallFlags flag);
+    public static native Object callEx(byte[] scriptHash, String method, byte callFlag,
+            Object... arguments);
 
+    /**
+     * Deploys a new contract with the given script and manifest.
+     *
+     * @param script   The script of the contract to deploy.
+     * @param manifest The manifest of the contract to deploy.
+     * @return The deployed <tt>Contract</tt>.
+     */
     @Syscall(SYSTEM_CONTRACT_CREATE)
     public static native Contract create(byte[] script, String manifest);
 
+
+    /**
+     * Migrates or updates the smart contract in which this method is called.
+     * <p>
+     * This method and {@link Contract#create(byte[], String)} function the same if no migration of
+     * the contract's persistent storage is required. If storage migration is required then this
+     * method also includes this migration.
+     *
+     * @param script   The updated script of the contract.
+     * @param manifest The updated manifest of the contract.
+     */
+    // TODO: Clarify how the migration of the storage works and document it here.
     @Syscall(SYSTEM_CONTRACT_UPDATE)
     public static native void update(byte[] script, String manifest);
 
+
+    /**
+     * Destroys the smart contract in which this method is called.
+     * <p>
+     * A deployed smart contract cannot be destroyed from the outside. Thus, if the contract should
+     * be destroyable, the logic has to be written into the contract during development.
+     * <p>
+     * When the contract is destroyed, the its storage area is destroyed as well. If the contract is
+     * moved, the contents in the old storage area are copied to the new contract storage area.
+     */
+    // TODO: Clarify what 'moving' a smart contract means and document it here.
     @Syscall(SYSTEM_CONTRACT_DESTROY)
     public static native void destroy();
 
+    /**
+     * Gets the call flags with which the contract has been called.
+     *
+     * @return the call flags encoded in one byte.
+     */
     @Syscall(SYSTEM_CONTRACT_GETCALLFLAGS)
     public static native byte getCallFlags();
 
+    /**
+     * Produces the script hash of the Neo account with the given public key
+     *
+     * @param pubKey The public key to get the script hash for.
+     * @return The account's script hash.
+     */
     @Syscall(SYSTEM_CONTRACT_CREATESTANDARDACCOUNT)
     public static native byte[] createStandardAccount(byte[] pubKey);
 
