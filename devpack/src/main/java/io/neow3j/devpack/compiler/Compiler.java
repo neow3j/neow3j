@@ -69,13 +69,13 @@ public class Compiler {
      */
     public CompilationResult compileClass(String name) throws IOException {
         ClassReader reader = new ClassReader(name);
-        ClassNode n = new ClassNode();
-        reader.accept(n, 0);
-        MethodNode entryPoint = getEntryPoint(n);
-        NeoMethod neoMethod = handleMethod(entryPoint);
+        ClassNode asmClass = new ClassNode();
+        reader.accept(asmClass, 0);
+        MethodNode entryPoint = getEntryPoint(asmClass);
+        NeoMethod neoMethod = handleMethod(entryPoint, asmClass);
         byte[] script = neoMethod.toByteArray();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION, script);
-        return new CompilationResult(nef, buildManifest(n, nef.getScriptHash()));
+        return new CompilationResult(nef, buildManifest(asmClass, nef.getScriptHash()));
     }
 
     private MethodNode getEntryPoint(ClassNode n) {
@@ -91,8 +91,8 @@ public class Compiler {
         return entryPoints[0];
     }
 
-    private NeoMethod handleMethod(MethodNode asmMethod) throws IOException {
-        NeoMethod neoMethod = new NeoMethod();
+    private NeoMethod handleMethod(MethodNode asmMethod, ClassNode owner) throws IOException {
+        NeoMethod neoMethod = new NeoMethod(owner, asmMethod);
         collectLocalVariables(asmMethod, neoMethod);
         addMethodBeginCode(asmMethod, neoMethod);
         for (int insnAddr = 0; insnAddr < asmMethod.instructions.size(); insnAddr++) {

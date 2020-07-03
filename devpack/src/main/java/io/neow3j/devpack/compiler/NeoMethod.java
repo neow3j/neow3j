@@ -6,39 +6,112 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
+/**
+ * Represents a method in a NeoVM script.
+ */
 public class NeoMethod {
 
+    /**
+     * The ASM counterpart of this method.
+     */
+    MethodNode asmMethod;
+
+    /**
+     * The type that contains this method.
+     */
+    ClassNode ownerType;
+
+    /**
+     * A string uniquely identifying this method. Includes the owner type's name the
+     * method's signature and the method's name.
+     */
+    String id;
+
+    /**
+     * This method's NeoVM instructions. Maps from instruction address to instruction.
+     */
     SortedMap<Integer, NeoInstruction> instructions = new TreeMap<>();
+
+    /**
+     * This method's local variables (excl. method parametrs).
+     */
     List<NeoVariable> variables = new ArrayList<>();
+
+    /**
+     * Maps JVM bytecode indices to local variables.
+     */
     Map<Integer, NeoVariable> variablesByJVMIndex = new HashMap<>();
+
+    /**
+     * This method's parameters.
+     */
     List<NeoVariable> parameters = new ArrayList<>();
+
+    /**
+     * Maps JVM bytecode indices to method parameters.
+     */
     Map<Integer, NeoVariable> parametersByJVMIndex = new HashMap<>();
 
-    public void addParameter(NeoVariable var) {
+
+    NeoMethod(ClassNode owner, MethodNode asmMethod) {
+        this.asmMethod = asmMethod;
+        this.ownerType = owner;
+        this.id = owner.name + asmMethod.desc + asmMethod.name;
+    }
+
+    /**
+     * Adds a parameter to this method.
+     */
+    void addParameter(NeoVariable var) {
         parameters.add(var.index, var);
         this.parametersByJVMIndex.put(var.jvmIndex, var);
     }
 
-    public void addVariable(NeoVariable var) {
+    /**
+     * Adds a local variable to this method.
+     */
+    void addVariable(NeoVariable var) {
         this.variables.add(var.index, var);
         this.variablesByJVMIndex.put(var.jvmIndex, var);
     }
 
-    public NeoVariable getVariableByJVMIndex(int index) {
+    /**
+     * Gets the variable at the given index from this method in its JVM bytecode representation
+     *
+     * @return the variable.
+     */
+    NeoVariable getVariableByJVMIndex(int index) {
         return this.variablesByJVMIndex.get(index);
     }
 
-    public NeoVariable getParameterByJVMIndex(int index) {
+    /**
+     * Gets the parameter at the given index from this method in its JVM bytecode representation
+     *
+     * @return the parameter.
+     */
+    NeoVariable getParameterByJVMIndex(int index) {
         return this.parametersByJVMIndex.get(index);
     }
 
-    public void addInstruction(NeoInstruction neoInsn) {
+    /**
+     * Adds the given instruction to this method. Uses the instructions address for ordering among
+     * the other instructions.
+     */
+    void addInstruction(NeoInstruction neoInsn) {
         this.instructions.put(neoInsn.address, neoInsn);
     }
 
-    public byte[] toByteArray() {
-        byte[] bytes = new byte[getByteSize()];
+    /**
+     * Serializes this method to a byte array, by serializing all its instructions ordered by
+     * instruction address.
+     *
+     * @return the byte array.
+     */
+    byte[] toByteArray() {
+        byte[] bytes = new byte[byteSize()];
         int i = 0;
         for (NeoInstruction insn : this.instructions.values()) {
             byte[] insnBytes = insn.toByteArray();
@@ -48,9 +121,14 @@ public class NeoMethod {
         return bytes;
     }
 
-    public int getByteSize() {
+    /**
+     * Gets this methods size in bytes (after serializing).
+     *
+     * @return the byte-size of this method.
+     */
+    int byteSize() {
         return this.instructions.values().stream()
-                .map(NeoInstruction::getByteSize)
+                .map(NeoInstruction::byteSize)
                 .reduce(Integer::sum).get();
     }
 }
