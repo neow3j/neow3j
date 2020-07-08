@@ -46,6 +46,7 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ public class Compiler {
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
 
     private int currentNeoAddr;
+    private NeoModule neoModule;
 
     /**
      * Compiles the class with the given name to NeoVM code.
@@ -68,33 +70,56 @@ public class Compiler {
      * @param name the fully qualified name of the class.
      */
     public CompilationResult compileClass(String name) throws IOException {
-        ClassReader reader = new ClassReader(name);
-        ClassNode asmClass = new ClassNode();
-        reader.accept(asmClass, 0);
-        MethodNode entryPoint = getEntryPoint(asmClass);
-        NeoMethod neoMethod = handleMethod(entryPoint, asmClass);
-        byte[] script = neoMethod.toByteArray();
+        ClassNode asmClass = getAsmClass(name);
+        this.neoModule = new NeoModule(asmClass);
+        collectContractMethods(asmClass);
+        for (NeoMethod neoMethod : this.neoModule.methods.values()) {
+            compileMethod(neoMethod);
+        }
+        byte[] script = neoModule.toByteArray();
+        // TODO: Get offsets of methods and set them in the manifest.
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION, script);
         return new CompilationResult(nef, buildManifest(asmClass, nef.getScriptHash()));
     }
 
-    private MethodNode getEntryPoint(ClassNode n) {
-        MethodNode[] entryPoints = n.methods.stream()
-                .filter(m -> m.invisibleAnnotations != null && m.invisibleAnnotations.stream()
-                        .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class))))
-                .toArray(MethodNode[]::new);
-        if (entryPoints.length > 1) {
-            throw new CompilerException("Multiple entry points found.");
-        } else if (entryPoints.length == 0) {
-            throw new CompilerException("No entry point found.");
+    private void collectContractMethods(ClassNode asmClass) {
+        boolean entryPointFound = false;
+        for (MethodNode asmMethod : asmClass.methods) {
+            if ("<init>".equals(asmMethod.name)) {
+                continue;
+            }
+            NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
+            this.neoModule.addMethod(neoMethod);
+            if (isEntryPoint(asmMethod)) {
+                if (entryPointFound) {
+                    throw new CompilerException("Multiple entry points found. Only one method of "
+                            + "a smart contract can be the entry point.");
+                }
+                neoMethod.isEntryPoint = true;
+                entryPointFound = true;
+            }
         }
-        return entryPoints[0];
+        if (!entryPointFound) {
+            throw new CompilerException("No entry point found. Specify one method as the entry "
+                    + "point of the smart contract.");
+        }
     }
 
-    private NeoMethod handleMethod(MethodNode asmMethod, ClassNode owner) throws IOException {
-        NeoMethod neoMethod = new NeoMethod(owner, asmMethod);
-        collectLocalVariables(asmMethod, neoMethod);
-        addMethodBeginCode(asmMethod, neoMethod);
+    private ClassNode getAsmClass(String name) throws IOException {
+        ClassReader reader = new ClassReader(name);
+        ClassNode asmClass = new ClassNode();
+        reader.accept(asmClass, 0);
+        return asmClass;
+    }
+
+    private boolean isEntryPoint(MethodNode asmMethod) {
+        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
+                .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class)));
+    }
+
+    private void compileMethod(NeoMethod neoMethod) throws IOException {
+        MethodNode asmMethod = neoMethod.asmMethod;
+        initializeMethod(asmMethod, neoMethod);
         for (int insnAddr = 0; insnAddr < asmMethod.instructions.size(); insnAddr++) {
             AbstractInsnNode insn = asmMethod.instructions.get(insnAddr);
             JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
@@ -236,8 +261,7 @@ public class Compiler {
         // a index on top that is used in the PICKITEM opcode. We get this index from the class
         // to which the field belongs to.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        ClassNode owner = new ClassNode();
-        new ClassReader(Type.getObjectType(fieldInsn.owner).getClassName()).accept(owner, 0);
+        ClassNode owner = getAsmClass(Type.getObjectType(fieldInsn.owner).getClassName());
         int idx = 0;
         for (FieldNode field : owner.fields) {
             if (field.name.equals(fieldInsn.name)) {
@@ -259,12 +283,26 @@ public class Compiler {
         return 0;
     }
 
-
-    private void collectLocalVariables(MethodNode asmMethod, NeoMethod neoMethod) {
-        if (asmMethod.localVariables == null) {
+    // Checks for method params and local variables, sets them on the NeoMethod object and adds
+    // the INITSLOT opcode to initiatlize variable slots in the NeoVM.
+    private void initializeMethod(MethodNode asmMethod, NeoMethod neoMethod) {
+        if (asmMethod.localVariables == null || asmMethod.localVariables.size() == 0) {
             return;
         }
-        int paramCount = Type.getArgumentTypes(asmMethod.desc).length;
+        int paramCount = 0;
+        if ("this".equals(asmMethod.localVariables.get(0).name)) {
+            paramCount++;
+        }
+        paramCount += Type.getArgumentTypes(asmMethod.desc).length;
+        int localVarCount = asmMethod.localVariables.size() - paramCount;
+        if (paramCount > MAX_PARAMS_COUNT) {
+            throw new CompilerException("The method has more than the max number of "
+                    + "parameters.");
+        }
+        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("The method has more than the max number of local "
+                    + "variables.");
+        }
         for (int i = 0; i < paramCount; i++) {
             LocalVariableNode varNode = asmMethod.localVariables.get(i);
             neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
@@ -272,6 +310,12 @@ public class Compiler {
         for (int i = paramCount; i < asmMethod.localVariables.size(); i++) {
             LocalVariableNode varNode = asmMethod.localVariables.get(i);
             neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
+        }
+        if (paramCount + localVarCount > 0) {
+            NeoInstruction neoInsn = new NeoInstruction(OpCode.INITSLOT,
+                    new byte[]{(byte) localVarCount, (byte) paramCount}, currentNeoAddr);
+            neoMethod.addInstruction(neoInsn);
+            currentNeoAddr++;
         }
     }
 
@@ -311,14 +355,6 @@ public class Compiler {
     private void addMethodBeginCode(MethodNode method, NeoMethod neoMethod) {
         int paramCount = Type.getArgumentTypes(method.desc).length;
         int localVarCount = method.localVariables.size() - paramCount;
-        if (paramCount > MAX_PARAMS_COUNT) {
-            throw new CompilerException("The method has more than the max number of "
-                    + "parameters.");
-        }
-        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("The method has more than the max number of local "
-                    + "variables.");
-        }
         if (paramCount + localVarCount > 0) {
             NeoInstruction neoInsn = new NeoInstruction(OpCode.INITSLOT,
                     new byte[]{(byte) localVarCount, (byte) paramCount}, currentNeoAddr);
@@ -393,19 +429,38 @@ public class Compiler {
         this.currentNeoAddr += insnBytes.length;
     }
 
-    private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod neoMethod)
+    private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod invokingNeoMethod)
             throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        ClassNode owner = new ClassNode();
-        new ClassReader(Type.getObjectType(methodInsn.owner).getClassName()).accept(owner, 0);
-        MethodNode asmMethod = owner.methods.stream()
+        ClassNode owner = getAsmClass(Type.getObjectType(methodInsn.owner).getClassName());
+        MethodNode invokedAsmMethod = owner.methods.stream()
                 .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
                 .findFirst().get();
-        if (hasSyscallAnnotation(asmMethod)) {
-            addSyscall(asmMethod, neoMethod);
-        } else if (hasInstructionAnnotation(asmMethod)) {
-            addInstruction(asmMethod, neoMethod);
+        if (hasSyscallAnnotation(invokedAsmMethod)) {
+            addSyscall(invokedAsmMethod, invokingNeoMethod);
+        } else if (hasInstructionAnnotation(invokedAsmMethod)) {
+            addInstruction(invokedAsmMethod, invokingNeoMethod);
+        } else {
+            addCallMethod(invokingNeoMethod, owner, invokedAsmMethod);
+        }
+    }
+
+    // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
+    // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
+    // compiles it to NeoVM code.
+    private void addCallMethod(NeoMethod invokingNeoMethod, ClassNode owner,
+            MethodNode invokedAsmMethod) throws IOException {
+        String invokedMethodId = NeoMethod.getMethodId(invokedAsmMethod, owner);
+        if (this.neoModule.methods.containsKey(invokedMethodId)) {
+            NeoMethod invokedNeoMethod = this.neoModule.methods.get(invokedMethodId);
+            NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL, this.currentNeoAddr++)
+                    .setExtra(invokedNeoMethod);
+            invokingNeoMethod.addInstruction(invokeInsn);
+        } else {
+            NeoMethod invokedNeoMethod = new NeoMethod(invokedAsmMethod, owner);
+            this.neoModule.addMethod(invokedNeoMethod);
+            compileMethod(invokedNeoMethod);
         }
     }
 
