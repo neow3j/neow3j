@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractTestHelper.CONTRACT_1_SCRIPT_HASH;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -46,6 +45,8 @@ import org.junit.rules.ExpectedException;
 
 public class InvocationTest {
 
+    private static final String SCRIPT = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
+
     @Rule
     public WireMockRule wireMockRule = new WireMockRule();
 
@@ -69,10 +70,10 @@ public class InvocationTest {
 
     @Test
     public void failWithoutSettingWallet() throws IOException {
-        ScriptHash sh = new ScriptHash(CONTRACT_1_SCRIPT_HASH);
+        ScriptHash neo = new ScriptHash("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         String method = "name";
         Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(sh)
+                .withContract(neo)
                 .withFunction(method);
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("wallet");
@@ -82,12 +83,11 @@ public class InvocationTest {
     @Test
     public void testAutomaticSettingOfValidUntilBlockVariable() throws IOException {
         Wallet wallet = Wallet.createWallet();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
         ContractTestHelper.setUpWireMockForGetBlockCount(1000);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .build();
         assertThat(i.getTransaction().getValidUntilBlock(),
@@ -97,8 +97,7 @@ public class InvocationTest {
     @Test
     public void testCreationOfTheScript() throws IOException {
         Wallet wallet = Wallet.createWallet();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
                 .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
@@ -107,23 +106,22 @@ public class InvocationTest {
                 .withValidUntilBlock(1000)
                 .build();
 
-        assertThat(Numeric.toHexStringNoPrefix(i.getTransaction().getScript()), is(script));
+        assertThat(Numeric.toHexStringNoPrefix(i.getTransaction().getScript()), is(SCRIPT));
     }
 
     @Test
     public void testAutomaticSettingOfSystemFee() throws IOException {
         Wallet wallet = Wallet.createWallet();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withValidUntilBlock(1000)
                 .build();
         assertThat(i.getTransaction().getSystemFee(), is(1007390L));
 
         // With fail on false.
-        script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238";
+        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238";
         setUpWireMockForCall("invokescript", "invokescript_name_neo_fail_on_false.json", script);
         i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(script))
@@ -139,11 +137,10 @@ public class InvocationTest {
     public void testAutomaticSettingOfNetworkFeeWithSingleSigAccount() throws Exception {
         Wallet wallet = Wallet.createWallet();
         long additionalFee = 100_000_000; // Additional fee of 1 GAS.
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withValidUntilBlock(1000)
                 .withAdditionalNetworkFee(additionalFee)
@@ -165,14 +162,13 @@ public class InvocationTest {
         List<ECPublicKey> keys = Arrays.asList(keyPair1.getPublicKey(), keyPair2.getPublicKey());
         int m = 2; // signingThreshold
         int n = 2; // total number of participating keys
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, m).isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(multiSigAcc).build();
+        Account multiSigAcc = Account.createMultiSigAccount(keys, m);
+        Wallet wallet = Wallet.withAccounts(multiSigAcc);
         long additionalFee = 100_000_000;
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withValidUntilBlock(1000)
                 .withAdditionalNetworkFee(additionalFee) // Additional fee of 1 GAS.
@@ -197,11 +193,10 @@ public class InvocationTest {
     @Test
     public void failTryingToSignInvocationWithAccountMissingAPrivateKey() throws Exception {
         Wallet w = Wallet.createWallet("neo");
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withSender(w.getAccounts().get(0).getScriptHash())
                 .withWallet(w)
                 .withValidUntilBlock(1000)
@@ -217,15 +212,14 @@ public class InvocationTest {
         Account a2 = Account.createAccount();
         List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
-        Account multiSigAcc = Account.fromMultiSigKeys(keys, 2).build();
-        w.addAccount(a2);
-        w.addAccount(multiSigAcc);
+        Account multiSigAcc = Account.createMultiSigAccount(keys, 2);
+        w.addAccounts(a2);
+        w.addAccounts(multiSigAcc);
         a2.encryptPrivateKey("neo");
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
                 .withSender(multiSigAcc.getScriptHash())
                 .withValidUntilBlock(1000)
@@ -240,11 +234,10 @@ public class InvocationTest {
             throws IOException {
 
         Wallet wallet = Wallet.createWallet();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withValidUntilBlock(1000)
                 .build();
@@ -260,13 +253,12 @@ public class InvocationTest {
 
         Wallet wallet = Wallet.createWallet();
         Account other = Account.createAccount();
-        wallet.addAccount(other);
+        wallet.addAccounts(other);
         Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withAttributes(cosigner)
                 .withValidUntilBlock(1000)
@@ -281,14 +273,12 @@ public class InvocationTest {
     public void dontAddDuplicateDefaultAccountCosignerIfAlreadySetExplicitly() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account acc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(acc).build();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        Account acc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = Wallet.withAccounts(acc);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withAttributes(Cosigner.calledByEntry(acc.getScriptHash()))
                 .withValidUntilBlock(1000)
@@ -303,15 +293,13 @@ public class InvocationTest {
     public void addSenderCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
+        Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = Wallet.withAccounts(senderAcc);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
-                script); // expected script
+                SCRIPT); // expected script
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
                 .withValidUntilBlock(1000)
@@ -328,17 +316,15 @@ public class InvocationTest {
 
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
+        Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = Wallet.withAccounts(senderAcc);
         Account other = Account.createAccount();
-        wallet.addAccount(other);
+        wallet.addAccounts(other);
         Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
                 .withAttributes(cosigner)
@@ -354,14 +340,12 @@ public class InvocationTest {
     public void dontAddDuplicateSenderCosignerIfAlreadySetExplicitly() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account senderAcc = Account.fromECKeyPair(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)))
-                .isDefault().build();
-        Wallet wallet = new Wallet.Builder().accounts(senderAcc).build();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
+        Wallet wallet = Wallet.withAccounts(senderAcc);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
                 .withAttributes(Cosigner.calledByEntry(senderAcc.getScriptHash()))
@@ -377,12 +361,11 @@ public class InvocationTest {
     public void signTransactionWithAdditionalCosigners() throws IOException {
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
-        w.addAccount(cosigner);
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        w.addAccounts(cosigner);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
                 .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
@@ -405,36 +388,38 @@ public class InvocationTest {
 
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
         Invocation.Builder b = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
                 .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(InvocationConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("Wallet does not contain the account for "
-                + "cosigner"));
+        exceptionRule.expectMessage(new StringContains("Wallet does not contain the account for cosigner" +
+                " with script hash " + cosigner.getScriptHash()));
         b.build();
     }
 
-    @Test(expected = InvocationConfigurationException.class)
+    @Test
     public void failSigningInvocationBecauseWalletDoesntContainCosignerAccount()
             throws IOException {
 
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
-        w.addAccount(cosigner);
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        w.addAccounts(cosigner);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
                 .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
         w.removeAccount(cosigner.getScriptHash());
+        exceptionRule.expect(InvocationConfigurationException.class);
+        exceptionRule.expectMessage(new StringContains("Can't create transaction "
+                + "signature. Wallet does not contain the cosigner account with script "
+                + "hash " + cosigner.getScriptHash()));
         i.sign();
     }
 
@@ -444,12 +429,11 @@ public class InvocationTest {
 
         Wallet w = Wallet.createWallet();
         Account cosigner = Account.createAccount();
-        w.addAccount(cosigner);
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script);
+        w.addAccounts(cosigner);
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
                 .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
@@ -475,8 +459,8 @@ public class InvocationTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -514,8 +498,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -555,10 +539,9 @@ public class InvocationTest {
                 "00ea02536400fea46931b5c22a99277a25233ff431d642b855c272890000000000b26213000000000024152000010100fea46931b5c22a99277a25233ff431d642b85501590200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b523801420c406fded85ee546f0283e4dfd8c70c4d514139b0516de6d8a2d569b73e6da8468c21c2e8c18a1d3c8a7d5160960cf89d48fc433df7ddafb602f716ca11043eccb8e2b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e");
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromMultiSigKeys(Arrays.asList(senderPair.getPublicKey()), 1)
-                .isDefault().build();
-        Account singleSigAcc = Account.fromECKeyPair(senderPair).build();
-        Wallet w = new Wallet.Builder().accounts(sender, singleSigAcc).build();
+        Account sender = Account.createMultiSigAccount(Arrays.asList(senderPair.getPublicKey()), 1);
+        Account singleSigAcc = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender, singleSigAcc);
         ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         String script =
@@ -607,8 +590,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -641,8 +624,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
 
         NeoInvokeFunction i = new Invocation.Builder(neow)
@@ -653,9 +636,7 @@ public class InvocationTest {
                 .invokeFunction();
 
         assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), is("NEO"));
-        String expectedScript =
-                "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        assertThat(i.getResult().getScript(), is(expectedScript));
+        assertThat(i.getResult().getScript(), is(SCRIPT));
     }
 
     @Test
@@ -673,8 +654,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
         long netFee = 1_264_390L;
@@ -714,8 +695,8 @@ public class InvocationTest {
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
         ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
@@ -737,16 +718,15 @@ public class InvocationTest {
 
     @Test
     public void invokeScript() throws IOException {
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script,
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT,
                 "[\"969a77db482f74ce27105f760efa139223431394\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
 
         NeoInvokeScript response = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
+                .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
                 .invokeScript();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
@@ -755,13 +735,12 @@ public class InvocationTest {
 
     @Test
     public void invokeScriptWithoutSettingScript() throws IOException {
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", script,
+        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT,
                 "[\"969a77db482f74ce27105f760efa139223431394\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = Account.fromECKeyPair(senderPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(sender).build();
+        Account sender = new Account(senderPair);
+        Wallet w = Wallet.withAccounts(sender);
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("Cannot make an 'invokescript' call");

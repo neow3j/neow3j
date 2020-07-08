@@ -17,9 +17,6 @@ public class NeoApplicationLog {
     @JsonProperty("trigger")
     private String trigger;
 
-    @JsonProperty("contract")
-    private String contract;
-
     @JsonProperty("vmstate")
     private String state;
 
@@ -37,13 +34,11 @@ public class NeoApplicationLog {
     public NeoApplicationLog() {
     }
 
-    public NeoApplicationLog(String transactionId, String trigger, String contract,
-            String state, String gasConsumed,
-            List<StackItem> stack,
-            List<Notification> notifications) {
+    public NeoApplicationLog(String transactionId, String trigger, String state,
+                             String gasConsumed, List<StackItem> stack,
+                             List<Notification> notifications) {
         this.transactionId = transactionId;
         this.trigger = trigger;
-        this.contract = contract;
         this.state = state;
         this.gasConsumed = gasConsumed;
         this.stack = stack;
@@ -110,10 +105,6 @@ public class NeoApplicationLog {
         return trigger;
     }
 
-    public String getContract() {
-        return contract;
-    }
-
     public String getState() {
         return state;
     }
@@ -141,7 +132,6 @@ public class NeoApplicationLog {
         NeoApplicationLog that = (NeoApplicationLog) o;
         return Objects.equals(getTransactionId(), that.getTransactionId()) &&
                 Objects.equals(getTrigger(), that.getTrigger()) &&
-                Objects.equals(getContract(), that.getContract()) &&
                 Objects.equals(getState(), that.getState()) &&
                 Objects.equals(getGasConsumed(), that.getGasConsumed()) &&
                 Objects.equals(getStack(), that.getStack()) &&
@@ -151,8 +141,8 @@ public class NeoApplicationLog {
     @Override
     public int hashCode() {
         return Objects
-                .hash(getTransactionId(), getTrigger(), getContract(), getState(), getGasConsumed(),
-                        getStack(), getNotifications());
+                .hash(getTransactionId(), getTrigger(), getState(), getGasConsumed(),
+                        getStack(),getNotifications());
     }
 
     @Override
@@ -160,7 +150,6 @@ public class NeoApplicationLog {
         return "NeoApplicationLog{" +
                 "transactionId='" + transactionId + '\'' +
                 ", trigger='" + trigger + '\'' +
-                ", contract='" + contract + '\'' +
                 ", state='" + state + '\'' +
                 ", gasConsumed='" + gasConsumed + '\'' +
                 ", stack=" + stack +

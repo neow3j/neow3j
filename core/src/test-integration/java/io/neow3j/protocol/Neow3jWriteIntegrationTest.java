@@ -1,16 +1,34 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.protocol.core.methods.response.InvocationResult;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
+import io.neow3j.protocol.core.methods.response.NeoSendFrom;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import io.neow3j.constants.NeoConstants;
-import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
-import java.io.IOException;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.MountableFile;
 
 // This test class spins up a new private net container for each test. This consumes a lot of time
 // but allows the tests to make changes without interfering with each other.
@@ -18,6 +36,14 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
 
     @Rule
     public GenericContainer privateNetContainer = new GenericContainer(NEO3_PRIVATENET_CONTAINER_IMG)
+            .withClasspathResourceMapping("/node-config/config.json",
+                    "/neo-cli/config.json", BindMode.READ_ONLY)
+            .withClasspathResourceMapping("/node-config/protocol.json",
+                    "/neo-cli/protocol.json", BindMode.READ_ONLY)
+            .withCopyFileToContainer(MountableFile.forClasspathResource("/node-config/wallet.json", 777),
+                    "/neo-cli/wallet.json")
+            .withClasspathResourceMapping("/node-config/rpcserver.config.json",
+                    "/neo-cli/Plugins/RpcServer/config.json", BindMode.READ_ONLY)
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());
 
@@ -27,219 +53,131 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testGetNewAddress() throws IOException {
-        NeoGetNewAddress getNewAddress = getNeow3j().getNewAddress().send();
-        String address = getNewAddress.getAddress();
-        assertNotNull(address);
-        assertThat(address.length(), is(NeoConstants.ADDRESS_SIZE));
+    public void testSendRawTransaction() throws IOException {
+        NeoSendRawTransaction sendRawTransaction = getNeow3j().sendRawTransaction(
+                "00835e32b9941343239213fa0e765f1027ce742f48db779a96" +
+                        "a472890000000000064b130000000000881300000101941343239213fa0e765f1027ce742f48db779a96015500" +
+                        "640c14d785dc45b8103f46ffb930ee7ffe4eff5d86bbf70c14941343239213fa0e765f1027ce742f48db779a96" +
+                        "13c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5201420c40d222" +
+                        "850ae7416a3b381a11b9a22f2130b61944b4c0f3e3e92c8bdd13f1dc5d86dd1989f986b96e010a41fcc8ccdd64" +
+                        "dd0a7c94088877451f1f4ebbab2abf09c3290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0" +
+                        "ebf561cb8f9562380b418a6b1e75")
+                .send();
+
+        String hash = sendRawTransaction.getSendRawTransaction().getHash();
+        assertNotNull(hash);
     }
 
-//    @Test
-//    public void testSendRawTransaction() throws IOException {
-//        NeoSendRawTransaction neoSendRawTransaction = getNeow3j()
-//                .sendRawTransaction
-//                ("80000001ff8c509a090d440c0e3471709ef536f8e8d32caa2488ed8c64c6" +
-//                        "f7acf1d1a44b0000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf" +
-//                        "6efc336fc500e1f505000000001cc9c05cefffe6cdd7b182816a9152ec218d2ec09b7cff" +
-//                        "daa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001fcb69f28623" +
-//                        "0023ba2703c53263e8d6e522dc32203339dcd8eee9014140ccd298c88d8c3609d9369d27" +
-//                        "0c6ab2278b3a4c1540df73b65fee93cbc088160bf3b9ada13a6c089f5a7b970985d4a31f" +
-//                        "54bf549cfa2bac8b9121cb0c56a6c7e22321031a6c6fbbdf02ca351745fa86b9ba5a9452" +
-//                        "d785ac4f7fc2b7548ca2a46c4fcf4aac")
-//                .send();
-//        Boolean sendRawTransaction = neoSendRawTransaction.getSendRawTransaction();
-//        assertThat(sendRawTransaction, is(true));
-//    }
-//
-//    @Test
-//    public void testSendToAddress() throws Exception {
-//        NeoSendToAddress neoSendToAddress = getNeow3j()
-//                .sendToAddress(NEO_HASH.toString(), ADDRESS_4, "10")
-//                .send();
-//        Transaction sendToAddress = neoSendToAddress.getSendToAddress();
-//        assertNotNull(sendToAddress);
-//        assertThat(
-//                sendToAddress.getOutputs(),
-//                hasItem(
-//                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10",
-//                        ADDRESS_4)
-//                )
-//        );
-//    }
-//
-//    @Test
-//    public void testSendToAddress_Fee() throws IOException {
-//        NeoSendToAddress neoSendToAddress = getNeow3j()
-//                .sendToAddress(NEO_HASH.toString(), ADDRESS_4, "10", "0.1")
-//                .send();
-//        Transaction sendToAddress = neoSendToAddress.getSendToAddress();
-//        assertNotNull(sendToAddress);
-//        assertThat(
-//                sendToAddress.getOutputs(),
-//                hasItem(
-//                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "10",
-//                        ADDRESS_4)
-//                )
-//        );
-//        assertThat(
-//                sendToAddress.getNetFee(),
-//                is("0.1")
-//        );
-//    }
-//
-//    @Test
-//    public void testSendToAddress_Fee_And_ChangeAddress() throws IOException {
-//        NeoGetNewAddress neoGetNewAddress = getNeow3j().getNewAddress().send();
-//        String newChangeAddress = neoGetNewAddress.getAddress();
-//        NeoSendToAddress neoSendToAddress = getNeow3j()
-//                .sendToAddress(NEO_HASH.toString(), ADDRESS_4, "10", "0.1", newChangeAddress)
-//                .send();
-//        Transaction sendToAddress = neoSendToAddress.getSendToAddress();
-//        assertNotNull(sendToAddress);
-//        assertThat(sendToAddress.getOutputs().size(), greaterThanOrEqualTo(2));
-//        assertThat(sendToAddress.getOutputs().get(0).getValue(), is("10"));
-//        assertThat(sendToAddress.getOutputs().get(0).getAddress(), is(ADDRESS_4));
-//        assertThat(sendToAddress.getOutputs().get(1).getValue(), notNullValue());
-//        assertThat(sendToAddress.getOutputs().get(1).getAddress(), is(newChangeAddress));
-//        assertThat(
-//                sendToAddress.getNetFee(),
-//                is("0.1")
-//        );
-//    }
-//
-//    @Test
-//    public void testSendMany() throws IOException, InterruptedException {
-//        int balance = getCurrentNeoBalance();
-//        String newNeoBalance = Integer.toString(balance - 110);
-//        NeoSendMany sendMany = getNeow3j().sendMany(
-//                Arrays.asList(
-//                        new TransactionOutput(NEO_HASH.toString(), "100", ADDRESS_2),
-//                        new TransactionOutput(NEO_HASH.toString(), "10", ADDRESS_2)
-//                )
-//        ).send();
-//        assertThat(sendMany.getSendMany(), is(notNullValue()));
-//        assertThat(
-//                sendMany.getSendMany().getOutputs(),
-//                hasItems(
-//                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100",
-//                        ADDRESS_2),
-//                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10",
-//                        ADDRESS_2),
-//                        // instead of "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", the address
-//                        // "AKkkumHbBipZ46UMZJoFynJMXzSRnBvKcs" is also part of the wallet --
-//                        default address
-//                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()),
-//                        newNeoBalance, ADDRESS_3)
-//                )
-//        );
-//        assertThat(sendMany.getSendMany().getInputs(), not(empty()));
-//        assertThat(
-//                sendMany.getSendMany().getType(),
-//                is(TransactionType.CONTRACT_TRANSACTION)
-//        );
-//    }
-//
-//    @Test
-//    public void testSendMany_Empty_Transaction() throws IOException {
-//        NeoSendMany sendMany = getNeow3j().sendMany(Arrays.asList()).send();
-//        assertThat(sendMany.getSendMany(), is(nullValue()));
-//        assertThat(sendMany.getError(), is(notNullValue()));
-//        assertThat(sendMany.getError().getCode(), is(INVALID_PARAMS_CODE));
-//        assertThat(sendMany.getError().getMessage(), is(INVALID_PARAMS_MESSAGE));
-//    }
-//
-//    @Test
-//    public void testSendMany_Fee() throws IOException, InterruptedException {
-//        int balance = getCurrentNeoBalance();
-//        String newNeoBalance = Integer.toString(balance - 110);
-//        NeoSendMany sendMany = getNeow3j().sendMany(
-//                Arrays.asList(
-//                        new TransactionOutput(NEO_HASH.toString(), "100", ADDRESS_2),
-//                        new TransactionOutput(NEO_HASH.toString(), "10", ADDRESS_2)
-//                ),
-//                "0.1"
-//        ).send();
-//        assertThat(sendMany.getSendMany(), is(notNullValue()));
-//        assertThat(
-//                sendMany.getSendMany().getOutputs(),
-//                hasItems(
-//                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100",
-//                        ADDRESS_2),
-//                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10",
-//                        ADDRESS_2),
-//                        // instead of "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y", the address
-//                        // "AKkkumHbBipZ46UMZJoFynJMXzSRnBvKcs" is also part of the wallet --
-//                        default address
-//                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()),
-//                        newNeoBalance, ADDRESS_3)
-//                )
-//        );
-//        assertThat(sendMany.getSendMany().getInputs(), not(empty()));
-//        assertThat(
-//                sendMany.getSendMany().getType(),
-//                is(TransactionType.CONTRACT_TRANSACTION)
-//        );
-//        assertThat(
-//                sendMany.getSendMany().getNetFee(),
-//                is("0.1")
-//        );
-//    }
-//
-//    @Test
-//    public void testSendMany_Fee_And_ChangeAddress() throws IOException, InterruptedException {
-//        int balance = getCurrentNeoBalance();
-//        String newNeoBalance = Integer.toString(balance - 110);
-//        NeoSendMany sendMany = getNeow3j().sendMany(
-//                Arrays.asList(
-//                        new TransactionOutput(NEO_HASH.toString(), "100", ADDRESS_2),
-//                        new TransactionOutput(NEO_HASH.toString(), "10", ADDRESS_2)
-//                ),
-//                "0.1",
-//                ADDRESS_1
-//        ).send();
-//        assertThat(sendMany.getSendMany(), is(notNullValue()));
-//        assertThat(
-//                sendMany.getSendMany().getOutputs(),
-//                hasItems(
-//                        new TransactionOutput(0, prependHexPrefix(NEO_HASH.toString()), "100",
-//                        ADDRESS_2),
-//                        new TransactionOutput(1, prependHexPrefix(NEO_HASH.toString()), "10",
-//                        ADDRESS_2),
-//                        new TransactionOutput(2, prependHexPrefix(NEO_HASH.toString()),
-//                        newNeoBalance, ADDRESS_1)
-//                )
-//        );
-//        assertThat(sendMany.getSendMany().getInputs(), not(empty()));
-//        assertThat(
-//                sendMany.getSendMany().getType(),
-//                is(TransactionType.CONTRACT_TRANSACTION)
-//        );
-//        assertThat(
-//                sendMany.getSendMany().getNetFee(),
-//                is("0.1")
-//        );
-//    }
-//
-//    private int getCurrentNeoBalance() throws IOException {
-//        NeoGetBalance.Balance b = getNeow3j().getBalance(NEO_HASH.toString()).send().getBalance();
-//        return Integer.parseInt(b.getBalance());
-//    }
-//
-//    @Test
-//    public void testInvokeFunction() throws IOException {
-//        // TODO: 2019-03-17 Guil:
-//        // to be implemented
-//    }
-//
-//    @Test
-//    public void testInvokeScript() throws IOException {
-//        // TODO: 2019-03-17 Guil:
-//        // to be implemented
-//    }
-//
-//    @Test
-//    public void testSubmitBlock() throws IOException {
-//        // TODO: 2019-03-21 Guil:
-//        // to be implemented
-//    }
+    @Ignore("Future work, act as a consensus to submit blocks.")
+    @Test
+    public void testSubmitBlock() throws IOException {
+        NeoSubmitBlock submitBlock = getNeow3j()
+                .submitBlock("")
+                .send();
+        Boolean getSubmitBlock = submitBlock.getSubmitBlock();
+
+        assertTrue(getSubmitBlock);
+    }
+
+    // SmartContract Methods
+
+    @Test
+    public void testInvokeFunction() throws IOException {
+        List<ContractParameter> params = Arrays.asList(
+                ADDRESS_2_HASH160,
+                RECIPIENT_ADDRESS_HASH160,
+                ContractParameter.integer(1));
+        NeoInvokeFunction invokeFunction = getNeow3j()
+                .invokeFunction(NEO_HASH, INVOKE_TRANSFER, params, WITNESS)
+                .send();
+        InvocationResult invoc = invokeFunction.getInvocationResult();
+
+        assertNotNull(invoc);
+        assertNotNull(invoc.getScript());
+        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNotNull(invoc.getStack());
+        assertNotNull(invoc.getTx());
+    }
+
+    @Test
+    public void testInvokeScript() throws IOException {
+        NeoInvokeScript invokeScript = getNeow3j().invokeScript(INVOKE_SCRIPT, WITNESS).send();
+        InvocationResult invoc = invokeScript.getInvocationResult();
+
+        assertNotNull(invoc);
+        assertNotNull(invoc.getScript());
+        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNotNull(invoc.getStack());
+        assertNotNull(invoc.getTx());
+    }
+
+    // Wallet Methods
+
+    @Test
+    public void testSendFrom() throws IOException {
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(ADDRESS_1, NEO_HASH, RECIPIENT_ADDRESS_1, "10").send();
+        Transaction tx = sendFrom.getSendFrom();
+
+        assertNotNull(tx);
+        assertNotNull(tx.getHash());
+        assertThat(tx.getSender(), is(ADDRESS_1));
+    }
+
+    @Test
+    public void testSendFrom_TransactionSendAsset() throws IOException {
+        TransactionSendAsset txSendAsset = new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_1);
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(ADDRESS_1, txSendAsset).send();
+        Transaction tx = sendFrom.getSendFrom();
+
+        assertNotNull(tx);
+        assertNotNull(tx.getHash());
+        assertThat(tx.getSender(), is(ADDRESS_1));
+    }
+
+    @Test
+    public void testSendMany() throws IOException {
+        NeoSendMany sendMany = getNeow3j().sendMany(
+                Arrays.asList(
+                        new TransactionSendAsset(NEO_HASH, "100", RECIPIENT_ADDRESS_1),
+                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_2)
+                )
+        ).send();
+
+        assertNotNull(sendMany.getSendMany());
+        Transaction tx = sendMany.getSendMany();
+
+        assertNotNull(tx.getHash());
+        assertNotNull(tx.getNonce());
+        assertNotNull(tx.getSender());
+    }
+
+    @Test
+    public void testSendMany_Empty_Transaction() throws IOException {
+        NeoSendMany sendMany = getNeow3j().sendMany(
+                Arrays.asList()).send();
+
+        assertNull(sendMany.getSendMany());
+        assertNotNull(sendMany.getError());
+        assertThat(sendMany.getError().getCode(), is(INVALID_PARAMS_CODE));
+        assertThat(sendMany.getError().getMessage(), is(INVALID_PARAMS_MESSAGE));
+    }
+
+    @Test
+    public void testSendToAddress() throws IOException {
+        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, "10").send();
+        Transaction tx = sendToAddress.getSendToAddress();
+
+        assertNotNull(tx);
+    }
+
+    @Test
+    public void testSendToAddress_TransactionSendAsset() throws IOException {
+        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_1);
+        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(transactionSendAsset).send();
+        Transaction tx = sendToAddress.getSendToAddress();
+
+        assertNotNull(tx);
+    }
 }

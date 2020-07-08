@@ -47,7 +47,7 @@ public class WalletUtilsTest {
         String pw = "password";
         String fileName = WalletUtils.generateWalletFile(pw, pair, this.tempDir);
         Path p = Paths.get(this.tempDir.getPath(), fileName);
-        Wallet loadedWallet = Wallet.fromNEP6Wallet(p.toFile()).build();
+        Wallet loadedWallet = Wallet.fromNEP6Wallet(p.toFile());
         loadedWallet.decryptAllAccounts(pw);
         assertThat(loadedWallet.getAccounts().get(0).getAddress(), is(expectedAdr));
         assertThat(loadedWallet.getAccounts().get(0).getECKeyPair(), is(pair));
@@ -58,7 +58,7 @@ public class WalletUtilsTest {
         String pw = "password";
         String fileName = WalletUtils.generateWalletFile(pw, this.tempDir);
         Path p = Paths.get(this.tempDir.getPath(), fileName);
-        Wallet loadedWallet = Wallet.fromNEP6Wallet(p.toFile()).build();
+        Wallet loadedWallet = Wallet.fromNEP6Wallet(p.toFile());
         loadedWallet.decryptAllAccounts(pw);
         assertTrue(AddressUtils.isValidAddress(loadedWallet.getAccounts().get(0).getAddress()));
         assertThat(loadedWallet.getAccounts().get(0).getECKeyPair(), notNullValue());
