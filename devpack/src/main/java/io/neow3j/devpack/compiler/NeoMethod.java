@@ -55,11 +55,20 @@ public class NeoMethod {
      */
     Map<Integer, NeoVariable> parametersByJVMIndex = new HashMap<>();
 
+    boolean isEntryPoint = false;
 
-    NeoMethod(ClassNode owner, MethodNode asmMethod) {
+    NeoMethod(MethodNode asmMethod, ClassNode owner) {
         this.asmMethod = asmMethod;
         this.ownerType = owner;
-        this.id = owner.name + asmMethod.desc + asmMethod.name;
+        this.id = getMethodId(asmMethod, owner);
+    }
+
+    /**
+     * Creates a unique id for the given method used to identify this method in the
+     * {@link NeoModule}.
+     */
+    static String getMethodId(MethodNode asmMethod, ClassNode owner) {
+        return owner.name + asmMethod.name + asmMethod.desc;
     }
 
     /**
