@@ -18,22 +18,21 @@ public class NeoInstruction {
      */
     byte[] operand;
 
-    /**
-     * The address of this instruction in the NeoVM script. // TODO: Clarify if it is a global
-     * address over the whole script or only in its own method.
-     */
-    int address;
+    Object extra;
 
-    NeoInstruction(OpCode opcode, byte[] operand, int address) {
+    NeoInstruction(OpCode opcode, byte[] operand) {
         this.opcode = opcode;
         this.operand = operand;
-        this.address = address;
     }
 
-    NeoInstruction(OpCode opcode, int address) {
+    NeoInstruction(OpCode opcode) {
         this.opcode = opcode;
         this.operand = new byte[]{};
-        this.address = address;
+    }
+
+    NeoInstruction setExtra(Object extra) {
+        this.extra = extra;
+        return this;
     }
 
     /**

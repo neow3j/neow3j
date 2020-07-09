@@ -55,7 +55,15 @@ public class NeoMethod {
      */
     Map<Integer, NeoVariable> parametersByJVMIndex = new HashMap<>();
 
+    /**
+     * Tells if a method is a contract's entry point.
+     */
     boolean isEntryPoint = false;
+
+    /**
+     * The address after this method's last instruction byte. I.e. the next free address.
+     */
+    int nextAddress = 0;
 
     NeoMethod(MethodNode asmMethod, ClassNode owner) {
         this.asmMethod = asmMethod;
@@ -110,7 +118,8 @@ public class NeoMethod {
      * the other instructions.
      */
     void addInstruction(NeoInstruction neoInsn) {
-        this.instructions.put(neoInsn.address, neoInsn);
+        this.instructions.put(this.nextAddress, neoInsn);
+        this.nextAddress += 1 + neoInsn.operand.length;
     }
 
     /**

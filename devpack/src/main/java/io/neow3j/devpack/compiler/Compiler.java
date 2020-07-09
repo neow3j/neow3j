@@ -64,7 +64,6 @@ public class Compiler {
 
     private static final String CONSTRUCTOR_NAME = "<init>";
 
-    private int currentNeoAddr;
     private NeoModule neoModule;
 
     /**
@@ -170,7 +169,7 @@ public class Compiler {
             case FRETURN:
             case DRETURN:
             case LRETURN:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.RET, this.currentNeoAddr++));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.RET));
                 break;
             case ASTORE:
             case ASTORE_0:
@@ -209,11 +208,10 @@ public class Compiler {
                 break;
             case NEWARRAY:
             case ANEWARRAY:
-                neoMethod.addInstruction(
-                        new NeoInstruction(OpCode.NEWARRAY, this.currentNeoAddr++));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
                 break;
             case DUP:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.DUP, this.currentNeoAddr++));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
                 break;
             case BASTORE:
             case IASTORE:
@@ -225,15 +223,13 @@ public class Compiler {
                 // and an index must have been pushed onto the operand stack. JVM opcodes
                 // `DASTORE` and `FASTORE` are not covered because NeoVM does not support
                 // doubles and floats.
-                neoMethod.addInstruction(
-                        new NeoInstruction(OpCode.SETITEM, this.currentNeoAddr++));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
                 break;
             case PUTFIELD:
                 addSetField(insn, neoMethod);
                 break;
             case POP:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.DROP,
-                        this.currentNeoAddr++));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 break;
             case CHECKCAST:
                 // Check if the object on the operand stack can be cast to a given type.
@@ -249,8 +245,7 @@ public class Compiler {
                 // and an index must have been pushed onto the operand stack. JVM and NeoVM both
                 // place the loaded element onto the operand stack. JVM opcodes `DALOAD` and
                 // `FALOAD` are not covered because NeoVM does not support doubles and floats.
-                neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM,
-                        this.currentNeoAddr++));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
                 break;
             case GETFIELD:
                 // Get a field variable from an object. The index of the field inside the
@@ -280,8 +275,8 @@ public class Compiler {
         int idx = getFieldIndex(fieldInsn);
         addPushNumber(idx, neoMethod);
         // SETITEM expects the item to be ontop of the stack (item -> index -> array)
-        neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP, this.currentNeoAddr++));
-        neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM, this.currentNeoAddr++));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
     }
 
     private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) throws IOException {
@@ -291,7 +286,7 @@ public class Compiler {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
         int idx = getFieldIndex(fieldInsn);
         addPushNumber(idx, neoMethod);
-        neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM, this.currentNeoAddr++));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
     }
 
     private int getFieldIndex(FieldInsnNode fieldInsn) throws IOException {
@@ -311,7 +306,7 @@ public class Compiler {
         TypeInsnNode typeInsn = (TypeInsnNode) insn;
         ClassNode type = getAsmClass(Type.getObjectType(typeInsn.desc).getClassName());
         addPushNumber(type.fields.size(), neoMethod);
-        neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY, this.currentNeoAddr++));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
         // TODO: Clarify when we need to use `NEWSTRUCT`.
 //        if (type.DeclaringType.IsValueType) {
 //            Insert1(VM.OpCode.NEWSTRUCT, null, to);
@@ -350,10 +345,8 @@ public class Compiler {
             neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
         }
         if (paramCount + localVarCount > 0) {
-            NeoInstruction neoInsn = new NeoInstruction(OpCode.INITSLOT,
-                    new byte[]{(byte) localVarCount, (byte) paramCount}, currentNeoAddr);
-            neoMethod.addInstruction(neoInsn);
-            currentNeoAddr++;
+            neoMethod.addInstruction(new NeoInstruction(
+                    OpCode.INITSLOT, new byte[]{(byte) localVarCount, (byte) paramCount}));
         }
     }
 
@@ -402,11 +395,10 @@ public class Compiler {
         NeoInstruction neoInsn;
         if (index <= 6) {
             OpCode storeCode = OpCode.get(opcode.getCode() - 7 + index);
-            neoInsn = new NeoInstruction(storeCode, this.currentNeoAddr++);
+            neoInsn = new NeoInstruction(storeCode);
         } else {
             byte[] operand = new byte[]{(byte) index};
-            neoInsn = new NeoInstruction(opcode, operand, this.currentNeoAddr);
-            this.currentNeoAddr += 2;
+            neoInsn = new NeoInstruction(opcode, operand);
         }
         return neoInsn;
     }
@@ -431,8 +423,7 @@ public class Compiler {
         byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(
-                OpCode.get(insnBytes[0]), operand, this.currentNeoAddr));
-        this.currentNeoAddr += insnBytes.length;
+                OpCode.get(insnBytes[0]), operand));
     }
 
     private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod invokingNeoMethod)
@@ -458,19 +449,19 @@ public class Compiler {
     private void addCallMethod(NeoMethod invokingNeoMethod, ClassNode owner,
             MethodNode invokedAsmMethod) throws IOException {
         String invokedMethodId = NeoMethod.getMethodId(invokedAsmMethod, owner);
+        NeoMethod invokedNeoMethod = null;
         if (this.neoModule.methods.containsKey(invokedMethodId)) {
-            NeoMethod invokedNeoMethod = this.neoModule.methods.get(invokedMethodId);
-            NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL, this.currentNeoAddr++)
-                    .setExtra(invokedNeoMethod);
-            invokingNeoMethod.addInstruction(invokeInsn);
+            invokedNeoMethod = this.neoModule.methods.get(invokedMethodId);
         } else {
-            NeoMethod invokedNeoMethod = new NeoMethod(invokedAsmMethod, owner);
+            invokedNeoMethod = new NeoMethod(invokedAsmMethod, owner);
             this.neoModule.addMethod(invokedNeoMethod);
             if (invokedAsmMethod.name.equals(CONSTRUCTOR_NAME)) {
                 handleConstructorCall(invokedNeoMethod);
             }
             compileMethod(invokedNeoMethod);
         }
+        NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL).setExtra(invokedNeoMethod);
+        invokingNeoMethod.addInstruction(invokeInsn);
     }
 
     // Searches for the call to the Object() super constructor and removes all instructions up
@@ -479,7 +470,7 @@ public class Compiler {
         String objectName = Type.getInternalName(Object.class);
         boolean hasSuperCallToObject = false;
         Iterator<AbstractInsnNode> it = neoMethod.asmMethod.instructions.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             AbstractInsnNode insn = it.next();
             it.remove();
             if (insn.getType() == AbstractInsnNode.METHOD_INSN
@@ -510,17 +501,17 @@ public class Compiler {
     private void addSyscall(MethodNode asmMethod, NeoMethod neoMethod) {
         // Before doing the syscall the arguments have to be reversed. Additionally, the Opcode
         // NOP is inserted before every Syscall.
-        neoMethod.addInstruction(new NeoInstruction(OpCode.NOP, this.currentNeoAddr++));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.NOP));
         int paramsCount = Type.getMethodType(asmMethod.desc).getArgumentTypes().length;
         if (paramsCount == 2) {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP, this.currentNeoAddr++));
+            neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
         } else if (paramsCount == 3) {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE3, this.currentNeoAddr++));
+            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE3));
         } else if (paramsCount == 4) {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE4, this.currentNeoAddr++));
+            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE4));
         } else if (paramsCount > 4) {
             addPushNumber(paramsCount, neoMethod);
-            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSEN, this.currentNeoAddr++));
+            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSEN));
         }
 
         // Annotation has to be either Syscalls or Syscall.
@@ -544,8 +535,7 @@ public class Compiler {
         String syscallName = ((String[]) syscallAnnotation.values.get(1))[1];
         InteropServiceCode syscall = InteropServiceCode.valueOf(syscallName);
         byte[] hash = Numeric.hexStringToByteArray(syscall.getHash());
-        neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash, this.currentNeoAddr));
-        this.currentNeoAddr += 1 + hash.length;
+        neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
     }
 
     private void addInstruction(MethodNode asmMethod, NeoMethod neoMethod) {
@@ -562,7 +552,6 @@ public class Compiler {
             // handle single instruction
             addSingleInstruction(insnAnnotation, neoMethod);
         }
-
     }
 
     private void addSingleInstruction(AnnotationNode insnAnnotation, NeoMethod neoMethod) {
@@ -570,16 +559,13 @@ public class Compiler {
         OpCode opCode = OpCode.valueOf(insnName);
         // TODO: Get OpCode operand
         byte[] operand = new byte[]{};
-        neoMethod.addInstruction(new NeoInstruction(opCode, operand, this.currentNeoAddr));
-        this.currentNeoAddr += 1 + operand.length;
+        neoMethod.addInstruction(new NeoInstruction(opCode, operand));
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {
         byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number)).toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        neoMethod.addInstruction(new NeoInstruction(
-                OpCode.get(insnBytes[0]), operand, this.currentNeoAddr));
-        this.currentNeoAddr += insnBytes.length;
+        neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
 
     private ContractManifest buildManifest(ClassNode classNode, ScriptHash scriptHash) {
