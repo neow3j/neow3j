@@ -25,7 +25,7 @@ public class StorageContext {
     }
 
     public StorageMap createMap(byte[] prefix) {
-        return new StorageMap(this, prefix, 1);
+        return new StorageMap(this, prefix);
     }
 
     public StorageMap createMap(byte prefix) {

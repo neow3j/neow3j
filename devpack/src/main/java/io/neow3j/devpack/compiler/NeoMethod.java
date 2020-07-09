@@ -68,7 +68,7 @@ public class NeoMethod {
      * {@link NeoModule}.
      */
     static String getMethodId(MethodNode asmMethod, ClassNode owner) {
-        return owner.name + asmMethod.name + asmMethod.desc;
+        return owner.name + "." + asmMethod.name + asmMethod.desc;
     }
 
     /**
@@ -140,4 +140,5 @@ public class NeoMethod {
                 .map(NeoInstruction::byteSize)
                 .reduce(Integer::sum).get();
     }
+
 }

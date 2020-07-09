@@ -13,11 +13,6 @@ public class StorageMap {
         this.prefix = prefix;
     }
 
-    public StorageMap(StorageContext context, byte[] prefix, int i) {
-        this.context = context;
-        this.prefix = prefix;
-    }
-
     public void delete(byte[] key) {
         byte[] k = SmartContract.concat(this.prefix, key);
         Storage.delete(this.context, k);
