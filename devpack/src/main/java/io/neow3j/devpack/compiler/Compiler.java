@@ -63,6 +63,7 @@ public class Compiler {
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
 
     private static final String CONSTRUCTOR_NAME = "<init>";
+    private static final String THIS_KEYWORD = "this";
 
     private NeoModule neoModule;
 
@@ -78,21 +79,21 @@ public class Compiler {
         for (NeoMethod neoMethod : this.neoModule.methods.values()) {
             compileMethod(neoMethod);
         }
-        byte[] script = neoModule.toByteArray();
+        this.neoModule.finalizeModule();
         // TODO: Get offsets of methods and set them in the manifest.
+        byte[] script = this.neoModule.toByteArray();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION, script);
-        return new CompilationResult(nef, buildManifest(asmClass, nef.getScriptHash()));
+        ContractManifest manifest = buildManifest(this.neoModule, nef.getScriptHash());
+        return new CompilationResult(nef, manifest);
     }
 
     private void collectContractMethods(ClassNode asmClass) {
         boolean entryPointFound = false;
         for (MethodNode asmMethod : asmClass.methods) {
             if (CONSTRUCTOR_NAME.equals(asmMethod.name)) {
-                // Constructors of the smart contract are ignored.
-                continue;
+                continue; // Constructors of the smart contract are ignored.
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            this.neoModule.addMethod(neoMethod);
             if (isEntryPoint(asmMethod)) {
                 if (entryPointFound) {
                     throw new CompilerException("Multiple entry points found. Only one method of "
@@ -101,6 +102,8 @@ public class Compiler {
                 neoMethod.isEntryPoint = true;
                 entryPointFound = true;
             }
+            neoMethod.isSmartContractMethod = true;
+            this.neoModule.addMethod(neoMethod);
         }
         if (!entryPointFound) {
             throw new CompilerException("No entry point found. Specify one method as the entry "
@@ -323,7 +326,7 @@ public class Compiler {
             return;
         }
         int paramCount = 0;
-        if ("this".equals(asmMethod.localVariables.get(0).name)) {
+        if (asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
             paramCount++;
         }
         paramCount += Type.getArgumentTypes(asmMethod.desc).length;
@@ -426,42 +429,61 @@ public class Compiler {
                 OpCode.get(insnBytes[0]), operand));
     }
 
-    private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod invokingNeoMethod)
+    private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod callingNeoMethod)
             throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
         ClassNode owner = getAsmClass(Type.getObjectType(methodInsn.owner).getClassName());
-        MethodNode invokedAsmMethod = owner.methods.stream()
+        Optional<MethodNode> calleAsmMethodOpt = owner.methods.stream()
                 .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
-                .findFirst().get();
-        if (hasSyscallAnnotation(invokedAsmMethod)) {
-            addSyscall(invokedAsmMethod, invokingNeoMethod);
-        } else if (hasInstructionAnnotation(invokedAsmMethod)) {
-            addInstruction(invokedAsmMethod, invokingNeoMethod);
+                .findFirst();
+        while (!calleAsmMethodOpt.isPresent()) {
+            if (owner.superName == null) {
+                throw new CompilerException("Couldn't find method " + methodInsn.name + " on "
+                        + "owning type and its super types.");
+            }
+            owner = getAsmClass(Type.getObjectType(owner.superName).getClassName());
+            calleAsmMethodOpt = owner.methods.stream()
+                    .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
+                    .findFirst();
+        }
+        MethodNode calledAsmMethod = calleAsmMethodOpt.get();
+        if (hasSyscallAnnotation(calledAsmMethod)) {
+            addSyscall(calledAsmMethod, callingNeoMethod);
+        } else if (hasInstructionAnnotation(calledAsmMethod)) {
+            addInstruction(calledAsmMethod, callingNeoMethod);
         } else {
-            addCallMethod(invokingNeoMethod, owner, invokedAsmMethod);
+            addCallMethod(callingNeoMethod, owner, calledAsmMethod);
         }
     }
 
     // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
     // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
     // compiles it to NeoVM code.
-    private void addCallMethod(NeoMethod invokingNeoMethod, ClassNode owner,
-            MethodNode invokedAsmMethod) throws IOException {
-        String invokedMethodId = NeoMethod.getMethodId(invokedAsmMethod, owner);
-        NeoMethod invokedNeoMethod = null;
+    private void addCallMethod(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode calledAsmMethod) throws IOException {
+
+        String invokedMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
+        NeoMethod invokedNeoMethod;
         if (this.neoModule.methods.containsKey(invokedMethodId)) {
             invokedNeoMethod = this.neoModule.methods.get(invokedMethodId);
         } else {
-            invokedNeoMethod = new NeoMethod(invokedAsmMethod, owner);
+            invokedNeoMethod = new NeoMethod(calledAsmMethod, owner);
             this.neoModule.addMethod(invokedNeoMethod);
-            if (invokedAsmMethod.name.equals(CONSTRUCTOR_NAME)) {
+            if (calledAsmMethod.name.equals(CONSTRUCTOR_NAME)) {
                 handleConstructorCall(invokedNeoMethod);
             }
             compileMethod(invokedNeoMethod);
         }
-        NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL).setExtra(invokedNeoMethod);
-        invokingNeoMethod.addInstruction(invokeInsn);
+        addReverseArguments(calledAsmMethod, callingNeoMethod);
+        // We explicitly add the 4-element byte array as an operand so that instruction addresses
+        // can easily be calculated even before the correct offset is set on the CALL_L opcode.
+        // The actual setting of the correct offset happens in NeoModule.
+        NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL_L, new byte[4])
+                .setExtra(invokedNeoMethod);
+        // Note that we never make use of Opcode.CALL because that complicates calculation of
+        // instruction addresses in the NeoModule.
+        callingNeoMethod.addInstruction(invokeInsn);
     }
 
     // Searches for the call to the Object() super constructor and removes all instructions up
@@ -498,36 +520,45 @@ public class Compiler {
                         || a.desc.equals(Type.getDescriptor(Instruction.class)));
     }
 
-    private void addSyscall(MethodNode asmMethod, NeoMethod neoMethod) {
+    private void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Before doing the syscall the arguments have to be reversed. Additionally, the Opcode
         // NOP is inserted before every Syscall.
-        neoMethod.addInstruction(new NeoInstruction(OpCode.NOP));
-        int paramsCount = Type.getMethodType(asmMethod.desc).getArgumentTypes().length;
-        if (paramsCount == 2) {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
-        } else if (paramsCount == 3) {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE3));
-        } else if (paramsCount == 4) {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE4));
-        } else if (paramsCount > 4) {
-            addPushNumber(paramsCount, neoMethod);
-            neoMethod.addInstruction(new NeoInstruction(OpCode.REVERSEN));
-        }
-
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NOP));
+        addReverseArguments(calledAsmMethod, callingNeoMethod);
         // Annotation has to be either Syscalls or Syscall.
-        AnnotationNode syscallAnnotation = asmMethod.invisibleAnnotations.stream()
+        AnnotationNode syscallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
                         || a.desc.equals(Type.getDescriptor(Syscall.class)))
                 .findFirst().get();
         if (syscallAnnotation.desc.equals(Type.getDescriptor(Syscalls.class))) {
-            // handle multiple syscalls
-            assert syscallAnnotation.values.size() == 2;
             for (Object a : (List<?>) syscallAnnotation.values.get(1)) {
-                addSingleSyscall((AnnotationNode) a, neoMethod);
+                addSingleSyscall((AnnotationNode) a, callingNeoMethod);
             }
         } else {
-            // handle single syscall
-            addSingleSyscall(syscallAnnotation, neoMethod);
+            addSingleSyscall(syscallAnnotation, callingNeoMethod);
+        }
+    }
+
+    // Adds an opcode that reverses the ordering of the arguments on the evaluation stack
+    // according to the number of arguments the called method takes.
+    private void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
+        int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
+        if (calledAsmMethod.localVariables != null
+                && calledAsmMethod.localVariables.size() > 0
+                && calledAsmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+            // The called method is an instance method, i.e., the instance itself ("this") is
+            // also an argument.
+            paramsCount++;
+        }
+        if (paramsCount == 2) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
+        } else if (paramsCount == 3) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE3));
+        } else if (paramsCount == 4) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE4));
+        } else if (paramsCount > 4) {
+            addPushNumber(paramsCount, callingNeoMethod);
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSEN));
         }
     }
 
@@ -544,21 +575,23 @@ public class Compiler {
                         || a.desc.equals(Type.getDescriptor(Instruction.class)))
                 .findFirst().get();
         if (insnAnnotation.desc.equals(Type.getDescriptor(Instructions.class))) {
-            // handle multiple instructions
             for (Object a : (List<?>) insnAnnotation.values.get(1)) {
                 addSingleInstruction((AnnotationNode) a, neoMethod);
             }
         } else {
-            // handle single instruction
             addSingleInstruction(insnAnnotation, neoMethod);
         }
     }
 
     private void addSingleInstruction(AnnotationNode insnAnnotation, NeoMethod neoMethod) {
+        assert "opcode".equals(insnAnnotation.values.get(0));
+        assert insnAnnotation.values.get(1) instanceof String[];
+        assert "operand".equals(insnAnnotation.values.get(2));
+        assert insnAnnotation.values.get(3) instanceof Byte;
+
         String insnName = ((String[]) insnAnnotation.values.get(1))[1];
         OpCode opCode = OpCode.valueOf(insnName);
-        // TODO: Get OpCode operand
-        byte[] operand = new byte[]{};
+        byte[] operand = new byte[] {(byte) insnAnnotation.values.get(3)};
         neoMethod.addInstruction(new NeoInstruction(opCode, operand));
     }
 
@@ -568,41 +601,37 @@ public class Compiler {
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
 
-    private ContractManifest buildManifest(ClassNode classNode, ScriptHash scriptHash) {
+    private ContractManifest buildManifest(NeoModule neoModule, ScriptHash scriptHash) {
         List<ContractGroup> groups = new ArrayList<>();
-        ContractFeatures features = buildContractFeatures(classNode);
-        ContractABI abi = buildABI(classNode, scriptHash);
+        ContractFeatures features = buildContractFeatures(neoModule.asmSmartContractClass);
+        ContractABI abi = buildABI(neoModule, scriptHash);
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));
         List<String> trusts = new ArrayList<>();
         List<String> safeMethods = new ArrayList<>();
-        Map<String, String> extras = buildManifestExtra(classNode);
+        Map<String, String> extras = buildManifestExtra(neoModule.asmSmartContractClass);
         return new ContractManifest(groups, features, abi, permissions, trusts, safeMethods,
                 extras);
     }
 
-    private ContractABI buildABI(ClassNode classNode, ScriptHash scriptHash) {
+    private ContractABI buildABI(NeoModule neoModule, ScriptHash scriptHash) {
         List<ContractMethod> methods = new ArrayList<>();
-        List<ContractEvent> events = new ArrayList<>();
         // TODO: Fill events list.
-        for (MethodNode asmMethod : classNode.methods) {
-            if (CONSTRUCTOR_NAME.equals(asmMethod.name)) {
-                continue; // Skip the constructor.
+        List<ContractEvent> events = new ArrayList<>();
+        for (NeoMethod neoMethod : neoModule.methods.values()) {
+            if (!neoMethod.isSmartContractMethod) {
+                // TODO: This needs to change when enabling inheritance.
+                continue; // Only add methods to the ABI that appear in the contract itself.
             }
-            // TODO: Make this compatible with non-static methods too. In that case the first
-            //  local variable is the 'this' object.
-            int paramsCount = Type.getArgumentTypes(asmMethod.desc).length;
-            ContractParameter[] params = new ContractParameter[paramsCount];
-            for (int i = 0; i < paramsCount; i++) {
-                LocalVariableNode varNode = asmMethod.localVariables.get(i);
-                ContractParameterType paramType =
-                        mapTypeToParameterType(Type.getType(varNode.desc));
-                params[i] = new ContractParameter(varNode.name, paramType, null);
+            List<ContractParameter> contractParams = new ArrayList<>();
+            for (NeoVariable var : neoMethod.parameters) {
+                contractParams.add(new ContractParameter(var.asmVariable.name,
+                        mapTypeToParameterType(Type.getType(var.asmVariable.desc)), null));
             }
             ContractParameterType paramType = mapTypeToParameterType(
-                    Type.getMethodType(asmMethod.desc).getReturnType());
-            // TODO: Set the correct method offset.
-            methods.add(new ContractMethod(asmMethod.name, Arrays.asList(params), paramType, 0));
+                    Type.getMethodType(neoMethod.asmMethod.desc).getReturnType());
+            methods.add(new ContractMethod(neoMethod.asmMethod.name, contractParams, paramType,
+                    neoMethod.startAddress));
         }
         return new ContractABI(scriptHash.toString(), methods, events);
     }
@@ -627,6 +656,10 @@ public class Compiler {
         if (typeName.equals(Byte[].class.getTypeName())
                 || typeName.equals(byte[].class.getTypeName())) {
             return ContractParameterType.BYTE_ARRAY;
+        }
+        if (typeName.equals(Void.class.getTypeName())
+                || typeName.equals(void.class.getTypeName())) {
+            return ContractParameterType.VOID;
         }
         try {
             typeName = type.getDescriptor().replace("/", ".");
@@ -678,10 +711,10 @@ public class Compiler {
         return extras;
     }
 
-    public class CompilationResult {
+    public static class CompilationResult {
 
-        private NefFile nef;
-        private ContractManifest manifest;
+        private final NefFile nef;
+        private final ContractManifest manifest;
 
         private CompilationResult(NefFile nef, ContractManifest manifest) {
             this.nef = nef;

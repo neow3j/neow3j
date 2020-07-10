@@ -25,8 +25,8 @@ public class NeoMethod {
     ClassNode ownerType;
 
     /**
-     * A string uniquely identifying this method. Includes the owner type's name the
-     * method's signature and the method's name.
+     * A string uniquely identifying this method. Includes the owner type's name the method's
+     * signature and the method's name.
      */
     String id;
 
@@ -61,9 +61,21 @@ public class NeoMethod {
     boolean isEntryPoint = false;
 
     /**
-     * The address after this method's last instruction byte. I.e. the next free address.
+     * Tells if this method belongs to a smart contract.
+     */
+    boolean isSmartContractMethod = false;
+
+    /**
+     * The address after this method's last instruction byte. I.e. the next free address. This
+     * address is not absolute in relation to the {@link NeoModule} this method belongs to. It is a
+     * method-internal address.
      */
     int nextAddress = 0;
+
+    /**
+     * The address in the {@link NeoModule} at which this method starts.
+     */
+    Integer startAddress = null;
 
     NeoMethod(MethodNode asmMethod, ClassNode owner) {
         this.asmMethod = asmMethod;
@@ -72,8 +84,8 @@ public class NeoMethod {
     }
 
     /**
-     * Creates a unique id for the given method used to identify this method in the
-     * {@link NeoModule}.
+     * Creates a unique id for the given method used to identify this method in the {@link
+     * NeoModule}.
      */
     static String getMethodId(MethodNode asmMethod, ClassNode owner) {
         return owner.name + "." + asmMethod.name + asmMethod.desc;
