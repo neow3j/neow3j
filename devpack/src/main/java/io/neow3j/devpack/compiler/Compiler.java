@@ -590,9 +590,12 @@ public class Compiler {
         assert insnAnnotation.values.get(3) instanceof Byte;
 
         String insnName = ((String[]) insnAnnotation.values.get(1))[1];
-        OpCode opCode = OpCode.valueOf(insnName);
-        byte[] operand = new byte[] {(byte) insnAnnotation.values.get(3)};
-        neoMethod.addInstruction(new NeoInstruction(opCode, operand));
+        OpCode opcode = OpCode.valueOf(insnName);
+        if (opcode.equals(OpCode.NOP)) {
+            return;
+        }
+        byte[] operand = new byte[]{(byte) insnAnnotation.values.get(3)};
+        neoMethod.addInstruction(new NeoInstruction(opcode, operand));
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {
