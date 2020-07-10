@@ -587,15 +587,29 @@ public class Compiler {
         assert "opcode".equals(insnAnnotation.values.get(0));
         assert insnAnnotation.values.get(1) instanceof String[];
         assert "operand".equals(insnAnnotation.values.get(2));
-        assert insnAnnotation.values.get(3) instanceof Byte;
+        assert insnAnnotation.values.get(3) instanceof List<?>;
 
         String insnName = ((String[]) insnAnnotation.values.get(1))[1];
         OpCode opcode = OpCode.valueOf(insnName);
         if (opcode.equals(OpCode.NOP)) {
             return;
         }
-        byte[] operand = new byte[]{(byte) insnAnnotation.values.get(3)};
+        byte[] operand = getOperand(insnAnnotation, opcode);
         neoMethod.addInstruction(new NeoInstruction(opcode, operand));
+    }
+
+    private byte[] getOperand(AnnotationNode insnAnnotation, OpCode opcode) {
+        List<?> operandAsList = (List<?>) insnAnnotation.values.get(3);
+        if (operandAsList.size() != OpCode.getOperandSize(opcode).size()) {
+            throw new CompilerException("Opcode " + opcode.name() + " was used with a wrong "
+                    + "number of operand byts.");
+        }
+        byte[] operand = new byte[operandAsList.size()];
+        int i = 0;
+        for (Object element : operandAsList) {
+            operand[i++] = (byte) element;
+        }
+        return operand;
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {

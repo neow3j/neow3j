@@ -5,7 +5,6 @@ import io.neow3j.constants.OperandSize;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 
 /**
  * Reads Neo VM scripts and converts them to a more human-readable representation.
@@ -35,7 +34,7 @@ public class ScriptReader {
             while (r.getPosition() < script.length) {
                 OpCode code = OpCode.get(r.readByte());
                 builder.append(code.name());
-                OperandSize operandSize = getOperandSize(code);
+                OperandSize operandSize = OpCode.getOperandSize(code);
                 if (operandSize == null) {
                     builder.append("\n");
                     continue;
@@ -68,22 +67,6 @@ public class ScriptReader {
         } else {
             throw new UnsupportedOperationException("Only operand prefix sizes 1, 2, and 4 are "
                     + "supported, but got " + operandSize.prefixSize());
-        }
-    }
-
-    private static OperandSize getOperandSize(OpCode code) {
-        try {
-            Annotation[] annotations = OpCode.class.getField(code.name()).getAnnotations();
-            if (annotations.length == 0) {
-                return null;
-            }
-            if (annotations[0].annotationType() != OperandSize.class) {
-                throw new IllegalStateException("Unsupported annotation on OpCode.");
-            }
-            return (OperandSize) annotations[0];
-        } catch (NoSuchFieldException ignore) {
-            // Does not happen.
-            return null;
         }
     }
 

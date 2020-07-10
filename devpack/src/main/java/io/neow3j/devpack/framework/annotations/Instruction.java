@@ -7,10 +7,9 @@ import java.lang.annotation.Repeatable;
 @Repeatable(Instructions.class)
 public @interface Instruction {
 
-    OpCode opcode();
+    OpCode opcode() default OpCode.NOP;
 
-    // TODO: Many opcodes don't require an operand. It needs to be disregarded on such opcodes.
-    byte operand() default 0;
+    byte[] operand() default 0;
 
     @interface Instructions {
         Instruction[] value();
