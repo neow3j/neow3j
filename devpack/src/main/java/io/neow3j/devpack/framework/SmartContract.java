@@ -100,7 +100,7 @@ public class SmartContract {
      * @param source The byte array to cast.
      * @return the string.
      */
-    @Instruction() // Nothing to do. Defaults to NOP which is ignored by compiler.
+    @Instruction() // Nothing to do.
     public native static String asString(byte[] source);
 
     /**

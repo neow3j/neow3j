@@ -9,7 +9,7 @@ public @interface Instruction {
 
     OpCode opcode() default OpCode.NOP;
 
-    byte[] operand() default 0;
+    byte[] operand() default {};
 
     @interface Instructions {
         Instruction[] value();

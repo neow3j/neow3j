@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -57,13 +58,14 @@ public class Compiler {
     private static final Logger log = LoggerFactory.getLogger(Compiler.class);
 
     public static final String COMPILER_NAME = "neow3j";
-    public static final Version COMPILER_VERSION = new Version(0, 0, 0, 0);
+    public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
 
     private static final String CONSTRUCTOR_NAME = "<init>";
     private static final String THIS_KEYWORD = "this";
+    private static final String OBJECT_INTERNAL_NAME = Type.getInternalName(Object.class);
 
     private NeoModule neoModule;
 
@@ -126,22 +128,20 @@ public class Compiler {
     private void compileMethod(NeoMethod neoMethod) throws IOException {
         initializeMethod(neoMethod.asmMethod, neoMethod);
         for (int insnAddr = 0; insnAddr < neoMethod.asmMethod.instructions.size(); insnAddr++) {
-            int skipAddresses = handleInsn(neoMethod, neoMethod.asmMethod, insnAddr);
-            insnAddr += skipAddresses;
+            handleInsn(neoMethod, neoMethod.asmMethod, insnAddr);
         }
     }
 
     // Returns the number additional addresses that where processed when handling the given
     // instruction. This usually means that this number of addresses does not have to processed
     // again in the calling method.
-    private int handleInsn(NeoMethod neoMethod, MethodNode asmMethod, int insnAddr)
+    private void handleInsn(NeoMethod neoMethod, MethodNode asmMethod, int insnAddr)
             throws IOException {
 
-        int skipAddresses = 0;
         AbstractInsnNode insn = asmMethod.instructions.get(insnAddr);
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
-            return skipAddresses;
+            return;
         }
         log.info(opcode.toString());
         switch (opcode) {
@@ -267,7 +267,6 @@ public class Compiler {
                 throw new CompilerException("Unsupported instruction " + opcode + " in: " +
                         asmMethod.name + ".");
         }
-        return skipAddresses;
     }
 
     private void addSetField(AbstractInsnNode insn, NeoMethod neoMethod) throws IOException {
@@ -314,9 +313,9 @@ public class Compiler {
 //        if (type.DeclaringType.IsValueType) {
 //            Insert1(VM.OpCode.NEWSTRUCT, null, to);
 //        }
-        // The NEW JVMopcode is followed by a DUP JVMopcode which will be handled correctly by
-        // `compileMethod()`. After that some other opcodes can follow but at some point a
-        // INVOKESPECIAL opcode will follow that calls the type's constructor.
+        // The NEW is followed by a DUP opcode which makes the object reference available to the
+        // constructor call. Only in case of empty constructors do we need to remove the DUP opcode
+        // because we don't need to call the ctor method. That is handled in `addCallMethod()`.
     }
 
     // Checks for method params and local variables, sets them on the NeoMethod object and adds
@@ -366,32 +365,31 @@ public class Compiler {
     }
 
     private void addLoadLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
-        VarInsnNode varInsn = (VarInsnNode) insn;
-        if (varInsn.var >= MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("Local variable index to high. Was " + varInsn + " but "
+        addLoadOrStoreLocalVariable((VarInsnNode) insn, neoMethod, OpCode.LDARG, OpCode.LDLOC);
+    }
+
+    private void addStoreLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
+        addLoadOrStoreLocalVariable((VarInsnNode) insn, neoMethod, OpCode.STARG, OpCode.STLOC);
+    }
+
+    private void addLoadOrStoreLocalVariable(VarInsnNode insn, NeoMethod neoMethod,
+            OpCode argOpcode, OpCode varOpcode) {
+
+        if (insn.var >= MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("Local variable index to high. Was " + insn + " but "
                     + "maximally " + MAX_LOCAL_VARIABLES_COUNT + " local variables are supported.");
         }
         // The local variable can either be a method parameter or a normal variable defined in
         // the method body. The NeoMethod has been initialized with all the local variables.
         // Therefore, we can check here if it is a parameter or a normal variable and treat it
         // accordingly.
-        NeoVariable param = neoMethod.getParameterByJVMIndex(varInsn.var);
+        NeoVariable param = neoMethod.getParameterByJVMIndex(insn.var);
         if (param != null) {
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.index, OpCode.LDARG));
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.index, argOpcode));
         } else {
-            NeoVariable var = neoMethod.getVariableByJVMIndex(varInsn.var);
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.index, OpCode.LDLOC));
+            NeoVariable var = neoMethod.getVariableByJVMIndex(insn.var);
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.index, varOpcode));
         }
-    }
-
-    private void addStoreLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
-        VarInsnNode varInsn = (VarInsnNode) insn;
-        if (varInsn.var >= MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("Local variable index to high. Was " + varInsn + " but "
-                    + "maximally " + MAX_LOCAL_VARIABLES_COUNT + " local variables are supported.");
-        }
-        NeoVariable var = neoMethod.getVariableByJVMIndex(varInsn.var);
-        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.index, OpCode.STLOC));
     }
 
     private NeoInstruction buildStoreOrLoadVariableInsn(int index, OpCode opcode) {
@@ -469,10 +467,18 @@ public class Compiler {
             invokedNeoMethod = this.neoModule.methods.get(invokedMethodId);
         } else {
             invokedNeoMethod = new NeoMethod(calledAsmMethod, owner);
-            this.neoModule.addMethod(invokedNeoMethod);
             if (calledAsmMethod.name.equals(CONSTRUCTOR_NAME)) {
+                if (hasInstructions(calledAsmMethod))  {
+                    // If the constructor is empty we don't need to parse it. The DUP opcode
+                    // added before must be removed again.
+                    int lastKey = callingNeoMethod.instructions.lastKey();
+                    assert callingNeoMethod.instructions.get(lastKey).opcode.equals(OpCode.DUP);
+                    callingNeoMethod.instructions.remove(lastKey);
+                    return;
+                }
                 handleConstructorCall(invokedNeoMethod);
             }
+            this.neoModule.addMethod(invokedNeoMethod);
             compileMethod(invokedNeoMethod);
         }
         addReverseArguments(calledAsmMethod, callingNeoMethod);
@@ -486,10 +492,20 @@ public class Compiler {
         callingNeoMethod.addInstruction(invokeInsn);
     }
 
-    // Searches for the call to the Object() super constructor and removes all instructions up
-    // to it (including the super call itself).
-    private void handleConstructorCall(NeoMethod neoMethod) throws IOException {
-        String objectName = Type.getInternalName(Object.class);
+    private boolean hasInstructions(MethodNode asmMethod) {
+        if (asmMethod.instructions == null || asmMethod.instructions.size() == 0) {
+            return false;
+        }
+        return Stream.of(asmMethod.instructions.toArray()).anyMatch(insn ->
+                    insn.getType() != AbstractInsnNode.LINE &&
+                    insn.getType() != AbstractInsnNode.LABEL &&
+                    insn.getType() != AbstractInsnNode.FRAME);
+    }
+
+    // Goes through the instructions of the given method and looks for the call to the `Object`
+    // constructor. Removes all instructions up to it (including the super call itself). Assumes
+    // that the constructed class does not extend any other class than `Object`.
+    private void handleConstructorCall(NeoMethod neoMethod) {
         boolean hasSuperCallToObject = false;
         Iterator<AbstractInsnNode> it = neoMethod.asmMethod.instructions.iterator();
         while (it.hasNext()) {
@@ -497,7 +513,7 @@ public class Compiler {
             it.remove();
             if (insn.getType() == AbstractInsnNode.METHOD_INSN
                     && ((MethodInsnNode) insn).name.equals(CONSTRUCTOR_NAME)
-                    && ((MethodInsnNode) insn).owner.equals(objectName)) {
+                    && ((MethodInsnNode) insn).owner.equals(OBJECT_INTERNAL_NAME)) {
                 hasSuperCallToObject = true;
                 break;
             }
@@ -584,18 +600,25 @@ public class Compiler {
     }
 
     private void addSingleInstruction(AnnotationNode insnAnnotation, NeoMethod neoMethod) {
-        assert "opcode".equals(insnAnnotation.values.get(0));
-        assert insnAnnotation.values.get(1) instanceof String[];
-        assert "operand".equals(insnAnnotation.values.get(2));
-        assert insnAnnotation.values.get(3) instanceof List<?>;
-
+        // Setting a default value on the Instruction annotation does not have an effect on ASM.
+        // The default value does not show up in the ASM annotation node. I.e. the annotation
+        // values can be null if the default values were used.
+        if (insnAnnotation.values == null) {
+            // In this case the default value OpCode.NOP was used, so there is nothing to do.
+            return;
+        }
         String insnName = ((String[]) insnAnnotation.values.get(1))[1];
         OpCode opcode = OpCode.valueOf(insnName);
         if (opcode.equals(OpCode.NOP)) {
+            // The default value OpCode.NOP was set explicitly. Nothing to do.
             return;
         }
-        byte[] operand = getOperand(insnAnnotation, opcode);
-        neoMethod.addInstruction(new NeoInstruction(opcode, operand));
+        if (insnAnnotation.values.size() == 4) {
+            byte[] operand = getOperand(insnAnnotation, opcode);
+            neoMethod.addInstruction(new NeoInstruction(opcode, operand));
+        } else {
+            neoMethod.addInstruction(new NeoInstruction(opcode));
+        }
     }
 
     private byte[] getOperand(AnnotationNode insnAnnotation, OpCode opcode) {
