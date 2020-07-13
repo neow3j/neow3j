@@ -3,7 +3,6 @@ package io.neow3j.devpack.framework;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALLEX;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATE;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_DESTROY;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_GETCALLFLAGS;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_UPDATE;
@@ -11,7 +10,8 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_UPDATE;
 import io.neow3j.devpack.framework.annotations.Syscall;
 
 /**
- * Represents a Neo smart contract and provides several contract-related methods.
+ * Represents a Neo smart contract and provides several contract-related methods for use in smart
+ * contracts.
  */
 public class Contract {
 
@@ -108,14 +108,5 @@ public class Contract {
      */
     @Syscall(SYSTEM_CONTRACT_GETCALLFLAGS)
     public static native byte getCallFlags();
-
-    /**
-     * Produces the script hash of the Neo account with the given public key
-     *
-     * @param pubKey The public key to get the script hash for.
-     * @return The account's script hash.
-     */
-    @Syscall(SYSTEM_CONTRACT_CREATESTANDARDACCOUNT)
-    public static native byte[] createStandardAccount(byte[] pubKey);
 
 }
