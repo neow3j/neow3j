@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
@@ -144,6 +147,35 @@ public class SmartContract {
         throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
                 StackItemType.BYTE_STRING);
     }
+
+    // ##################################################################################################
+    public List<ECKeyPair.ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
+            throws IOException {
+
+        StackItem arrayItem = invokeFunction(function).getInvocationResult().getStack().get(0);
+        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
+            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
+        }
+        List<ECKeyPair.ECPublicKey> valKeys = new ArrayList<>();
+        for (StackItem keyItem : arrayItem.asArray().getValue()) {
+            valKeys.add(extractPublicKey(keyItem));
+        }
+        return valKeys;
+    }
+
+    ECKeyPair.ECPublicKey extractPublicKey(StackItem keyItem) {
+        if (!keyItem.getType().equals(StackItemType.BYTE_STRING)) {
+            throw new UnexpectedReturnTypeException(keyItem.getType(),
+                    StackItemType.BYTE_STRING);
+        }
+        try {
+            return new ECKeyPair.ECPublicKey(keyItem.asByteString().getValue());
+        } catch (IllegalArgumentException e) {
+            throw new UnexpectedReturnTypeException("Byte array return type did not contain "
+                    + "public key in expected format.", e);
+        }
+    }
+    // ##################################################################################################
 
     protected NeoInvokeFunction invokeFunction(String function, ContractParameter... params)
             throws IOException {

@@ -181,6 +181,45 @@ Content-Type: application/javascript'
 }
 
 ####################
+# PolicyContract - getMaxTxPerBlock
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [ "3209d09120465bf181ced70693b897ec6ea4619a", "getMaxTransactionsPerBlock" ],
+ "id": 1
+}
+
+####################
+# PolicyContract - getFeePerByte
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [ "3209d09120465bf181ced70693b897ec6ea4619a", "getFeePerByte" ],
+ "id": 1
+}
+
+####################
+# PolicyContract - getBlockedAccounts
+####################
+POST http://localhost:40332
+Content-Type: application/javascript'
+
+{
+ "jsonrpc": "2.0",
+ "method": "invokefunction",
+ "params": [ "3209d09120465bf181ced70693b897ec6ea4619a", "getBlockedAccounts" ],
+ "id": 1
+}
+
+####################
 # invokefunction - vote
 ####################
 POST http://localhost:40332
