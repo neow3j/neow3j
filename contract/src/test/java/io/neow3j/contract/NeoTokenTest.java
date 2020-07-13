@@ -98,8 +98,8 @@ public class NeoTokenTest {
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
-        Account a = Account.fromECKeyPair(keyPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(a).build();
+        Account a = new Account(keyPair);
+        Wallet w = Wallet.withAccounts(a);
         Invocation inv = new NeoToken(neow).buildRegisterInvocation(
                 a.getScriptHash(), w, keyPair.getPublicKey());
         Transaction tx = inv.getTransaction();
@@ -192,8 +192,8 @@ public class NeoTokenTest {
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
-        Account a = Account.fromECKeyPair(keyPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(a).build();
+        Account a = new Account(keyPair);
+        Wallet w = Wallet.withAccounts(a);
         ECPublicKey validator1 = a.getECKeyPair().getPublicKey();
         ECPublicKey validator2 = new ECPublicKey(Numeric.hexStringToByteArray(
                 "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"));

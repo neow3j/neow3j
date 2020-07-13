@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.contract.NefFile.Version;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
@@ -18,6 +19,18 @@ public class NefFileTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
+
+    @Test
+    public void newNefFile() {
+        byte[] script = Numeric.hexStringToByteArray(
+                "5700020c0548656c6c6f0c05576f726c642150419bf667ce41e63f18841140");
+        NefFile nef = new NefFile("neon", new Version(3, 0, 0, 0), script);
+        assertThat(nef.getCompiler(), is("neon"));
+        assertThat(nef.getScriptHash().toString(), is("b1872e12d6151da6312d0ff6617df37a98a48591"));
+        assertThat(nef.getScript(), is(Numeric.hexStringToByteArray(
+                "5700020c0548656c6c6f0c05576f726c642150419bf667ce41e63f18841140")));
+        assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is("7898d2a8"));
+    }
 
     @Test
     public void readFromFileThatIsTooLarge() throws URISyntaxException, DeserializationException,

@@ -16,9 +16,21 @@ public class Bip39Account extends Account {
      */
     private String mnemonic;
 
-    protected Bip39Account(Builder builder) {
-        super(builder);
-        this.mnemonic = builder.mnemonic;
+    private Bip39Account() {
+    }
+
+    protected Bip39Account(String mnemonic) {
+        super();
+        this.mnemonic = mnemonic;
+    }
+
+    public Bip39Account(ECKeyPair ecKeyPair) {
+        super(ecKeyPair);
+    }
+
+    private Bip39Account setMnemonic(String mnemonic) {
+        this.mnemonic = mnemonic;
+        return this;
     }
 
     /**
@@ -38,9 +50,8 @@ public class Bip39Account extends Account {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair keyPair = ECKeyPair.create(sha256(seed));
 
-        return fromECKeyPair(keyPair)
-                .mnemonic(mnemonic)
-                .build();
+        return new Bip39Account(keyPair)
+                .setMnemonic(mnemonic);
     }
 
     /**
@@ -50,38 +61,13 @@ public class Bip39Account extends Account {
      * @param mnemonic the generated mnemonic with the given passphrase.
      * @return a Bip39Account builder.
      */
-    public static Builder fromBip39Mnemonic(String password, String mnemonic) {
+    public static Bip39Account fromBip39Mnemonic(String password, String mnemonic) {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair ecKeyPair = ECKeyPair.create(sha256(seed));
-        return fromECKeyPair(ecKeyPair).mnemonic(mnemonic);
-    }
-
-    public static Builder fromECKeyPair(ECKeyPair ecKeyPair) {
-        Builder b = new Builder();
-        b.keyPair = ecKeyPair;
-        b.address = ecKeyPair.getAddress();
-        b.label = b.address;
-        return b;
+        return new Bip39Account(ecKeyPair).setMnemonic(mnemonic);
     }
 
     public String getMnemonic() {
         return mnemonic;
-    }
-
-    public static class Builder extends Account.Builder<Bip39Account, Builder> {
-
-        String mnemonic;
-
-        protected Builder() {
-        }
-
-        public Builder mnemonic(String mnemonic) {
-            this.mnemonic = mnemonic;
-            return this;
-        }
-
-        public Bip39Account build() {
-            return new Bip39Account(this);
-        }
     }
 }

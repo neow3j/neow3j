@@ -67,6 +67,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -2124,7 +2125,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoAppLog.getStack(), hasSize(1));
         assertThat(neoAppLog.getStack().get(0).getType(),
                 is(StackItemType.INTEGER));
-        assertThat(neoAppLog.getStack().get(0).getValue(),
+        assertThat(neoAppLog.getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(1)));
 
         assertThat(neoAppLog.getNotifications(), is(notNullValue()));
@@ -2139,12 +2140,12 @@ public class ResponseTest extends ResponseTester {
         ArrayStackItem notification0Array = notification0.getState().asArray();
 
         String eventName0 = notification0Array.get(0).asByteString().getAsString();
-        Object from0 = notification0Array.get(1).getValue();
+        Object from0 = notification0Array.get(1).asAny();
         String to0 = notification0Array.get(2).asByteString().getAsAddress();
         BigInteger amount0 = notification0Array.get(3).asInteger().getValue();
 
         assertThat(eventName0, is("Transfer"));
-        assertThat(from0, is(nullValue()));
+        assertNotNull(from0);
         assertThat(to0, is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
         assertThat(amount0, is(BigInteger.valueOf(600000000)));
 

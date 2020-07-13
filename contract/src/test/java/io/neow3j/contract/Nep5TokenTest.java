@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.contract.ContractTestHelper.setUpWireMockForSendRawTransaction;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
@@ -40,7 +42,7 @@ public class Nep5TokenTest {
 
     @Test
     public void transferGas() throws Exception {
-        ContractTestHelper.setUpWireMockForSendRawTransaction();
+        setUpWireMockForSendRawTransaction();
         String script =
                 "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238";
         ContractTestHelper.setUpWireMockForCall("invokescript", "invokescript_transfer_1_gas.json",
@@ -49,7 +51,7 @@ public class Nep5TokenTest {
         setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");
         // Required for fetching the block height used for setting the validUntilBlock.
-        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForGetBlockCount(1000);
         // Required when checking the senders token balance.
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf.json");
@@ -58,9 +60,8 @@ public class Nep5TokenTest {
                 new ScriptHash("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"), this.neow);
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3");
-        Account a = Account.fromECKeyPair(ECKeyPair.create(privateKey))
-                .isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(a).build();
+        Account a = new Account(ECKeyPair.create(privateKey));
+        Wallet w = Wallet.withAccounts(a);
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         Invocation i = gas.buildTransferInvocation(w, receiver, BigDecimal.ONE);
 
@@ -121,20 +122,20 @@ public class Nep5TokenTest {
 
     @Test
     public void getBalanceOfWallet() throws Exception {
-        Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm").isDefault().build();
-        Account a2 = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ").build();
+        Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm");
+        Account a2 = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ");
         ContractTestHelper.setUpWireMockForBalanceOf(a1.getScriptHash(),
                 "invokefunction_balanceOf_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json");
         ContractTestHelper.setUpWireMockForBalanceOf(a2.getScriptHash(),
                 "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json");
-        Wallet w = new Wallet.Builder().accounts(a1, a2).build();
+        Wallet w = Wallet.withAccounts(a1, a2);
         Nep5Token token = new Nep5Token(GasToken.SCRIPT_HASH, this.neow);
         assertThat(token.getBalanceOf(w), is(new BigInteger("411285799730")));
     }
 
     @Test(expected = InsufficientFundsException.class)
     public void failTransferringGasBecauseOfInsufficientBalance() throws Exception {
-        ContractTestHelper.setUpWireMockForSendRawTransaction();
+        setUpWireMockForSendRawTransaction();
         // Required for fetching of system fee of the invocation.
         setUpWireMockForInvokeFunction(
                 "transfer", "invokescript_transfer_1_gas.json");
@@ -142,7 +143,7 @@ public class Nep5TokenTest {
         setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");
         // Required for fetching the block height used for setting the validUntilBlock.
-        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForGetBlockCount(1000);
         // Required for checking the senders token balance.
         ContractTestHelper.setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
@@ -153,9 +154,8 @@ public class Nep5TokenTest {
         Nep5Token gas = new Nep5Token(GasToken.SCRIPT_HASH, this.neow);
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
-        Account a = Account.fromECKeyPair(ECKeyPair.create(privateKey))
-                .isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(a).build();
+        Account a = new Account(ECKeyPair.create(privateKey));
+        Wallet w = Wallet.withAccounts(a);
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         Invocation i = gas.buildTransferInvocation(w, receiver, new BigDecimal("4"));
     }

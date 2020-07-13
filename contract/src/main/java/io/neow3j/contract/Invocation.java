@@ -82,19 +82,17 @@ public class Invocation {
      */
     public Invocation sign() {
         byte[] txBytes = getTransactionForSigning();
-        for (Cosigner c : this.transaction.getCosigners()) {
-            Account cosignerAcc = this.wallet.getAccount(c.getScriptHash());
-            if (cosignerAcc == null) {
+        this.transaction.getCosigners().forEach(cosigner -> {
+            if (!this.wallet.holdsAccount(cosigner.getScriptHash())) {
                 throw new InvocationConfigurationException("Can't create transaction "
                         + "signature. Wallet does not contain the cosigner account with script "
-                        + "hash " + c.getScriptHash());
-            }
-            if (cosignerAcc.isMultiSig()) {
-                signWithMultiSigAccount(txBytes, cosignerAcc);
+                        + "hash " + cosigner.getScriptHash());
             } else {
-                signWithNormalAccount(txBytes, cosignerAcc);
+                Account cosignerAcc = this.wallet.getAccount(cosigner.getScriptHash());
+                if (cosignerAcc.isMultiSig()) signWithMultiSigAccount(txBytes, cosignerAcc);
+                else signWithNormalAccount(txBytes, cosignerAcc);
             }
-        }
+        });
         return this;
     }
 
@@ -547,16 +545,21 @@ public class Invocation {
             return execFee + size * NeoConstants.GAS_PER_BYTE;
         }
 
+        /**
+         * Gets the cosigner accounts held in the wallet.
+         *
+         * @return a list containing the cosigner accounts
+         */
         private List<Account> getCosignerAccounts() {
             List<Account> accounts = new ArrayList<>();
-            for (Cosigner cosigner : txBuilder.getCosigners()) {
-                Account account = this.wallet.getAccount(cosigner.getScriptHash());
-                if (account == null) {
+            txBuilder.getCosigners().forEach(cosigner -> {
+                if (this.wallet.holdsAccount(cosigner.getScriptHash())) {
+                    accounts.add(this.wallet.getAccount(cosigner.getScriptHash()));
+                } else {
                     throw new InvocationConfigurationException("Wallet does not contain the "
                             + "account for cosigner with script hash " + cosigner.getScriptHash());
                 }
-                accounts.add(account);
-            }
+            });
             return accounts;
         }
 
@@ -584,9 +587,9 @@ public class Invocation {
             int n = verifScript.getNrOfAccounts();
 
             return OpCode.PUSHDATA1.getPrice() * m
-                    + OpCode.valueOf(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
+                    + OpCode.get(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
                     + OpCode.PUSHDATA1.getPrice() * n
-                    + OpCode.valueOf(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
+                    + OpCode.get(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
                     // Push null because we don't want to verify a particular message but the
                     // transaction itself.
                     + OpCode.PUSHNULL.getPrice()

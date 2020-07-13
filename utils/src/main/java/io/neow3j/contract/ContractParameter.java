@@ -44,7 +44,7 @@ public class ContractParameter {
     protected ContractParameter() {
     }
 
-    protected ContractParameter(String name, ContractParameterType paramType, Object value) {
+    public ContractParameter(String name, ContractParameterType paramType, Object value) {
         this.paramName = name;
         this.paramType = paramType;
         this.value = value;
