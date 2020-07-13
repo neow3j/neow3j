@@ -60,6 +60,8 @@ public enum InteropServiceCode {
     SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 30000),
     SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 10000),
 
+    NEO_CRYPTO_SHA256("Neo.Crypto.SHA256", 1_000_000),
+    NEO_CRYPTO_RIPEMD160("Neo.Crypto.RIPEMD160", 1_000_000),
     NEO_CRYPTO_ECDSA_SECP256R1_VERIFY("Neo.Crypto.ECDsa.Secp256r1.Verify", 1_000_000),
     NEO_CRYPTO_ECDSA_SECP256K1_VERIFY("Neo.Crypto.ECDsa.Secp256k1.Verify", 1_000_000),
     // The price for check multisig is the price for Secp256r1.Verify times the number of signatures
