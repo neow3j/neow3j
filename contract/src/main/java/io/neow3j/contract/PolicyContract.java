@@ -15,7 +15,7 @@ public class PolicyContract extends SmartContract{
     private static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
             new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_POLICY).toArray());
 
-    private static final String GET_MAX_TX_COUNT_PER_BLOCK = "getMaxTransactionsPerBlock";
+    private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
     private static final String GET_BLOCKED_ACCOUNTS = "getBlockedAccounts";
 
@@ -35,8 +35,8 @@ public class PolicyContract extends SmartContract{
      * @return the maximal amount of transactions allowed per block.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Integer getMaxTxPerBlock() throws IOException {
-        return callFuncReturningInt(GET_MAX_TX_COUNT_PER_BLOCK).intValue();
+    public Integer getMaxTransactionsPerBlock() throws IOException {
+        return callFuncReturningInt(GET_MAX_TRANSACTIONS_PER_BLOCK).intValue();
     }
 
     /**
