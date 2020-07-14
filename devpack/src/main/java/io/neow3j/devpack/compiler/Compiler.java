@@ -9,6 +9,7 @@ import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.devpack.framework.ScriptContainer;
 import io.neow3j.devpack.framework.annotations.Appcall;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
 import io.neow3j.devpack.framework.annotations.Instruction;
@@ -743,6 +744,9 @@ public class Compiler {
         if (typeName.equals(Void.class.getTypeName())
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
+        }
+        if (typeName.equals(ScriptContainer.class.getTypeName())) {
+            return ContractParameterType.INTEROP_INTERFACE;
         }
         try {
             typeName = type.getDescriptor().replace("/", ".");
