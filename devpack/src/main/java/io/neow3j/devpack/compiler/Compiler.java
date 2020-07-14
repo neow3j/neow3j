@@ -9,6 +9,7 @@ import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.devpack.framework.annotations.Appcall;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
 import io.neow3j.devpack.framework.annotations.Instruction;
 import io.neow3j.devpack.framework.annotations.Instruction.Instructions;
@@ -24,6 +25,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractStat
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractFeatures;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractPermission;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
@@ -66,6 +68,12 @@ public class Compiler {
     private static final String CONSTRUCTOR_NAME = "<init>";
     private static final String THIS_KEYWORD = "this";
     private static final String OBJECT_INTERNAL_NAME = Type.getInternalName(Object.class);
+    private static final String VALUEOF_METHOD_NAME = "valueOf";
+    private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
+            "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
+    private static final List<String> PRIMITIVE_TYPE_WRAPPER_CLASSES = Arrays.asList(
+            "java/lang/Integer", "java/lang/Long", "java/lang/Byte", "java/lang/Short",
+            "java/lang/Boolean", "java/lang/Character");
 
     private NeoModule neoModule;
 
@@ -432,35 +440,43 @@ public class Compiler {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
         ClassNode owner = getAsmClass(Type.getObjectType(methodInsn.owner).getClassName());
-        Optional<MethodNode> calleAsmMethodOpt = owner.methods.stream()
+        Optional<MethodNode> calledAsmMethodOpt = owner.methods.stream()
                 .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
                 .findFirst();
-        while (!calleAsmMethodOpt.isPresent()) {
+        // If the called method cannot be found on the owner type, we look through the super
+        // types until we find the method.
+        while (!calledAsmMethodOpt.isPresent()) {
             if (owner.superName == null) {
                 throw new CompilerException("Couldn't find method " + methodInsn.name + " on "
                         + "owning type and its super types.");
             }
             owner = getAsmClass(Type.getObjectType(owner.superName).getClassName());
-            calleAsmMethodOpt = owner.methods.stream()
+            calledAsmMethodOpt = owner.methods.stream()
                     .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
                     .findFirst();
         }
-        MethodNode calledAsmMethod = calleAsmMethodOpt.get();
+        MethodNode calledAsmMethod = calledAsmMethodOpt.get();
         if (hasSyscallAnnotation(calledAsmMethod)) {
             addSyscall(calledAsmMethod, callingNeoMethod);
         } else if (hasInstructionAnnotation(calledAsmMethod)) {
             addInstruction(calledAsmMethod, callingNeoMethod);
+        } else if (hasAppcallAnnotation(calledAsmMethod)) {
+            addAppcall(calledAsmMethod, callingNeoMethod);
         } else {
-            addCallMethod(callingNeoMethod, owner, calledAsmMethod);
+            handleMethodCall(callingNeoMethod, owner, calledAsmMethod);
         }
     }
 
     // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
     // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
     // compiles it to NeoVM code.
-    private void addCallMethod(NeoMethod callingNeoMethod, ClassNode owner,
+    private void handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
             MethodNode calledAsmMethod) throws IOException {
 
+        if (isPrimitiveTypeCast(calledAsmMethod, owner)) {
+            // Nothing to do if Java casts between primitive type and wrapper classes.
+            return;
+        }
         String invokedMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
         NeoMethod invokedNeoMethod;
         if (this.neoModule.methods.containsKey(invokedMethodId)) {
@@ -468,7 +484,7 @@ public class Compiler {
         } else {
             invokedNeoMethod = new NeoMethod(calledAsmMethod, owner);
             if (calledAsmMethod.name.equals(CONSTRUCTOR_NAME)) {
-                if (hasInstructions(calledAsmMethod))  {
+                if (hasInstructions(calledAsmMethod)) {
                     // If the constructor is empty we don't need to parse it. The DUP opcode
                     // added before must be removed again.
                     int lastKey = callingNeoMethod.instructions.lastKey();
@@ -492,14 +508,23 @@ public class Compiler {
         callingNeoMethod.addInstruction(invokeInsn);
     }
 
+    private boolean isPrimitiveTypeCast(MethodNode calledAsmMethod, ClassNode owner) {
+        boolean isConversionFromPrimitiveType = calledAsmMethod.name.equals(VALUEOF_METHOD_NAME);
+        boolean isConversionToPrimitiveType =
+                PRIMITIVE_TYPE_CAST_METHODS.contains(calledAsmMethod.name);
+        boolean isOwnerPrimitiveTypeWrapper = PRIMITIVE_TYPE_WRAPPER_CLASSES.contains(owner.name);
+        return (isConversionFromPrimitiveType || isConversionToPrimitiveType)
+                && isOwnerPrimitiveTypeWrapper;
+    }
+
     private boolean hasInstructions(MethodNode asmMethod) {
         if (asmMethod.instructions == null || asmMethod.instructions.size() == 0) {
             return false;
         }
         return Stream.of(asmMethod.instructions.toArray()).anyMatch(insn ->
-                    insn.getType() != AbstractInsnNode.LINE &&
-                    insn.getType() != AbstractInsnNode.LABEL &&
-                    insn.getType() != AbstractInsnNode.FRAME);
+                insn.getType() != AbstractInsnNode.LINE &&
+                        insn.getType() != AbstractInsnNode.LABEL &&
+                        insn.getType() != AbstractInsnNode.FRAME);
     }
 
     // Goes through the instructions of the given method and looks for the call to the `Object`
@@ -534,6 +559,11 @@ public class Compiler {
         return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
                 .anyMatch(a -> a.desc.equals(Type.getDescriptor(Instructions.class))
                         || a.desc.equals(Type.getDescriptor(Instruction.class)));
+    }
+
+    private boolean hasAppcallAnnotation(MethodNode asmMethod) {
+        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
+                .anyMatch(a -> a.desc.equals(Type.getDescriptor(Appcall.class)));
     }
 
     private void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
@@ -633,6 +663,18 @@ public class Compiler {
             operand[i++] = (byte) element;
         }
         return operand;
+    }
+
+    private void addAppcall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
+        addReverseArguments(calledAsmMethod, callingNeoMethod);
+        AnnotationNode appCallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(Appcall.class))).findFirst().get();
+        String scriptHash = (String) appCallAnnotation.values.get(1);
+        byte[] data = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(scriptHash));
+        addPushDataArray(data, callingNeoMethod);
+        byte[] callHash = Numeric.hexStringToByteArray(
+                InteropServiceCode.SYSTEM_CONTRACT_CALL.getHash());
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, callHash));
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {
