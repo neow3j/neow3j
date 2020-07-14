@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * <p>
  * The method's body is ignored by the NeoVM compiler if it has this annotation.
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface Appcall {
 
     /**

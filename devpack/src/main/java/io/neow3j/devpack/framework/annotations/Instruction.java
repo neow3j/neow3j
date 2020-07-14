@@ -15,14 +15,14 @@ import java.lang.annotation.Target;
  * The method's body is ignored by the NeoVM compiler if it has this annotation.
  */
 @Repeatable(Instructions.class)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface Instruction {
 
     OpCode opcode() default OpCode.NOP;
 
     byte[] operand() default {};
 
-    @Target(ElementType.METHOD)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @interface Instructions {
 
         Instruction[] value();

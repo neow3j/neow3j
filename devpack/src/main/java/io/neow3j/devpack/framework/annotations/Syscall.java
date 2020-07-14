@@ -15,12 +15,12 @@ import java.lang.annotation.Target;
  * The method's body is ignored by the NeoVM compiler if it has this annotation.
  */
 @Repeatable(Syscalls.class)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface Syscall {
 
     InteropServiceCode value();
 
-    @Target(ElementType.METHOD)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @interface Syscalls {
 
         Syscall[] value();
