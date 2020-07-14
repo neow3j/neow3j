@@ -16,8 +16,9 @@ public class CompilerTest {
                 "io.neow3j.devpack.template.ExampleContract");
         System.out.println(ScriptReader.convertToOpCodeString(res.getNef().getScript()));
         String tmpDir = System.getProperty("user.home") + "/tmp/";
-        if (new File(tmpDir).mkdir()) {
-            throw new RuntimeException("Couldn't create tmp directory.");
+        File tmpDirFile = new File(tmpDir);
+        if (!tmpDirFile.exists() && !new File(tmpDir).mkdir()) {
+            return;
         }
         FileOutputStream s = new FileOutputStream(tmpDir + "Neow3jContract.nef");
         s.write(res.getNef().toArray());
