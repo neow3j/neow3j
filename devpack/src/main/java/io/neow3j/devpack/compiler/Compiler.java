@@ -484,7 +484,7 @@ public class Compiler {
         } else {
             invokedNeoMethod = new NeoMethod(calledAsmMethod, owner);
             if (calledAsmMethod.name.equals(CONSTRUCTOR_NAME)) {
-                if (hasInstructions(calledAsmMethod)) {
+                if (!hasInstructions(calledAsmMethod)) {
                     // If the constructor is empty we don't need to parse it. The DUP opcode
                     // added before must be removed again.
                     int lastKey = callingNeoMethod.instructions.lastKey();
@@ -524,7 +524,8 @@ public class Compiler {
         return Stream.of(asmMethod.instructions.toArray()).anyMatch(insn ->
                 insn.getType() != AbstractInsnNode.LINE &&
                         insn.getType() != AbstractInsnNode.LABEL &&
-                        insn.getType() != AbstractInsnNode.FRAME);
+                        insn.getType() != AbstractInsnNode.FRAME &&
+                        insn.getOpcode() != JVMOpcode.RETURN.getOpcode());
     }
 
     // Goes through the instructions of the given method and looks for the call to the `Object`
