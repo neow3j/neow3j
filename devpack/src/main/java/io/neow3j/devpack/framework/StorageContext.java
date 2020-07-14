@@ -1,6 +1,7 @@
 package io.neow3j.devpack.framework;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_ASREADONLY;
+import static io.neow3j.devpack.framework.Helper.toByteArray;
 
 import io.neow3j.devpack.framework.annotations.Syscall;
 
@@ -28,7 +29,7 @@ public class StorageContext {
      * @return the {@link StorageMap}
      */
     public StorageMap createMap(String prefix) {
-        return new StorageMap(this, SmartContract.toByteArray(prefix));
+        return new StorageMap(this, toByteArray(prefix));
     }
 
     /**
@@ -50,7 +51,7 @@ public class StorageContext {
      * @return the {@link StorageMap}
      */
     public StorageMap createMap(byte prefix) {
-        return new StorageMap(this, SmartContract.toByteArray(prefix));
+        return new StorageMap(this, toByteArray(prefix));
     }
 
 }

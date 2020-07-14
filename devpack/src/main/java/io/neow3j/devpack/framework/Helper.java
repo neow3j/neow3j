@@ -10,7 +10,7 @@ import io.neow3j.devpack.framework.annotations.Syscall;
 /**
  * Provides helper methods to be used in a smart contract.
  */
-public class SmartContract {
+public class Helper {
 
     // Can't access the byte values of StackItemType in the annotations. Therefore, we need to
     // duplicate them here.
