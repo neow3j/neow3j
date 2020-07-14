@@ -4,7 +4,7 @@ package io.neow3j.devpack.framework;
  * Represents a transaction and provides transaction-related information. It is returned for example
  * when calling {@link Blockchain#getTransaction(byte[])}.
  */
-public class Transaction {
+public class Transaction implements ScriptContainer {
 
     /**
      * The hash of the transaction.
