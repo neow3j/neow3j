@@ -1,4 +1,4 @@
-package io.neow3j.devpack.compiler;
+package io.neow3j.compiler;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.utils.Numeric;

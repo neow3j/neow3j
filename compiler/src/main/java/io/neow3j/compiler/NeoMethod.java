@@ -1,4 +1,4 @@
-package io.neow3j.devpack.compiler;
+package io.neow3j.compiler;
 
 import java.util.ArrayList;
 import java.util.HashMap;

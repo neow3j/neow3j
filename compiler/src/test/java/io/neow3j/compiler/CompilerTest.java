@@ -1,19 +1,20 @@
-package io.neow3j.devpack.compiler;
+package io.neow3j.compiler;
 
 import io.neow3j.contract.ScriptReader;
-import io.neow3j.devpack.compiler.Compiler.CompilationResult;
+import io.neow3j.compiler.Compiler.CompilationResult;
 import io.neow3j.protocol.ObjectMapperFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import org.junit.Test;
 
 public class CompilerTest {
 
     @Test
-    public void compileExampleContract() throws IOException {
+    public void compileExampleContract() throws IOException, URISyntaxException {
         CompilationResult res = new Compiler().compileClass(
-                "io.neow3j.devpack.template.ExampleContract");
+                "io.neow3j.compiler.ExampleContract");
         System.out.println(ScriptReader.convertToOpCodeString(res.getNef().getScript()));
         String tmpDir = System.getProperty("user.home") + "/tmp/";
         File tmpDirFile = new File(tmpDir);

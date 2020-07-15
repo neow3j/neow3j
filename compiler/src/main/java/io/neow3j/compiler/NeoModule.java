@@ -1,16 +1,25 @@
-package io.neow3j.devpack.compiler;
+package io.neow3j.compiler;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.framework.Contract;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.objectweb.asm.tree.ClassNode;
 
 public class NeoModule {
+
+    Map<String, JavaClass> javaClasses = new HashMap<>();
 
     /**
      * Holds this module's methods, mapping from method ID to {@link NeoMethod};
@@ -18,8 +27,8 @@ public class NeoModule {
     Map<String, NeoMethod> methods = new HashMap<>();
 
     /**
-     * Holds the same references to the methods as {@link NeoModule#methods} but in the order
-     * they have been added to this module.
+     * Holds the same references to the methods as {@link NeoModule#methods} but in the order they
+     * have been added to this module.
      */
     List<NeoMethod> sortedMethods = new ArrayList<>();
 
@@ -28,8 +37,34 @@ public class NeoModule {
      */
     ClassNode asmSmartContractClass;
 
-    public NeoModule(ClassNode asmSmartContractClass) {
+    public NeoModule(ClassNode asmSmartContractClass) throws IOException {
         this.asmSmartContractClass = asmSmartContractClass;
+        loadDevpackFrameWorkJar();
+        // TODO: Load contract class or JAR.
+    }
+
+    private void loadDevpackFrameWorkJar() throws IOException {
+        String path = null;
+        try {
+            path = new File(Contract.class.getProtectionDomain()
+                    .getCodeSource().getLocation().toURI())
+                    .getPath();
+        } catch (URISyntaxException ignore) {
+        }
+        loadJar(path);
+    }
+
+    private void loadJar(String jarFileName) throws IOException {
+        JarFile jar = new JarFile(jarFileName);
+        Enumeration<JarEntry> entries = jar.entries();
+        while (entries.hasMoreElements()) {
+            JarEntry jarEntry = entries.nextElement();
+            if (!jarEntry.getName().endsWith(".class")) {
+                continue;
+            }
+            JavaClass c = new JavaClass(jarEntry.getName(), jar.getName());
+            this.javaClasses.put(jarEntry.getName(), c);
+        }
     }
 
     void addMethod(NeoMethod method) {
@@ -38,8 +73,6 @@ public class NeoModule {
     }
 
     void finalizeModule() {
-//        this.sortedMethods = new ArrayList<>(methods.values());
-//        sortedMethods.sort(Comparator.comparing(a -> a.asmMethod.name));
         int startAddress = 0;
         for (NeoMethod method : this.sortedMethods) {
             method.startAddress = startAddress;
@@ -56,10 +89,12 @@ public class NeoModule {
                 // addresses of all following instructions.
                 if (insn.opcode.equals(OpCode.CALL_L)) {
                     if (!(insn.extra instanceof NeoMethod)) {
-                        throw new CompilerException("Missing reference to method in CALL opcode.");
+                        throw new CompilerException(
+                                "Missing reference to method in CALL opcode.");
                     }
                     NeoMethod calledMethod = (NeoMethod) insn.extra;
-                    int offset = calledMethod.startAddress - (method.startAddress + entry.getKey());
+                    int offset =
+                            calledMethod.startAddress - (method.startAddress + entry.getKey());
                     insn.operand = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
                             .putInt(offset).array();
                 }
@@ -73,8 +108,8 @@ public class NeoModule {
 
     /**
      * Concatenates all of this module's methods together into one script. Should only be called
-     * after {@link NeoModule#finalizeModule()} becuase otherwise the
-     * {@link NeoModule#sortedMethods} is not yet initialized.
+     * after {@link NeoModule#finalizeModule()} becuase otherwise the {@link
+     * NeoModule#sortedMethods} is not yet initialized.
      */
     byte[] toByteArray() {
         ByteBuffer b = ByteBuffer.allocate(byteSize());

@@ -1,4 +1,4 @@
-package io.neow3j.devpack.compiler;
+package io.neow3j.compiler;
 
 import org.objectweb.asm.tree.LocalVariableNode;
 

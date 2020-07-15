@@ -1,4 +1,4 @@
-package io.neow3j.devpack.compiler;
+package io.neow3j.compiler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -31,6 +31,7 @@ import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class Compiler {
      *
      * @param name the fully qualified name of the class.
      */
-    public CompilationResult compileClass(String name) throws IOException {
+    public CompilationResult compileClass(String name) throws IOException, URISyntaxException {
         ClassNode asmClass = getAsmClass(name);
         this.neoModule = new NeoModule(asmClass);
         collectContractMethods(asmClass);
@@ -468,9 +469,6 @@ public class Compiler {
         }
     }
 
-    // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
-    // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
-    // compiles it to NeoVM code.
     private void handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
             MethodNode calledAsmMethod) throws IOException {
 
@@ -478,6 +476,12 @@ public class Compiler {
             // Nothing to do if Java casts between primitive type and wrapper classes.
             return;
         }
+        // TODO: Only allow calls to methods that are inside of the currently compiled module.
+        //  This may include the definition of classes that are by default in the module for smart
+        //  contract compilation.
+        // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
+        // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
+        // compiles it to NeoVM code.
         String invokedMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
         NeoMethod invokedNeoMethod;
         if (this.neoModule.methods.containsKey(invokedMethodId)) {

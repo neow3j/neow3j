@@ -1,4 +1,4 @@
-package io.neow3j.devpack.template;
+package io.neow3j.compiler;
 
 import io.neow3j.devpack.framework.annotations.EntryPoint;
 import io.neow3j.devpack.framework.annotations.ManifestExtra;
