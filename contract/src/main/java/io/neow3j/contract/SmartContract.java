@@ -148,35 +148,6 @@ public class SmartContract {
                 StackItemType.BYTE_STRING);
     }
 
-    // ##################################################################################################
-    public List<ECKeyPair.ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
-            throws IOException {
-
-        StackItem arrayItem = invokeFunction(function).getInvocationResult().getStack().get(0);
-        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
-            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
-        }
-        List<ECKeyPair.ECPublicKey> valKeys = new ArrayList<>();
-        for (StackItem keyItem : arrayItem.asArray().getValue()) {
-            valKeys.add(extractPublicKey(keyItem));
-        }
-        return valKeys;
-    }
-
-    ECKeyPair.ECPublicKey extractPublicKey(StackItem keyItem) {
-        if (!keyItem.getType().equals(StackItemType.BYTE_STRING)) {
-            throw new UnexpectedReturnTypeException(keyItem.getType(),
-                    StackItemType.BYTE_STRING);
-        }
-        try {
-            return new ECKeyPair.ECPublicKey(keyItem.asByteString().getValue());
-        } catch (IllegalArgumentException e) {
-            throw new UnexpectedReturnTypeException("Byte array return type did not contain "
-                    + "public key in expected format.", e);
-        }
-    }
-    // ##################################################################################################
-
     protected NeoInvokeFunction invokeFunction(String function, ContractParameter... params)
             throws IOException {
 

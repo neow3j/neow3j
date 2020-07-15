@@ -11,6 +11,7 @@ import io.neow3j.transaction.Cosigner;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +184,33 @@ public class NeoToken extends Nep5Token {
      */
     public List<ECPublicKey> getNextBlockValidators() throws IOException {
         return callFunctionReturningListOfPublicKeys(GET_NEXT_BLOCK_VALIDATORS);
+    }
+
+    public List<ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
+            throws IOException {
+
+        StackItem arrayItem = invokeFunction(function).getInvocationResult().getStack().get(0);
+        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
+            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
+        }
+        List<ECPublicKey> valKeys = new ArrayList<>();
+        for (StackItem keyItem : arrayItem.asArray().getValue()) {
+            valKeys.add(extractPublicKey(keyItem));
+        }
+        return valKeys;
+    }
+
+    ECPublicKey extractPublicKey(StackItem keyItem) {
+        if (!keyItem.getType().equals(StackItemType.BYTE_STRING)) {
+            throw new UnexpectedReturnTypeException(keyItem.getType(),
+                    StackItemType.BYTE_STRING);
+        }
+        try {
+            return new ECPublicKey(keyItem.asByteString().getValue());
+        } catch (IllegalArgumentException e) {
+            throw new UnexpectedReturnTypeException("Byte array return type did not contain "
+                    + "public key in expected format.", e);
+        }
     }
 
     /**
