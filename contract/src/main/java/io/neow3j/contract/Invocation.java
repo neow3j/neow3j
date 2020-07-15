@@ -505,7 +505,7 @@ public class Invocation {
          * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
          */
         private long getSystemFeeForScript() throws IOException {
-            // The signers are required for `invokescript` calls that will hit a ChecekWitness
+            // The signers are required for `invokescript` calls that will hit a CheckWitness
             // check in the smart contract.
             String[] signers = this.txBuilder.getCosigners().stream()
                     .map(c -> c.getScriptHash().toString()).toArray(String[]::new);
