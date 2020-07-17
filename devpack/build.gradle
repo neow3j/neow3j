@@ -2,6 +2,4 @@ description 'Neo Java DevPack'
 
 dependencies {
     compile project(':contract')
-
-    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
 }
