@@ -31,7 +31,6 @@ import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -47,6 +47,7 @@ import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LocalVariableNode;
@@ -66,8 +67,11 @@ public class Compiler {
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
+    public static final int MAX_STATIC_FIELDS_COUNT = 255;
 
-    private static final String CONSTRUCTOR_NAME = "<init>";
+    private static final String INSTANCE_CTOR = "<init>";
+    private static final String CLASS_CTOR = "<clinit>";
+    private static final String INITSSLOT_METHOD_NAME = "_initialize";
     private static final String THIS_KEYWORD = "this";
     private static final String OBJECT_INTERNAL_NAME = Type.getInternalName(Object.class);
     private static final String VALUEOF_METHOD_NAME = "valueOf";
@@ -84,43 +88,110 @@ public class Compiler {
      *
      * @param name the fully qualified name of the class.
      */
-    public CompilationResult compileClass(String name) throws IOException, URISyntaxException {
+    public CompilationResult compileClass(String name) throws IOException {
         ClassNode asmClass = getAsmClass(name);
         this.neoModule = new NeoModule(asmClass);
-        collectContractMethods(asmClass);
+        collectAndInitializeStaticFields(asmClass);
+        collectAndInitializeMethods(asmClass);
         for (NeoMethod neoMethod : this.neoModule.methods.values()) {
             compileMethod(neoMethod);
         }
         this.neoModule.finalizeModule();
-        // TODO: Get offsets of methods and set them in the manifest.
         byte[] script = this.neoModule.toByteArray();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION, script);
         ContractManifest manifest = buildManifest(this.neoModule, nef.getScriptHash());
         return new CompilationResult(nef, manifest);
     }
 
-    private void collectContractMethods(ClassNode asmClass) {
+    private void collectAndInitializeStaticFields(ClassNode asmClass) {
+        if (asmClass.fields == null || asmClass.fields.size() == 0) {
+            return;
+        }
+        if (asmClass.fields.size() > MAX_STATIC_FIELDS_COUNT) {
+            throw new CompilerException("The method has more than the max number of static field "
+                    + "variables.");
+        }
+
+        if (asmClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
+            throw new CompilerException("Class " + asmClass.name + " has non-static fields but only"
+                    + " static fields are supported in smart contracts.");
+        }
+        // At this point we know that there are only static variables. Check if a static instructor
+        // or an instance constructor is used and throw an exception if so. The instructions of the
+        // instance ctor and the static ctor are both in the JVM "<init>" method.
+        Optional<MethodNode> instanceCtorOpt = asmClass.methods.stream()
+                .filter(m -> m.name.equals(INSTANCE_CTOR))
+                .findFirst();
+        if (instanceCtorOpt.isPresent()) {
+            MethodNode instanceCtor = instanceCtorOpt.get();
+            removeInsnsUpToObjectCtorCall(instanceCtor);
+            if (hasInstructions(instanceCtor)) {
+                throw new CompilerException("Class " + asmClass.name + " has an explicit instance "
+                        + "constructor or static constructor. But, neither is supported in smart "
+                        + "contracts.");
+            }
+        }
+
+        NeoMethod neoMethod = createInitsslotMethod(asmClass);
+        this.neoModule.addMethod(neoMethod);
+    }
+
+    // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
+    // script.
+    private NeoMethod createInitsslotMethod(ClassNode asmClass) {
+        MethodNode initsslotMethod = null;
+        Optional<MethodNode> classCtorOpt = asmClass.methods.stream()
+                .filter(m -> m.name.equals(CLASS_CTOR))
+                .findFirst();
+        if (classCtorOpt.isPresent()) {
+            initsslotMethod = classCtorOpt.get();
+        } else {
+            // Static variables are not initialized but we still need to add the INITSSLOT method.
+            // Therefore, we create a "fake" ASM method for it here.
+            initsslotMethod = new MethodNode();
+            initsslotMethod.instructions.add(new InsnNode(JVMOpcode.RETURN.getOpcode()));
+            initsslotMethod.name = CLASS_CTOR;
+            initsslotMethod.desc = "()V";
+            initsslotMethod.access = Opcodes.ACC_STATIC;
+        }
+        NeoMethod neoMethod = new NeoMethod(initsslotMethod, asmClass);
+        neoMethod.name = INITSSLOT_METHOD_NAME;
+        neoMethod.isAbiMethod = true;
+        byte[] operand = new byte[]{(byte) asmClass.fields.size()};
+        neoMethod.addInstruction(new NeoInstruction(OpCode.INITSSLOT, operand));
+        return neoMethod;
+    }
+
+    private void collectAndInitializeMethods(ClassNode asmClass) {
         boolean entryPointFound = false;
         for (MethodNode asmMethod : asmClass.methods) {
-            if (CONSTRUCTOR_NAME.equals(asmMethod.name)) {
-                continue; // Constructors of the smart contract are ignored.
+            if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
+                continue; // Handled in method `collectAndInitializeStaticFields()`.
+            }
+            if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
+                throw new CompilerException("Method " + asmClass.name + "." + asmMethod.name
+                        + "() is an non-static method but only static smart contract methods are "
+                        + "supported.");
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            if (isEntryPoint(asmMethod)) {
-                if (entryPointFound) {
-                    throw new CompilerException("Multiple entry points found. Only one method of "
-                            + "a smart contract can be the entry point.");
-                }
-                neoMethod.isEntryPoint = true;
-                entryPointFound = true;
+            initializeMethod(asmMethod, neoMethod);
+            if (entryPointFound && neoMethod.isEntryPoint) {
+                throw new CompilerException("Multiple entry points found. Only one method of "
+                        + "a smart contract can be the entry point.");
+            } else {
+                entryPointFound = entryPointFound || neoMethod.isEntryPoint;
             }
-            neoMethod.isSmartContractMethod = true;
             this.neoModule.addMethod(neoMethod);
         }
         if (!entryPointFound) {
             throw new CompilerException("No entry point found. Specify one method as the entry "
                     + "point of the smart contract.");
         }
+    }
+
+    private boolean isEntryPoint(MethodNode asmMethod) {
+        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
+                .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class)));
     }
 
     private ClassNode getAsmClass(String name) throws IOException {
@@ -130,13 +201,7 @@ public class Compiler {
         return asmClass;
     }
 
-    private boolean isEntryPoint(MethodNode asmMethod) {
-        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
-                .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class)));
-    }
-
     private void compileMethod(NeoMethod neoMethod) throws IOException {
-        initializeMethod(neoMethod.asmMethod, neoMethod);
         for (int insnAddr = 0; insnAddr < neoMethod.asmMethod.instructions.size(); insnAddr++) {
             handleInsn(neoMethod, neoMethod.asmMethod, insnAddr);
         }
@@ -239,8 +304,24 @@ public class Compiler {
                 neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
                 break;
             case PUTFIELD:
-                addSetField(insn, neoMethod);
+                // Sets a value for a field variable on an object. The compiler doesn't
+                // support non-static variables in the smart contract, but we currently handle this
+                // JVM opcode because we support instantiation of simple objects like the
+                // `StorageMap`.
+                addSetItem(insn, neoMethod);
                 break;
+            case GETFIELD:
+                // Get a field variable from an object. The index of the field inside the
+                // object is given with the instruction and the object itself must be on top
+                // of the operand stack.
+                addGetField(insn, neoMethod);
+                break;
+            case PUTSTATIC:
+                addStoreStaticField(insn, neoMethod);
+                break;
+            case GETSTATIC:
+                // TODO: Handle get static variable
+                throw new CompilerException("Sounds good, doesn't work.");
             case POP:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 break;
@@ -260,12 +341,6 @@ public class Compiler {
                 // `FALOAD` are not covered because NeoVM does not support doubles and floats.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
                 break;
-            case GETFIELD:
-                // Get a field variable from an object. The index of the field inside the
-                // object is given with the instruction and the object itself must be on top
-                // of the operand stack.
-                addGetField(insn, neoMethod);
-                break;
             case I2B:
                 // Convert an integer to byte by truncating. Because integers and bytes are
                 // handled equally by NeoVM there is nothing to do.
@@ -279,30 +354,35 @@ public class Compiler {
         }
     }
 
-    private void addSetField(AbstractInsnNode insn, NeoMethod neoMethod) throws IOException {
-        // NeoVM sets fields of objects simply by calling SETITEM. The operand stack has to have
-        // an index on top that is used by SETITEM. We get this index from the class to which the
-        // field belongs to.
+    private void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn);
+        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
+    }
+
+    private void addSetItem(AbstractInsnNode insn, NeoMethod neoMethod) {
+        // NeoVM doesn't support objects but can imitate them by using  arrays or structs. The
+        // field variables of an object then simply becomes an index in the array. This is done
+        // with the SETITEM opcode.
+        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
         addPushNumber(idx, neoMethod);
-        // SETITEM expects the item to be ontop of the stack (item -> index -> array)
+        // SETITEM expects the item to be on top of the stack (item -> index -> array)
         neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
         neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
     }
 
-    private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) throws IOException {
+    private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) {
         // NeoVM gets fields of objects simply by calling PICKITEM. The operand stack has to have
         // an index on top that is used by PICKITEM. We get this index from the class to which the
         // field belongs to.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn);
+        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
         addPushNumber(idx, neoMethod);
         neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
     }
 
-    private int getFieldIndex(FieldInsnNode fieldInsn) throws IOException {
-        ClassNode owner = getAsmClass(Type.getObjectType(fieldInsn.owner).getClassName());
+    private int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {
         int idx = 0;
         for (FieldNode field : owner.fields) {
             if (field.name.equals(fieldInsn.name)) {
@@ -328,9 +408,16 @@ public class Compiler {
         // because we don't need to call the ctor method. That is handled in `addCallMethod()`.
     }
 
-    // Checks for method params and local variables, sets them on the NeoMethod object and adds
-    // the INITSLOT opcode to initialize variable slots in the NeoVM.
     private void initializeMethod(MethodNode asmMethod, NeoMethod neoMethod) {
+        if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0) {
+            // Only contract methods that are public are added to the ABI and are invokable.
+            neoMethod.isAbiMethod = true;
+        }
+        neoMethod.isEntryPoint = isEntryPoint(asmMethod);
+
+        // Look for method params and local variables and add them to the NeoMethod. Note that
+        // JVM does not have a special opcode for method parameters like NeoVM has with LDARG and
+        // STARG.
         if (asmMethod.localVariables == null || asmMethod.localVariables.size() == 0) {
             return;
         }
@@ -341,8 +428,7 @@ public class Compiler {
         paramCount += Type.getArgumentTypes(asmMethod.desc).length;
         int localVarCount = asmMethod.localVariables.size() - paramCount;
         if (paramCount > MAX_PARAMS_COUNT) {
-            throw new CompilerException("The method has more than the max number of "
-                    + "parameters.");
+            throw new CompilerException("The method has more than the max number of parameters.");
         }
         if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
             throw new CompilerException("The method has more than the max number of local "
@@ -356,6 +442,9 @@ public class Compiler {
             LocalVariableNode varNode = asmMethod.localVariables.get(i);
             neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
         }
+
+        // Add the INITSLOT opcode as first instruction of the method if the method has parameters
+        // and/or local variables.
         if (paramCount + localVarCount > 0) {
             neoMethod.addInstruction(new NeoInstruction(
                     OpCode.INITSLOT, new byte[]{(byte) localVarCount, (byte) paramCount}));
@@ -476,9 +565,6 @@ public class Compiler {
             // Nothing to do if Java casts between primitive type and wrapper classes.
             return;
         }
-        // TODO: Only allow calls to methods that are inside of the currently compiled module.
-        //  This may include the definition of classes that are by default in the module for smart
-        //  contract compilation.
         // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
         // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
         // compiles it to NeoVM code.
@@ -488,7 +574,7 @@ public class Compiler {
             invokedNeoMethod = this.neoModule.methods.get(invokedMethodId);
         } else {
             invokedNeoMethod = new NeoMethod(calledAsmMethod, owner);
-            if (calledAsmMethod.name.equals(CONSTRUCTOR_NAME)) {
+            if (calledAsmMethod.name.equals(INSTANCE_CTOR)) {
                 if (!hasInstructions(calledAsmMethod)) {
                     // If the constructor is empty we don't need to parse it. The DUP opcode
                     // added before must be removed again.
@@ -497,7 +583,8 @@ public class Compiler {
                     callingNeoMethod.instructions.remove(lastKey);
                     return;
                 }
-                handleConstructorCall(invokedNeoMethod);
+                // After this removal the method will be compiled if it were a normal method.
+                removeInsnsUpToObjectCtorCall(invokedNeoMethod.asmMethod);
             }
             this.neoModule.addMethod(invokedNeoMethod);
             compileMethod(invokedNeoMethod);
@@ -536,14 +623,14 @@ public class Compiler {
     // Goes through the instructions of the given method and looks for the call to the `Object`
     // constructor. Removes all instructions up to it (including the super call itself). Assumes
     // that the constructed class does not extend any other class than `Object`.
-    private void handleConstructorCall(NeoMethod neoMethod) {
+    private void removeInsnsUpToObjectCtorCall(MethodNode asmMethod) {
         boolean hasSuperCallToObject = false;
-        Iterator<AbstractInsnNode> it = neoMethod.asmMethod.instructions.iterator();
+        Iterator<AbstractInsnNode> it = asmMethod.instructions.iterator();
         while (it.hasNext()) {
             AbstractInsnNode insn = it.next();
             it.remove();
             if (insn.getType() == AbstractInsnNode.METHOD_INSN
-                    && ((MethodInsnNode) insn).name.equals(CONSTRUCTOR_NAME)
+                    && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR)
                     && ((MethodInsnNode) insn).owner.equals(OBJECT_INTERNAL_NAME)) {
                 hasSuperCallToObject = true;
                 break;
@@ -707,7 +794,7 @@ public class Compiler {
         // TODO: Fill events list.
         List<ContractEvent> events = new ArrayList<>();
         for (NeoMethod neoMethod : neoModule.methods.values()) {
-            if (!neoMethod.isSmartContractMethod) {
+            if (!neoMethod.isAbiMethod) {
                 // TODO: This needs to change when enabling inheritance.
                 continue; // Only add methods to the ABI that appear in the contract itself.
             }
@@ -718,7 +805,7 @@ public class Compiler {
             }
             ContractParameterType paramType = mapTypeToParameterType(
                     Type.getMethodType(neoMethod.asmMethod.desc).getReturnType());
-            methods.add(new ContractMethod(neoMethod.asmMethod.name, contractParams, paramType,
+            methods.add(new ContractMethod(neoMethod.name, contractParams, paramType,
                     neoMethod.startAddress));
         }
         return new ContractABI(scriptHash.toString(), methods, events);

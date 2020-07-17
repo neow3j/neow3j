@@ -56,14 +56,14 @@ public class NeoMethod {
     Map<Integer, NeoVariable> parametersByJVMIndex = new HashMap<>();
 
     /**
-     * Tells if a method is a contract's entry point.
+     * Determin if a method is a contract's entry point.
      */
     boolean isEntryPoint = false;
 
     /**
-     * Tells if this method belongs to a smart contract.
+     * Determines if this method will show up in the contract's ABI.
      */
-    boolean isSmartContractMethod = false;
+    boolean isAbiMethod = false;
 
     /**
      * The address after this method's last instruction byte. I.e. the next free address. This
@@ -77,10 +77,16 @@ public class NeoMethod {
      */
     Integer startAddress = null;
 
+    /**
+     * The name of this method. Used like this, e.g., in the contracts ABI.
+     */
+    String name;
+
     NeoMethod(MethodNode asmMethod, ClassNode owner) {
         this.asmMethod = asmMethod;
         this.ownerType = owner;
         this.id = getMethodId(asmMethod, owner);
+        this.name = asmMethod.name;
     }
 
     /**
