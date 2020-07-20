@@ -320,8 +320,8 @@ public class Compiler {
                 addStoreStaticField(insn, neoMethod);
                 break;
             case GETSTATIC:
-                // TODO: Handle get static variable
-                throw new CompilerException("Sounds good, doesn't work.");
+                addLoadStaticField(insn, neoMethod);
+                break;
             case POP:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 break;
@@ -352,6 +352,12 @@ public class Compiler {
                 throw new CompilerException("Unsupported instruction " + opcode + " in: " +
                         asmMethod.name + ".");
         }
+    }
+
+    private void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
+        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
     }
 
     private void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
