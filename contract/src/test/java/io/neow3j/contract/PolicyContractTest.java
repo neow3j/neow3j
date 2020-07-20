@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.Matchers.contains;
@@ -28,7 +29,7 @@ import java.util.List;
 public class PolicyContractTest {
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     private Neow3j neow3j;
     private Wallet consensusWallet;
@@ -41,9 +42,10 @@ public class PolicyContractTest {
 
     @Before
     public void setUp() {
-        // Configuring WireMock to use default host and port "localhost:8080".
-        WireMock.configure();
-        neow3j = Neow3j.build(new HttpService("http://localhost:8080"));
+        // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
+        int port = this.wireMockRule.port();
+        WireMock.configureFor(port);
+        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
         // Configuring wallet to invoke policy contract
         ECKeyPair ecKeyPair = ECKeyPair.create(
