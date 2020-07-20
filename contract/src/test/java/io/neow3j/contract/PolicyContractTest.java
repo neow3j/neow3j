@@ -95,7 +95,6 @@ public class PolicyContractTest {
                 ScriptHash.fromAddress("ATpVyfpFwE2SzNGSvXDNrtRyfVLajhn7yN")));
     }
 
-
     @Test
     public void testSetFeePerByte() throws IOException {
         String script =
