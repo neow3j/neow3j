@@ -31,7 +31,7 @@ public class Nep5Token extends SmartContract {
     private String symbol;
 
     /**
-     * Constructs a new <tt>Nep5Token</tt> representing the token contract with the given script
+     * Constructs a new {@code Nep5Token} representing the token contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash The token contract's script hash

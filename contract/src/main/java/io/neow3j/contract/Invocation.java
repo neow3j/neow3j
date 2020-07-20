@@ -34,8 +34,8 @@ import java.util.stream.Stream;
 
 /**
  * Used to invoke Neo VM scripts and contract functions. Uses the {@link Invocation.Builder} to
- * configure an invocation and do calls via the <tt>invokescript</tt> and <tt>invokefunction</tt>
- * RPC. When building the <tt>Invocation</tt>, a transaction is created that can be signed
+ * configure an invocation and do calls via the {@code invokescript} and {@code invokefunction}
+ * RPC. When building the {@code Invocation}, a transaction is created that can be signed
  * and sent to the Neo node.
  */
 public class Invocation {
@@ -362,11 +362,11 @@ public class Invocation {
         }
 
         /**
-         * Makes an <tt>invokescript</tt> call to the neo-node with the invocation in its current
+         * Makes an {@code invokescript} call to the neo-node with the invocation in its current
          * configuration. No changes are made to the blockchain state.
          * <p>
          * Make sure to add all necessary cosigners to the builder before making this call. They are
-         * required for a successful <tt>invokescript</tt> call.
+         * required for a successful {@code invokescript} call.
          *
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
@@ -386,11 +386,11 @@ public class Invocation {
         }
 
         /**
-         * Makes an <tt>invokefunction</tt> call to the neo-node with the invocation in its current
+         * Makes an {@code invokefunction} call to the neo-node with the invocation in its current
          * configuration. No changes are made to the blockchain state.
          * <p>
          * Make sure to add all necessary cosigners to the builder before making this call. They are
-         * required for a successful <tt>invokefunction</tt> call.
+         * required for a successful {@code invokefunction} call.
          *
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
@@ -436,7 +436,7 @@ public class Invocation {
          * Builds the invocation, enforces correct configuration, fetches the system fee and
          * calculates the network fee.
          *
-         * @return the <tt>Invocation</tt> ready for signing and sending.
+         * @return the {@code Invocation} ready for signing and sending.
          * @throws IOException if something goes wrong when communicating with the neo-node.
          */
         public Invocation build() throws IOException {
