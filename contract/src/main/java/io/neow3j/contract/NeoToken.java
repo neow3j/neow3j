@@ -186,7 +186,7 @@ public class NeoToken extends Nep5Token {
         return callFunctionReturningListOfPublicKeys(GET_NEXT_BLOCK_VALIDATORS);
     }
 
-    public List<ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
+    private List<ECPublicKey> callFunctionReturningListOfPublicKeys(String function)
             throws IOException {
 
         StackItem arrayItem = invokeFunction(function).getInvocationResult().getStack().get(0);
@@ -200,7 +200,7 @@ public class NeoToken extends Nep5Token {
         return valKeys;
     }
 
-    ECPublicKey extractPublicKey(StackItem keyItem) {
+    private ECPublicKey extractPublicKey(StackItem keyItem) {
         if (!keyItem.getType().equals(StackItemType.BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(keyItem.getType(),
                     StackItemType.BYTE_STRING);
