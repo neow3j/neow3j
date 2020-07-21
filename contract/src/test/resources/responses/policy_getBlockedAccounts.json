@@ -1,0 +1,25 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "10c00c12676574426c6f636b65644163636f756e74730c149a61a46eec97b89306d7ce81f15b462091d0093241627d5b52",
+    "state": "HALT",
+    "gas_consumed": "2007390",
+    "stack": [
+      {
+        "type": "Array",
+        "value": [
+          {
+            "type": "ByteString",
+            "value": "yBcuo7QFv4v8V8M6hBARa4Q+E98="
+          },
+          {
+            "type": "ByteString",
+            "value": "hCCrJZI92VViQOmHlEIxk80H2vY="
+          }
+        ]
+      }
+    ],
+    "tx": "00c677e719941343239213fa0e765f1027ce742f48db779a965ea11e00000000007668120000000000f0152000003110c00c12676574426c6f636b65644163636f756e74730c149a61a46eec97b89306d7ce81f15b462091d0093241627d5b5201420c40b69d0d065d2c10549d8dafec291453848ae58205918a18c8f1c9b07708d45255af225455f396957144f10354d783799cbd28ab5edeeb82fae11ffa8c8134beba290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75"
+  }
+}

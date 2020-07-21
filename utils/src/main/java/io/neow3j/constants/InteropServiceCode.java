@@ -100,7 +100,7 @@ public enum InteropServiceCode {
     }
 
     /**
-     * Gets this <tt>InteropServiceCode</tt>'s hash (4 bytes) as a hex string.
+     * Gets this {@code InteropServiceCode}'s hash (4 bytes) as a hex string.
      *
      * @return the hash.
      */
