@@ -45,7 +45,8 @@ public enum InteropServiceCode {
 
     // Native tokens.
     NEO_NATIVE_TOKENS_NEO("Neo.Native.Tokens.NEO", null),
-    NEO_NATIVE_TOKENS_GAS("Neo.Native.Tokens.GAS", null);
+    NEO_NATIVE_TOKENS_GAS("Neo.Native.Tokens.GAS", null),
+    NEO_NATIVE_POLICY("Neo.Native.Policy", null);
 
     /* The service's name */
     private String name;

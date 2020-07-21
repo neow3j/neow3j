@@ -88,7 +88,6 @@ public class NeoTokenTest {
 
     @Test
     public void registerCandidate() throws IOException {
-        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
         String script =
                 "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c11c00c11726567697374657243616e6469646174650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_registercandidate.json", script,
