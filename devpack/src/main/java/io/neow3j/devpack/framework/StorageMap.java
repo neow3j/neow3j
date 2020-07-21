@@ -44,18 +44,20 @@ public class StorageMap {
     }
 
     /**
-     * Gets the entry with a key equal to {@code prefix + key} from the underlying storage context.
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context.
      *
-     * @param key The key of the entry to retrieve.
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key.
      */
     public byte[] get(byte[] key) {
         return Storage.get(this.context, concat(this.prefix, key));
     }
 
     /**
-     * Gets the entry with a key equal to {@code prefix + key} from the underlying storage context.
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context.
      *
-     * @param key The key of the entry to retrieve.
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key.
      */
     public byte[] get(String key) {
         return Storage.get(this.context, concat(this.prefix, toByteArray(key)));

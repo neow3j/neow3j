@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
 public @interface Appcall {
 
     /**
-     * The script hash of the contract to call.
+     * @return the script hash of the contract to call.
      */
     String scriptHash();
 

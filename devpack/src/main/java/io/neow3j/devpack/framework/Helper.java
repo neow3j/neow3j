@@ -45,7 +45,12 @@ public class Helper {
     /**
      * Converts the given string to a byte array.
      * <p>
-     * Examples: "hello" -> [0x68656c6c6f]; "" -> []; "Neo" -> [0x4e656f]
+     * Examples
+     * <ul>
+     *     <li>"hello": [0x68656c6c6f]</li>
+     *     <li>"": []</li>
+     *     <li>"Neo": [0x4e656f]</li>
+     * </ul>
      *
      * @param source The string to convert.
      * @return the converted byte array.
@@ -57,13 +62,13 @@ public class Helper {
      * Checks if the given integer is in the range [0, 255], converts it to a signed byte or exits
      * in fault state if not in range. Examples:
      * <ul>
-     *      <li>256 -> fault</li>
-     *      <li>-1 -> fault</li>
-     *      <li>255 -> -1 [0xff]</li>
-     *      <li>0 -> 0 [0x00]</li>
-     *      <li>10 -> 10 [0x0a]</li>
-     *      <li>127 -> 127 [0x7f]</li>
-     *      <li>128 -> -128 [0x80]</li>
+     *      <li>256: fault</li>
+     *      <li>-1: fault</li>
+     *      <li>255: -1 [0xff]</li>
+     *      <li>0: 0 [0x00]</li>
+     *      <li>10: 10 [0x0a]</li>
+     *      <li>127: 127 [0x7f]</li>
+     *      <li>128: -128 [0x80]</li>
      * </ul>
      *
      * @param source The integer to convert.
@@ -81,7 +86,13 @@ public class Helper {
      * Converts the given byte array to an integer. No checks are made regarding the value range of
      * integers.
      * <p>
-     * Examples: [0x0a] -> 10; [0x80] -> -128; [] -> 0; [0xff00] -> 255
+     * Examples
+     * <ul>
+     *  <li>[0x0a]: 10</li>
+     *  <li>[0x80]: -128</li>
+     *  <li>[]: 0</li>
+     *  <li>[0xff00]: 255</li>
+     * </ul>
      *
      * @param source The byte array to convert.
      * @return the converted integer.
@@ -92,10 +103,14 @@ public class Helper {
     /**
      * Casts the given byte array to a string.
      * <p>
-     * Examples: [0x68656c6c6f] -> "hello"; [] -> ""; [0x4e656f] -> "Neo"
-     * <p>
-     * This doesn't actually require an operation in NeoVM, i.e. calling this doesn't add anything
-     * to the compiled script.
+     * Examples
+     * <ul>
+     *     <li>[0x68656c6c6f]: "hello"</li>
+     *     <li>[]: ""</li>
+     *     <li>[0x4e656f]: "Neo"</li>
+     * </ul>
+     * This doesn't actually require an operation in the NeoVM. I.e., calling this doesn't
+     * add anything to the compiled script.
      *
      * @param source The byte array to cast.
      * @return the string.
@@ -111,7 +126,7 @@ public class Helper {
      * @param x The value to check if it is in the range.
      * @param a The beginning of the range (inclusive).
      * @param b The end of the range (exclusive).
-     * @return true iff a <= x < b. False, otherwise.
+     * @return true iff {@literal a <= x < b}. False, otherwise.
      */
     @Instruction(opcode = OpCode.WITHIN)
     public static native boolean within(int x, int a, int b);
@@ -138,7 +153,7 @@ public class Helper {
     public static native byte[] range(byte[] source, int index, int n);
 
     /**
-     * Returns the first n elements from the given byte array. Faults if count < 0.
+     * Returns the first n elements from the given byte array. Faults if count &lt; 0.
      *
      * @param source The array to take the bytes from.
      * @param n      The number of bytes to return.
@@ -148,7 +163,7 @@ public class Helper {
     public static native byte[] take(byte[] source, int n);
 
     /**
-     * Returns the last n elements from the given byte array. Faults if count < 0.
+     * Returns the last n elements from the given byte array. Faults if count &lt; 0.
      *
      * @param source The array to take the bytes from.
      * @param n      The number of bytes to return.
@@ -158,7 +173,7 @@ public class Helper {
     public static native byte[] last(byte[] source, int n);
 
     /**
-     * Returns a reversed copy of the given bytes. Example: [0a,0b,0c,0d,0e] -> [0e,0d,0c,0b,0a]
+     * Returns a reversed copy of the given bytes. Example: [0a,0b,0c,0d,0e]: [0e,0d,0c,0b,0a]
      *
      * @param source The bytes to reverse.
      * @return The reversed bytes.
@@ -177,8 +192,8 @@ public class Helper {
     public static native byte[] serialize(Object source);
 
     /**
-     * Attempts to deserialize the given byte array. It is up to the developer to know what type
-     * to expect from the deserialization.
+     * Attempts to deserialize the given byte array. It is up to the developer to know what type to
+     * expect from the deserialization.
      *
      * @param source the byte array to deserialize.
      * @return the deserialized object.

@@ -13,70 +13,71 @@ import io.neow3j.devpack.framework.annotations.Syscall;
 public class Enumerator<V> {
 
     /**
-     * Creates an <tt>Enumerator</tt> over the given entries.
+     * Creates an {@code Enumerator} over the given entries.
      *
      * @param entries The values to enumerate.
-     * @return the <tt>Enumerator</tt>.
+     * @param <V> The type of the entries in the enumerator.
+     * @return the {@code Enumerator}.
      */
     @Syscall(SYSTEM_ENUMERATOR_CREATE)
     public static native <V> Enumerator<V> create(V[] entries);
 
     /**
-     * Creates an <tt>Enumerator</tt> over the given bytes.
+     * Creates an {@code Enumerator} over the given bytes.
      *
      * @param entries The bytes to enumerate.
-     * @return the <tt>Enumerator</tt>.
+     * @return the {@code Enumerator}.
      */
     @Syscall(SYSTEM_ENUMERATOR_CREATE)
     public static native Enumerator<Byte> create(byte[] entries);
 
     /**
-     * Creates an <tt>Enumerator</tt> over the given integers.
+     * Creates an {@code Enumerator} over the given integers.
      *
      * @param entries The integers to enumerate.
-     * @return the <tt>Enumerator</tt>.
+     * @return the {@code Enumerator}.
      */
     @Syscall(SYSTEM_ENUMERATOR_CREATE)
     public static native Enumerator<Integer> create(int[] entries);
 
     /**
-     * Creates an <tt>Enumerator</tt> over the given characters.
+     * Creates an {@code Enumerator} over the given characters.
      *
      * @param entries The characters to enumerate.
-     * @return the <tt>Enumerator</tt>.
+     * @return the {@code Enumerator}.
      */
     @Syscall(SYSTEM_ENUMERATOR_CREATE)
     public static native Enumerator<Character> create(char[] entries);
 
     /**
-     * Creates an <tt>Enumerator</tt> over the given boolean values.
+     * Creates an {@code Enumerator} over the given boolean values.
      *
      * @param entries The boolean values to enumerate.
-     * @return the <tt>Enumerator</tt>.
+     * @return the {@code Enumerator}.
      */
     @Syscall(SYSTEM_ENUMERATOR_CREATE)
     public static native Enumerator<Boolean> create(boolean[] entries);
 
     /**
-     * Creates an <tt>Enumerator</tt> over the characters in the given string.
+     * Creates an {@code Enumerator} over the characters in the given string.
      *
      * @param characters The string to enumerate.
-     * @return the <tt>Enumerator</tt>.
+     * @return the {@code Enumerator}.
      */
     @Syscall(SYSTEM_ENUMERATOR_CREATE)
     public static native Enumerator<Character> create(String characters);
 
     /**
-     * Concatenates the given <tt>Enumerator</tt> to this one.
+     * Concatenates the given {@code Enumerator} to this one.
      *
-     * @param value The <tt>Enumerator</tt> to concatenate.
-     * @return the concatenated <tt>Enumerator</tt>s.
+     * @param value The {@code Enumerator} to concatenate.
+     * @return the concatenated {@code Enumerator}s.
      */
     @Syscall(SYSTEM_ENUMERATOR_CONCAT)
     public native Enumerator<V> concat(Enumerator<V> value);
 
     /**
-     * Moves this <tt>Enumerator</tt>'s position to the next element.
+     * Moves this {@code Enumerator}'s position to the next element.
      *
      * @return true if there is a next element. False, otherwise.
      */
@@ -84,7 +85,7 @@ public class Enumerator<V> {
     public native boolean next();
 
     /**
-     * Gets the value of the element at the current <tt>Enumerator</tt> position.
+     * Gets the value of the element at the current {@code Enumerator} position.
      *
      * @return the value.
      */

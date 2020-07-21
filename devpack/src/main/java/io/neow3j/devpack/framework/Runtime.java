@@ -63,6 +63,7 @@ public class Runtime {
      * Gets current invocation notifications matching the given sender script hash. The script hash
      * must be 20 bytes long. If it is all zeros, it refers to all existing notifications.
      *
+     * @param hash The sender script hash to get the notifications for.
      * @return an array of all notifications matching the given script hash.
      */
     @Syscall(SYSTEM_RUNTIME_GETNOTIFICATIONS)
