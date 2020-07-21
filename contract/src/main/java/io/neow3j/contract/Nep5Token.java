@@ -7,9 +7,13 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents a NEP-5 token contract and provides methods to invoke it.
@@ -165,7 +169,143 @@ public class Nep5Token extends SmartContract {
     /**
      * Creates and sends a transfer transaction.
      * <p>
-     * Currently only the wallet's default account is used to cover the token amount.
+     * Uses all accounts of the wallet to cover the token amount.
+     * For the wallet's accounts, a transfer script is build for the remaining amount to cover. If the amount is fully
+     * covered, the scripts are concatenated and a transfer transaction is sent.
+     * The default account is used first to cover the amount.
+     *
+     * @param wallet The wallet from which to send the tokens from.
+     * @param to     The script hash of the receiver.
+     * @param amount The amount to transfer as a decimal number (not token fractions).
+     * @return The transaction id.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public NeoSendRawTransaction transferUsingFullWallet(Wallet wallet, ScriptHash to, BigDecimal amount)
+            throws IOException {
+        BigInteger amountStillToCover = getAmountAsBigInteger(amount);
+
+        // Use default account first.
+        Account defaultAccount = wallet.getDefaultAccount();
+        BigInteger balanceDefaultAcc = getBalanceOf(defaultAccount.getScriptHash());
+        amountStillToCover = amountStillToCover.subtract(balanceDefaultAcc);
+
+        // List of the individual invocation scripts.
+        List<byte[]> scripts;
+        // If the amount is covered by the wallet's default account, build and send the transaction.
+        if (amountStillToCover.signum() <= 0) {
+            scripts = Arrays.asList(buildTransferScript(defaultAccount, to, amountStillToCover));
+            return buildTransferInvocation(wallet, scripts).send();
+        } else {
+            scripts = Arrays.asList(buildTransferScript(defaultAccount, to, balanceDefaultAcc));
+        }
+
+        // If there is still an amount to cover, use other accounts in the wallet until the amount is covered.
+        List<Account> accounts = wallet.getAccounts();
+        for (Account acc : accounts) {
+            if (acc.isDefault()) {
+                continue;
+            }
+            amountStillToCover = amountStillToCover.subtract(getBalanceOf(acc.getScriptHash()));
+
+            if (amountStillToCover.signum() <= 0) {
+                scripts.add(buildTransferScript(acc, to, amountStillToCover));
+                break;
+            } else {
+                scripts.add(buildTransferScript(acc, to, balanceDefaultAcc));
+            }
+        }
+
+        if (amountStillToCover.signum() > 0) {
+            BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
+            throw new InsufficientFundsException("The wallet's default account does not hold enough"
+                    + " tokens. Transfer amount is " + amountStillToCover.toString() + " but account"
+                    + " only holds " + maxCoverPotential.toString() + " (in token fractions).");
+        }
+
+        return buildTransferInvocation(wallet, scripts).send();
+    }
+
+    /**
+     * Creates and sends a transfer transaction.
+     * <p>
+     * Uses only specified accounts of the wallet to cover the token amount.
+     * For the provided accounts, a transfer script is build for the remaining amount to cover. If the amount is fully
+     * covered, the scripts are concatenated and a transfer transaction is sent. The accounts are used in the order as
+     * they are provided. (The first account is used first to cover the amount.)
+     *
+     * @param wallet The wallet from which to send the tokens from.
+     * @param to     The script hash of the receiver.
+     * @param amount The amount to transfer as a decimal number (not token fractions).
+     * @param from   The script hashes of the accounts in the wallet that should be used to cover the amount.
+     * @return The transaction id.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public NeoSendRawTransaction transferUsingSpecificAddresses(Wallet wallet, ScriptHash to,
+            BigDecimal amount, ScriptHash... from)
+            throws IOException {
+        if (from.length == 0) {
+            throw new IllegalArgumentException("No address provided to build an invocation.");
+        }
+        if (amount.signum() <= 0) {
+            throw new IllegalArgumentException("Amount to transfer must be positive.");
+        }
+
+        BigInteger amountStillToCover = getAmountAsBigInteger(amount);
+        // List of the individual invocation scripts.
+        List<byte[]> scripts = new ArrayList<>();
+
+        // If there is still an amount to cover, use other accounts in the wallet until the amount is covered.
+        for (ScriptHash scriptHash : from) {
+            Account acc = wallet.getAccount(scriptHash);
+            BigInteger balance = getBalanceOf(acc.getScriptHash());
+            amountStillToCover = amountStillToCover.subtract(balance);
+
+            if (amountStillToCover.signum() <= 0) {
+                scripts.add(buildTransferScript(acc, to, amountStillToCover));
+                break;
+            } else {
+                scripts.add(buildTransferScript(acc, to, balance));
+            }
+        }
+
+        if (amountStillToCover.signum() > 0) {
+            BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
+            throw new InsufficientFundsException("The provided accounts do not hold enough"
+                    + " tokens. Transfer amount is " + amountStillToCover.toString() + " but account"
+                    + " only holds " + maxCoverPotential.toString() + " (in token fractions).");
+        }
+
+        return buildTransferInvocation(wallet, scripts).send();
+    }
+
+    private byte[] buildTransferScript(Account acc, ScriptHash to, BigInteger amount) {
+        List<ContractParameter> params = Arrays.asList(
+                ContractParameter.hash160(acc.getScriptHash()),
+                ContractParameter.hash160(to),
+                ContractParameter.integer(amount));
+
+        return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
+    }
+
+    Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        for (byte[] script : scripts) {
+            byteArrayOutputStream.write(script);
+        }
+        byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
+
+        return new Invocation.Builder(neow)
+                .withWallet(wallet)
+                .withSender(wallet.getDefaultAccount().getScriptHash())
+                .withScript(concatenatedScript)
+                .build()
+                .sign();
+    }
+
+    /**
+     * Creates and sends a transfer transaction.
+     * <p>
+     * Uses only the wallet's default account to cover the token amount.
      *
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
@@ -184,8 +324,7 @@ public class Nep5Token extends SmartContract {
             throws IOException {
 
         Account acc = wallet.getDefaultAccount();
-        BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
-        BigInteger fractions = amount.multiply(factor).toBigInteger();
+        BigInteger fractions = getAmountAsBigInteger(amount);
         BigInteger accBalance = getBalanceOf(acc.getScriptHash());
         if (accBalance.compareTo(fractions) < 0) {
             throw new InsufficientFundsException("The wallet's default account does not hold enough"
@@ -202,5 +341,10 @@ public class Nep5Token extends SmartContract {
                 .failOnFalse()
                 .build()
                 .sign();
+    }
+
+    private BigInteger getAmountAsBigInteger(BigDecimal amount) throws IOException {
+        BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
+        return amount.multiply(factor).toBigInteger();
     }
 }
