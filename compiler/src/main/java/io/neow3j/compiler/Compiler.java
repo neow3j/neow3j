@@ -33,14 +33,15 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -93,7 +94,10 @@ public class Compiler {
         this.neoModule = new NeoModule(asmClass);
         collectAndInitializeStaticFields(asmClass);
         collectAndInitializeMethods(asmClass);
-        for (NeoMethod neoMethod : this.neoModule.methods.values()) {
+        // Need to create a new list from the methods that have been added to the NeoModule so
+        // far because we are potentially adding new methods to the module in the compilation,
+        // which leads to concurrency errors.
+        for (NeoMethod neoMethod : new ArrayList<>(this.neoModule.methods.values())) {
             compileMethod(neoMethod);
         }
         this.neoModule.finalizeModule();
@@ -174,7 +178,7 @@ public class Compiler {
                         + "supported.");
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            initializeMethod(asmMethod, neoMethod);
+            initializeMethod(neoMethod);
             if (entryPointFound && neoMethod.isEntryPoint) {
                 throw new CompilerException("Multiple entry points found. Only one method of "
                         + "a smart contract can be the entry point.");
@@ -414,25 +418,27 @@ public class Compiler {
         // because we don't need to call the ctor method. That is handled in `addCallMethod()`.
     }
 
-    private void initializeMethod(MethodNode asmMethod, NeoMethod neoMethod) {
-        if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0) {
-            // Only contract methods that are public are added to the ABI and are invokable.
+    private void initializeMethod(NeoMethod neoMethod) {
+        if ((neoMethod.asmMethod.access & Opcodes.ACC_PUBLIC) > 0 &&
+                neoMethod.ownerType.equals(this.neoModule.asmSmartContractClass)) {
+            // Only contract methods that are public and on the smart contract class are added to
+            // the ABI and are invokable.
             neoMethod.isAbiMethod = true;
         }
-        neoMethod.isEntryPoint = isEntryPoint(asmMethod);
+        neoMethod.isEntryPoint = isEntryPoint(neoMethod.asmMethod);
 
         // Look for method params and local variables and add them to the NeoMethod. Note that
         // JVM does not have a special opcode for method parameters like NeoVM has with LDARG and
         // STARG.
-        if (asmMethod.localVariables == null || asmMethod.localVariables.size() == 0) {
+        if (neoMethod.asmMethod.localVariables == null || neoMethod.asmMethod.localVariables.size() == 0) {
             return;
         }
         int paramCount = 0;
-        if (asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+        if (neoMethod.asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
             paramCount++;
         }
-        paramCount += Type.getArgumentTypes(asmMethod.desc).length;
-        int localVarCount = asmMethod.localVariables.size() - paramCount;
+        paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
+        int localVarCount = neoMethod.asmMethod.localVariables.size() - paramCount;
         if (paramCount > MAX_PARAMS_COUNT) {
             throw new CompilerException("The method has more than the max number of parameters.");
         }
@@ -441,11 +447,11 @@ public class Compiler {
                     + "variables.");
         }
         for (int i = 0; i < paramCount; i++) {
-            LocalVariableNode varNode = asmMethod.localVariables.get(i);
+            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
             neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
         }
-        for (int i = paramCount; i < asmMethod.localVariables.size(); i++) {
-            LocalVariableNode varNode = asmMethod.localVariables.get(i);
+        for (int i = paramCount; i < neoMethod.asmMethod.localVariables.size(); i++) {
+            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
             neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
         }
 
@@ -574,12 +580,12 @@ public class Compiler {
         // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
         // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
         // compiles it to NeoVM code.
-        String invokedMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
-        NeoMethod invokedNeoMethod;
-        if (this.neoModule.methods.containsKey(invokedMethodId)) {
-            invokedNeoMethod = this.neoModule.methods.get(invokedMethodId);
+        String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
+        NeoMethod calledNeoMethod;
+        if (this.neoModule.methods.containsKey(calledMethodId)) {
+            calledNeoMethod = this.neoModule.methods.get(calledMethodId);
         } else {
-            invokedNeoMethod = new NeoMethod(calledAsmMethod, owner);
+            calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
             if (calledAsmMethod.name.equals(INSTANCE_CTOR)) {
                 if (!hasInstructions(calledAsmMethod)) {
                     // If the constructor is empty we don't need to parse it. The DUP opcode
@@ -590,17 +596,18 @@ public class Compiler {
                     return;
                 }
                 // After this removal the method will be compiled if it were a normal method.
-                removeInsnsUpToObjectCtorCall(invokedNeoMethod.asmMethod);
+                removeInsnsUpToObjectCtorCall(calledNeoMethod.asmMethod);
             }
-            this.neoModule.addMethod(invokedNeoMethod);
-            compileMethod(invokedNeoMethod);
+            this.neoModule.addMethod(calledNeoMethod);
+            initializeMethod(calledNeoMethod);
+            compileMethod(calledNeoMethod);
         }
         addReverseArguments(calledAsmMethod, callingNeoMethod);
         // We explicitly add the 4-element byte array as an operand so that instruction addresses
         // can easily be calculated even before the correct offset is set on the CALL_L opcode.
         // The actual setting of the correct offset happens in NeoModule.
         NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL_L, new byte[4])
-                .setExtra(invokedNeoMethod);
+                .setExtra(calledNeoMethod);
         // Note that we never make use of Opcode.CALL because that complicates calculation of
         // instruction addresses in the NeoModule.
         callingNeoMethod.addInstruction(invokeInsn);
