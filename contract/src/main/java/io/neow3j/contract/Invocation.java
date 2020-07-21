@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Used to invoke Neo VM scripts and contract functions. Uses the {@link Invocation.Builder} to
@@ -60,9 +59,11 @@ public class Invocation {
      *                                          of the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
-        Stream<Witness> witnesses = this.transaction.getWitnesses().stream();
+        List<ScriptHash> witnesses = this.transaction.getWitnesses().stream()
+                .map(Witness::getScriptHash).collect(Collectors.toList());
+
         for (Cosigner cosigner : this.transaction.getCosigners()) {
-            if (witnesses.noneMatch(w -> w.getScriptHash().equals(cosigner.getScriptHash()))) {
+            if (!witnesses.contains(cosigner.getScriptHash())) {
                 throw new InvocationConfigurationException("The transaction does not have a "
                         + "signature for each of its cosigners.");
             }
