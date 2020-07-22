@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -428,7 +427,8 @@ public class Compiler {
         // Look for method params and local variables and add them to the NeoMethod. Note that
         // JVM does not have a special opcode for method parameters like NeoVM has with LDARG and
         // STARG.
-        if (neoMethod.asmMethod.localVariables == null || neoMethod.asmMethod.localVariables.size() == 0) {
+        if (neoMethod.asmMethod.localVariables == null
+                || neoMethod.asmMethod.localVariables.size() == 0) {
             return;
         }
         int paramCount = 0;

@@ -7,11 +7,6 @@ package io.neow3j.devpack.framework;
  */
 public class Notification {
 
-    private Notification(byte[] scriptHash, Object state) {
-        this.scriptHash = scriptHash;
-        this.state = state;
-    }
-
     /**
      * Sender script hash.
      */
@@ -21,6 +16,11 @@ public class Notification {
      * Notification's state
      */
     public final Object state;
+
+    private Notification(byte[] scriptHash, Object state) {
+        this.scriptHash = scriptHash;
+        this.state = state;
+    }
 
 }
 
