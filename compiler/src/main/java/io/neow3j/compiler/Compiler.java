@@ -248,8 +248,6 @@ public class Compiler {
             case RETURN:
             case IRETURN:
             case ARETURN:
-            case FRETURN:
-            case DRETURN:
             case LRETURN:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.RET));
                 break;
