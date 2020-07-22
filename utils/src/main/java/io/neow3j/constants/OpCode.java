@@ -1,6 +1,7 @@
 package io.neow3j.constants;
 
 import io.neow3j.utils.Numeric;
+import java.lang.annotation.Annotation;
 
 /**
  * This enum contains a <b>subset</b> of NEO VM opcodes.
@@ -1098,5 +1099,27 @@ public enum OpCode {
     @Override
     public String toString() {
         return Numeric.toHexStringNoPrefix((byte) this.getCode());
+    }
+
+    /**
+     * Gets the {@link OperandSize} annotation for the given opcode.
+     *
+     * @param code The opcode to get the annotation for.
+     * @return the annotation, or null if the given opcode is not annotated.
+     */
+    public static OperandSize getOperandSize(OpCode code) {
+        try {
+            Annotation[] annotations = OpCode.class.getField(code.name()).getAnnotations();
+            if (annotations.length == 0) {
+                return null;
+            }
+            if (annotations[0].annotationType() != OperandSize.class) {
+                throw new IllegalStateException("Unsupported annotation on OpCode.");
+            }
+            return (OperandSize) annotations[0];
+        } catch (NoSuchFieldException ignore) {
+            // Does not happen.
+            return null;
+        }
     }
 }
