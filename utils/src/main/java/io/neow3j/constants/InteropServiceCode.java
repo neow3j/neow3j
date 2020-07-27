@@ -7,9 +7,6 @@ import java.nio.charset.StandardCharsets;
 
 public enum InteropServiceCode {
 
-    SYSTEM_CONTRACT_CREATE("System.Contract.Create", null), // dynamic calculation
-    SYSTEM_CONTRACT_CALL("System.Contract.Call", 1000000),
-
     SYSTEM_ENUMERATOR_CREATE("System.Enumerator.Create", 400),
     SYSTEM_ENUMERATOR_NEXT("System.Enumerator.Next", 1_000_000),
     SYSTEM_ENUMERATOR_VALUE("System.Enumerator.Value", 400),
@@ -21,8 +18,19 @@ public enum InteropServiceCode {
     SYSTEM_ITERATOR_VALUES("System.Iterator.Values", 400),
     SYSTEM_ITERATOR_CONCAT("System.Iterator.Concat", 400),
 
+    SYSTEM_RUNTIME_PLATFORM("System.Runtime.Platform", 250),
+    SYSTEM_RUNTIME_GETTRIGGER("System.Runtime.GetTrigger", 250),
+    SYSTEM_RUNTIME_GETTIME("System.Runtime.GetTime", 250),
+    SYSTEM_RUNTIME_GETSCRIPTCONTAINER("System.Runtime.GetScriptContainer", 250),
+    SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH("System.Runtime.GetExecutingScriptHash", 400),
+    SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH("System.Runtime.GetCallingScriptHash", 400),
+    SYSTEM_RUNTIME_GETENTRYSCRIPTHASH("System.Runtime.GetEntryScriptHash", 400),
     SYSTEM_RUNTIME_CHECKWITNESS("System.Runtine.CheckWitness", 30000),
+    SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 400),
+    SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1_000_000),
     SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1_000_000),
+    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", null), // dynamic calculation
+    SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 400),
 
     SYSTEM_STORAGE_GETCONTEXT("System.Storage.GetContext", 400),
     SYSTEM_STORAGE_GETREADONLYCONTEXT("System.Storage.GetReadOnlyContext", 400),
@@ -36,6 +44,27 @@ public enum InteropServiceCode {
     SYSTEM_BINARY_SERIALIZE("System.Binary.Serialize", 100000),
     SYSTEM_BINARY_DESERIALIZE("System.Binary.Deserialize", 500000),
 
+    SYSTEM_BLOCKCHAIN_GETHEIGHT("System.Blockchain.GetHeight", 400),
+    SYSTEM_BLOCKCHAIN_GETBLOCK("System.Blockchain.GetBlock", 2500000),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTION("System.Blockchain.GetTransaction", 1000000),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1000000),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1000000),
+    SYSTEM_BLOCKCHAIN_GETCONTRACT("System.Blockchain.GetContract", 1000000),
+
+    SYSTEM_CONTRACT_CREATE("System.Contract.Create", null), // dynamic calculation
+    SYSTEM_CONTRACT_UPDATE("System.Contract.Update", null), // dynamic calculation
+    SYSTEM_CONTRACT_DESTROY("System.Contract.Destroy", 1000000),
+    SYSTEM_CONTRACT_CALL("System.Contract.Call", 1000000),
+    SYSTEM_CONTRACT_CALLEX("System.Contract.CallEx", 1000000),
+    SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 30000),
+    SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 30000),
+    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 10000),
+
+    SYSTEM_JSON_SERIALIZE("System.Json.Serialize", 100_000),
+    SYSTEM_JSON_DESERIALIZE("System.Json.Deserialize", 500_000),
+
+    NEO_CRYPTO_SHA256("Neo.Crypto.SHA256", 1_000_000),
+    NEO_CRYPTO_RIPEMD160("Neo.Crypto.RIPEMD160", 1_000_000),
     NEO_CRYPTO_ECDSA_SECP256R1_VERIFY("Neo.Crypto.ECDsa.Secp256r1.Verify", 1_000_000),
     NEO_CRYPTO_ECDSA_SECP256K1_VERIFY("Neo.Crypto.ECDsa.Secp256k1.Verify", 1_000_000),
     // The price for check multisig is the price for Secp256r1.Verify times the number of signatures

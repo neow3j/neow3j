@@ -1,13 +1,5 @@
 description 'Neo Java DevPack'
 
 dependencies {
-    compile "org.ow2.asm:asm-tree:$asmVersion",
-            "org.ow2.asm:asm-commons:$asmVersion",
-            "org.ow2.asm:asm-analysis:$asmVersion",
-            "org.ow2.asm:asm-util:$asmVersion",
-            "org.ow2.asm:asm:$asmVersion",
-            project(':utils'),
-            project(':contract')
-
-    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
+    compile project(':contract')
 }

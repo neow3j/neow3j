@@ -1,18 +1,29 @@
 package io.neow3j.devpack.framework;
 
-public enum TriggerType {
-    Verification(0x00),
-    VerificationR(0x01),
-    Application(0x10),
-    ApplicationR(0x11);
+/**
+ * The <tt>TriggerType</tt> defines the mode in which a smart contract is invoked. This implies that
+ * a smart contract can be invoked in other ways than just the normal application mode.
+ */
+public class TriggerType {
 
-    private byte value;
+    public static final byte SYSTEM = 0x01;
 
-    private TriggerType(int value) {
-        this.value = (byte) value;
-    }
+    /**
+     * The verification trigger indicates that the contract is being invoked as a verification
+     * function. The verification function can accept multiple parameters, and should return a
+     * boolean value that indicates the validity of the transaction or block. The entry point of the
+     * contract will be invoked if the contract is triggered with this trigger type. The entry point
+     * of the contract must be able to handle this trigger type.
+     */
+    public static final byte VERIFICATION = 0x20;
 
-    public byte value() {
-        return value;
-    }
+    /**
+     * The application trigger indicates that the contract is being invoked as an application. The
+     * application function can accept multiple parameters, change the state of the blockchain, and
+     * return any type of value. Any function of the contract can server as the entry point with
+     * this trigger type.
+     */
+    public static final byte APPLICATION = 0x40;
+
+    public static final byte ALL = SYSTEM | VERIFICATION | APPLICATION;
 }
