@@ -225,7 +225,7 @@ public class Nep5Token extends SmartContract {
                 continue;
             }
             signers.add(acc.getScriptHash());
-            if (balance.subtract(amountStillToCover).signum() <= 0) {
+            if (balance.subtract(amountStillToCover).signum() >= 0) {
                 // Full remaining amount can be covered by current account.
                 scripts.add(buildSingleTransferScript(acc, to, amountStillToCover));
                 return buildTransferInvocation(wallet, scripts, signers);
@@ -237,9 +237,10 @@ public class Nep5Token extends SmartContract {
 
         if (amountStillToCover.signum() > 0) {
             BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
-            throw new InsufficientFundsException("The wallet's default account does not hold enough"
-                    + " tokens. Transfer amount is " + amountStillToCover.toString() + " but account"
-                    + " only holds " + maxCoverPotential.toString() + " (in token fractions).");
+            throw new InsufficientFundsException("The wallet does not hold enough tokens." +
+                    " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
+                    " but the wallet only holds " + maxCoverPotential.toString() + " " + getSymbol() +
+                    " (in token fractions).");
         }
 
         return buildTransferInvocation(wallet, scripts, signers);
@@ -303,9 +304,10 @@ public class Nep5Token extends SmartContract {
 
         if (amountStillToCover.signum() > 0) {
             BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
-            throw new InsufficientFundsException("The provided accounts do not hold enough"
-                    + " tokens. Transfer amount is " + amountStillToCover.toString() + " but account"
-                    + " only holds " + maxCoverPotential.toString() + " (in token fractions).");
+            throw new InsufficientFundsException("The provided accounts do not hold enough tokens." +
+                    " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
+                    " but the provided accounts only hold " + maxCoverPotential.toString() + " " + getSymbol() +
+                    " (in token fractions).");
         }
 
         return buildTransferInvocation(wallet, scripts, signers);
@@ -317,13 +319,10 @@ public class Nep5Token extends SmartContract {
                 ContractParameter.hash160(to),
                 ContractParameter.integer(amount));
 
-        System.out.println("script with acc: " + acc.getAddress() + "\namount: " + amount);
-        System.out.println("script: " + Numeric.toHexStringNoPrefix(new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray()));
         return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
     }
 
-    // Method extracted for testability.
-    Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts, List<ScriptHash> signers)
+    private Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts, List<ScriptHash> signers)
             throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         for (byte[] script : scripts) {
