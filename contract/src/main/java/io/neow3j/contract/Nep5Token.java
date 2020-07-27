@@ -4,7 +4,6 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.Cosigner;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
@@ -295,7 +294,7 @@ public class Nep5Token extends SmartContract {
             if (balance.subtract(amountStillToCover).signum() >= 0) {
                 // Full remaining amount can be covered by current account.
                 scripts.add(buildSingleTransferScript(acc, to, amountStillToCover));
-                break;
+                return buildTransferInvocation(wallet, scripts, signers);
             } else {
                 scripts.add(buildSingleTransferScript(acc, to, balance));
                 amountStillToCover = amountStillToCover.subtract(balance);
