@@ -187,6 +187,13 @@ public class Nep5Token extends SmartContract {
         if (amount.signum() <= 0) {
             throw new IllegalArgumentException("Transfer amount must be positive.");
         }
+
+        return buildTransactionScript(wallet, to, amount).send();
+    }
+
+    // Method extracted for testability.
+    Invocation buildTransactionScript(Wallet wallet, ScriptHash to, BigDecimal amount)
+            throws IOException {
         BigInteger amountStillToCover = getAmountAsBigInteger(amount);
 
         // Use default account first.
@@ -201,11 +208,11 @@ public class Nep5Token extends SmartContract {
             signers.add(defaultAccount.getScriptHash());
             if (balanceDefaultAcc.subtract(amountStillToCover).signum() >= 0) {
                 // Full amount can be covered by default account.
-                scripts.add(buildTransferScript(defaultAccount, to, amountStillToCover));
-                return buildTransferInvocation(wallet, scripts, signers).send();
+                scripts.add(buildSingleTransferScript(defaultAccount, to, amountStillToCover));
+                return buildTransferInvocation(wallet, scripts, signers);
             } else {
                 // Amount exceeds balance, therefore, full balance of default account is used.
-                scripts.add(buildTransferScript(defaultAccount, to, balanceDefaultAcc));
+                scripts.add(buildSingleTransferScript(defaultAccount, to, balanceDefaultAcc));
                 amountStillToCover = amountStillToCover.subtract(balanceDefaultAcc);
             }
         }
@@ -220,10 +227,10 @@ public class Nep5Token extends SmartContract {
             signers.add(acc.getScriptHash());
             if (balance.subtract(amountStillToCover).signum() <= 0) {
                 // Full remaining amount can be covered by current account.
-                scripts.add(buildTransferScript(acc, to, amountStillToCover));
-                return buildTransferInvocation(wallet, scripts, signers).send();
+                scripts.add(buildSingleTransferScript(acc, to, amountStillToCover));
+                return buildTransferInvocation(wallet, scripts, signers);
             } else {
-                scripts.add(buildTransferScript(acc, to, balance));
+                scripts.add(buildSingleTransferScript(acc, to, balance));
                 amountStillToCover = amountStillToCover.subtract(balance);
             }
         }
@@ -235,7 +242,7 @@ public class Nep5Token extends SmartContract {
                     + " only holds " + maxCoverPotential.toString() + " (in token fractions).");
         }
 
-        return buildTransferInvocation(wallet, scripts, signers).send();
+        return buildTransferInvocation(wallet, scripts, signers);
     }
 
     /**
@@ -263,6 +270,13 @@ public class Nep5Token extends SmartContract {
             throw new IllegalArgumentException("Transfer amount must be positive.");
         }
 
+        return buildTransactionScript(wallet, to, amount, from).send();
+    }
+
+    // Method extracted for testability.
+    Invocation buildTransactionScript(Wallet wallet, ScriptHash to,
+            BigDecimal amount, ScriptHash... from) throws IOException {
+
         BigInteger amountStillToCover = getAmountAsBigInteger(amount);
         // List of the individual invocation scripts.
         List<byte[]> scripts = new ArrayList<>();
@@ -276,13 +290,14 @@ public class Nep5Token extends SmartContract {
                 continue;
             }
             signers.add(acc.getScriptHash());
-            amountStillToCover = amountStillToCover.subtract(balance);
 
-            if (amountStillToCover.signum() <= 0) {
-                scripts.add(buildTransferScript(acc, to, amountStillToCover));
+            if (balance.subtract(amountStillToCover).signum() >= 0) {
+                // Full remaining amount can be covered by current account.
+                scripts.add(buildSingleTransferScript(acc, to, amountStillToCover));
                 break;
             } else {
-                scripts.add(buildTransferScript(acc, to, balance));
+                scripts.add(buildSingleTransferScript(acc, to, balance));
+                amountStillToCover = amountStillToCover.subtract(balance);
             }
         }
 
@@ -293,10 +308,10 @@ public class Nep5Token extends SmartContract {
                     + " only holds " + maxCoverPotential.toString() + " (in token fractions).");
         }
 
-        return buildTransferInvocation(wallet, scripts, signers).send();
+        return buildTransferInvocation(wallet, scripts, signers);
     }
 
-    private byte[] buildTransferScript(Account acc, ScriptHash to, BigInteger amount) {
+    private byte[] buildSingleTransferScript(Account acc, ScriptHash to, BigInteger amount) {
         List<ContractParameter> params = Arrays.asList(
                 ContractParameter.hash160(acc.getScriptHash()),
                 ContractParameter.hash160(to),
@@ -307,6 +322,7 @@ public class Nep5Token extends SmartContract {
         return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
     }
 
+    // Method extracted for testability.
     Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts, List<ScriptHash> signers)
             throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
