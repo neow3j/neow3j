@@ -1,9 +1,11 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
@@ -180,7 +182,7 @@ public class Nep5Token extends SmartContract {
      * @return The transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NeoSendRawTransaction transferUsingFullWallet(Wallet wallet, ScriptHash to, BigDecimal amount)
+    public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
@@ -203,21 +205,30 @@ public class Nep5Token extends SmartContract {
         List<ScriptHash> signers = new ArrayList<>();
         // If the amount is covered by the wallet's default account, build and send the transaction.
         if (balanceDefaultAcc.signum() > 0) {
-            signers.add(defaultAccount.getScriptHash());
-            if (balanceDefaultAcc.subtract(amountStillToCover).signum() >= 0) {
-                // Full amount can be covered by default account.
-                scripts.add(buildSingleTransferScript(defaultAccount, to, amountStillToCover));
-                return buildTransferInvocation(wallet, scripts, signers);
-            } else {
-                // Amount exceeds balance, therefore, full balance of default account is used.
-                scripts.add(buildSingleTransferScript(defaultAccount, to, balanceDefaultAcc));
-                amountStillToCover = amountStillToCover.subtract(balanceDefaultAcc);
+            if (!defaultAccount.isMultiSig() ||
+                    privateKeysArePresentForMultiSig(wallet, defaultAccount.getScriptHash())) {
+                signers.add(defaultAccount.getScriptHash());
+                if (balanceDefaultAcc.subtract(amountStillToCover).signum() >= 0) {
+                    // Full amount can be covered by default account.
+                    scripts.add(buildSingleTransferScript(defaultAccount, to, amountStillToCover));
+                    return buildTransferInvocation(wallet, scripts, signers);
+                } else {
+                    // Amount exceeds balance, therefore, full balance of default account is used.
+                    scripts.add(buildSingleTransferScript(defaultAccount, to, balanceDefaultAcc));
+                    amountStillToCover = amountStillToCover.subtract(balanceDefaultAcc);
+                }
             }
         }
 
         // If there is still an amount to cover, use other accounts in the wallet until the amount is covered.
         List<Account> accounts = wallet.getAccounts();
         for (Account acc : accounts) {
+            // If acc is a multi-sig account, verify that it can be used. Otherwise, skip this account.
+            if (acc.isMultiSig()) {
+                if (!privateKeysArePresentForMultiSig(wallet, acc.getScriptHash())) {
+                    continue;
+                }
+            }
             BigInteger balance = getBalanceOf(acc.getScriptHash());
             if (acc.isDefault() || balance.signum() <= 0) {
                 continue;
@@ -231,6 +242,11 @@ public class Nep5Token extends SmartContract {
                 scripts.add(buildSingleTransferScript(acc, to, balance));
                 amountStillToCover = amountStillToCover.subtract(balance);
             }
+        }
+        if (scripts.size() == 0) {
+            throw new IllegalArgumentException("Can't create transaction signature. Wallet does not contain" +
+                    " enough accounts (with decrypted private keys) that are part of the multi-sig account(s)" +
+                    " in the wallet.");
         }
 
         BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
@@ -254,14 +270,24 @@ public class Nep5Token extends SmartContract {
      * @return The transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NeoSendRawTransaction transferUsingSpecificAddresses(Wallet wallet, ScriptHash to,
+    public NeoSendRawTransaction transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
             BigDecimal amount, ScriptHash... from)
             throws IOException {
         if (from.length == 0) {
-            throw new IllegalArgumentException("No address provided to build an invocation.");
+            throw new IllegalArgumentException("An account address must be provided to build an invocation.");
         }
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
+        }
+        // Verify that potential multi-sig accounts can be used.
+        for (ScriptHash fromScriptHash : from) {
+            if (wallet.getAccount(fromScriptHash).isMultiSig()) {
+                if (!privateKeysArePresentForMultiSig(wallet, fromScriptHash)) {
+                    throw new IllegalArgumentException("Can't create transaction signature. Wallet does not contain" +
+                            "enough accounts (with decrypted private keys) that are part of the multi-sig account" +
+                            "with script hash " + fromScriptHash + ".");
+                }
+            }
         }
 
         return buildTransactionScript(wallet, to, amount, from).send();
@@ -332,6 +358,23 @@ public class Nep5Token extends SmartContract {
         return invocationBuilder.build().sign();
     }
 
+    private boolean privateKeysArePresentForMultiSig(Wallet wallet, ScriptHash multiSig) {
+        VerificationScript multiSigVerifScript = wallet.getAccount(multiSig).getVerificationScript();
+        int signers = 0;
+        Account account;
+        for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
+            ScriptHash scriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
+            if (wallet.holdsAccount(scriptHash)) {
+                account = wallet.getAccount(scriptHash);
+                if (account != null && account.getECKeyPair() != null) {
+                    signers += 1;
+                }
+            }
+        }
+        int signingThreshold = multiSigVerifScript.getSigningThreshold();
+        return signers >= signingThreshold;
+    }
+
     /**
      * Creates and sends a transfer transaction.
      * <p>
@@ -343,7 +386,7 @@ public class Nep5Token extends SmartContract {
      * @return The transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
+    public NeoSendRawTransaction transferFromDefaultAccount(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
