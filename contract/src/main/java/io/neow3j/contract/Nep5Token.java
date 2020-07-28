@@ -168,12 +168,11 @@ public class Nep5Token extends SmartContract {
     }
 
     /**
-     * Creates and sends a transfer transaction.
+     * Creates and sends a transfer transaction that uses all accounts in the wallet to cover the amount.
      * <p>
-     * Uses all accounts of the wallet to cover the token amount.
-     * For the wallet's accounts, a transfer script is build for the remaining amount to cover. If the amount is fully
-     * covered, the scripts are concatenated and a transfer transaction is sent.
-     * The default account is used first to cover the amount.
+     * The default account is used first to cover the amount. If it cannot cover the full amount, the other accounts in
+     * the wallet are iterated one by one to cover the remaining amount. If the amount can be covered, all necessary
+     * transfers are sent in one transaction.
      *
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
@@ -242,12 +241,11 @@ public class Nep5Token extends SmartContract {
     }
 
     /**
-     * Creates and sends a transfer transaction.
+     * Creates and sends a transfer transaction that uses the provided accounts.
      * <p>
-     * Uses only specified accounts of the wallet to cover the token amount.
-     * For the provided accounts, a transfer script is build for the remaining amount to cover. If the amount is fully
-     * covered, the scripts are concatenated and a transfer transaction is sent. The accounts are used in the order as
-     * they are provided. (The first account is used first to cover the amount.)
+     * The accounts are used in the order provided to cover the transaction amount.
+     * If the first account cannot cover the full amount, the second account is used to cover the remaining
+     * amount and so on. If the amount can be covered, all necessary transfers are sent in one transaction.
      *
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
