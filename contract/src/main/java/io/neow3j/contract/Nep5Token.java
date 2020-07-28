@@ -183,8 +183,8 @@ public class Nep5Token extends SmartContract {
      */
     public NeoSendRawTransaction transferUsingFullWallet(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
-        if (amount.signum() <= 0) {
-            throw new IllegalArgumentException("Transfer amount must be positive.");
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
         }
 
         return buildTransactionScript(wallet, to, amount).send();
@@ -234,15 +234,11 @@ public class Nep5Token extends SmartContract {
             }
         }
 
-        if (amountStillToCover.signum() > 0) {
-            BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
-            throw new InsufficientFundsException("The wallet does not hold enough tokens." +
-                    " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
-                    " but the wallet only holds " + maxCoverPotential.toString() + " " + getSymbol() +
-                    " (in token fractions).");
-        }
-
-        return buildTransferInvocation(wallet, scripts, signers);
+        BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
+        throw new InsufficientFundsException("The wallet does not hold enough tokens." +
+                " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
+                " but the wallet only holds " + maxCoverPotential.toString() + " " + getSymbol() +
+                " (in token fractions).");
     }
 
     /**
@@ -266,8 +262,8 @@ public class Nep5Token extends SmartContract {
         if (from.length == 0) {
             throw new IllegalArgumentException("No address provided to build an invocation.");
         }
-        if (amount.signum() <= 0) {
-            throw new IllegalArgumentException("Transfer amount must be positive.");
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
         }
 
         return buildTransactionScript(wallet, to, amount, from).send();
@@ -301,15 +297,11 @@ public class Nep5Token extends SmartContract {
             }
         }
 
-        if (amountStillToCover.signum() > 0) {
-            BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
-            throw new InsufficientFundsException("The provided accounts do not hold enough tokens." +
-                    " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
-                    " but the provided accounts only hold " + maxCoverPotential.toString() + " " + getSymbol() +
-                    " (in token fractions).");
-        }
-
-        return buildTransferInvocation(wallet, scripts, signers);
+        BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
+        throw new InsufficientFundsException("The provided accounts do not hold enough tokens." +
+                " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
+                " but the provided accounts only hold " + maxCoverPotential.toString() + " " + getSymbol() +
+                " (in token fractions).");
     }
 
     private byte[] buildSingleTransferScript(Account acc, ScriptHash to, BigInteger amount) {
@@ -332,7 +324,8 @@ public class Nep5Token extends SmartContract {
         Invocation.Builder invocationBuilder = new Invocation.Builder(neow)
                 .withWallet(wallet)
                 .withScript(concatenatedScript)
-                .withSender(signers.get(0));
+                .withSender(signers.get(0))
+                .failOnFalse();
 
         for (ScriptHash signer : signers) {
             invocationBuilder.withAttributes(Cosigner.calledByEntry(signer));
@@ -354,6 +347,9 @@ public class Nep5Token extends SmartContract {
      */
     public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
+        }
 
         return buildTransferInvocation(wallet, to, amount).send();
     }
