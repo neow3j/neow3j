@@ -1,0 +1,19 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "120c14941343239213fa0e765f1027ce742f48db779a960c147cb804716ab4950e248fb0d0083e0a4e20ae4f0813c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52110c14941343239213fa0e765f1027ce742f48db779a960c143f42fda6876aa9ee081751f92babdf0cc2319dfb13c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52",
+    "state": "HALT",
+    "gas_consumed": "18015560",
+    "stack": [
+      {
+        "type": "Boolean",
+        "value": true
+      },
+      {
+        "type": "Boolean",
+        "value": true
+      }
+    ]
+  }
+}

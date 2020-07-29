@@ -407,7 +407,7 @@ public class Invocation {
             }
 
             // The list of signers is required for `invokefunction` calls that will hit a
-            // ChecekWitness check in the smart contract. We add the signers even if that is not the
+            // CheckWitness check in the smart contract. We add the signers even if that is not the
             // case because we cannot know if the invoked function needs it or not and it doesn't
             // lead to failures if we add them in any case.
             String[] signers = getSigners().toArray(new String[]{});
