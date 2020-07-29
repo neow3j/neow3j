@@ -206,17 +206,12 @@ public class Compiler {
 
     private void compileMethod(NeoMethod neoMethod) throws IOException {
         for (int insnAddr = 0; insnAddr < neoMethod.asmMethod.instructions.size(); insnAddr++) {
-            handleInsn(neoMethod, neoMethod.asmMethod, insnAddr);
+            AbstractInsnNode insn = neoMethod.asmMethod.instructions.get(insnAddr);
+            handleInsn(neoMethod, insn);
         }
     }
 
-    // Returns the number additional addresses that where processed when handling the given
-    // instruction. This usually means that this number of addresses does not have to processed
-    // again in the calling method.
-    private void handleInsn(NeoMethod neoMethod, MethodNode asmMethod, int insnAddr)
-            throws IOException {
-
-        AbstractInsnNode insn = asmMethod.instructions.get(insnAddr);
+    private void handleInsn(NeoMethod neoMethod, AbstractInsnNode insn) throws IOException {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
             return;
@@ -351,7 +346,7 @@ public class Compiler {
                 break;
             default:
                 throw new CompilerException("Unsupported instruction " + opcode + " in: " +
-                        asmMethod.name + ".");
+                        neoMethod.asmMethod.name + ".");
         }
     }
 
