@@ -49,7 +49,9 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -212,6 +214,12 @@ public class Compiler {
     }
 
     private void handleInsn(NeoMethod neoMethod, AbstractInsnNode insn) throws IOException {
+        if (insn.getType() == AbstractInsnNode.LINE) {
+            neoMethod.currentLine = ((LineNumberNode)insn).line;
+        }
+        if (insn.getType() == AbstractInsnNode.LABEL) {
+            neoMethod.currentLabelNode = (LabelNode) insn;
+        }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
             return;
