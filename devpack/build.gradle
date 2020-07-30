@@ -1,5 +1,5 @@
 description 'Neo Java DevPack'
 
 dependencies {
-
+    compile project(':contract')
 }

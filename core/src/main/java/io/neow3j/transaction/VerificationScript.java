@@ -158,10 +158,10 @@ public class VerificationScript extends NeoSerializable {
             return false;
         }
         String interopService = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(script, 4));
-        return script[0] == OpCode.PUSHDATA1.getValue()
+        return script[0] == OpCode.PUSHDATA1.getCode()
                 && script[1] == 33 // 33 bytes of public key
-                && script[35] == OpCode.PUSHNULL.getValue()
-                && script[36] == OpCode.SYSCALL.getValue()
+                && script[35] == OpCode.PUSHNULL.getCode()
+                && script[36] == OpCode.SYSCALL.getCode()
                 && interopService.equals(
                         InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash());
     }
@@ -183,7 +183,7 @@ public class VerificationScript extends NeoSerializable {
             }
 
             int m = 0; // Number of participating keys
-            while (reader.readByte() == OpCode.PUSHDATA1.getValue()) {
+            while (reader.readByte() == OpCode.PUSHDATA1.getCode()) {
                 // Position at PUSHDATA1 + (1 byte data size + 33 bytes + 1 byte to make sure
                 // script does not end after the key.
                 if (script.length <= reader.getPosition() + 35) {
@@ -208,10 +208,10 @@ public class VerificationScript extends NeoSerializable {
             if (m != alsoM) {
                 return false;
             }
-            if (reader.readByte() != OpCode.PUSHNULL.getValue()) {
+            if (reader.readByte() != OpCode.PUSHNULL.getCode()) {
                 return false;
             }
-            if (reader.readByte() != OpCode.SYSCALL.getValue()) {
+            if (reader.readByte() != OpCode.SYSCALL.getCode()) {
                 return false;
             }
             byte[] interopServiceCode = new byte[4];
@@ -243,7 +243,7 @@ public class VerificationScript extends NeoSerializable {
                 return keys;
             } else if (isMultiSigScript()) {
                 reader.readPushInteger(); // Signing Threshold (n of m)
-                while (reader.readByte() == OpCode.PUSHDATA1.getValue()) {
+                while (reader.readByte() == OpCode.PUSHDATA1.getCode()) {
                     reader.readByte(); // size byte
                     keys.add(new ECPublicKey(reader.readECPoint()));
                 }

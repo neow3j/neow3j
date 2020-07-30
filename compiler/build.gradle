@@ -1,9 +1,12 @@
-description 'Neo Java compiler'
+description 'Neo Java Compiler'
 
 dependencies {
-    compile project(':utils'),
-            project(':model'),
-            project(':crypto'),
+    compile "org.ow2.asm:asm-tree:$asmVersion",
+            "org.ow2.asm:asm-commons:$asmVersion",
+            "org.ow2.asm:asm-analysis:$asmVersion",
+            "org.ow2.asm:asm-util:$asmVersion",
             "org.ow2.asm:asm:$asmVersion",
-            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+            project(':devpack')
+
+    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
 }

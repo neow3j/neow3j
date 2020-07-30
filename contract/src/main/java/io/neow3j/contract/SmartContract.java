@@ -29,7 +29,7 @@ public class SmartContract {
     protected ContractManifest manifest;
 
     /**
-     * Constructs a <tt>SmartContract</tt> representing the smart contract with the given script
+     * Constructs a {@code SmartContract} representing the smart contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash The smart contract's script hash.
@@ -47,7 +47,7 @@ public class SmartContract {
     }
 
     /**
-     * Constructs a <tt>SmartContract</tt> with a NEF file and a manifest file for deployment
+     * Constructs a {@code SmartContract} with a NEF file and a manifest file for deployment
      * with {@link SmartContract#deploy()}.
      *
      * @param neow         The {@link Neow3j} instance to use for deploying and invoking the

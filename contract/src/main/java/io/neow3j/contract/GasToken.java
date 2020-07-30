@@ -15,7 +15,7 @@ public class GasToken extends Nep5Token {
             new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_GAS).toArray());
 
     /**
-     * Constructs a new <tt>GasToken</tt> that uses the given {@link Neow3j} instance for
+     * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for
      * invocations.
      *
      * @param neow The {@link Neow3j} instance to use for invocations.

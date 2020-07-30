@@ -30,12 +30,11 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Used to invoke Neo VM scripts and contract functions. Uses the {@link Invocation.Builder} to
- * configure an invocation and do calls via the <tt>invokescript</tt> and <tt>invokefunction</tt>
- * RPC. When building the <tt>Invocation</tt>, a transaction is created that can be signed
+ * configure an invocation and do calls via the {@code invokescript} and {@code invokefunction}
+ * RPC. When building the {@code Invocation}, a transaction is created that can be signed
  * and sent to the Neo node.
  */
 public class Invocation {
@@ -60,9 +59,11 @@ public class Invocation {
      *                                          of the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
-        Stream<Witness> witnesses = this.transaction.getWitnesses().stream();
+        List<ScriptHash> witnesses = this.transaction.getWitnesses().stream()
+                .map(Witness::getScriptHash).collect(Collectors.toList());
+
         for (Cosigner cosigner : this.transaction.getCosigners()) {
-            if (witnesses.noneMatch(w -> w.getScriptHash().equals(cosigner.getScriptHash()))) {
+            if (!witnesses.contains(cosigner.getScriptHash())) {
                 throw new InvocationConfigurationException("The transaction does not have a "
                         + "signature for each of its cosigners.");
             }
@@ -82,19 +83,17 @@ public class Invocation {
      */
     public Invocation sign() {
         byte[] txBytes = getTransactionForSigning();
-        for (Cosigner c : this.transaction.getCosigners()) {
-            Account cosignerAcc = this.wallet.getAccount(c.getScriptHash());
-            if (cosignerAcc == null) {
+        this.transaction.getCosigners().forEach(cosigner -> {
+            if (!this.wallet.holdsAccount(cosigner.getScriptHash())) {
                 throw new InvocationConfigurationException("Can't create transaction "
                         + "signature. Wallet does not contain the cosigner account with script "
-                        + "hash " + c.getScriptHash());
-            }
-            if (cosignerAcc.isMultiSig()) {
-                signWithMultiSigAccount(txBytes, cosignerAcc);
+                        + "hash " + cosigner.getScriptHash());
             } else {
-                signWithNormalAccount(txBytes, cosignerAcc);
+                Account cosignerAcc = this.wallet.getAccount(cosigner.getScriptHash());
+                if (cosignerAcc.isMultiSig()) signWithMultiSigAccount(txBytes, cosignerAcc);
+                else signWithNormalAccount(txBytes, cosignerAcc);
             }
-        }
+        });
         return this;
     }
 
@@ -364,11 +363,11 @@ public class Invocation {
         }
 
         /**
-         * Makes an <tt>invokescript</tt> call to the neo-node with the invocation in its current
+         * Makes an {@code invokescript} call to the neo-node with the invocation in its current
          * configuration. No changes are made to the blockchain state.
          * <p>
          * Make sure to add all necessary cosigners to the builder before making this call. They are
-         * required for a successful <tt>invokescript</tt> call.
+         * required for a successful {@code invokescript} call.
          *
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
@@ -388,11 +387,11 @@ public class Invocation {
         }
 
         /**
-         * Makes an <tt>invokefunction</tt> call to the neo-node with the invocation in its current
+         * Makes an {@code invokefunction} call to the neo-node with the invocation in its current
          * configuration. No changes are made to the blockchain state.
          * <p>
          * Make sure to add all necessary cosigners to the builder before making this call. They are
-         * required for a successful <tt>invokefunction</tt> call.
+         * required for a successful {@code invokefunction} call.
          *
          * @return the call's response.
          * @throws IOException if something goes wrong when communicating with the neo-node.
@@ -408,7 +407,7 @@ public class Invocation {
             }
 
             // The list of signers is required for `invokefunction` calls that will hit a
-            // ChecekWitness check in the smart contract. We add the signers even if that is not the
+            // CheckWitness check in the smart contract. We add the signers even if that is not the
             // case because we cannot know if the invoked function needs it or not and it doesn't
             // lead to failures if we add them in any case.
             String[] signers = getSigners().toArray(new String[]{});
@@ -438,7 +437,7 @@ public class Invocation {
          * Builds the invocation, enforces correct configuration, fetches the system fee and
          * calculates the network fee.
          *
-         * @return the <tt>Invocation</tt> ready for signing and sending.
+         * @return the {@code Invocation} ready for signing and sending.
          * @throws IOException if something goes wrong when communicating with the neo-node.
          */
         public Invocation build() throws IOException {
@@ -507,7 +506,7 @@ public class Invocation {
          * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
          */
         private long getSystemFeeForScript() throws IOException {
-            // The signers are required for `invokescript` calls that will hit a ChecekWitness
+            // The signers are required for `invokescript` calls that will hit a CheckWitness
             // check in the smart contract.
             String[] signers = this.txBuilder.getCosigners().stream()
                     .map(c -> c.getScriptHash().toString()).toArray(String[]::new);
@@ -547,16 +546,21 @@ public class Invocation {
             return execFee + size * NeoConstants.GAS_PER_BYTE;
         }
 
+        /**
+         * Gets the cosigner accounts held in the wallet.
+         *
+         * @return a list containing the cosigner accounts
+         */
         private List<Account> getCosignerAccounts() {
             List<Account> accounts = new ArrayList<>();
-            for (Cosigner cosigner : txBuilder.getCosigners()) {
-                Account account = this.wallet.getAccount(cosigner.getScriptHash());
-                if (account == null) {
+            txBuilder.getCosigners().forEach(cosigner -> {
+                if (this.wallet.holdsAccount(cosigner.getScriptHash())) {
+                    accounts.add(this.wallet.getAccount(cosigner.getScriptHash()));
+                } else {
                     throw new InvocationConfigurationException("Wallet does not contain the "
                             + "account for cosigner with script hash " + cosigner.getScriptHash());
                 }
-                accounts.add(account);
-            }
+            });
             return accounts;
         }
 
@@ -584,9 +588,9 @@ public class Invocation {
             int n = verifScript.getNrOfAccounts();
 
             return OpCode.PUSHDATA1.getPrice() * m
-                    + OpCode.valueOf(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
+                    + OpCode.get(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
                     + OpCode.PUSHDATA1.getPrice() * n
-                    + OpCode.valueOf(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
+                    + OpCode.get(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
                     // Push null because we don't want to verify a particular message but the
                     // transaction itself.
                     + OpCode.PUSHNULL.getPrice()

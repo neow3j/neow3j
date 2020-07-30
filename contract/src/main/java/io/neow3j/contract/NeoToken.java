@@ -37,7 +37,7 @@ public class NeoToken extends Nep5Token {
     public static final String VOTE = "vote";
 
     /**
-     * Constructs a new <tt>NeoToken</tt> that uses the given {@link Neow3j} instance for
+     * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
      * invocations.
      *
      * @param neow The {@link Neow3j} instance to use for invocations.

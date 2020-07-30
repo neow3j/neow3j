@@ -88,7 +88,6 @@ public class NeoTokenTest {
 
     @Test
     public void registerCandidate() throws IOException {
-        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
         String script =
                 "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c11c00c11726567697374657243616e6469646174650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         setUpWireMockForCall("invokescript", "invokescript_registercandidate.json", script,
@@ -98,8 +97,8 @@ public class NeoTokenTest {
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
-        Account a = Account.fromECKeyPair(keyPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(a).build();
+        Account a = new Account(keyPair);
+        Wallet w = Wallet.withAccounts(a);
         Invocation inv = new NeoToken(neow).buildRegisterInvocation(
                 a.getScriptHash(), w, keyPair.getPublicKey());
         Transaction tx = inv.getTransaction();
@@ -192,8 +191,8 @@ public class NeoTokenTest {
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
-        Account a = Account.fromECKeyPair(keyPair).isDefault().build();
-        Wallet w = new Wallet.Builder().accounts(a).build();
+        Account a = new Account(keyPair);
+        Wallet w = Wallet.withAccounts(a);
         ECPublicKey validator1 = a.getECKeyPair().getPublicKey();
         ECPublicKey validator2 = new ECPublicKey(Numeric.hexStringToByteArray(
                 "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"));

@@ -1,5 +1,60 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.NodePluginType;
+import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
+import io.neow3j.protocol.core.methods.response.ConsensusData;
+import io.neow3j.protocol.core.methods.response.NeoAddress;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoBlockCount;
+import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
+import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
+import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
+import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.methods.response.NeoGetPeers;
+import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetStorage;
+import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetVersion;
+import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
+import io.neow3j.protocol.core.methods.response.NeoListAddress;
+import io.neow3j.protocol.core.methods.response.NeoListPlugins;
+import io.neow3j.protocol.core.methods.response.NeoOpenWallet;
+import io.neow3j.protocol.core.methods.response.NeoSendFrom;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.NeoWitness;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.methods.response.TransactionCosigner;
+import io.neow3j.protocol.ResponseTester;
+import io.neow3j.transaction.TransactionAttributeType;
+import io.neow3j.transaction.WitnessScope;
+import io.neow3j.utils.Numeric;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -7,23 +62,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.*;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.model.types.NodePluginType;
-import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.ResponseTester;
-import io.neow3j.protocol.core.methods.response.*;
-import io.neow3j.transaction.TransactionAttributeType;
-import io.neow3j.transaction.WitnessScope;
-import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
@@ -380,22 +426,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoBlockCount.getBlockIndex(), is(notNullValue()));
 
         assertThat(neoBlockCount.getBlockIndex(), is(BigInteger.valueOf(1234)));
-    }
-
-    @Test
-    public void testGetBlockSysFee() {
-        buildResponse(
-                "{\n" +
-                        "  \"jsonrpc\":\"2.0\",\n" +
-                        "  \"id\":67,\n" +
-                        "  \"result\": \"200\"\n" +
-                        "}"
-        );
-
-        NeoGetBlockSysFee getBlockSysFee = deserialiseResponse(NeoGetBlockSysFee.class);
-        assertThat(getBlockSysFee.getFee(), is(notNullValue()));
-
-        assertThat(getBlockSysFee.getFee(), is("200"));
     }
 
     @Test
@@ -1474,8 +1504,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"balance\": \"200\",\n" +
-                        "        \"confirmed\": \"100\"" +
+                        "        \"balance\": \"200\"\n" +
                         "    }\n" +
                         "}"
         );
@@ -1483,7 +1512,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
         assertThat(getBalance.getBalance(), is(notNullValue()));
         assertThat(getBalance.getBalance().getBalance(), is("200"));
-        assertThat(getBalance.getBalance().getConfirmed(), is("100"));
     }
 
     @Test
@@ -1493,8 +1521,7 @@ public class ResponseTest extends ResponseTester {
                         + "  \"id\":1,\n"
                         + "  \"jsonrpc\":\"2.0\",\n"
                         + "  \"result\": {\n"
-                        + "      \"Balance\": \"199999990.0\",\n"
-                        + "      \"Confirmed\": \"99999990.0\"\n"
+                        + "      \"Balance\": \"199999990.0\"\n"
                         + "  }\n"
                         + "}"
         );
@@ -1502,25 +1529,6 @@ public class ResponseTest extends ResponseTester {
         NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
         assertThat(getBalance.getBalance(), is(notNullValue()));
         assertThat(getBalance.getBalance().getBalance(), is("199999990.0"));
-        assertThat(getBalance.getBalance().getConfirmed(), is("99999990.0"));
-    }
-
-    @Test
-    public void testGetBalance_nullable() {
-        buildResponse(
-                "{\n"
-                        + "  \"id\":1,\n"
-                        + "  \"jsonrpc\":\"2.0\",\n"
-                        + "  \"result\": {\n"
-                        + "      \"balance\": \"199999990.0\"\n"
-                        + "  }\n"
-                        + "}"
-        );
-
-        NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
-        assertThat(getBalance.getBalance(), is(notNullValue()));
-        assertThat(getBalance.getBalance().getBalance(), is("199999990.0"));
-        assertThat(getBalance.getBalance().getConfirmed(), is(nullValue()));
     }
 
     @Test
@@ -2117,7 +2125,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoAppLog.getStack(), hasSize(1));
         assertThat(neoAppLog.getStack().get(0).getType(),
                 is(StackItemType.INTEGER));
-        assertThat(neoAppLog.getStack().get(0).getValue(),
+        assertThat(neoAppLog.getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(1)));
 
         assertThat(neoAppLog.getNotifications(), is(notNullValue()));
@@ -2132,12 +2140,12 @@ public class ResponseTest extends ResponseTester {
         ArrayStackItem notification0Array = notification0.getState().asArray();
 
         String eventName0 = notification0Array.get(0).asByteString().getAsString();
-        Object from0 = notification0Array.get(1).getValue();
+        Object from0 = notification0Array.get(1).asAny();
         String to0 = notification0Array.get(2).asByteString().getAsAddress();
         BigInteger amount0 = notification0Array.get(3).asInteger().getValue();
 
         assertThat(eventName0, is("Transfer"));
-        assertThat(from0, is(nullValue()));
+        assertNotNull(from0);
         assertThat(to0, is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
         assertThat(amount0, is(BigInteger.valueOf(600000000)));
 
