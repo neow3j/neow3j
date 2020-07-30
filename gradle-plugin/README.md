@@ -45,7 +45,7 @@ repositories {
     mavenCentral()
 }
 
-neow3jDevpack {
+neow3jCompiler {
     className = "io.neow3j.examples.SmartContractExample"
 }
 

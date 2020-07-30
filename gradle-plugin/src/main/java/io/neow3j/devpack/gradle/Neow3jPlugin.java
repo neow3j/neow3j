@@ -21,7 +21,7 @@ public class Neow3jPlugin implements Plugin<Project> {
         }
 
         Neow3jPluginOptions opts = project.getExtensions()
-                .create("neow3jDevpack", Neow3jPluginOptions.class);
+                .create("neow3jCompiler", Neow3jPluginOptions.class);
 
         project.task("neow3jCompile")
                 .dependsOn(JavaCompile.class)
