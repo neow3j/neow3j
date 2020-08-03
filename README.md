@@ -62,6 +62,13 @@ __Maven__
 </dependency>
 ```
 
+
+## Using the _neow3j devpack_ and _compiler_
+
+Visit [neow3j.io](https://neow3j.io/#/neo3_guides/contract_development) for information on how to
+develop and compile a Neo smart contract in Java with neow3j.
+
+
 ## Donate
 
 Help the development of neow3j by donating to the following addresses:
