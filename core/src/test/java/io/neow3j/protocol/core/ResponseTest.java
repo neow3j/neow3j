@@ -190,7 +190,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"valid_until_block\": 2107425,\n" +
                         "                \"attributes\": [\n" +
                         "                    {\n" +
-                        "                        \"type\": \"Cosigner\",\n" +
+                        "                        \"type\": \"Signer\",\n" +
                         "                        \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                        \"scopes\": \"CalledByEntry\"\n" +
                         "                    }\n" +
@@ -215,7 +215,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"valid_until_block\": 2107425,\n" +
                         "                \"attributes\": [\n" +
                         "                    {\n" +
-                        "                        \"type\": \"Cosigner\",\n" +
+                        "                        \"type\": \"Signer\",\n" +
                         "                        \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                        \"scopes\": \"CalledByEntry\"\n" +
                         "                    }\n" +
@@ -816,7 +816,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"valid_until_block\": 2103622,\n" +
                         "        \"attributes\": [" +
                         "            {\n" +
-                        "                \"type\": \"Cosigner\",\n" +
+                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -852,7 +852,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(getTransaction.getTransaction().getAttributes(), hasSize(1));
         assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
         assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().type,
-                is(TransactionAttributeType.COSIGNER));
+                is(TransactionAttributeType.SIGNER));
         assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
         assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
@@ -1121,10 +1121,10 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"tcp_port\": 10333,\n" +
-                        "        \"ws_port\": 10334,\n" +
+                        "        \"tcpPort\": 10333,\n" +
+                        "        \"wsPort\": 10334,\n" +
                         "        \"nonce\": 1845610272,\n" +
-                        "        \"user_agent\": \"/Neo:3.0.0-preview2-00/\"\n" +
+                        "        \"userAgent\": \"/Neo:3.0.0-preview2-00/\"\n" +
                         "    }\n" +
                         "}"
         );
@@ -1181,7 +1181,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"HALT\",\n" +
-                        "        \"gas_consumed\": \"2007570\",\n" +
+                        "        \"gasConsumed\": \"2007570\",\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"ByteString\",\n" +
@@ -1239,7 +1239,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
                         "        \"state\": \"HALT, BREAK\",\n" +
-                        "        \"gas_consumed\": \"2.489\",\n" +
+                        "        \"gasConsumed\": \"2.489\",\n" +
                         "        \"stack\": []\n" +
                         "    }\n" +
                         "}"
@@ -1265,7 +1265,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"FAULT\",\n" +
-                        "        \"gas_consumed\": \"2007390\",\n" +
+                        "        \"gasConsumed\": \"2007390\",\n" +
                         "        \"stack\": []\n" +
                         "    }\n" +
                         "}"
@@ -1290,7 +1290,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n" +
                         "        \"state\": \"HALT, BREAK\",\n" +
-                        "        \"gas_consumed\": \"0.161\",\n" +
+                        "        \"gasConsumed\": \"0.161\",\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"ByteString\",\n" +
@@ -1335,14 +1335,14 @@ public class ResponseTest extends ResponseTester {
                         "            \"name\": \"LevelDBStore\",\n" +
                         "            \"version\": \"3.0.0.0\",\n" +
                         "            \"interfaces\": [\n" +
-                        "                \"IStoragePlugin\"\n" +
+                        "                \"IStorageProvider\"\n" +
                         "            ]\n" +
                         "        },\n" +
                         "        {\n" +
                         "            \"name\": \"RocksDBStore\",\n" +
                         "            \"version\": \"3.0.0.0\",\n" +
                         "            \"interfaces\": [\n" +
-                        "                \"IStoragePlugin\"\n" +
+                        "                \"IStorageProvider\"\n" +
                         "            ]\n" +
                         "        },\n" +
                         "        {\n" +
@@ -1393,7 +1393,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
-        assertThat(plugin.getInterfaces(), containsInAnyOrder("IStoragePlugin"));
+        assertThat(plugin.getInterfaces(), containsInAnyOrder("IStorageProvider"));
 
         plugin = listPlugins.getPlugins().get(2);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
@@ -1401,7 +1401,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
-        assertThat(plugin.getInterfaces(), containsInAnyOrder("IStoragePlugin"));
+        assertThat(plugin.getInterfaces(), containsInAnyOrder("IStorageProvider"));
 
         plugin = listPlugins.getPlugins().get(3);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
@@ -1641,7 +1641,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"valid_until_block\": 2106392,\n" +
                         "        \"attributes\": [" +
                         "            {\n" +
-                        "                \"type\": \"Cosigner\",\n" +
+                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -1673,9 +1673,9 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(sendFrom.getSendFrom().getAttributes(), hasSize(1));
         assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getType(), is(TransactionAttributeType.COSIGNER));
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getType(), is(TransactionAttributeType.SIGNER));
         assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().type,
-                is(TransactionAttributeType.COSIGNER));
+                is(TransactionAttributeType.SIGNER));
         assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
         assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
@@ -1718,12 +1718,12 @@ public class ResponseTest extends ResponseTester {
                         "        \"valid_until_block\": 2106840,\n" +
                         "        \"attributes\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"Cosigner\",\n" +
+                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xbe175fb771d5782282b7598b56c26a2f5ebf2d24\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"type\": \"Cosigner\",\n" +
+                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -1764,7 +1764,7 @@ public class ResponseTest extends ResponseTester {
                                 WitnessScope.CALLED_BY_ENTRY
                         )
                 ));
-        assertThat(sendMany.getSendMany().getAttributes().get(0).getType(), is(TransactionAttributeType.COSIGNER));
+        assertThat(sendMany.getSendMany().getAttributes().get(0).getType(), is(TransactionAttributeType.SIGNER));
         assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
                 is("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24"));
         assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
@@ -1818,7 +1818,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"valid_until_block\": 2106930,\n" +
                         "        \"attributes\": [" +
                         "            {\n" +
-                        "                \"type\": \"Cosigner\",\n" +
+                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
@@ -1854,9 +1854,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendToAddress.getSendToAddress().getAttributes(), is(notNullValue()));
         assertThat(sendToAddress.getSendToAddress().getAttributes(), hasSize(1));
         assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getType(),
-                is(TransactionAttributeType.COSIGNER));
+                is(TransactionAttributeType.SIGNER));
         assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().type,
-                is(TransactionAttributeType.COSIGNER));
+                is(TransactionAttributeType.SIGNER));
         assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
         assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
@@ -2054,7 +2054,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"txid\": \"0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109\",\n" +
                         "        \"trigger\": \"Application\",\n" +
                         "        \"vmstate\": \"HALT\",\n" +
-                        "        \"gas_consumed\": \"9007810\",\n" +
+                        "        \"gasConsumed\": \"9007810\",\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"Integer\",\n" +

@@ -16,11 +16,11 @@ public class TransactionCosigner extends TransactionAttribute {
     private WitnessScope scopes;
 
     public TransactionCosigner() {
-        super(TransactionAttributeType.COSIGNER);
+        super(TransactionAttributeType.SIGNER);
     }
 
     public TransactionCosigner(String account, WitnessScope scopes) {
-        super(TransactionAttributeType.COSIGNER);
+        super(TransactionAttributeType.SIGNER);
         this.account = account;
         this.scopes = scopes;
     }
@@ -53,7 +53,7 @@ public class TransactionCosigner extends TransactionAttribute {
 
     @Override
     public String toString() {
-        return "TransactionCosigner{" +
+        return "TransactionSigner{" +
                 "account='" + account + '\'' +
                 ", scopes=" + scopes +
                 '}';

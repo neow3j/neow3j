@@ -4,7 +4,7 @@
   "result": {
     "script": "10c00c08646563696d616c730c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52",
     "state": "HALT",
-    "gas_consumed": "1007390",
+    "gasConsumed": "1007390",
     "stack": [
       {
         "type": "Integer",

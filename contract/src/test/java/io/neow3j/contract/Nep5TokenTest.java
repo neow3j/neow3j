@@ -15,7 +15,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
@@ -110,9 +110,9 @@ public class Nep5TokenTest {
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getSender(), is(w.getDefaultAccount().getScriptHash()));
         assertThat(tx.getAttributes(), hasSize(1));
-        assertThat(tx.getCosigners(), hasSize(1));
+        assertThat(tx.getSigners(), hasSize(1));
 
-        Cosigner c = tx.getCosigners().get(0);
+        Signer c = tx.getSigners().get(0);
         assertThat(c.getScriptHash(), is(w.getDefaultAccount().getScriptHash()));
         assertThat(c.getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 

@@ -15,16 +15,16 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Result {
 
-        @JsonProperty("tcp_port")
+        @JsonProperty("tcpPort")
         private int tcpPort;
 
-        @JsonProperty("ws_port")
+        @JsonProperty("wsPort")
         private int wsPort;
 
         @JsonProperty("nonce")
         private long nonce;
 
-        @JsonProperty("user_agent")
+        @JsonProperty("userAgent")
         private String userAgent;
 
         public Result() {

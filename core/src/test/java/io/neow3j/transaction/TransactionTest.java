@@ -45,8 +45,8 @@ public class TransactionTest {
         assertThat(t.getVersion(), is(NeoConstants.CURRENT_TX_VERSION));
         assertThat(t.getNetworkFee(), is(0L));
         assertThat(t.getSystemFee(), is(0L));
-        assertThat(t.getAttributes(), containsInAnyOrder(Cosigner.calledByEntry(account1)));
-        assertThat(t.getCosigners(), containsInAnyOrder(Cosigner.calledByEntry(account1)));
+        assertThat(t.getAttributes(), containsInAnyOrder(Signer.calledByEntry(account1)));
+        assertThat(t.getSigners(), containsInAnyOrder(Signer.calledByEntry(account1)));
         assertThat(t.getScript().length, is(0));
         assertThat(t.getNonce(), notNullValue());
         assertThat(t.getWitnesses(), empty());
@@ -128,14 +128,14 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount1() {
         Transaction.Builder b = new Transaction.Builder();
-        b.attributes(Cosigner.global(account1), Cosigner.calledByEntry(account1));
+        b.attributes(Signer.global(account1), Signer.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleCosignersConcerningTheSameAccount2() {
         Transaction.Builder b = new Transaction.Builder();
-        b.attributes(Cosigner.global(account1));
-        b.attributes(Cosigner.calledByEntry(account1));
+        b.attributes(Signer.global(account1));
+        b.attributes(Signer.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
@@ -144,7 +144,7 @@ public class TransactionTest {
         TransactionAttribute[] attrs =
                 new TransactionAttribute[NeoConstants.MAX_TRANSACTION_ATTRIBUTES + 1];
         for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
-            attrs[i] = new Cosigner();
+            attrs[i] = new Signer();
         }
         new Transaction.Builder().attributes(attrs);
     }
@@ -188,8 +188,8 @@ public class TransactionTest {
             .validUntilBlock(0x01020304L)
             .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
             .attributes(
-                Cosigner.global(account1),
-                Cosigner.calledByEntry(account2))
+                Signer.global(account1),
+                Signer.calledByEntry(account2))
             .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
             .build();
 
@@ -234,8 +234,8 @@ public class TransactionTest {
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
-        assertThat(tx.getCosigners(), contains(
-                Cosigner.calledByEntry(new ScriptHash("969a77db482f74ce27105f760efa139223431394"))));
+        assertThat(tx.getSigners(), contains(
+                Signer.calledByEntry(new ScriptHash("969a77db482f74ce27105f760efa139223431394"))));
         assertArrayEquals(new byte[]{(byte)OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
             Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
@@ -252,8 +252,8 @@ public class TransactionTest {
             .validUntilBlock(0x01020304L)
             .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
             .attributes(
-                Cosigner.global(account1),
-                Cosigner.calledByEntry(account2))
+                Signer.global(account1),
+                Signer.calledByEntry(account2))
             .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
             .build();
 

@@ -12,7 +12,7 @@ import io.neow3j.transaction.TransactionAttributeType;
 @JsonTypeInfo(use = Id.NAME, property = "type", include = As.EXISTING_PROPERTY)
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = TransactionCosigner.class, name =
-                TransactionAttributeType.COSIGNER_VALUE)
+                TransactionAttributeType.SIGNER_VALUE)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class TransactionAttribute {
@@ -33,7 +33,7 @@ public abstract class TransactionAttribute {
             return (TransactionCosigner) this;
         }
         throw new IllegalStateException("This object is not of type " +
-                TransactionAttributeType.COSIGNER_VALUE + " but of " + this.type.jsonValue());
+                TransactionAttributeType.SIGNER_VALUE + " but of " + this.type.jsonValue());
     }
 
     public TransactionAttributeType getType() {

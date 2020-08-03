@@ -2,7 +2,7 @@ package io.neow3j.transaction.exceptions;
 
 /**
  * Is thrown in case of invalid configurations when building a {@link
- * io.neow3j.transaction.Cosigner}.
+ * io.neow3j.transaction.Signer}.
  */
 public class CosignerConfigurationException extends RuntimeException {
 

@@ -24,7 +24,7 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Witness;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -242,9 +242,9 @@ public class InvocationTest {
                 .withValidUntilBlock(1000)
                 .build();
 
-        Cosigner expected = Cosigner.calledByEntry(wallet.getDefaultAccount().getScriptHash());
-        assertThat(i.getTransaction().getCosigners(), hasSize(1));
-        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+        Signer expected = Signer.calledByEntry(wallet.getDefaultAccount().getScriptHash());
+        assertThat(i.getTransaction().getSigners(), hasSize(1));
+        assertThat(i.getTransaction().getSigners().get(0), is(expected));
     }
 
     @Test
@@ -254,19 +254,19 @@ public class InvocationTest {
         Wallet wallet = Wallet.createWallet();
         Account other = Account.createAccount();
         wallet.addAccounts(other);
-        Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
+        Signer signer = Signer.calledByEntry(other.getScriptHash());
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
-                .withAttributes(cosigner)
+                .withAttributes(signer)
                 .withValidUntilBlock(1000)
                 .build();
 
-        Cosigner expected = Cosigner.calledByEntry(wallet.getDefaultAccount().getScriptHash());
-        assertThat(i.getTransaction().getCosigners(), hasSize(2));
-        assertThat(i.getTransaction().getCosigners(), containsInAnyOrder(expected, cosigner));
+        Signer expected = Signer.calledByEntry(wallet.getDefaultAccount().getScriptHash());
+        assertThat(i.getTransaction().getSigners(), hasSize(2));
+        assertThat(i.getTransaction().getSigners(), containsInAnyOrder(expected, signer));
     }
 
     @Test
@@ -280,13 +280,13 @@ public class InvocationTest {
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
-                .withAttributes(Cosigner.calledByEntry(acc.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(acc.getScriptHash()))
                 .withValidUntilBlock(1000)
                 .build();
 
-        Cosigner expected = Cosigner.calledByEntry(acc.getScriptHash());
-        assertThat(i.getTransaction().getCosigners(), hasSize(1));
-        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+        Signer expected = Signer.calledByEntry(acc.getScriptHash());
+        assertThat(i.getTransaction().getSigners(), hasSize(1));
+        assertThat(i.getTransaction().getSigners().get(0), is(expected));
     }
 
     @Test
@@ -305,9 +305,9 @@ public class InvocationTest {
                 .withValidUntilBlock(1000)
                 .build();
 
-        Cosigner expected = Cosigner.calledByEntry(senderAcc.getScriptHash());
-        assertThat(i.getTransaction().getCosigners(), hasSize(1));
-        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+        Signer expected = Signer.calledByEntry(senderAcc.getScriptHash());
+        assertThat(i.getTransaction().getSigners(), hasSize(1));
+        assertThat(i.getTransaction().getSigners().get(0), is(expected));
     }
 
     @Test
@@ -320,20 +320,20 @@ public class InvocationTest {
         Wallet wallet = Wallet.withAccounts(senderAcc);
         Account other = Account.createAccount();
         wallet.addAccounts(other);
-        Cosigner cosigner = Cosigner.calledByEntry(other.getScriptHash());
+        Signer signer = Signer.calledByEntry(other.getScriptHash());
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
-                .withAttributes(cosigner)
+                .withAttributes(signer)
                 .withValidUntilBlock(1000)
                 .build();
 
-        Cosigner expected = Cosigner.calledByEntry(senderAcc.getScriptHash());
-        assertThat(i.getTransaction().getCosigners(), hasSize(2));
-        assertThat(i.getTransaction().getCosigners(), containsInAnyOrder(expected, cosigner));
+        Signer expected = Signer.calledByEntry(senderAcc.getScriptHash());
+        assertThat(i.getTransaction().getSigners(), hasSize(2));
+        assertThat(i.getTransaction().getSigners(), containsInAnyOrder(expected, signer));
     }
 
     @Test
@@ -348,13 +348,13 @@ public class InvocationTest {
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(wallet)
                 .withSender(senderAcc.getScriptHash())
-                .withAttributes(Cosigner.calledByEntry(senderAcc.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(senderAcc.getScriptHash()))
                 .withValidUntilBlock(1000)
                 .build();
 
-        Cosigner expected = Cosigner.calledByEntry(senderAcc.getScriptHash());
-        assertThat(i.getTransaction().getCosigners(), hasSize(1));
-        assertThat(i.getTransaction().getCosigners().get(0), is(expected));
+        Signer expected = Signer.calledByEntry(senderAcc.getScriptHash());
+        assertThat(i.getTransaction().getSigners(), hasSize(1));
+        assertThat(i.getTransaction().getSigners().get(0), is(expected));
     }
 
     @Test
@@ -367,7 +367,7 @@ public class InvocationTest {
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build()
                 .sign();
@@ -392,10 +392,10 @@ public class InvocationTest {
         Invocation.Builder b = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(InvocationConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("Wallet does not contain the account for cosigner" +
+        exceptionRule.expectMessage(new StringContains("Wallet does not contain the account for signer" +
                 " with script hash " + cosigner.getScriptHash()));
         b.build();
     }
@@ -412,13 +412,13 @@ public class InvocationTest {
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
         w.removeAccount(cosigner.getScriptHash());
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("Can't create transaction "
-                + "signature. Wallet does not contain the cosigner account with script "
+                + "signature. Wallet does not contain the signer account with script "
                 + "hash " + cosigner.getScriptHash()));
         i.sign();
     }
@@ -435,13 +435,13 @@ public class InvocationTest {
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Cosigner.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("The transaction does not have a signature"
-                + " for each of its cosigners"));
+                + " for each of its signers"));
         i.send();
     }
 

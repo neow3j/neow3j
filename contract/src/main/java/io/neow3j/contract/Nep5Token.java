@@ -4,7 +4,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -352,7 +352,7 @@ public class Nep5Token extends SmartContract {
                 .failOnFalse();
 
         for (ScriptHash signer : signers) {
-            invocationBuilder.withAttributes(Cosigner.calledByEntry(signer));
+            invocationBuilder.withAttributes(Signer.calledByEntry(signer));
         }
 
         return invocationBuilder.build().sign();

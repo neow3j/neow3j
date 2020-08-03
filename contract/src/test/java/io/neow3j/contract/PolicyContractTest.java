@@ -13,7 +13,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -110,7 +110,7 @@ public class PolicyContractTest {
         assertThat(tx.getSender().toAddress(), is(CONSENSUS_MULTISIG_ADDRESS));
         assertThat(tx.getSystemFee(), is(4007420L));
         assertThat(tx.getNetworkFee(), is(1227450L));
-        assertThat(tx.getCosigners(), contains(Cosigner.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
+        assertThat(tx.getSigners(), contains(Signer.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
         assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(VERIFICATION_SCRIPT));
     }
@@ -128,7 +128,7 @@ public class PolicyContractTest {
         assertThat(tx.getSender().toAddress(), is(CONSENSUS_MULTISIG_ADDRESS));
         assertThat(tx.getSystemFee(), is(4007420L));
         assertThat(tx.getNetworkFee(), is(1241450L));
-        assertThat(tx.getCosigners(), contains(Cosigner.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
+        assertThat(tx.getSigners(), contains(Signer.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
         assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(VERIFICATION_SCRIPT));
     }
@@ -147,7 +147,7 @@ public class PolicyContractTest {
         assertThat(tx.getSender().toAddress(), is(CONSENSUS_MULTISIG_ADDRESS));
         assertThat(tx.getSystemFee(), is(4007570L));
         assertThat(tx.getNetworkFee(), is(1246450L));
-        assertThat(tx.getCosigners(), contains(Cosigner.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
+        assertThat(tx.getSigners(), contains(Signer.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
         assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(VERIFICATION_SCRIPT));
     }
@@ -166,7 +166,7 @@ public class PolicyContractTest {
         assertThat(tx.getSender().toAddress(), is(CONSENSUS_MULTISIG_ADDRESS));
         assertThat(tx.getSystemFee(), is(4007570L));
         assertThat(tx.getNetworkFee(), is(1248450L));
-        assertThat(tx.getCosigners(), contains(Cosigner.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
+        assertThat(tx.getSigners(), contains(Signer.calledByEntry(CONSENSUS_MULTISIG_SCRIPT_HASH)));
         assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(VERIFICATION_SCRIPT));
     }

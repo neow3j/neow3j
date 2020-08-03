@@ -13,7 +13,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
 import io.neow3j.transaction.VerificationScript;
@@ -62,10 +62,10 @@ public class Invocation {
         List<ScriptHash> witnesses = this.transaction.getWitnesses().stream()
                 .map(Witness::getScriptHash).collect(Collectors.toList());
 
-        for (Cosigner cosigner : this.transaction.getCosigners()) {
-            if (!witnesses.contains(cosigner.getScriptHash())) {
+        for (Signer signer : this.transaction.getSigners()) {
+            if (!witnesses.contains(signer.getScriptHash())) {
                 throw new InvocationConfigurationException("The transaction does not have a "
-                        + "signature for each of its cosigners.");
+                        + "signature for each of its signers.");
             }
         }
         String hex = Numeric.toHexStringNoPrefix(this.transaction.toArray());
@@ -83,10 +83,10 @@ public class Invocation {
      */
     public Invocation sign() {
         byte[] txBytes = getTransactionForSigning();
-        this.transaction.getCosigners().forEach(cosigner -> {
+        this.transaction.getSigners().forEach(cosigner -> {
             if (!this.wallet.holdsAccount(cosigner.getScriptHash())) {
                 throw new InvocationConfigurationException("Can't create transaction "
-                        + "signature. Wallet does not contain the cosigner account with script "
+                        + "signature. Wallet does not contain the signer account with script "
                         + "hash " + cosigner.getScriptHash());
             } else {
                 Account cosignerAcc = this.wallet.getAccount(cosigner.getScriptHash());
@@ -420,7 +420,7 @@ public class Invocation {
         }
 
         private Set<String> getSigners() {
-            Set<String> signerSet = this.txBuilder.getCosigners().stream()
+            Set<String> signerSet = this.txBuilder.getSigners().stream()
                     .map(c -> c.getScriptHash().toString())
                     .collect(Collectors.toSet());
             if (this.txBuilder.getSender() != null) {
@@ -457,9 +457,9 @@ public class Invocation {
                 // If sender is not set explicitly set it to the default account of the wallet.
                 this.txBuilder.sender(this.wallet.getDefaultAccount().getScriptHash());
             }
-            if (this.txBuilder.getCosigners().isEmpty() || !senderCosignerExists()) {
+            if (this.txBuilder.getSigners().isEmpty() || !senderCosignerExists()) {
                 // Set the standard cosigner if none has been specified.
-                this.txBuilder.attributes(Cosigner.calledByEntry(this.txBuilder.getSender()));
+                this.txBuilder.attributes(Signer.calledByEntry(this.txBuilder.getSender()));
             }
             if (this.txBuilder.getScript() == null || this.txBuilder.getScript().length == 0) {
                 // The builder was not configured with a script. Therefore, try to construct one
@@ -493,7 +493,7 @@ public class Invocation {
         }
 
         private boolean senderCosignerExists() {
-            return this.txBuilder.getCosigners().stream()
+            return this.txBuilder.getSigners().stream()
                     .anyMatch(c -> c.getScriptHash().equals(this.txBuilder.getSender()));
         }
 
@@ -508,7 +508,7 @@ public class Invocation {
         private long getSystemFeeForScript() throws IOException {
             // The signers are required for `invokescript` calls that will hit a CheckWitness
             // check in the smart contract.
-            String[] signers = this.txBuilder.getCosigners().stream()
+            String[] signers = this.txBuilder.getSigners().stream()
                     .map(c -> c.getScriptHash().toString()).toArray(String[]::new);
             String script = Numeric.toHexStringNoPrefix(this.txBuilder.getScript());
             NeoInvokeScript response = neow.invokeScript(script, signers).send();
@@ -553,12 +553,12 @@ public class Invocation {
          */
         private List<Account> getCosignerAccounts() {
             List<Account> accounts = new ArrayList<>();
-            txBuilder.getCosigners().forEach(cosigner -> {
+            txBuilder.getSigners().forEach(cosigner -> {
                 if (this.wallet.holdsAccount(cosigner.getScriptHash())) {
                     accounts.add(this.wallet.getAccount(cosigner.getScriptHash()));
                 } else {
                     throw new InvocationConfigurationException("Wallet does not contain the "
-                            + "account for cosigner with script hash " + cosigner.getScriptHash());
+                            + "account for signer with script hash " + cosigner.getScriptHash());
                 }
             });
             return accounts;

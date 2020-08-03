@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TransactionAttributeType {
 
-    COSIGNER("Cosigner", 0x01, Cosigner.class);
+    SIGNER("Signer", 0x01, Signer.class);
 
-    public static final String COSIGNER_VALUE = "Cosigner";
+    public static final String SIGNER_VALUE = "Signer";
 
     private String jsonValue;
     private byte byteValue;

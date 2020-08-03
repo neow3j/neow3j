@@ -15,7 +15,7 @@ public class InvocationResult {
     @JsonProperty("state")
     private String state;
 
-    @JsonProperty("gas_consumed")
+    @JsonProperty("gasConsumed")
     private String gasConsumed;
 
     @JsonProperty("stack")

@@ -15,7 +15,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.transaction.Cosigner.Builder;
+import io.neow3j.transaction.Signer.Builder;
 import io.neow3j.transaction.exceptions.CosignerConfigurationException;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CosignerTest {
+public class SignerTest {
 
     private ScriptHash acctScriptHash;
     private ScriptHash contract1;
@@ -44,7 +44,7 @@ public class CosignerTest {
 
     @Test
     public void createCosignerWithCallByEntryWitnessScope() {
-        Cosigner cos = Cosigner.calledByEntry(acctScriptHash);
+        Signer cos = Signer.calledByEntry(acctScriptHash);
         assertThat(cos.getScriptHash(), is(acctScriptHash));
         assertThat(cos.getScopes(), hasSize(1));
         assertThat(cos.getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
@@ -54,7 +54,7 @@ public class CosignerTest {
 
     @Test
     public void createCosignerWithGlobalWitnessScope() {
-        Cosigner cos = Cosigner.global(acctScriptHash);
+        Signer cos = Signer.global(acctScriptHash);
         assertThat(cos.getScriptHash(), is(acctScriptHash));
         assertThat(cos.getScopes(), hasSize(1));
         assertThat(cos.getScopes(), contains(WitnessScope.GLOBAL));
@@ -64,7 +64,7 @@ public class CosignerTest {
 
     @Test
     public void buildValidCosigner1() {
-        Cosigner cos = new Cosigner.Builder()
+        Signer cos = new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS, WitnessScope.CALLED_BY_ENTRY)
                 .allowedContracts(this.contract1, this.contract2)
@@ -81,7 +81,7 @@ public class CosignerTest {
 
     @Test
     public void buildValidCosigner2() {
-        Cosigner cos = new Cosigner.Builder()
+        Signer cos = new Signer.Builder()
                 .account(this.acctScriptHash)
                 // the allowed contracts scope is added automatically.
                 .allowedContracts(this.contract1, this.contract2)
@@ -98,7 +98,7 @@ public class CosignerTest {
 
     @Test
     public void buildValidCosigner3() {
-        Cosigner cos = new Cosigner.Builder()
+        Signer cos = new Signer.Builder()
                 .account(this.acctScriptHash)
                 .allowedGroups(this.groupPubKey1, this.groupPubKey2)
                 .build();
@@ -115,19 +115,19 @@ public class CosignerTest {
 
     @Test(expected = CosignerConfigurationException.class)
     public void failBuildingEmptyCosigner() {
-        new Cosigner.Builder().build();
+        new Signer.Builder().build();
     }
 
     @Test(expected = CosignerConfigurationException.class)
     public void failBuildingCosignerWithoutScopes() {
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(this.acctScriptHash)
                 .build();
     }
 
     @Test(expected = CosignerConfigurationException.class)
     public void failBuildingCosignerWithoutAccount() {
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
     }
@@ -135,7 +135,7 @@ public class CosignerTest {
     @Test(expected = CosignerConfigurationException.class)
     public void failBuildingCosignerWithGlobalAndAnyOtherScope() {
         try {
-            new Cosigner.Builder()
+            new Signer.Builder()
                     .account(this.acctScriptHash)
                     .scopes(WitnessScope.GLOBAL)
                     .scopes(WitnessScope.CUSTOM_CONTRACTS)
@@ -145,7 +145,7 @@ public class CosignerTest {
         }
 
         try {
-            new Cosigner.Builder()
+            new Signer.Builder()
                     .account(this.acctScriptHash)
                     .scopes(WitnessScope.GLOBAL)
                     .scopes(WitnessScope.CUSTOM_GROUPS)
@@ -154,7 +154,7 @@ public class CosignerTest {
             // continue
         }
 
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.GLOBAL)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
@@ -163,7 +163,7 @@ public class CosignerTest {
 
     @Test(expected = CosignerConfigurationException.class)
     public void failBuildingCustomContractsCosignerWithoutSpecifyingAllowedContracts() {
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .build();
@@ -171,7 +171,7 @@ public class CosignerTest {
 
     @Test(expected = CosignerConfigurationException.class)
     public void failBuildingCustomGroupsCosignerWithoutSpecifyingAllowedContracts() {
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_GROUPS)
                 .build();
@@ -183,7 +183,7 @@ public class CosignerTest {
         for (int i = 0; i <= 16; i++) {
             contracts[i] = new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88");
         }
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .allowedContracts(contracts)
@@ -192,7 +192,7 @@ public class CosignerTest {
 
     @Test(expected = CosignerConfigurationException.class)
     public void failBuildingCosignerWithTooManyContractsAddedSeparately() {
-        Builder b = new Cosigner.Builder()
+        Builder b = new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .allowedContracts(new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88"));
@@ -211,7 +211,7 @@ public class CosignerTest {
         for (int i = 0; i <= 16; i++) {
             groups[i] = publicKey;
         }
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .allowedGroups(groups)
@@ -222,7 +222,7 @@ public class CosignerTest {
     public void failBuildingCosignerWithTooManyGroupsAddedSeparately() {
         ECPublicKey publicKey = new ECPublicKey(Numeric.hexStringToByteArray(
                 "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
-        Builder b = new Cosigner.Builder()
+        Builder b = new Signer.Builder()
                 .account(this.acctScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .allowedGroups(publicKey);
@@ -237,7 +237,7 @@ public class CosignerTest {
     public void serializeGlobalScope() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        Cosigner.global(acctScriptHash).serialize(writer);
+        Signer.global(acctScriptHash).serialize(writer);
         byte[] actual = outStream.toByteArray();
         String expected = ""
                 + "01" // attribute type: cosigner
@@ -250,7 +250,7 @@ public class CosignerTest {
     public void serializeCustomContractsScope() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(acctScriptHash)
                 .allowedContracts(contract1, contract2)
                 .build()
@@ -271,7 +271,7 @@ public class CosignerTest {
     public void serializeCustomGroupsScope() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(acctScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .build()
@@ -291,7 +291,7 @@ public class CosignerTest {
     public void serializeWithMultipleScopesContractsAndGroups() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new Cosigner.Builder()
+        new Signer.Builder()
                 .account(acctScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)
@@ -324,7 +324,7 @@ public class CosignerTest {
                 + "02" // array length 2
                 + "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7" // group 1
                 + "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60"); // group 2
-        Cosigner c = NeoSerializableInterface.from(data, Cosigner.class);
+        Signer c = NeoSerializableInterface.from(data, Signer.class);
         assertThat(c.getScriptHash(), is(acctScriptHash));
         assertThat(c.getScopes(), containsInAnyOrder(
                 WitnessScope.CUSTOM_CONTRACTS,
@@ -345,7 +345,7 @@ public class CosignerTest {
             serialized.append("3ab0be8672e25cf475219d018ded961ec684ca88"); // contract
         }
         byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
-        NeoSerializableInterface.from(serializedBytes, Cosigner.class);
+        NeoSerializableInterface.from(serializedBytes, Signer.class);
     }
 
     @Test(expected = DeserializationException.class)
@@ -359,12 +359,12 @@ public class CosignerTest {
             serialized.append("0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7");
         }
         byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
-        NeoSerializableInterface.from(serializedBytes, Cosigner.class);
+        NeoSerializableInterface.from(serializedBytes, Signer.class);
     }
 
     @Test
     public void getSize() {
-        Cosigner c = new Cosigner.Builder()
+        Signer c = new Signer.Builder()
                 .account(acctScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)
@@ -384,11 +384,11 @@ public class CosignerTest {
 
     @Test
     public void equals() {
-        Cosigner c1 = Cosigner.calledByEntry(acctScriptHash);
-        Cosigner c2 = Cosigner.calledByEntry(acctScriptHash);
+        Signer c1 = Signer.calledByEntry(acctScriptHash);
+        Signer c2 = Signer.calledByEntry(acctScriptHash);
         assertThat(c1, equalTo(c2));
 
-        Cosigner c = new Cosigner.Builder()
+        Signer c = new Signer.Builder()
                 .account(acctScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)

@@ -16,7 +16,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -105,7 +105,7 @@ public class NeoTokenTest {
         assertThat(tx.getSender().toAddress(), is("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ"));
         assertThat(tx.getSystemFee(), is(6007570L));
         assertThat(tx.getNetworkFee(), is(1262390L));
-        assertThat(tx.getCosigners(), contains(Cosigner.global(a.getScriptHash())));
+        assertThat(tx.getSigners(), contains(Signer.global(a.getScriptHash())));
         assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         byte[] verifScript = Numeric.hexStringToByteArray(
                 "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");
@@ -203,7 +203,7 @@ public class NeoTokenTest {
         assertThat(tx.getSender().toAddress(), is("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ"));
         assertThat(tx.getSystemFee(), is(501007930L));
         assertThat(tx.getNetworkFee(), is(1306390L));
-        assertThat(tx.getCosigners(), contains(Cosigner.global(a.getScriptHash())));
+        assertThat(tx.getSigners(), contains(Signer.global(a.getScriptHash())));
         assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
         byte[] verifScript = Numeric.hexStringToByteArray(
                 "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");

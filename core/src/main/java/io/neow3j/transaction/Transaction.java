@@ -109,10 +109,10 @@ public class Transaction extends NeoSerializable {
         return attributes;
     }
 
-    public List<Cosigner> getCosigners() {
+    public List<Signer> getSigners() {
         return this.attributes.stream()
-                .filter(a -> a.type.equals(TransactionAttributeType.COSIGNER))
-                .map(a -> ((Cosigner) a))
+                .filter(a -> a.type.equals(TransactionAttributeType.SIGNER))
+                .map(a -> ((Signer) a))
                 .collect(Collectors.toList());
     }
 
@@ -388,28 +388,28 @@ public class Transaction extends NeoSerializable {
                 throw new TransactionConfigurationException("A transaction cannot have more "
                         + "than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
             }
-            if (containsDuplicateCosigners(attributes)) {
-                throw new TransactionConfigurationException("Can't add multiple cosigners" +
+            if (containsDuplicateSigners(attributes)) {
+                throw new TransactionConfigurationException("Can't add multiple signers" +
                         " concerning the same account.");
             }
             this.attributes.addAll(Arrays.asList(attributes));
             return this;
         }
 
-        private boolean containsDuplicateCosigners(TransactionAttribute... newAttributes) {
-            List<ScriptHash> newCosignersList = Stream.of(newAttributes)
-                    .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getScriptHash())
+        private boolean containsDuplicateSigners(TransactionAttribute... newAttributes) {
+            List<ScriptHash> newSignersList = Stream.of(newAttributes)
+                    .filter(a -> a.getType().equals(TransactionAttributeType.SIGNER))
+                    .map(a -> ((Signer) a).getScriptHash())
                     .collect(Collectors.toList());
-            Set<ScriptHash> newCosignersSet = new HashSet<>(newCosignersList);
-            if (newCosignersList.size() != newCosignersSet.size()) {
-                // The new cosingers list contains duplicates in itself.
+            Set<ScriptHash> newSignersSet = new HashSet<>(newSignersList);
+            if (newSignersList.size() != newSignersSet.size()) {
+                // The new singers list contains duplicates in itself.
                 return true;
             }
             return this.attributes.stream()
-                    .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getScriptHash())
-                    .anyMatch(newCosignersSet::contains);
+                    .filter(a -> a.getType().equals(TransactionAttributeType.SIGNER))
+                    .map(a -> ((Signer) a).getScriptHash())
+                    .anyMatch(newSignersSet::contains);
         }
 
         /**
@@ -450,10 +450,11 @@ public class Transaction extends NeoSerializable {
                         "with a block number up to which this it is considered valid.");
             }
 
-            if (getCosigners().isEmpty()) {
+            if (getSigners().isEmpty()) {
                 // Add default restrictive witness scope.
-                this.attributes.add(Cosigner.calledByEntry(this.sender));
+                this.attributes.add(Signer.calledByEntry(this.sender));
             }
+
             return new Transaction(this);
         }
 
@@ -481,10 +482,10 @@ public class Transaction extends NeoSerializable {
             return networkFee;
         }
 
-        public List<Cosigner> getCosigners() {
+        public List<Signer> getSigners() {
             return this.attributes.stream()
-                    .filter(a -> a.type.equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a))
+                    .filter(a -> a.type.equals(TransactionAttributeType.SIGNER))
+                    .map(a -> ((Signer) a))
                     .collect(Collectors.toList());
         }
 

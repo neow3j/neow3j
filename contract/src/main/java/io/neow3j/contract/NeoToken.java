@@ -7,7 +7,7 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -125,7 +125,7 @@ public class NeoToken extends Nep5Token {
                 .withSender(candidate)
                 .withWallet(wallet)
                 .withParameters(ContractParameter.publicKey(candidateKey.getEncoded(true)))
-                .withAttributes(Cosigner.global(candidate))
+                .withAttributes(Signer.global(candidate))
                 .build()
                 .sign();
     }
@@ -241,7 +241,7 @@ public class NeoToken extends Nep5Token {
                 .withWallet(wallet)
                 .withParameters(ContractParameter.hash160(voter))
                 .withParameters(validatorParams)
-                .withAttributes(Cosigner.global(voter))
+                .withAttributes(Signer.global(voter))
                 .build()
                 .sign();
     }
