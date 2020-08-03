@@ -10,15 +10,33 @@
 <img src="./images/neow3j-neo3-with-balloon.png" alt="Bongo Cat Neow3j" width="400" height="291" />
 </p>
 
-Neow3j is a Java library that aims to provide easy and reliable integration with NEO nodes.
-By using neow3j, you will happily play with NEO and end up neow'ing around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat).
+Neow3j is a development toolkit that provides easy and reliable tools to build Neo dApps using the Java platform.
+By using neow3j, you will happily play with Neo and end up neow'ing around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat).
 
-You can now focus on building Java/Android applications that use the functions provided by the NEO blockchain, without being concerned about writing specific code to integrate with NEO nodes.
+This is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
 
-Visit https://neow3j.io for more information on neow3j and the technical documentation.
+Visit https://neow3j.io for the full project documentation.
 
-Neow3j is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
+This branch ([master-2.x](https://github.com/neow3j/neow3j/tree/master-2.x)) is a stable version of neow3j compatible with Neo2. For the Neo3-related version switch to the [master-3.x](https://github.com/neow3j/neow3j) branch.
 
+## Using *neow3j SDK* in your project
+
+To get all *neow3j SDK* features, add the `io.neow3j:contract` project to your dependencies. Since neow3j is split into multiple project modules, you can also depend on a subset of the functionality, e.g., if you only require certain utility methods. Check out the concept and structure of the library [here](https://neow3j.io/#/overview/concepts_and_structure).
+
+__Gradle__
+
+```groovy
+compile 'io.neow3j:contract:2.+'
+```
+__Maven__
+
+```xml
+<dependency>
+    <groupId>io.neow3j</groupId>
+    <artifactId>contract</artifactId>
+    <version>[2.0.0,3.0.0)</version>
+</dependency>
+```
 
 ## Donate
 
