@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -49,6 +50,7 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
@@ -209,31 +211,46 @@ public class Compiler {
     private void compileMethod(NeoMethod neoMethod) throws IOException {
         for (int insnAddr = 0; insnAddr < neoMethod.asmMethod.instructions.size(); insnAddr++) {
             AbstractInsnNode insn = neoMethod.asmMethod.instructions.get(insnAddr);
-            handleInsn(neoMethod, insn);
+            insnAddr += handleInsn(neoMethod, insn);
         }
     }
 
-    private void handleInsn(NeoMethod neoMethod, AbstractInsnNode insn) throws IOException {
+    private int handleInsn(NeoMethod neoMethod, AbstractInsnNode insn) throws IOException {
+        int skipCount = 0;
         if (insn.getType() == AbstractInsnNode.LINE) {
-            neoMethod.currentLine = ((LineNumberNode)insn).line;
+            neoMethod.currentLine = ((LineNumberNode) insn).line;
         }
         if (insn.getType() == AbstractInsnNode.LABEL) {
             neoMethod.currentLabelNode = (LabelNode) insn;
         }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
-            return;
+            return skipCount;
         }
         log.info(opcode.toString());
         switch (opcode) {
-            case INVOKESTATIC:
-            case INVOKEVIRTUAL:
-            case INVOKESPECIAL:
-                handleMethodInstruction(insn, neoMethod);
+
+            // region ### OBJECTS ###
+            case PUTSTATIC:
+                addStoreStaticField(insn, neoMethod);
                 break;
-            case LDC:
-                addLoadConstant(insn, neoMethod);
+            case GETSTATIC:
+                addLoadStaticField(insn, neoMethod);
                 break;
+            case CHECKCAST:
+                // Check if the object on the operand stack can be cast to a given type.
+                // There is no corresponding NeoVM opcode.
+                break;
+            case NEW:
+                handleNew(insn, neoMethod);
+                break;
+            case ARRAYLENGTH:
+            case INSTANCEOF:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### OBJECTS ###
+
+                // region ### CONSTANTS ###
             case ICONST_M1:
             case ICONST_0:
             case ICONST_1:
@@ -241,18 +258,43 @@ public class Compiler {
             case ICONST_3:
             case ICONST_4:
             case ICONST_5:
+            case LCONST_0:
+            case LCONST_1:
                 addPushNumber(opcode.getOpcode() - 3, neoMethod);
                 break;
+            case LDC:
+            case LDC_W:
+            case LDC2_W:
+                addLoadConstant(insn, neoMethod);
+                break;
+            case ACONST_NULL:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
             case BIPUSH: // Has an operand with an int value from -128 to 127.
             case SIPUSH: // Has an operand with an int value from -32768 to 32767.
                 addPushNumber(((IntInsnNode) insn).operand, neoMethod);
                 break;
+            // endregion ### CONSTANTS ###
+
+            // region ### METHODS ###
             case RETURN:
             case IRETURN:
             case ARETURN:
             case LRETURN:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.RET));
                 break;
+            case INVOKESTATIC:
+            case INVOKEVIRTUAL:
+            case INVOKESPECIAL:
+                handleMethodInstruction(insn, neoMethod);
+                break;
+            case INVOKEINTERFACE:
+            case INVOKEDYNAMIC:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### METHODS ###
+
+                // region ### LOCAL VARIABLES ###
             case ASTORE:
             case ASTORE_0:
             case ASTORE_1:
@@ -271,14 +313,17 @@ public class Compiler {
                 addStoreLocalVariable(insn, neoMethod);
                 break;
             case ALOAD:
+            case ALOAD_0:
             case ALOAD_1:
             case ALOAD_2:
             case ALOAD_3:
             case ILOAD:
+            case ILOAD_0:
             case ILOAD_1:
             case ILOAD_2:
             case ILOAD_3:
             case LLOAD:
+            case LLOAD_0:
             case LLOAD_1:
             case LLOAD_2:
             case LLOAD_3:
@@ -288,12 +333,12 @@ public class Compiler {
                 // stack.
                 addLoadLocalVariable(insn, neoMethod);
                 break;
+            // endregion ### LOCAL VARIABLES ###
+
+            // region ### ARRAYS ###
             case NEWARRAY:
             case ANEWARRAY:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
-                break;
-            case DUP:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
                 break;
             case BASTORE:
             case IASTORE:
@@ -306,6 +351,18 @@ public class Compiler {
                 // `DASTORE` and `FASTORE` are not covered because NeoVM does not support
                 // doubles and floats.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
+                break;
+            case AALOAD:
+            case BALOAD:
+            case CALOAD:
+            case IALOAD:
+            case LALOAD:
+            case SALOAD:
+                // Load an element from an array. Before calling this OpCode an array references
+                // and an index must have been pushed onto the operand stack. JVM and NeoVM both
+                // place the loaded element onto the operand stack. JVM opcodes `DALOAD` and
+                // `FALOAD` are not covered because NeoVM does not support doubles and floats.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
                 break;
             case PUTFIELD:
                 // Sets a value for a field variable on an object. The compiler doesn't
@@ -320,42 +377,266 @@ public class Compiler {
                 // of the operand stack.
                 addGetField(insn, neoMethod);
                 break;
-            case PUTSTATIC:
-                addStoreStaticField(insn, neoMethod);
+            case MULTIANEWARRAY:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### ARRAYS ###
+
+                // region ### STACK MANIPULATION ###
+            case NOP:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NOP));
                 break;
-            case GETSTATIC:
-                addLoadStaticField(insn, neoMethod);
+            case DUP:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
                 break;
             case POP:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 break;
-            case CHECKCAST:
-                // Check if the object on the operand stack can be cast to a given type.
-                // There is no corresponding NeoVM opcode.
+            case POP2:
+            case DUP_X1:
+            case DUP_X2:
+            case DUP2:
+            case DUP2_X1:
+            case DUP2_X2:
+            case SWAP:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### STACK MANIPULATION ###
+
+                // region ### JUMP OPCODES ###
+                // Java jump addresses are restricted to 2 bytes, i.e. there are no 4-byte jump
+                // addresses as in NeoVM. It is simpler for the compiler implementation to always
+                // use the 4-byte NeoVM jump opcodes and then optimize (to 1-byte addresses) in a
+                // second step. This is how the dotnet-devpack handeles it too.
+            case IF_ICMPEQ:
+            case IF_ACMPEQ: // Object reference comparison.
+                addJumpInstruction(neoMethod, insn, OpCode.JMPEQ_L);
                 break;
-            case AALOAD:
-            case BALOAD:
-            case CALOAD:
-            case IALOAD:
-            case LALOAD:
-            case SALOAD:
-                // Load an element from an array. Before calling this OpCode an array references
-                // and an index must have been pushed onto the operand stack. JVM and NeoVM both
-                // place the loaded element onto the operand stack. JVM opcodes `DALOAD` and
-                // `FALOAD` are not covered because NeoVM does not support doubles and floats.
-                neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
+            case IF_ICMPNE:
+            case IF_ACMPNE: // Object reference comparison.
+                addJumpInstruction(neoMethod, insn, OpCode.JMPNE_L);
                 break;
+            case IF_ICMPLT:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
+                break;
+            case IF_ICMPGT:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
+                break;
+            case IF_ICMPLE:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
+                break;
+            case IF_ICMPGE:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
+                break;
+            // These opcodes operate on boolean, byte, char, short, and int. In the latter four
+            // cases (IFLT, IFLE, IFGT, and IFGE) the NeoVM opcode is switched, e.g., from GT to
+            // LE because zero value will be on top of the stack and not the integer value.
+            case IFEQ: // Tests if the value on the stack is equal to zero.
+            case IFNULL: // Object comparison with null.
+                // JMPIFNOT_L means that the process should jump if the value is not set, is null,
+                // or is zero.
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIFNOT_L);
+                break;
+            case IFNE: // Tests if the value on the stack is not equal to zero.
+            case IFNONNULL: // Object comparison with null.
+                // JMPIF_L means that the process should jump if the value is set, is not null, or
+                // not zero.
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
+                break;
+            case IFLT: // Tests if the value on the stack is less than zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
+                break;
+            case IFLE: // Tests if the value on the stack is less than or equal to zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
+                break;
+            case IFGT: // Tests if the value on the stack is greater than zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
+                break;
+            case IFGE: // Tests if the value on the stack is greater than or equal to zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
+                break;
+
+            case LCMP:
+                // Comparison of two longs resulting in an integer with value -1, 0, or 1.
+                // This opcode has no direct counterpart in NeoVM because NeoVM does not
+                // differentiate between int and long.
+                skipCount += handleLongComparison(neoMethod, insn);
+                break;
+            case GOTO:
+            case GOTO_W:
+                // Unconditionally branch of to another code location.
+                neoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
+                        ((JumpInsnNode) insn).label.getLabel()));
+                break;
+            case LOOKUPSWITCH:
+            case TABLESWITCH:
+            case JSR:
+            case RET:
+            case JSR_W:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### JUMP OPCODES ###
+
+                // region ### CONVERSION ###
             case I2B:
-                // Convert an integer to byte by truncating. Because integers and bytes are
-                // handled equally by NeoVM there is nothing to do.
+            case L2I:
+            case I2L:
+            case I2C:
+            case I2S:
+                // Nothing to do because the NeoVM treats these types all the same.
                 break;
-            case NEW:
-                handleNew(insn, neoMethod);
-                break;
+            // endregion ### CONVERSION ###
+
+            // region ### ARITHMETICS ###
+            case IINC:
+            case IADD:
+            case LADD:
+            case ISUB:
+            case LSUB:
+            case IMUL:
+            case LMUL:
+            case IDIV:
+            case LDIV:
+            case IREM:
+            case LREM:
+            case INEG:
+            case LNEG:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### ARITHMETICS ###
+
+                // region ### BIT OPERATIONS ###
+            case ISHL:
+            case LSHL:
+            case ISHR:
+            case LSHR:
+            case IUSHR:
+            case LUSHR:
+            case IAND:
+            case LAND:
+            case IOR:
+            case LOR:
+            case IXOR:
+            case LXOR:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### BIT OPERATIONS ###
+
+                // region ### FLOATING POINT (unsupported) ###
+            case FCMPL:
+            case FCMPG:
+            case DCMPL:
+            case DCMPG:
+            case FRETURN:
+            case DRETURN:
+            case F2I:
+            case F2L:
+            case F2D:
+            case D2I:
+            case D2L:
+            case D2F:
+            case I2F:
+            case I2D:
+            case L2F:
+            case L2D:
+            case FNEG:
+            case DNEG:
+            case FDIV:
+            case DDIV:
+            case FREM:
+            case DREM:
+            case FMUL:
+            case DMUL:
+            case FSUB:
+            case DSUB:
+            case FADD:
+            case DADD:
+            case FASTORE:
+            case DASTORE:
+            case FALOAD:
+            case DALOAD:
+            case FSTORE:
+            case DSTORE:
+            case FCONST_0:
+            case FCONST_1:
+            case FCONST_2:
+            case DCONST_0:
+            case DCONST_1:
+            case FSTORE_0:
+            case FSTORE_1:
+            case FSTORE_2:
+            case FSTORE_3:
+            case DSTORE_0:
+            case DSTORE_1:
+            case DSTORE_2:
+            case DSTORE_3:
+            case FLOAD_0:
+            case FLOAD_1:
+            case FLOAD_2:
+            case FLOAD_3:
+            case DLOAD_0:
+            case DLOAD_1:
+            case DLOAD_2:
+            case DLOAD_3:
+            case FLOAD:
+            case DLOAD:
+                throw new CompilerException("Floating point numbers are not supported.");
+                // endregion ### FLOATING POINT (unsupported) ###
+
+                // region ### MISCELLANEOUS ###
+            case ATHROW:
+            case MONITORENTER:
+            case MONITOREXIT:
+            case WIDE:
+                // endregion ### MISCELLANEOUS ###
+
             default:
                 throw new CompilerException("Unsupported instruction " + opcode + " in: " +
                         neoMethod.asmMethod.name + ".");
         }
+        return skipCount;
+    }
+
+    private int handleLongComparison(NeoMethod neoMethod, AbstractInsnNode insn) {
+        JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
+        JVMOpcode jvmOpcode = JVMOpcode.get(jumpInsn.getOpcode());
+        if (jvmOpcode == null) {
+            // TODO: Add meaningful exception message.
+            throw new CompilerException("");
+        }
+        switch (jvmOpcode) {
+            case IFEQ:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPEQ_L);
+                break;
+            case IFNE:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPNE_L);
+                break;
+            case IFLT:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPLT_L);
+                break;
+            case IFGT:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGT_L);
+                break;
+            case IFLE:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPLE_L);
+                break;
+            case IFGE:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGE_L);
+                break;
+            default:
+                // TODO: Insert informative exception message.
+                throw new CompilerException("");
+        }
+        return 1;
+    }
+
+    private void addJumpInstruction(NeoMethod neoMethod, AbstractInsnNode insn, OpCode jmpOpcode) {
+        Label jmpLabel = ((JumpInsnNode) insn).label.getLabel();
+        neoMethod.addInstruction(new NeoJumpInstruction(jmpOpcode, jmpLabel));
     }
 
     private void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
@@ -517,19 +798,17 @@ public class Compiler {
     }
 
     private void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
-        assert insn.getType() == AbstractInsnNode.LDC_INSN : "Instruction type doesn't match "
-                + "opcode.";
         LdcInsnNode ldcInsn = (LdcInsnNode) insn;
         if (ldcInsn.cst instanceof String) {
             addPushDataArray(((String) ldcInsn.cst).getBytes(UTF_8), neoMethod);
-        }
-        if (ldcInsn.cst instanceof Integer) {
+        } else if (ldcInsn.cst instanceof Integer) {
             addPushNumber(((Integer) ldcInsn.cst), neoMethod);
-        }
-        if (ldcInsn.cst instanceof Long) {
+        } else if (ldcInsn.cst instanceof Long) {
             addPushNumber(((Long) ldcInsn.cst), neoMethod);
+        } else if (ldcInsn.cst instanceof Float || ldcInsn.cst instanceof Double) {
+            throw new CompilerException("Compiler does not support floating point numbers.");
         }
-        // TODO: Handle other types.
+        // TODO: Handle `org.objectweb.asm.Type`.
     }
 
     private void addPushDataArray(byte[] data, NeoMethod neoMethod) {
