@@ -55,8 +55,10 @@ import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TableSwitchInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.slf4j.Logger;
@@ -221,7 +223,7 @@ public class Compiler {
             neoMethod.currentLine = ((LineNumberNode) insn).line;
         }
         if (insn.getType() == AbstractInsnNode.LABEL) {
-            neoMethod.currentLabelNode = (LabelNode) insn;
+            neoMethod.currentLabel = ((LabelNode) insn).getLabel();
         }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
@@ -473,7 +475,11 @@ public class Compiler {
                         ((JumpInsnNode) insn).label.getLabel()));
                 break;
             case LOOKUPSWITCH:
+                handleLookupSwitch(neoMethod, insn);
+                break;
             case TABLESWITCH:
+                handleTableSwitch(neoMethod, insn);
+                break;
             case JSR:
             case RET:
             case JSR_W:
@@ -599,6 +605,78 @@ public class Compiler {
                         neoMethod.asmMethod.name + ".");
         }
         return skipCount;
+    }
+
+    private void handleTableSwitch(NeoMethod neoMethod, AbstractInsnNode insn) {
+        TableSwitchInsnNode switchNode = (TableSwitchInsnNode) insn;
+        for (int i = 0; i < switchNode.labels.size(); i++) {
+            if (switchNode.labels.get(i).getLabel() == switchNode.dflt.getLabel()) {
+                // We don't handle the cases that the Java compiler only to reach sequential values.
+                continue;
+            }
+            int key = switchNode.min + i;
+            processCase(i, key, switchNode.labels, switchNode.dflt.getLabel(), neoMethod);
+        }
+        // After handling the `TableSwitchInsnNode` the compiler can continue processing all the
+        // case branches in its `handleInsn(...)` method.
+    }
+
+    private void handleLookupSwitch(NeoMethod neoMethod, AbstractInsnNode insn) {
+        LookupSwitchInsnNode switchNode = (LookupSwitchInsnNode) insn;
+        for (int i = 0; i < switchNode.keys.size(); i++) {
+            int key = switchNode.keys.get(i);
+            processCase(i, key, switchNode.labels, switchNode.dflt.getLabel(), neoMethod);
+        }
+        // After handling the `LookupSwitchInsnNode` the compiler can continue processing all the
+        // case branches in its `handleInsn(...)` method.
+    }
+
+    private void processCase(int i, int key, List<LabelNode> labels, Label defaultLabel,
+            NeoMethod neoMethod) {
+        // The nextCaseLabel is used to connect the current case with the next case. If the
+        // current case is not successful, then the process will jump to the next case marked
+        // with this label.
+        Label nextCaseLabel;
+        boolean isLastCase = isLastCase(i, labels, defaultLabel);
+        if (isLastCase) {
+            // If this is the last case statement (before the `default`) then we don't
+            // need to duplicate the value and the next label is the one of the default body.
+            nextCaseLabel = defaultLabel;
+        } else {
+            nextCaseLabel = new Label();
+            // The value being compared in the switch needs to be duplicated before each case.
+            neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
+        }
+        addPushNumber(key, neoMethod);
+        neoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPNE_L, nextCaseLabel));
+
+        if (!isLastCase) {
+            // If the case is the right one we need to drop the value duplicated before.
+            // But not for the last `case` statement (before the default).
+            neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
+        }
+        Label jmpLabel = labels.get(i).getLabel();
+        neoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L, jmpLabel));
+        // Set the nextCaseLabel on the NeoMethod so that the next added instruction becomes
+        // the jump target.
+        neoMethod.currentLabel = nextCaseLabel;
+    }
+
+    // Checks if the given index marks the last case in the given list of case statements (i.e.
+    // labels of the cases' jump targets). If the case is only followed by cases that target the
+    // default case it is still considered to be last.
+    private boolean isLastCase(int i, List<LabelNode> labelNodes, Label defaultLbl) {
+        assert i < labelNodes.size() && i >= 0 : "Index was outside of the list of label nodes.";
+        if (i == labelNodes.size() - 1 && !(labelNodes.get(i).getLabel() == defaultLbl)) {
+            return true;
+        }
+        for (; i < labelNodes.size(); i++) {
+            LabelNode labelNode = labelNodes.get(i);
+            if (labelNode.getLabel() != defaultLbl) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private int handleLongComparison(NeoMethod neoMethod, AbstractInsnNode insn) {
@@ -1114,7 +1192,11 @@ public class Compiler {
                 || typeName.equals(Long.class.getTypeName())
                 || typeName.equals(long.class.getTypeName())
                 || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())) {
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
             return ContractParameterType.INTEGER;
         }
         if (typeName.equals(Boolean.class.getTypeName())

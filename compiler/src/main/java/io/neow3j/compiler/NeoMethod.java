@@ -10,7 +10,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -89,7 +88,7 @@ public class NeoMethod {
     // The current label of an instruction. Used in the compilation process to resolve jump
     // addresses. In contrast to `LineNumberNodes`, `LableNodes` are only applicable to the
     // very next instruction node.
-    LabelNode currentLabelNode;
+    Label currentLabel;
 
     // The current instruction line number. Used in the compilation process to map line numbers to
     // `NeoInstructions`.
@@ -153,7 +152,7 @@ public class NeoMethod {
     // current address (relative to this method) is added to the instruction.
     void addInstruction(NeoInstruction neoInsn) {
         neoInsn.setLineNr(this.currentLine);
-        if (this.currentLabelNode != null) {
+        if (this.currentLabel != null) {
             // When the compiler sees a `LabelNode` it stores it on the `currentLabelNode` field
             // and continues. The next instruction is the one that the label belongs. We expect
             // that when a new instruction is added to this method and the `currentLabelNode` is
@@ -163,8 +162,8 @@ public class NeoMethod {
             //  always get replaced one-to-one with `NeoInstructions`.
             // TODO: Clarify if we only need jump points for instructions that additionally have
             //  a `FrameNode` before them.
-            this.jumpPoints.put(this.currentLabelNode.getLabel(), neoInsn);
-            this.currentLabelNode = null;
+            this.jumpPoints.put(this.currentLabel, neoInsn);
+            this.currentLabel = null;
         }
         neoInsn.setAddress(this.nextAddress);
         this.instructions.put(this.nextAddress, neoInsn);
