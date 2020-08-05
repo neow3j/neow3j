@@ -786,34 +786,13 @@ public class Compiler {
         }
         neoMethod.isEntryPoint = isEntryPoint(neoMethod.asmMethod);
 
-        // Look for method params and local variables and add them to the NeoMethod. Note that
-        // JVM does not have a special opcode for method parameters like NeoVM has with LDARG and
-        // STARG.
-        if (neoMethod.asmMethod.localVariables == null
-                || neoMethod.asmMethod.localVariables.size() == 0) {
-            return;
+        // Look for method params and local variables and add them to the NeoMethod. Note that Java
+        // mixes method params and local variables.
+        if (neoMethod.asmMethod.maxLocals == 0) {
+            return; // There are no local variables or parameters to process.
         }
-        int paramCount = 0;
-        if (neoMethod.asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
-            paramCount++;
-        }
-        paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
-        int localVarCount = neoMethod.asmMethod.localVariables.size() - paramCount;
-        if (paramCount > MAX_PARAMS_COUNT) {
-            throw new CompilerException("The method has more than the max number of parameters.");
-        }
-        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("The method has more than the max number of local "
-                    + "variables.");
-        }
-        for (int i = 0; i < paramCount; i++) {
-            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
-            neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
-        }
-        for (int i = paramCount; i < neoMethod.asmMethod.localVariables.size(); i++) {
-            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
-            neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
-        }
+        int paramCount = collectMethodParameters(neoMethod);
+        int localVarCount = collectLocalVariables(neoMethod, paramCount);
 
         // Add the INITSLOT opcode as first instruction of the method if the method has parameters
         // and/or local variables.
@@ -821,6 +800,39 @@ public class Compiler {
             neoMethod.addInstruction(new NeoInstruction(
                     OpCode.INITSLOT, new byte[]{(byte) localVarCount, (byte) paramCount}));
         }
+    }
+
+    private int collectLocalVariables(NeoMethod neoMethod, int paramCount) {
+        int localVarCount = neoMethod.asmMethod.maxLocals - paramCount;
+        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("The method has more than the max number of local "
+                    + "variables.");
+        }
+        for (int i = paramCount; i < neoMethod.asmMethod.maxLocals; i++) {
+            if (i < neoMethod.asmMethod.localVariables.size()) {
+                LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
+                neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
+            } else {
+                neoMethod.addVariable(new NeoVariable(i - paramCount, i, null));
+            }
+        }
+        return localVarCount;
+    }
+
+    private int collectMethodParameters(NeoMethod neoMethod) {
+        int paramCount = 0;
+        if (neoMethod.asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+            paramCount++;
+        }
+        paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
+        if (paramCount > MAX_PARAMS_COUNT) {
+            throw new CompilerException("The method has more than the max number of parameters.");
+        }
+        for (int i = 0; i < paramCount; i++) {
+            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
+            neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
+        }
+        return paramCount;
     }
 
     private int extractPushedNumber(NeoInstruction insn) {
