@@ -22,12 +22,12 @@ public class ContractParameterTypeTest {
 
     @Test
     public void testByteValue() {
-        assertThat(this.contractParameterType.byteValue(), is((byte) 0x07));
+        assertThat(this.contractParameterType.byteValue(), is((byte) 0x13));
     }
 
     @Test
     public void testValueOf() {
-        assertThat(ContractParameterType.valueOf((byte) 0x07), is(ContractParameterType.STRING));
+        assertThat(ContractParameterType.valueOf((byte) 0x13), is(ContractParameterType.STRING));
     }
 
     @Test(expected = IllegalArgumentException.class)
