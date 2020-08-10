@@ -132,15 +132,13 @@ public class ScriptHashTest {
 
     @Test
     public void fromContractScript() {
-        String verificationScript = "522102028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26" +
-                "e8861699ef21031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c921" +
-                "02232ce8d2e2063dce0451131851d47421bfc4fc1da4db116fca5302c0756462fa53ae";
+        String verificationScript = "110c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d110b41138defaf";
         ScriptHash sh = ScriptHash.fromScript(verificationScript);
 
         String bigEndian = sh.toString();
-        assertThat(bigEndian, is("fc3ea6882d1f6fdc360a2c650edf742dcb4ae078"));
+        assertThat(bigEndian, is("afaed076854454449770763a628f379721ea9808"));
         String littleEndian = Numeric.toHexStringNoPrefix(sh.toArray());
-        assertThat(littleEndian, is("78e04acb2d74df0e652c0a36dc6f1f2d88a63efc"));
+        assertThat(littleEndian, is("0898ea2197378f623a7670974454448576d0aeaf"));
     }
 
     @Test
