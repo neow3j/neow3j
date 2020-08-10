@@ -11,7 +11,7 @@ import io.neow3j.transaction.TransactionAttributeType;
 
 @JsonTypeInfo(use = Id.NAME, property = "type", include = As.EXISTING_PROPERTY)
 @JsonSubTypes(value = {
-        @JsonSubTypes.Type(value = TransactionCosigner.class, name =
+        @JsonSubTypes.Type(value = TransactionSigner.class, name =
                 TransactionAttributeType.SIGNER_VALUE)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -28,9 +28,9 @@ public abstract class TransactionAttribute {
     }
 
     @JsonIgnore
-    public TransactionCosigner getAsTransactionCosigner() {
-        if (this instanceof TransactionCosigner) {
-            return (TransactionCosigner) this;
+    public TransactionSigner getAsTransactionSigner() {
+        if (this instanceof TransactionSigner) {
+            return (TransactionSigner) this;
         }
         throw new IllegalStateException("This object is not of type " +
                 TransactionAttributeType.SIGNER_VALUE + " but of " + this.type.jsonValue());

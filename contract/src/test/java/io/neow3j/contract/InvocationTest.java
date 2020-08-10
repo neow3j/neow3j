@@ -230,7 +230,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void addDefaultAccountCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet()
+    public void addDefaultAccountSignerIfNotExplicitlySetAndNoOtherSignerIsSet()
             throws IOException {
 
         Wallet wallet = Wallet.createWallet();
@@ -248,7 +248,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void addDefaultAccountCosignerIfNotExplicitlySetAndAnotherCosignerIsSet()
+    public void addDefaultAccountSignerIfNotExplicitlySetAndAnotherSignerIsSet()
             throws IOException {
 
         Wallet wallet = Wallet.createWallet();
@@ -270,7 +270,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void dontAddDuplicateDefaultAccountCosignerIfAlreadySetExplicitly() throws IOException {
+    public void dontAddDuplicateDefaultAccountSignerIfAlreadySetExplicitly() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account acc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
@@ -290,7 +290,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void addSenderCosignerIfNotExplicitlySetAndNoOtherCosignerIsSet() throws IOException {
+    public void addSenderSignerIfNotExplicitlySetAndNoOtherSignerIsSet() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
@@ -311,7 +311,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void addSenderCosignerIfNotExplicitlySetAndAnotherCosignerIsSet()
+    public void addSenderSignerIfNotExplicitlySetAndAnotherSignerIsSet()
             throws IOException {
 
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
@@ -337,7 +337,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void dontAddDuplicateSenderCosignerIfAlreadySetExplicitly() throws IOException {
+    public void dontAddDuplicateSenderSignerIfAlreadySetExplicitly() throws IOException {
         // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
@@ -358,16 +358,16 @@ public class InvocationTest {
     }
 
     @Test
-    public void signTransactionWithAdditionalCosigners() throws IOException {
+    public void signTransactionWithAdditionalSigners() throws IOException {
         Wallet w = Wallet.createWallet();
-        Account cosigner = Account.createAccount();
-        w.addAccounts(cosigner);
+        Account signer = Account.createAccount();
+        w.addAccounts(signer);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(signer.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build()
                 .sign();
@@ -379,63 +379,63 @@ public class InvocationTest {
                 .collect(Collectors.toList());
         assertThat(signers, containsInAnyOrder(
                 w.getDefaultAccount().getECKeyPair().getPublicKey(),
-                cosigner.getECKeyPair().getPublicKey()));
+                signer.getECKeyPair().getPublicKey()));
     }
 
     @Test
-    public void failBuildingInvocationBecauseWalletDoesntContainCosignerAccount()
+    public void failBuildingInvocationBecauseWalletDoesntContainSignerAccount()
             throws IOException {
 
         Wallet w = Wallet.createWallet();
-        Account cosigner = Account.createAccount();
+        Account signer = Account.createAccount();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
         Invocation.Builder b = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(signer.getScriptHash()))
                 .withValidUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("Wallet does not contain the account for signer" +
-                " with script hash " + cosigner.getScriptHash()));
+                " with script hash " + signer.getScriptHash()));
         b.build();
     }
 
     @Test
-    public void failSigningInvocationBecauseWalletDoesntContainCosignerAccount()
+    public void failSigningInvocationBecauseWalletDoesntContainSignerAccount()
             throws IOException {
 
         Wallet w = Wallet.createWallet();
-        Account cosigner = Account.createAccount();
-        w.addAccounts(cosigner);
+        Account signer = Account.createAccount();
+        w.addAccounts(signer);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(signer.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
-        w.removeAccount(cosigner.getScriptHash());
+        w.removeAccount(signer.getScriptHash());
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("Can't create transaction "
                 + "signature. Wallet does not contain the signer account with script "
-                + "hash " + cosigner.getScriptHash()));
+                + "hash " + signer.getScriptHash()));
         i.sign();
     }
 
     @Test
-    public void failSendingInvocationBecauseItDoesntContainSignaturesForAllCosigners()
+    public void failSendingInvocationBecauseItDoesntContainSignaturesForAllSigners()
             throws IOException {
 
         Wallet w = Wallet.createWallet();
-        Account cosigner = Account.createAccount();
-        w.addAccounts(cosigner);
+        Account signer = Account.createAccount();
+        w.addAccounts(signer);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
                 .withScript(Numeric.hexStringToByteArray(SCRIPT))
                 .withWallet(w)
-                .withAttributes(Signer.calledByEntry(cosigner.getScriptHash()))
+                .withAttributes(Signer.calledByEntry(signer.getScriptHash()))
                 .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
 

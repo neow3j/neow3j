@@ -273,8 +273,8 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertNotNull(transaction.getValidUntilBlock());
         assertNotNull(transaction.getAttributes());
         assertThat(transaction.getAttributes(), hasSize(1));
-        assertThat(transaction.getAttributes().get(0).getAsTransactionCosigner(),
-                is(new TransactionCosigner(TX_COSIGNER, WitnessScope.CALLED_BY_ENTRY)));
+        assertThat(transaction.getAttributes().get(0).getAsTransactionSigner(),
+                is(new TransactionSigner(TX_SIGNER, WitnessScope.CALLED_BY_ENTRY)));
         assertThat(transaction.getScript(), is(TX_SCRIPT));
         assertNotNull(transaction.getWitnesses());
         assertNotNull(transaction.getBlockHash());

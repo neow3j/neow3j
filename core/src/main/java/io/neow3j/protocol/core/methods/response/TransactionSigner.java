@@ -7,7 +7,7 @@ import io.neow3j.transaction.WitnessScope;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TransactionCosigner extends TransactionAttribute {
+public class TransactionSigner extends TransactionAttribute {
 
     @JsonProperty("account")
     private String account;
@@ -15,11 +15,11 @@ public class TransactionCosigner extends TransactionAttribute {
     @JsonProperty("scopes")
     private WitnessScope scopes;
 
-    public TransactionCosigner() {
+    public TransactionSigner() {
         super(TransactionAttributeType.SIGNER);
     }
 
-    public TransactionCosigner(String account, WitnessScope scopes) {
+    public TransactionSigner(String account, WitnessScope scopes) {
         super(TransactionAttributeType.SIGNER);
         this.account = account;
         this.scopes = scopes;
@@ -38,10 +38,10 @@ public class TransactionCosigner extends TransactionAttribute {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof TransactionCosigner)) {
+        if (!(o instanceof TransactionSigner)) {
             return false;
         }
-        TransactionCosigner other = (TransactionCosigner) o;
+        TransactionSigner other = (TransactionSigner) o;
         return Objects.equals(getAccount(), other.getAccount()) &&
                 getScopes() == other.getScopes();
     }

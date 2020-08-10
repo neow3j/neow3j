@@ -29,13 +29,13 @@ public class Transaction {
     @JsonProperty("sender")
     private String sender;
 
-    @JsonProperty("sys_fee")
+    @JsonProperty("sysfee")
     private String sysFee;
 
-    @JsonProperty("net_fee")
+    @JsonProperty("netfee")
     private String netFee;
 
-    @JsonProperty("valid_until_block")
+    @JsonProperty("validuntilblock")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long validUntilBlock;
 
@@ -63,7 +63,7 @@ public class Transaction {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private long blockTime;
 
-    @JsonProperty("vm_state")
+    @JsonProperty("vmstate")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private String vmState;
 

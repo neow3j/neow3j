@@ -49,7 +49,7 @@ import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.NeoWitness;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
-import io.neow3j.protocol.core.methods.response.TransactionCosigner;
+import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
@@ -185,9 +185,9 @@ public class ResponseTest extends ResponseTester {
                         "                \"version\": 0,\n" +
                         "                \"nonce\": 565086327,\n" +
                         "                \"sender\": \"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\",\n" +
-                        "                \"sys_fee\": \"0\",\n" +
-                        "                \"net_fee\": \"0\",\n" +
-                        "                \"valid_until_block\": 2107425,\n" +
+                        "                \"sysfee\": \"0\",\n" +
+                        "                \"netfee\": \"0\",\n" +
+                        "                \"validuntilblock\": 2107425,\n" +
                         "                \"attributes\": [\n" +
                         "                    {\n" +
                         "                        \"type\": \"Signer\",\n" +
@@ -210,9 +210,9 @@ public class ResponseTest extends ResponseTester {
                         "                \"version\": 0,\n" +
                         "                \"nonce\": 565086327,\n" +
                         "                \"sender\": \"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\",\n" +
-                        "                \"sys_fee\": \"0\",\n" +
-                        "                \"net_fee\": \"0\",\n" +
-                        "                \"valid_until_block\": 2107425,\n" +
+                        "                \"sysfee\": \"0\",\n" +
+                        "                \"netfee\": \"0\",\n" +
+                        "                \"validuntilblock\": 2107425,\n" +
                         "                \"attributes\": [\n" +
                         "                    {\n" +
                         "                        \"type\": \"Signer\",\n" +
@@ -285,7 +285,7 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 2107425L,
                                 Arrays.asList(
-                                        new TransactionCosigner(
+                                        new TransactionSigner(
                                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
                                                 WitnessScope.CALLED_BY_ENTRY
                                         )
@@ -308,7 +308,7 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 2107425L,
                                 Arrays.asList(
-                                        new TransactionCosigner(
+                                        new TransactionSigner(
                                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
                                                 WitnessScope.CALLED_BY_ENTRY
                                         )
@@ -811,9 +811,9 @@ public class ResponseTest extends ResponseTester {
                         "        \"version\": 0,\n" +
                         "        \"nonce\": 1046354582,\n" +
                         "        \"sender\": \"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\",\n" +
-                        "        \"sys_fee\": \"9007810\",\n" +
-                        "        \"net_fee\": \"1267450\",\n" +
-                        "        \"valid_until_block\": 2103622,\n" +
+                        "        \"sysfee\": \"9007810\",\n" +
+                        "        \"netfee\": \"1267450\",\n" +
+                        "        \"validuntilblock\": 2103622,\n" +
                         "        \"attributes\": [" +
                         "            {\n" +
                         "                \"type\": \"Signer\",\n" +
@@ -831,7 +831,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"blockhash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299\",\n" +
                         "        \"confirmations\": 1388,\n" +
                         "        \"blocktime\": 1589019142879,\n" +
-                        "        \"vm_state\": \"HALT\"\n" +
+                        "        \"vmstate\": \"HALT\"\n" +
                         "    }\n" +
                         "}"
         );
@@ -851,15 +851,15 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(getTransaction.getTransaction().getAttributes(), hasSize(1));
         assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().type,
+        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionSigner().type,
                 is(TransactionAttributeType.SIGNER));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionSigner().getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionSigner().getScopes(),
                 is(WitnessScope.CALLED_BY_ENTRY));
         assertThat(getTransaction.getTransaction().getAttributes(),
                 containsInAnyOrder(
-                        new TransactionCosigner(
+                        new TransactionSigner(
                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
                                 WitnessScope.CALLED_BY_ENTRY
                         )
@@ -1636,9 +1636,9 @@ public class ResponseTest extends ResponseTester {
                         "        \"version\": 0,\n" +
                         "        \"nonce\": 1762654532,\n" +
                         "        \"sender\": \"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\",\n" +
-                        "        \"sys_fee\": \"9007810\",\n" +
-                        "        \"net_fee\": \"1266450\",\n" +
-                        "        \"valid_until_block\": 2106392,\n" +
+                        "        \"sysfee\": \"9007810\",\n" +
+                        "        \"netfee\": \"1266450\",\n" +
+                        "        \"validuntilblock\": 2106392,\n" +
                         "        \"attributes\": [" +
                         "            {\n" +
                         "                \"type\": \"Signer\",\n" +
@@ -1674,16 +1674,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendFrom.getSendFrom().getAttributes(), hasSize(1));
         assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
         assertThat(sendFrom.getSendFrom().getAttributes().get(0).getType(), is(TransactionAttributeType.SIGNER));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().type,
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionSigner().type,
                 is(TransactionAttributeType.SIGNER));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionSigner().getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionSigner().getScopes(),
                 is(WitnessScope.CALLED_BY_ENTRY));
 
         assertThat(sendFrom.getSendFrom().getAttributes(),
                 containsInAnyOrder(
-                        new TransactionCosigner("0xf68f181731a47036a99f04dad90043a744edec0f",
+                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
                                 WitnessScope.CALLED_BY_ENTRY)
                 ));
 
@@ -1713,9 +1713,9 @@ public class ResponseTest extends ResponseTester {
                         "        \"version\": 0,\n" +
                         "        \"nonce\": 1256822346,\n" +
                         "        \"sender\": \"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\",\n" +
-                        "        \"sys_fee\": \"18015620\",\n" +
-                        "        \"net_fee\": \"1352450\",\n" +
-                        "        \"valid_until_block\": 2106840,\n" +
+                        "        \"sysfee\": \"18015620\",\n" +
+                        "        \"netfee\": \"1352450\",\n" +
+                        "        \"validuntilblock\": 2106840,\n" +
                         "        \"attributes\": [\n" +
                         "            {\n" +
                         "                \"type\": \"Signer\",\n" +
@@ -1756,18 +1756,18 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany().getAttributes(), hasSize(2));
         assertThat(sendMany.getSendMany().getAttributes(),
                 containsInAnyOrder(
-                        new TransactionCosigner(
+                        new TransactionSigner(
                                 "0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
                                 WitnessScope.CALLED_BY_ENTRY),
-                        new TransactionCosigner(
+                        new TransactionSigner(
                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
                                 WitnessScope.CALLED_BY_ENTRY
                         )
                 ));
         assertThat(sendMany.getSendMany().getAttributes().get(0).getType(), is(TransactionAttributeType.SIGNER));
-        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionSigner().getAccount(),
                 is("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24"));
-        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionSigner().getScopes(),
                 is(WitnessScope.CALLED_BY_ENTRY));
 
         assertThat(sendMany.getSendMany().getScript(),
@@ -1813,9 +1813,9 @@ public class ResponseTest extends ResponseTester {
                         "        \"version\": 0,\n" +
                         "        \"nonce\": 1509730265,\n" +
                         "        \"sender\": \"AK5AmzrrM3sw3kbCHXpHNeuK3kkjnneUrb\",\n" +
-                        "        \"sys_fee\": \"9007810\",\n" +
-                        "        \"net_fee\": \"2375840\",\n" +
-                        "        \"valid_until_block\": 2106930,\n" +
+                        "        \"sysfee\": \"9007810\",\n" +
+                        "        \"netfee\": \"2375840\",\n" +
+                        "        \"validuntilblock\": 2106930,\n" +
                         "        \"attributes\": [" +
                         "            {\n" +
                         "                \"type\": \"Signer\",\n" +
@@ -1855,15 +1855,15 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendToAddress.getSendToAddress().getAttributes(), hasSize(1));
         assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getType(),
                 is(TransactionAttributeType.SIGNER));
-        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().type,
+        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionSigner().type,
                 is(TransactionAttributeType.SIGNER));
-        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().getAccount(),
+        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionSigner().getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionCosigner().getScopes(),
+        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionSigner().getScopes(),
                 is(WitnessScope.CALLED_BY_ENTRY));
         assertThat(sendToAddress.getSendToAddress().getAttributes(),
                 containsInAnyOrder(
-                        new TransactionCosigner(
+                        new TransactionSigner(
                                 "0xf68f181731a47036a99f04dad90043a744edec0f",
                                 WitnessScope.CALLED_BY_ENTRY
                         )
@@ -1898,32 +1898,32 @@ public class ResponseTest extends ResponseTester {
                         "        \"sent\": [\n" +
                         "            {\n" +
                         "                \"timestamp\": 1554283931,\n" +
-                        "                \"asset_hash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
-                        "                \"transfer_address\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
                         "                \"amount\": \"100000000000\",\n" +
-                        "                \"block_index\": 368082,\n" +
-                        "                \"transfer_notify_index\": 0,\n" +
-                        "                \"tx_hash\": \"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
+                        "                \"blockindex\": 368082,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
                         "            },\n" +
                         "            {\n" +
                         "                \"timestamp\": 1554880287,\n" +
-                        "                \"asset_hash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
-                        "                \"transfer_address\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
                         "                \"amount\": \"100000000000\",\n" +
-                        "                \"block_index\": 397769,\n" +
-                        "                \"transfer_notify_index\": 0,\n" +
-                        "                \"tx_hash\": \"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
+                        "                \"blockindex\": 397769,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"received\": [\n" +
                         "            {\n" +
                         "                \"timestamp\": 1555651816,\n" +
-                        "                \"asset_hash\": \"600c4f5200db36177e3e8a09e9f18e2fc7d12a0f\",\n" +
-                        "                \"transfer_address\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"assethash\": \"600c4f5200db36177e3e8a09e9f18e2fc7d12a0f\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
                         "                \"amount\": \"1000000\",\n" +
-                        "                \"block_index\": 436036,\n" +
-                        "                \"transfer_notify_index\": 0,\n" +
-                        "                \"tx_hash\": \"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
+                        "                \"blockindex\": 436036,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"address\": \"AbHgdBaWEnHkCiLtDZXjhvhaAK2cwFh5pF\"\n" +
@@ -1997,14 +1997,14 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"balance\": [\n" +
                         "            {\n" +
-                        "                \"asset_hash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n" +
+                        "                \"assethash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n" +
                         "                \"amount\": \"50000000000\",\n" +
-                        "                \"last_updated_block\": 251604\n" +
+                        "                \"lastupdatedblock\": 251604\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"asset_hash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
                         "                \"amount\": \"50000000000\",\n" +
-                        "                \"last_updated_block\": 251600\n" +
+                        "                \"lastupdatedblock\": 251600\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"address\": \"AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w\"\n" +

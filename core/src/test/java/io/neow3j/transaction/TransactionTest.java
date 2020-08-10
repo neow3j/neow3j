@@ -126,13 +126,13 @@ public class TransactionTest {
     }
 
     @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMultipleCosignersConcerningTheSameAccount1() {
+    public void failAddingMultipleSignersConcerningTheSameAccount1() {
         Transaction.Builder b = new Transaction.Builder();
         b.attributes(Signer.global(account1), Signer.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMultipleCosignersConcerningTheSameAccount2() {
+    public void failAddingMultipleSignersConcerningTheSameAccount2() {
         Transaction.Builder b = new Transaction.Builder();
         b.attributes(Signer.global(account1));
         b.attributes(Signer.calledByEntry(account1));
@@ -150,7 +150,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void serializeWithoutAttributesWitnessesAndCosigners() {
+    public void serializeWithoutAttributesWitnessesAndSigners() {
         Transaction tx = new Transaction.Builder()
             .sender(account1)
             .version((byte) 0)
@@ -170,7 +170,7 @@ public class TransactionTest {
             + "0100000000000000"  // network fee (1 GAS fraction)
             + "04030201"  // valid until block
             + "01"  // one attribute
-            + "0123ba2703c53263e8d6e522dc32203339dcd8eee901" // calledByEntry cosigner
+            + "0123ba2703c53263e8d6e522dc32203339dcd8eee901" // calledByEntry signer
             + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
             + "00"); // no witnesses
 
@@ -178,7 +178,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void serializeWithAttributesWitnessesAndCosigners() {
+    public void serializeWithAttributesWitnessesAndSigners() {
         Transaction tx = new Transaction.Builder()
             .sender(account1)
             .version((byte) 0)
@@ -201,9 +201,9 @@ public class TransactionTest {
             + "00e1f50500000000"  // system fee (1 GAS)
             + "0100000000000000"  // network fee (1 GAS fraction)
             + "04030201"  // valid until block
-            + "02"  // 2 cosigners
-            + "0123ba2703c53263e8d6e522dc32203339dcd8eee900" // global cosigner
-            + "0152eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry cosigner
+            + "02"  // 2 signers
+            + "0123ba2703c53263e8d6e522dc32203339dcd8eee900" // global signer
+            + "0152eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry signer
             + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
             + "01" // 1 witness
             + "01000100" // witness
@@ -222,7 +222,7 @@ public class TransactionTest {
             + "a65a130000000000"  // network fee
             + "99232000"  // valid until block
             + "01" // one attribute
-            + "01941343239213fa0e765f1027ce742f48db779a9601" // cosigner
+            + "01941343239213fa0e765f1027ce742f48db779a9601" // signer
             + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
             + "01" // 1 witness
             + "01000100"); /* witness*/
@@ -264,8 +264,8 @@ public class TransactionTest {
             8 +  // Network fee
             4 + // Valid until block
             1 + // Byte for attributes list size
-            1 + 1 + 20 + // Attribute type, Cosigner scope and cosigner script hash
-            1 + 1 + 20 + // Attribute type, Cosigner scope and cosigner script hash
+            1 + 1 + 20 + // Attribute type, Signer scope and signer script hash
+            1 + 1 + 20 + // Attribute type, Signer scope and signer script hash
             1 + 1 + // Byte for script length and the actual length
             1 + // Byte for witnesses list size
             1 + 1 + // Byte for invocation script length and the actual length.
@@ -286,7 +286,7 @@ public class TransactionTest {
                 + "99232000"  // valid until block
                 + "17"); // one attribute
         for (int i = 0; i <= 16; i++) {
-            txString.append("01941343239213fa0e765f1027ce742f48db779a9601"); // cosigner
+            txString.append("01941343239213fa0e765f1027ce742f48db779a9601"); // signer
         }
         txString.append(""
                 + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode

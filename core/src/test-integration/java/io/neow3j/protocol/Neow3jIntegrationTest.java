@@ -38,7 +38,7 @@ abstract class Neow3jIntegrationTest {
     protected static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     protected static final int TX_VERSION = 0;
     protected static final String TX_SCRIPT = "AcQJDBTXhdxFuBA/Rv+5MO5//k7/XYa79wwUlBNDI5IT+g52XxAnznQvSNt3mpYTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4";
-    protected static final String TX_COSIGNER = "0x969a77db482f74ce27105f760efa139223431394";
+    protected static final String TX_SIGNER = "0x969a77db482f74ce27105f760efa139223431394";
     protected static final int RAW_TX_LENGTH = 532;
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String KEY_TO_LOOKUP_AS_HEX = "14941343239213fa0e765f1027ce742f48db779a96";
@@ -61,12 +61,12 @@ abstract class Neow3jIntegrationTest {
     protected static int EXPOSED_JSONRPC_PORT = 40332;
     protected static int BLOCK_HASH_LENGTH_WITH_PREFIX = 66;
     // First address held in wallet
-    protected static final String ADDRESS_1 = "AFs8hMHrS8emaPP4oyTuf5uKPuAW6HZ2DF";
-    protected static final String ADDR1_WIF = "L4xa4S78qj87q9FRkMQDeZsrymQG6ThR5oczagNNNnBrWRjicF36";
+    protected static final String ADDRESS_1 = "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN";
+    protected static final String ADDR1_WIF = "L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR";
     protected static final ContractParameter ADDRESS_1_HASH160 =
             ContractParameter.hash160(ScriptHash.fromAddress(ADDRESS_1));
     // Second address held in wallet
-    protected static final String ADDRESS_2 = "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm";
+    protected static final String ADDRESS_2 = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
     protected static final ContractParameter ADDRESS_2_HASH160 =
             ContractParameter.hash160(ScriptHash.fromAddress(ADDRESS_2));
     // Before the tests Neo is sent to this address to test GetTransaction method.
