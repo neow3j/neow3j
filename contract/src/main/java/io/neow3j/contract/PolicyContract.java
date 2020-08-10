@@ -17,8 +17,10 @@ import java.util.stream.Collectors;
  */
 public class PolicyContract extends SmartContract{
 
+    private static final String NAME = "Policy";
+
     private static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_POLICY).toArray());
+            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";

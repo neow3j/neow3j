@@ -41,7 +41,7 @@ public class WalletUtilsTest {
     @Test
     public void testGenerateWalletFile() throws Exception {
         // Used neo-core with address version 0x17 to generate test data.
-        String expectedAdr = "AMuDKuFCrHNtEg4jCV17ge4eyoa3JwD9fH";
+        String expectedAdr = "AXJxLU79D795wMRMmGq9SWaqCqnmpGw9uq";
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
         String pw = "password";

@@ -43,8 +43,8 @@ public class Nep5TokenTest {
     private Account account6;
     private Account multiSigAccount;
 
-    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = new ScriptHash("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
-    private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = new ScriptHash("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
+    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
+    private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
 
     // Configuring accounts and wallet
     private static final Account ACCOUNT_1 = new Account(ECKeyPair.create(
@@ -179,7 +179,7 @@ public class Nep5TokenTest {
         // Required for checking the senders token balance.
         setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
-                "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b",
+                "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
                 "balanceOf",
                 "df133e846b1110843ac357fc8bbf05b4a32e17c8");
 

@@ -72,20 +72,24 @@ public enum InteropServiceCode {
 
     NEO_CRYPTO_SHA256("Neo.Crypto.SHA256", 1_000_000),
     NEO_CRYPTO_RIPEMD160("Neo.Crypto.RIPEMD160", 1_000_000),
-    NEO_CRYPTO_ECDSA_SECP256R1_VERIFY("Neo.Crypto.VerifyWithECDsaSecp256r1", 1_000_000),
-    NEO_CRYPTO_ECDSA_SECP256K1_VERIFY("Neo.Crypto.VerifyWithECDsaSecp256k1", 1_000_000),
+    NEO_CRYPTO_VERIFYWITHECDSASECP256R1("Neo.Crypto.VerifyWithECDsaSecp256r1", 1_000_000),
+    NEO_CRYPTO_VERIFYWITHECDSASECP256K1("Neo.Crypto.VerifyWithECDsaSecp256k1", 1_000_000),
     // The price for check multisig is the price for Secp256r1.Verify times the number of signatures
-    NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG("Neo.Crypto.CheckMultisigWithECDsaSecp256r1", null),
+    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1("Neo.Crypto.CheckMultisigWithECDsaSecp256r1", null),
     // The price for check multisig is the price for Secp256k1.Verify times the number of signatures
-    NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG("Neo.Crypto.CheckMultisigWithECDsaSecp256k1", null),
+    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1("Neo.Crypto.CheckMultisigWithECDsaSecp256k1", null),
 
     NEO_NATIVE_DEPLOY("Neo.Native.Deploy", null),
-    NEO_NATIVE_CALL("Neo.Native.Call", null),
+    NEO_NATIVE_CALL("Neo.Native.Call", null);
 
-    // Native tokens.
-    NEO_NATIVE_TOKENS_NEO("Neo.Native.Tokens.NEO", null),
-    NEO_NATIVE_TOKENS_GAS("Neo.Native.Tokens.GAS", null),
-    NEO_NATIVE_POLICY("Neo.Native.Policy", null);
+    // only temporarily kept here for adaption to neo3-preview3
+//    OLD_VERIFY_SECP256R1("Neo.Crypto.ECDsa.Secp256r1.Verify", 1_000_000),
+//    OLD_VERIFY_SECP256K1("Neo.Crypto.ECDsa.Secp256k1.Verify", 1_000_000),
+//    OLD_CHECKMULTISIG_SECP256R1("Neo.Crypto.ECDsa.Secp256r1.CheckMultiSig", null),
+//    OLD_CHECKMULTISIG_SECP256K1("Neo.Crypto.ECDsa.Secp256k1.CheckMultiSig", null),
+//    OLD_NEO_TOKEN("Neo.Native.Tokens.NEO", null),
+//    OLD_GAS_TOKEN("Neo.Native.Tokens.GAS", null),
+//    OLD_POLICY("Neo.Native.Policy", null);
 
     /* The service's name */
     private String name;
@@ -134,8 +138,8 @@ public enum InteropServiceCode {
                 throw new UnsupportedOperationException("The price of the interop service "
                         + "System.Contract.Create is not fixed but depends on the contract's "
                         + "script and manifest size.");
-            case NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG:
-            case NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG:
+            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1:
+            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1:
                 throw new UnsupportedOperationException("The price of the interop service "
                         + this.getName() + " is not fixed but depends on the number of "
                         + "signatures.");
@@ -159,10 +163,10 @@ public enum InteropServiceCode {
         switch (this) {
             case SYSTEM_CONTRACT_CREATE:
                 return param * NeoConstants.GAS_PER_BYTE;
-            case NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG:
-                return param * NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.price;
-            case NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG:
-                return param * NEO_CRYPTO_ECDSA_SECP256K1_VERIFY.price;
+            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1:
+                return param * NEO_CRYPTO_VERIFYWITHECDSASECP256R1.price;
+            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1:
+                return param * NEO_CRYPTO_VERIFYWITHECDSASECP256K1.price;
             default:
                 throw new UnsupportedOperationException("The price for " + this.toString() + " is "
                         + "not defined.");

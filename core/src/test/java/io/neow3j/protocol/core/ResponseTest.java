@@ -78,7 +78,8 @@ import org.junit.Test;
 public class ResponseTest extends ResponseTester {
 
     public static final ScriptHash NEO_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
+            new ScriptBuilder().pushData("NEO").sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
+    private static final String NEO_HASH_STRING = NEO_HASH.toString();
 
     @Test
     public void testErrorResponse() {
@@ -436,7 +437,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"id\": -2,\n" +
-                        "        \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "        \"script\": \"QetD9PQ=\",\n" +
                         "        \"manifest\": {\n" +
                         "            \"groups\": [\n" +
@@ -450,7 +451,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"payable\": false\n" +
                         "            },\n" +
                         "            \"abi\": {\n" +
-                        "                \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"methods\": [\n" +
                         "                    {\n" +
                         "                        \"name\": \"name\",\n" +
@@ -511,7 +512,7 @@ public class ResponseTest extends ResponseTester {
                         "            },\n" +
                         "            \"permissions\": [\n" +
                         "                {\n" +
-                        "                    \"contract\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\n" +
+                        "                    \"contract\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\n" +
                         "                    \"methods\": [\n" +
                         "                        \"name\",\n" +
                         "                        \"transfer\"\n" +
@@ -519,7 +520,7 @@ public class ResponseTest extends ResponseTester {
                         "                }\n" +
                         "            ],\n" +
                         "            \"trusts\": [" +
-                        "                \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"\n" +
+                        "                \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"\n" +
                         "            ],\n" +
                         "            \"safeMethods\": [\n" +
                         "                \"name\",\n" +
@@ -539,7 +540,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(getContractState.getContractState(), is(notNullValue()));
         assertThat(getContractState.getContractState().getId(), is(-2));
         assertThat(getContractState.getContractState().getHash(),
-                is("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"));
+                is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
         assertThat(getContractState.getContractState().getScript(), is("QetD9PQ="));
 
         NeoGetContractState.ContractState.ContractManifest manifest = getContractState.getContractState().getManifest();
@@ -557,7 +558,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
-        assertThat(abi.getHash(), is("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"));
+        assertThat(abi.getHash(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
 
         assertThat(abi.getMethods(), is(notNullValue()));
         assertThat(abi.getMethods(), hasSize(5));
@@ -580,7 +581,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getPermissions(), is(notNullValue()));
         assertThat(manifest.getPermissions(), hasSize(1));
         assertThat(manifest.getPermissions().get(0).getContract(),
-                is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+                is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
         assertThat(manifest.getPermissions().get(0).getMethods(), is(notNullValue()));
         assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(2));
         assertThat(manifest.getPermissions().get(0).getMethods().get(1), is("transfer"));
@@ -588,7 +589,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getTrusts(), is(notNullValue()));
         assertThat(manifest.getTrusts(), hasSize(1));
         assertFalse(manifest.trusts_isWildCard());
-        assertThat(manifest.getTrusts().get(0), is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+        assertThat(manifest.getTrusts().get(0), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
 
         assertThat(manifest.getSafeMethods(), is(notNullValue()));
         assertThat(manifest.getSafeMethods(), hasSize(6));
@@ -614,7 +615,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"id\": -2,\n" +
-                        "        \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "        \"script\": \"QetD9PQ=\",\n" +
                         "        \"manifest\": {\n" +
                         "            \"groups\": [\n" +
@@ -628,7 +629,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"payable\": false\n" +
                         "            },\n" +
                         "            \"abi\": {\n" +
-                        "                \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"entryPoint\": {\n" +
                         "                    \"name\": \"Main\",\n" +
                         "                    \"parameters\": [\n" +
@@ -2063,7 +2064,7 @@ public class ResponseTest extends ResponseTester {
                         "        ],\n" +
                         "        \"notifications\": [\n" +
                         "            {\n" +
-                        "                \"contract\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
+                        "                \"contract\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"state\": {\n" +
                         "                    \"type\": \"Array\",\n" +
                         "                    \"value\": [\n" +
@@ -2086,7 +2087,7 @@ public class ResponseTest extends ResponseTester {
                         "                }\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"contract\": \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\n" +
+                        "                \"contract\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\n" +
                         "                \"state\": {\n" +
                         "                    \"type\": \"Array\",\n" +
                         "                    \"value\": [\n" +
@@ -2134,7 +2135,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 0
         NeoApplicationLog.Notification notification0 = neoAppLog.getNotifications().get(0);
 
-        assertThat(notification0.getContract(), is("0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"));
+        assertThat(notification0.getContract(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
 
         ArrayStackItem notification0Array = notification0.getState().asArray();
@@ -2152,7 +2153,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 1
         NeoApplicationLog.Notification notification1 = neoAppLog.getNotifications().get(1);
 
-        assertThat(notification1.getContract(), is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+        assertThat(notification1.getContract(), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
 
         ArrayStackItem notification1Array = notification1.getState().asArray();

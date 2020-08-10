@@ -70,7 +70,7 @@ public class InvocationTest {
 
     @Test
     public void failWithoutSettingWallet() throws IOException {
-        ScriptHash neo = new ScriptHash("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("0xde5f57d430d3dece511cf975a8d37848cb9e0525");
         String method = "name";
         Invocation.Builder b = new Invocation.Builder(neow)
                 .withContract(neo)
@@ -100,7 +100,7 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
+                .withContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"))
                 .withFunction("name")
                 .withWallet(wallet)
                 .withValidUntilBlock(1000)
@@ -461,7 +461,7 @@ public class InvocationTest {
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
         NeoSendRawTransaction i = new Invocation.Builder(neow)
@@ -500,7 +500,7 @@ public class InvocationTest {
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
         Invocation i = new Invocation.Builder(neow)
@@ -542,7 +542,7 @@ public class InvocationTest {
         Account sender = Account.createMultiSigAccount(Arrays.asList(senderPair.getPublicKey()), 1);
         Account singleSigAcc = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender, singleSigAcc);
-        ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
+        ScriptHash neo = new ScriptHash("668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         String script =
                 "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c1400fea46931b5c22a99277a25233ff431d642b85513c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238";
@@ -580,7 +580,7 @@ public class InvocationTest {
     public void callWithParams() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_transfer_neo.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "de5f57d430d3dece511cf975a8d37848cb9e0525",
                 "transfer",
                 "\"type\":\"Hash160\",\"value\":\"969a77db482f74ce27105f760efa139223431394\"",
                 "\"type\":\"Hash160\",\"value\":\"df133e846b1110843ac357fc8bbf05b4a32e17c8\"",
@@ -592,7 +592,7 @@ public class InvocationTest {
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
         NeoInvokeFunction i = new Invocation.Builder(neow)
@@ -617,7 +617,7 @@ public class InvocationTest {
     public void callWithoutParams() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_name.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "de5f57d430d3dece511cf975a8d37848cb9e0525",
                 "name",
                 "[\"969a77db482f74ce27105f760efa139223431394\"]"
         );
@@ -626,7 +626,7 @@ public class InvocationTest {
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
 
         NeoInvokeFunction i = new Invocation.Builder(neow)
                 .withContract(neo)
@@ -647,7 +647,7 @@ public class InvocationTest {
 
         setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf_0.01gas.json",
-                "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b",
+                "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
                 "balanceOf",
                 "969a77db482f74ce27105f760efa139223431394"
         );
@@ -664,7 +664,7 @@ public class InvocationTest {
         BigInteger expectedBalance = BigInteger.valueOf(1_000_000L);
         AtomicBoolean tested = new AtomicBoolean(false);
         new Invocation.Builder(neow)
-                .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
+                .withContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"))
                 .withFunction("transfer")
                 .withWallet(w)
                 .withValidUntilBlock(2000000)
@@ -689,7 +689,7 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer_5_neo.json", script,
                 "[\"969a77db482f74ce27105f760efa139223431394\"]"); // witness (sender script hash)
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_0.01gas.json",
-                "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b",
+                "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
                 "balanceOf",
                 "969a77db482f74ce27105f760efa139223431394");
 
@@ -697,7 +697,7 @@ public class InvocationTest {
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
 
         Invocation i = new Invocation.Builder(neow)
@@ -763,7 +763,7 @@ public class InvocationTest {
     @Test
     public void invokeFunctionWithoutSettingFunction() throws IOException {
         Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
+                .withContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"))
                 .withWallet(Wallet.createWallet());
 
         exceptionRule.expect(InvocationConfigurationException.class);
@@ -785,7 +785,7 @@ public class InvocationTest {
     @Test
     public void buildWithSettingContractButNoFunction() throws IOException {
         Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"))
+                .withContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"))
                 .withWallet(Wallet.createWallet())
                 .withValidUntilBlock(1000);
 

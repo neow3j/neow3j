@@ -574,7 +574,7 @@ public class Invocation {
                     // Push null because we don't want to verify a particular message but the
                     // transaction itself.
                     + OpCode.PUSHNULL.getPrice()
-                    + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getPrice();
+                    + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getPrice();
         }
 
         private long calcSizeForMultiSigWitness(VerificationScript verifScript) {
@@ -594,7 +594,7 @@ public class Invocation {
                     // Push null because we don't want to verify a particular message but the
                     // transaction itself.
                     + OpCode.PUSHNULL.getPrice()
-                    + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getPrice(n);
+                    + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getPrice(n);
         }
     }
 }

@@ -201,7 +201,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
         NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
         assertNotNull(abi);
-        assertThat(abi.getHash(), is("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"));
+        assertThat(abi.getHash(), is(NEO_HASH_WITH_PREFIX));
 
         assertNotNull(abi.getMethods());
         assertThat(abi.getMethods(), hasSize(16));

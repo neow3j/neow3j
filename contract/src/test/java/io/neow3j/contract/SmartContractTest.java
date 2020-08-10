@@ -55,7 +55,7 @@ public class SmartContractTest {
 
     @Test
     public void constructSmartContractWithoutNeow3j() {
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("Neow3j"));
         new SmartContract(neo, null);
@@ -64,9 +64,9 @@ public class SmartContractTest {
     @Test
     public void constructSmartContract() {
         SmartContract sc = new SmartContract(
-                new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"), this.neow);
+                new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"), this.neow);
         assertThat(sc.getScriptHash(),
-                is(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789")));
+                is(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525")));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class SmartContractTest {
     @Test
     public void tryDeployAfterUsingWrongConstructor() throws IOException {
         SmartContract sc = new SmartContract(
-                new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"), this.neow);
+                new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"), this.neow);
         expectedException.expect(IllegalStateException.class);
         sc.deploy();
     }
@@ -137,7 +137,7 @@ public class SmartContractTest {
     public void invokeWithNullString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("null"));
-        new SmartContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"), this.neow)
+        new SmartContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"), this.neow)
                 .invoke(null);
     }
 
@@ -145,7 +145,7 @@ public class SmartContractTest {
     public void invokeWithEmptyString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("empty"));
-        new SmartContract(new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"), this.neow)
+        new SmartContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"), this.neow)
                 .invoke("");
     }
 
@@ -160,7 +160,7 @@ public class SmartContractTest {
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         SmartContract sc = new SmartContract(neo, this.neow);
         Invocation i = sc.invoke("transfer")
@@ -188,8 +188,8 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_name.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "name");
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+                "de5f57d430d3dece511cf975a8d37848cb9e0525", "name");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         SmartContract sc = new SmartContract(neo, this.neow);
         String name = sc.callFuncReturningString("name");
         assertThat(name, is("NEO"));
@@ -198,8 +198,8 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningNonString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "name");
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+                "de5f57d430d3dece511cf975a8d37848cb9e0525", "name");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         SmartContract sc = new SmartContract(neo, this.neow);
         expectedException.expect(UnexpectedReturnTypeException.class);
         expectedException.expectMessage(new StringContains(StackItemType.INTEGER.jsonValue()));
@@ -209,8 +209,8 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningInt() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
-                "8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b", "totalSupply");
-        ScriptHash neo = new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b");
+                "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc", "totalSupply");
+        ScriptHash neo = new ScriptHash("668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
         SmartContract sc = new SmartContract(neo, this.neow);
         BigInteger supply = sc.callFuncReturningInt("totalSupply");
         assertThat(supply, is(BigInteger.valueOf(3000000000000000L)));
@@ -220,8 +220,8 @@ public class SmartContractTest {
     public void callFunctionReturningNonInt() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokescript_registercandidate.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "totalSupply");
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+                "de5f57d430d3dece511cf975a8d37848cb9e0525", "totalSupply");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         SmartContract sc = new SmartContract(neo, this.neow);
         expectedException.expect(UnexpectedReturnTypeException.class);
         expectedException.expectMessage(new StringContains(StackItemType.BOOLEAN.jsonValue()));
@@ -232,10 +232,10 @@ public class SmartContractTest {
     public void callFunctionWithParams() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf.json",
-                "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "de5f57d430d3dece511cf975a8d37848cb9e0525",
                 "balanceOf",
                 "df133e846b1110843ac357fc8bbf05b4a32e17c8");
-        ScriptHash neo = new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789");
+        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
         SmartContract sc = new SmartContract(neo, this.neow);
 
         ScriptHash acc = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");

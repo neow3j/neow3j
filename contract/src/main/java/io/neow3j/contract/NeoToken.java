@@ -27,7 +27,7 @@ public class NeoToken extends Nep5Token {
     public final static String SYMBOL = "neo";
     public final static BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
     public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
+            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
     public static final String REGISTER_CANDIDATE = "registerCandidate";

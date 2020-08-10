@@ -25,9 +25,9 @@ abstract class Neow3jIntegrationTest {
 
     // Wallet password for node-config/wallet.json
     protected static final String NODE_WALLET_PASSWORD = "neo";
-    protected static final String NEO_HASH = "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789";
-    protected static final String NEO_HASH_WITH_PREFIX = "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789";
-    protected static final String GAS_HASH_WITH_PREFIX = "0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b";
+    protected static final String NEO_HASH = "de5f57d430d3dece511cf975a8d37848cb9e0525";
+    protected static final String NEO_HASH_WITH_PREFIX = "0xde5f57d430d3dece511cf975a8d37848cb9e0525";
+    protected static final String GAS_HASH_WITH_PREFIX = "0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc";
     protected static final int TOTAL_NEO_SUPPLY = 100000000;
 
     // The transaction information that is initially sent

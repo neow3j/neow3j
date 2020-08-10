@@ -72,7 +72,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"unclaimedGas\"" // function
                         + ".*\"f68f181731a47036a99f04dad90043a744edec0f\"" // script hash
                         + ".*100.*" // block height
@@ -120,7 +120,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"getValidators\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -141,7 +141,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"getCandidates\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -166,7 +166,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"getNextBlockValidators\".*" // function
                 ))
                 .willReturn(aResponse()

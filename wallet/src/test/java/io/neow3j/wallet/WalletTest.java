@@ -361,18 +361,18 @@ public class WalletTest {
         WireMock.configure();
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:8080"));
         Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm");
-        Account a2 = Account.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ");
+        Account a2 = Account.fromAddress("AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS");
         WalletTestHelper.setUpWireMockForCall("getnep5balances",
                 "getnep5balances_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json",
                 "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm");
         WalletTestHelper.setUpWireMockForCall("getnep5balances",
-                "getnep5balances_Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ.json",
-                "Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ");
+                "getnep5balances_AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS.json",
+                "AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS");
         Wallet w = Wallet.withAccounts(a1, a2);
         Map<ScriptHash, BigInteger> balances = w.getNep5TokenBalances(neow);
-        assertThat(balances.keySet(), contains(
-                new ScriptHash("8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"),
-                new ScriptHash("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789")));
+        assertThat(balances.keySet(), containsInAnyOrder(
+                new ScriptHash("668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"),
+                new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525")));
         assertThat(balances.values(), containsInAnyOrder(
                 new BigInteger("411285799730"),
                 new BigInteger("50000000")));
