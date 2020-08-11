@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Used to invoke Neo VM scripts and contract functions. Uses the {@link Invocation.Builder} to
@@ -60,9 +59,11 @@ public class Invocation {
      *                                          of the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
-        Stream<Witness> witnesses = this.transaction.getWitnesses().stream();
+        List<ScriptHash> witnesses = this.transaction.getWitnesses().stream()
+                .map(Witness::getScriptHash).collect(Collectors.toList());
+
         for (Cosigner cosigner : this.transaction.getCosigners()) {
-            if (witnesses.noneMatch(w -> w.getScriptHash().equals(cosigner.getScriptHash()))) {
+            if (!witnesses.contains(cosigner.getScriptHash())) {
                 throw new InvocationConfigurationException("The transaction does not have a "
                         + "signature for each of its cosigners.");
             }
@@ -406,7 +407,7 @@ public class Invocation {
             }
 
             // The list of signers is required for `invokefunction` calls that will hit a
-            // ChecekWitness check in the smart contract. We add the signers even if that is not the
+            // CheckWitness check in the smart contract. We add the signers even if that is not the
             // case because we cannot know if the invoked function needs it or not and it doesn't
             // lead to failures if we add them in any case.
             String[] signers = getSigners().toArray(new String[]{});
@@ -505,7 +506,7 @@ public class Invocation {
          * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
          */
         private long getSystemFeeForScript() throws IOException {
-            // The signers are required for `invokescript` calls that will hit a ChecekWitness
+            // The signers are required for `invokescript` calls that will hit a CheckWitness
             // check in the smart contract.
             String[] signers = this.txBuilder.getCosigners().stream()
                     .map(c -> c.getScriptHash().toString()).toArray(String[]::new);

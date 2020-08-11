@@ -2,17 +2,29 @@ package io.neow3j.devpack.framework.annotations;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.framework.annotations.Instruction.Instructions;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
+import java.lang.annotation.Target;
 
+/**
+ * Used to mark a method to be replaced with an {@link OpCode} and its operand. The method can then
+ * be used in a smart contract. A method can be annotated with multiple <tt>Instructions</tt>, which
+ * offers the possibility to create a short, static script that is inserted wherever the annotated
+ * method is called.
+ * <p>
+ * The method's body is ignored by the NeoVM compiler if it has this annotation.
+ */
 @Repeatable(Instructions.class)
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface Instruction {
 
-    OpCode opcode();
+    OpCode opcode() default OpCode.NOP;
 
-    // TODO: Many opcodes don't require an operand. It needs to be disregarded on such opcodes.
-    byte operand() default 0;
+    byte[] operand() default {};
 
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @interface Instructions {
+
         Instruction[] value();
     }
 }
