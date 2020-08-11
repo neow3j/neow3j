@@ -81,6 +81,10 @@ public class Compiler {
     private static final String THIS_KEYWORD = "this";
     private static final String OBJECT_INTERNAL_NAME = Type.getInternalName(Object.class);
     private static final String VALUEOF_METHOD_NAME = "valueOf";
+    private static final String HASH_CODE_METHOD_NAME = "hashCode";
+    private static final String EQUALS_METHOD_NAME = "hashCode";
+    private static final String STRING_INTERNAL_NAME = Type.getInternalName(String.class);
+    ;
     private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
             "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
     private static final List<String> PRIMITIVE_TYPE_WRAPPER_CLASSES = Arrays.asList(
@@ -211,14 +215,17 @@ public class Compiler {
     }
 
     private void compileMethod(NeoMethod neoMethod) throws IOException {
-        for (int insnAddr = 0; insnAddr < neoMethod.asmMethod.instructions.size(); insnAddr++) {
-            AbstractInsnNode insn = neoMethod.asmMethod.instructions.get(insnAddr);
-            insnAddr += handleInsn(neoMethod, insn);
+        AbstractInsnNode insn = neoMethod.asmMethod.instructions.get(0);
+        while (insn != null) {
+            insn = handleInsn(neoMethod, insn);
+            insn = insn.getNext();
         }
     }
 
-    private int handleInsn(NeoMethod neoMethod, AbstractInsnNode insn) throws IOException {
-        int skipCount = 0;
+    // Returns the last insn node that was processed, i.e., the returned insn can be used to
+    // obtain the next innsn that should be processed.
+    private AbstractInsnNode handleInsn(NeoMethod neoMethod, AbstractInsnNode insn)
+            throws IOException {
         if (insn.getType() == AbstractInsnNode.LINE) {
             neoMethod.currentLine = ((LineNumberNode) insn).line;
         }
@@ -227,7 +234,7 @@ public class Compiler {
         }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
-            return skipCount;
+            return insn;
         }
         log.info(opcode.toString());
         switch (opcode) {
@@ -288,7 +295,7 @@ public class Compiler {
             case INVOKESTATIC:
             case INVOKEVIRTUAL:
             case INVOKESPECIAL:
-                handleMethodInstruction(insn, neoMethod);
+                insn = handleMethodInstruction(insn, neoMethod);
                 break;
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
@@ -466,7 +473,7 @@ public class Compiler {
                 // Comparison of two longs resulting in an integer with value -1, 0, or 1.
                 // This opcode has no direct counterpart in NeoVM because NeoVM does not
                 // differentiate between int and long.
-                skipCount += handleLongComparison(neoMethod, insn);
+                insn = handleLongComparison(neoMethod, insn);
                 break;
             case GOTO:
             case GOTO_W:
@@ -604,7 +611,7 @@ public class Compiler {
                 throw new CompilerException("Unsupported instruction " + opcode + " in: " +
                         neoMethod.asmMethod.name + ".");
         }
-        return skipCount;
+        return insn;
     }
 
     private void handleTableSwitch(NeoMethod neoMethod, AbstractInsnNode insn) {
@@ -679,7 +686,7 @@ public class Compiler {
         return true;
     }
 
-    private int handleLongComparison(NeoMethod neoMethod, AbstractInsnNode insn) {
+    private AbstractInsnNode handleLongComparison(NeoMethod neoMethod, AbstractInsnNode insn) {
         JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
         JVMOpcode jvmOpcode = JVMOpcode.get(jumpInsn.getOpcode());
         if (jvmOpcode == null) {
@@ -709,7 +716,7 @@ public class Compiler {
                 // TODO: Insert informative exception message.
                 throw new CompilerException("");
         }
-        return 1;
+        return jumpInsn;
     }
 
     private void addJumpInstruction(NeoMethod neoMethod, AbstractInsnNode insn, OpCode jmpOpcode) {
@@ -908,8 +915,8 @@ public class Compiler {
                 OpCode.get(insnBytes[0]), operand));
     }
 
-    private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod callingNeoMethod)
-            throws IOException {
+    private AbstractInsnNode handleMethodInstruction(AbstractInsnNode insn,
+            NeoMethod callingNeoMethod) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
         ClassNode owner = getAsmClass(Type.getObjectType(methodInsn.owner).getClassName());
@@ -936,58 +943,157 @@ public class Compiler {
         } else if (hasAppcallAnnotation(calledAsmMethod)) {
             addAppcall(calledAsmMethod, callingNeoMethod);
         } else {
-            handleMethodCall(callingNeoMethod, owner, calledAsmMethod);
+            return handleMethodCall(callingNeoMethod, owner, calledAsmMethod, methodInsn);
         }
+        return insn;
     }
 
-    private void handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
-            MethodNode calledAsmMethod) throws IOException {
+    private AbstractInsnNode handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode calledAsmMethod, MethodInsnNode methodInsn) throws IOException {
+
+        String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
+        if (this.neoModule.methods.containsKey(calledMethodId)) {
+            // If the module already compiled the method simply add a CALL instruction.
+            NeoMethod calledNeoMethod = this.neoModule.methods.get(calledMethodId);
+            addReverseArguments(calledAsmMethod, callingNeoMethod);
+            // The actual address offset for the method call is set at a later point in compilation.
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4])
+                    .setExtra(calledNeoMethod));
+        } else {
+            return handleSpecialMethodCall(callingNeoMethod, owner, calledAsmMethod, methodInsn);
+        }
+        return methodInsn;
+    }
+
+    private AbstractInsnNode handleSpecialMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode calledAsmMethod, MethodInsnNode methodInsn) throws IOException {
 
         if (isPrimitiveTypeCast(calledAsmMethod, owner)) {
             // Nothing to do if Java casts between primitive type and wrapper classes.
-            return;
+            return methodInsn;
         }
-        // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
-        // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
-        // compiles it to NeoVM code.
-        String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
-        NeoMethod calledNeoMethod;
-        if (this.neoModule.methods.containsKey(calledMethodId)) {
-            calledNeoMethod = this.neoModule.methods.get(calledMethodId);
-        } else {
-            calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
-            if (calledAsmMethod.name.equals(INSTANCE_CTOR)) {
-                if (!hasInstructions(calledAsmMethod)) {
-                    // If the constructor is empty we don't need to parse it. The DUP opcode
-                    // added before must be removed again.
-                    int lastKey = callingNeoMethod.instructions.lastKey();
-                    assert callingNeoMethod.instructions.get(lastKey).opcode.equals(OpCode.DUP);
-                    callingNeoMethod.instructions.remove(lastKey);
-                    return;
-                }
-                // After this removal the method will be compiled if it were a normal method.
-                removeInsnsUpToObjectCtorCall(calledNeoMethod.asmMethod);
+        if (calledAsmMethod.name.equals(HASH_CODE_METHOD_NAME)
+                && owner.name.equals(STRING_INTERNAL_NAME)
+                && methodInsn.getNext() instanceof LookupSwitchInsnNode) {
+            // Based on a few tests, we determined that before the LOOKUPSWITCH and
+            // INVOKEVIRTUAL opcodes there are always the opcodes <ASTORE, ICONST_M1, ISTORE,
+            // ALOAD>. They need to be removed from the NeoMethod, because we don't need them
+            // for the way that we will convert the swtich into NeoVM code.
+            // There should be no issue with any jump addresses because the last `LabelNode` is
+            // "consumed" by the instruction that puts the string value to compare onto the
+            // operand stack. So by removing the above opcodes we do not break any
+            // connections between jump instructions and jump targets.
+            callingNeoMethod.removeLastInstruction();
+            callingNeoMethod.removeLastInstruction();
+            callingNeoMethod.removeLastInstruction();
+            // TODO: Make sure that the initialization of the current method (INITSLOT ...)
+            //  is adapted because we removed two local variables that only appear in the
+            //  initialization because of this switch-case.
+            LookupSwitchInsnNode lookupSwitchInsn = (LookupSwitchInsnNode) methodInsn.getNext();
+            AbstractInsnNode insn = lookupSwitchInsn.getNext();
+            for (int i = 0; i < lookupSwitchInsn.labels.size(); i++) {
+                // Insn after switch insn should be loading the local string variable.
+                insn = skipToInstructionType(insn, AbstractInsnNode.VAR_INSN);
+                addLoadLocalVariable(insn, callingNeoMethod);
+                // Then an insn for loading the string to compare with should follow.
+                insn = insn.getNext();
+                addLoadConstant(insn, callingNeoMethod);
+                // Then the method call to String.equals() should follow.
+                insn = insn.getNext();
+                assert isStringEqualsMethodCall(insn);
+                // Then a jump insn for the inequality case, i.e., the case that the
+                // equalitycheck resultet in `false`, follows.
+                JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
+                assert jumpInsn.getOpcode() == JVMOpcode.IFEQ.getOpcode();
+                LabelNode labelNode = skipToLabel(jumpInsn, jumpInsn.label.getLabel());
+                // TODO: The retrieval of the TABLESWITCH node has to happen only once.
+                TableSwitchInsnNode tableSwitchInsn =
+                        (TableSwitchInsnNode) skipToInstructionType(
+                                labelNode, AbstractInsnNode.TABLESWITCH_INSN);
+                // Jump to the label of the default branch
+                callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPEQ_L,
+                        tableSwitchInsn.dflt.getLabel()));
+                // The next opcode determines which case of the next switch statement
+                // will be jumped to.
+                InsnNode branchNumberInsn = (InsnNode) jumpInsn.getNext();
+                int branchNr = branchNumberInsn.getOpcode() - 3;
+                // The branch number gets stored to a local variable in the next opcode. But we
+                // ignore this.
+                insn = branchNumberInsn.getNext();
+                assert insn.getType() == AbstractInsnNode.VAR_INSN;
+                // The next opcode jumps to the TABLESWITCH opcode so we can use the same
+                // `TableSwitchInsnNode` as found before. That label is the one we need to jump
+                // to in the equality case.
+                callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
+                        tableSwitchInsn.labels.get(branchNr).getLabel()));
             }
-            this.neoModule.addMethod(calledNeoMethod);
-            initializeMethod(calledNeoMethod);
-            compileMethod(calledNeoMethod);
+            return skipToInstructionType(insn, AbstractInsnNode.TABLESWITCH_INSN);
         }
+        if (calledAsmMethod.name.equals(INSTANCE_CTOR)) {
+            // Handle a constructor call
+            if (!hasInstructions(calledAsmMethod)) {
+                // If the constructor is empty we don't need to parse it. The DUP opcode
+                // added before must be removed again.
+                int lastKey = callingNeoMethod.instructions.lastKey();
+                assert callingNeoMethod.instructions.get(lastKey).opcode.equals(OpCode.DUP);
+                callingNeoMethod.instructions.remove(lastKey);
+                return methodInsn;
+            }
+            // After this removal the method will be compiled as if it were a normal method.
+            removeInsnsUpToObjectCtorCall(calledAsmMethod);
+        }
+        NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
+        this.neoModule.addMethod(calledNeoMethod);
+        initializeMethod(calledNeoMethod);
+        compileMethod(calledNeoMethod);
         addReverseArguments(calledAsmMethod, callingNeoMethod);
-        // We explicitly add the 4-element byte array as an operand so that instruction addresses
-        // can easily be calculated even before the correct offset is set on the CALL_L opcode.
-        // The actual setting of the correct offset happens in NeoModule.
-        NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL_L, new byte[4])
-                .setExtra(calledNeoMethod);
-        // Note that we never make use of Opcode.CALL because that complicates calculation of
-        // instruction addresses in the NeoModule.
-        callingNeoMethod.addInstruction(invokeInsn);
+        // The actual address offset for the method call is set at a later point in compilation.
+        callingNeoMethod.addInstruction(
+                new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
+        return methodInsn;
+    }
+
+    private LabelNode skipToLabel(AbstractInsnNode insn, Label label) {
+        while (insn.getNext() != null) {
+            insn = insn.getNext();
+            if (insn.getType() == AbstractInsnNode.LABEL) {
+                LabelNode labelNode = (LabelNode) insn;
+                if (labelNode.getLabel() == label) {
+                    return labelNode;
+                }
+            }
+        }
+        throw new CompilerException("Couldn't find node with label " + label.toString());
+    }
+
+    private AbstractInsnNode skipToInstructionType(AbstractInsnNode insn, int type) {
+        while (insn.getNext() != null) {
+            insn = insn.getNext();
+            if (insn.getType() == type) {
+                return insn;
+            }
+        }
+        throw new CompilerException("Couldn't find node of type " + type);
+    }
+
+    private boolean isStringEqualsMethodCall(AbstractInsnNode insn) {
+        if (insn.getType() == AbstractInsnNode.METHOD_INSN
+                && insn.getOpcode() == JVMOpcode.INVOKEVIRTUAL.getOpcode()) {
+
+            MethodInsnNode equalsCallInsn = (MethodInsnNode) insn;
+            return equalsCallInsn.name.equals(EQUALS_METHOD_NAME)
+                    && equalsCallInsn.owner.equals(STRING_INTERNAL_NAME);
+        }
+        return false;
     }
 
     private boolean isPrimitiveTypeCast(MethodNode calledAsmMethod, ClassNode owner) {
-        boolean isConversionFromPrimitiveType = calledAsmMethod.name.equals(VALUEOF_METHOD_NAME);
+        boolean isConversionFromPrimitiveType = calledAsmMethod.name.equals(
+                VALUEOF_METHOD_NAME);
         boolean isConversionToPrimitiveType =
                 PRIMITIVE_TYPE_CAST_METHODS.contains(calledAsmMethod.name);
-        boolean isOwnerPrimitiveTypeWrapper = PRIMITIVE_TYPE_WRAPPER_CLASSES.contains(owner.name);
+        boolean isOwnerPrimitiveTypeWrapper = PRIMITIVE_TYPE_WRAPPER_CLASSES.contains(
+                owner.name);
         return (isConversionFromPrimitiveType || isConversionToPrimitiveType)
                 && isOwnerPrimitiveTypeWrapper;
     }
@@ -1144,7 +1250,8 @@ public class Compiler {
     private void addAppcall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         addReverseArguments(calledAsmMethod, callingNeoMethod);
         AnnotationNode appCallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Appcall.class))).findFirst().get();
+                .filter(a -> a.desc.equals(Type.getDescriptor(Appcall.class))).findFirst()
+                .get();
         String scriptHash = (String) appCallAnnotation.values.get(1);
         byte[] data = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(scriptHash));
         addPushDataArray(data, callingNeoMethod);
@@ -1154,7 +1261,8 @@ public class Compiler {
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {
-        byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number)).toArray();
+        byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number))
+                .toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }

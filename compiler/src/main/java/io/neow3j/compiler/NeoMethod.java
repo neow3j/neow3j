@@ -95,9 +95,9 @@ public class NeoMethod {
     int currentLine;
 
     // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
-    // track of possible jump points. This is needed when resolving jump addresses for
+    // track of possible jump targets. This is needed when resolving jump addresses for
     // opcodes like JMPIF.
-    Map<Label, NeoInstruction> jumpPoints = new HashMap<>();
+    Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
 
     NeoMethod(MethodNode asmMethod, ClassNode owner) {
         this.asmMethod = asmMethod;
@@ -162,7 +162,7 @@ public class NeoMethod {
             //  always get replaced one-to-one with `NeoInstructions`.
             // TODO: Clarify if we only need jump points for instructions that additionally have
             //  a `FrameNode` before them.
-            this.jumpPoints.put(this.currentLabel, neoInsn);
+            this.jumpTargets.put(this.currentLabel, neoInsn);
             this.currentLabel = null;
         }
         neoInsn.setAddress(this.nextAddress);
@@ -171,6 +171,18 @@ public class NeoMethod {
             this.jumpInstructions.add((NeoJumpInstruction) neoInsn);
         }
         this.nextAddress += 1 + neoInsn.operand.length;
+    }
+
+    void removeLastInstruction() {
+        // What about the currentLabel?
+        NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
+        if (this.jumpTargets.containsValue(lastInsn)) {
+            throw new CompilerException("Attempting to remove an instruction that potentially is a "
+                    + "jump target for jump instruction.");
+        }
+        this.instructions.remove(this.instructions.lastKey());
+        this.jumpInstructions.remove(lastInsn);
+        this.nextAddress -= (1 + lastInsn.operand.length);
     }
 
     /**
@@ -204,12 +216,12 @@ public class NeoMethod {
     void finalizeMethod() {
         // Update the jump instructions with the correct target address offset.
         for (NeoJumpInstruction jumpInsn : this.jumpInstructions) {
-            if (!this.jumpPoints.containsKey(jumpInsn.label)) {
+            if (!this.jumpTargets.containsKey(jumpInsn.label)) {
                 throw new CompilerException("Missing jump target for jump opcode "
                         + jumpInsn.opcode.name() + ", at source code line number " + jumpInsn.lineNr
                         + ".");
             }
-            NeoInstruction destinationInsn = this.jumpPoints.get(jumpInsn.label);
+            NeoInstruction destinationInsn = this.jumpTargets.get(jumpInsn.label);
             int offset = destinationInsn.address - jumpInsn.address;
             // It is assumed that the compiler makes use only of the wide (4-byte) jump opcodes. We
             // can therefore always use 4-byte operand.
