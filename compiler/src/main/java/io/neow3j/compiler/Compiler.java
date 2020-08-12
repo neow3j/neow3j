@@ -816,14 +816,25 @@ public class Compiler {
             throw new CompilerException("The method has more than the max number of local "
                     + "variables.");
         }
-        for (int i = paramCount; i < neoMethod.asmMethod.maxLocals; i++) {
-            if (i < neoMethod.asmMethod.localVariables.size()) {
-                LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
-                neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
-            } else {
-                neoMethod.addVariable(new NeoVariable(i - paramCount, i, null));
+        for (int varIdx = paramCount; varIdx < neoMethod.asmMethod.maxLocals; varIdx++) {
+            // The variables' indices start where the parameters left off. Nonetheless, we need to
+            // look through all local variables because the ordering is not necessarily according to
+            // the indices.
+            NeoVariable neoVar = null;
+            for (LocalVariableNode varNode : neoMethod.asmMethod.localVariables) {
+                if (varNode.index == varIdx) {
+                    neoVar = new NeoVariable(varNode.index - paramCount, varNode.index, varNode);
+                    break;
+                }
             }
+            if (neoVar == null) {
+                // Not all local variables show up in ASM's `localVariables` list, e.g. when a
+                // String-base switch-case occurs.
+                neoVar = new NeoVariable(varIdx - paramCount, varIdx, null);
+            }
+            neoMethod.addVariable(neoVar);
         }
+
         return localVarCount;
     }
 
@@ -836,9 +847,15 @@ public class Compiler {
         if (paramCount > MAX_PARAMS_COUNT) {
             throw new CompilerException("The method has more than the max number of parameters.");
         }
-        for (int i = 0; i < paramCount; i++) {
-            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
-            neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
+        for (int paramIdx = 0; paramIdx < paramCount; paramIdx++) {
+            // The parameters' indices start at zero. Nonetheless, we need to look through all
+            // local variables because the ordering is not necessarily according to the indices.
+            for (LocalVariableNode varNode : neoMethod.asmMethod.localVariables) {
+                if (varNode.index == paramIdx) {
+                    neoMethod.addParameter(new NeoVariable(varNode.index, varNode.index, varNode));
+                    break;
+                }
+            }
         }
         return paramCount;
     }
@@ -976,59 +993,7 @@ public class Compiler {
         if (calledAsmMethod.name.equals(HASH_CODE_METHOD_NAME)
                 && owner.name.equals(STRING_INTERNAL_NAME)
                 && methodInsn.getNext() instanceof LookupSwitchInsnNode) {
-            // Based on a few tests, we determined that before the LOOKUPSWITCH and
-            // INVOKEVIRTUAL opcodes there are always the opcodes <ASTORE, ICONST_M1, ISTORE,
-            // ALOAD>. They need to be removed from the NeoMethod, because we don't need them
-            // for the way that we will convert the swtich into NeoVM code.
-            // There should be no issue with any jump addresses because the last `LabelNode` is
-            // "consumed" by the instruction that puts the string value to compare onto the
-            // operand stack. So by removing the above opcodes we do not break any
-            // connections between jump instructions and jump targets.
-            callingNeoMethod.removeLastInstruction();
-            callingNeoMethod.removeLastInstruction();
-            callingNeoMethod.removeLastInstruction();
-            // TODO: Make sure that the initialization of the current method (INITSLOT ...)
-            //  is adapted because we removed two local variables that only appear in the
-            //  initialization because of this switch-case.
-            LookupSwitchInsnNode lookupSwitchInsn = (LookupSwitchInsnNode) methodInsn.getNext();
-            AbstractInsnNode insn = lookupSwitchInsn.getNext();
-            for (int i = 0; i < lookupSwitchInsn.labels.size(); i++) {
-                // Insn after switch insn should be loading the local string variable.
-                insn = skipToInstructionType(insn, AbstractInsnNode.VAR_INSN);
-                addLoadLocalVariable(insn, callingNeoMethod);
-                // Then an insn for loading the string to compare with should follow.
-                insn = insn.getNext();
-                addLoadConstant(insn, callingNeoMethod);
-                // Then the method call to String.equals() should follow.
-                insn = insn.getNext();
-                assert isStringEqualsMethodCall(insn);
-                // Then a jump insn for the inequality case, i.e., the case that the
-                // equalitycheck resultet in `false`, follows.
-                JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
-                assert jumpInsn.getOpcode() == JVMOpcode.IFEQ.getOpcode();
-                LabelNode labelNode = skipToLabel(jumpInsn, jumpInsn.label.getLabel());
-                // TODO: The retrieval of the TABLESWITCH node has to happen only once.
-                TableSwitchInsnNode tableSwitchInsn =
-                        (TableSwitchInsnNode) skipToInstructionType(
-                                labelNode, AbstractInsnNode.TABLESWITCH_INSN);
-                // Jump to the label of the default branch
-                callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPEQ_L,
-                        tableSwitchInsn.dflt.getLabel()));
-                // The next opcode determines which case of the next switch statement
-                // will be jumped to.
-                InsnNode branchNumberInsn = (InsnNode) jumpInsn.getNext();
-                int branchNr = branchNumberInsn.getOpcode() - 3;
-                // The branch number gets stored to a local variable in the next opcode. But we
-                // ignore this.
-                insn = branchNumberInsn.getNext();
-                assert insn.getType() == AbstractInsnNode.VAR_INSN;
-                // The next opcode jumps to the TABLESWITCH opcode so we can use the same
-                // `TableSwitchInsnNode` as found before. That label is the one we need to jump
-                // to in the equality case.
-                callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
-                        tableSwitchInsn.labels.get(branchNr).getLabel()));
-            }
-            return skipToInstructionType(insn, AbstractInsnNode.TABLESWITCH_INSN);
+            return handleStringSwitch(callingNeoMethod, methodInsn);
         }
         if (calledAsmMethod.name.equals(INSTANCE_CTOR)) {
             // Handle a constructor call
@@ -1054,6 +1019,57 @@ public class Compiler {
         return methodInsn;
     }
 
+    // Converts the instructions of a string switch from JVM bytecode to NeoVM code. The
+    // `MethodInsnNode` is expected represent a call to the `String.hashCode()` method.
+    private AbstractInsnNode handleStringSwitch(NeoMethod callingNeoMethod,
+            MethodInsnNode methodInsn) {
+        // Before the call to `hashCode()` there the opcodes ICONST_M1, ISTORE,
+        // and ALOAD occured. The compiler already converted them and added them to the
+        // `NeoMethod` at this point. But they are not needed when converting the switch to
+        // NeoVM code. Thus, they must to be removed again.
+        callingNeoMethod.removeLastInstruction();
+        callingNeoMethod.removeLastInstruction();
+        callingNeoMethod.removeLastInstruction();
+        // TODO: Make sure that the initialization of the current method (INITSLOT ...)
+        //  is adapted because we removed two local variables that only appear in the
+        //  initialization because of this switch-case.
+        LookupSwitchInsnNode lookupSwitchInsn = (LookupSwitchInsnNode) methodInsn.getNext();
+        AbstractInsnNode insn = lookupSwitchInsn.getNext();
+        // The TABLESWITCH instruction will be needed several times in the following.
+        TableSwitchInsnNode tableSwitchInsn = (TableSwitchInsnNode)
+                skipToInstructionType(insn, AbstractInsnNode.TABLESWITCH_INSN);
+        for (int i = 0; i < lookupSwitchInsn.labels.size(); i++) {
+            // First, instruction in each `case` loads the string var that is evaluated.
+            insn = skipToInstructionType(insn, AbstractInsnNode.VAR_INSN);
+            addLoadLocalVariable(insn, callingNeoMethod);
+            // Next, the constant string to compare with is loaded.
+            insn = insn.getNext();
+            addLoadConstant(insn, callingNeoMethod);
+            // Next, the method call to String.equals() follows.
+            insn = insn.getNext();
+            assert isStringEqualsMethodCall(insn);
+            // Next is the jump instruction for the inequality case. We ignore this because
+            // it will be the last instruction after all `cases` have been passed.
+            JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
+            assert jumpInsn.getOpcode() == JVMOpcode.IFEQ.getOpcode();
+            // Next, follow instructions for the equality case. We retrieve the number that
+            // points us to the correct case in the TABLESWITCH instruction following later.
+            InsnNode branchNumberInsn = (InsnNode) jumpInsn.getNext();
+            int branchNr = branchNumberInsn.getOpcode() - 3;
+            // The branch number gets stored to a local variable in the next opcode. But we
+            // can ignore that.
+            insn = branchNumberInsn.getNext();
+            assert insn.getType() == AbstractInsnNode.VAR_INSN;
+            // The next instruction opcode jumps to the TABLESWITCH instruction but we need
+            // to replace this with a jump directly to the correct branch after the TABLESWITCH.
+            callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPEQ_L,
+                    tableSwitchInsn.labels.get(branchNr).getLabel()));
+        }
+        callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
+                tableSwitchInsn.dflt.getLabel()));
+        return tableSwitchInsn;
+    }
+
     private LabelNode skipToLabel(AbstractInsnNode insn, Label label) {
         while (insn.getNext() != null) {
             insn = insn.getNext();
@@ -1077,6 +1093,7 @@ public class Compiler {
         throw new CompilerException("Couldn't find node of type " + type);
     }
 
+    // Checks if the given instruction is a method call to the `String.equals()` method.
     private boolean isStringEqualsMethodCall(AbstractInsnNode insn) {
         if (insn.getType() == AbstractInsnNode.METHOD_INSN
                 && insn.getOpcode() == JVMOpcode.INVOKEVIRTUAL.getOpcode()) {
