@@ -7,7 +7,8 @@ import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
@@ -21,7 +22,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
@@ -111,6 +112,8 @@ public interface Neo {
 
     Request<?, NeoInvokeScript> invokeScript(String script, String... witnesses);
 
+    Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address);
+
     // Utilities Methods
 
     Request<?, NeoListPlugins> listPlugins();
@@ -125,11 +128,11 @@ public interface Neo {
 
     Request<?, NeoDumpPrivKey> dumpPrivKey(String address);
 
-    Request<?, NeoGetBalance> getBalance(String assetId);
+    Request<?, NeoGetWalletBalance> getWalletBalance(String assetId);
 
     Request<?, NeoGetNewAddress> getNewAddress();
 
-    Request<?, NeoGetUnclaimedGas> getUnclaimedGas();
+    Request<?, NeoGetWalletUnclaimedGas> getWalletUnclaimedGas();
 
     Request<?, NeoImportPrivKey> importPrivKey(String privateKeyInWIF);
 

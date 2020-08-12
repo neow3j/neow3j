@@ -17,7 +17,7 @@ import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
@@ -31,7 +31,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
@@ -1510,9 +1510,9 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
-        assertThat(getBalance.getBalance(), is(notNullValue()));
-        assertThat(getBalance.getBalance().getBalance(), is("200"));
+        NeoGetWalletBalance getBalance = deserialiseResponse(NeoGetWalletBalance.class);
+        assertThat(getBalance.getWalletBalance(), is(notNullValue()));
+        assertThat(getBalance.getWalletBalance().getBalance(), is("200"));
     }
 
     @Test
@@ -1527,9 +1527,9 @@ public class ResponseTest extends ResponseTester {
                         + "}"
         );
 
-        NeoGetBalance getBalance = deserialiseResponse(NeoGetBalance.class);
-        assertThat(getBalance.getBalance(), is(notNullValue()));
-        assertThat(getBalance.getBalance().getBalance(), is("199999990.0"));
+        NeoGetWalletBalance getBalance = deserialiseResponse(NeoGetWalletBalance.class);
+        assertThat(getBalance.getWalletBalance(), is(notNullValue()));
+        assertThat(getBalance.getWalletBalance().getBalance(), is("199999990.0"));
     }
 
     @Test
@@ -1557,9 +1557,9 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetUnclaimedGas getUnclaimedGas = deserialiseResponse(NeoGetUnclaimedGas.class);
-        assertThat(getUnclaimedGas.getUnclaimedGas(), is(notNullValue()));
-        assertThat(getUnclaimedGas.getUnclaimedGas(), is("289799420400"));
+        NeoGetWalletUnclaimedGas getUnclaimedGas = deserialiseResponse(NeoGetWalletUnclaimedGas.class);
+        assertThat(getUnclaimedGas.getWalletUnclaimedGas(), is(notNullValue()));
+        assertThat(getUnclaimedGas.getWalletUnclaimedGas(), is("289799420400"));
     }
 
     @Test

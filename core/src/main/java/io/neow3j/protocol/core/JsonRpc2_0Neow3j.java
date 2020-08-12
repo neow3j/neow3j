@@ -14,7 +14,7 @@ import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
@@ -29,6 +29,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
@@ -355,6 +356,16 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 NeoInvokeScript.class);
     }
 
+    // TODO: 12.08.20 Michael: getunclaimedgas of a specific address
+    @Override
+    public Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address) {
+        return new Request<>(
+                "getunclaimedgas",
+                asList(address),
+                neow3jService,
+                NeoGetUnclaimedGas.class);
+    }
+
     // Utilities Methods
 
     @Override
@@ -387,15 +398,6 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoOpenWallet> openWallet(String walletPath, String password) {
-        return new Request<>(
-                "openwallet",
-                asList(walletPath, password),
-                neow3jService,
-                NeoOpenWallet.class);
-    }
-
-    @Override
     public Request<?, NeoDumpPrivKey> dumpPrivKey(String address) {
         return new Request<>(
                 "dumpprivkey",
@@ -405,12 +407,12 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoGetBalance> getBalance(String assetId) {
+    public Request<?, NeoGetWalletBalance> getWalletBalance(String assetId) {
         return new Request<>(
-                "getbalance",
+                "getwalletbalance",
                 asList(cleanHexPrefix(assetId)),
                 neow3jService,
-                NeoGetBalance.class);
+                NeoGetWalletBalance.class);
     }
 
     @Override
@@ -423,12 +425,12 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoGetUnclaimedGas> getUnclaimedGas() {
+    public Request<?, NeoGetWalletUnclaimedGas> getWalletUnclaimedGas() {
         return new Request<>(
-                "getunclaimedgas",
+                "getwalletunclaimedgas",
                 emptyList(),
                 neow3jService,
-                NeoGetUnclaimedGas.class);
+                NeoGetWalletUnclaimedGas.class);
     }
 
     @Override
@@ -450,6 +452,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
+    public Request<?, NeoOpenWallet> openWallet(String walletPath, String password) {
+        return new Request<>(
+                "openwallet",
+                asList(walletPath, password),
+                neow3jService,
+                NeoOpenWallet.class);
+    }
+
+    @Override
     public Request<?, NeoSendFrom> sendFrom(String fromAddress, String assetId,
             String toAddress, String value) {
         return new Request<>(
@@ -465,6 +476,8 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 txSendAsset.getValue());
     }
 
+    // TODO: 12.08.20 Michael: According to the neo docs, an optional 'from' address from which one wants to transfer
+    //  the asset can be passed as first parameter. Create an additional method for this.
     @Override
     public Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset) {
         return new Request<>(
@@ -494,7 +507,29 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 txSendAsset.getValue());
     }
 
+    // ApplicationLogs
+
+    @Override
+    public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
+        return new Request<>(
+                "getapplicationlog",
+                asList(txId),
+                neow3jService,
+                NeoGetApplicationLog.class);
+    }
+
     // RpcNep5Tracker
+
+    // TODO: 12.08.20 Michael: In the neo docs, in this request, there is a 0 as the second item in the parameter list.
+    //  Check whether this was changed, or the current method works as is.
+    @Override
+    public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
+        return new Request<>(
+                "getnep5balances",
+                asList(address),
+                neow3jService,
+                NeoGetNep5Balances.class);
+    }
 
     @Override
     public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address) {
@@ -521,26 +556,6 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 asList(address, from.getTime(), to.getTime()),
                 neow3jService,
                 NeoGetNep5Transfers.class);
-    }
-
-    @Override
-    public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
-        return new Request<>(
-                "getnep5balances",
-                asList(address),
-                neow3jService,
-                NeoGetNep5Balances.class);
-    }
-
-    // ApplicationLogs
-
-    @Override
-    public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
-        return new Request<>(
-                "getapplicationlog",
-                asList(txId),
-                neow3jService,
-                NeoGetApplicationLog.class);
     }
 
     // Neow3j Rx Convenience methods:

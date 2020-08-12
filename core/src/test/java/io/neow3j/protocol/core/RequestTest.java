@@ -366,7 +366,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetBalance() throws Exception {
-        neow3j.getBalance("de5f57d430d3dece511cf975a8d37848cb9e0525").send();
+        neow3j.getWalletBalance("de5f57d430d3dece511cf975a8d37848cb9e0525").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
@@ -375,7 +375,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetBalance_with_Prefix() throws Exception {
-        neow3j.getBalance("0xde5f57d430d3dece511cf975a8d37848cb9e0525").send();
+        neow3j.getWalletBalance("0xde5f57d430d3dece511cf975a8d37848cb9e0525").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
@@ -392,11 +392,11 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetUnclaimedGas() throws Exception {
-        neow3j.getUnclaimedGas().send();
+    public void testGetWalletUnclaimedGas() throws Exception {
+        neow3j.getWalletUnclaimedGas().send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getunclaimedgas\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getwalletunclaimedgas\","
                         + "\"params\":[],\"id\":1}");
     }
 

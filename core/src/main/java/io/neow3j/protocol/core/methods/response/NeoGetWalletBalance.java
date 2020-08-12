@@ -8,9 +8,9 @@ import io.neow3j.protocol.core.Response;
 
 import java.util.Objects;
 
-public class NeoGetBalance extends Response<NeoGetBalance.Balance> {
+public class NeoGetWalletBalance extends Response<NeoGetWalletBalance.Balance> {
 
-    public NeoGetBalance.Balance getBalance() {
+    public Balance getWalletBalance() {
         return getResult();
     }
 

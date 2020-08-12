@@ -4,6 +4,7 @@ import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.BlockParameterIndex;
+import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.*;
 import io.neow3j.transaction.WitnessScope;
 
@@ -23,6 +24,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -66,15 +68,6 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     public void testGetBestBlockHash() throws IOException {
         NeoBlockHash getBestBlockHash = getNeow3j().getBestBlockHash().send();
         String blockHash = getBestBlockHash.getBlockHash();
-
-        assertNotNull(blockHash);
-        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
-    }
-
-    @Test
-    public void testGetBlockHash() throws IOException {
-        NeoBlockHash getBlockHash = getNeow3j().getBlockHash(new BlockParameterIndex(1)).send();
-        String blockHash = getBlockHash.getBlockHash();
 
         assertNotNull(blockHash);
         assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
@@ -142,6 +135,15 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
+    public void testGetBlockHash() throws IOException {
+        NeoBlockHash getBlockHash = getNeow3j().getBlockHash(new BlockParameterIndex(1)).send();
+        String blockHash = getBlockHash.getBlockHash();
+
+        assertNotNull(blockHash);
+        assertThat(blockHash.length(), is(BLOCK_HASH_LENGTH_WITH_PREFIX));
+    }
+
+    @Test
     public void testGetBlockHeader_Hash() throws IOException {
         NeoGetBlock getBlock = getNeow3j().getBlockHeader(BLOCK_0_HASH).send();
         NeoBlock block = getBlock.getBlock();
@@ -169,7 +171,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         String rawBlock = getRawBlock.getRawBlock();
 
         assertNotNull(rawBlock);
-        assertThat(rawBlock, is(BLOCK_0_RAW_STRING));
+        assertThat(rawBlock, is(BLOCK_0_HEADER_RAW_STRING));
     }
 
     @Test
@@ -178,7 +180,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         String rawBlock = getRawBlock.getRawBlock();
 
         assertNotNull(rawBlock);
-        assertThat(rawBlock, is(BLOCK_0_RAW_STRING));
+        assertThat(rawBlock, is(BLOCK_0_HEADER_RAW_STRING));
     }
 
     @Test
@@ -189,7 +191,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertNotNull(contractState);
         assertThat(contractState.getId(), is(-1));
         assertThat(contractState.getHash(), is(NEO_HASH_WITH_PREFIX));
-        assertThat(contractState.getScript(), is("QUXEkoQ="));
+        assertThat(contractState.getScript(), is("DANORU9Ba2d4Cw=="));
 
         NeoGetContractState.ContractState.ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -204,12 +206,13 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(abi.getHash(), is(NEO_HASH_WITH_PREFIX));
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(16));
-        assertThat(abi.getMethods().get(1).getName(), is("registerCandidate"));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(), is("pubkey"));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamType(),
-                is(ContractParameterType.PUBLIC_KEY));
-        assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.BOOLEAN));
+        assertThat(abi.getMethods(), hasSize(15));
+        assertThat(abi.getMethods().get(3).getName(), is("registerCandidate"));
+        assertThat(abi.getMethods().get(3).getParameters().get(0).getParamName(), is("pubkey"));
+        assertThat(abi.getMethods().get(3).getParameters().get(0).getParamType(),
+                is(ContractParameterType.BYTE_ARRAY));
+        assertThat(abi.getMethods().get(3).getOffset(), is(0));
+        assertThat(abi.getMethods().get(3).getReturnType(), is(ContractParameterType.BOOLEAN));
 
         assertNotNull(abi.getEvents());
         assertThat(abi.getEvents(), hasSize(1));
@@ -326,6 +329,8 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(validators, hasSize(greaterThanOrEqualTo(0)));
     }
 
+    // Node Methods
+
     @Test
     public void testGetConnectionCount() throws IOException {
         NeoConnectionCount getConnectionCount = getNeow3j().getConnectionCount().send();
@@ -378,6 +383,15 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertNotNull(invokeFunction.getInvocationResult());
     }
 
+    @Test
+    public void testGetUnclaimedGas() throws IOException {
+        NeoGetUnclaimedGas getUnclaimedGas = getNeow3j().getUnclaimedGas(ADDRESS_1).send();
+
+        assertThat(getUnclaimedGas.getUnclaimedGas(), is(notNullValue()));
+        assertThat(getUnclaimedGas.getUnclaimedGas().getUnclaimed(), is(UNCLAIMED_GAS));
+        assertThat(getUnclaimedGas.getUnclaimedGas().getAddress(), is(ADDRESS_1));
+    }
+
     // Utilities Methods
 
     @Test
@@ -423,25 +437,25 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetBalance() throws IOException {
-        NeoGetBalance getBalance = getNeow3j().getBalance(NEO_HASH).send();
-        NeoGetBalance.Balance balance = getBalance.getBalance();
+        NeoGetWalletBalance getWalletBalance = getNeow3j().getWalletBalance(NEO_HASH).send();
+        String balance = getWalletBalance.getWalletBalance().getBalance();
 
-        assertNotNull(balance.getBalance());
-        assertThat(Integer.parseInt(balance.getBalance()),
+        assertNotNull(balance);
+        assertThat(Integer.parseInt(balance),
                 is(greaterThanOrEqualTo(0)));
-        assertThat(Integer.parseInt(balance.getBalance()),
+        assertThat(Integer.parseInt(balance),
                 is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
     }
 
     @Test
     public void testGetBalance_with_Prefix() throws IOException {
-        NeoGetBalance getBalance = getNeow3j().getBalance(NEO_HASH_WITH_PREFIX).send();
-        NeoGetBalance.Balance balance = getBalance.getBalance();
+        NeoGetWalletBalance getWalletBalance = getNeow3j().getWalletBalance(NEO_HASH_WITH_PREFIX).send();
+        String balance = getWalletBalance.getWalletBalance().getBalance();
 
-        assertNotNull(balance.getBalance());
-        assertThat(Integer.parseInt(balance.getBalance()),
+        assertNotNull(balance);
+        assertThat(Integer.parseInt(balance),
                 is(greaterThanOrEqualTo(0)));
-        assertThat(Integer.parseInt(balance.getBalance()),
+        assertThat(Integer.parseInt(balance),
                 is(lessThanOrEqualTo(TOTAL_NEO_SUPPLY)));
     }
 
@@ -453,10 +467,11 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     }
 
     @Test
-    public void testGetUnclaimedGas() throws IOException {
-        NeoGetUnclaimedGas getUnclaimedGas = getNeow3j().getUnclaimedGas().send();
+    public void testGetWalletUnclaimedGas() throws IOException {
+        Request<?, NeoGetWalletUnclaimedGas> getWalletUnclaimedGas = getNeow3j().getWalletUnclaimedGas();
+        NeoGetWalletUnclaimedGas send = getWalletUnclaimedGas.send();
 
-        assertNotNull(getUnclaimedGas.getUnclaimedGas());
+        assertNotNull(send.getWalletUnclaimedGas());
     }
 
     @Test
@@ -482,7 +497,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetNep5Transfers() throws IOException {
-        NeoGetNep5Transfers getNep5Transfers = getNeow3j().getNep5Transfers(ADDRESS_2).send();
+        NeoGetNep5Transfers getNep5Transfers = getNeow3j().getNep5Transfers(ADDRESS_1).send();
         NeoGetNep5Transfers.Nep5TransferWrapper nep5TransferWrapper = getNep5Transfers.getNep5Transfer();
 
         assertNotNull(nep5TransferWrapper.getSent());
@@ -511,7 +526,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
     public void testGetNep5Transfers_Date() throws IOException {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR_OF_DAY, -1);
-        NeoGetNep5Transfers getNep5Transfers = getNeow3j().getNep5Transfers(ADDRESS_2, calendar.getTime()).send();
+        NeoGetNep5Transfers getNep5Transfers = getNeow3j().getNep5Transfers(ADDRESS_1, calendar.getTime()).send();
         NeoGetNep5Transfers.Nep5TransferWrapper nep5TransferWrapper = getNep5Transfers.getNep5Transfer();
 
         assertNotNull(nep5TransferWrapper.getSent());
@@ -527,7 +542,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         Calendar to = Calendar.getInstance();
         to.add(Calendar.HOUR_OF_DAY, 1);
         NeoGetNep5Transfers getNep5Transfers = getNeow3j()
-                .getNep5Transfers(ADDRESS_2, from.getTime(), to.getTime())
+                .getNep5Transfers(ADDRESS_1, from.getTime(), to.getTime())
                 .send();
         NeoGetNep5Transfers.Nep5TransferWrapper nep5TransferWrapper = getNep5Transfers.getNep5Transfer();
 
@@ -539,18 +554,18 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetNep5Balances() throws IOException {
-        NeoGetNep5Balances nep5Balances = getNeow3j().getNep5Balances(ADDRESS_2).send();
+        NeoGetNep5Balances nep5Balances = getNeow3j().getNep5Balances(ADDRESS_1).send();
         NeoGetNep5Balances.Balances balances = nep5Balances.getBalances();
 
         assertNotNull(balances);
-        assertThat(balances.getAddress(), is(ADDRESS_2));
+        assertThat(balances.getAddress(), is(ADDRESS_1));
         assertNotNull(balances.getBalances());
         assertThat(balances.getBalances(), hasSize(2));
-        assertThat(balances.getBalances().get(0).getAssetHash(), is(GAS_HASH_WITH_PREFIX));
+        assertThat(balances.getBalances().get(0).getAssetHash(), is(NEO_HASH_WITH_PREFIX));
         assertNotNull(balances.getBalances().get(0).getAmount());
         assertThat(balances.getBalances().get(0).getLastUpdatedBlock(),
                 is(greaterThanOrEqualTo(new BigInteger("0"))));
-        assertThat(balances.getBalances().get(1).getAssetHash(), is(NEO_HASH_WITH_PREFIX));
+        assertThat(balances.getBalances().get(1).getAssetHash(), is(GAS_HASH_WITH_PREFIX));
         assertNotNull(balances.getBalances().get(1).getAmount());
         assertNotNull(balances.getBalances().get(1).getLastUpdatedBlock());
     }
