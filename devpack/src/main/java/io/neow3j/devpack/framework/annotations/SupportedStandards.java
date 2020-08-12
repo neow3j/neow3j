@@ -8,10 +8,7 @@ import java.lang.annotation.Target;
  * contract's manifest file.
  */
 @Target(ElementType.TYPE)
-public @interface ManifestFeature {
+public @interface SupportedStandards {
 
-    boolean hasStorage() default false;
-
-    boolean payable() default false;
-
+    String[] value();
 }

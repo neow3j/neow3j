@@ -1,5 +1,6 @@
 package io.neow3j.crypto;
 
+import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import io.neow3j.constants.NeoConstants;
@@ -168,7 +169,7 @@ public class ECKeyPair {
                 Numeric.toBytesPadded(getPrivateKey().getInt(), NeoConstants.PRIVATE_KEY_SIZE),
                 new byte[]{(byte) 0x01}
         );
-        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, data.length));
+        byte[] checksum = hash256(data, 0, data.length);
         byte[] first4Bytes = Arrays.copyOfRange(checksum, 0, 4);
         data = ArrayUtils.concatenate(data, first4Bytes);
         String wif = Base58.encode(data);

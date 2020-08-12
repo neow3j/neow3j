@@ -1,8 +1,9 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.crypto.Hash.hash256;
+
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
@@ -133,7 +134,7 @@ public class Transaction extends NeoSerializable {
     }
 
     public String getTxId() {
-        byte[] hash = Hash.sha256(Hash.sha256(getHashData()));
+        byte[] hash = hash256(getHashData());
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 

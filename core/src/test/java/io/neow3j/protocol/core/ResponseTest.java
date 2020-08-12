@@ -442,7 +442,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"manifest\": {\n" +
                         "            \"groups\": [\n" +
                         "                {\n" +
-                        "                    \"pubKey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
+                        "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
                         "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
                         "                }\n" +
                         "            ],\n" +
@@ -450,6 +450,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"storage\": true,\n" +
                         "                \"payable\": false\n" +
                         "            },\n" +
+                        "            \"supportedstandards\": [],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"methods\": [\n" +
@@ -457,25 +458,25 @@ public class ResponseTest extends ResponseTester {
                         "                        \"name\": \"name\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"String\"\n" +
+                        "                        \"returntype\": \"String\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"symbol\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"String\"\n" +
+                        "                        \"returntype\": \"String\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"decimals\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"totalSupply\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"balanceOf\",\n" +
@@ -486,7 +487,7 @@ public class ResponseTest extends ResponseTester {
                         "                            }\n" +
                         "                        ],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\"\n" +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"events\": [\n" +
@@ -506,7 +507,7 @@ public class ResponseTest extends ResponseTester {
                         "                                \"type\": \"Integer\"\n" +
                         "                            }\n" +
                         "                        ],\n" +
-                        "                        \"returnType\": \"Signature\"\n" +
+                        "                        \"returntype\": \"Signature\"\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
@@ -522,7 +523,7 @@ public class ResponseTest extends ResponseTester {
                         "            \"trusts\": [" +
                         "                \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"\n" +
                         "            ],\n" +
-                        "            \"safeMethods\": [\n" +
+                        "            \"safemethods\": [\n" +
                         "                \"name\",\n" +
                         "                \"symbol\",\n" +
                         "                \"decimals\",\n" +
@@ -620,7 +621,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"manifest\": {\n" +
                         "            \"groups\": [\n" +
                         "                {\n" +
-                        "                    \"pubKey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
+                        "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
                         "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
                         "                }\n" +
                         "            ],\n" +
@@ -628,27 +629,14 @@ public class ResponseTest extends ResponseTester {
                         "                \"storage\": true,\n" +
                         "                \"payable\": false\n" +
                         "            },\n" +
+                        "            \"supportedstandards\": [],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "                \"entryPoint\": {\n" +
-                        "                    \"name\": \"Main\",\n" +
-                        "                    \"parameters\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"operation\",\n" +
-                        "                            \"type\": \"String\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"args\",\n" +
-                        "                            \"type\": \"Array\"\n" +
-                        "                        }\n" +
-                        "                    ],\n" +
-                        "                    \"returnType\": \"Void\"\n" +
-                        "                },\n" +
                         "                \"methods\": [\n" +
                         "                    {\n" +
                         "                        \"name\": \"name\",\n" +
                         "                        \"parameters\": [],\n" +
-                        "                        \"returnType\": \"String\"\n" +
+                        "                        \"returntype\": \"String\"\n" +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"events\": [\n" +
@@ -668,13 +656,13 @@ public class ResponseTest extends ResponseTester {
                         "                                \"type\": \"Integer\"\n" +
                         "                            }\n" +
                         "                        ],\n" +
-                        "                        \"returnType\": \"Signature\"\n" +
+                        "                        \"returntype\": \"Signature\"\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
                         "            \"permissions\": [],\n" +
                         "            \"trusts\": \"*\",\n" +
-                        "            \"safeMethods\": \"*\",\n" +
+                        "            \"safemethods\": \"*\",\n" +
                         "            \"extra\": \"individual info\"\n" +
                         "        }\n" +
                         "    }\n" +
@@ -1182,7 +1170,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"HALT\",\n" +
-                        "        \"gasConsumed\": \"2007570\",\n" +
+                        "        \"gasconsumed\": \"2007570\",\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"ByteString\",\n" +
@@ -1240,7 +1228,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
                         "        \"state\": \"HALT, BREAK\",\n" +
-                        "        \"gasConsumed\": \"2.489\",\n" +
+                        "        \"gasconsumed\": \"2.489\",\n" +
                         "        \"stack\": []\n" +
                         "    }\n" +
                         "}"
@@ -1266,7 +1254,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"FAULT\",\n" +
-                        "        \"gasConsumed\": \"2007390\",\n" +
+                        "        \"gasconsumed\": \"2007390\",\n" +
                         "        \"stack\": []\n" +
                         "    }\n" +
                         "}"
@@ -1291,7 +1279,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"script\": \"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n" +
                         "        \"state\": \"HALT, BREAK\",\n" +
-                        "        \"gasConsumed\": \"0.161\",\n" +
+                        "        \"gasconsumed\": \"0.161\",\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"ByteString\",\n" +
@@ -2055,7 +2043,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"txid\": \"0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109\",\n" +
                         "        \"trigger\": \"Application\",\n" +
                         "        \"vmstate\": \"HALT\",\n" +
-                        "        \"gasConsumed\": \"9007810\",\n" +
+                        "        \"gasconsumed\": \"9007810\",\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"Integer\",\n" +

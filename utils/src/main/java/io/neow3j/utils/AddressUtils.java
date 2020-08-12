@@ -1,7 +1,8 @@
 package io.neow3j.utils;
 
+import static io.neow3j.crypto.Hash.hash256;
+
 import io.neow3j.crypto.Base58;
-import io.neow3j.crypto.Hash;
 import io.neow3j.crypto.exceptions.AddressFormatException;
 import io.neow3j.model.NeoConfig;
 
@@ -26,7 +27,7 @@ public class AddressUtils {
         if (data[0] != NeoConfig.addressVersion()) {
             return false;
         }
-        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, 21));
+        byte[] checksum = hash256(data, 0, 21);
         for (int i = 0; i < 4; i++) {
             if (data[data.length - 4 + i] != checksum[i]) {
                 return false;
@@ -61,7 +62,7 @@ public class AddressUtils {
      */
     public static String scriptHashToAddress(byte[] scriptHash) {
         byte[] script = ArrayUtils.concatenate(NeoConfig.addressVersion(), scriptHash);
-        byte[] checksum = ArrayUtils.getFirstNBytes(Hash.sha256(Hash.sha256(script)), 4);
+        byte[] checksum = ArrayUtils.getFirstNBytes(hash256(script), 4);
         return Base58.encode(ArrayUtils.concatenate(script, checksum));
     }
 
