@@ -33,7 +33,7 @@ import java.util.Objects;
 public class NefFile extends NeoSerializable {
 
     // NEO Executable Format 3 (NEF3)
-    private static final int MAGIC = 0x3346454E;
+    private static final int MAGIC = 0x3346454E; // 860243278 in decimal
 
     private static final int HEADER_SIZE = 4    // Magic (uint32)
             + 32                                // Compiler (32 bytes String)
@@ -100,7 +100,8 @@ public class NefFile extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            if (reader.readUInt32() != MAGIC) {
+            long l = reader.readUInt32();
+            if (l != MAGIC) {
                 throw new DeserializationException("Wrong magic number in NEF file.");
             }
             byte[] compilerBytes = ArrayUtils.trimTrailingBytes(reader.readBytes(32), (byte)0);
@@ -122,13 +123,13 @@ public class NefFile extends NeoSerializable {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             BinaryWriter writer = new BinaryWriter(stream);
             writer.writeSerializableFixed(file);
-            // Get header without the checksum.
             serialized = stream.toByteArray();
         } catch (IOException e) {
             // Doesn't happen because we're not writing to anywhere.
         }
+        // Get header without the checksum.
         byte[] header = ArrayUtils.getFirstNBytes(serialized, HEADER_SIZE - 4);
-        return ArrayUtils.getFirstNBytes(Hash.sha256(header), 4);
+        return ArrayUtils.getFirstNBytes(Hash.hash256(header), 4);
     }
 
     public static NefFile readFromFile(File nefFile) throws DeserializationException, IOException {
@@ -160,6 +161,22 @@ public class NefFile extends NeoSerializable {
             this.minor = minor;
             this.build = build;
             this.revision = revision;
+        }
+
+        public int getMajor() {
+            return major;
+        }
+
+        public int getMinor() {
+            return minor;
+        }
+
+        public int getBuild() {
+            return build;
+        }
+
+        public int getRevision() {
+            return revision;
         }
 
         @Override

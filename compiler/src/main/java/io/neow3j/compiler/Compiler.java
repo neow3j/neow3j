@@ -12,10 +12,11 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.framework.ScriptContainer;
 import io.neow3j.devpack.framework.annotations.Appcall;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
+import io.neow3j.devpack.framework.annotations.Features;
 import io.neow3j.devpack.framework.annotations.Instruction;
 import io.neow3j.devpack.framework.annotations.Instruction.Instructions;
 import io.neow3j.devpack.framework.annotations.ManifestExtra.ManifestExtras;
-import io.neow3j.devpack.framework.annotations.ManifestFeature;
+import io.neow3j.devpack.framework.annotations.SupportedStandards;
 import io.neow3j.devpack.framework.annotations.Syscall;
 import io.neow3j.devpack.framework.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
@@ -1271,13 +1272,15 @@ public class Compiler {
         List<ContractGroup> groups = new ArrayList<>();
         ContractFeatures features = buildContractFeatures(neoModule.asmSmartContractClass);
         ContractABI abi = buildABI(neoModule, scriptHash);
+        Map<String, String> extras = buildManifestExtra(neoModule.asmSmartContractClass);
+        List<String> supportedStandards = buildSupportedStandards(neoModule.asmSmartContractClass);
+        // TODO: Fill the remaining manifest fields below.
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));
         List<String> trusts = new ArrayList<>();
         List<String> safeMethods = new ArrayList<>();
-        Map<String, String> extras = buildManifestExtra(neoModule.asmSmartContractClass);
-        return new ContractManifest(groups, features, abi, permissions, trusts, safeMethods,
-                extras);
+        return new ContractManifest(groups, features, supportedStandards, abi, permissions, trusts,
+                safeMethods, extras);
     }
 
     private ContractABI buildABI(NeoModule neoModule, ScriptHash scriptHash) {
@@ -1299,7 +1302,7 @@ public class Compiler {
             methods.add(new ContractMethod(neoMethod.name, contractParams, paramType,
                     neoMethod.startAddress));
         }
-        return new ContractABI(scriptHash.toString(), methods, events);
+        return new ContractABI(Numeric.prependHexPrefix(scriptHash.toString()), methods, events);
     }
 
     private ContractParameterType mapTypeToParameterType(Type type) {
@@ -1348,7 +1351,7 @@ public class Compiler {
 
     private ContractFeatures buildContractFeatures(ClassNode n) {
         Optional<AnnotationNode> opt = n.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(ManifestFeature.class)))
+                .filter(a -> a.desc.equals(Type.getDescriptor(Features.class)))
                 .findFirst();
         boolean payable = false;
         boolean hasStorage = false;
@@ -1382,6 +1385,21 @@ public class Compiler {
             extras.put(key, value);
         }
         return extras;
+    }
+
+    private List<String> buildSupportedStandards(ClassNode asmClass) {
+        Optional<AnnotationNode> opt = asmClass.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(SupportedStandards.class)))
+                .findFirst();
+        if (!opt.isPresent()) {
+            return new ArrayList<>();
+        }
+        AnnotationNode ann = opt.get();
+        List<String> standards = new ArrayList<>();
+        for (Object standard : (List<?>) ann.values.get(1)) {
+            standards.add((String) standard);
+        }
+        return standards;
     }
 
     public static class CompilationResult {

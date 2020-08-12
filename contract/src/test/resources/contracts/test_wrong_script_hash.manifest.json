@@ -1,0 +1,42 @@
+{
+  "groups": [],
+  "features": {
+    "storage": true,
+    "payable": false
+  },
+  "abi": {
+    "hash": "0x0000000000000000000000000000000000000000",
+    "methods": [
+      {
+        "name": "main",
+        "offset": "0",
+        "parameters": [
+          {
+            "name": "i",
+            "type": "Integer"
+          }
+        ],
+        "returntype": "Integer"
+      },
+      {
+        "name": "_initialize",
+        "offset": "28",
+        "parameters": [],
+        "returntype": "Void"
+      }
+    ],
+    "events": []
+  },
+  "permissions": [
+    {
+      "contract": "*",
+      "methods": "*"
+    }
+  ],
+  "trusts": [],
+  "safemethods": [],
+  "supportedstandards": [],
+  "extra": {
+    "Author": "Neo"
+  }
+}

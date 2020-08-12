@@ -129,4 +129,30 @@ public class Hash {
         return sha256(input);
     }
 
+    /**
+     * Applies SHA-256 twice to the input and returns the result.
+     * <p>
+     * Neo uses the name {@code hash256} for hashes created in this way.
+     *
+     * @param input The input to hash.
+     * @return the hash value for the given input.
+     */
+    public static byte[] hash256(byte[] input) {
+        return sha256(sha256(input));
+    }
+
+    /**
+     * Applies SHA-256 twice to the slice of the given length of the input, starting at the given
+     * offset.
+     * <p>
+     * Neo uses the name {@code hash256} for hashes created in this way.
+     *
+     * @param input The input to hash.
+     * @param offset The offset at which the slice starts.
+     * @param length The length of the slice to hash.
+     * @return the hash value.
+     */
+    public static byte[] hash256(byte[] input, int offset, int length) {
+        return sha256(sha256(input, offset, length));
+    }
 }

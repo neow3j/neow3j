@@ -1,5 +1,7 @@
 package io.neow3j.crypto;
 
+import static io.neow3j.crypto.Hash.hash256;
+
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.utils.ArrayUtils;
 import java.util.Arrays;
@@ -20,7 +22,7 @@ public class WIF {
             throw new IllegalArgumentException("Incorrect WIF format.");
         }
 
-        byte[] checksum = Hash.sha256(Hash.sha256(data, 0, data.length - 4));
+        byte[] checksum = hash256(data, 0, data.length - 4);
 
         for (int i = 0; i < 4; i++) {
             if (data[data.length - 4 + i] != checksum[i]) {
@@ -42,7 +44,7 @@ public class WIF {
 
         byte[] extendenKey = ArrayUtils.concatenate(
                 ArrayUtils.concatenate((byte) 0x80, key), (byte) 0x01);
-        byte[] hash = Hash.sha256(Hash.sha256(extendenKey));
+        byte[] hash = hash256(extendenKey);
         byte[] checksum = ArrayUtils.getFirstNBytes(hash, 4);
         return Base58.encode(ArrayUtils.concatenate(extendenKey, checksum));
     }
