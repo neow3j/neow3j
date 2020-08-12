@@ -5,7 +5,7 @@
     "payable": false
   },
   "abi": {
-    "hash": "0xb1872e12d6151da6312d0ff6617df37a98a48591",
+    "hash": "0xc570e5cd068dd9f8dcdee0e4b201d70aaff61ff9",
     "methods": [
       {
         "name": "main",

@@ -441,7 +441,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"manifest\": {\n" +
                         "            \"groups\": [\n" +
                         "                {\n" +
-                        "                    \"pubKey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
+                        "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
                         "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
                         "                }\n" +
                         "            ],\n" +
@@ -449,6 +449,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"storage\": true,\n" +
                         "                \"payable\": false\n" +
                         "            },\n" +
+                        "            \"supportedstandards\": [],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
                         "                \"methods\": [\n" +
@@ -456,25 +457,25 @@ public class ResponseTest extends ResponseTester {
                         "                        \"name\": \"name\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"String\"\n" +
+                        "                        \"returntype\": \"String\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"symbol\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"String\"\n" +
+                        "                        \"returntype\": \"String\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"decimals\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"totalSupply\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\"\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"balanceOf\",\n" +
@@ -485,7 +486,7 @@ public class ResponseTest extends ResponseTester {
                         "                            }\n" +
                         "                        ],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returnType\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\"\n" +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"events\": [\n" +
@@ -505,7 +506,7 @@ public class ResponseTest extends ResponseTester {
                         "                                \"type\": \"Integer\"\n" +
                         "                            }\n" +
                         "                        ],\n" +
-                        "                        \"returnType\": \"Signature\"\n" +
+                        "                        \"returntype\": \"Signature\"\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
@@ -521,7 +522,7 @@ public class ResponseTest extends ResponseTester {
                         "            \"trusts\": [" +
                         "                \"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"\n" +
                         "            ],\n" +
-                        "            \"safeMethods\": [\n" +
+                        "            \"safemethods\": [\n" +
                         "                \"name\",\n" +
                         "                \"symbol\",\n" +
                         "                \"decimals\",\n" +
@@ -619,7 +620,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"manifest\": {\n" +
                         "            \"groups\": [\n" +
                         "                {\n" +
-                        "                    \"pubKey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
+                        "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
                         "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
                         "                }\n" +
                         "            ],\n" +
@@ -627,27 +628,14 @@ public class ResponseTest extends ResponseTester {
                         "                \"storage\": true,\n" +
                         "                \"payable\": false\n" +
                         "            },\n" +
+                        "            \"supportedstandards\": [],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b\",\n" +
-                        "                \"entryPoint\": {\n" +
-                        "                    \"name\": \"Main\",\n" +
-                        "                    \"parameters\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"operation\",\n" +
-                        "                            \"type\": \"String\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"args\",\n" +
-                        "                            \"type\": \"Array\"\n" +
-                        "                        }\n" +
-                        "                    ],\n" +
-                        "                    \"returnType\": \"Void\"\n" +
-                        "                },\n" +
                         "                \"methods\": [\n" +
                         "                    {\n" +
                         "                        \"name\": \"name\",\n" +
                         "                        \"parameters\": [],\n" +
-                        "                        \"returnType\": \"String\"\n" +
+                        "                        \"returntype\": \"String\"\n" +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"events\": [\n" +
@@ -667,13 +655,13 @@ public class ResponseTest extends ResponseTester {
                         "                                \"type\": \"Integer\"\n" +
                         "                            }\n" +
                         "                        ],\n" +
-                        "                        \"returnType\": \"Signature\"\n" +
+                        "                        \"returntype\": \"Signature\"\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
                         "            \"permissions\": [],\n" +
                         "            \"trusts\": \"*\",\n" +
-                        "            \"safeMethods\": \"*\",\n" +
+                        "            \"safemethods\": \"*\",\n" +
                         "            \"extra\": \"individual info\"\n" +
                         "        }\n" +
                         "    }\n" +
