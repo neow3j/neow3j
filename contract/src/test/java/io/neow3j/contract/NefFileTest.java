@@ -56,8 +56,8 @@ public class NefFileTest {
     }
 
     @Test
-    public void readFromFile() throws URISyntaxException, DeserializationException,
-            IOException {
+    public void readFromFileProducesCorrectChecksum() throws URISyntaxException,
+            DeserializationException, IOException {
 
         File file = new File(NefFileTest.class.getClassLoader()
                 .getResource("contracts/test.nef").toURI());
