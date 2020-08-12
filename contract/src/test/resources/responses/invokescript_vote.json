@@ -4,7 +4,7 @@
   "result": {
     "script": "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0c14c8172ea3b405bf8bfc57c33a8410116b843e13df13c00c04766f74650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52",
     "state": "HALT",
-    "gasConsumed": "501007930",
+    "gasconsumed": "501007930",
     "stack": [
       {
         "type": "Boolean",

@@ -15,7 +15,7 @@ public class InvocationResult {
     @JsonProperty("state")
     private String state;
 
-    @JsonProperty("gasConsumed")
+    @JsonProperty("gasconsumed")
     private String gasConsumed;
 
     @JsonProperty("stack")
@@ -77,7 +77,7 @@ public class InvocationResult {
         return "InvocationResult{" +
                 "script='" + script + '\'' +
                 ", state='" + state + '\'' +
-                ", gasConsumed='" + gasConsumed + '\'' +
+                ", gasconsumed='" + gasConsumed + '\'' +
                 ", stack=" + stack +
                 ", tx='" + tx + '\'' +
                 '}';

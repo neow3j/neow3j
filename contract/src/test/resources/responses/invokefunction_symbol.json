@@ -4,7 +4,7 @@
   "result": {
     "script": "10c00c0673796d626f6c0c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52",
     "state": "HALT",
-    "gasConsumed": "1007390",
+    "gasconsumed": "1007390",
     "stack": [
       {
         "type": "ByteString",
