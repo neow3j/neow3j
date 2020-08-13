@@ -433,6 +433,7 @@ public class Compiler {
             // region ### INTEGER COMPARISON ###
             case IF_ICMPEQ:
                 addJumpInstruction(neoMethod, insn, OpCode.JMPEQ_L);
+                break;
             case IF_ICMPNE: // integer comparison
                 addJumpInstruction(neoMethod, insn, OpCode.JMPNE_L);
                 break;
