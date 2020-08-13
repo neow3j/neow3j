@@ -417,13 +417,23 @@ public class Compiler {
                 // Java jump addresses are restricted to 2 bytes, i.e. there are no 4-byte jump
                 // addresses as in NeoVM. It is simpler for the compiler implementation to always
                 // use the 4-byte NeoVM jump opcodes and then optimize (to 1-byte addresses) in a
-                // second step. This is how the dotnet-devpack handeles it too.
-            case IF_ICMPEQ:
-            case IF_ACMPEQ: // Object reference comparison.
-                addJumpInstruction(neoMethod, insn, OpCode.JMPEQ_L);
+                // second step. This is how the dotnet-devpack handles it too.
+
+                // region ### OBJECT COMPARISON ###
+            case IF_ACMPEQ:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
                 break;
-            case IF_ICMPNE:
-            case IF_ACMPNE: // Object reference comparison.
+            case IF_ACMPNE:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NOTEQUAL));
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
+                break;
+            // endregion ### OBJECT COMPARISON ###
+
+            // region ### INTEGER COMPARISON ###
+            case IF_ICMPEQ:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPEQ_L);
+            case IF_ICMPNE: // integer comparison
                 addJumpInstruction(neoMethod, insn, OpCode.JMPNE_L);
                 break;
             case IF_ICMPLT:
@@ -438,6 +448,9 @@ public class Compiler {
             case IF_ICMPGE:
                 addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
                 break;
+            // endregion ### INTEGER COMPARISON ###
+
+            // region ### INTEGER COMPARISON WITH ZERO ###
             // These opcodes operate on boolean, byte, char, short, and int. In the latter four
             // cases (IFLT, IFLE, IFGT, and IFGE) the NeoVM opcode is switched, e.g., from GT to
             // LE because zero value will be on top of the stack and not the integer value.
@@ -469,6 +482,7 @@ public class Compiler {
                 addPushNumber(0, neoMethod);
                 addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
                 break;
+            // endregion ### INTEGER COMPARISON WITH ZERO ###
 
             case LCMP:
                 // Comparison of two longs resulting in an integer with value -1, 0, or 1.
@@ -1062,7 +1076,8 @@ public class Compiler {
             assert insn.getType() == AbstractInsnNode.VAR_INSN;
             // The next instruction opcode jumps to the TABLESWITCH instruction but we need
             // to replace this with a jump directly to the correct branch after the TABLESWITCH.
-            callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPEQ_L,
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
+            callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPIF_L,
                     tableSwitchInsn.labels.get(branchNr).getLabel()));
         }
         callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
