@@ -705,8 +705,8 @@ public class Compiler {
         JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
         JVMOpcode jvmOpcode = JVMOpcode.get(jumpInsn.getOpcode());
         if (jvmOpcode == null) {
-            // TODO: Add meaningful exception message.
-            throw new CompilerException("");
+            throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine, "Jump opcode "
+                    + "of jump instruction was null.");
         }
         switch (jvmOpcode) {
             case IFEQ:
@@ -728,8 +728,8 @@ public class Compiler {
                 addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGE_L);
                 break;
             default:
-                // TODO: Insert informative exception message.
-                throw new CompilerException("");
+                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine,
+                        "Unexpected opcode " + jvmOpcode.name() + " following long comparison.");
         }
         return jumpInsn;
     }
@@ -1044,9 +1044,8 @@ public class Compiler {
         callingNeoMethod.removeLastInstruction();
         callingNeoMethod.removeLastInstruction();
         callingNeoMethod.removeLastInstruction();
-        // TODO: Make sure that the initialization of the current method (INITSLOT ...)
-        //  is adapted because we removed two local variables that only appear in the
-        //  initialization because of this switch-case.
+        // TODO: Besides removing the last few instructions we could also clean up the variable
+        //  initialization (in INTISLOT).
         LookupSwitchInsnNode lookupSwitchInsn = (LookupSwitchInsnNode) methodInsn.getNext();
         AbstractInsnNode insn = lookupSwitchInsn.getNext();
         // The TABLESWITCH instruction will be needed several times in the following.
