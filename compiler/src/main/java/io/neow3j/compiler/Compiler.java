@@ -268,9 +268,13 @@ public class Compiler {
             case ICONST_3:
             case ICONST_4:
             case ICONST_5:
-            case LCONST_0:
-            case LCONST_1:
                 addPushNumber(opcode.getOpcode() - 3, neoMethod);
+                break;
+            case LCONST_0:
+                addPushNumber(0, neoMethod);
+                break;
+            case LCONST_1:
+                addPushNumber(1, neoMethod);
                 break;
             case LDC:
             case LDC_W:
