@@ -907,9 +907,9 @@ public class Compiler {
             throw new CompilerException("The method has more than the max number of local "
                     + "variables.");
         }
-        int neoIdx = paramCount;
+        int neoIdx = 0;
         int jvmIdx = nextVarIdx;
-        while (neoIdx < paramCount + localVarCount) {
+        while (neoIdx < localVarCount) {
             // The variables' indices start where the parameters left off. Nonetheless, we need to
             // look through all local variables because the ordering is not necessarily according to
             // the indices.
