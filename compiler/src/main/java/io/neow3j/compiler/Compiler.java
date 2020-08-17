@@ -568,21 +568,31 @@ public class Compiler {
             // region ### BIT OPERATIONS ###
             case ISHL:
             case LSHL:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SHL));
+                break;
             case ISHR:
             case LSHR:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SHR));
+                break;
             case IUSHR:
             case LUSHR:
+                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine, "Logical "
+                        + "bit-shifts are not supported.");
             case IAND:
             case LAND:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.AND));
+                break;
             case IOR:
             case LOR:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.OR));
+                break;
             case IXOR:
             case LXOR:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.asmMethod.name + " not yet supported.");
-                // endregion ### BIT OPERATIONS ###
+                neoMethod.addInstruction(new NeoInstruction(OpCode.XOR));
+                break;
+            // endregion ### BIT OPERATIONS ###
 
-                // region ### FLOATING POINT (unsupported) ###
+            // region ### FLOATING POINT (unsupported) ###
             case FCMPL:
             case FCMPG:
             case DCMPL:

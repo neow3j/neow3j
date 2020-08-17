@@ -90,8 +90,8 @@ public class NeoMethod {
     // very next instruction node.
     Label currentLabel;
 
-    // The current instruction line number. Used in the compilation process to map line numbers to
-    // `NeoInstructions`.
+    // The current JVM instruction line number. Used in the compilation process to map line
+    // numbers to `NeoInstructions`.
     int currentLine;
 
     // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
