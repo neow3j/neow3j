@@ -41,25 +41,25 @@ public class NeoMethod {
     /**
      * This method's local variables (excl. method parametrs).
      */
-    List<NeoVariable> variables = new ArrayList<>();
+    SortedMap<Integer, NeoVariable> variablesByNeoIndex = new TreeMap<>();
 
     /**
      * Maps JVM bytecode indices to local variables.
      */
-    Map<Integer, NeoVariable> variablesByJVMIndex = new HashMap<>();
+    SortedMap<Integer, NeoVariable> variablesByJVMIndex = new TreeMap<>();
 
     /**
      * This method's parameters.
      */
-    List<NeoVariable> parameters = new ArrayList<>();
+    SortedMap<Integer, NeoVariable> parametersByNeoIndex = new TreeMap<>();
 
     /**
      * Maps JVM bytecode indices to method parameters.
      */
-    Map<Integer, NeoVariable> parametersByJVMIndex = new HashMap<>();
+    SortedMap<Integer, NeoVariable> parametersByJVMIndex = new TreeMap<>();
 
     /**
-     * Determin if a method is a contract's entry point.
+     * Determines if a method is a contract's entry point.
      */
     boolean isEntryPoint = false;
 
@@ -118,7 +118,7 @@ public class NeoMethod {
      * Adds a parameter to this method.
      */
     void addParameter(NeoVariable var) {
-        parameters.add(var.index, var);
+        this.parametersByNeoIndex.put(var.neoIndex, var);
         this.parametersByJVMIndex.put(var.jvmIndex, var);
     }
 
@@ -126,7 +126,7 @@ public class NeoMethod {
      * Adds a local variable to this method.
      */
     void addVariable(NeoVariable var) {
-        this.variables.add(var.index, var);
+        this.variablesByNeoIndex.put(var.neoIndex, var);
         this.variablesByJVMIndex.put(var.jvmIndex, var);
     }
 

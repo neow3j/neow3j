@@ -10,7 +10,7 @@ public class NeoVariable {
     /**
      * This variable's index inside of the {@link NeoMethod}.
      */
-    int index;
+    int neoIndex;
 
     /**
      * This variable's original index in the JVM bytecode.
@@ -23,7 +23,7 @@ public class NeoVariable {
     LocalVariableNode asmVariable;
 
     NeoVariable(int index, int jvmIndex, LocalVariableNode asmVariable) {
-        this.index = index;
+        this.neoIndex = index;
         this.jvmIndex = jvmIndex;
         this.asmVariable = asmVariable;
     }
