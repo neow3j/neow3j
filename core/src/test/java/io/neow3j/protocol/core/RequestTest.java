@@ -10,6 +10,8 @@ import io.neow3j.protocol.http.HttpService;
 import java.util.Arrays;
 import java.util.Date;
 
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.WitnessScope;
 import org.junit.Test;
 
 public class RequestTest extends RequestTester {
@@ -260,7 +262,10 @@ public class RequestTest extends RequestTester {
                 Arrays.asList(
                         ContractParameter.hash160(new ScriptHash("91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 ),
-                "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"
+                new Signer.Builder()
+                        .account(new ScriptHash("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+                        .scopes(WitnessScope.CALLED_BY_ENTRY)
+                        .build()
         ).send();
 
         verifyResult(
@@ -270,7 +275,8 @@ public class RequestTest extends RequestTester {
                         + "["
                         + "{\"type\":\"Hash160\",\"value\":\"91b83e96f2a7c4fdf0c1688441ec61986c7cae26\"}"
                         + "],"
-                        + "[\"0xcadb3dc2faa3ef14a13b619c9a43124755aa2569\"]"
+                        + "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\",\"scopes\":[\"CalledByEntry\"],"
+                        + "\"allowedcontracts\":[],\"allowedgroups\":[]}]"
                         + "],\"id\":1}"
         );
     }
@@ -292,25 +298,32 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeScript() throws Exception {
-        neow3j.invokeScript("00046e616d656724058e5e1b6008847cd662728549088a9ee82191").send();
+        neow3j.invokeScript("10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokescript\","
-                        + "\"params\":[\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\"],"
+                        + "\"params\":[\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\"],"
                         + "\"id\":1}"
         );
     }
 
     @Test
     public void testInvokeScriptWithWitness() throws Exception {
-        neow3j.invokeScript("00046e616d656724058e5e1b6008847cd662728549088a9ee82191",
-                "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569").send();
+        neow3j.invokeScript("10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52",
+                Signer.calledByEntry(new ScriptHash("0xcc45cc8987b0e35371f5685431e3c8eeea306722"))).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokescript\","
                         + "\"params\":["
-                        +       "\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\","
-                        +       "[\"0xcadb3dc2faa3ef14a13b619c9a43124755aa2569\"]"
+                        +     "\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\","
+                        +         "["
+                        +             "{"
+                        +                 "\"account\":\"cc45cc8987b0e35371f5685431e3c8eeea306722\","
+                        +                 "\"scopes\":[\"CalledByEntry\"],"
+                        +                 "\"allowedcontracts\":[],"
+                        +                 "\"allowedgroups\":[]"
+                        +             "}"
+                        +         "]"
                         + "],\"id\":1}"
         );
     }
@@ -365,20 +378,20 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetBalance() throws Exception {
+    public void testGetWalletBalance() throws Exception {
         neow3j.getWalletBalance("de5f57d430d3dece511cf975a8d37848cb9e0525").send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getwalletbalance\","
                         + "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"],\"id\":1}");
     }
 
     @Test
-    public void testGetBalance_with_Prefix() throws Exception {
+    public void testGetWalletBalance_with_Prefix() throws Exception {
         neow3j.getWalletBalance("0xde5f57d430d3dece511cf975a8d37848cb9e0525").send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getwalletbalance\","
                         + "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"],\"id\":1}");
     }
 

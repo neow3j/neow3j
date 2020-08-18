@@ -51,10 +51,10 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.ResponseTester;
-import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -64,7 +64,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -79,7 +78,6 @@ public class ResponseTest extends ResponseTester {
 
     public static final ScriptHash NEO_HASH = ScriptHash.fromScript(
             new ScriptBuilder().pushData("NEO").sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
-    private static final String NEO_HASH_STRING = NEO_HASH.toString();
 
     @Test
     public void testErrorResponse() {
@@ -175,7 +173,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ],\n" +
-                        "        \"consensus_data\": {\n" +
+                        "        \"consensusdata\": {\n" +
                         "            \"primary\": 0,\n" +
                         "            \"nonce\": \"45fba5f11cb04667\"\n" +
                         "        },\n" +
@@ -189,13 +187,13 @@ public class ResponseTest extends ResponseTester {
                         "                \"sysfee\": \"0\",\n" +
                         "                \"netfee\": \"0\",\n" +
                         "                \"validuntilblock\": 2107425,\n" +
-                        "                \"attributes\": [\n" +
-                        "                    {\n" +
-                        "                        \"type\": \"Signer\",\n" +
+                        "                \"signers\": [" +
+                        "                    {" +
                         "                        \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                        \"scopes\": \"CalledByEntry\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
+                        "                    }" +
+                        "                ]," +
+                        "                \"attributes\": [],\n" +
                         "                \"script\":\n" +
                         "                    \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
                         "                \"witnesses\": [\n" +
@@ -214,13 +212,13 @@ public class ResponseTest extends ResponseTester {
                         "                \"sysfee\": \"0\",\n" +
                         "                \"netfee\": \"0\",\n" +
                         "                \"validuntilblock\": 2107425,\n" +
-                        "                \"attributes\": [\n" +
-                        "                    {\n" +
-                        "                        \"type\": \"Signer\",\n" +
+                        "                \"signers\": [" +
+                        "                    {" +
                         "                        \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                        \"scopes\": \"CalledByEntry\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
+                        "                    }" +
+                        "                ]," +
+                        "                \"attributes\": [],\n" +
                         "                \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
                         "                \"witnesses\": [\n" +
                         "                    {\n" +
@@ -285,14 +283,13 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                Arrays.asList(
-                                        new TransactionSigner(
-                                                "0xf68f181731a47036a99f04dad90043a744edec0f",
-                                                WitnessScope.CALLED_BY_ENTRY
-                                        )
+                                asList(
+                                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
+                                        asList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
+                                asList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                Arrays.asList(
+                                asList(
                                         new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
@@ -308,14 +305,13 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                Arrays.asList(
-                                        new TransactionSigner(
-                                                "0xf68f181731a47036a99f04dad90043a744edec0f",
-                                                WitnessScope.CALLED_BY_ENTRY
-                                        )
+                                asList(
+                                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
+                                                asList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
+                                asList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                Arrays.asList(
+                                asList(
                                         new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
@@ -395,7 +391,6 @@ public class ResponseTest extends ResponseTester {
                 is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
     }
 
-
     @Test
     public void testGetRawBlock() {
         buildResponse(
@@ -450,7 +445,9 @@ public class ResponseTest extends ResponseTester {
                         "                \"storage\": true,\n" +
                         "                \"payable\": false\n" +
                         "            },\n" +
-                        "            \"supportedstandards\": [],\n" +
+                        "            \"supportedstandards\": [" +
+                        "                \"NEP-5\"" +
+                        "            ],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"methods\": [\n" +
@@ -483,7 +480,7 @@ public class ResponseTest extends ResponseTester {
                         "                        \"parameters\": [\n" +
                         "                            {\n" +
                         "                                \"name\": \"account\",\n" +
-                        "                                \"type\": \"Hash160\"\n" +
+                        "                                \"type\": \"ByteArray\"\n" +
                         "                            }\n" +
                         "                        ],\n" +
                         "                        \"offset\": 0,\n" +
@@ -506,8 +503,7 @@ public class ResponseTest extends ResponseTester {
                         "                                \"name\": \"amount\",\n" +
                         "                                \"type\": \"Integer\"\n" +
                         "                            }\n" +
-                        "                        ],\n" +
-                        "                        \"returntype\": \"Signature\"\n" +
+                        "                        ]\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
@@ -556,6 +552,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getFeatures(), is(notNullValue()));
         assertThat(manifest.getFeatures().getStorage(), is(true));
         assertThat(manifest.getFeatures().getPayable(), is(false));
+
+        assertThat(manifest.getSupportedStandards(), hasSize(1));
+        assertThat(manifest.getSupportedStandards().get(0), is("NEP-5"));
 
         NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
@@ -629,7 +628,9 @@ public class ResponseTest extends ResponseTester {
                         "                \"storage\": true,\n" +
                         "                \"payable\": false\n" +
                         "            },\n" +
-                        "            \"supportedstandards\": [],\n" +
+                        "            \"supportedstandards\": [" +
+                        "                \"NEP-5\"" +
+                        "            ],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"methods\": [\n" +
@@ -655,8 +656,7 @@ public class ResponseTest extends ResponseTester {
                         "                                \"name\": \"amount\",\n" +
                         "                                \"type\": \"Integer\"\n" +
                         "                            }\n" +
-                        "                        ],\n" +
-                        "                        \"returntype\": \"Signature\"\n" +
+                        "                        ]\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
@@ -803,13 +803,13 @@ public class ResponseTest extends ResponseTester {
                         "        \"sysfee\": \"9007810\",\n" +
                         "        \"netfee\": \"1267450\",\n" +
                         "        \"validuntilblock\": 2103622,\n" +
-                        "        \"attributes\": [" +
+                        "        \"signers\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
                         "        ],\n" +
+                        "        \"attributes\": []," +
                         "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -836,23 +836,15 @@ public class ResponseTest extends ResponseTester {
         assertThat(getTransaction.getTransaction().getSysFee(), is("9007810"));
         assertThat(getTransaction.getTransaction().getNetFee(), is("1267450"));
         assertThat(getTransaction.getTransaction().getValidUntilBlock(), is(2103622L));
-        assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
 
-        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(1));
+        assertThat(getTransaction.getTransaction().getSigners(), is(notNullValue()));
+        assertThat(getTransaction.getTransaction().getSigners(), hasSize(1));
+        assertThat(getTransaction.getTransaction().getSigners().get(0).getAccount(), is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+        assertThat(getTransaction.getTransaction().getSigners().get(0).getScopes(), hasSize(1));
+        assertThat(getTransaction.getTransaction().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
+
         assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionSigner().type,
-                is(TransactionAttributeType.SIGNER));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionSigner().getAccount(),
-                is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0).getAsTransactionSigner().getScopes(),
-                is(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(getTransaction.getTransaction().getAttributes(),
-                containsInAnyOrder(
-                        new TransactionSigner(
-                                "0xf68f181731a47036a99f04dad90043a744edec0f",
-                                WitnessScope.CALLED_BY_ENTRY
-                        )
-                ));
+        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(0));
 
         assertThat(getTransaction.getTransaction().getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));
@@ -1110,20 +1102,20 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"tcpPort\": 10333,\n" +
-                        "        \"wsPort\": 10334,\n" +
-                        "        \"nonce\": 1845610272,\n" +
-                        "        \"userAgent\": \"/Neo:3.0.0-preview2-00/\"\n" +
+                        "        \"tcpport\": 40333,\n" +
+                        "        \"wsport\": 40334,\n" +
+                        "        \"nonce\": 224036820,\n" +
+                        "        \"useragent\": \"/Neo:3.0.0-preview3-00/\"\n" +
                         "    }\n" +
                         "}"
         );
 
         NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
         assertThat(getVersion.getVersion(), is(notNullValue()));
-        assertThat(getVersion.getVersion().getTCPPort(), is(10333));
-        assertThat(getVersion.getVersion().getWSPort(), is(10334));
-        assertThat(getVersion.getVersion().getNonce(), is(1845610272L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview2-00/"));
+        assertThat(getVersion.getVersion().getTCPPort(), is(40333));
+        assertThat(getVersion.getVersion().getWSPort(), is(40334));
+        assertThat(getVersion.getVersion().getNonce(), is(224036820L));
+        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview3-00/"));
     }
 
     @Test
@@ -1277,7 +1269,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 3,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\",\n" +
+                        "        \"script\": \"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\",\n" +
                         "        \"state\": \"HALT, BREAK\",\n" +
                         "        \"gasconsumed\": \"0.161\",\n" +
                         "        \"stack\": [\n" +
@@ -1293,7 +1285,7 @@ public class ResponseTest extends ResponseTester {
         NeoInvokeScript invokeScript = deserialiseResponse(NeoInvokeScript.class);
         assertThat(invokeScript.getInvocationResult(), is(notNullValue()));
         assertThat(invokeScript.getInvocationResult().getScript(),
-                is("00046e616d656724058e5e1b6008847cd662728549088a9ee82191"));
+                is("10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52"));
         assertThat(invokeScript.getInvocationResult().getState(), is("HALT, BREAK"));
         assertThat(invokeScript.getInvocationResult().getGasConsumed(), is("0.161"));
         assertThat(invokeScript.getInvocationResult().getStack(), is(notNullValue()));
@@ -1323,16 +1315,12 @@ public class ResponseTest extends ResponseTester {
                         "        {\n" +
                         "            \"name\": \"LevelDBStore\",\n" +
                         "            \"version\": \"3.0.0.0\",\n" +
-                        "            \"interfaces\": [\n" +
-                        "                \"IStorageProvider\"\n" +
-                        "            ]\n" +
+                        "            \"interfaces\": []\n" +
                         "        },\n" +
                         "        {\n" +
                         "            \"name\": \"RocksDBStore\",\n" +
                         "            \"version\": \"3.0.0.0\",\n" +
-                        "            \"interfaces\": [\n" +
-                        "                \"IStorageProvider\"\n" +
-                        "            ]\n" +
+                        "            \"interfaces\": []\n" +
                         "        },\n" +
                         "        {\n" +
                         "            \"name\": \"RpcNep5Tracker\",\n" +
@@ -1381,16 +1369,14 @@ public class ResponseTest extends ResponseTester {
                 is(NodePluginType.LEVEL_DB_STORE));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
-        assertThat(plugin.getInterfaces(), hasSize(1));
-        assertThat(plugin.getInterfaces(), containsInAnyOrder("IStorageProvider"));
+        assertThat(plugin.getInterfaces(), hasSize(0));
 
         plugin = listPlugins.getPlugins().get(2);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
                 is(NodePluginType.ROCKS_DB_STORE));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
-        assertThat(plugin.getInterfaces(), hasSize(1));
-        assertThat(plugin.getInterfaces(), containsInAnyOrder("IStorageProvider"));
+        assertThat(plugin.getInterfaces(), hasSize(0));
 
         plugin = listPlugins.getPlugins().get(3);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
@@ -1487,7 +1473,7 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetBalance() {
+    public void testGetWalletBalance() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -1504,7 +1490,7 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetBalance_UpperCase() {
+    public void testGetWalletBalance_UpperCase() {
         buildResponse(
                 "{\n"
                         + "  \"id\":1,\n"
@@ -1628,13 +1614,13 @@ public class ResponseTest extends ResponseTester {
                         "        \"sysfee\": \"9007810\",\n" +
                         "        \"netfee\": \"1266450\",\n" +
                         "        \"validuntilblock\": 2106392,\n" +
-                        "        \"attributes\": [" +
+                        "        \"signers\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
                         "        ],\n" +
+                        "        \"attributes\": []," +
                         "        \"script\": \"GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA==\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -1658,23 +1644,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendFrom.getSendFrom().getSysFee(), is("9007810"));
         assertThat(sendFrom.getSendFrom().getNetFee(), is("1266450"));
         assertThat(sendFrom.getSendFrom().getValidUntilBlock(), is(2106392L));
-        assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
 
-        assertThat(sendFrom.getSendFrom().getAttributes(), hasSize(1));
-        assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getType(), is(TransactionAttributeType.SIGNER));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionSigner().type,
-                is(TransactionAttributeType.SIGNER));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionSigner().getAccount(),
+        assertThat(sendFrom.getSendFrom().getSigners(), is(notNullValue()));
+        assertThat(sendFrom.getSendFrom().getSigners(), hasSize(1));
+        assertThat(sendFrom.getSendFrom().getSigners().get(0).getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(sendFrom.getSendFrom().getAttributes().get(0).getAsTransactionSigner().getScopes(),
-                is(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(sendFrom.getSendFrom().getSigners().get(0).getScopes(), hasSize(1));
+        assertThat(sendFrom.getSendFrom().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 
-        assertThat(sendFrom.getSendFrom().getAttributes(),
-                containsInAnyOrder(
-                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                WitnessScope.CALLED_BY_ENTRY)
-                ));
+        assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
+        assertThat(sendFrom.getSendFrom().getAttributes(), hasSize(0));
 
         assertThat(sendFrom.getSendFrom().getScript(),
                 is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA=="));
@@ -1705,18 +1684,17 @@ public class ResponseTest extends ResponseTester {
                         "        \"sysfee\": \"18015620\",\n" +
                         "        \"netfee\": \"1352450\",\n" +
                         "        \"validuntilblock\": 2106840,\n" +
-                        "        \"attributes\": [\n" +
+                        "        \"signers\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xbe175fb771d5782282b7598b56c26a2f5ebf2d24\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
                         "        ],\n" +
+                        "        \"attributes\": []," +
                         "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjgaDBQP7O1Ep0MA2doEn6k2cKQxFxiP9gwUD+ztRKdDANnaBJ+pNnCkMRcYj/YTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -1741,23 +1719,22 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany().getNetFee(), is("1352450"));
         assertThat(sendMany.getSendMany().getValidUntilBlock(), is(2106840L));
 
-        assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
-        assertThat(sendMany.getSendMany().getAttributes(), hasSize(2));
-        assertThat(sendMany.getSendMany().getAttributes(),
-                containsInAnyOrder(
-                        new TransactionSigner(
-                                "0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
-                                WitnessScope.CALLED_BY_ENTRY),
-                        new TransactionSigner(
-                                "0xf68f181731a47036a99f04dad90043a744edec0f",
-                                WitnessScope.CALLED_BY_ENTRY
-                        )
-                ));
-        assertThat(sendMany.getSendMany().getAttributes().get(0).getType(), is(TransactionAttributeType.SIGNER));
-        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionSigner().getAccount(),
+        assertThat(sendMany.getSendMany().getSigners(), is(notNullValue()));
+        assertThat(sendMany.getSendMany().getSigners(), hasSize(2));
+        assertThat(sendMany.getSendMany().getSigners().get(0).getAccount(),
                 is("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24"));
-        assertThat(sendMany.getSendMany().getAttributes().get(0).getAsTransactionSigner().getScopes(),
-                is(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(sendMany.getSendMany().getSigners().get(0).getScopes(), hasSize(1));
+        assertThat(sendMany.getSendMany().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(sendMany.getSendMany().getSigners(),
+                containsInAnyOrder(
+                        new TransactionSigner("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
+                                asList(WitnessScope.CALLED_BY_ENTRY)),
+                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
+                                asList(WitnessScope.CALLED_BY_ENTRY))
+                ));
+
+        assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
+        assertThat(sendMany.getSendMany().getAttributes(), hasSize(0));
 
         assertThat(sendMany.getSendMany().getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjgaDBQP7O1Ep0MA2doEn6k2cKQxFxiP9gwUD+ztRKdDANnaBJ+pNnCkMRcYj/YTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4"));
@@ -1805,13 +1782,13 @@ public class ResponseTest extends ResponseTester {
                         "        \"sysfee\": \"9007810\",\n" +
                         "        \"netfee\": \"2375840\",\n" +
                         "        \"validuntilblock\": 2106930,\n" +
-                        "        \"attributes\": [" +
+                        "        \"signers\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"Signer\",\n" +
                         "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
                         "        ],\n" +
+                        "        \"attributes\": []," +
                         "        \"script\": \"GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA==\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -1838,26 +1815,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendToAddress.getSendToAddress().getSysFee(), is("9007810"));
         assertThat(sendToAddress.getSendToAddress().getNetFee(), is("2375840"));
         assertThat(sendToAddress.getSendToAddress().getValidUntilBlock(), is(2106930L));
-        assertThat(sendToAddress.getSendToAddress().getAttributes(), is(notNullValue()));
 
-        assertThat(sendToAddress.getSendToAddress().getAttributes(), is(notNullValue()));
-        assertThat(sendToAddress.getSendToAddress().getAttributes(), hasSize(1));
-        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getType(),
-                is(TransactionAttributeType.SIGNER));
-        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionSigner().type,
-                is(TransactionAttributeType.SIGNER));
-        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionSigner().getAccount(),
+        assertThat(sendToAddress.getSendToAddress().getSigners(), is(notNullValue()));
+        assertThat(sendToAddress.getSendToAddress().getSigners(), hasSize(1));
+        assertThat(sendToAddress.getSendToAddress().getSigners().get(0).getAccount(),
                 is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(sendToAddress.getSendToAddress().getAttributes().get(0).getAsTransactionSigner().getScopes(),
+        assertThat(sendToAddress.getSendToAddress().getSigners().get(0).getScopes(), hasSize(1));
+        assertThat(sendToAddress.getSendToAddress().getSigners().get(0).getScopes().get(0),
                 is(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(sendToAddress.getSendToAddress().getAttributes(),
-                containsInAnyOrder(
-                        new TransactionSigner(
-                                "0xf68f181731a47036a99f04dad90043a744edec0f",
-                                WitnessScope.CALLED_BY_ENTRY
-                        )
-                ));
-
+        assertThat(sendToAddress.getSendToAddress().getAttributes(), is(notNullValue()));
+        assertThat(sendToAddress.getSendToAddress().getAttributes(), hasSize(0));
         assertThat(sendToAddress.getSendToAddress().getScript(),
                 is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA=="));
         assertThat(sendToAddress.getSendToAddress().getWitnesses(), is(notNullValue()));
@@ -2053,6 +2020,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"notifications\": [\n" +
                         "            {\n" +
                         "                \"contract\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
+                        "                \"eventname\": \"Transfer\",\n" +
                         "                \"state\": {\n" +
                         "                    \"type\": \"Array\",\n" +
                         "                    \"value\": [\n" +
@@ -2076,6 +2044,7 @@ public class ResponseTest extends ResponseTester {
                         "            },\n" +
                         "            {\n" +
                         "                \"contract\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\n" +
+                        "                \"eventname\": \"Transfer\",\n" +
                         "                \"state\": {\n" +
                         "                    \"type\": \"Array\",\n" +
                         "                    \"value\": [\n" +
@@ -2125,6 +2094,7 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(notification0.getContract(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
+        assertThat(notification0.getEventName(), is("Transfer"));
 
         ArrayStackItem notification0Array = notification0.getState().asArray();
 
@@ -2143,6 +2113,7 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(notification1.getContract(), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
+        assertThat(notification1.getEventName(), is("Transfer"));
 
         ArrayStackItem notification1Array = notification1.getState().asArray();
 
