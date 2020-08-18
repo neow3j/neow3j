@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.transaction.Signer;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,9 @@ public class Transaction {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long validUntilBlock;
 
+    @JsonProperty("signers")
+    private List<TransactionSigner> signers;
+
     @JsonProperty("attributes")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<TransactionAttribute> attributes;
@@ -70,8 +74,8 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(String hash, long size, int version, Long nonce, String sender,
-            String sysFee, String netFee, Long validUntilBlock,
+    public Transaction(String hash, long size, int version, Long nonce, String sender, String sysFee,
+            String netFee, Long validUntilBlock, List<TransactionSigner> signers,
             List<TransactionAttribute> attributes, String script,
             List<NeoWitness> witnesses) {
         this.hash = hash;
@@ -82,16 +86,17 @@ public class Transaction {
         this.sysFee = sysFee;
         this.netFee = netFee;
         this.validUntilBlock = validUntilBlock;
+        this.signers = signers;
         this.attributes = attributes;
         this.script = script;
         this.witnesses = witnesses;
     }
 
-    public Transaction(String hash, long size, int version, Long nonce, String sender,
-                       String sysFee, String netFee, Long validUntilBlock,
-                       List<TransactionAttribute> attributes, String script,
-                       List<NeoWitness> witnesses, String blockHash, int confirmations,
-                       long blockTime, String vmState) {
+    public Transaction(String hash, long size, int version, Long nonce, String sender, String sysFee,
+            String netFee, Long validUntilBlock, List<TransactionSigner> signers,
+            List<TransactionAttribute> attributes, String script,
+            List<NeoWitness> witnesses, String blockHash, int confirmations,
+            long blockTime, String vmState) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -100,6 +105,7 @@ public class Transaction {
         this.sysFee = sysFee;
         this.netFee = netFee;
         this.validUntilBlock = validUntilBlock;
+        this.signers = signers;
         this.attributes = attributes;
         this.script = script;
         this.witnesses = witnesses;
@@ -139,6 +145,10 @@ public class Transaction {
 
     public Long getValidUntilBlock() {
         return validUntilBlock;
+    }
+
+    public List<TransactionSigner> getSigners() {
+        return signers;
     }
 
     public List<TransactionAttribute> getAttributes() {
@@ -186,6 +196,7 @@ public class Transaction {
                 Objects.equals(getSysFee(), that.getSysFee()) &&
                 Objects.equals(getNetFee(), that.getNetFee()) &&
                 Objects.equals(getValidUntilBlock(), that.getValidUntilBlock()) &&
+                Objects.equals(getSigners(), that.getSigners()) &&
                 Objects.equals(getAttributes(), that.getAttributes()) &&
                 Objects.equals(getScript(), that.getScript()) &&
                 Objects.equals(getWitnesses(), that.getWitnesses()) &&
@@ -199,9 +210,9 @@ public class Transaction {
     public int hashCode() {
         return Objects
                 .hash(getHash(), getSize(), getVersion(), getNonce(), getSender(), getSysFee(),
-                        getNetFee(), getValidUntilBlock(), getAttributes(), getScript(),
-                        getWitnesses(), getBlockHash(), getConfirmations(), getBlockTime(),
-                        getVMState());
+                        getNetFee(), getValidUntilBlock(), getSigners(), getAttributes(),
+                        getScript(), getWitnesses(), getBlockHash(), getConfirmations(),
+                        getBlockTime(), getVMState());
     }
 
     @Override
@@ -215,6 +226,7 @@ public class Transaction {
                 ", sysFee='" + sysFee + '\'' +
                 ", netFee='" + netFee + '\'' +
                 ", validUntilBlock=" + validUntilBlock +
+                ", signers=" + signers +
                 ", attributes=" + attributes +
                 ", script='" + script + '\'' +
                 ", witnesses=" + witnesses +

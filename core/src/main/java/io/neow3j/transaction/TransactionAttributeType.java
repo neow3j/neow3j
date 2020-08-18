@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum TransactionAttributeType {
 
-    SIGNER("Signer", 0x01, Signer.class);
+    VOID("Void", 0x00, TransactionAttribute.TransactionAttributeVoid.class);
 
     public static final String SIGNER_VALUE = "Signer";
 
