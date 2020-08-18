@@ -39,7 +39,7 @@ public class NeoBlock {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<NeoWitness> witnesses;
 
-    @JsonProperty("consensus_data")
+    @JsonProperty("consensusdata")
     private ConsensusData consensusData;
 
     @JsonProperty("tx")
