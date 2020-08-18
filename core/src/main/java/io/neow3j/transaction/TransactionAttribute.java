@@ -84,4 +84,23 @@ public abstract class TransactionAttribute extends NeoSerializable {
         return Objects.hash(getType());
     }
 
+    public static class TransactionAttributeVoid extends TransactionAttribute {
+
+        public TransactionAttributeVoid(TransactionAttributeType type) {
+            super(type);
+        }
+
+        @Override
+        protected int getSizeWithoutType() {
+            return 0;
+        }
+
+        @Override
+        protected void deserializeWithoutType(BinaryReader reader) {
+        }
+
+        @Override
+        protected void serializeWithoutType(BinaryWriter writer) {
+        }
+    }
 }
