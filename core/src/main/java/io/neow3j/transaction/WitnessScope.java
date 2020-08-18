@@ -9,10 +9,9 @@ import java.util.List;
 public enum WitnessScope {
 
     /**
-     * The global scope allows to use a witness in all contexts. It cannot be combined with other
-     * scopes.
+     * This scope is used to mark the transaction sender.
      */
-    GLOBAL("Global", 0x00),
+    FEE_ONLY("FeeOnly", 0x00),
 
     /**
      * This scope limits the use of a witness to the level of the contract called in the
@@ -29,7 +28,13 @@ public enum WitnessScope {
     /**
      * This scope allows the specification of contract groups in which the witness can be used.
      */
-    CUSTOM_GROUPS("CustomGroups", 0x20);
+    CUSTOM_GROUPS("CustomGroups", 0x20),
+
+    /**
+     * The global scope allows to use a witness in all contexts. It cannot be combined with other
+     * scopes.
+     */
+    GLOBAL("Global", 0x80);
 
     private String jsonValue;
 
@@ -51,6 +56,9 @@ public enum WitnessScope {
             return Arrays.asList(GLOBAL);
         }
         List<WitnessScope> scopes = new ArrayList<>();
+        if ((combinedScopes & FEE_ONLY.byteValue()) != 0) {
+            scopes.add(FEE_ONLY);
+        }
         if ((combinedScopes & CALLED_BY_ENTRY.byteValue()) != 0) {
             scopes.add(CALLED_BY_ENTRY);
         }
