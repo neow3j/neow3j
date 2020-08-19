@@ -86,7 +86,6 @@ public class Compiler {
     private static final String HASH_CODE_METHOD_NAME = "hashCode";
     private static final String EQUALS_METHOD_NAME = "hashCode";
     private static final String STRING_INTERNAL_NAME = Type.getInternalName(String.class);
-    private static final String LONG_TYPE_DESC = "J";
 
     private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
             "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
@@ -257,6 +256,8 @@ public class Compiler {
                 handleNew(insn, neoMethod);
                 break;
             case ARRAYLENGTH:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SIZE));
+                break;
             case INSTANCEOF:
                 throw new CompilerException("Instruction " + opcode + " in " +
                         neoMethod.asmMethod.name + " not yet supported.");
@@ -284,8 +285,8 @@ public class Compiler {
                 addLoadConstant(insn, neoMethod);
                 break;
             case ACONST_NULL:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.asmMethod.name + " not yet supported.");
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSHNULL));
+                break;
             case BIPUSH: // Has an operand with an int value from -128 to 127.
             case SIPUSH: // Has an operand with an int value from -32768 to 32767.
                 addPushNumber(((IntInsnNode) insn).operand, neoMethod);
