@@ -263,6 +263,11 @@ public class ScriptBuilder {
         return this;
     }
 
+    public ScriptBuilder pack() {
+        opCode(OpCode.PACK);
+        return this;
+    }
+
     private void writeByte(int v) {
         try {
             stream.writeByte(v);
