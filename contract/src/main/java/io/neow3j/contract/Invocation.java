@@ -18,13 +18,17 @@ import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.transaction.Witness;
+import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import static java.util.Arrays.asList;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -90,8 +94,12 @@ public class Invocation {
                         + "hash " + signer.getScriptHash());
             } else {
                 Account signerAcc = this.wallet.getAccount(signer.getScriptHash());
-                if (signerAcc.isMultiSig()) signWithMultiSigAccount(txBytes, signerAcc);
-                else signWithNormalAccount(txBytes, signerAcc);
+                if (signerAcc.isMultiSig()) {
+                    signWithMultiSigAccount(txBytes, signerAcc);
+                }
+                else {
+                    signWithNormalAccount(txBytes, signerAcc);
+                }
             }
         });
         return this;
@@ -174,7 +182,7 @@ public class Invocation {
         BigInteger fees = BigInteger.valueOf(
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
-                .getBalanceOf(this.transaction.getSender());
+                .getBalanceOf(this.transaction.getSender().getScriptHash());
         if (fees.compareTo(senderGasBalance) > 0) {
             consumer.accept(fees, senderGasBalance);
         }
@@ -201,7 +209,7 @@ public class Invocation {
         BigInteger fees = BigInteger.valueOf(
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
-                .getBalanceOf(this.transaction.getSender());
+                .getBalanceOf(this.transaction.getSender().getScriptHash());
         return fees.compareTo(senderGasBalance) < 0;
     }
 
@@ -253,6 +261,29 @@ public class Invocation {
         }
 
         /**
+         * Configures the invocation with the given signers.
+         * <p>
+         * If no sender is specified explicitly, the first signer parameter is used as the
+         * transaction sender.
+         *
+         * @param signers The signers.
+         * @return this.
+         */
+        public Builder withSigners(Signer... signers) {
+            List<ScriptHash> currentSigners = this.txBuilder.getSigners().stream()
+                    .map(Signer::getScriptHash)
+                    .collect(Collectors.toList());
+            Arrays.stream(signers)
+                    .map(Signer::getScriptHash).forEach(s -> {
+                        if (currentSigners.contains(s)) {
+                            throw new IllegalArgumentException("Cannot add a signer multiple times.");
+                        }
+            });
+            this.txBuilder.withSigners(signers);
+            return this;
+        }
+
+        /**
          * Configures the invocation with the given nonce. 
          * <p>
          * By default the nonce is set to a random value.
@@ -282,8 +313,8 @@ public class Invocation {
         /**
          * Configures the invocation to use the given wallet.
          * <p>
-         * The wallet's default account is used as the transaction sender if no sender is specified
-         * explicitly.
+         * The wallet's default account is used as the transaction sender if no signers and no sender
+         * is specified explicitly.
          *
          * @param wallet The wallet.
          * @return this.
@@ -313,7 +344,7 @@ public class Invocation {
          * @return this.
          */
         public Builder withParameters(ContractParameter... parameters) {
-            this.contractParams.addAll(Arrays.asList(parameters));
+            this.contractParams.addAll(asList(parameters));
             return this;
         }
 
@@ -381,7 +412,7 @@ public class Invocation {
             // ChecekWitness check in the smart contract. We add the signers even if that
             // is not the case because we cannot know if the invoked script needs it or not and it
             // doesn't lead to failures if we add them in any case.
-            String[] signers = getSigners().toArray(new String[]{});
+            Signer[] signers = getSigners().toArray(new Signer[]{});
             String script = Numeric.toHexStringNoPrefix(this.txBuilder.getScript());
             return neow.invokeScript(script, signers).send();
         }
@@ -410,7 +441,7 @@ public class Invocation {
             // CheckWitness check in the smart contract. We add the signers even if that is not the
             // case because we cannot know if the invoked function needs it or not and it doesn't
             // lead to failures if we add them in any case.
-            String[] signers = getSigners().toArray(new String[]{});
+            Signer[] signers = getSigners().toArray(new Signer[]{});
             if (this.contractParams.isEmpty()) {
                 return neow.invokeFunction(this.contract.toString(), this.contractFunction, null,
                         signers).send();
@@ -419,18 +450,8 @@ public class Invocation {
                     this.contractParams, signers).send();
         }
 
-        private Set<String> getSigners() {
-            Set<String> signerSet = this.txBuilder.getSigners().stream()
-                    .map(c -> c.getScriptHash().toString())
-                    .collect(Collectors.toSet());
-            if (this.txBuilder.getSender() != null) {
-                // If the sender account is not in the signers then add it here.
-                signerSet.add(this.txBuilder.getSender().toString());
-            } else if (wallet != null) {
-                // If the sender is not set, then take the default account form the wallet
-                signerSet.add(this.wallet.getDefaultAccount().getScriptHash().toString());
-            }
-            return signerSet;
+        private Set<Signer> getSigners() {
+            return new HashSet<>(this.txBuilder.getSigners());
         }
 
         /**
@@ -453,13 +474,12 @@ public class Invocation {
                 this.txBuilder.validUntilBlock(
                         fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT - 1);
             }
+            // If no signer or sender is present, add the default account as signer with fee only witness scope to
+            // cover the fees.
             if (this.txBuilder.getSender() == null) {
-                // If sender is not set explicitly set it to the default account of the wallet.
-                this.txBuilder.sender(this.wallet.getDefaultAccount().getScriptHash());
-            }
-            if (this.txBuilder.getSigners().isEmpty() || !senderSignerExists()) {
-                // Set the standard signer if none has been specified.
-                this.txBuilder.attributes(Signer.calledByEntry(this.txBuilder.getSender()));
+                if (this.txBuilder.getSigners().isEmpty()) {
+                    this.txBuilder.sender(this.wallet.getDefaultAccount().getScriptHash());
+                }
             }
             if (this.txBuilder.getScript() == null || this.txBuilder.getScript().length == 0) {
                 // The builder was not configured with a script. Therefore, try to construct one
@@ -493,8 +513,11 @@ public class Invocation {
         }
 
         private boolean senderSignerExists() {
-            return this.txBuilder.getSigners().stream()
-                    .anyMatch(c -> c.getScriptHash().equals(this.txBuilder.getSender()));
+            Signer signer = this.txBuilder.getSigners().stream()
+                    .filter(s -> s.getScopes().contains(WitnessScope.FEE_ONLY))
+                    .findAny()
+                    .orElse(null);
+            return signer != null;
         }
 
         private long fetchCurrentBlockNr() throws IOException {
@@ -508,8 +531,7 @@ public class Invocation {
         private long getSystemFeeForScript() throws IOException {
             // The signers are required for `invokescript` calls that will hit a CheckWitness
             // check in the smart contract.
-            String[] signers = this.txBuilder.getSigners().stream()
-                    .map(c -> c.getScriptHash().toString()).toArray(String[]::new);
+            Signer[] signers = this.txBuilder.getSigners().toArray(new Signer[0]);
             String script = Numeric.toHexStringNoPrefix(this.txBuilder.getScript());
             NeoInvokeScript response = neow.invokeScript(script, signers).send();
             // The GAS amount is returned in fractions (10^8)

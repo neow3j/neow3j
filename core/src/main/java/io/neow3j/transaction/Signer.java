@@ -3,9 +3,11 @@ package io.neow3j.transaction;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Sign;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
+import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
 import java.io.IOException;
@@ -19,8 +21,7 @@ import java.util.Objects;
  * A Signer of a transaction. It also sets a scope in which the signer's
  * witness/signature is valid.
  */
-public class Signer extends TransactionAttribute {
-
+public class Signer extends NeoSerializable {
 
     /**
      * The script hash of the signer account.
@@ -43,7 +44,6 @@ public class Signer extends TransactionAttribute {
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
     public Signer() {
-        super(TransactionAttributeType.SIGNER);
         this.account = new ScriptHash();
         this.scopes = new ArrayList<>();
         this.allowedContracts = new ArrayList<>();
@@ -51,11 +51,24 @@ public class Signer extends TransactionAttribute {
     }
 
     private Signer(Builder builder) {
-        super(TransactionAttributeType.SIGNER);
         this.account = builder.account;
         this.scopes = builder.scopes;
         this.allowedContracts = builder.allowedContracts;
         this.allowedGroups = builder.allowedGroups;
+    }
+
+    /**
+     * Creates a Signer for the given account with fee only witness scope ({@link
+     * WitnessScope#FEE_ONLY}).
+     *
+     * @param account The originator of the witness.
+     * @return {@link Signer}
+     */
+    public static Signer feeOnly(ScriptHash account) {
+        return new Builder()
+                .account(account)
+                .scopes(WitnessScope.FEE_ONLY)
+                .build();
     }
 
     /**
@@ -69,6 +82,34 @@ public class Signer extends TransactionAttribute {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .build();
+    }
+
+    /**
+     * Creates a Signer for the given account with custom contract scope ({@link
+     * WitnessScope#CUSTOM_CONTRACTS}).
+     *
+     * @param account The originator of the witness.
+     * @return {@link Signer}
+     */
+    public static Signer customContract(ScriptHash account) {
+        return new Builder()
+                .account(account)
+                .scopes(WitnessScope.CUSTOM_CONTRACTS)
+                .build();
+    }
+
+    /**
+     * Creates a Signer for the given account with custom group scope ({@link
+     * WitnessScope#CUSTOM_GROUPS}).
+     *
+     * @param account The originator of the witness.
+     * @return {@link Signer}
+     */
+    public static Signer customGroups(ScriptHash account) {
+        return new Builder()
+                .account(account)
+                .scopes(WitnessScope.CUSTOM_GROUPS)
                 .build();
     }
 
@@ -103,7 +144,7 @@ public class Signer extends TransactionAttribute {
     }
 
     @Override
-    public void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
+    public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             this.account = reader.readSerializable(ScriptHash.class);
             this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
@@ -129,7 +170,7 @@ public class Signer extends TransactionAttribute {
     }
 
     @Override
-    public void serializeWithoutType(BinaryWriter writer) throws IOException {
+    public void serialize(BinaryWriter writer) throws IOException {
         writer.writeSerializableFixed(this.account);
         writer.writeByte(WitnessScope.combineScopes(this.scopes));
         if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
@@ -141,7 +182,7 @@ public class Signer extends TransactionAttribute {
     }
 
     @Override
-    public int getSizeWithoutType() {
+    public int getSize() {
         // Account script hash plus scope byte.
         int size = NeoConstants.SCRIPTHASH_SIZE + 1;
         if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {

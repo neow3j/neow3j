@@ -1,5 +1,7 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.protocol.core.methods.response.TransactionSigner;
+import io.neow3j.transaction.Signer;
 import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Strings.isEmpty;
 import static java.util.Arrays.asList;
@@ -49,6 +51,7 @@ import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.utils.Async;
 import io.reactivex.Observable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -320,17 +323,19 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
-            String functionName, String... witnesses) {
+            String functionName, Signer... witnesses) {
         return invokeFunction(contractScriptHash, functionName, null, witnesses);
     }
 
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
-            String functionName, List<ContractParameter> contractParams, String... witnesses) {
+            String functionName, List<ContractParameter> contractParams, Signer... witnesses) {
 
+        List<TransactionSigner> signers = new ArrayList<>();
+        Arrays.stream(witnesses).map(TransactionSigner::new).forEach(signers::add);
         List<?> params;
-        if (witnesses.length > 0) {
-            params = asList(contractScriptHash, functionName, contractParams, witnesses);
+        if (signers.size() > 0) {
+            params = asList(contractScriptHash, functionName, contractParams, signers);
         } else {
             params = asList(contractScriptHash, functionName, contractParams);
         }
@@ -342,10 +347,12 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoInvokeScript> invokeScript(String script, String... witnesses) {
+    public Request<?, NeoInvokeScript> invokeScript(String script, Signer... witnesses) {
+        List<TransactionSigner> signers = new ArrayList<>();
+        Arrays.stream(witnesses).map(TransactionSigner::new).forEach(signers::add);
         List<?> params;
         if (witnesses.length > 0) {
-            params = asList(script, witnesses);
+            params = asList(script, signers);
         } else {
             params = asList(script);
         }

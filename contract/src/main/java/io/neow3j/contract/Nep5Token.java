@@ -188,7 +188,8 @@ public class Nep5Token extends SmartContract {
             throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
         }
 
-        return buildTransactionScript(wallet, to, amount).send();
+        Invocation inv = buildTransactionScript(wallet, to, amount);
+        return inv.send();
     }
 
     // Method extracted for testability.
@@ -202,12 +203,12 @@ public class Nep5Token extends SmartContract {
 
         // List of the individual invocation scripts.
         List<byte[]> scripts = new ArrayList<>();
-        List<ScriptHash> signers = new ArrayList<>();
+        List<Signer> signers = new ArrayList<>();
         // If the amount is covered by the wallet's default account, build and send the transaction.
         if (balanceDefaultAcc.signum() > 0) {
             if (!defaultAccount.isMultiSig() ||
                     privateKeysArePresentForMultiSig(wallet, defaultAccount.getScriptHash())) {
-                signers.add(defaultAccount.getScriptHash());
+                signers.add(Signer.calledByEntry(defaultAccount.getScriptHash()));
                 if (balanceDefaultAcc.subtract(amountStillToCover).signum() >= 0) {
                     // Full amount can be covered by default account.
                     scripts.add(buildSingleTransferScript(defaultAccount, to, amountStillToCover));
@@ -233,7 +234,7 @@ public class Nep5Token extends SmartContract {
             if (acc.isDefault() || balance.signum() <= 0) {
                 continue;
             }
-            signers.add(acc.getScriptHash());
+            signers.add(Signer.calledByEntry(acc.getScriptHash()));
             if (balance.subtract(amountStillToCover).signum() >= 0) {
                 // Full remaining amount can be covered by current account.
                 scripts.add(buildSingleTransferScript(acc, to, amountStillToCover));
@@ -243,6 +244,8 @@ public class Nep5Token extends SmartContract {
                 amountStillToCover = amountStillToCover.subtract(balance);
             }
         }
+        // TODO: 12.08.20 Michael: if only the default account is present with insufficient funds, the following
+        //  exception is thrown. However, the exception message is not correct in that case. Restructure this.
         if (scripts.size() == 0) {
             throw new IllegalArgumentException("Can't create transaction signature. Wallet does not contain" +
                     " enough accounts (with decrypted private keys) that are part of the multi-sig account(s)" +
@@ -300,7 +303,7 @@ public class Nep5Token extends SmartContract {
         BigInteger amountStillToCover = getAmountAsBigInteger(amount);
         // List of the individual invocation scripts.
         List<byte[]> scripts = new ArrayList<>();
-        List<ScriptHash> signers = new ArrayList<>();
+        List<Signer> signers = new ArrayList<>();
 
         // If there is still an amount to cover, use other accounts in the wallet until the amount is covered.
         for (ScriptHash scriptHash : from) {
@@ -309,7 +312,7 @@ public class Nep5Token extends SmartContract {
             if (balance.signum() <= 0) {
                 continue;
             }
-            signers.add(acc.getScriptHash());
+            signers.add(Signer.calledByEntry(acc.getScriptHash()));
 
             if (balance.subtract(amountStillToCover).signum() >= 0) {
                 // Full remaining amount can be covered by current account.
@@ -337,7 +340,7 @@ public class Nep5Token extends SmartContract {
         return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
     }
 
-    private Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts, List<ScriptHash> signers)
+    private Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts, List<Signer> signers)
             throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         for (byte[] script : scripts) {
@@ -348,11 +351,11 @@ public class Nep5Token extends SmartContract {
         Invocation.Builder invocationBuilder = new Invocation.Builder(neow)
                 .withWallet(wallet)
                 .withScript(concatenatedScript)
-                .withSender(signers.get(0))
+//                .withSender(signers.get(0).getScriptHash())
                 .failOnFalse();
 
-        for (ScriptHash signer : signers) {
-            invocationBuilder.withAttributes(Signer.calledByEntry(signer));
+        for (Signer signer : signers) {
+            invocationBuilder.withSigners(signer);
         }
 
         return invocationBuilder.build().sign();
@@ -408,13 +411,14 @@ public class Nep5Token extends SmartContract {
                     + " only holds " + accBalance.toString() + " (in token fractions).");
         }
         return invoke(NEP5_TRANSFER)
+                .withSigners(Signer.calledByEntry(acc.getScriptHash()))
                 .withWallet(wallet)
                 .withParameters(
                         ContractParameter.hash160(acc.getScriptHash()),
                         ContractParameter.hash160(to),
                         ContractParameter.integer(fractions)
                 )
-                .failOnFalse()
+//                .failOnFalse()
                 .build()
                 .sign();
     }

@@ -125,7 +125,7 @@ public class NeoToken extends Nep5Token {
                 .withSender(candidate)
                 .withWallet(wallet)
                 .withParameters(ContractParameter.publicKey(candidateKey.getEncoded(true)))
-                .withAttributes(Signer.global(candidate))
+                .withSigners(Signer.global(candidate))
                 .build()
                 .sign();
     }
@@ -241,7 +241,7 @@ public class NeoToken extends Nep5Token {
                 .withWallet(wallet)
                 .withParameters(ContractParameter.hash160(voter))
                 .withParameters(validatorParams)
-                .withAttributes(Signer.global(voter))
+                .withSigners(Signer.global(voter))
                 .build()
                 .sign();
     }

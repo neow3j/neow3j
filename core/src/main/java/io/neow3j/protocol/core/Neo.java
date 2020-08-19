@@ -38,6 +38,8 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.transaction.Signer;
+
 import java.util.Date;
 import java.util.List;
 
@@ -105,12 +107,12 @@ public interface Neo {
     // SmartContract Methods
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
-            String... witnesses);
+            Signer... signers);
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
-            List<ContractParameter> params, String... witnesses);
+            List<ContractParameter> params, Signer... signers);
 
-    Request<?, NeoInvokeScript> invokeScript(String script, String... witnesses);
+    Request<?, NeoInvokeScript> invokeScript(String script, Signer... signers);
 
     Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address);
 
