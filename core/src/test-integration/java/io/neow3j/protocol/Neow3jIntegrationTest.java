@@ -33,11 +33,11 @@ abstract class Neow3jIntegrationTest {
     // The transaction information that is initially sent
     protected static String TX_HASH;
     protected static final String TX_AMOUNT = "2500";
-    protected static final String TX_GAS_CONSUMED = "9007810";
+    protected static final String TX_GAS_CONSUMED = "9007990";
     protected static final long TX_BLOCK_IDX = 2L;
     protected static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     protected static final int TX_VERSION = 0;
-    protected static final String TX_SCRIPT = "AcQJDBTXhdxFuBA/Rv+5MO5//k7/XYa79wwUlBNDI5IT+g52XxAnznQvSNt3mpYTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4";
+    protected static final String TX_SCRIPT = "AcQJDBTXhdxFuBA/Rv+5MO5//k7/XYa79wwUCJjqIZc3j2I6dnCXRFREhXbQrq8TwAwIdHJhbnNmZXIMFCUFnstIeNOodfkcUc7e0zDUV1/eQWJ9W1I4";
     protected static final String TX_SIGNER = "0x969a77db482f74ce27105f760efa139223431394";
     protected static final int RAW_TX_LENGTH = 496;
     protected static final String VM_STATE_HALT = "HALT";
@@ -51,7 +51,7 @@ abstract class Neow3jIntegrationTest {
     protected static final String INVOKE_TRANSFER = "transfer";
 
     // Invoke script
-    protected static final String INVOKE_SCRIPT = "0c142bf173f849d1d59123d097c009aa31624d39e73911c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
+    protected static final String INVOKE_SCRIPT = "FQwUCJjqIZc3j2I6dnCXRFREhXbQrq8MFAiY6iGXN49iOnZwl0RURIV20K6vE8AMCHRyYW5zZmVyDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtSOA==";
 
     // This is the last unspent transaction of address AK2nJJ... after a clean start of the container.
     protected static final String NEO3_PRIVATENET_CONTAINER_IMG = "docker.pkg.github.com" +
@@ -78,7 +78,7 @@ abstract class Neow3jIntegrationTest {
     // The address that is imported to the wallet
     protected static final String IMPORT_ADDRESS = "AaN1ksPFARY9dH73brS8AGoUBt86zqRDcQ";
     // The witness for the invokeFunction transfer
-    protected static final String WITNESS = "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569";
+    protected static final String WITNESS = "afaed076854454449770763a628f379721ea9808";
     // The address from which Address 2 receives gas when sending Neo to the recipient address.
     protected static final String TX_GAS_ADDRESS = "AFmseVrdL9f9oyCzZefL9tG6UbvhPbdYzM";
     protected static final String TX_GAS_AMOUNT = "1200000000";

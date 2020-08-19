@@ -3,9 +3,12 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import io.neow3j.constants.InteropServiceCode;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import io.neow3j.transaction.WitnessScope;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -13,10 +16,8 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -88,10 +89,15 @@ public class NeoTokenTest {
 
     @Test
     public void registerCandidate() throws IOException {
-        String script =
-                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c11c00c11726567697374657243616e6469646174650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_registercandidate.json", script,
-                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        byte[] expectedScript = new ScriptBuilder()
+                .pushData(Numeric.hexStringToByteArray("02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c"))
+                .pushInteger(1)
+                .pack()
+                .pushData(Numeric.hexStringToByteArray("726567697374657243616e646964617465"))
+                .pushData(Numeric.hexStringToByteArray("25059ecb4878d3a875f91c51ceded330d4575fde"))
+                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL)
+                .toArray();
+        setUpWireMockForCall("invokescript", "invokescript_registercandidate.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
         byte[] privateKey = Numeric.hexStringToByteArray(
@@ -102,13 +108,15 @@ public class NeoTokenTest {
         Invocation inv = new NeoToken(neow).buildRegisterInvocation(
                 a.getScriptHash(), w, keyPair.getPublicKey());
         Transaction tx = inv.getTransaction();
-        assertThat(tx.getSender().toAddress(), is("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ"));
+        assertThat(tx.getSender().getScriptHash().toAddress(), is("ANzk4JsM7PY1QTZrVSTfzeDU3E9pWqajEb"));
         assertThat(tx.getSystemFee(), is(6007570L));
-        assertThat(tx.getNetworkFee(), is(1262390L));
-        assertThat(tx.getSigners(), contains(Signer.global(a.getScriptHash())));
-        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
-        byte[] verifScript = Numeric.hexStringToByteArray(
-                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");
+        assertThat(tx.getNetworkFee(), is(1240390L));
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(a.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        assertThat(tx.getScript(), is(expectedScript));
+
+        byte[] verifScript = ScriptBuilder.buildVerificationScript(a.getECKeyPair().getPublicKey().getEncoded(true));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(verifScript));
     }
 
@@ -181,11 +189,17 @@ public class NeoTokenTest {
 
     @Test
     public void vote() throws IOException {
-        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        String script =
-                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0c14c8172ea3b405bf8bfc57c33a8410116b843e13df13c00c04766f74650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_vote.json", script,
-                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        byte[] expectedScript = new ScriptBuilder()
+                .pushData(Numeric.hexStringToByteArray("02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"))
+                .pushData(Numeric.hexStringToByteArray("02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c"))
+                .pushData(Numeric.hexStringToByteArray("4f37f3deae488c13b671ea6489d07b15a4396310"))
+                .pushInteger(3)
+                .pack()
+                .pushData(Numeric.hexStringToByteArray("766f7465"))
+                .pushData(Numeric.hexStringToByteArray("25059ecb4878d3a875f91c51ceded330d4575fde"))
+                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL)
+                .toArray();
+        setUpWireMockForCall("invokescript", "invokescript_vote.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
         byte[] privateKey = Numeric.hexStringToByteArray(
@@ -200,13 +214,15 @@ public class NeoTokenTest {
         Invocation inv = new NeoToken(neow).buildVoteInvocation(
                 a.getScriptHash(), w, validator1, validator2);
         Transaction tx = inv.getTransaction();
-        assertThat(tx.getSender().toAddress(), is("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ"));
+        assertThat(tx.getSender().getScriptHash().toAddress(), is("ANzk4JsM7PY1QTZrVSTfzeDU3E9pWqajEb"));
         assertThat(tx.getSystemFee(), is(501007930L));
-        assertThat(tx.getNetworkFee(), is(1306390L));
-        assertThat(tx.getSigners(), contains(Signer.global(a.getScriptHash())));
-        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
-        byte[] verifScript = Numeric.hexStringToByteArray(
-                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");
+        assertThat(tx.getNetworkFee(), is(1284390L));
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(a.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        System.out.println(Numeric.toHexStringNoPrefix(tx.getScript()));
+        assertThat(tx.getScript(), is(expectedScript));
+        byte[] verifScript = ScriptBuilder.buildVerificationScript(a.getECKeyPair().getPublicKey().getEncoded(true));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(verifScript));
     }
 }

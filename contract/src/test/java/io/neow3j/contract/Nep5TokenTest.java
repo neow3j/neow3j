@@ -38,24 +38,37 @@ public class Nep5TokenTest {
     private Neow3j neow;
     private Nep5Token neoToken;
     private Nep5Token gasToken;
-    private Account account4;
-    private Account account5;
-    private Account account6;
-    private Account multiSigAccount;
+    private Account account4; // AUnZ8SnrxFUm2esBseNyTGpHQmF9i67Ae7 -> 23f7a38471c289321987b843a2431d41cd97ba8e
+    private Account account5; //
+    private Account account6; //
+    private Account multiSigAccount; // AKWf4Sd9aX7JoCzK1dprKd4BNhSjf6YeHC -> 1be05d811883c86a7c3ff2c2df5f7c00a8c1ff28
 
     private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
 
     // Configuring accounts and wallet
+    //
     private static final Account ACCOUNT_1 = new Account(ECKeyPair.create(
             Numeric.hexStringToByteArray("1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
+    //
     private static final Account ACCOUNT_2 = new Account(ECKeyPair.create(
             Numeric.hexStringToByteArray("b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
+    //
     private static final Account ACCOUNT_3 = new Account(ECKeyPair.create(
             Numeric.hexStringToByteArray("3a100280baf46ea7db17bc01b53365891876b4a2db11028dbc1ccb8c782725f8")));
     private static final Wallet WALLET = Wallet.withAccounts(ACCOUNT_1, ACCOUNT_2, ACCOUNT_3);
 
+    // AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm
     private static final ScriptHash RECIPIENT_SCRIPT_HASH = new ScriptHash("969a77db482f74ce27105f760efa139223431394");
+
+    // Configuring accounts for Script Builder
+    private static final String TRANSFER_HEX = "7472616e73666572";
+//    private static final String ACCOUNT_1_XEH
+//    private static final String ACCOUNT_1_XEH
+//    private static final String ACCOUNT_1_XEH
+
+//    private static final String NEO_HEX =
+//    private static final String ACCOUNT_1_HEX
 
     @Before
     public void setUp() {
@@ -85,18 +98,17 @@ public class Nep5TokenTest {
     @Test
     public void testTransferFromDefaultAccount() throws Exception {
         setUpWireMockForSendRawTransaction();
+
         String script =
                 "0200e1f5050c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c143b7d3711c6f0ccf9b1dca903d1bfa1d896f1238c41627d5b5238";
-        setUpWireMockForCall("invokescript", "invokescript_transferFromDefaultAccount_1_gas.json",
-                script, "969a77db482f74ce27105f760efa139223431394");
+        setUpWireMockForCall("invokescript", "invokescript_transferFromDefaultAccount_1_gas.json");
         // Required for fetching the token's decimals.
         setUpWireMockForInvokeFunction(
                 "decimals", "invokefunction_decimals_gas.json");
         // Required for fetching the block height used for setting the validUntilBlock.
         setUpWireMockForGetBlockCount(1000);
         // Required when checking the senders token balance.
-        setUpWireMockForInvokeFunction("balanceOf",
-                "invokefunction_balanceOf.json");
+        setUpWireMockForInvokeFunction("balanceOf", "invokefunction_balanceOf.json");
 
         byte[] privateKey = Numeric.hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3");
@@ -105,11 +117,13 @@ public class Nep5TokenTest {
         ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
         Invocation i = gasToken.buildTransferInvocation(w, receiver, BigDecimal.ONE);
 
+        System.out.println(Numeric.toHexStringNoPrefix(i.getTransaction().getScript()));
+
         Transaction tx = i.getTransaction();
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getSystemFee(), is(9007810L));
-        assertThat(tx.getSender(), is(w.getDefaultAccount().getScriptHash()));
-        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getSender().getScriptHash(), is(w.getDefaultAccount().getScriptHash()));
+        assertThat(tx.getAttributes(), hasSize(0));
         assertThat(tx.getSigners(), hasSize(1));
 
         Signer c = tx.getSigners().get(0);
@@ -198,13 +212,13 @@ public class Nep5TokenTest {
 
     /*
      *  The following test cases use a wallet that contains three accounts with the following balances (unless otherwise declared):
-     *      1. AXC48TRb62MQQFXWcnUXwbra2MpTNBHNyG: 5 neo (default account in the wallet)
-     *      2. Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ: 4 neo
-     *      3. ATpVyfpFwE2SzNGSvXDNrtRyfVLajhn7yN: 3 neo
+     *      1. AUnZ8SnrxFUm2esBseNyTGpHQmF9i67Ae7: 5 neo (default account in the wallet)
+     *      2. AKvnACo3j78bcP8dCerxh3zEAjZVxPmJUU: 4 neo
+     *      3. ANy3dJorWjWquU7EoncPM1cjZdqA2hzwHj: 3 neo
      */
 
     /*
-     *  In this test case, 7 neo should be tramsferred.
+     *  In this test case, 7 neo should be transferred.
      *  Result: Account 1 should transfer 5 neo and Account 2 should transfer the rest (2 neo).
      */
     @Test
@@ -240,7 +254,7 @@ public class Nep5TokenTest {
                 "invokefunction_balanceOf_account2.json");
         setUpWireMockForBalanceOf(ACCOUNT_3.getScriptHash(),
                 "invokefunction_balanceOf_account3.json");
-
+//       12 226730eaeec8e3315468f57153e3b08789cc45cc 0898ea2197378f623a7670974454448576d0aeaf 13c00c08 7472616e73666572 bcaf41d684c7d4ad6ee0d99da9707b9d1f0c8e66 41627d5b52
         String script = "150c14941343239213fa0e765f1027ce742f48db779a960c14a91c9eab5efcdf4970e793c92f9db2beac065f8213c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52140c14941343239213fa0e765f1027ce742f48db779a960c14c8172ea3b405bf8bfc57c33a8410116b843e13df13c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52130c14941343239213fa0e765f1027ce742f48db779a960c148420ab25923dd9556240e98794423193cd07daf613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         Invocation invocation = neoToken.buildTransactionScript(WALLET, RECIPIENT_SCRIPT_HASH, new BigDecimal("12"));
 
@@ -329,6 +343,10 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),"invokefunction_balanceOf_multiSig.json");
 
         Wallet wallet = Wallet.withAccounts(multiSigAccount, account4);
+//        new ScriptBuilder()
+//                .pushInteger(2)
+//                .pushData(Numeric.toHexStringNoPrefix(NeoToken.SCRIPT_HASH.toArray()))
+//                .pushData()
         String script = "120c14941343239213fa0e765f1027ce742f48db779a960c143f42fda6876aa9ee081751f92babdf0cc2319dfb13c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
         Invocation invocation = neoToken.buildTransactionScript(wallet, RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
 

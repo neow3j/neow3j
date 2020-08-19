@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.*;
@@ -22,6 +23,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -220,7 +222,6 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(abi.getEvents().get(0).getParameters(), hasSize(3));
         assertThat(abi.getEvents().get(0).getParameters().get(0).getParamName(), is("from"));
         assertThat(abi.getEvents().get(0).getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
-        assertThat(abi.getEvents().get(0).getReturnType(), is(ContractParameterType.SIGNATURE));
 
         assertNotNull(manifest.getPermissions());
         assertThat(manifest.getPermissions(), hasSize(1));
@@ -232,7 +233,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertThat(manifest.getTrusts(), hasSize(0));
 
         assertNotNull(manifest.getSafeMethods());
-        assertThat(manifest.getSafeMethods(), hasSize(11));
+        assertThat(manifest.getSafeMethods(), hasSize(10));
         assertThat(manifest.getSafeMethods(),
                 containsInAnyOrder(
                         "unclaimedGas",
@@ -244,8 +245,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
                         "symbol",
                         "decimals",
                         "totalSupply",
-                        "balanceOf",
-                        "supportedStandards"
+                        "balanceOf"
                 ));
         assertNull(manifest.getExtra());
     }
@@ -275,9 +275,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
         assertNotNull(transaction.getNetFee());
         assertNotNull(transaction.getValidUntilBlock());
         assertNotNull(transaction.getAttributes());
-        assertThat(transaction.getAttributes(), hasSize(1));
-        assertThat(transaction.getAttributes().get(0).getAsTransactionSigner(),
-                is(new TransactionSigner(TX_SIGNER, WitnessScope.CALLED_BY_ENTRY)));
+        assertThat(transaction.getAttributes(), hasSize(0));
         assertThat(transaction.getScript(), is(TX_SCRIPT));
         assertNotNull(transaction.getWitnesses());
         assertNotNull(transaction.getBlockHash());
@@ -296,7 +294,7 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testGetStorage() throws IOException {
-        NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH, KEY_TO_LOOKUP_AS_HEX).send();
+        NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH, "456e67696e65").send();
         String storage = getStorage.getStorage();
 
         assertThat(storage.length(), is(STORAGE_LENGTH));
@@ -589,5 +587,18 @@ public class Neow3jReadOnlyIntegrationTest extends Neow3jIntegrationTest {
 
         assertNotNull(applicationLog.getNotifications());
         assertThat(applicationLog.getNotifications(), hasSize(greaterThanOrEqualTo(1)));
+        assertThat(applicationLog.getNotifications().get(0).getContract(),
+                isOneOf(NEO_HASH_WITH_PREFIX, GAS_HASH_WITH_PREFIX));
+        assertThat(applicationLog.getNotifications().get(0).getEventName(), is("Transfer"));
+
+        StackItem state = applicationLog.getNotifications().get(0).getState();
+        assertThat(state, is(notNullValue()));
+        assertThat(state.getType(), is(StackItemType.ARRAY));
+        assertThat(state.asArray().getValue(), hasSize(3));
+        assertThat(state.asArray().getValue().get(0).getType(), is(StackItemType.ANY));
+        assertThat(state.asArray().getValue().get(1).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(state.asArray().getValue().get(1).asByteString().getAsAddress(), is(ADDRESS_1));
+        assertThat(state.asArray().getValue().get(2).getType(), is(StackItemType.INTEGER));
+        assertThat(state.asArray().getValue().get(2).asInteger().getValue(), is(new BigInteger("1200000000")));
     }
 }

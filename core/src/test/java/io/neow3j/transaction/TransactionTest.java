@@ -1,8 +1,8 @@
 package io.neow3j.transaction;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertArrayEquals;
@@ -45,8 +45,11 @@ public class TransactionTest {
         assertThat(t.getVersion(), is(NeoConstants.CURRENT_TX_VERSION));
         assertThat(t.getNetworkFee(), is(0L));
         assertThat(t.getSystemFee(), is(0L));
-        assertThat(t.getAttributes(), containsInAnyOrder(Signer.calledByEntry(account1)));
-        assertThat(t.getSigners(), containsInAnyOrder(Signer.calledByEntry(account1)));
+        assertThat(t.getAttributes(), is(notNullValue()));
+        assertThat(t.getAttributes(), hasSize(0));
+        assertThat(t.getSigners(), hasSize(1));
+        assertThat(t.getSigners().get(0).getScriptHash(), is(account1));
+        assertThat(t.getSigners().get(0).getScopes(), contains(WitnessScope.FEE_ONLY));
         assertThat(t.getScript().length, is(0));
         assertThat(t.getNonce(), notNullValue());
         assertThat(t.getWitnesses(), empty());
@@ -128,51 +131,51 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleSignersConcerningTheSameAccount1() {
         Transaction.Builder b = new Transaction.Builder();
-        b.attributes(Signer.global(account1), Signer.calledByEntry(account1));
+        b.withSigners(Signer.global(account1), Signer.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleSignersConcerningTheSameAccount2() {
         Transaction.Builder b = new Transaction.Builder();
-        b.attributes(Signer.global(account1));
-        b.attributes(Signer.calledByEntry(account1));
+        b.withSigners(Signer.global(account1));
+        b.withSigners(Signer.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMoreThanMaxAttributesToTxBuilder() {
         // Add one too many attributes.
-        TransactionAttribute[] attrs =
-                new TransactionAttribute[NeoConstants.MAX_TRANSACTION_ATTRIBUTES + 1];
-        for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
-            attrs[i] = new Signer();
+        Signer[] singers =
+                new Signer[NeoConstants.MAX_SIGNER_SUBITEMS + 1];
+        for (int i = 0; i <= NeoConstants.MAX_SIGNER_SUBITEMS; i++) {
+            singers[i] = new Signer();
         }
-        new Transaction.Builder().attributes(attrs);
+        new Transaction.Builder().withSigners(singers);
     }
 
     @Test
     public void serializeWithoutAttributesWitnessesAndSigners() {
         Transaction tx = new Transaction.Builder()
-            .sender(account1)
-            .version((byte) 0)
-            .nonce((long) 0x01020304)
-            .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
-            .networkFee(1L) // 1 fraction of GAS
-            .validUntilBlock(0x01020304L)
-            .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
-            .build();
+                .sender(account1)
+                .withSigners(Signer.calledByEntry(account1))
+                .version((byte) 0)
+                .nonce((long) 0x01020304)
+                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
+                 .networkFee(1L) // 1 fraction of GAS
+                 .validUntilBlock(0x01020304L)
+                .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
+                .build();
 
         byte[] actual = tx.toArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-            + "00" // version
-            + "04030201"  // nonce
-            + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash
-            + "00e1f50500000000"  // system fee (1 GAS)
-            + "0100000000000000"  // network fee (1 GAS fraction)
-            + "04030201"  // valid until block
-            + "01"  // one attribute
-            + "0123ba2703c53263e8d6e522dc32203339dcd8eee901" // calledByEntry signer
-            + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
-            + "00"); // no witnesses
+                + "00" // version
+                + "04030201"  // nonce
+                + "00e1f50500000000"  // system fee (1 GAS)
+                + "0100000000000000"  // network fee (1 GAS fraction)
+                + "04030201"  // valid until block
+                + "01" + "23ba2703c53263e8d6e522dc32203339dcd8eee9" + "01" // one calledByEntry signer with scope
+                + "00"
+                + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
+                + "00"); // no witnesses
 
         assertArrayEquals(expected, actual);
     }
@@ -180,33 +183,31 @@ public class TransactionTest {
     @Test
     public void serializeWithAttributesWitnessesAndSigners() {
         Transaction tx = new Transaction.Builder()
-            .sender(account1)
-            .version((byte) 0)
-            .nonce((long) 0x01020304)
-            .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
-            .networkFee(1L) // 1 fraction of GAS
-            .validUntilBlock(0x01020304L)
-            .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
-            .attributes(
-                Signer.global(account1),
-                Signer.calledByEntry(account2))
-            .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
-            .build();
+                .sender(account1)
+                .version((byte) 0)
+                .nonce((long) 0x01020304)
+                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
+                .networkFee(1L) // 1 fraction of GAS
+                .validUntilBlock(0x01020304L)
+                .withSigners(Signer.global(account1), Signer.calledByEntry(account2))
+                .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
+                .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
+                .build();
 
         byte[] actual = tx.toArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-            + "00" // version
-            + "04030201"  // nonce
-            + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash
-            + "00e1f50500000000"  // system fee (1 GAS)
-            + "0100000000000000"  // network fee (1 GAS fraction)
-            + "04030201"  // valid until block
-            + "02"  // 2 signers
-            + "0123ba2703c53263e8d6e522dc32203339dcd8eee900" // global signer
-            + "0152eaab8b2aab608902c651912db34de36e7a2b0f01" // calledByEntry signer
-            + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
-            + "01" // 1 witness
-            + "01000100" // witness
+                + "00" // version
+                + "04030201"  // nonce
+                + "00e1f50500000000"  // system fee (1 GAS)
+                + "0100000000000000"  // network fee (1 GAS fraction)
+                + "04030201"  // valid until block
+                + "02"  // 2 signers
+                + "23ba2703c53263e8d6e522dc32203339dcd8eee9" + "80" // global signer
+                + "52eaab8b2aab608902c651912db34de36e7a2b0f" + "01" // calledByEntry signer
+                + "00"
+                + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
+                + "01" // 1 witness
+                + "01000100" // witness
         );
 
         assertArrayEquals(expected, actual);
@@ -215,27 +216,28 @@ public class TransactionTest {
     @Test
     public void deserialize() throws DeserializationException {
         byte[] data = Numeric.hexStringToByteArray(""
-            + "00" // version
-            + "62bdaa0e"  // nonce
-            + "941343239213fa0e765f1027ce742f48db779a96"// account script hash
-            + "c272890000000000"  // system fee
-            + "a65a130000000000"  // network fee
-            + "99232000"  // valid until block
-            + "01" // one attribute
-            + "01941343239213fa0e765f1027ce742f48db779a9601" // signer
-            + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
-            + "01" // 1 witness
-            + "01000100"); /* witness*/
+                + "00" // version
+                + "62bdaa0e"  // nonce
+                + "c272890000000000"  // system fee
+                + "a65a130000000000"  // network fee
+                + "99232000"  // valid until block
+                + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01" // one called by entry signer
+                + "00"
+                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
+                + "01" // 1 witness
+                + "01000100"); /* witness*/
 
         Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
         assertThat(tx.getVersion(), is((byte) 0));
         assertThat(tx.getNonce(), is(246070626L));
-        assertThat(tx.getSender(), is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSender().getScriptHash(), is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
-        assertThat(tx.getSigners(), contains(
-                Signer.calledByEntry(new ScriptHash("969a77db482f74ce27105f760efa139223431394"))));
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
+                is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
         assertArrayEquals(new byte[]{(byte)OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
             Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
@@ -244,32 +246,30 @@ public class TransactionTest {
     @Test
     public void getSize() {
         Transaction tx = new Transaction.Builder()
-            .sender(account1)
-            .version((byte) 0)
-            .nonce((long) 0x01020304)
-            .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
-            .networkFee(1L) // 1 fraction of GAS
-            .validUntilBlock(0x01020304L)
-            .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
-            .attributes(
-                Signer.global(account1),
-                Signer.calledByEntry(account2))
-            .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
-            .build();
+                .sender(account1)
+                .version((byte) 0)
+                .nonce((long) 0x01020304)
+                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
+                .networkFee(1L) // 1 fraction of GAS
+                .validUntilBlock(0x01020304L)
+                .withSigners(Signer.global(account1), Signer.calledByEntry(account2))
+                .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
+                .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
+                .build();
 
         int expectedSize = 1 +  // Version
-            4 +  // Nonce
-            20 + // Sender script hash
-            8 +  // System fee
-            8 +  // Network fee
-            4 + // Valid until block
-            1 + // Byte for attributes list size
-            1 + 1 + 20 + // Attribute type, Signer scope and signer script hash
-            1 + 1 + 20 + // Attribute type, Signer scope and signer script hash
-            1 + 1 + // Byte for script length and the actual length
-            1 + // Byte for witnesses list size
-            1 + 1 + // Byte for invocation script length and the actual length.
-            1 + 1; // Byte for verifiaction script length and the actual length.
+                4 +  // Nonce
+                8 +  // System fee
+                8 +  // Network fee
+                4 + // Valid until block
+                1 + // Signer list size
+                1 + 20 + // Signer script hash, scope, allowed groups and allowed contracts
+                1 + 20 + // Signer script hash and scope, allowed groups and allowed contracts
+                1 + // Byte for attributes list size
+                1 + 1 + // Byte for script length and the actual length
+                1 + // Byte for witnesses list size
+                1 + 1 + // Byte for invocation script length and the actual length.
+                1 + 1; // Byte for verification script length and the actual length.
 
         assertThat(tx.getSize(), is(expectedSize));
     }

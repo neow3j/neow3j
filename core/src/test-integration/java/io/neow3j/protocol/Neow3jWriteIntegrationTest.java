@@ -1,6 +1,8 @@
 package io.neow3j.protocol;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
@@ -16,6 +18,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.WitnessScope;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -87,10 +91,15 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
                 ADDRESS_2_HASH160,
                 RECIPIENT_ADDRESS_HASH160,
                 ContractParameter.integer(1));
-        NeoInvokeFunction invokeFunction = getNeow3j()
-                .invokeFunction(NEO_HASH, INVOKE_TRANSFER, params, WITNESS)
-                .send();
-        InvocationResult invoc = invokeFunction.getInvocationResult();
+        Signer signer = new Signer.Builder()
+                .account(ScriptHash.fromAddress(ADDRESS_2))
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .allowedContracts(new ScriptHash(NEO_HASH))
+                .build();
+        Request<?, NeoInvokeFunction> invokeFunction = getNeow3j()
+                .invokeFunction(NEO_HASH, INVOKE_TRANSFER, params, signer);
+        NeoInvokeFunction send = invokeFunction.send();
+        InvocationResult invoc = send.getInvocationResult();
 
         assertNotNull(invoc);
         assertNotNull(invoc.getScript());

@@ -26,12 +26,15 @@ public class WitnessScopeTest {
         assertThat(scope, is((byte) 0x31));
 
         scope = WitnessScope.combineScopes(Arrays.asList(WitnessScope.GLOBAL));
+        assertThat(scope, is((byte) 0x80));
+
+        scope = WitnessScope.combineScopes(Arrays.asList(WitnessScope.FEE_ONLY));
         assertThat(scope, is((byte) 0x00));
     }
 
     @Test
     public void extractCombinedScopes() {
-        List<WitnessScope> scopes = WitnessScope.extractCombinedScopes((byte) 0x00);
+        List<WitnessScope> scopes = WitnessScope.extractCombinedScopes((byte) 0x80);
         assertThat(scopes, contains(WitnessScope.GLOBAL));
 
         scopes = WitnessScope.extractCombinedScopes((byte) 0x11);

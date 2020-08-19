@@ -1,5 +1,7 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.OpCode;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -157,10 +159,19 @@ public class SmartContractTest {
 
     @Test
     public void invoke() throws IOException {
-        String script =
-                "150c14c8172ea3b405bf8bfc57c33a8410116b843e13df0c14941343239213fa0e765f1027ce742f48db779a9613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238";
-        setUpWireMockForCall("invokescript", "invokescript_transfer_5_neo.json", script,
-                "969a77db482f74ce27105f760efa139223431394"); // witness script hash
+        byte[] expectedScript = new ScriptBuilder()
+                .pushInteger(5)
+                .pushData(Numeric.hexStringToByteArray("c8172ea3b405bf8bfc57c33a8410116b843e13df"))
+                .pushData(Numeric.hexStringToByteArray("064a5dcc0f162c83473d028938e95fb776131e72"))
+                .pushInteger(3)
+                .pack()
+                .pushData(Numeric.hexStringToByteArray("7472616e73666572"))
+                .pushData(Numeric.hexStringToByteArray("25059ecb4878d3a875f91c51ceded330d4575fde"))
+                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL)
+                .opCode(OpCode.ASSERT)
+                .toArray();
+        setUpWireMockForCall("invokescript", "invokescript_transfer_5_neo.json",
+                Numeric.toHexStringNoPrefix(expectedScript));
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
@@ -182,11 +193,10 @@ public class SmartContractTest {
 
         assertThat(i.getTransaction().getNonce(), is(1800992192L));
         assertThat(i.getTransaction().getValidUntilBlock(), is(2107199L));
-        assertThat(i.getTransaction().getNetworkFee(), is(1264390L));
+        assertThat(i.getTransaction().getNetworkFee(), is(133000L));
         assertThat(i.getTransaction().getSystemFee(), is(9007810L));
-        assertThat(i.getTransaction().getScript(), is(Numeric.hexStringToByteArray(script)));
-        byte[] expectedVerificationScript = Numeric.hexStringToByteArray(
-                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380b418a6b1e75");
+        assertThat(i.getTransaction().getScript(), is(expectedScript));
+        byte[] expectedVerificationScript = ScriptBuilder.buildVerificationScript(sender.getECKeyPair().getPublicKey().getEncoded(true));
         assertThat(i.getTransaction().getWitnesses().get(0).getVerificationScript().getScript(),
                 is(expectedVerificationScript));
     }
