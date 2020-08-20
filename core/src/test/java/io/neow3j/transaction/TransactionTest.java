@@ -38,9 +38,9 @@ public class TransactionTest {
     public void buildMinimalTransaction() {
         long validUntilBlock = 100L;
         Transaction t = new Transaction.Builder()
-            .validUntilBlock(validUntilBlock)
-            .sender(account1)
-            .build();
+                .validUntilBlock(validUntilBlock)
+                .signers(Signer.feeOnly(account1))
+                .build();
 
         assertThat(t.getVersion(), is(NeoConstants.CURRENT_TX_VERSION));
         assertThat(t.getNetworkFee(), is(0L));
@@ -59,8 +59,8 @@ public class TransactionTest {
     public void buildTransactionWithCorrectNonce() {
         Long nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
         Transaction.Builder b = new Transaction.Builder()
-            .validUntilBlock(1L)
-            .sender(account1);
+                .validUntilBlock(1L)
+                .signers(Signer.calledByEntry(account1));
         Transaction t = b.nonce(nonce).build();
         assertThat(t.getNonce(), is(nonce));
 
@@ -80,8 +80,8 @@ public class TransactionTest {
     @Test
     public void failBuildingTransactionWithIncorrectNonce() {
         Transaction.Builder b = new Transaction.Builder()
-            .validUntilBlock(1L)
-            .sender(account1);
+                .validUntilBlock(1L)
+                .signers(Signer.calledByEntry(account1));
         try {
             Long nonce = Integer.toUnsignedLong(-1) + 1;
             b.nonce(nonce);
@@ -117,15 +117,15 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failBuildingTxWithoutValidUntilBlockProperty() {
         new Transaction.Builder()
-            .sender(account1)
-            .build();
+                .signers(Signer.calledByEntry(account1))
+                .build();
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failBuildingTxWithoutSenderAccount() {
         new Transaction.Builder()
-            .validUntilBlock(100L)
-            .build();
+                .validUntilBlock(100L)
+                .build();
     }
 
     @Test(expected = TransactionConfigurationException.class)
@@ -153,16 +153,15 @@ public class TransactionTest {
     }
 
     @Test
-    public void serializeWithoutAttributesWitnessesAndSigners() {
+    public void serializeWithoutAttributesAndWitnesses() {
         Transaction tx = new Transaction.Builder()
-                .sender(account1)
                 .signers(Signer.calledByEntry(account1))
                 .version((byte) 0)
                 .nonce((long) 0x01020304)
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
-                 .networkFee(1L) // 1 fraction of GAS
-                 .validUntilBlock(0x01020304L)
-                .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
+                .networkFee(1L) // 1 fraction of GAS
+                .validUntilBlock(0x01020304L)
+                .script(new byte[]{(byte) OpCode.PUSH1.getCode()})
                 .build();
 
         byte[] actual = tx.toArray();
@@ -172,7 +171,8 @@ public class TransactionTest {
                 + "00e1f50500000000"  // system fee (1 GAS)
                 + "0100000000000000"  // network fee (1 GAS fraction)
                 + "04030201"  // valid until block
-                + "01" + "23ba2703c53263e8d6e522dc32203339dcd8eee9" + "01" // one calledByEntry signer with scope
+                + "01" + "23ba2703c53263e8d6e522dc32203339dcd8eee9" + "01"
+                // one calledByEntry signer with scope
                 + "00"
                 + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
                 + "00"); // no witnesses
@@ -181,16 +181,15 @@ public class TransactionTest {
     }
 
     @Test
-    public void serializeWithAttributesWitnessesAndSigners() {
+    public void serializeWithAttributesAndWitnesses() {
         Transaction tx = new Transaction.Builder()
-                .sender(account1)
                 .version((byte) 0)
                 .nonce((long) 0x01020304)
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
                 .networkFee(1L) // 1 fraction of GAS
                 .validUntilBlock(0x01020304L)
                 .signers(Signer.global(account1), Signer.calledByEntry(account2))
-                .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
+                .script(new byte[]{(byte) OpCode.PUSH1.getCode()})
                 .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
                 .build();
 
@@ -221,7 +220,8 @@ public class TransactionTest {
                 + "c272890000000000"  // system fee
                 + "a65a130000000000"  // network fee
                 + "99232000"  // valid until block
-                + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01" // one called by entry signer
+                + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01"
+                // one called by entry signer
                 + "00"
                 + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
                 + "01" // 1 witness
@@ -230,7 +230,8 @@ public class TransactionTest {
         Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
         assertThat(tx.getVersion(), is((byte) 0));
         assertThat(tx.getNonce(), is(246070626L));
-        assertThat(tx.getSender().getScriptHash(), is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSender().getScriptHash(),
+                is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
@@ -238,22 +239,21 @@ public class TransactionTest {
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
-        assertArrayEquals(new byte[]{(byte)OpCode.PUSH1.getCode()}, tx.getScript());
+        assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
-            Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
+                Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
     }
 
     @Test
     public void getSize() {
         Transaction tx = new Transaction.Builder()
-                .sender(account1)
                 .version((byte) 0)
                 .nonce((long) 0x01020304)
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
                 .networkFee(1L) // 1 fraction of GAS
                 .validUntilBlock(0x01020304L)
                 .signers(Signer.global(account1), Signer.calledByEntry(account2))
-                .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
+                .script(new byte[]{(byte) OpCode.PUSH1.getCode()})
                 .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
                 .build();
 

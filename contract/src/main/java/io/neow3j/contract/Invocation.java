@@ -1,5 +1,7 @@
 package io.neow3j.contract;
 
+import static java.util.Arrays.asList;
+
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
@@ -22,14 +24,12 @@ import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
-import static java.util.Arrays.asList;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -37,9 +37,9 @@ import java.util.stream.Collectors;
 
 /**
  * Used to invoke Neo VM scripts and contract functions. Uses the {@link Invocation.Builder} to
- * configure an invocation and do calls via the {@code invokescript} and {@code invokefunction}
- * RPC. When building the {@code Invocation}, a transaction is created that can be signed
- * and sent to the Neo node.
+ * configure an invocation and do calls via the {@code invokescript} and {@code invokefunction} RPC.
+ * When building the {@code Invocation}, a transaction is created that can be signed and sent to the
+ * Neo node.
  */
 public class Invocation {
 
@@ -59,8 +59,8 @@ public class Invocation {
      * @return the Neo node's response.
      * @throws IOException                      if a problem in communicating with the Neo node
      *                                          occurs.
-     * @throws InvocationConfigurationException if signatures are missing for one or more signers
-     *                                          of the transaction.
+     * @throws InvocationConfigurationException if signatures are missing for one or more signers of
+     *                                          the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
         List<ScriptHash> witnesses = this.transaction.getWitnesses().stream()
@@ -80,8 +80,8 @@ public class Invocation {
      * Creates signatures for every signer of the invocation transaction and adds them to the
      * transaction as witnesses.
      * <p>
-     * For each signer set on the transaction a corresponding account with an EC key pair must
-     * exist in the wallet set on the builder.
+     * For each signer set on the transaction a corresponding account with an EC key pair must exist
+     * in the wallet set on the builder.
      *
      * @return this.
      */
@@ -96,8 +96,7 @@ public class Invocation {
                 Account signerAcc = this.wallet.getAccount(signer.getScriptHash());
                 if (signerAcc.isMultiSig()) {
                     signWithMultiSigAccount(txBytes, signerAcc);
-                }
-                else {
+                } else {
                     signWithNormalAccount(txBytes, signerAcc);
                 }
             }
@@ -224,6 +223,7 @@ public class Invocation {
         protected Transaction.Builder txBuilder;
         protected Transaction transaction;
         protected boolean failOnFalse;
+        private ScriptHash sender;
 
         // TODO: Add javadoc.
         protected Builder(Neow3j neow) {
@@ -236,7 +236,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation with the given attributes. 
+         * Configures the invocation with the given attributes.
          *
          * @param attributes The attributes.
          * @return this.
@@ -247,7 +247,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation such that it is valid until the given block number. 
+         * Configures the invocation such that it is valid until the given block number.
          * <p>
          * By default it is set to the maximum.
          *
@@ -275,7 +275,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation with the given nonce. 
+         * Configures the invocation with the given nonce.
          * <p>
          * By default the nonce is set to a random value.
          *
@@ -289,7 +289,7 @@ public class Invocation {
         }
 
         /**
-         * Configures the invocation with an additional network fee. 
+         * Configures the invocation with an additional network fee.
          * <p>
          * The basic network fee required to send this invocation is added automatically.
          *
@@ -304,8 +304,8 @@ public class Invocation {
         /**
          * Configures the invocation to use the given wallet.
          * <p>
-         * The wallet's default account is used as the transaction sender if no signers and no sender
-         * is specified explicitly.
+         * The wallet's default account is used as the transaction sender if no signers and no
+         * sender is specified explicitly.
          *
          * @param wallet The wallet.
          * @return this.
@@ -322,7 +322,7 @@ public class Invocation {
          * @return this.
          */
         public Builder withSender(ScriptHash sender) {
-            txBuilder.sender(sender);
+            this.sender = sender;
             return this;
         }
 
@@ -375,7 +375,7 @@ public class Invocation {
 
         /**
          * Configures the invocation such that it fails (NeoVM exits with state FAULT) if the return
-         * value of the invocation is "False". 
+         * value of the invocation is "False".
          *
          * @return this
          */
@@ -465,13 +465,7 @@ public class Invocation {
                 this.txBuilder.validUntilBlock(
                         fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT - 1);
             }
-            // If no signer or sender is present, add the default account as signer with fee only witness scope to
-            // cover the fees.
-            if (this.txBuilder.getSender() == null) {
-                if (this.txBuilder.getSigners().isEmpty()) {
-                    this.txBuilder.sender(this.wallet.getDefaultAccount().getScriptHash());
-                }
-            }
+            prepareTransactionSigners();
             if (this.txBuilder.getScript() == null || this.txBuilder.getScript().length == 0) {
                 // The builder was not configured with a script. Therefore, try to construct one
                 // from the contract, function, and parameters.
@@ -481,6 +475,43 @@ public class Invocation {
             this.txBuilder.networkFee(calcNetworkFee() + this.additionalNetworkFee);
             this.transaction = this.txBuilder.build();
             return new Invocation(this);
+        }
+
+        // Prepares the list of signers such that there is at least one signer that will be used
+        // to cover the transaction fees.
+        private void prepareTransactionSigners() {
+            if (this.sender != null) {
+                if (hasSignerWithFeeOnlyScope()) {
+                    throw new InvocationConfigurationException("The list of transaction signers "
+                            + "contained a signer with the fee-only scope and at the same time a "
+                            + "sender was set. Either a fee-only signer, or a sender is allowed, "
+                            + "but not both at the same time.");
+                }
+                Optional<Signer> senderInSignersOpt = this.txBuilder.getSigners().stream()
+                        .filter(s -> s.getScriptHash().equals(this.sender))
+                        .findFirst();
+                if (senderInSignersOpt.isPresent()) {
+                    // If the sender is already in the signers list move it to the first position in
+                    // the signer list, but don't change the scope (can be more than feeOnly).
+                    this.txBuilder.getSigners().remove(senderInSignersOpt.get());
+                    this.txBuilder.getSigners().add(0, senderInSignersOpt.get());
+                } else {
+                    // Add the sender to the first position in the signer list.
+                    this.txBuilder.getSigners().add(0, Signer.feeOnly(this.sender));
+                }
+            } else if (this.txBuilder.getSigners().isEmpty()) {
+                // If no signer or sender is present, add the default account as a signer with
+                // the feeOnly witness scope. It will be used to cover the fees.
+                this.txBuilder.signers(Signer.feeOnly(
+                        this.wallet.getDefaultAccount().getScriptHash()));
+            }
+        }
+
+        // Checks if there is a signer (excluding the sender) with a feeOnly scope.
+        private boolean hasSignerWithFeeOnlyScope() {
+            return this.txBuilder.getSigners().stream()
+                    .anyMatch(s -> s.getScopes().contains(WitnessScope.FEE_ONLY)
+                            && !s.getScriptHash().equals(this.sender));
         }
 
         // Tries to build a script from the properties contract, function and parameters
@@ -501,14 +532,6 @@ public class Invocation {
                 b.opCode(OpCode.ASSERT);
             }
             return b.toArray();
-        }
-
-        private boolean senderSignerExists() {
-            Signer signer = this.txBuilder.getSigners().stream()
-                    .filter(s -> s.getScopes().contains(WitnessScope.FEE_ONLY))
-                    .findAny()
-                    .orElse(null);
-            return signer != null;
         }
 
         private long fetchCurrentBlockNr() throws IOException {
@@ -541,6 +564,7 @@ public class Invocation {
 
             // Base transaction size
             int size = Transaction.HEADER_SIZE // constant header size
+                    + IOUtils.getVarSize(this.txBuilder.getSigners())
                     + IOUtils.getVarSize(this.txBuilder.getAttributes()) // attributes
                     + IOUtils.getVarSize(this.txBuilder.getScript()) // script
                     + IOUtils.getVarSize(cosigAccs.size()); // varInt for all necessary witnesses

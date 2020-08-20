@@ -244,7 +244,6 @@ public class Transaction extends NeoSerializable {
         private long nonce;
         private byte version;
         private Long validUntilBlock;
-        private ScriptHash sender;
         private List<Signer> signers;
         private long systemFee;
         private long networkFee;
@@ -322,10 +321,10 @@ public class Transaction extends NeoSerializable {
         }
 
         /**
-         * Adds a signer to this transaction.
+         * Adds the given signers to this transaction.
          * <p>
-         * The first signer is used as the transaction sender, if no sender is specified
-         * explicitly.
+         * The first signer will be used as the sender of this transaction, i.e. the payer of the
+         * transaction fees.
          *
          * @param signers Signers for this transaction.
          * @return this builder.
@@ -336,19 +335,6 @@ public class Transaction extends NeoSerializable {
                         " concerning the same account.");
             }
             this.signers.addAll(Arrays.asList(signers));
-            return this;
-        }
-
-        /**
-         * Sets the sender of this transaction.
-         * <p>
-         * The sender's account will be charged with the network and system fees.
-         *
-         * @param sender The sender account's script hash.
-         * @return this builder.
-         */
-        public Builder sender(ScriptHash sender) {
-            this.sender = sender;
             return this;
         }
 
@@ -453,8 +439,8 @@ public class Transaction extends NeoSerializable {
          * Builds the transaction.
          *
          * @return The transaction.
-         * @throws TransactionConfigurationException if either the sender account or the
-         *                                           "validUntilBlock" property was not set.
+         * @throws TransactionConfigurationException if either no signer was set or the
+         *                                           valid-until-block property was not set.
          */
         public Transaction build() {
             if (this.validUntilBlock == null) {
@@ -462,29 +448,11 @@ public class Transaction extends NeoSerializable {
                         "with a block number up to which this it is considered valid.");
             }
 
-            if (getSigners().isEmpty() && getSender() == null) {
-                throw new TransactionConfigurationException("No sender and no signers are "
-                        + "specified for this transaction. A transaction requires a sender or at "
-                        + "least one signer account that can cover the network and system fees for "
-                        + "this transaction.");
+            if (this.signers.isEmpty()) {
+                throw new TransactionConfigurationException("No signers are specified for this "
+                        + "transaction. A transaction requires at least one signer account that "
+                        + "can cover the network and system fees.");
             }
-
-            // If a sender is specified explicitly, add or move it to the first index of signers
-            if (getSender() != null) {
-                Signer sender = getSigners().stream()
-                        .filter(s -> s.getScriptHash().equals(getSender()))
-                        .findFirst()
-                        .orElse(null);
-                if (sender == null) {
-                    // Add the sender to the first position in the signer list.
-                    this.signers.add(0, Signer.feeOnly(getSender()));
-                } else {
-                    // Move the sender to the first position in the signer list.
-                    this.signers.remove(sender);
-                    this.signers.add(0, sender);
-                }
-            }
-
             return new Transaction(this);
         }
 
@@ -506,10 +474,6 @@ public class Transaction extends NeoSerializable {
 
         public long getNetworkFee() {
             return networkFee;
-        }
-
-        public ScriptHash getSender() {
-            return sender;
         }
 
         public List<Signer> getSigners() {
