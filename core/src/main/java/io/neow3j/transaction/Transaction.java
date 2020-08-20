@@ -218,8 +218,8 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets this transaction's data in the format used to produce the transaction's hash. E.g.,
-     * for producing the transaction ID or a transaction signature.
+     * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for
+     * producing the transaction ID or a transaction signature.
      * <p>
      * The returned value depends on the configuration of {@link NeoConfig#magicNumber()}.
      *
@@ -324,12 +324,13 @@ public class Transaction extends NeoSerializable {
         /**
          * Adds a signer to this transaction.
          * <p>
-         * The first signer is used as the transaction sender, if no sender is specified explicitly.
+         * The first signer is used as the transaction sender, if no sender is specified
+         * explicitly.
          *
          * @param signers Signers for this transaction.
          * @return this builder.
          */
-        public Builder withSigners(Signer... signers) {
+        public Builder signers(Signer... signers) {
             if (containsDuplicateSigners(signers)) {
                 throw new TransactionConfigurationException("Can't add multiple signers" +
                         " concerning the same account.");
@@ -462,9 +463,10 @@ public class Transaction extends NeoSerializable {
             }
 
             if (getSigners().isEmpty() && getSender() == null) {
-                throw new TransactionConfigurationException("No sender and no signers are specified " +
-                        "for this transaction. A transaction requires a sender or at least one signer account " +
-                        "that can cover the network and system fees for this transaction.");
+                throw new TransactionConfigurationException("No sender and no signers are "
+                        + "specified for this transaction. A transaction requires a sender or at "
+                        + "least one signer account that can cover the network and system fees for "
+                        + "this transaction.");
             }
 
             // If a sender is specified explicitly, add or move it to the first index of signers

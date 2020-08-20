@@ -131,14 +131,14 @@ public class TransactionTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleSignersConcerningTheSameAccount1() {
         Transaction.Builder b = new Transaction.Builder();
-        b.withSigners(Signer.global(account1), Signer.calledByEntry(account1));
+        b.signers(Signer.global(account1), Signer.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleSignersConcerningTheSameAccount2() {
         Transaction.Builder b = new Transaction.Builder();
-        b.withSigners(Signer.global(account1));
-        b.withSigners(Signer.calledByEntry(account1));
+        b.signers(Signer.global(account1));
+        b.signers(Signer.calledByEntry(account1));
     }
 
     @Test(expected = TransactionConfigurationException.class)
@@ -149,14 +149,14 @@ public class TransactionTest {
         for (int i = 0; i <= NeoConstants.MAX_SIGNER_SUBITEMS; i++) {
             singers[i] = new Signer();
         }
-        new Transaction.Builder().withSigners(singers);
+        new Transaction.Builder().signers(singers);
     }
 
     @Test
     public void serializeWithoutAttributesWitnessesAndSigners() {
         Transaction tx = new Transaction.Builder()
                 .sender(account1)
-                .withSigners(Signer.calledByEntry(account1))
+                .signers(Signer.calledByEntry(account1))
                 .version((byte) 0)
                 .nonce((long) 0x01020304)
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
@@ -189,7 +189,7 @@ public class TransactionTest {
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
                 .networkFee(1L) // 1 fraction of GAS
                 .validUntilBlock(0x01020304L)
-                .withSigners(Signer.global(account1), Signer.calledByEntry(account2))
+                .signers(Signer.global(account1), Signer.calledByEntry(account2))
                 .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
                 .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
                 .build();
@@ -252,7 +252,7 @@ public class TransactionTest {
                 .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
                 .networkFee(1L) // 1 fraction of GAS
                 .validUntilBlock(0x01020304L)
-                .withSigners(Signer.global(account1), Signer.calledByEntry(account2))
+                .signers(Signer.global(account1), Signer.calledByEntry(account2))
                 .script(new byte[]{(byte)OpCode.PUSH1.getCode()})
                 .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
                 .build();
