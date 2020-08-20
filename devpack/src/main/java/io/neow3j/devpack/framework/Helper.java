@@ -149,7 +149,7 @@ public class Helper {
     public static native byte[] range(byte[] source, int index, int n);
 
     /**
-     * Returns the first n elements from the given byte array. Faults if count &lt; 0.
+     * Returns the first n elements from the given byte array. Faults if {@code n} &lt; 0.
      *
      * @param source The array to take the bytes from.
      * @param n      The number of bytes to return.
@@ -159,7 +159,7 @@ public class Helper {
     public static native byte[] take(byte[] source, int n);
 
     /**
-     * Returns the last n elements from the given byte array. Faults if count &lt; 0.
+     * Returns the last n elements from the given byte array. Faults if {@code n} &lt; 0.
      *
      * @param source The array to take the bytes from.
      * @param n      The number of bytes to return.
