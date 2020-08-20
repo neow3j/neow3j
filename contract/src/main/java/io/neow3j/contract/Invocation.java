@@ -270,16 +270,7 @@ public class Invocation {
          * @return this.
          */
         public Builder withSigners(Signer... signers) {
-            List<ScriptHash> currentSigners = this.txBuilder.getSigners().stream()
-                    .map(Signer::getScriptHash)
-                    .collect(Collectors.toList());
-            Arrays.stream(signers)
-                    .map(Signer::getScriptHash).forEach(s -> {
-                        if (currentSigners.contains(s)) {
-                            throw new IllegalArgumentException("Cannot add a signer multiple times.");
-                        }
-            });
-            this.txBuilder.withSigners(signers);
+            this.txBuilder.signers(signers);
             return this;
         }
 
