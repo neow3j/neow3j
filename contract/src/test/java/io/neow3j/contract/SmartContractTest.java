@@ -170,7 +170,7 @@ public class SmartContractTest {
                 .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL)
                 .opCode(OpCode.ASSERT)
                 .toArray();
-        setUpWireMockForCall("invokescript", "invokescript_transfer_5_neo.json",
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json",
                 Numeric.toHexStringNoPrefix(expectedScript));
 
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
