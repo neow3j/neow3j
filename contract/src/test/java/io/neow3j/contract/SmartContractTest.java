@@ -246,18 +246,17 @@ public class SmartContractTest {
 
     @Test
     public void callFunctionWithParams() throws IOException {
-        setUpWireMockForCall("invokefunction",
-                "invokefunction_balanceOf.json",
-                "de5f57d430d3dece511cf975a8d37848cb9e0525",
-                "balanceOf",
-                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
-        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
-        SmartContract sc = new SmartContract(neo, this.neow);
-
         ScriptHash acc = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        setUpWireMockForCall("invokefunction",
+                "invokefunction_balanceOf_3.json",
+                NeoToken.SCRIPT_HASH.toString(),
+                "balanceOf",
+                acc.toString());
+
+        SmartContract sc = new SmartContract(NeoToken.SCRIPT_HASH, this.neow);
         NeoInvokeFunction response = sc.invokeFunction("balanceOf", ContractParameter.hash160(acc));
         assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
-                is(BigInteger.valueOf(3000000000000000L)));
+                is(BigInteger.valueOf(300000000)));
     }
 
     @Ignore("The test fails because the mocked `incokescript` RPC call expects the script hash of "

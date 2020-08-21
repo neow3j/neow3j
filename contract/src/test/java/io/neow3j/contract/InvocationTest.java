@@ -684,7 +684,7 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer_5_neo.json");
 
         setUpWireMockForCall("invokefunction",
-                "invokefunction_balanceOf_0.01gas.json",
+                "invokefunction_balanceOf_1000000.json",
                 "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
                 "balanceOf",
                 "721e1376b75fe93889023d47832c160fcc5d4a06"
@@ -723,7 +723,7 @@ public class InvocationTest {
     @Test
     public void throwIfSenderCannotCoverFees() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer_5_neo.json");
-        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_0.01gas.json",
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
                 "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
                 "balanceOf",
                 "721e1376b75fe93889023d47832c160fcc5d4a06");
