@@ -38,4 +38,24 @@ public class Neow3jPluginUtilsTest {
         assertThat(readBytes, is(bytesToBeWritten));
     }
 
+    @Test
+    public void testGetCompileOutputFileName() throws IOException {
+        String outputFileName1 = Neow3jPluginUtils
+                .getCompileOutputFileName("io.neow3j.blah.Test");
+        assertThat(outputFileName1, is("Test.nef"));
+
+        String outputFileName2 = Neow3jPluginUtils
+                .getCompileOutputFileName("io.neow3j.blah.");
+        assertThat(outputFileName2, is(Neow3jPluginUtils.DEFAULT_FILENAME));
+
+        String outputFileName3 = Neow3jPluginUtils
+                .getCompileOutputFileName("");
+        assertThat(outputFileName3, is(Neow3jPluginUtils.DEFAULT_FILENAME));
+
+        String outputFileName4 = Neow3jPluginUtils
+                .getCompileOutputFileName(null);
+        assertThat(outputFileName4, is(Neow3jPluginUtils.DEFAULT_FILENAME));
+    }
+
+
 }

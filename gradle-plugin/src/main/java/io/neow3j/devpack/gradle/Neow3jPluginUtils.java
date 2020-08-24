@@ -12,6 +12,17 @@ import org.gradle.api.plugins.JavaPluginConvention;
 
 public class Neow3jPluginUtils {
 
+    protected static final String SUFFIX_FILENAME = ".nef";
+    protected static final String DEFAULT_FILENAME = "output" + SUFFIX_FILENAME;
+
+    static String getCompileOutputFileName(String fqClassName) {
+        String className = getClassName(fqClassName);
+        if (className != null && className.length() > 0) {
+            return className + SUFFIX_FILENAME;
+        }
+        return DEFAULT_FILENAME;
+    }
+
     static URL getBuildDirURL(File buildDir) {
         try {
             return buildDir.toURI().toURL();
@@ -40,6 +51,9 @@ public class Neow3jPluginUtils {
     }
 
     static String getClassName(String fqClassName) {
+        if (fqClassName == null) {
+            return null;
+        }
         int firstChar;
         firstChar = fqClassName.lastIndexOf('.') + 1;
         if (firstChar > 0) {

@@ -1,6 +1,7 @@
 package io.neow3j.devpack.gradle;
 
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getCompileOutputFileName;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.writeToFile;
 import static java.nio.file.Files.createDirectories;
@@ -55,7 +56,8 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             // output the result to the output file
             String outDir = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
                     .toString();
-            Path outputFile = Paths.get(outDir, "output.nef");
+            String outFileName = getCompileOutputFileName(canonicalClassName);
+            Path outputFile = Paths.get(outDir, outFileName);
             writeToFile(outputFile.toFile(), nefBytes);
 
             // if everything goes fine, print info
