@@ -1,7 +1,5 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.protocol.core.methods.response.TransactionSigner;
-import io.neow3j.transaction.Signer;
 import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Strings.isEmpty;
 import static java.util.Arrays.asList;
@@ -16,7 +14,6 @@ import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
@@ -31,9 +28,10 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
@@ -47,7 +45,9 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
+import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Async;
 import io.reactivex.Observable;
 import java.io.IOException;
@@ -347,12 +347,12 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoInvokeScript> invokeScript(String script, Signer... witnesses) {
-        List<TransactionSigner> signers = new ArrayList<>();
-        Arrays.stream(witnesses).map(TransactionSigner::new).forEach(signers::add);
+    public Request<?, NeoInvokeScript> invokeScript(String script, Signer... signers) {
         List<?> params;
-        if (witnesses.length > 0) {
-            params = asList(script, signers);
+        if (signers.length > 0) {
+            params = asList(script, Arrays.stream(signers)
+                    .map(TransactionSigner::new)
+                    .collect(Collectors.toList()));
         } else {
             params = asList(script);
         }
