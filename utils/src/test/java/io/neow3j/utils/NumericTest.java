@@ -201,6 +201,16 @@ public class NumericTest {
     }
 
     @Test
+    public void convertingToHexStringAndZeroPaddingAnOddLengthHexString() {
+        assertThat(Numeric.toHexStringNoPrefixZeroPadded(new BigInteger("0e", 16)), is("0e"));
+    }
+
+    @Test
+    public void convertingToHexStringAndZeroPaddingAnEvenLengthHexString() {
+        assertThat(Numeric.toHexStringNoPrefixZeroPadded(new BigInteger("1e", 16)), is("1e"));
+    }
+
+    @Test
     public void testIsIntegerValue() {
         assertTrue(Numeric.isIntegerValue(BigDecimal.ZERO));
         assertTrue(Numeric.isIntegerValue(BigDecimal.ZERO));

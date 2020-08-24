@@ -215,6 +215,15 @@ public final class Numeric {
         return HEX_PREFIX + result;
     }
 
+    public static String toHexStringNoPrefixZeroPadded(BigInteger value) {
+        String result = toHexStringNoPrefix(value);
+        if (result.length() % 2 == 0) {
+            return result;
+        } else {
+            return toHexStringZeroPadded(value, result.length() + 1, false);
+        }
+    }
+
     public static String toHexStringNoPrefixZeroPadded(BigInteger value, int size) {
         return toHexStringZeroPadded(value, size, false);
     }
