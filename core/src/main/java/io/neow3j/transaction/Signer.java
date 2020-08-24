@@ -202,9 +202,6 @@ public class Signer extends NeoSerializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         Signer that = (Signer) o;
         return Objects.equals(this.account, that.account) &&
                 Objects.equals(this.scopes, that.scopes) &&
