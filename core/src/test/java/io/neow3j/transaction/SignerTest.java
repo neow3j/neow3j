@@ -240,29 +240,26 @@ public class SignerTest {
         Signer.global(acctScriptHash).serialize(writer);
         byte[] actual = outStream.toByteArray();
         String expected = ""
-                + "01" // attribute type: signer
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9" // script hash LE
-                + "00"; // global scope
+                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.toHexStringNoPrefix(WitnessScope.GLOBAL.byteValue());
         assertThat(Numeric.toHexStringNoPrefix(actual), is(expected));
     }
 
     @Test
-    public void serializeCustomContractsScope() throws IOException {
+    public void serializingWithCustomContractsScopeProducesCorrectByteArray() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new Signer.Builder()
+        Signer s = new Signer.Builder()
                 .account(acctScriptHash)
                 .allowedContracts(contract1, contract2)
-                .build()
-                .serialize(writer);
-        byte[] actual = outStream.toByteArray();
+                .build();
+        byte[] actual = s.toArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-                + "01" // attribute type: signer
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
-                + "10" // custom contracts scope
+                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.toHexStringNoPrefix(WitnessScope.CUSTOM_CONTRACTS.byteValue())
                 + "02" // array length 2
-                + "47efccbc2c12df2935b39044b507eae270110288" // contract 1 script hash LE
-                + "3ab0be8672e25cf475219d018ded961ec684ca88"); // contract 2 script hash LE
+                + Numeric.reverseHexString(contract1.toString())
+                + Numeric.reverseHexString(contract2.toString()));
         assertArrayEquals(expected, actual);
     }
 
@@ -278,12 +275,11 @@ public class SignerTest {
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-                + "01" // attribute type: signer
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
-                + "20" // custom groups scope
+                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.toHexStringNoPrefix(WitnessScope.CUSTOM_GROUPS.byteValue())
                 + "02" // array length 2
-                + "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7" // group 1
-                + "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60"); // group 2
+                + Numeric.toHexStringNoPrefix(groupPubKey1.toArray())
+                + Numeric.toHexStringNoPrefix(groupPubKey2.toArray()));
         assertArrayEquals(expected, actual);
     }
 
@@ -300,30 +296,29 @@ public class SignerTest {
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-                + "01" // attribute type: signer
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
+                + Numeric.reverseHexString(acctScriptHash.toString())
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
-                + "47efccbc2c12df2935b39044b507eae270110288" // contract 1 script hash LE
-                + "3ab0be8672e25cf475219d018ded961ec684ca88" // contract 2 script hash LE
+                + Numeric.reverseHexString(contract1.toString())
+                + Numeric.reverseHexString(contract2.toString())
                 + "02" // array length 2
-                + "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7" // group 1
-                + "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60"); // group 2
+                + Numeric.toHexStringNoPrefix(groupPubKey1.toArray())
+                + Numeric.toHexStringNoPrefix(groupPubKey2.toArray()));
         assertArrayEquals(expected, actual);
     }
 
     @Test
     public void deserialize() throws DeserializationException {
         byte[] data = Numeric.hexStringToByteArray(""
-                + "01" // attribute type: signer
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
+                + Numeric.reverseHexString(acctScriptHash.toString())
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
-                + "47efccbc2c12df2935b39044b507eae270110288" // contract 1 script hash LE
-                + "3ab0be8672e25cf475219d018ded961ec684ca88" // contract 2 script hash LE
+                + Numeric.reverseHexString(contract1.toString())
+                + Numeric.reverseHexString(contract2.toString())
                 + "02" // array length 2
-                + "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7" // group 1
-                + "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60"); // group 2
+                + Numeric.toHexStringNoPrefix(groupPubKey1.toArray())
+                + Numeric.toHexStringNoPrefix(groupPubKey2.toArray()));
+
         Signer c = NeoSerializableInterface.from(data, Signer.class);
         assertThat(c.getScriptHash(), is(acctScriptHash));
         assertThat(c.getScopes(), containsInAnyOrder(
@@ -336,13 +331,13 @@ public class SignerTest {
 
     @Test(expected = DeserializationException.class)
     public void failDeserializingWithTooManyContracts() throws DeserializationException {
-        StringBuilder serialized = new StringBuilder("01" // attribute type: signer
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
+        StringBuilder serialized = new StringBuilder(""
+                + Numeric.reverseHexString(acctScriptHash.toString())
                 + "11" // calledByEntry, custom contracts
                 + "11"); // array length 17 (0x11)
         // Add one too many contract script hashes.
         for (int i = 0; i <= 17; i++) {
-            serialized.append("3ab0be8672e25cf475219d018ded961ec684ca88"); // contract
+            serialized.append(Numeric.reverseHexString(contract1.toString()));
         }
         byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
         NeoSerializableInterface.from(serializedBytes, Signer.class);
@@ -350,13 +345,13 @@ public class SignerTest {
 
     @Test(expected = DeserializationException.class)
     public void failDeserializingWithTooManyContractGroups() throws DeserializationException {
-        StringBuilder serialized = new StringBuilder("01" // attribute type: signer
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9"// account script hash LE
+        StringBuilder serialized = new StringBuilder(""
+                + Numeric.reverseHexString(acctScriptHash.toString())
                 + "21" // calledByEntry, custom contracts
                 + "11"); // array length 17 (0x11)
         // Add one too many contract group public keys.
         for (int i = 0; i <= 17; i++) {
-            serialized.append("0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7");
+            serialized.append(Numeric.toHexStringNoPrefix(groupPubKey1.toArray()));
         }
         byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
         NeoSerializableInterface.from(serializedBytes, Signer.class);
@@ -371,7 +366,7 @@ public class SignerTest {
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
 
-        int expectedSize = 1 // attribute type
+        int expectedSize =
                 + 20 // Account script hash
                 + 1 // Scope byte
                 + 1 // length byte of allowed contracts list
@@ -388,11 +383,20 @@ public class SignerTest {
         Signer c2 = Signer.calledByEntry(acctScriptHash);
         assertThat(c1, equalTo(c2));
 
-        Signer c = new Signer.Builder()
+        c1 = new Signer.Builder()
                 .account(acctScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
+
+        c2 = new Signer.Builder()
+                .account(acctScriptHash)
+                .allowedGroups(groupPubKey1, groupPubKey2)
+                .allowedContracts(contract1, contract2)
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .build();
+
+        assertThat(c1, equalTo(c2));
     }
 }
