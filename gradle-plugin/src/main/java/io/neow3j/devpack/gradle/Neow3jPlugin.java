@@ -1,40 +1,27 @@
 package io.neow3j.devpack.gradle;
 
-import io.neow3j.compiler.Compiler;
-import java.io.IOException;
+import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILE_TASK_NAME;
+
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaLibraryPlugin;
-import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.util.GradleVersion;
-import io.neow3j.compiler.*;
 
 public class Neow3jPlugin implements Plugin<Project> {
 
     private static final String PLUGIN_ID = "io.neow3j.devpack.gradle-plugin";
+    private static final String GRADLE_MIN_VERSION = "5.2";
 
     @Override
     public void apply(Project project) {
 
-        if (GradleVersion.current().compareTo(GradleVersion.version("5.2")) < 0) {
-            throw new UnsupportedOperationException(PLUGIN_ID + " requires at least Gradle 5.2");
+        if (GradleVersion.current().compareTo(GradleVersion.version(GRADLE_MIN_VERSION)) < 0) {
+            throw new UnsupportedOperationException(PLUGIN_ID +
+                    " requires at least Gradle " + GRADLE_MIN_VERSION);
         }
 
-        Neow3jPluginOptions opts = project.getExtensions()
-                .create("neow3jCompiler", Neow3jPluginOptions.class);
+        project.getTasks()
+                .create(NEOW3J_COMPILE_TASK_NAME, Neow3jCompileTask.class);
 
-        project.task("neow3jCompile")
-                .dependsOn(JavaCompile.class)
-                .doLast(t -> {
-                    Compiler n = new Compiler();
-                    try {
-                        n.compileClass(opts.getClassName());
-                    } catch (IOException e) {
-                        System.out.println("Compilation failed: " + e);
-                    }
-                });
-
-        project.getPluginManager().apply(JavaLibraryPlugin.class);
     }
 
 }
