@@ -54,8 +54,7 @@ public class Neow3jPluginUtils {
         if (fqClassName == null) {
             return null;
         }
-        int firstChar;
-        firstChar = fqClassName.lastIndexOf('.') + 1;
+        int firstChar = fqClassName.lastIndexOf('.') + 1;
         if (firstChar > 0) {
             fqClassName = fqClassName.substring(firstChar);
         }
