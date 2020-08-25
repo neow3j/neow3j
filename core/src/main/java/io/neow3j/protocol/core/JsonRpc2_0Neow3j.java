@@ -535,8 +535,6 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     // RpcNep5Tracker
 
-    // TODO: 12.08.20 Michael: In the neo docs, in this request, there is a 0 as the second item in the parameter list.
-    //  Check whether this was changed, or the current method works as is.
     @Override
     public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
         return new Request<>(
