@@ -175,7 +175,27 @@ public class Neow3jWriteIntegrationTest {
 
         assertNotNull(tx.getHash());
         assertNotNull(tx.getNonce());
-        assertNotNull(tx.getSender());
+        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
+    }
+
+    @Test
+    public void testSendManyWithFrom() throws IOException {
+        NeoSendMany response = getNeow3j().sendMany(
+                ACCOUNT_1_ADDRESS,
+                Arrays.asList(
+                        new TransactionSendAsset(NEO_HASH, "100", RECIPIENT_1),
+                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_2)
+                )
+        ).send();
+
+        assertNotNull(response.getSendMany());
+        Transaction tx = response.getSendMany();
+
+        assertThat(tx.getScript(), is("AGQMFNeF3EW4ED9G/7kw7n/+Tv9dhrv3DBQImOohlzePYjp2cJdEVESFdtCu"
+                + "rxPADAh0cmFuc2ZlcgwUJQWey0h406h1+RxRzt7TMNRXX95BYn1bUjgaDBQjuicDxTJj6NblItwyIDM5"
+                + "3Nju6QwUCJjqIZc3j2I6dnCXRFREhXbQrq8TwAwIdHJhbnNmZXIMFCUFnstIeNOodfkcUc7e0zDUV1/e"
+                + "QWJ9W1I4"));
+        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
     }
 
     @Test

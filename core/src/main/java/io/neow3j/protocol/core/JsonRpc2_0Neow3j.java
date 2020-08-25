@@ -483,15 +483,23 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 txSendAsset.getValue());
     }
 
-    // TODO: 12.08.20 Michael: According to the neo docs, an optional 'from' address from which one wants to transfer
-    //  the asset can be passed as first parameter. Create an additional method for this.
     @Override
     public Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset) {
         return new Request<>(
                 "sendmany",
-                asList(txSendAsset).stream()
-                        .filter((param) -> (param != null))
-                        .collect(Collectors.toList()),
+                Arrays.asList(txSendAsset.stream().filter(Objects::nonNull).collect(Collectors.toList())),
+                neow3jService,
+                NeoSendMany.class);
+    }
+
+    @Override
+    public Request<?, NeoSendMany> sendMany(String fromAddress,
+            List<TransactionSendAsset> txSendAsset) {
+
+        return new Request<>(
+                "sendmany",
+                asList(fromAddress, txSendAsset.stream().filter(Objects::nonNull)
+                        .collect(Collectors.toList())),
                 neow3jService,
                 NeoSendMany.class);
     }

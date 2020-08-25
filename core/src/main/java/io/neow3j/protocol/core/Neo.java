@@ -147,6 +147,8 @@ public interface Neo {
 
     Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
 
+    Request<?, NeoSendMany> sendMany(String fromAddress, List<TransactionSendAsset> txSendAsset);
+
     Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
