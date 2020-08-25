@@ -323,17 +323,13 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                 }
             }
 
-            // TODO: 13.05.20 Michael: This ContractABI class is currently mainly copied from contract module abi/model classes.
-            //  These need to be restructured and/or new positioned - same for ContractParameter
             @JsonIgnoreProperties(ignoreUnknown = true)
-            @JsonPropertyOrder({"hash", "methods", "events"})
             public static class ContractABI {
 
                 @JsonProperty("hash")
                 private String hash;
 
                 @JsonProperty("methods")
-                @JsonAlias({"functions"})
                 @JsonSetter(nulls = Nulls.AS_EMPTY)
                 private List<ContractMethod> methods;
 

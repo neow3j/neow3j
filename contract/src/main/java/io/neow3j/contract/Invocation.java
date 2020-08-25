@@ -225,8 +225,12 @@ public class Invocation {
         protected boolean failOnFalse;
         private ScriptHash sender;
 
-        // TODO: Add javadoc.
-        protected Builder(Neow3j neow) {
+        /**
+         * Constructs a builder for configuring a contract invocation.
+         *
+         * @param neow The {@link Neow3j} instance to use for JSON-RPC calls.
+         */
+        public Builder(Neow3j neow) {
             if (neow == null) {
                 throw new IllegalArgumentException("Neow3j instance must not be null.");
             }

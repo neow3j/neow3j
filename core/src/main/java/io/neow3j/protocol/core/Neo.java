@@ -87,7 +87,6 @@ public interface Neo {
 
     Request<?, NeoGetStorage> getStorage(String contractAddress, String keyToLookUpAsHexString);
 
-    // TODO: 11.02.20 Guil: test missing
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 
     Request<?, NeoGetValidators> getValidators();

@@ -363,7 +363,6 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 NeoInvokeScript.class);
     }
 
-    // TODO: 12.08.20 Michael: getunclaimedgas of a specific address
     @Override
     public Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address) {
         return new Request<>(

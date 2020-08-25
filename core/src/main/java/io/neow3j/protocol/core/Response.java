@@ -67,7 +67,6 @@ public class Response<T> {
 
     public void throwOnError() throws ErrorResponseException {
         if (hasError()) {
-            // TODO Claude 19.06.19: Throw more differentiated exception according to error code.
             throw new ErrorResponseException(error);
         }
     }
