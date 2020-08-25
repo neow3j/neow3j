@@ -120,16 +120,15 @@ public class ECKeyPair {
     }
 
     public static ECKeyPair create(ECPrivateKey privateKey) {
-        return create(privateKey.getInt());
+        return new ECKeyPair(privateKey, Sign.publicKeyFromPrivate(privateKey));
     }
 
     public static ECKeyPair create(BigInteger privateKey) {
-        return create(BigIntegers.asUnsignedByteArray(privateKey));
+        return create(new ECPrivateKey(privateKey));
     }
 
     public static ECKeyPair create(byte[] privateKey) {
-        return new ECKeyPair(new ECPrivateKey(privateKey),
-                Sign.publicKeyFromPrivate(new ECPrivateKey(privateKey)));
+        return create(new ECPrivateKey(privateKey));
     }
 
     /**
@@ -207,7 +206,7 @@ public class ECKeyPair {
          * @param key The private key.
          */
         public ECPrivateKey(BigInteger key) {
-            this(BigIntegers.asUnsignedByteArray(key));
+            this(Numeric.hexStringToByteArray(Numeric.toHexStringNoPrefixZeroPadded(key)));
         }
 
         /**
@@ -244,6 +243,9 @@ public class ECKeyPair {
 
         /**
          * Overwrites the private key with zeros.
+         * <p>
+         * If this private key was generated from a byte array, that input array will be overwritten
+         * because this private key simply holds a reference to that input byte array.
          */
         public void erase() {
             for (int i = 0; i < privateKey.length; i++) {
