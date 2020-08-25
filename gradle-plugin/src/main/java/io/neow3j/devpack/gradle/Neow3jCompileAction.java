@@ -1,5 +1,7 @@
 package io.neow3j.devpack.gradle;
 
+import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getCompileOutputFileName;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
@@ -23,14 +25,11 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
         String canonicalClassName = neow3jPluginCompile.getOptions().getClassName();
 
-        System.out.println("Smart Contract class: "
-                + canonicalClassName);
-
-        ofNullable(canonicalClassName)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("The parameter '"
-                                + Neow3jPluginOptions.CLASSNAME_NAME
-                                + "' should be set."));
+        ofNullable(canonicalClassName).orElseThrow(() ->
+                new IllegalArgumentException("The parameter "
+                        + "'" + CLASSNAME_NAME + "' needs to be set in the "
+                        + "'" + NEOW3J_COMPILER_OPTIONS_NAME + "' "
+                        + "declaration in your build.gradle file."));
 
         List<URL> clDirs = new ArrayList<>();
 
