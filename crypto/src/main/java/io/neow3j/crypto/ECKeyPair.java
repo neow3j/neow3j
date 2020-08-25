@@ -124,12 +124,12 @@ public class ECKeyPair {
     }
 
     public static ECKeyPair create(BigInteger privateKey) {
-        return new ECKeyPair(new ECPrivateKey(privateKey),
-                Sign.publicKeyFromPrivate(new ECPrivateKey(privateKey)));
+        return create(BigIntegers.asUnsignedByteArray(privateKey));
     }
 
     public static ECKeyPair create(byte[] privateKey) {
-        return create(Numeric.toBigInt(privateKey));
+        return new ECKeyPair(new ECPrivateKey(privateKey),
+                Sign.publicKeyFromPrivate(new ECPrivateKey(privateKey)));
     }
 
     /**
