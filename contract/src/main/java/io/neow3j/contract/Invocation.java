@@ -407,7 +407,7 @@ public class Invocation {
             // ChecekWitness check in the smart contract. We add the signers even if that
             // is not the case because we cannot know if the invoked script needs it or not and it
             // doesn't lead to failures if we add them in any case.
-            Signer[] signers = getSigners().toArray(new Signer[]{});
+            Signer[] signers = this.txBuilder.getSigners().toArray(new Signer[0]);
             String script = Numeric.toHexStringNoPrefix(this.txBuilder.getScript());
             return neow.invokeScript(script, signers).send();
         }
@@ -436,17 +436,13 @@ public class Invocation {
             // CheckWitness check in the smart contract. We add the signers even if that is not the
             // case because we cannot know if the invoked function needs it or not and it doesn't
             // lead to failures if we add them in any case.
-            Signer[] signers = getSigners().toArray(new Signer[]{});
+            Signer[] signers = this.txBuilder.getSigners().toArray(new Signer[0]);
             if (this.contractParams.isEmpty()) {
                 return neow.invokeFunction(this.contract.toString(), this.contractFunction, null,
                         signers).send();
             }
             return neow.invokeFunction(this.contract.toString(), this.contractFunction,
                     this.contractParams, signers).send();
-        }
-
-        private Set<Signer> getSigners() {
-            return new HashSet<>(this.txBuilder.getSigners());
         }
 
         /**
