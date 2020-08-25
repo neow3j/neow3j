@@ -6,6 +6,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
@@ -77,6 +78,14 @@ public class ECKeyPairTest {
         final String expectedAddress = "ARhJPYxmizqheBQA2dSQAHWfQQsbTSba2S";
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(privKey));
         assertThat(pair.getAddress(), is(expectedAddress));
+    }
+
+    @Test
+    public void privateKeyShouldBeZeroAfterErasing() {
+        ECPrivateKey privKey = new ECPrivateKey(Numeric.hexStringToByteArray(
+                        "a7038726c5a127989d78593c423e3dad93b2d74db90a16c0a58468c9e6617a87"));
+        privKey.erase();
+        assertThat(privKey.getBytes(), is(new byte[NeoConstants.PRIVATE_KEY_SIZE]));
     }
 
 }

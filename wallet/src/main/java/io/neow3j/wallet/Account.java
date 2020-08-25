@@ -193,8 +193,7 @@ public class Account {
             throw new AccountStateException("The account does not hold a decrypted private key.");
         }
         this.encryptedPrivateKey = NEP2.encrypt(password, this.keyPair, scryptParams);
-        // TODO 25.05.20 claude: Clarify if it is necessary to destroy the private key in a
-        //  safer way than we are doing here.
+        this.keyPair.getPrivateKey().erase();
         this.keyPair = null;
     }
 

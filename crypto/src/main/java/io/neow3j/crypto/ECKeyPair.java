@@ -199,7 +199,7 @@ public class ECKeyPair {
 
     public static class ECPrivateKey {
 
-        private BigInteger privateKey;
+        private byte[] privateKey;
 
         /**
          * Creates a ECPrivateKey instance from the given private key.
@@ -207,7 +207,7 @@ public class ECKeyPair {
          * @param key The private key.
          */
         public ECPrivateKey(BigInteger key) {
-            this.privateKey = key;
+            this(BigIntegers.asUnsignedByteArray(key));
         }
 
         /**
@@ -221,7 +221,7 @@ public class ECKeyPair {
                 throw new IllegalArgumentException("Private key byte array must have length of "
                         + NeoConstants.PRIVATE_KEY_SIZE);
             }
-            this.privateKey = new BigInteger(1, key);
+            this.privateKey = key;
         }
 
         /**
@@ -230,7 +230,7 @@ public class ECKeyPair {
          * @return This private key as an integer.
          */
         public BigInteger getInt() {
-            return this.privateKey;
+            return new BigInteger(1, this.privateKey);
         }
 
         /**
@@ -239,7 +239,16 @@ public class ECKeyPair {
          * @return This private key as a byte array.
          */
         public byte[] getBytes() {
-            return Numeric.toBytesPadded(this.privateKey, NeoConstants.PRIVATE_KEY_SIZE);
+            return this.privateKey;
+        }
+
+        /**
+         * Overwrites the private key with zeros.
+         */
+        public void erase() {
+            for (int i = 0; i < privateKey.length; i++) {
+                this.privateKey[i] = 0;
+            }
         }
 
         @Override
@@ -251,13 +260,14 @@ public class ECKeyPair {
                 return false;
             }
             ECPrivateKey that = (ECPrivateKey) o;
-            return privateKey.equals(that.privateKey);
+            return Arrays.equals(privateKey, that.privateKey);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(privateKey);
+            return Arrays.hashCode(this.privateKey);
         }
+
     }
 
     public static class ECPublicKey extends NeoSerializable {
