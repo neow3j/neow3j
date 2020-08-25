@@ -99,6 +99,7 @@ public class Compiler {
      * Compiles the given class to NeoVM code.
      *
      * @param fullyQualifiedClassName the fully qualified name of the class.
+     * @return the compilation result info represented by {@link CompilationResult}
      */
     public CompilationResult compileClass(String fullyQualifiedClassName) throws IOException {
         ClassNode asmClass = getAsmClass(fullyQualifiedClassName);
@@ -109,6 +110,7 @@ public class Compiler {
      * Compiles the given class to NeoVM code.
      *
      * @param classStream the {@link InputStream} pointing to a class file.
+     * @return the compilation result info represented by {@link CompilationResult}
      */
     public CompilationResult compileClass(InputStream classStream) throws IOException {
         ClassNode asmClass = getAsmClass(classStream);
@@ -119,6 +121,7 @@ public class Compiler {
      * Compiles the given class to NeoVM code.
      *
      * @param classNode the {@link ClassNode} representing a class file.
+     * @return the compilation result info represented by {@link CompilationResult}
      */
     private CompilationResult compileClass(ClassNode classNode) throws IOException {
         this.neoModule = new NeoModule(classNode);
