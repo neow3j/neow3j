@@ -17,6 +17,7 @@ import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
@@ -1523,6 +1524,24 @@ public class ResponseTest extends ResponseTester {
 
     @Test
     public void testGetUnclaimedGas() {
+        buildResponse("{\n"
+                        + "  \"jsonrpc\": \"2.0\",\n"
+                        + "  \"id\": 1,\n"
+                        + "  \"result\": {\n"
+                        + "    \"unclaimed\": \"79199824176\",\n"
+                        + "    \"address\": \"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"\n"
+                        + "  }\n"
+                        + "}"
+        );
+
+        NeoGetUnclaimedGas getUnclaimedGas = deserialiseResponse(NeoGetUnclaimedGas.class);
+        assertThat(getUnclaimedGas.getUnclaimedGas().getUnclaimed(), is("79199824176"));
+        assertThat(getUnclaimedGas.getUnclaimedGas().getAddress(),
+                is("AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN"));
+    }
+
+    @Test
+    public void testGetWalletUnclaimedGas() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +

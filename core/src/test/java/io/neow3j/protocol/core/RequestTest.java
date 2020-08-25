@@ -414,6 +414,15 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetUnclaimedGas() throws Exception {
+        neow3j.getUnclaimedGas("AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getunclaimedgas\","
+                        + "\"params\":[\"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"],\"id\":1}");
+    }
+
+    @Test
     public void testImportPrivKey() throws Exception {
         neow3j.importPrivKey("L5c6jz6Rh8arFJW3A5vg7Suaggo28ApXVF2EPzkAXbm94ThqaA6r").send();
 
