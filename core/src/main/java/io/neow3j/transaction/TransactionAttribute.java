@@ -84,6 +84,9 @@ public abstract class TransactionAttribute extends NeoSerializable {
         return Objects.hash(getType());
     }
 
+    /**
+     * This is just a placeholder. In future new attribute types might be added.
+     */
     public static class TransactionAttributeVoid extends TransactionAttribute {
 
         public TransactionAttributeVoid(TransactionAttributeType type) {

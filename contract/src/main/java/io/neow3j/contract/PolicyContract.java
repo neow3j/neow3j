@@ -153,8 +153,7 @@ public class PolicyContract extends SmartContract {
 
     // Method extracted for testability.
     Invocation buildBlockAccountInvocation(ScriptHash accountToBlock, Wallet wallet,
-            ScriptHash signer)
-            throws IOException {
+            ScriptHash signer) throws IOException {
 
         return invoke(BLOCK_ACCOUNT)
                 .withSigners(Signer.calledByEntry(signer))

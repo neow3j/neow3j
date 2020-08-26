@@ -52,6 +52,8 @@ public class AccountTest {
     private static final String ACCOUNT_JSON_ADDRESS = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
     private static final String ACCOUNT_JSON_KEY = "6PYLykbKcbwnCuTJiQQ5PYu5uH9NgwGYLoMyTUabRxRJUsiA9GP8NgorUV";
     private static final String WIF = "L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR";
+    private static final String NEO_SCRIPT_HASH = "de5f57d430d3dece511cf975a8d37848cb9e0525";
+    private static final String GAS_SCRIPT_HASH = "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc";
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -306,9 +308,7 @@ public class AccountTest {
                 "getnep5balances_AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS.json",
                 ADDRESS);
         Map<ScriptHash, BigInteger> balances = a.getNep5Balances(neow);
-        assertThat(balances.keySet(), contains(
-                new ScriptHash("668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"),
-                new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525")));
+        assertThat(balances.keySet(), contains(GAS_SCRIPT_HASH, NEO_SCRIPT_HASH));
         assertThat(balances.values(), contains(
                 new BigInteger("300000000"),
                 new BigInteger("5")));

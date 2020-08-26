@@ -50,7 +50,8 @@ public enum InteropServiceCode {
     SYSTEM_BLOCKCHAIN_GETBLOCK("System.Blockchain.GetBlock", 2_500_000),
     SYSTEM_BLOCKCHAIN_GETTRANSACTION("System.Blockchain.GetTransaction", 1_000_000),
     SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1_000_000),
-    SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1_000_000),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock",
+            1_000_000),
     SYSTEM_BLOCKCHAIN_GETCONTRACT("System.Blockchain.GetContract", 1_000_000),
 
     SYSTEM_CALLBACK_CREATE("System.Callback.Create", 400), // DONE
@@ -81,15 +82,6 @@ public enum InteropServiceCode {
 
     NEO_NATIVE_DEPLOY("Neo.Native.Deploy", null),
     NEO_NATIVE_CALL("Neo.Native.Call", null);
-
-    // only temporarily kept here for adaption to neo3-preview3
-//    OLD_VERIFY_SECP256R1("Neo.Crypto.ECDsa.Secp256r1.Verify", 1_000_000),
-//    OLD_VERIFY_SECP256K1("Neo.Crypto.ECDsa.Secp256k1.Verify", 1_000_000),
-//    OLD_CHECKMULTISIG_SECP256R1("Neo.Crypto.ECDsa.Secp256r1.CheckMultiSig", null),
-//    OLD_CHECKMULTISIG_SECP256K1("Neo.Crypto.ECDsa.Secp256k1.CheckMultiSig", null),
-//    OLD_NEO_TOKEN("Neo.Native.Tokens.NEO", null),
-//    OLD_GAS_TOKEN("Neo.Native.Tokens.GAS", null),
-//    OLD_POLICY("Neo.Native.Policy", null);
 
     /* The service's name */
     private String name;

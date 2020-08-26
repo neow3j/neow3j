@@ -181,7 +181,7 @@ public class Invocation {
         BigInteger fees = BigInteger.valueOf(
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
-                .getBalanceOf(this.transaction.getSender().getScriptHash());
+                .getBalanceOf(this.transaction.getSender());
         if (fees.compareTo(senderGasBalance) > 0) {
             consumer.accept(fees, senderGasBalance);
         }
@@ -208,7 +208,7 @@ public class Invocation {
         BigInteger fees = BigInteger.valueOf(
                 this.transaction.getSystemFee() + this.transaction.getNetworkFee());
         BigInteger senderGasBalance = new GasToken(this.neow)
-                .getBalanceOf(this.transaction.getSender().getScriptHash());
+                .getBalanceOf(this.transaction.getSender());
         return fees.compareTo(senderGasBalance) < 0;
     }
 

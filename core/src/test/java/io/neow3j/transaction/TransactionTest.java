@@ -233,8 +233,7 @@ public class TransactionTest {
         Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
         assertThat(tx.getVersion(), is((byte) 0));
         assertThat(tx.getNonce(), is(246070626L));
-        assertThat(tx.getSender().getScriptHash(),
-                is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSender(), is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));

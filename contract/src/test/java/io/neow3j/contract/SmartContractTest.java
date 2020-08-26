@@ -231,8 +231,7 @@ public class SmartContractTest {
 
     @Test
     public void callingInvokeScriptOnContractDeployProducesCorrectCall() throws IOException,
-            DeserializationException,
-            URISyntaxException {
+            DeserializationException, URISyntaxException {
 
         setUpWireMockForCall("invokescript", "invokescript_deploy.json",
                 TEST_CONTRACT_1_DEPLOY_SCRIPT);

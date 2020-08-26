@@ -88,14 +88,14 @@ public class Transaction extends NeoSerializable {
         return signers;
     }
 
-    public Signer getSender() {
+    public ScriptHash getSender() {
         if (signers.isEmpty()) {
             throw new NoSuchElementException("This transaction does not contain any signer.");
         }
         return signers.stream()
                 .filter(signer -> signer.getScopes().contains(WitnessScope.FEE_ONLY))
                 .findFirst()
-                .orElse(signers.get(0));
+                .orElse(signers.get(0)).getScriptHash();
     }
 
     /**

@@ -84,7 +84,7 @@ public class Nep5TokenTest {
         Transaction tx = i.getTransaction();
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(tx.getSender().getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSender(), is(account1.getScriptHash()));
     }
 
     @Test

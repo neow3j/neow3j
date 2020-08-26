@@ -131,7 +131,7 @@ public class NeoConstants {
     public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
 
     /**
-     * The maximum number of contracts or groups a signer scope can contian
+     * The maximum number of contracts or groups a signer scope can contain.
      */
     public static final int MAX_SIGNER_SUBITEMS = 16;
 

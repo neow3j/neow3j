@@ -141,8 +141,7 @@ public class SmartContract {
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue();
         }
-        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
-                StackItemType.BYTE_STRING);
+        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
     }
 
     protected NeoInvokeFunction invokeFunction(String function, ContractParameter... params)
