@@ -31,7 +31,9 @@ import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -95,16 +97,47 @@ public class Compiler {
 
     private NeoModule neoModule;
 
+    private ClassLoader classLoader;
+
+    public Compiler() {
+    }
+
+    public Compiler(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
     /**
-     * Compiles the class with the given name to NeoVM code.
+     * Compiles the given class to NeoVM code.
      *
-     * @param name the fully qualified name of the class.
+     * @param fullyQualifiedClassName the fully qualified name of the class.
+     * @return the compilation result info represented by {@link CompilationResult}
      */
-    public CompilationResult compileClass(String name) throws IOException {
-        ClassNode asmClass = getAsmClass(name);
-        this.neoModule = new NeoModule(asmClass);
-        collectAndInitializeStaticFields(asmClass);
-        collectAndInitializeMethods(asmClass);
+    public CompilationResult compileClass(String fullyQualifiedClassName) throws IOException {
+        ClassNode asmClass = getAsmClass(fullyQualifiedClassName);
+        return compileClass(asmClass);
+    }
+
+    /**
+     * Compiles the given class to NeoVM code.
+     *
+     * @param classStream the {@link InputStream} pointing to a class file.
+     * @return the compilation result info represented by {@link CompilationResult}
+     */
+    public CompilationResult compileClass(InputStream classStream) throws IOException {
+        ClassNode asmClass = getAsmClass(classStream);
+        return compileClass(asmClass);
+    }
+
+    /**
+     * Compiles the given class to NeoVM code.
+     *
+     * @param classNode the {@link ClassNode} representing a class file.
+     * @return the compilation result info represented by {@link CompilationResult}
+     */
+    private CompilationResult compileClass(ClassNode classNode) throws IOException {
+        this.neoModule = new NeoModule(classNode);
+        collectAndInitializeStaticFields(classNode);
+        collectAndInitializeMethods(classNode);
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -209,10 +242,28 @@ public class Compiler {
                 .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class)));
     }
 
-    private ClassNode getAsmClass(String name) throws IOException {
-        ClassReader reader = new ClassReader(name);
+    private ClassNode getAsmClass(String fullyQualifiedClassName) throws IOException {
+        if (classLoader != null) {
+            return getAsmClass(
+                    classLoader
+                            .getResourceAsStream(fullyQualifiedClassName.replace('.', '/') + ".class"));
+        }
+        return getAsmClass(
+                this.getClass().getClassLoader()
+                        .getResourceAsStream(fullyQualifiedClassName.replace('.', '/') + ".class"));
+    }
+
+    private ClassNode getAsmClass(InputStream classStream) throws IOException {
+        ClassReader classReader = new ClassReader(classStream);
+        return getAsmClass(classReader);
+    }
+
+    private ClassNode getAsmClass(ClassReader classReader) throws IOException {
+        if (classReader == null) {
+            throw new InvalidParameterException("Class reader not found.");
+        }
         ClassNode asmClass = new ClassNode();
-        reader.accept(asmClass, 0);
+        classReader.accept(asmClass, 0);
         return asmClass;
     }
 

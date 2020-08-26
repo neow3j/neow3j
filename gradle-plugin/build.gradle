@@ -1,0 +1,25 @@
+dependencies {
+    compile project(':compiler')
+    compile gradleApi()
+}
+
+gradlePlugin {
+    plugins {
+        neow3jDevpackGradlePlugin {
+            id = "io.neow3j.gradle-plugin"
+            implementationClass = "io.neow3j.devpack.gradle.Neow3jPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = "https://github.com/neow3j/neow3j"
+    vcsUrl = "https://github.com/neow3j/neow3j"
+    description = "Gradle plugin to use neow3j devpack for Java"
+    tags = [ "javac", "neo", "blockchain", "neow3j", "java" ]
+
+    mavenCoordinates {
+        groupId = project.group.toString()
+        artifactId = project.name
+    }
+}
