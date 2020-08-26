@@ -52,8 +52,10 @@ public class AccountTest {
     private static final String ACCOUNT_JSON_KEY =
             "6PYLykbKcbwnCuTJiQQ5PYu5uH9NgwGYLoMyTUabRxRJUsiA9GP8NgorUV";
     private static final String WIF = "L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR";
-    private static final String NEO_SCRIPT_HASH = "de5f57d430d3dece511cf975a8d37848cb9e0525";
-    private static final String GAS_SCRIPT_HASH = "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc";
+    private static final ScriptHash NEO_SCRIPT_HASH = new ScriptHash(
+            "de5f57d430d3dece511cf975a8d37848cb9e0525");
+    private static final ScriptHash GAS_SCRIPT_HASH = new ScriptHash(
+            "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();

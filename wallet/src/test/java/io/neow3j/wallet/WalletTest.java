@@ -41,8 +41,10 @@ import org.junit.Test;
 
 public class WalletTest {
 
-    private static final String NEO_SCRIPT_HASH = "de5f57d430d3dece511cf975a8d37848cb9e0525";
-    private static final String GAS_SCRIPT_HASH = "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc";
+    private static final ScriptHash NEO_SCRIPT_HASH = new ScriptHash(
+            "de5f57d430d3dece511cf975a8d37848cb9e0525");
+    private static final ScriptHash GAS_SCRIPT_HASH = new ScriptHash(
+            "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
 
     @Test
     public void testCreateDefaultWallet() {
