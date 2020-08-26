@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.Invocation.Builder;
@@ -34,6 +33,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,22 +47,17 @@ import org.junit.rules.ExpectedException;
 
 public class InvocationTest {
 
+    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
+    private static final String NEP5_TRANSFER = "transfer";
+
     private static final String SCRIPT = Numeric.toHexStringNoPrefix(
-            new ScriptBuilder()
-                    .pushInteger(0)
-                    .pack()
-                    .pushData(Numeric.hexStringToByteArray("6e616d65"))
-                    .pushData(Numeric.hexStringToByteArray(
-                            "25059ecb4878d3a875f91c51ceded330d4575fde"))
-                    .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL)
+            new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, "name", new ArrayList<>())
                     .toArray());
 
     private Account account1;
     private Account account2;
     private Account multiSigAcc;
     private ScriptHash recipient;
-    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    private static final String NEP5_TRANSFER = "transfer";
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule();
