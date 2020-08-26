@@ -52,12 +52,12 @@ public enum WitnessScope {
      * @return the list of scopes encoded by the given byte.
      */
     public static List<WitnessScope> extractCombinedScopes(byte combinedScopes) {
-        if (combinedScopes == GLOBAL.byteValue()) {
-            return Arrays.asList(GLOBAL);
+        if (combinedScopes == FEE_ONLY.byteValue()) {
+            return Arrays.asList(FEE_ONLY);
         }
         List<WitnessScope> scopes = new ArrayList<>();
-        if ((combinedScopes & FEE_ONLY.byteValue()) != 0) {
-            scopes.add(FEE_ONLY);
+        if ((combinedScopes & GLOBAL.byteValue()) != 0) {
+            scopes.add(GLOBAL);
         }
         if ((combinedScopes & CALLED_BY_ENTRY.byteValue()) != 0) {
             scopes.add(CALLED_BY_ENTRY);

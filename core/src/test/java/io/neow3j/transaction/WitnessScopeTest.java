@@ -34,7 +34,10 @@ public class WitnessScopeTest {
 
     @Test
     public void extractCombinedScopes() {
-        List<WitnessScope> scopes = WitnessScope.extractCombinedScopes((byte) 0x80);
+        List<WitnessScope> scopes = WitnessScope.extractCombinedScopes((byte) 0x00);
+        assertThat(scopes, contains(WitnessScope.FEE_ONLY));
+
+        scopes = WitnessScope.extractCombinedScopes((byte) 0x80);
         assertThat(scopes, contains(WitnessScope.GLOBAL));
 
         scopes = WitnessScope.extractCombinedScopes((byte) 0x11);
@@ -52,5 +55,6 @@ public class WitnessScopeTest {
                 WitnessScope.CALLED_BY_ENTRY,
                 WitnessScope.CUSTOM_GROUPS,
                 WitnessScope.CUSTOM_CONTRACTS));
+
     }
 }
