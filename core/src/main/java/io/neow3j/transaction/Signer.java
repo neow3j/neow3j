@@ -3,7 +3,6 @@ package io.neow3j.transaction;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.Sign;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
@@ -18,8 +17,7 @@ import java.util.Objects;
 
 
 /**
- * A Signer of a transaction. It also sets a scope in which the signer's
- * witness/signature is valid.
+ * A signer of a transaction. It defines a scope in which the signer's signature is valid.
  */
 public class Signer extends NeoSerializable {
 
@@ -82,34 +80,6 @@ public class Signer extends NeoSerializable {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
-                .build();
-    }
-
-    /**
-     * Creates a Signer for the given account with custom contract scope ({@link
-     * WitnessScope#CUSTOM_CONTRACTS}).
-     *
-     * @param account The originator of the witness.
-     * @return {@link Signer}
-     */
-    public static Signer customContract(ScriptHash account) {
-        return new Builder()
-                .account(account)
-                .scopes(WitnessScope.CUSTOM_CONTRACTS)
-                .build();
-    }
-
-    /**
-     * Creates a Signer for the given account with custom group scope ({@link
-     * WitnessScope#CUSTOM_GROUPS}).
-     *
-     * @param account The originator of the witness.
-     * @return {@link Signer}
-     */
-    public static Signer customGroups(ScriptHash account) {
-        return new Builder()
-                .account(account)
-                .scopes(WitnessScope.CUSTOM_GROUPS)
                 .build();
     }
 
@@ -300,16 +270,16 @@ public class Signer extends NeoSerializable {
          *
          * @return the signer.
          * @throws SignerConfigurationException if either
-         *                                        <ul>
-         *                                          <li>no account has been set</li>
-         *                                          <li>no scope has been set</li>
-         *                                          <li>the global scope is mixed with other
-         *                                          scopes</li>
-         *                                          <li>the custom contracts scope is set but
-         *                                          no contracts are specified</li>
-         *                                          <li>the custom groups scope is set but
-         *                                          no groups are specified</li>
-         *                                        </ul>
+         *                                      <ul>
+         *                                        <li>no account has been set</li>
+         *                                        <li>no scope has been set</li>
+         *                                        <li>the global scope is mixed with other
+         *                                        scopes</li>
+         *                                        <li>the custom contracts scope is set but
+         *                                        no contracts are specified</li>
+         *                                        <li>the custom groups scope is set but
+         *                                        no groups are specified</li>
+         *                                      </ul>
          */
         public Signer build() {
             if (account == null) {
@@ -319,6 +289,10 @@ public class Signer extends NeoSerializable {
             if (scopes.isEmpty()) {
                 throw new SignerConfigurationException("No scope has been defined. A signer" +
                         " object requires at least one scope.");
+            }
+            if (scopes.contains(WitnessScope.FEE_ONLY) && scopes.size() > 1) {
+                throw new SignerConfigurationException("The fee-only witness scope cannot be " +
+                        "combined with other scopes.");
             }
             if (scopes.contains(WitnessScope.GLOBAL) && scopes.size() > 1) {
                 throw new SignerConfigurationException("The global witness scope cannot be " +
