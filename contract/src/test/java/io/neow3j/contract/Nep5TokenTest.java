@@ -45,7 +45,6 @@ public class Nep5TokenTest {
     private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
     private static final String NEP5_TRANSFER = "transfer";
 
-
     @Before
     public void setUp() {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
@@ -198,7 +197,7 @@ public class Nep5TokenTest {
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
+        Invocation invocation = neoToken.buildTransferScript(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("7"));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
@@ -233,7 +232,7 @@ public class Nep5TokenTest {
                         ContractParameter.integer(3)))
                 .toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
+        Invocation invocation = neoToken.buildTransferScript(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("12"));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
@@ -256,7 +255,7 @@ public class Nep5TokenTest {
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
+        Invocation invocation = neoToken.buildTransferScript(Wallet.withAccounts(account1,
                 account2), RECIPIENT_SCRIPT_HASH, new BigDecimal("4"));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
@@ -282,7 +281,7 @@ public class Nep5TokenTest {
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
+        Invocation invocation = neoToken.buildTransferScript(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("1"));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
@@ -317,9 +316,9 @@ public class Nep5TokenTest {
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(2))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(multiSigAccount,
-                account1, account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("5"),
-                multiSigAccount.getScriptHash(), account1.getScriptHash());
+        Wallet w = Wallet.withAccounts(multiSigAccount, account1, account2, account3);
+        Invocation invocation = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("5"), Arrays.asList(multiSigAccount, account1));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
     }
@@ -347,7 +346,7 @@ public class Nep5TokenTest {
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(multiSigAccount,
+        Invocation invocation = neoToken.buildTransferScript(Wallet.withAccounts(multiSigAccount,
                 account1), RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
@@ -356,10 +355,12 @@ public class Nep5TokenTest {
     /*
      *  For this test, the wallet contains only a multi-sig account.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InsufficientFundsException.class)
     public void testTransfer_MultiSigNotEnoughSignersPresent_NoOtherAccountPresent()
             throws IOException {
+
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
         Wallet wallet = Wallet.withAccounts(multiSigAccount);
@@ -374,7 +375,7 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
-        neoToken.buildTransactionScript(Wallet.withAccounts(account1, account2, account3),
+        neoToken.buildTransferScript(Wallet.withAccounts(account1, account2, account3),
                 RECIPIENT_SCRIPT_HASH, new BigDecimal("20"));
     }
 
@@ -402,9 +403,9 @@ public class Nep5TokenTest {
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(2))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("5"),
-                account3.getScriptHash(), account2.getScriptHash());
+        Wallet w = Wallet.withAccounts(account1, account2, account3);
+        Invocation invocation = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("5"), Arrays.asList(account3, account2));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
     }
@@ -426,9 +427,9 @@ public class Nep5TokenTest {
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("4"),
-                account2.getScriptHash(), account3.getScriptHash());
+        Wallet w = Wallet.withAccounts(account1, account2, account3);
+        Invocation invocation = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("4"), Arrays.asList(account2, account3));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
     }
@@ -454,9 +455,9 @@ public class Nep5TokenTest {
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("1"),
-                account2.getScriptHash(), account3.getScriptHash());
+        Wallet w = Wallet.withAccounts(account1, account2, account3);
+        Invocation invocation = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("1"), Arrays.asList(account2, account3));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
     }
@@ -475,9 +476,9 @@ public class Nep5TokenTest {
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1))).toArray();
 
-        Invocation invocation = neoToken.buildTransactionScript(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("1"),
-                account2.getScriptHash(), account3.getScriptHash());
+        Wallet w = Wallet.withAccounts(account1, account2, account3);
+        Invocation invocation = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("1"), Arrays.asList(account2, account3));
 
         assertThat(invocation.getTransaction().getScript(), is(expectedScript));
     }
@@ -511,9 +512,9 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
 
-        neoToken.buildTransactionScript(Wallet.withAccounts(account1, account2, account3),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("12"), account1.getScriptHash(),
-                account3.getScriptHash());
+        Wallet w = Wallet.withAccounts(account1, account2, account3);
+        Invocation invocation = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("12"), Arrays.asList(account1, account3));
     }
 
     @Test(expected = IllegalArgumentException.class)

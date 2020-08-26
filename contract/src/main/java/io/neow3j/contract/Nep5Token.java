@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -188,75 +189,17 @@ public class Nep5Token extends SmartContract {
             throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
         }
 
-        Invocation inv = buildTransactionScript(wallet, to, amount);
+        Invocation inv = buildTransferScript(wallet, to, amount);
         return inv.send();
     }
 
     // Method extracted for testability.
-    Invocation buildTransactionScript(Wallet wallet, ScriptHash to, BigDecimal amount)
+    Invocation buildTransferScript(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
-        BigInteger amountStillToCover = getAmountAsBigInteger(amount);
-
-        // Use default account first.
-        Account defaultAccount = wallet.getDefaultAccount();
-        BigInteger balanceDefaultAcc = getBalanceOf(defaultAccount.getScriptHash());
-
-        // List of the individual invocation scripts.
-        List<byte[]> scripts = new ArrayList<>();
-        List<Signer> signers = new ArrayList<>();
-        // If the amount is covered by the wallet's default account, build and send the transaction.
-        if (balanceDefaultAcc.signum() > 0) {
-            if (!defaultAccount.isMultiSig() ||
-                    privateKeysArePresentForMultiSig(wallet, defaultAccount.getScriptHash())) {
-                signers.add(Signer.calledByEntry(defaultAccount.getScriptHash()));
-                if (balanceDefaultAcc.subtract(amountStillToCover).signum() >= 0) {
-                    // Full amount can be covered by default account.
-                    scripts.add(buildSingleTransferScript(defaultAccount, to, amountStillToCover));
-                    return buildTransferInvocation(wallet, scripts, signers);
-                } else {
-                    // Amount exceeds balance, therefore, full balance of default account is used.
-                    scripts.add(buildSingleTransferScript(defaultAccount, to, balanceDefaultAcc));
-                    amountStillToCover = amountStillToCover.subtract(balanceDefaultAcc);
-                }
-            }
-        }
-
-        // If there is still an amount to cover, use other accounts in the wallet until the amount is covered.
-        List<Account> accounts = wallet.getAccounts();
-        for (Account acc : accounts) {
-            // If acc is a multi-sig account, verify that it can be used. Otherwise, skip this account.
-            if (acc.isMultiSig()) {
-                if (!privateKeysArePresentForMultiSig(wallet, acc.getScriptHash())) {
-                    continue;
-                }
-            }
-            BigInteger balance = getBalanceOf(acc.getScriptHash());
-            if (acc.isDefault() || balance.signum() <= 0) {
-                continue;
-            }
-            signers.add(Signer.calledByEntry(acc.getScriptHash()));
-            if (balance.subtract(amountStillToCover).signum() >= 0) {
-                // Full remaining amount can be covered by current account.
-                scripts.add(buildSingleTransferScript(acc, to, amountStillToCover));
-                return buildTransferInvocation(wallet, scripts, signers);
-            } else {
-                scripts.add(buildSingleTransferScript(acc, to, balance));
-                amountStillToCover = amountStillToCover.subtract(balance);
-            }
-        }
-        // TODO: 12.08.20 Michael: if only the default account is present with insufficient funds, the following
-        //  exception is thrown. However, the exception message is not correct in that case. Restructure this.
-        if (scripts.size() == 0) {
-            throw new IllegalArgumentException("Can't create transaction signature. Wallet does not contain" +
-                    " enough accounts (with decrypted private keys) that are part of the multi-sig account(s)" +
-                    " in the wallet.");
-        }
-
-        BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
-        throw new InsufficientFundsException("The wallet does not hold enough tokens." +
-                " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
-                " but the wallet only holds " + maxCoverPotential.toString() + " " + getSymbol() +
-                " (in token fractions).");
+        List<Account> accountsOrdered = new ArrayList<>(wallet.getAccounts());
+        accountsOrdered.remove(wallet.getDefaultAccount());
+        accountsOrdered.add(0, wallet.getDefaultAccount()); // Start with default account.
+        return buildMultiTransferInvocation(wallet, to, amount, accountsOrdered);
     }
 
     /**
@@ -274,61 +217,66 @@ public class Nep5Token extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public NeoSendRawTransaction transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
-            BigDecimal amount, ScriptHash... from)
-            throws IOException {
+            BigDecimal amount, ScriptHash... from) throws IOException {
+
         if (from.length == 0) {
             throw new IllegalArgumentException("An account address must be provided to build an invocation.");
         }
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
         }
-        // Verify that potential multi-sig accounts can be used.
-        for (ScriptHash fromScriptHash : from) {
-            if (wallet.getAccount(fromScriptHash).isMultiSig()) {
-                if (!privateKeysArePresentForMultiSig(wallet, fromScriptHash)) {
-                    throw new IllegalArgumentException("Can't create transaction signature. Wallet does not contain" +
-                            "enough accounts (with decrypted private keys) that are part of the multi-sig account" +
-                            "with script hash " + fromScriptHash + ".");
-                }
-            }
-        }
 
-        return buildTransactionScript(wallet, to, amount, from).send();
+        List<Account> accounts = new ArrayList<>();
+        for (ScriptHash fromScriptHash : from) {
+            Account a = wallet.getAccount(fromScriptHash);
+            // Verify that potential multi-sig accounts can be used.
+            if (a.isMultiSig() && !privateKeysArePresentForMultiSig(wallet, fromScriptHash)) {
+                    throw new IllegalArgumentException("The multi-sig account with script "
+                            + "hash " + fromScriptHash.toString() + " does not have the "
+                            + "corresponding private keys in the wallet that are required for "
+                            + "signing the transfer transaction.");
+            }
+            accounts.add(a);
+        }
+        return buildMultiTransferInvocation(wallet, to, amount, accounts).send();
     }
 
-    // Method extracted for testability.
-    Invocation buildTransactionScript(Wallet wallet, ScriptHash to,
-            BigDecimal amount, ScriptHash... from) throws IOException {
+    Invocation buildMultiTransferInvocation(Wallet wallet, ScriptHash to,
+            BigDecimal amount, List<Account> accounts) throws IOException {
 
-        BigInteger amountStillToCover = getAmountAsBigInteger(amount);
-        // List of the individual invocation scripts.
-        List<byte[]> scripts = new ArrayList<>();
-        List<Signer> signers = new ArrayList<>();
-
-        // If there is still an amount to cover, use other accounts in the wallet until the amount is covered.
-        for (ScriptHash scriptHash : from) {
-            Account acc = wallet.getAccount(scriptHash);
-            BigInteger balance = getBalanceOf(acc.getScriptHash());
+        List<byte[]> scripts = new ArrayList<>(); // List of the individual invocation scripts.
+        List<Signer> signers = new ArrayList<>(); // Accounts taking part in the transfer.
+        Iterator<Account> it = accounts.iterator();
+        BigInteger remainingAmount = getAmountAsBigInteger(amount);
+        while(remainingAmount.signum() > 0 && it.hasNext()) {
+            Account a = it.next();
+            if (a.isMultiSig() && !privateKeysArePresentForMultiSig(wallet, a.getScriptHash())) {
+                continue;
+            }
+            BigInteger balance = getBalanceOf(a.getScriptHash());
             if (balance.signum() <= 0) {
                 continue;
             }
-            signers.add(Signer.calledByEntry(acc.getScriptHash()));
-
-            if (balance.subtract(amountStillToCover).signum() >= 0) {
+            signers.add(Signer.calledByEntry(a.getScriptHash()));
+            if (balance.compareTo(remainingAmount) >= 0) {
                 // Full remaining amount can be covered by current account.
-                scripts.add(buildSingleTransferScript(acc, to, amountStillToCover));
-                return buildTransferInvocation(wallet, scripts, signers);
+                scripts.add(buildSingleTransferScript(a, to, remainingAmount));
             } else {
-                scripts.add(buildSingleTransferScript(acc, to, balance));
-                amountStillToCover = amountStillToCover.subtract(balance);
+                // Full balance of account is needed but doesn't yet cover the full amount.
+                scripts.add(buildSingleTransferScript(a, to, balance));
             }
+            remainingAmount = remainingAmount.subtract(balance);
         }
 
-        BigInteger maxCoverPotential = getAmountAsBigInteger(amount).subtract(amountStillToCover);
-        throw new InsufficientFundsException("The provided accounts do not hold enough tokens." +
-                " The transfer amount is " + getAmountAsBigInteger(amount).toString() + " " + getSymbol() +
-                " but the provided accounts only hold " + maxCoverPotential.toString() + " " + getSymbol() +
-                " (in token fractions).");
+        if (remainingAmount.signum() > 0) {
+            BigInteger amountToCover = getAmountAsBigInteger(amount);
+            BigInteger coveredAmount = amountToCover.subtract(remainingAmount);
+            throw new InsufficientFundsException("The wallet does not hold enough tokens, resp. "
+                    + "token-holding accounts with available private keys. The transfer amount is "
+                    + amountToCover.toString() + " " + getSymbol() + " but the wallet only holds "
+                    + coveredAmount.toString() + " " + getSymbol() + " (in token fractions).");
+        }
+        return buildTransferInvocation(wallet, scripts, signers);
     }
 
     private byte[] buildSingleTransferScript(Account acc, ScriptHash to, BigInteger amount) {
@@ -351,7 +299,6 @@ public class Nep5Token extends SmartContract {
         Invocation.Builder invocationBuilder = new Invocation.Builder(neow)
                 .withWallet(wallet)
                 .withScript(concatenatedScript)
-//                .withSender(signers.get(0).getScriptHash())
                 .failOnFalse();
 
         for (Signer signer : signers) {
@@ -418,7 +365,6 @@ public class Nep5Token extends SmartContract {
                         ContractParameter.hash160(to),
                         ContractParameter.integer(fractions)
                 )
-//                .failOnFalse()
                 .build()
                 .sign();
     }
