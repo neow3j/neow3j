@@ -119,7 +119,7 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Invocation i = new Invocation.Builder(neow)
-                .withContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"))
+                .withContract(NEO_TOKEN_SCRIPT_HASH)
                 .withFunction("name")
                 .withWallet(wallet)
                 .withValidUntilBlock(1000)
@@ -237,8 +237,7 @@ public class InvocationTest {
     }
 
     @Test
-    public void addDefaultAccountSignerIfNotExplicitlySetAndNoOtherSignerIsSet()
-            throws IOException {
+    public void addDefaultAccountSignerIfNotExplicitlySet() throws IOException {
 
         Wallet wallet = Wallet.createWallet();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
@@ -449,20 +448,14 @@ public class InvocationTest {
         setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
-        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = new Account(senderPair);
-        Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
-        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
-
+        Wallet w = Wallet.withAccounts(account1);
         NeoSendRawTransaction i = new Invocation.Builder(neow)
-                .withContract(neo)
+                .withContract(NEO_TOKEN_SCRIPT_HASH)
                 .withFunction(NEP5_TRANSFER)
                 .withWallet(w)
                 .withParameters(
-                        ContractParameter.hash160(sender.getScriptHash()),
-                        ContractParameter.hash160(receiver),
+                        ContractParameter.hash160(account1.getScriptHash()),
+                        ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
                 .build()
                 .sign()
@@ -569,19 +562,14 @@ public class InvocationTest {
     public void callWithoutParams() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_name.json",
-                "de5f57d430d3dece511cf975a8d37848cb9e0525",
+                NEO_TOKEN_SCRIPT_HASH.toString(),
                 "name",
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"
         );
-
-        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
-        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = new Account(senderPair);
-        Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
+        Wallet w = Wallet.withAccounts(account1);
 
         NeoInvokeFunction i = new Invocation.Builder(neow)
-                .withContract(neo)
+                .withContract(NEO_TOKEN_SCRIPT_HASH)
                 .withFunction("name")
                 .withWallet(w)
                 .failOnFalse()
@@ -631,21 +619,16 @@ public class InvocationTest {
                 "balanceOf",
                 "721e1376b75fe93889023d47832c160fcc5d4a06");
 
-        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
-        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
-        Account sender = new Account(senderPair);
-        Wallet w = Wallet.withAccounts(sender);
-        ScriptHash neo = new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525");
-        ScriptHash receiver = new ScriptHash("df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        Wallet w = Wallet.withAccounts(account1);
 
         Invocation i = new Invocation.Builder(neow)
-                .withContract(neo)
+                .withContract(NEO_TOKEN_SCRIPT_HASH)
                 .withFunction(NEP5_TRANSFER)
                 .withWallet(w)
                 .withValidUntilBlock(2000000)
                 .withParameters(
-                        ContractParameter.hash160(sender.getScriptHash()),
-                        ContractParameter.hash160(receiver),
+                        ContractParameter.hash160(account1.getScriptHash()),
+                        ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
                 .failOnFalse()
                 .build();
@@ -701,7 +684,7 @@ public class InvocationTest {
     @Test
     public void invokeFunctionWithoutSettingFunction() throws IOException {
         Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"))
+                .withContract(NEO_TOKEN_SCRIPT_HASH)
                 .withWallet(Wallet.createWallet());
 
         exceptionRule.expect(InvocationConfigurationException.class);
@@ -723,7 +706,7 @@ public class InvocationTest {
     @Test
     public void buildWithSettingContractButNoFunction() throws IOException {
         Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(new ScriptHash("de5f57d430d3dece511cf975a8d37848cb9e0525"))
+                .withContract(NEO_TOKEN_SCRIPT_HASH)
                 .withWallet(Wallet.createWallet())
                 .withValidUntilBlock(1000);
 
