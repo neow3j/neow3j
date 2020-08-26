@@ -1,7 +1,5 @@
 package io.neow3j.wallet;
 
-import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptReader;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,6 +16,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
@@ -50,7 +49,8 @@ public class AccountTest {
 
     private static final String ADDRESS = "AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS";
     private static final String ACCOUNT_JSON_ADDRESS = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
-    private static final String ACCOUNT_JSON_KEY = "6PYLykbKcbwnCuTJiQQ5PYu5uH9NgwGYLoMyTUabRxRJUsiA9GP8NgorUV";
+    private static final String ACCOUNT_JSON_KEY =
+            "6PYLykbKcbwnCuTJiQQ5PYu5uH9NgwGYLoMyTUabRxRJUsiA9GP8NgorUV";
     private static final String WIF = "L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR";
     private static final String NEO_SCRIPT_HASH = "de5f57d430d3dece511cf975a8d37848cb9e0525";
     private static final String GAS_SCRIPT_HASH = "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc";
@@ -95,7 +95,8 @@ public class AccountTest {
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
         String verScript = Numeric.toHexString(ScriptBuilder.buildVerificationScript(
-                Numeric.hexStringToByteArray("027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2")));
+                Numeric.hexStringToByteArray(
+                        "027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2")));
 
         Account a = new Account(pair);
         assertThat(a.isMultiSig(), is(false));
@@ -116,8 +117,10 @@ public class AccountTest {
         Account a = Account.createMultiSigAccount(keys, 2);
         byte[] verScript = ScriptBuilder.buildVerificationScript(
                 Arrays.asList(
-                        Numeric.hexStringToByteArray("027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2"),
-                        Numeric.hexStringToByteArray("027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2")),
+                        Numeric.hexStringToByteArray(
+                                "027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2"),
+                        Numeric.hexStringToByteArray(
+                                "027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2")),
                 2);
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(adr));
@@ -184,7 +187,8 @@ public class AccountTest {
         assertThat(a.getEncryptedPrivateKey(), is(ACCOUNT_JSON_KEY));
         ScriptBuilder scriptBuilder = new ScriptBuilder();
         byte[] expectedScript = scriptBuilder
-                .pushData(Numeric.hexStringToByteArray("026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
+                .pushData(Numeric.hexStringToByteArray(
+                        "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
                 .opCode(OpCode.PUSHNULL)
                 .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
                 .toArray();
@@ -220,7 +224,8 @@ public class AccountTest {
 
         ScriptBuilder scriptBuilder = new ScriptBuilder();
         String expectedScript = Base64.encode(scriptBuilder
-                .pushData(Numeric.hexStringToByteArray("026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
+                .pushData(Numeric.hexStringToByteArray(
+                        "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
                 .opCode(OpCode.PUSHNULL)
                 .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
                 .toArray());
@@ -241,11 +246,11 @@ public class AccountTest {
         Account a = Account.createMultiSigAccount(Arrays.asList(key), 1);
         NEP6Account nep6 = a.toNEP6Account();
 
-
         ScriptBuilder scriptBuilder = new ScriptBuilder();
         String expectedScript = Base64.encode(scriptBuilder
                 .pushInteger(1)
-                .pushData(Numeric.hexStringToByteArray("026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
+                .pushData(Numeric.hexStringToByteArray(
+                        "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
                 .pushInteger(1)
                 .opCode(OpCode.PUSHNULL)
                 .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1)
@@ -276,7 +281,8 @@ public class AccountTest {
         assertThat(a.isLocked(), is(false));
         ScriptBuilder scriptBuilder = new ScriptBuilder();
         byte[] verifScript = scriptBuilder
-                .pushData(Numeric.hexStringToByteArray("026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
+                .pushData(Numeric.hexStringToByteArray(
+                        "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"))
                 .opCode(OpCode.PUSHNULL)
                 .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
                 .toArray();

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.transaction.Signer;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -74,7 +72,8 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(String hash, long size, int version, Long nonce, String sender, String sysFee,
+    public Transaction(String hash, long size, int version, Long nonce, String sender,
+            String sysFee,
             String netFee, Long validUntilBlock, List<TransactionSigner> signers,
             List<TransactionAttribute> attributes, String script,
             List<NeoWitness> witnesses) {
@@ -92,7 +91,8 @@ public class Transaction {
         this.witnesses = witnesses;
     }
 
-    public Transaction(String hash, long size, int version, Long nonce, String sender, String sysFee,
+    public Transaction(String hash, long size, int version, Long nonce, String sender,
+            String sysFee,
             String netFee, Long validUntilBlock, List<TransactionSigner> signers,
             List<TransactionAttribute> attributes, String script,
             List<NeoWitness> witnesses, String blockHash, int confirmations,

@@ -486,7 +486,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset) {
         return new Request<>(
                 "sendmany",
-                Arrays.asList(txSendAsset.stream().filter(Objects::nonNull).collect(Collectors.toList())),
+                asList(txSendAsset.stream().filter(Objects::nonNull).collect(Collectors.toList())),
                 neow3jService,
                 NeoSendMany.class);
     }

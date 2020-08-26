@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.utils.AddressUtils;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.File;
 import java.nio.file.Files;

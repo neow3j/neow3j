@@ -513,7 +513,7 @@ public class Nep5TokenTest {
                 "invokefunction_balanceOf_3.json");
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
-        Invocation invocation = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
+        neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("12"), Arrays.asList(account1, account3));
     }
 
