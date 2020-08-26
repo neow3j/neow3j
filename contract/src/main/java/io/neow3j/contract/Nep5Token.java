@@ -9,7 +9,6 @@ import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -171,11 +170,12 @@ public class Nep5Token extends SmartContract {
     }
 
     /**
-     * Creates and sends a transfer transaction that uses all accounts in the wallet to cover the amount.
+     * Creates and sends a transfer transaction that uses all accounts in the wallet to cover the
+     * amount.
      * <p>
-     * The default account is used first to cover the amount. If it cannot cover the full amount, the other accounts in
-     * the wallet are iterated one by one to cover the remaining amount. If the amount can be covered, all necessary
-     * transfers are sent in one transaction.
+     * The default account is used first to cover the amount. If it cannot cover the full amount,
+     * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
+     * the amount can be covered, all necessary transfers are sent in one transaction.
      *
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
@@ -186,9 +186,9 @@ public class Nep5Token extends SmartContract {
     public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
         if (amount.signum() < 0) {
-            throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
+            throw new IllegalArgumentException(
+                    "The parameter amount must be greater than or equal to 0");
         }
-
         Invocation inv = buildTransferScript(wallet, to, amount);
         return inv.send();
     }
@@ -205,14 +205,16 @@ public class Nep5Token extends SmartContract {
     /**
      * Creates and sends a transfer transaction that uses the provided accounts.
      * <p>
-     * The accounts are used in the order provided to cover the transaction amount.
-     * If the first account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered, all necessary transfers are sent in one transaction.
+     * The accounts are used in the order provided to cover the transaction amount. If the first
+     * account cannot cover the full amount, the second account is used to cover the remaining
+     * amount and so on. If the amount can be covered, all necessary transfers are sent in one
+     * transaction.
      *
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
      * @param amount The amount to transfer as a decimal number (not token fractions).
-     * @param from   The script hashes of the accounts in the wallet that should be used to cover the amount.
+     * @param from   The script hashes of the accounts in the wallet that should be used to cover
+     *               the amount.
      * @return The transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -220,10 +222,12 @@ public class Nep5Token extends SmartContract {
             BigDecimal amount, ScriptHash... from) throws IOException {
 
         if (from.length == 0) {
-            throw new IllegalArgumentException("An account address must be provided to build an invocation.");
+            throw new IllegalArgumentException(
+                    "An account address must be provided to build an invocation.");
         }
         if (amount.signum() < 0) {
-            throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
+            throw new IllegalArgumentException(
+                    "The parameter amount must be greater than or equal to 0");
         }
 
         List<Account> accounts = new ArrayList<>();
@@ -231,24 +235,24 @@ public class Nep5Token extends SmartContract {
             Account a = wallet.getAccount(fromScriptHash);
             // Verify that potential multi-sig accounts can be used.
             if (a.isMultiSig() && !privateKeysArePresentForMultiSig(wallet, fromScriptHash)) {
-                    throw new IllegalArgumentException("The multi-sig account with script "
-                            + "hash " + fromScriptHash.toString() + " does not have the "
-                            + "corresponding private keys in the wallet that are required for "
-                            + "signing the transfer transaction.");
+                throw new IllegalArgumentException("The multi-sig account with script hash "
+                        + fromScriptHash.toString() + " does not have the corresponding private "
+                        + "keys in the wallet that are required for signing the transfer "
+                        + "transaction.");
             }
             accounts.add(a);
         }
         return buildMultiTransferInvocation(wallet, to, amount, accounts).send();
     }
 
-    Invocation buildMultiTransferInvocation(Wallet wallet, ScriptHash to,
-            BigDecimal amount, List<Account> accounts) throws IOException {
+    Invocation buildMultiTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount,
+            List<Account> accounts) throws IOException {
 
         List<byte[]> scripts = new ArrayList<>(); // List of the individual invocation scripts.
         List<Signer> signers = new ArrayList<>(); // Accounts taking part in the transfer.
         Iterator<Account> it = accounts.iterator();
         BigInteger remainingAmount = getAmountAsBigInteger(amount);
-        while(remainingAmount.signum() > 0 && it.hasNext()) {
+        while (remainingAmount.signum() > 0 && it.hasNext()) {
             Account a = it.next();
             if (a.isMultiSig() && !privateKeysArePresentForMultiSig(wallet, a.getScriptHash())) {
                 continue;
@@ -288,8 +292,8 @@ public class Nep5Token extends SmartContract {
         return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
     }
 
-    private Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts, List<Signer> signers)
-            throws IOException {
+    private Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts,
+            List<Signer> signers) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         for (byte[] script : scripts) {
             byteArrayOutputStream.write(script);
@@ -309,7 +313,8 @@ public class Nep5Token extends SmartContract {
     }
 
     private boolean privateKeysArePresentForMultiSig(Wallet wallet, ScriptHash multiSig) {
-        VerificationScript multiSigVerifScript = wallet.getAccount(multiSig).getVerificationScript();
+        VerificationScript multiSigVerifScript = wallet.getAccount(multiSig)
+                .getVerificationScript();
         int signers = 0;
         Account account;
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
@@ -336,10 +341,11 @@ public class Nep5Token extends SmartContract {
      * @return The transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NeoSendRawTransaction transferFromDefaultAccount(Wallet wallet, ScriptHash to, BigDecimal amount)
-            throws IOException {
+    public NeoSendRawTransaction transferFromDefaultAccount(Wallet wallet, ScriptHash to,
+            BigDecimal amount) throws IOException {
         if (amount.signum() < 0) {
-            throw new IllegalArgumentException("The parameter amount must be greater than or equal to 0");
+            throw new IllegalArgumentException(
+                    "The parameter amount must be greater than or equal to 0");
         }
 
         return buildTransferInvocation(wallet, to, amount).send();
