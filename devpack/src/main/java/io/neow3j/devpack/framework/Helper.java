@@ -6,16 +6,12 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_SERIALIZE;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.framework.annotations.Instruction;
 import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.model.types.StackItemType;
 
 /**
  * Provides helper methods to be used in a smart contract.
  */
 public class Helper {
-
-    // Can't access the byte values of StackItemType in the annotations. Therefore, we need to
-    // duplicate them here.
-    private static final byte stackItemTypeInteger = 0x21;
-    private static final byte stackItemTypeBuffer = 0x30;
 
     /**
      * Asserts if the given boolean is true. If not, makes the smart contract exit in a fault state.
@@ -55,7 +51,7 @@ public class Helper {
      * @param source The string to convert.
      * @return the converted byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = stackItemTypeBuffer)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
     public static native byte[] toByteArray(String source);
 
     /**
@@ -97,7 +93,7 @@ public class Helper {
      * @param source The byte array to convert.
      * @return the converted integer.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = stackItemTypeInteger)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
     public static native int toInt(byte[] source);
 
     /**
@@ -153,7 +149,7 @@ public class Helper {
     public static native byte[] range(byte[] source, int index, int n);
 
     /**
-     * Returns the first n elements from the given byte array. Faults if count &lt; 0.
+     * Returns the first n elements from the given byte array. Faults if {@code n} &lt; 0.
      *
      * @param source The array to take the bytes from.
      * @param n      The number of bytes to return.
@@ -163,7 +159,7 @@ public class Helper {
     public static native byte[] take(byte[] source, int n);
 
     /**
-     * Returns the last n elements from the given byte array. Faults if count &lt; 0.
+     * Returns the last n elements from the given byte array. Faults if {@code n} &lt; 0.
      *
      * @param source The array to take the bytes from.
      * @param n      The number of bytes to return.

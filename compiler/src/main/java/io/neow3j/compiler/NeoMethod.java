@@ -1,11 +1,14 @@
 package io.neow3j.compiler;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -30,33 +33,33 @@ public class NeoMethod {
      */
     String id;
 
-    /**
-     * This method's NeoVM instructions. Maps from instruction address to instruction.
-     */
+    // This method's instructions sorted by their address. The addresses in this map are only
+    // relative to this method and not the whole `NeoModule` in which this method lives in.
     SortedMap<Integer, NeoInstruction> instructions = new TreeMap<>();
+    List<NeoJumpInstruction> jumpInstructions = new ArrayList<>();
 
     /**
      * This method's local variables (excl. method parametrs).
      */
-    List<NeoVariable> variables = new ArrayList<>();
+    SortedMap<Integer, NeoVariable> variablesByNeoIndex = new TreeMap<>();
 
     /**
      * Maps JVM bytecode indices to local variables.
      */
-    Map<Integer, NeoVariable> variablesByJVMIndex = new HashMap<>();
+    SortedMap<Integer, NeoVariable> variablesByJVMIndex = new TreeMap<>();
 
     /**
      * This method's parameters.
      */
-    List<NeoVariable> parameters = new ArrayList<>();
+    SortedMap<Integer, NeoVariable> parametersByNeoIndex = new TreeMap<>();
 
     /**
      * Maps JVM bytecode indices to method parameters.
      */
-    Map<Integer, NeoVariable> parametersByJVMIndex = new HashMap<>();
+    SortedMap<Integer, NeoVariable> parametersByJVMIndex = new TreeMap<>();
 
     /**
-     * Determin if a method is a contract's entry point.
+     * Determines if a method is a contract's entry point.
      */
     boolean isEntryPoint = false;
 
@@ -82,6 +85,20 @@ public class NeoMethod {
      */
     String name;
 
+    // The current label of an instruction. Used in the compilation process to resolve jump
+    // addresses. In contrast to `LineNumberNodes`, `LableNodes` are only applicable to the
+    // very next instruction node.
+    Label currentLabel;
+
+    // The current JVM instruction line number. Used in the compilation process to map line
+    // numbers to `NeoInstructions`.
+    int currentLine;
+
+    // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
+    // track of possible jump targets. This is needed when resolving jump addresses for
+    // opcodes like JMPIF.
+    Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
+
     NeoMethod(MethodNode asmMethod, ClassNode owner) {
         this.asmMethod = asmMethod;
         this.ownerType = owner;
@@ -101,7 +118,7 @@ public class NeoMethod {
      * Adds a parameter to this method.
      */
     void addParameter(NeoVariable var) {
-        parameters.add(var.index, var);
+        this.parametersByNeoIndex.put(var.neoIndex, var);
         this.parametersByJVMIndex.put(var.jvmIndex, var);
     }
 
@@ -109,7 +126,7 @@ public class NeoMethod {
      * Adds a local variable to this method.
      */
     void addVariable(NeoVariable var) {
-        this.variables.add(var.index, var);
+        this.variablesByNeoIndex.put(var.neoIndex, var);
         this.variablesByJVMIndex.put(var.jvmIndex, var);
     }
 
@@ -131,13 +148,41 @@ public class NeoMethod {
         return this.parametersByJVMIndex.get(index);
     }
 
-    /**
-     * Adds the given instruction to this method. Uses the instructions address for ordering among
-     * the other instructions.
-     */
+    // Adds the given instruction to this method. The current source code line number and the
+    // current address (relative to this method) is added to the instruction.
     void addInstruction(NeoInstruction neoInsn) {
+        neoInsn.setLineNr(this.currentLine);
+        if (this.currentLabel != null) {
+            // When the compiler sees a `LabelNode` it stores it on the `currentLabelNode` field
+            // and continues. The next instruction is the one that the label belongs. We expect
+            // that when a new instruction is added to this method and the `currentLabelNode` is
+            // set, that label belongs to that `NeoInstruction`. The label is unset as
+            // soon as it has been assigned.
+            // TODO: Clarify if this behavior is correct in all scenarios. JVM instructions don't
+            //  always get replaced one-to-one with `NeoInstructions`.
+            // TODO: Clarify if we only need jump points for instructions that additionally have
+            //  a `FrameNode` before them.
+            this.jumpTargets.put(this.currentLabel, neoInsn);
+            this.currentLabel = null;
+        }
+        neoInsn.setAddress(this.nextAddress);
         this.instructions.put(this.nextAddress, neoInsn);
+        if (neoInsn instanceof NeoJumpInstruction) {
+            this.jumpInstructions.add((NeoJumpInstruction) neoInsn);
+        }
         this.nextAddress += 1 + neoInsn.operand.length;
+    }
+
+    void removeLastInstruction() {
+        // What about the currentLabel?
+        NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
+        if (this.jumpTargets.containsValue(lastInsn)) {
+            throw new CompilerException("Attempting to remove an instruction that potentially is a "
+                    + "jump target for jump instruction.");
+        }
+        this.instructions.remove(this.instructions.lastKey());
+        this.jumpInstructions.remove(lastInsn);
+        this.nextAddress -= (1 + lastInsn.operand.length);
     }
 
     /**
@@ -168,4 +213,20 @@ public class NeoMethod {
                 .reduce(Integer::sum).get();
     }
 
+    void finalizeMethod() {
+        // Update the jump instructions with the correct target address offset.
+        for (NeoJumpInstruction jumpInsn : this.jumpInstructions) {
+            if (!this.jumpTargets.containsKey(jumpInsn.label)) {
+                throw new CompilerException("Missing jump target for jump opcode "
+                        + jumpInsn.opcode.name() + ", at source code line number " + jumpInsn.lineNr
+                        + ".");
+            }
+            NeoInstruction destinationInsn = this.jumpTargets.get(jumpInsn.label);
+            int offset = destinationInsn.address - jumpInsn.address;
+            // It is assumed that the compiler makes use only of the wide (4-byte) jump opcodes. We
+            // can therefore always use 4-byte operand.
+            jumpInsn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+                    .putInt(offset).array());
+        }
+    }
 }

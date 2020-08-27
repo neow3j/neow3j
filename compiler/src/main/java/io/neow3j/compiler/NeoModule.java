@@ -41,6 +41,7 @@ public class NeoModule {
     void finalizeModule() {
         int startAddress = 0;
         for (NeoMethod method : this.sortedMethods) {
+            method.finalizeMethod();
             method.startAddress = startAddress;
             // At this point, the `nextAddress` should be set to one byte after the last
             // instruction byte of a method. So we can simply add this number to the current
