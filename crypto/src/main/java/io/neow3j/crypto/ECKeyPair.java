@@ -206,7 +206,12 @@ public class ECKeyPair {
          * @param key The private key.
          */
         public ECPrivateKey(BigInteger key) {
-            this(Numeric.hexStringToByteArray(Numeric.toHexStringNoPrefixZeroPadded(key)));
+            if (key.toString(16).length() > NeoConstants.PRIVATE_KEY_SIZE * 2) {
+                throw new IllegalArgumentException("Private key must fit into"
+                        + NeoConstants.PRIVATE_KEY_SIZE + " bytes, but required " +
+                        key.toString(16).length() / 2 + "bytes.");
+            }
+            this.privateKey = Numeric.toBytesPadded(key, NeoConstants.PRIVATE_KEY_SIZE);
         }
 
         /**
@@ -218,7 +223,7 @@ public class ECKeyPair {
         public ECPrivateKey(byte[] key) {
             if (key.length != NeoConstants.PRIVATE_KEY_SIZE) {
                 throw new IllegalArgumentException("Private key byte array must have length of "
-                        + NeoConstants.PRIVATE_KEY_SIZE);
+                        + NeoConstants.PRIVATE_KEY_SIZE + " but had length " + key.length);
             }
             this.privateKey = key;
         }
