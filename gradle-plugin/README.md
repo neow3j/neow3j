@@ -37,9 +37,6 @@ plugins {
 group 'org.example'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
 repositories {
     mavenLocal()
     mavenCentral()
@@ -50,7 +47,7 @@ neow3jCompiler {
 }
 
 dependencies {
-    annotationProcessor("io.neow3j:gradle-plugin:1.0-SNAPSHOT")
+    compile("io.neow3j:devpack:1.0-SNAPSHOT")
 }
 ```
 
@@ -58,6 +55,14 @@ where the `io.neow3j.examples.SmartContractExample` is the class which be compil
 
 ## Publish to Productive Gradle Plugin Repo
 
+In the project's root directory, execute the following:
+
 ```
-./gradlew publishPlugin
+./gradlew :gradle-plugin:publishPlugin
+```
+
+If you want to publish as a SNAPSHOT, please use:
+
+```
+./gradlew -Psnapshot :gradle-plugin:publishPlugin
 ```
