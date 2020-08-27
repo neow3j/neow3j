@@ -88,14 +88,24 @@ public class Transaction extends NeoSerializable {
         return signers;
     }
 
+    /**
+     * Gets the sender of this transaction. The sender is the account that pays for the
+     * transaction's fees.
+     *
+     * @return the sender account's script hash.
+     */
     public ScriptHash getSender() {
         if (signers.isEmpty()) {
-            throw new NoSuchElementException("This transaction does not contain any signer.");
+            return null;
         }
+        // First we look for a signer that has the fee-only scope. The signer with that scope is
+        // the sender of the transaction. If there is no such signer then the order of the
+        // signers defines the sender, i.e., the first signer is the sender of the transaction.
         return signers.stream()
                 .filter(signer -> signer.getScopes().contains(WitnessScope.FEE_ONLY))
                 .findFirst()
-                .orElse(signers.get(0)).getScriptHash();
+                .orElse(signers.get(0))
+                .getScriptHash();
     }
 
     /**
