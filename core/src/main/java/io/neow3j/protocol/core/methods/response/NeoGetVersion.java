@@ -15,16 +15,16 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Result {
 
-        @JsonProperty("tcp_port")
+        @JsonProperty("tcpport")
         private int tcpPort;
 
-        @JsonProperty("ws_port")
+        @JsonProperty("wsport")
         private int wsPort;
 
         @JsonProperty("nonce")
         private long nonce;
 
-        @JsonProperty("user_agent")
+        @JsonProperty("useragent")
         private String userAgent;
 
         public Result() {
@@ -81,10 +81,10 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
         @Override
         public String toString() {
             return "Result{" +
-                    "tcpPort=" + tcpPort +
-                    ", wsPort=" + wsPort +
+                    "tcpport=" + tcpPort +
+                    ", wsport=" + wsPort +
                     ", nonce=" + nonce +
-                    ", userAgent='" + userAgent + '\'' +
+                    ", useragent='" + userAgent + '\'' +
                     '}';
         }
     }

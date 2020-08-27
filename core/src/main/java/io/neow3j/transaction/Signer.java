@@ -6,8 +6,9 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
+import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.transaction.exceptions.CosignerConfigurationException;
+import io.neow3j.transaction.exceptions.SignerConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,11 +17,9 @@ import java.util.Objects;
 
 
 /**
- * A Cosigner represents a signer of a transaction. It also sets a scope in which the signer's
- * witness/signature is valid.
+ * A signer of a transaction. It defines a scope in which the signer's signature is valid.
  */
-public class Cosigner extends TransactionAttribute {
-
+public class Signer extends NeoSerializable {
 
     /**
      * The script hash of the signer account.
@@ -42,16 +41,14 @@ public class Cosigner extends TransactionAttribute {
      */
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
-    public Cosigner() {
-        super(TransactionAttributeType.COSIGNER);
+    public Signer() {
         this.account = new ScriptHash();
         this.scopes = new ArrayList<>();
         this.allowedContracts = new ArrayList<>();
         this.allowedGroups = new ArrayList<>();
     }
 
-    private Cosigner(Builder builder) {
-        super(TransactionAttributeType.COSIGNER);
+    private Signer(Builder builder) {
         this.account = builder.account;
         this.scopes = builder.scopes;
         this.allowedContracts = builder.allowedContracts;
@@ -59,13 +56,27 @@ public class Cosigner extends TransactionAttribute {
     }
 
     /**
-     * Creates a Cosigner for the given account with the most restrictive witness scope ({@link
+     * Creates a Signer for the given account with fee only witness scope ({@link
+     * WitnessScope#FEE_ONLY}).
+     *
+     * @param account The originator of the witness.
+     * @return {@link Signer}
+     */
+    public static Signer feeOnly(ScriptHash account) {
+        return new Builder()
+                .account(account)
+                .scopes(WitnessScope.FEE_ONLY)
+                .build();
+    }
+
+    /**
+     * Creates a Signer for the given account with the most restrictive witness scope ({@link
      * WitnessScope#CALLED_BY_ENTRY}).
      *
      * @param account The originator of the witness.
-     * @return {@link Cosigner}
+     * @return {@link Signer}
      */
-    public static Cosigner calledByEntry(ScriptHash account) {
+    public static Signer calledByEntry(ScriptHash account) {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
@@ -73,13 +84,13 @@ public class Cosigner extends TransactionAttribute {
     }
 
     /**
-     * Creates a Cosigner for the given account with global witness scope ({@link
+     * Creates a Signer for the given account with global witness scope ({@link
      * WitnessScope#GLOBAL}).
      *
      * @param account The originator of the witness.
-     * @return {@link Cosigner}
+     * @return {@link Signer}
      */
-    public static Cosigner global(ScriptHash account) {
+    public static Signer global(ScriptHash account) {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.GLOBAL)
@@ -103,23 +114,23 @@ public class Cosigner extends TransactionAttribute {
     }
 
     @Override
-    public void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
+    public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             this.account = reader.readSerializable(ScriptHash.class);
             this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
             if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
                 this.allowedContracts = reader.readSerializableList(ScriptHash.class);
-                if (this.allowedContracts.size() > NeoConstants.MAX_COSIGNER_SUBITEMS) {
-                    throw new DeserializationException("A cosigner's scope can only contain "
-                            + NeoConstants.MAX_COSIGNER_SUBITEMS + " contracts. The input data "
+                if (this.allowedContracts.size() > NeoConstants.MAX_SIGNER_SUBITEMS) {
+                    throw new DeserializationException("A signer's scope can only contain "
+                            + NeoConstants.MAX_SIGNER_SUBITEMS + " contracts. The input data "
                             + "contained " + this.allowedContracts.size() + " contracts.");
                 }
             }
             if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
                 this.allowedGroups = reader.readSerializableList(ECKeyPair.ECPublicKey.class);
-                if (this.allowedGroups.size() > NeoConstants.MAX_COSIGNER_SUBITEMS) {
-                    throw new DeserializationException("A cosigner's scope can only contain "
-                            + NeoConstants.MAX_COSIGNER_SUBITEMS + " groups. The input data "
+                if (this.allowedGroups.size() > NeoConstants.MAX_SIGNER_SUBITEMS) {
+                    throw new DeserializationException("A signer's scope can only contain "
+                            + NeoConstants.MAX_SIGNER_SUBITEMS + " groups. The input data "
                             + "contained " + this.allowedGroups.size() + " groups.");
                 }
             }
@@ -129,7 +140,7 @@ public class Cosigner extends TransactionAttribute {
     }
 
     @Override
-    public void serializeWithoutType(BinaryWriter writer) throws IOException {
+    public void serialize(BinaryWriter writer) throws IOException {
         writer.writeSerializableFixed(this.account);
         writer.writeByte(WitnessScope.combineScopes(this.scopes));
         if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
@@ -141,7 +152,7 @@ public class Cosigner extends TransactionAttribute {
     }
 
     @Override
-    public int getSizeWithoutType() {
+    public int getSize() {
         // Account script hash plus scope byte.
         int size = NeoConstants.SCRIPTHASH_SIZE + 1;
         if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
@@ -161,10 +172,7 @@ public class Cosigner extends TransactionAttribute {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
-        Cosigner that = (Cosigner) o;
+        Signer that = (Signer) o;
         return Objects.equals(this.account, that.account) &&
                 Objects.equals(this.scopes, that.scopes) &&
                 Objects.equals(this.allowedContracts, that.allowedContracts) &&
@@ -190,7 +198,7 @@ public class Cosigner extends TransactionAttribute {
         }
 
         /**
-         * Sets the account for which this Cosigner object sepcifies the witness scopes.
+         * Sets the account for which this Signer object specifies the witness scopes.
          *
          * @param account the account's script hash
          * @return this builder.
@@ -228,9 +236,9 @@ public class Cosigner extends TransactionAttribute {
                 this.scopes.add(WitnessScope.CUSTOM_CONTRACTS);
             }
             if (this.allowedContracts.size() + contracts.length
-                    > NeoConstants.MAX_COSIGNER_SUBITEMS) {
-                throw new CosignerConfigurationException("A cosigner's scope can only contain "
-                        + NeoConstants.MAX_COSIGNER_SUBITEMS + " contracts.");
+                    > NeoConstants.MAX_SIGNER_SUBITEMS) {
+                throw new SignerConfigurationException("A signer's scope can only contain "
+                        + NeoConstants.MAX_SIGNER_SUBITEMS + " contracts.");
             }
             this.allowedContracts.addAll(Arrays.asList(contracts));
             return this;
@@ -249,52 +257,56 @@ public class Cosigner extends TransactionAttribute {
             if (!this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
                 this.scopes.add(WitnessScope.CUSTOM_GROUPS);
             }
-            if (this.allowedGroups.size() + groups.length > NeoConstants.MAX_COSIGNER_SUBITEMS) {
-                throw new CosignerConfigurationException("A cosigner's scope can only contain "
-                        + NeoConstants.MAX_COSIGNER_SUBITEMS + " groups.");
+            if (this.allowedGroups.size() + groups.length > NeoConstants.MAX_SIGNER_SUBITEMS) {
+                throw new SignerConfigurationException("A signer's scope can only contain "
+                        + NeoConstants.MAX_SIGNER_SUBITEMS + " groups.");
             }
             this.allowedGroups.addAll(Arrays.asList(groups));
             return this;
         }
 
         /**
-         * Builds the cosigner.
+         * Builds the signer.
          *
-         * @return the cosigner.
-         * @throws CosignerConfigurationException if either
-         *                                        <ul>
-         *                                          <li>no account has been set</li>
-         *                                          <li>no scope has been set</li>
-         *                                          <li>the global scope is mixed with other
-         *                                          scopes</li>
-         *                                          <li>the custom contracts scope is set but
-         *                                          no contracts are specified</li>
-         *                                          <li>the custom groups scope is set but
-         *                                          no groups are specified</li>
-         *                                        </ul>
+         * @return the signer.
+         * @throws SignerConfigurationException if either
+         *                                      <ul>
+         *                                        <li>no account has been set</li>
+         *                                        <li>no scope has been set</li>
+         *                                        <li>the global scope is mixed with other
+         *                                        scopes</li>
+         *                                        <li>the custom contracts scope is set but
+         *                                        no contracts are specified</li>
+         *                                        <li>the custom groups scope is set but
+         *                                        no groups are specified</li>
+         *                                      </ul>
          */
-        public Cosigner build() {
+        public Signer build() {
             if (account == null) {
-                throw new CosignerConfigurationException("No account has been set. A cosigner" +
+                throw new SignerConfigurationException("No account has been set. A signer" +
                         " object requires an account.");
             }
             if (scopes.isEmpty()) {
-                throw new CosignerConfigurationException("No scope has been defined. A cosigner" +
+                throw new SignerConfigurationException("No scope has been defined. A signer" +
                         " object requires at least one scope.");
             }
+            if (scopes.contains(WitnessScope.FEE_ONLY) && scopes.size() > 1) {
+                throw new SignerConfigurationException("The fee-only witness scope cannot be " +
+                        "combined with other scopes.");
+            }
             if (scopes.contains(WitnessScope.GLOBAL) && scopes.size() > 1) {
-                throw new CosignerConfigurationException("The global witness scope cannot be " +
+                throw new SignerConfigurationException("The global witness scope cannot be " +
                         "combined with other scopes.");
             }
             if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS) && allowedContracts.isEmpty()) {
-                throw new CosignerConfigurationException("Set of allowed contracts must not be " +
-                        "empty for a cosigner with the custom contracts scope.");
+                throw new SignerConfigurationException("Set of allowed contracts must not be " +
+                        "empty for a signer with the custom contracts scope.");
             }
             if (scopes.contains(WitnessScope.CUSTOM_GROUPS) && allowedGroups.isEmpty()) {
-                throw new CosignerConfigurationException("Set of allowed groups must not be " +
-                        "empty for a cosigner with the custom groups scope.");
+                throw new SignerConfigurationException("Set of allowed groups must not be " +
+                        "empty for a signer with the custom groups scope.");
             }
-            return new Cosigner(this);
+            return new Signer(this);
         }
 
     }

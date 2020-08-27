@@ -24,7 +24,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "sendtoaddress",
  "params": [
-  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
   "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
   100
  ],
@@ -54,7 +54,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "sendfrom",
  "params": [
-  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
   "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",
   "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
   "100.0"
@@ -75,7 +75,7 @@ Content-Type: application/javascript'
    "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm",
    [
      {
-       "asset": "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+       "asset": "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
        "value": 10,
        "address": "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y"
      }
@@ -95,7 +95,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "getbalance",
  "params": [
-  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789"
+  "0xde5f57d430d3dece511cf975a8d37848cb9e0525"
  ],
  "id": 1
 }
@@ -176,7 +176,7 @@ Content-Type: application/javascript'
 {
  "jsonrpc": "2.0",
  "method": "invokefunction",
- "params": [ "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "getNextBlockValidators" ],
+ "params": [ "de5f57d430d3dece511cf975a8d37848cb9e0525", "getNextBlockValidators" ],
  "id": 1
 }
 
@@ -215,7 +215,7 @@ Content-Type: application/javascript'
 {
  "jsonrpc": "2.0",
  "method": "invokefunction",
- "params": [ "3209d09120465bf181ced70693b897ec6ea4619a", "getBlockedAccounts" ],
+ "params": [ "ce06595079cd69583126dbfd1d2e25cca74cffe9", "getBlockedAccounts" ],
  "id": 1
 }
 
@@ -265,7 +265,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "invokefunction",
  "params": [
-   "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+   "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
    "vote",
    [
      {"type": "Hash160", "value": "0xdf133e846b1110843ac357fc8bbf05b4a32e17c8"},
@@ -287,7 +287,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "invokefunction",
  "params": [
-   "9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+   "de5f57d430d3dece511cf975a8d37848cb9e0525",
    "registerCandidate",
    [
      {"type": "PublicKey", "value": "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"}
@@ -307,7 +307,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "invokefunction",
  "params": [
-	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
 	 "getCandidates"
  ],
  "id": 1
@@ -323,7 +323,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "invokefunction",
  "params": [
-	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
 	 "symbol"
  ],
  "id": 1
@@ -339,7 +339,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "invokefunction",
  "params": [
-   "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+   "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
    "balanceOf",
    [
      {"type": "Hash160", "value": "0x3d952ba848992ca5dc8b968a3d11af543601c1e6"}
@@ -358,7 +358,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "invokefunction",
  "params":[
-  "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+  "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
   "transfer",
   [
     {"type": "Hash160", "value": "0x3d952ba848992ca5dc8b968a3d11af543601c1e6"},
@@ -379,7 +379,7 @@ Content-Type: application/javascript'
 {
   "jsonrpc": "2.0",
   "method": "getcontractstate",
-  "params":["0x8c23f196d8a1bfd103a9dcb1f9ccf0c611377d3b"],
+  "params":["0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"],
   "id": 1
 }
 
@@ -393,7 +393,7 @@ Content-Type: application/javascript'
  "jsonrpc": "2.0",
  "method": "getstorage",
  "params": [
-	 "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+	 "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
 	 "14941343239213fa0e765f1027ce742f48db779a96"
  ],
  "id": 1

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
@@ -73,10 +74,18 @@ public class ECKeyPairTest {
 
     @Test
     public void getAddress() {
-        final String sKey = "97374afac1e801407d6a60006e00d555297c5019788795f017d4cd1fff3df529";
-        final String expectedAddress = "AYN3RrCySAb3qGAeg9VxG62YWCbFhQFtBn";
-        ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(sKey));
+        final String privKey = "a7038726c5a127989d78593c423e3dad93b2d74db90a16c0a58468c9e6617a87";
+        final String expectedAddress = "ARhJPYxmizqheBQA2dSQAHWfQQsbTSba2S";
+        ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(privKey));
         assertThat(pair.getAddress(), is(expectedAddress));
+    }
+
+    @Test
+    public void privateKeyShouldBeZeroAfterErasing() {
+        ECPrivateKey privKey = new ECPrivateKey(Numeric.hexStringToByteArray(
+                        "a7038726c5a127989d78593c423e3dad93b2d74db90a16c0a58468c9e6617a87"));
+        privKey.erase();
+        assertThat(privKey.getBytes(), is(new byte[NeoConstants.PRIVATE_KEY_SIZE]));
     }
 
 }

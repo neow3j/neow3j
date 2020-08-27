@@ -5,15 +5,15 @@
     "balance": [
       {
         "assethash": "0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc",
-        "amount": "410985799730",
-        "lastupdatedblock": 1337
+        "amount": "300000000",
+        "lastupdatedblock": 1091
       },
       {
         "assethash": "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-        "amount": "49999995",
+        "amount": "5",
         "lastupdatedblock": 1337
       }
     ],
-    "address": "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"
+    "address": "AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS"
   }
 }

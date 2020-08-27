@@ -41,16 +41,24 @@ public class WalletUtilsTest {
     @Test
     public void testGenerateWalletFile() throws Exception {
         // Used neo-core with address version 0x17 to generate test data.
-        String expectedAdr = "AMuDKuFCrHNtEg4jCV17ge4eyoa3JwD9fH";
-        ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(
-                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"));
+        String expectedAdr = "AXJxLU79D795wMRMmGq9SWaqCqnmpGw9uq";
+        byte[] sk = Numeric.hexStringToByteArray(
+                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+        // Get a copy of the private key for the assertion below, because it will be erased when
+        // the wallet is encrypted.
+        byte[] skCopy = new byte[sk.length];
+        System.arraycopy(sk, 0, skCopy, 0, sk.length);
+        ECKeyPair pair = ECKeyPair.create(sk);
         String pw = "password";
         String fileName = WalletUtils.generateWalletFile(pw, pair, this.tempDir);
         Path p = Paths.get(this.tempDir.getPath(), fileName);
         Wallet loadedWallet = Wallet.fromNEP6Wallet(p.toFile());
         loadedWallet.decryptAllAccounts(pw);
         assertThat(loadedWallet.getAccounts().get(0).getAddress(), is(expectedAdr));
-        assertThat(loadedWallet.getAccounts().get(0).getECKeyPair(), is(pair));
+        // After calling generateWalletFile the wallet got encrypted and the private key erased.
+        // Thus, for comparing the loaded wallet, the ECKeyPair has to be re-instantiated from the
+        // private key.
+        assertThat(loadedWallet.getAccounts().get(0).getECKeyPair(), is(ECKeyPair.create(skCopy)));
     }
 
     @Test

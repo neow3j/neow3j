@@ -131,9 +131,9 @@ public class NeoConstants {
     public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
 
     /**
-     * The maximum number of contracts or groups a cosigner scope can contian
+     * The maximum number of contracts or groups a signer scope can contain.
      */
-    public static final int MAX_COSIGNER_SUBITEMS = 16;
+    public static final int MAX_SIGNER_SUBITEMS = 16;
 
     /**
      * The maximum value for the 'validUntilBlock' transaction property.

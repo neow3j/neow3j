@@ -7,7 +7,8 @@ import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetBalance;
+import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
@@ -21,7 +22,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
@@ -37,6 +38,8 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.transaction.Signer;
+
 import java.util.Date;
 import java.util.List;
 
@@ -84,7 +87,6 @@ public interface Neo {
 
     Request<?, NeoGetStorage> getStorage(String contractAddress, String keyToLookUpAsHexString);
 
-    // TODO: 11.02.20 Guil: test missing
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 
     Request<?, NeoGetValidators> getValidators();
@@ -104,12 +106,14 @@ public interface Neo {
     // SmartContract Methods
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
-            String... witnesses);
+            Signer... signers);
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
-            List<ContractParameter> params, String... witnesses);
+            List<ContractParameter> params, Signer... signers);
 
-    Request<?, NeoInvokeScript> invokeScript(String script, String... witnesses);
+    Request<?, NeoInvokeScript> invokeScript(String script, Signer... signers);
+
+    Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address);
 
     // Utilities Methods
 
@@ -125,11 +129,11 @@ public interface Neo {
 
     Request<?, NeoDumpPrivKey> dumpPrivKey(String address);
 
-    Request<?, NeoGetBalance> getBalance(String assetId);
+    Request<?, NeoGetWalletBalance> getWalletBalance(String assetId);
 
     Request<?, NeoGetNewAddress> getNewAddress();
 
-    Request<?, NeoGetUnclaimedGas> getUnclaimedGas();
+    Request<?, NeoGetWalletUnclaimedGas> getWalletUnclaimedGas();
 
     Request<?, NeoImportPrivKey> importPrivKey(String privateKeyInWIF);
 
@@ -141,6 +145,8 @@ public interface Neo {
     Request<?, NeoSendFrom> sendFrom(String fromAddress, TransactionSendAsset txSendAsset);
 
     Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
+
+    Request<?, NeoSendMany> sendMany(String fromAddress, List<TransactionSendAsset> txSendAsset);
 
     Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
 

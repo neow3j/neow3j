@@ -20,6 +20,6 @@ public class HexParameterNumber implements HexParameter {
     @Override
     @JsonValue
     public String getHexValue() {
-        return Numeric.toHexStringNoPrefix(this.param);
+        return Numeric.toHexStringNoPrefixZeroPadded(this.param);
     }
 }

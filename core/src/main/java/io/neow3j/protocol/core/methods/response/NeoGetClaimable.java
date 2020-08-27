@@ -96,7 +96,7 @@ public class NeoGetClaimable extends Response<NeoGetClaimable.Claimables> {
         @JsonProperty("generated")
         private String generatedGas;
 
-        @JsonProperty("sys_fee")
+        @JsonProperty("sysfee")
         private String systemFee;
 
         @JsonProperty("unclaimed")

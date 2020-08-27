@@ -13,16 +13,16 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Cosigner;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.junit.Before;
@@ -35,6 +35,10 @@ public class NeoTokenTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule();
 
+    private Account account1;
+    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
+    private static final String VOTE = NeoToken.VOTE;
+    private static final String REGISTER_CANDIDATE = NeoToken.REGISTER_CANDIDATE;
     private Neow3j neow;
 
     @Before
@@ -42,6 +46,9 @@ public class NeoTokenTest {
         // Configure WireMock to use default host and port "localhost:8080".
         WireMock.configure();
         neow = Neow3j.build(new HttpService("http://localhost:8080"));
+
+        account1 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
+                "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
     }
 
     @Test
@@ -72,7 +79,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"unclaimedGas\"" // function
                         + ".*\"f68f181731a47036a99f04dad90043a744edec0f\"" // script hash
                         + ".*100.*" // block height
@@ -88,28 +95,21 @@ public class NeoTokenTest {
 
     @Test
     public void registerCandidate() throws IOException {
-        String script =
-                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c11c00c11726567697374657243616e6469646174650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_registercandidate.json", script,
-                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+        setUpWireMockForCall("invokescript", "invokescript_registercandidate.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        byte[] privateKey = Numeric.hexStringToByteArray(
-                "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
-        ECKeyPair keyPair = ECKeyPair.create(privateKey);
-        Account a = new Account(keyPair);
-        Wallet w = Wallet.withAccounts(a);
+        byte[] pubKeyBytes = account1.getECKeyPair().getPublicKey().getEncoded(true);
+        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+                REGISTER_CANDIDATE, Arrays.asList(ContractParameter.publicKey(pubKeyBytes)))
+                .toArray();
+
+        Wallet w = Wallet.withAccounts(account1);
         Invocation inv = new NeoToken(neow).buildRegisterInvocation(
-                a.getScriptHash(), w, keyPair.getPublicKey());
+                account1.getScriptHash(), w, account1.getECKeyPair().getPublicKey());
         Transaction tx = inv.getTransaction();
-        assertThat(tx.getSender().toAddress(), is("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ"));
-        assertThat(tx.getSystemFee(), is(6007570L));
-        assertThat(tx.getNetworkFee(), is(1262390L));
-        assertThat(tx.getCosigners(), contains(Cosigner.global(a.getScriptHash())));
-        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
-        byte[] verifScript = Numeric.hexStringToByteArray(
-                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");
-        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(verifScript));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        assertThat(tx.getScript(), is(expectedScript));
     }
 
     @Test
@@ -120,7 +120,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"getValidators\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -141,7 +141,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"getCandidates\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -166,7 +166,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"" // neo contract
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
                         + ".*\"getNextBlockValidators\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -180,33 +180,27 @@ public class NeoTokenTest {
     }
 
     @Test
-    public void vote() throws IOException {
-        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        String script =
-                "0c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f9562380c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0c14c8172ea3b405bf8bfc57c33a8410116b843e13df13c00c04766f74650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52";
-        setUpWireMockForCall("invokescript", "invokescript_vote.json", script,
-                "df133e846b1110843ac357fc8bbf05b4a32e17c8");
+    public void voteProducesCorrectScriptAnsSigner() throws IOException {
+        setUpWireMockForCall("invokescript", "invokescript_vote.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        byte[] privateKey = Numeric.hexStringToByteArray(
-                "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9");
-        ECKeyPair keyPair = ECKeyPair.create(privateKey);
-        Account a = new Account(keyPair);
-        Wallet w = Wallet.withAccounts(a);
-        ECPublicKey validator1 = a.getECKeyPair().getPublicKey();
-        ECPublicKey validator2 = new ECPublicKey(Numeric.hexStringToByteArray(
-                "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"));
+        byte[] pubKeyBytes1 = Numeric.hexStringToByteArray(
+                "02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c");
+        byte[] pubKeyBytes2 = Numeric.hexStringToByteArray(
+                "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
+        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, VOTE,
+                Arrays.asList(
+                        ContractParameter.hash160(account1.getScriptHash()),
+                        ContractParameter.publicKey(pubKeyBytes1),
+                        ContractParameter.publicKey((pubKeyBytes2))))
+                .toArray();
 
-        Invocation inv = new NeoToken(neow).buildVoteInvocation(
-                a.getScriptHash(), w, validator1, validator2);
-        Transaction tx = inv.getTransaction();
-        assertThat(tx.getSender().toAddress(), is("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ"));
-        assertThat(tx.getSystemFee(), is(501007930L));
-        assertThat(tx.getNetworkFee(), is(1306390L));
-        assertThat(tx.getCosigners(), contains(Cosigner.global(a.getScriptHash())));
-        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(script)));
-        byte[] verifScript = Numeric.hexStringToByteArray(
-                "0c2102200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c0b418a6b1e75");
-        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(), is(verifScript));
+        Wallet w = Wallet.withAccounts(account1);
+        Invocation i = new NeoToken(neow).buildVoteInvocation(account1.getScriptHash(), w,
+                new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2));
+        Transaction tx = i.getTransaction();
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        assertThat(tx.getScript(), is(expectedScript));
     }
 }

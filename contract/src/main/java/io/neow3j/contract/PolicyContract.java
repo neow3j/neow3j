@@ -6,8 +6,8 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.transaction.Signer;
 import io.neow3j.wallet.Wallet;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,10 +15,13 @@ import java.util.stream.Collectors;
 /**
  * Represents a Policy contract and provides methods to invoke it.
  */
-public class PolicyContract extends SmartContract{
+public class PolicyContract extends SmartContract {
 
-    private static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_POLICY).toArray());
+    private static final String NAME = "Policy";
+
+    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
+            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL)
+                    .toArray());
 
     private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
@@ -65,7 +68,8 @@ public class PolicyContract extends SmartContract{
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<ScriptHash> getBlockedAccounts() throws IOException {
-        StackItem arrayItem = invokeFunction(GET_BLOCKED_ACCOUNTS).getInvocationResult().getStack().get(0);
+        StackItem arrayItem = invokeFunction(GET_BLOCKED_ACCOUNTS).getInvocationResult().getStack()
+                .get(0);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }
@@ -78,24 +82,24 @@ public class PolicyContract extends SmartContract{
     /**
      * Creates and sends a transaction that sets the fee per byte.
      *
-     * @param fee       The fee per byte.
-     * @param wallet    The wallet that contains the account authorised to invoke the policy contract.
-     * @param sender    The authorised account.
+     * @param fee    The fee per byte.
+     * @param wallet The wallet that contains the account authorised to invoke the policy contract.
+     * @param signer The authorised account.
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction setFeePerByte(Integer fee, Wallet wallet, ScriptHash sender)
+    public NeoSendRawTransaction setFeePerByte(Integer fee, Wallet wallet, ScriptHash signer)
             throws IOException {
 
-        return buildSetFeePerByteInvocation(fee, wallet, sender).send();
+        return buildSetFeePerByteInvocation(fee, wallet, signer).send();
     }
 
     // Method extracted for testability.
-    Invocation buildSetFeePerByteInvocation(Integer fee, Wallet wallet, ScriptHash sender)
+    Invocation buildSetFeePerByteInvocation(Integer fee, Wallet wallet, ScriptHash signer)
             throws IOException {
 
         return invoke(SET_FEE_PER_BYTE)
-                .withSender(sender)
+                .withSigners(Signer.calledByEntry(signer))
                 .withWallet(wallet)
                 .withParameters(ContractParameter.integer(fee))
                 .build()
@@ -103,27 +107,28 @@ public class PolicyContract extends SmartContract{
     }
 
     /**
-     * Creates and sends a transaction that sets the maximal allowed number of transactions per block.
+     * Creates and sends a transaction that sets the maximal allowed number of transactions per
+     * block.
      *
      * @param maxTxPerBlock The maximal allowed number of transactions per block.
-     * @param wallet        The wallet that contains the account authorised to invoke the policy contract.
-     * @param sender        The authorised account.
+     * @param wallet        The wallet that contains the account authorised to invoke the policy
+     *                      contract.
+     * @param signer        The authorised account.
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction setMaxTransactionsPerBlock(Integer maxTxPerBlock,
-            Wallet wallet, ScriptHash sender)
-            throws IOException {
+    public NeoSendRawTransaction setMaxTransactionsPerBlock(Integer maxTxPerBlock, Wallet wallet,
+            ScriptHash signer) throws IOException {
 
-        return buildSetMaxTxPerBlockInvocation(maxTxPerBlock, wallet, sender).send();
+        return buildSetMaxTxPerBlockInvocation(maxTxPerBlock, wallet, signer).send();
     }
 
     // Method extracted for testability.
-    Invocation buildSetMaxTxPerBlockInvocation(Integer maxTxPerBlock, Wallet wallet, ScriptHash sender)
-            throws IOException {
+    Invocation buildSetMaxTxPerBlockInvocation(Integer maxTxPerBlock, Wallet wallet,
+            ScriptHash signer) throws IOException {
 
         return invoke(SET_MAX_TX_PER_BLOCK)
-                .withSender(sender)
+                .withSigners(Signer.calledByEntry(signer))
                 .withWallet(wallet)
                 .withParameters(ContractParameter.integer(maxTxPerBlock))
                 .build()
@@ -133,53 +138,56 @@ public class PolicyContract extends SmartContract{
     /**
      * Creates and sends a transaction that adds an Account to the blacklist of the neo-network.
      *
-     * @param scriptHash    The account that is blocked.
-     * @param wallet        The wallet that contains the account authorised to invoke the policy contract.
-     * @param sender        The authorised account.
+     * @param accountToBlock The account to block.
+     * @param wallet         The wallet that contains the account authorised to invoke the policy
+     *                       contract.
+     * @param signer         The authorised account.
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction blockAccount(ScriptHash scriptHash, Wallet wallet, ScriptHash sender)
-            throws IOException {
+    public NeoSendRawTransaction blockAccount(ScriptHash accountToBlock, Wallet wallet,
+            ScriptHash signer) throws IOException {
 
-        return buildBlockAccountInvocation(scriptHash, wallet, sender).send();
+        return buildBlockAccountInvocation(accountToBlock, wallet, signer).send();
     }
 
     // Method extracted for testability.
-    Invocation buildBlockAccountInvocation(ScriptHash scriptHash, Wallet wallet, ScriptHash sender)
-            throws IOException {
+    Invocation buildBlockAccountInvocation(ScriptHash accountToBlock, Wallet wallet,
+            ScriptHash signer) throws IOException {
 
         return invoke(BLOCK_ACCOUNT)
-                .withSender(sender)
+                .withSigners(Signer.calledByEntry(signer))
                 .withWallet(wallet)
-                .withParameters(ContractParameter.hash160(scriptHash))
+                .withParameters(ContractParameter.hash160(accountToBlock))
                 .build()
                 .sign();
     }
 
     /**
-     * Creates and sends a transaction that removes an Account from the blacklist of the neo-network.
+     * Creates and sends a transaction that removes an Account from the blacklist of the
+     * neo-network.
      *
-     * @param scriptHash    The account that is unblocked.
-     * @param wallet        The wallet that contains the account authorised to invoke the policy contract.
-     * @param sender        The authorised account.
+     * @param accountToUnblock The account to unblocked.
+     * @param wallet           The wallet that contains the account authorised to invoke the policy
+     *                         contract.
+     * @param signer           The authorised account.
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction unblockAccount(ScriptHash scriptHash, Wallet wallet, ScriptHash sender)
-            throws IOException {
+    public NeoSendRawTransaction unblockAccount(ScriptHash accountToUnblock, Wallet wallet,
+            ScriptHash signer) throws IOException {
 
-        return buildUnblockAccountInvocation(scriptHash, wallet, sender).send();
+        return buildUnblockAccountInvocation(accountToUnblock, wallet, signer).send();
     }
 
     // Method extracted for testability.
-    Invocation buildUnblockAccountInvocation(ScriptHash scriptHash, Wallet wallet, ScriptHash sender)
-            throws IOException {
+    Invocation buildUnblockAccountInvocation(ScriptHash accountToUnblock, Wallet wallet,
+            ScriptHash signer) throws IOException {
 
         return invoke(UNBLOCK_ACCOUNT)
-                .withSender(sender)
+                .withSigners(Signer.calledByEntry(signer))
                 .withWallet(wallet)
-                .withParameters(ContractParameter.hash160(scriptHash))
+                .withParameters(ContractParameter.hash160(accountToUnblock))
                 .build()
                 .sign();
     }

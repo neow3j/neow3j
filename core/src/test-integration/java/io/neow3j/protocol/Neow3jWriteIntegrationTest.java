@@ -1,6 +1,21 @@
 package io.neow3j.protocol;
 
+import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
+import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
+import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
+import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
@@ -11,61 +26,65 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
-
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.WitnessScope;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.MountableFile;
 
 // This test class spins up a new private net container for each test. This consumes a lot of time
 // but allows the tests to make changes without interfering with each other.
-public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
+public class Neow3jWriteIntegrationTest {
+
+    // Invoke function variables
+    protected static final String INVOKE_TRANSFER = "transfer";
+    protected static final String INVOKE_SCRIPT =
+            "150c140898ea2197378f623a7670974454448576d0aeaf0c140898ea2197378f623a7670974454448576d0aeaf13c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238";
+
+    // Before the tests 5 NEO is sent to the RECIPIENT_1 address.
+    private static final String RECIPIENT_1 = "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2";
+    protected static final String RECIPIENT_2 = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
+
+    // The witness for the invokeFunction transfer
+    protected static final Signer SIGNER = Signer.calledByEntry(
+            new ScriptHash("afaed076854454449770763a628f379721ea9808"));
+
+    protected static final int INVALID_PARAMS_CODE = -32602;
+    protected static final String INVALID_PARAMS_MESSAGE = "Invalid params";
+
+    private Neow3jTestWrapper neow3jWrapper;
 
     @Rule
-    public GenericContainer privateNetContainer = new GenericContainer(NEO3_PRIVATENET_CONTAINER_IMG)
-            .withClasspathResourceMapping("/node-config/config.json",
-                    "/neo-cli/config.json", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("/node-config/protocol.json",
-                    "/neo-cli/protocol.json", BindMode.READ_ONLY)
-            .withCopyFileToContainer(MountableFile.forClasspathResource("/node-config/wallet.json", 777),
-                    "/neo-cli/wallet.json")
-            .withClasspathResourceMapping("/node-config/rpcserver.config.json",
-                    "/neo-cli/Plugins/RpcServer/config.json", BindMode.READ_ONLY)
-            .withExposedPorts(EXPOSED_JSONRPC_PORT)
-            .waitingFor(Wait.forListeningPort());
+    public GenericContainer privateNetContainer = setupPrivateNetContainer();
 
-    @Override
-    protected GenericContainer getPrivateNetContainer() {
-        return privateNetContainer;
+    @Before
+    public void setUp() throws IOException {
+        neow3jWrapper = new Neow3jTestWrapper(new HttpService(
+                IntegrationTestHelper.getNodeUrl(privateNetContainer)));
+        // open the wallet for JSON-RPC calls
+        neow3jWrapper.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
+        // ensure that the wallet with NEO/GAS is initialized for the tests
+        neow3jWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
     }
 
     @Test
     public void testSendRawTransaction() throws IOException {
         NeoSendRawTransaction sendRawTransaction = getNeow3j().sendRawTransaction(
-                "00835e32b9941343239213fa0e765f1027ce742f48db779a96" +
-                        "a472890000000000064b130000000000881300000101941343239213fa0e765f1027ce742f48db779a96015500" +
-                        "640c14d785dc45b8103f46ffb930ee7ffe4eff5d86bbf70c14941343239213fa0e765f1027ce742f48db779a96" +
-                        "13c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5201420c40d222" +
-                        "850ae7416a3b381a11b9a22f2130b61944b4c0f3e3e92c8bdd13f1dc5d86dd1989f986b96e010a41fcc8ccdd64" +
-                        "dd0a7c94088877451f1f4ebbab2abf09c3290c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0" +
-                        "ebf561cb8f9562380b418a6b1e75")
+                "005368de7758738900000000000a0113000000000064000000010898ea2197378f623a7670974454448576d0aeaf000054110c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f70c14226730eaeec8e3315468f57153e3b08789cc45cc13c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5201420c40b31404344e976287d79641e9b06adc516bbd895386bf3decff4546545f2b8895a1cef9a25b761f8354bd529778a7e4cc445804aa1b36b620c8bfba8b3429e6e92b110c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d110b41138defaf")
                 .send();
 
         String hash = sendRawTransaction.getSendRawTransaction().getHash();
         assertNotNull(hash);
+    }
+
+    private Neow3j getNeow3j() {
+        return neow3jWrapper;
     }
 
     @Ignore("Future work, act as a consensus to submit blocks.")
@@ -84,13 +103,18 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
     @Test
     public void testInvokeFunction() throws IOException {
         List<ContractParameter> params = Arrays.asList(
-                ADDRESS_2_HASH160,
-                RECIPIENT_ADDRESS_HASH160,
+                ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS)),
+                ContractParameter.hash160(ScriptHash.fromAddress(RECIPIENT_1)),
                 ContractParameter.integer(1));
-        NeoInvokeFunction invokeFunction = getNeow3j()
-                .invokeFunction(NEO_HASH, INVOKE_TRANSFER, params, WITNESS)
-                .send();
-        InvocationResult invoc = invokeFunction.getInvocationResult();
+        Signer signer = new Signer.Builder()
+                .account(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS))
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .allowedContracts(new ScriptHash(NEO_HASH))
+                .build();
+        Request<?, NeoInvokeFunction> invokeFunction = getNeow3j()
+                .invokeFunction(NEO_HASH, INVOKE_TRANSFER, params, signer);
+        NeoInvokeFunction send = invokeFunction.send();
+        InvocationResult invoc = send.getInvocationResult();
 
         assertNotNull(invoc);
         assertNotNull(invoc.getScript());
@@ -102,7 +126,7 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testInvokeScript() throws IOException {
-        NeoInvokeScript invokeScript = getNeow3j().invokeScript(INVOKE_SCRIPT, WITNESS).send();
+        NeoInvokeScript invokeScript = getNeow3j().invokeScript(INVOKE_SCRIPT, SIGNER).send();
         InvocationResult invoc = invokeScript.getInvocationResult();
 
         assertNotNull(invoc);
@@ -117,31 +141,32 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testSendFrom() throws IOException {
-        NeoSendFrom sendFrom = getNeow3j().sendFrom(ADDRESS_1, NEO_HASH, RECIPIENT_ADDRESS_1, "10").send();
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(ACCOUNT_1_ADDRESS, NEO_HASH, RECIPIENT_1, "10")
+                .send();
         Transaction tx = sendFrom.getSendFrom();
 
         assertNotNull(tx);
         assertNotNull(tx.getHash());
-        assertThat(tx.getSender(), is(ADDRESS_1));
+        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
     }
 
     @Test
     public void testSendFrom_TransactionSendAsset() throws IOException {
-        TransactionSendAsset txSendAsset = new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_1);
-        NeoSendFrom sendFrom = getNeow3j().sendFrom(ADDRESS_1, txSendAsset).send();
+        TransactionSendAsset txSendAsset = new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_1);
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(ACCOUNT_1_ADDRESS, txSendAsset).send();
         Transaction tx = sendFrom.getSendFrom();
 
         assertNotNull(tx);
         assertNotNull(tx.getHash());
-        assertThat(tx.getSender(), is(ADDRESS_1));
+        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
     }
 
     @Test
     public void testSendMany() throws IOException {
         NeoSendMany sendMany = getNeow3j().sendMany(
                 Arrays.asList(
-                        new TransactionSendAsset(NEO_HASH, "100", RECIPIENT_ADDRESS_1),
-                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_2)
+                        new TransactionSendAsset(NEO_HASH, "100", RECIPIENT_1),
+                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_2)
                 )
         ).send();
 
@@ -150,7 +175,27 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
 
         assertNotNull(tx.getHash());
         assertNotNull(tx.getNonce());
-        assertNotNull(tx.getSender());
+        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
+    }
+
+    @Test
+    public void testSendManyWithFrom() throws IOException {
+        NeoSendMany response = getNeow3j().sendMany(
+                ACCOUNT_1_ADDRESS,
+                Arrays.asList(
+                        new TransactionSendAsset(NEO_HASH, "100", RECIPIENT_1),
+                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_2)
+                )
+        ).send();
+
+        assertNotNull(response.getSendMany());
+        Transaction tx = response.getSendMany();
+
+        assertThat(tx.getScript(), is("AGQMFNeF3EW4ED9G/7kw7n/+Tv9dhrv3DBQImOohlzePYjp2cJdEVESFdtCu"
+                + "rxPADAh0cmFuc2ZlcgwUJQWey0h406h1+RxRzt7TMNRXX95BYn1bUjgaDBQjuicDxTJj6NblItwyIDM5"
+                + "3Nju6QwUCJjqIZc3j2I6dnCXRFREhXbQrq8TwAwIdHJhbnNmZXIMFCUFnstIeNOodfkcUc7e0zDUV1/e"
+                + "QWJ9W1I4"));
+        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
     }
 
     @Test
@@ -166,7 +211,8 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testSendToAddress() throws IOException {
-        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(NEO_HASH, RECIPIENT_ADDRESS_1, "10").send();
+        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(NEO_HASH, RECIPIENT_1, "10")
+                .send();
         Transaction tx = sendToAddress.getSendToAddress();
 
         assertNotNull(tx);
@@ -174,7 +220,8 @@ public class Neow3jWriteIntegrationTest extends Neow3jIntegrationTest {
 
     @Test
     public void testSendToAddress_TransactionSendAsset() throws IOException {
-        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(NEO_HASH, "10", RECIPIENT_ADDRESS_1);
+        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(NEO_HASH, "10",
+                RECIPIENT_1);
         NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(transactionSendAsset).send();
         Transaction tx = sendToAddress.getSendToAddress();
 

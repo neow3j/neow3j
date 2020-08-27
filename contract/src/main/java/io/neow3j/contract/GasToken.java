@@ -12,7 +12,7 @@ public class GasToken extends Nep5Token {
     public final static String NAME = "GAS";
     public final static String SYMBOL = "gas";
     public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_GAS).toArray());
+            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     /**
      * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for

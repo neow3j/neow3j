@@ -7,7 +7,7 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.transaction.Cosigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -27,7 +27,7 @@ public class NeoToken extends Nep5Token {
     public final static String SYMBOL = "neo";
     public final static BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
     public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().sysCall(InteropServiceCode.NEO_NATIVE_TOKENS_NEO).toArray());
+            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
     public static final String REGISTER_CANDIDATE = "registerCandidate";
@@ -125,7 +125,7 @@ public class NeoToken extends Nep5Token {
                 .withSender(candidate)
                 .withWallet(wallet)
                 .withParameters(ContractParameter.publicKey(candidateKey.getEncoded(true)))
-                .withAttributes(Cosigner.global(candidate))
+                .withSigners(Signer.global(candidate))
                 .build()
                 .sign();
     }
@@ -241,7 +241,7 @@ public class NeoToken extends Nep5Token {
                 .withWallet(wallet)
                 .withParameters(ContractParameter.hash160(voter))
                 .withParameters(validatorParams)
-                .withAttributes(Cosigner.global(voter))
+                .withSigners(Signer.global(voter))
                 .build()
                 .sign();
     }

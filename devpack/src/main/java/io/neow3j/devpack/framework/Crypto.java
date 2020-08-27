@@ -59,7 +59,7 @@ public class Crypto {
              * @param signature The signature created from the message.
              * @return {@code True}, if the signature is correct. {@code False}, otherwise.
              */
-            @Syscall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY)
+            @Syscall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
             public native static boolean verify(byte[] message, byte[] pubKey, byte[] signature);
 
             /**
@@ -71,7 +71,7 @@ public class Crypto {
              * @param signature The signatures created from the message.
              * @return {@code True}, if the signatures are correct. {@code False}, otherwise.
              */
-            @Syscall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG)
+            @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1)
             public native static boolean checkMultiSig(byte[] message, byte[][] pubKey,
                     byte[][] signature);
         }
@@ -87,7 +87,7 @@ public class Crypto {
              * @param signature The signature created from the message.
              * @return {@code True}, if the signature is correct. {@code False}, otherwise.
              */
-            @Syscall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256K1_VERIFY)
+            @Syscall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256K1)
             public native static boolean verify(byte[] message, byte[] pubKey, byte[] signature);
 
             /**
@@ -99,7 +99,7 @@ public class Crypto {
              * @param signature The signatures created from the message.
              * @return {@code True}, if the signatures are correct. {@code False}, otherwise.
              */
-            @Syscall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256K1_CHECKMULTISIG)
+            @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1)
             public native static boolean checkMultiSig(byte[] message, byte[][] pubKey,
                     byte[][] signature);
         }

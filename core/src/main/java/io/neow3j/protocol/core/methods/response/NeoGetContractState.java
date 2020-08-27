@@ -323,17 +323,13 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                 }
             }
 
-            // TODO: 13.05.20 Michael: This ContractABI class is currently mainly copied from contract module abi/model classes.
-            //  These need to be restructured and/or new positioned - same for ContractParameter
             @JsonIgnoreProperties(ignoreUnknown = true)
-            @JsonPropertyOrder({"hash", "methods", "events"})
             public static class ContractABI {
 
                 @JsonProperty("hash")
                 private String hash;
 
                 @JsonProperty("methods")
-                @JsonAlias({"functions"})
                 @JsonSetter(nulls = Nulls.AS_EMPTY)
                 private List<ContractMethod> methods;
 
@@ -466,18 +462,13 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     @JsonSetter(nulls = Nulls.AS_EMPTY)
                     private List<ContractParameter> parameters;
 
-                    @JsonProperty("returntype")
-                    private ContractParameterType returnType;
-
                     public ContractEvent() {
                     }
 
                     public ContractEvent(String name,
-                                         List<ContractParameter> parameters,
-                                         ContractParameterType returnType) {
+                                         List<ContractParameter> parameters) {
                         this.name = name;
                         this.parameters = parameters != null ? parameters : new ArrayList<>();
-                        this.returnType = returnType;
                     }
 
                     public String getName() {
@@ -488,23 +479,18 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         return parameters;
                     }
 
-                    public ContractParameterType getReturnType() {
-                        return returnType;
-                    }
-
                     @Override
                     public boolean equals(Object o) {
                         if (this == o) return true;
                         if (!(o instanceof ContractEvent)) return false;
                         ContractEvent that = (ContractEvent) o;
                         return Objects.equals(getName(), that.getName()) &&
-                                Objects.equals(getParameters(), that.getParameters()) &&
-                                Objects.equals(getReturnType(), that.getReturnType());
+                                Objects.equals(getParameters(), that.getParameters());
                     }
 
                     @Override
                     public int hashCode() {
-                        return Objects.hash(getName(), getParameters(), getReturnType());
+                        return Objects.hash(getName(), getParameters());
                     }
 
                     @Override
@@ -512,7 +498,6 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         return "NeoContractEvent{" +
                                 "name='" + name + '\'' +
                                 ", parameters=" + parameters +
-                                ", returnType=" + returnType +
                                 '}';
                     }
                 }

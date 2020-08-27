@@ -76,22 +76,22 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
         @JsonProperty("timestamp")
         private long timestamp;
 
-        @JsonProperty("asset_hash")
+        @JsonProperty("assethash")
         private String assetHash;
 
-        @JsonProperty("transfer_address")
+        @JsonProperty("transferaddress")
         private String transferAddress;
 
         @JsonProperty("amount")
         private String amount;
 
-        @JsonProperty("block_index")
+        @JsonProperty("blockindex")
         private long blockIndex;
 
-        @JsonProperty("transfer_notify_index")
+        @JsonProperty("transfernotifyindex")
         private long transferNotifyIndex;
 
-        @JsonProperty("tx_hash")
+        @JsonProperty("txhash")
         private String txHash;
 
         public Nep5Transfer() {

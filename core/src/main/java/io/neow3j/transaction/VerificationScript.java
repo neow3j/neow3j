@@ -163,7 +163,7 @@ public class VerificationScript extends NeoSerializable {
                 && script[35] == OpCode.PUSHNULL.getCode()
                 && script[36] == OpCode.SYSCALL.getCode()
                 && interopService.equals(
-                        InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash());
+                        InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash());
     }
 
     /**
@@ -217,7 +217,7 @@ public class VerificationScript extends NeoSerializable {
             byte[] interopServiceCode = new byte[4];
             reader.read(interopServiceCode, 0, 4);
             if (!Numeric.toHexStringNoPrefix(interopServiceCode)
-                    .equals(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getHash())) {
+                    .equals(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getHash())) {
                 return false;
             }
         } catch (DeserializationException | IOException e) {

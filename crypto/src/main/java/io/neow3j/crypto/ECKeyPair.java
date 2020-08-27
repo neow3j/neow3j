@@ -120,16 +120,15 @@ public class ECKeyPair {
     }
 
     public static ECKeyPair create(ECPrivateKey privateKey) {
-        return create(privateKey.getInt());
+        return new ECKeyPair(privateKey, Sign.publicKeyFromPrivate(privateKey));
     }
 
     public static ECKeyPair create(BigInteger privateKey) {
-        return new ECKeyPair(new ECPrivateKey(privateKey),
-                Sign.publicKeyFromPrivate(new ECPrivateKey(privateKey)));
+        return create(new ECPrivateKey(privateKey));
     }
 
     public static ECKeyPair create(byte[] privateKey) {
-        return create(Numeric.toBigInt(privateKey));
+        return create(new ECPrivateKey(privateKey));
     }
 
     /**
@@ -199,7 +198,7 @@ public class ECKeyPair {
 
     public static class ECPrivateKey {
 
-        private BigInteger privateKey;
+        private byte[] privateKey;
 
         /**
          * Creates a ECPrivateKey instance from the given private key.
@@ -207,7 +206,12 @@ public class ECKeyPair {
          * @param key The private key.
          */
         public ECPrivateKey(BigInteger key) {
-            this.privateKey = key;
+            if (key.toString(16).length() > NeoConstants.PRIVATE_KEY_SIZE * 2) {
+                throw new IllegalArgumentException("Private key must fit into"
+                        + NeoConstants.PRIVATE_KEY_SIZE + " bytes, but required " +
+                        key.toString(16).length() / 2 + "bytes.");
+            }
+            this.privateKey = Numeric.toBytesPadded(key, NeoConstants.PRIVATE_KEY_SIZE);
         }
 
         /**
@@ -219,9 +223,9 @@ public class ECKeyPair {
         public ECPrivateKey(byte[] key) {
             if (key.length != NeoConstants.PRIVATE_KEY_SIZE) {
                 throw new IllegalArgumentException("Private key byte array must have length of "
-                        + NeoConstants.PRIVATE_KEY_SIZE);
+                        + NeoConstants.PRIVATE_KEY_SIZE + " but had length " + key.length);
             }
-            this.privateKey = new BigInteger(1, key);
+            this.privateKey = key;
         }
 
         /**
@@ -230,7 +234,7 @@ public class ECKeyPair {
          * @return This private key as an integer.
          */
         public BigInteger getInt() {
-            return this.privateKey;
+            return new BigInteger(1, this.privateKey);
         }
 
         /**
@@ -239,7 +243,19 @@ public class ECKeyPair {
          * @return This private key as a byte array.
          */
         public byte[] getBytes() {
-            return Numeric.toBytesPadded(this.privateKey, NeoConstants.PRIVATE_KEY_SIZE);
+            return this.privateKey;
+        }
+
+        /**
+         * Overwrites the private key with zeros.
+         * <p>
+         * If this private key was generated from a byte array, that input array will be overwritten
+         * because this private key simply holds a reference to that input byte array.
+         */
+        public void erase() {
+            for (int i = 0; i < privateKey.length; i++) {
+                this.privateKey[i] = 0;
+            }
         }
 
         @Override
@@ -251,13 +267,14 @@ public class ECKeyPair {
                 return false;
             }
             ECPrivateKey that = (ECPrivateKey) o;
-            return privateKey.equals(that.privateKey);
+            return Arrays.equals(privateKey, that.privateKey);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(privateKey);
+            return Arrays.hashCode(this.privateKey);
         }
+
     }
 
     public static class ECPublicKey extends NeoSerializable {
