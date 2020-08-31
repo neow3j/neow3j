@@ -246,7 +246,8 @@ public class Compiler {
         if (classLoader != null) {
             return getAsmClass(
                     classLoader
-                            .getResourceAsStream(fullyQualifiedClassName.replace('.', '/') + ".class"));
+                            .getResourceAsStream(
+                                    fullyQualifiedClassName.replace('.', '/') + ".class"));
         }
         return getAsmClass(
                 this.getClass().getClassLoader()
@@ -951,7 +952,8 @@ public class Compiler {
 
     private void collectLocalVariables(NeoMethod neoMethod, int nextVarIdx) {
         int paramCount = Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
-        if (neoMethod.asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
             paramCount++;
         }
         int localVarCount = neoMethod.asmMethod.maxLocals - paramCount;
@@ -966,7 +968,7 @@ public class Compiler {
             // look through all local variables because the ordering is not necessarily according to
             // the indices.
             NeoVariable neoVar = null;
-            for (LocalVariableNode varNode : neoMethod.asmMethod.localVariables) {
+            for (LocalVariableNode varNode : locVars) {
                 if (varNode.index == jvmIdx) {
                     neoVar = new NeoVariable(neoIdx, jvmIdx, varNode);
                     if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
@@ -990,7 +992,8 @@ public class Compiler {
     // Retruns the next index of the local variables after the method parameter slots.
     private int collectMethodParameters(NeoMethod neoMethod) {
         int paramCount = 0;
-        if (neoMethod.asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
             paramCount++;
         }
         paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
@@ -1002,7 +1005,7 @@ public class Compiler {
         while (neoIdx < paramCount) {
             // The parameters' indices start at zero. Nonetheless, we need to look through all local
             // variables because the ordering is not necessarily according to the indices.
-            for (LocalVariableNode varNode : neoMethod.asmMethod.localVariables) {
+            for (LocalVariableNode varNode : locVars) {
                 if (varNode.index == jvmIdx) {
                     neoMethod.addParameter(new NeoVariable(neoIdx, jvmIdx, varNode));
                     jvmIdx++;
