@@ -24,7 +24,7 @@ The neow3j development toolkit is composed of:
 
 Visit http://neow3j.io for more information on neow3j and the technical documentation.
 
-## Using *neow3j SDK* in your project
+## Using the *neow3j SDK*
 
 To get all *neow3j SDK* features, add the `io.neow3j:contract` project to your dependencies. Since neow3j is split into multiple project modules, you can also depend on a subset of the functionality, e.g., if you only require certain utility methods. Check out the concept and structure of the library [here](https://neow3j.io/#/overview/concepts_and_structure).
 
@@ -61,6 +61,28 @@ __Maven__
     <version>[3.0.0,4.0.0)</version>
 </dependency>
 ```
+
+
+## Using the *neow3j devpack* and *compiler*
+
+The devpack offers methods and annotations to write Neo smart contracts in Java. To try it out, add the following dependency to your project.
+
+Gradle:
+```groovy
+implementation 'io.neow3j:devpack:3.+',
+```
+
+Maven:
+```xml
+<dependency>
+    <groupId>io.neow3j</groupId>
+    <artifactId>compiler</artifactId>
+    <version>[3.0.0,4.0.0)</version>
+</dependency>
+```
+
+For help on how to compile a contract, check out the documentation about the neow3j compiler at [neow3j.io](http://localhost:3000/#/../neo3_guides/contract_development?id=compilation).
+
 
 ## Donate
 
