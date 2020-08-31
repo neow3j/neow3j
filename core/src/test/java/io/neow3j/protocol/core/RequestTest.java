@@ -10,6 +10,8 @@ import io.neow3j.protocol.http.HttpService;
 import java.util.Arrays;
 import java.util.Date;
 
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.WitnessScope;
 import org.junit.Test;
 
 public class RequestTest extends RequestTester {
@@ -260,7 +262,10 @@ public class RequestTest extends RequestTester {
                 Arrays.asList(
                         ContractParameter.hash160(new ScriptHash("91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 ),
-                "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"
+                new Signer.Builder()
+                        .account(new ScriptHash("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+                        .scopes(WitnessScope.CALLED_BY_ENTRY)
+                        .build()
         ).send();
 
         verifyResult(
@@ -270,7 +275,8 @@ public class RequestTest extends RequestTester {
                         + "["
                         + "{\"type\":\"Hash160\",\"value\":\"91b83e96f2a7c4fdf0c1688441ec61986c7cae26\"}"
                         + "],"
-                        + "[\"0xcadb3dc2faa3ef14a13b619c9a43124755aa2569\"]"
+                        + "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\",\"scopes\":[\"CalledByEntry\"],"
+                        + "\"allowedcontracts\":[],\"allowedgroups\":[]}]"
                         + "],\"id\":1}"
         );
     }
@@ -292,25 +298,32 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeScript() throws Exception {
-        neow3j.invokeScript("00046e616d656724058e5e1b6008847cd662728549088a9ee82191").send();
+        neow3j.invokeScript("10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokescript\","
-                        + "\"params\":[\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\"],"
+                        + "\"params\":[\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\"],"
                         + "\"id\":1}"
         );
     }
 
     @Test
     public void testInvokeScriptWithWitness() throws Exception {
-        neow3j.invokeScript("00046e616d656724058e5e1b6008847cd662728549088a9ee82191",
-                "0xcadb3dc2faa3ef14a13b619c9a43124755aa2569").send();
+        neow3j.invokeScript("10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52",
+                Signer.calledByEntry(new ScriptHash("0xcc45cc8987b0e35371f5685431e3c8eeea306722"))).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokescript\","
                         + "\"params\":["
-                        +       "\"00046e616d656724058e5e1b6008847cd662728549088a9ee82191\","
-                        +       "[\"0xcadb3dc2faa3ef14a13b619c9a43124755aa2569\"]"
+                        +     "\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\","
+                        +         "["
+                        +             "{"
+                        +                 "\"account\":\"cc45cc8987b0e35371f5685431e3c8eeea306722\","
+                        +                 "\"scopes\":[\"CalledByEntry\"],"
+                        +                 "\"allowedcontracts\":[],"
+                        +                 "\"allowedgroups\":[]"
+                        +             "}"
+                        +         "]"
                         + "],\"id\":1}"
         );
     }
@@ -365,21 +378,21 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetBalance() throws Exception {
-        neow3j.getBalance("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789").send();
+    public void testGetWalletBalance() throws Exception {
+        neow3j.getWalletBalance("de5f57d430d3dece511cf975a8d37848cb9e0525").send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
-                        + "\"params\":[\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"],\"id\":1}");
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getwalletbalance\","
+                        + "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"],\"id\":1}");
     }
 
     @Test
-    public void testGetBalance_with_Prefix() throws Exception {
-        neow3j.getBalance("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789").send();
+    public void testGetWalletBalance_with_Prefix() throws Exception {
+        neow3j.getWalletBalance("0xde5f57d430d3dece511cf975a8d37848cb9e0525").send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getbalance\","
-                        + "\"params\":[\"9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\"],\"id\":1}");
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getwalletbalance\","
+                        + "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"],\"id\":1}");
     }
 
     @Test
@@ -392,12 +405,21 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetWalletUnclaimedGas() throws Exception {
+        neow3j.getWalletUnclaimedGas().send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getwalletunclaimedgas\","
+                        + "\"params\":[],\"id\":1}");
+    }
+
+    @Test
     public void testGetUnclaimedGas() throws Exception {
-        neow3j.getUnclaimedGas().send();
+        neow3j.getUnclaimedGas("AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN").send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getunclaimedgas\","
-                        + "\"params\":[],\"id\":1}");
+                        + "\"params\":[\"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"],\"id\":1}");
     }
 
     @Test
@@ -422,14 +444,14 @@ public class RequestTest extends RequestTester {
     public void testSendFrom() throws Exception {
         neow3j.sendFrom(
                 "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4",
-                "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
                 "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
                 "10.0"
         ).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"sendfrom\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
+                        + "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\","
                         + "\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\","
                         + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\","
                         + "\"10.0\"],\"id\":1}");
@@ -440,7 +462,7 @@ public class RequestTest extends RequestTester {
         neow3j.sendFrom(
                 "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4",
                 new TransactionSendAsset(
-                        "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                        "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
                         "10.0",
                         "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"
                 )
@@ -448,7 +470,7 @@ public class RequestTest extends RequestTester {
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"sendfrom\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
+                        + "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\","
                         + "\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\","
                         + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\","
                         + "\"10.0\"],\"id\":1}");
@@ -458,8 +480,8 @@ public class RequestTest extends RequestTester {
     public void testSendMany() throws Exception {
         neow3j.sendMany(
                 Arrays.asList(
-                        new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "100", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
-                        new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "10", "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4")
+                        new TransactionSendAsset("0xde5f57d430d3dece511cf975a8d37848cb9e0525", "100", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
+                        new TransactionSendAsset("0xde5f57d430d3dece511cf975a8d37848cb9e0525", "10", "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4")
                 )
         ).send();
 
@@ -467,8 +489,8 @@ public class RequestTest extends RequestTester {
                 "{\"jsonrpc\":\"2.0\",\"method\":\"sendmany\","
                         + "\"params\":["
                         + "["
-                        + "{\"asset\":\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\"value\":\"100\",\"address\":\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"},"
-                        + "{\"asset\":\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\",\"value\":\"10\",\"address\":\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"}"
+                        + "{\"asset\":\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"100\",\"address\":\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"},"
+                        + "{\"asset\":\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"10\",\"address\":\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"}"
                         + "]"
                         + "],\"id\":1}");
     }
@@ -483,28 +505,59 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testSendManyWithFrom() throws Exception {
+        neow3j.sendMany(
+                "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN",
+                Arrays.asList(
+                        new TransactionSendAsset("0xde5f57d430d3dece511cf975a8d37848cb9e0525", "100", "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
+                        new TransactionSendAsset("0xde5f57d430d3dece511cf975a8d37848cb9e0525", "10", "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                )
+        ).send();
+
+
+        verifyResult("{"
+                + "  \"jsonrpc\": \"2.0\","
+                + "  \"method\": \"sendmany\","
+                + "  \"params\": [\"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\","
+                + "  ["
+                + "     {"
+                + "         \"asset\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\", "
+                + "         \"value\": \"100\","
+                + "         \"address\": \"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\""
+                + "     },"
+                + "     {"
+                + "         \"asset\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\", "
+                + "         \"value\": \"10\","
+                + "         \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"}"
+                + "     ]"
+                + "  ],"
+                + "  \"id\": 1"
+                + "}");
+    }
+
+    @Test
     public void testSendToAddress() throws Exception {
         neow3j.sendToAddress(
-                "0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789",
+                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
                 "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
                 "10.0"
         ).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"sendtoaddress\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
+                        + "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\","
                         + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",\"10.0\"],\"id\":1}");
     }
 
     @Test
     public void testSendToAddress_TransactionSendAsset() throws Exception {
         neow3j.sendToAddress(
-                new TransactionSendAsset("0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789", "10.0", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb")
+                new TransactionSendAsset("0xde5f57d430d3dece511cf975a8d37848cb9e0525", "10.0", "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb")
         ).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"sendtoaddress\","
-                        + "\"params\":[\"0x9bde8f209c88dd0e7ca3bf0af0f476cdd8207789\","
+                        + "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\","
                         + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",\"10.0\"],\"id\":1}");
     }
 

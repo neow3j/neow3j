@@ -263,6 +263,11 @@ public class ScriptBuilder {
         return this;
     }
 
+    public ScriptBuilder pack() {
+        opCode(OpCode.PACK);
+        return this;
+    }
+
     private void writeByte(int v) {
         try {
             stream.writeByte(v);
@@ -316,7 +321,7 @@ public class ScriptBuilder {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
                 .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
                 .toArray();
     }
 
@@ -335,8 +340,7 @@ public class ScriptBuilder {
         return builder
                 .pushInteger(encodedPublicKeys.size())
                 .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1)
                 .toArray();
-
     }
 }

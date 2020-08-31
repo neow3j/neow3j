@@ -4,21 +4,26 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ContractParameterType {
 
-    SIGNATURE("Signature", 0x00),
-    BOOLEAN("Boolean", 0x01),
-    INTEGER("Integer", 0x02),
+    ANY("Any", 0x00),
+
+    BOOLEAN("Boolean", 0x10),
+    INTEGER("Integer", 0x11),
+    BYTE_ARRAY("ByteArray", 0x12),
+    STRING("String", 0x13),
     // 160-bit hash value
-    HASH160("Hash160", 0x03),
+    HASH160("Hash160", 0x14),
     // 256-bit hash value
-    HASH256("Hash256", 0x04),
+    HASH256("Hash256", 0x15),
     // Byte Array
-    BYTE_ARRAY("ByteArray", 0x05),
-    PUBLIC_KEY("PublicKey", 0x06),
-    STRING("String", 0x07),
+    PUBLIC_KEY("PublicKey", 0x16),
+    SIGNATURE("Signature", 0x17),
 
     // Object Array
-    ARRAY("Array", 0x10),
-    INTEROP_INTERFACE("InteropInterface", 0xf0),
+    ARRAY("Array", 0x20),
+    MAP("Map", 0x22),
+
+    INTEROP_INTERFACE("InteropInterface", 0x30),
+
     VOID("Void", 0xff);
 
     private String jsonValue;

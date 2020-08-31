@@ -68,13 +68,13 @@ public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Nep5Balance {
 
-        @JsonProperty("asset_hash")
+        @JsonProperty("assethash")
         private String assetHash;
 
         @JsonProperty("amount")
         private String amount;
 
-        @JsonProperty("last_updated_block")
+        @JsonProperty("lastupdatedblock")
         private BigInteger lastUpdatedBlock;
 
         public Nep5Balance() {

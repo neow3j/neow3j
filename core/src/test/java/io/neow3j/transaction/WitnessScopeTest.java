@@ -26,12 +26,18 @@ public class WitnessScopeTest {
         assertThat(scope, is((byte) 0x31));
 
         scope = WitnessScope.combineScopes(Arrays.asList(WitnessScope.GLOBAL));
+        assertThat(scope, is((byte) 0x80));
+
+        scope = WitnessScope.combineScopes(Arrays.asList(WitnessScope.FEE_ONLY));
         assertThat(scope, is((byte) 0x00));
     }
 
     @Test
     public void extractCombinedScopes() {
         List<WitnessScope> scopes = WitnessScope.extractCombinedScopes((byte) 0x00);
+        assertThat(scopes, contains(WitnessScope.FEE_ONLY));
+
+        scopes = WitnessScope.extractCombinedScopes((byte) 0x80);
         assertThat(scopes, contains(WitnessScope.GLOBAL));
 
         scopes = WitnessScope.extractCombinedScopes((byte) 0x11);
@@ -49,5 +55,6 @@ public class WitnessScopeTest {
                 WitnessScope.CALLED_BY_ENTRY,
                 WitnessScope.CUSTOM_GROUPS,
                 WitnessScope.CUSTOM_CONTRACTS));
+
     }
 }

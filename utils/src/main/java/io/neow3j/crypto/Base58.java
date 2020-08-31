@@ -17,6 +17,8 @@
 
 package io.neow3j.crypto;
 
+import static io.neow3j.crypto.Hash.hash256;
+
 import io.neow3j.crypto.exceptions.AddressFormatException;
 import io.neow3j.utils.ArrayUtils;
 
@@ -163,7 +165,7 @@ public class Base58 {
     }
 
     public static String base58CheckEncode(byte[] data) {
-        byte[] checksum = Hash.sha256(Hash.sha256(data));
+        byte[] checksum = hash256(data);
         byte[] buffer = new byte[data.length + 4];
         System.arraycopy(data, 0, buffer, 0, data.length);
         System.arraycopy(checksum, 0, buffer, data.length, 4);
@@ -179,7 +181,7 @@ public class Base58 {
         byte[] data = ArrayUtils.getFirstNBytes(buffer, buffer.length - 4);
         byte[] givenChecksum = ArrayUtils.getLastNBytes(buffer, 4);
 
-        byte[] calculatedChecksum = Hash.sha256(Hash.sha256(data));
+        byte[] calculatedChecksum = hash256(data);
         byte[] first4BytesCalculatedChecksum = ArrayUtils.getFirstNBytes(calculatedChecksum, 4);
 
         if (!Arrays.equals(givenChecksum, first4BytesCalculatedChecksum)) {

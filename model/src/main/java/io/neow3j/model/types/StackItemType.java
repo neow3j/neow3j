@@ -7,9 +7,9 @@ public enum StackItemType {
     ANY(StackItemType.ANY_VALUE, 0x00),
     POINTER(StackItemType.POINTER_VALUE, 0x10),
     BOOLEAN(StackItemType.BOOLEAN_VALUE, 0x20),
-    INTEGER(StackItemType.INTEGER_VALUE, 0x21),
+    INTEGER(StackItemType.INTEGER_VALUE, StackItemType.INTEGER_CODE),
     BYTE_STRING(StackItemType.BYTE_STRING_VALUE, 0x28),
-    BUFFER(StackItemType.BUFFER_VALUE, 0x30),
+    BUFFER(StackItemType.BUFFER_VALUE, StackItemType.BUFFER_CODE),
     ARRAY(StackItemType.ARRAY_VALUE, 0x40),
     STRUCT(StackItemType.STRUCT_VALUE, 0x41),
     MAP(StackItemType.MAP_VALUE, 0x48),
@@ -25,6 +25,11 @@ public enum StackItemType {
     public static final String STRUCT_VALUE = "Struct";
     public static final String MAP_VALUE = "Map";
     public static final String INTEROP_INTERFACE_VALUE = "InteropInterface";
+
+    // These constants are required for usage in annotation in `io.neow3j.devpack.framework.Helper`
+    // because the enum values are not directly usable in annotations.
+    public static final byte BUFFER_CODE = 0x30;
+    public static final byte INTEGER_CODE = 0x21;
 
     private String jsonValue;
     private byte byteValue;

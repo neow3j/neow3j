@@ -111,7 +111,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + OpCode.PUSH2.toString() // m = 2, number of keys
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_CHECKMULTISIG.getHash()
+                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getHash()
         );
         assertArrayEquals(expected, script);
     }
@@ -126,7 +126,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + key // public key
                 + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_ECDSA_SECP256R1_VERIFY.getHash()
+                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash()
         );
         assertArrayEquals(expected, script);
     }

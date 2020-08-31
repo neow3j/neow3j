@@ -23,8 +23,6 @@ public class ContractParameterTest {
 
     @Before
     public void setUp() {
-        // TODO 14.07.19 claude:
-        // Write test for all static creation methods in ContractParameter.
         this.contractParameter = ContractParameter.string("value");
     }
 

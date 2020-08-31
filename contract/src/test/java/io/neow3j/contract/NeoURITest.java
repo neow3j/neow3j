@@ -132,10 +132,10 @@ public class NeoURITest {
     public void testGenerateURI_Asset_FromByteArray() {
         NeoURI neoURI = new NeoURI()
                 .toAddress(ADDRESS)
-                .assetFromByteArray("9bde8f209c88dd0e7ca3bf0af0f476cdd8207789")
+                .assetFromByteArray("de5f57d430d3dece511cf975a8d37848cb9e0525")
                 .buildURI();
 
-        String BEGIN_TX_ASSET = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=9bde8f209c88dd0e7ca3bf0af0f476cdd8207789";
+        String BEGIN_TX_ASSET = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=de5f57d430d3dece511cf975a8d37848cb9e0525";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_ASSET)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_ASSET));
     }

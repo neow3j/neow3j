@@ -20,7 +20,7 @@ public class NeoApplicationLog {
     @JsonProperty("vmstate")
     private String state;
 
-    @JsonProperty("gas_consumed")
+    @JsonProperty("gasconsumed")
     private String gasConsumed;
 
     @JsonProperty("stack")
@@ -51,19 +51,27 @@ public class NeoApplicationLog {
         @JsonProperty("contract")
         private String contract;
 
+        @JsonProperty("eventname")
+        private String eventName;
+
         @JsonProperty("state")
         private StackItem state;
 
         public Notification() {
         }
 
-        public Notification(String contract, StackItem state) {
+        public Notification(String contract, String eventName, StackItem state) {
             this.contract = contract;
+            this.eventName = eventName;
             this.state = state;
         }
 
         public String getContract() {
             return contract;
+        }
+
+        public String getEventName() {
+            return eventName;
         }
 
         public StackItem getState() {
@@ -80,18 +88,20 @@ public class NeoApplicationLog {
             }
             Notification that = (Notification) o;
             return Objects.equals(getContract(), that.getContract()) &&
+                    Objects.equals(getEventName(), that.getEventName()) &&
                     Objects.equals(getState(), that.getState());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getContract(), getState());
+            return Objects.hash(getContract(), getEventName(), getState());
         }
 
         @Override
         public String toString() {
             return "Notification{" +
                     "contract='" + contract + '\'' +
+                    "eventname=" + eventName +
                     ", state=" + state +
                     '}';
         }

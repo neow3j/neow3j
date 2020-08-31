@@ -1,8 +1,9 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.crypto.Hash.hash256;
+
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
@@ -19,6 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -28,7 +30,6 @@ public class Transaction extends NeoSerializable {
 
     public static final int HEADER_SIZE = 1 +  // Version byte
             4 +  // Nonce uint32
-            NeoConstants.SCRIPTHASH_SIZE + // Sender script hash
             8 +  // System fee int64
             8 +  // Network fee int64
             4; // Valid until block uint32
@@ -47,7 +48,7 @@ public class Transaction extends NeoSerializable {
      * integer which offers a smaller but still large enough range.
      */
     private long validUntilBlock;
-    private ScriptHash sender;
+    private List<Signer> signers;
     private long systemFee;
     private long networkFee;
     private List<TransactionAttribute> attributes;
@@ -63,7 +64,7 @@ public class Transaction extends NeoSerializable {
         this.version = builder.version;
         this.nonce = builder.nonce;
         this.validUntilBlock = builder.validUntilBlock;
-        this.sender = builder.sender;
+        this.signers = builder.signers;
         this.systemFee = builder.systemFee;
         this.networkFee = builder.networkFee;
         this.attributes = builder.attributes;
@@ -83,8 +84,28 @@ public class Transaction extends NeoSerializable {
         return validUntilBlock;
     }
 
+    public List<Signer> getSigners() {
+        return signers;
+    }
+
+    /**
+     * Gets the sender of this transaction. The sender is the account that pays for the
+     * transaction's fees.
+     *
+     * @return the sender account's script hash.
+     */
     public ScriptHash getSender() {
-        return sender;
+        if (signers.isEmpty()) {
+            return null;
+        }
+        // First we look for a signer that has the fee-only scope. The signer with that scope is
+        // the sender of the transaction. If there is no such signer then the order of the
+        // signers defines the sender, i.e., the first signer is the sender of the transaction.
+        return signers.stream()
+                .filter(signer -> signer.getScopes().contains(WitnessScope.FEE_ONLY))
+                .findFirst()
+                .orElse(signers.get(0))
+                .getScriptHash();
     }
 
     /**
@@ -109,13 +130,6 @@ public class Transaction extends NeoSerializable {
         return attributes;
     }
 
-    public List<Cosigner> getCosigners() {
-        return this.attributes.stream()
-                .filter(a -> a.type.equals(TransactionAttributeType.COSIGNER))
-                .map(a -> ((Cosigner) a))
-                .collect(Collectors.toList());
-    }
-
     public byte[] getScript() {
         return script;
     }
@@ -133,13 +147,14 @@ public class Transaction extends NeoSerializable {
     }
 
     public String getTxId() {
-        byte[] hash = Hash.sha256(Hash.sha256(getHashData()));
+        byte[] hash = hash256(getHashData());
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 
     @Override
     public int getSize() {
         return HEADER_SIZE +
+                IOUtils.getVarSize(this.signers) +
                 IOUtils.getVarSize(this.attributes) +
                 IOUtils.getVarSize(this.script) +
                 IOUtils.getVarSize(this.witnesses);
@@ -150,10 +165,10 @@ public class Transaction extends NeoSerializable {
         try {
             this.version = reader.readByte();
             this.nonce = reader.readUInt32();
-            this.sender = reader.readSerializable(ScriptHash.class);
             this.systemFee = reader.readInt64();
             this.networkFee = reader.readInt64();
             this.validUntilBlock = reader.readUInt32();
+            this.signers = reader.readSerializableList(Signer.class);
             readTransactionAttributes(reader);
             this.script = reader.readVarBytes();
             this.witnesses = reader.readSerializableList(Witness.class);
@@ -178,10 +193,10 @@ public class Transaction extends NeoSerializable {
     private void serializeWithoutWitnesses(BinaryWriter writer) throws IOException {
         writer.writeByte(this.version);
         writer.writeUInt32(this.nonce);
-        writer.writeSerializableFixed(this.sender);
         writer.writeInt64(this.systemFee);
         writer.writeInt64(this.networkFee);
         writer.writeUInt32(this.validUntilBlock);
+        writer.writeSerializableVariable(this.signers);
         writer.writeSerializableVariable(this.attributes);
         writer.writeVarBytes(this.script);
     }
@@ -213,8 +228,8 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets this transaction's data in the format used to produce the transaction's hash. E.g.,
-     * for producing the transaction ID or a transaction signature.
+     * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for
+     * producing the transaction ID or a transaction signature.
      * <p>
      * The returned value depends on the configuration of {@link NeoConfig#magicNumber()}.
      *
@@ -239,7 +254,7 @@ public class Transaction extends NeoSerializable {
         private long nonce;
         private byte version;
         private Long validUntilBlock;
-        private ScriptHash sender;
+        private List<Signer> signers;
         private long systemFee;
         private long networkFee;
         private byte[] script;
@@ -251,6 +266,7 @@ public class Transaction extends NeoSerializable {
             // therefore we can use ThreadLocalRandom to generate it.
             this.nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
             this.version = NeoConstants.CURRENT_TX_VERSION;
+            this.signers = new ArrayList<>();
             this.networkFee = 0L;
             this.systemFee = 0L;
             this.attributes = new ArrayList<>();
@@ -315,17 +331,20 @@ public class Transaction extends NeoSerializable {
         }
 
         /**
-         * Sets the sender of this transaction.
+         * Adds the given signers to this transaction.
          * <p>
-         * The sender's account will be charged with the network and system fees.
-         * <p>
-         * This property is <b>mandatory</b>.
+         * The first signer will be used as the sender of this transaction, i.e. the payer of the
+         * transaction fees.
          *
-         * @param sender The sender account's script hash.
+         * @param signers Signers for this transaction.
          * @return this builder.
          */
-        public Builder sender(ScriptHash sender) {
-            this.sender = sender;
+        public Builder signers(Signer... signers) {
+            if (containsDuplicateSigners(signers)) {
+                throw new TransactionConfigurationException("Can't add multiple signers" +
+                        " concerning the same account.");
+            }
+            this.signers.addAll(Arrays.asList(signers));
             return this;
         }
 
@@ -388,28 +407,22 @@ public class Transaction extends NeoSerializable {
                 throw new TransactionConfigurationException("A transaction cannot have more "
                         + "than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
             }
-            if (containsDuplicateCosigners(attributes)) {
-                throw new TransactionConfigurationException("Can't add multiple cosigners" +
-                        " concerning the same account.");
-            }
             this.attributes.addAll(Arrays.asList(attributes));
             return this;
         }
 
-        private boolean containsDuplicateCosigners(TransactionAttribute... newAttributes) {
-            List<ScriptHash> newCosignersList = Stream.of(newAttributes)
-                    .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getScriptHash())
+        private boolean containsDuplicateSigners(Signer... signers) {
+            List<ScriptHash> newSignersList = Stream.of(signers)
+                    .map(Signer::getScriptHash)
                     .collect(Collectors.toList());
-            Set<ScriptHash> newCosignersSet = new HashSet<>(newCosignersList);
-            if (newCosignersList.size() != newCosignersSet.size()) {
-                // The new cosingers list contains duplicates in itself.
+            Set<ScriptHash> newSignersSet = new HashSet<>(newSignersList);
+            if (newSignersList.size() != newSignersSet.size()) {
+                // The new singers list contains duplicates in itself.
                 return true;
             }
-            return this.attributes.stream()
-                    .filter(a -> a.getType().equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a).getScriptHash())
-                    .anyMatch(newCosignersSet::contains);
+            return this.signers.stream()
+                    .map(Signer::getScriptHash)
+                    .anyMatch(newSignersSet::contains);
         }
 
         /**
@@ -436,23 +449,19 @@ public class Transaction extends NeoSerializable {
          * Builds the transaction.
          *
          * @return The transaction.
-         * @throws TransactionConfigurationException if either the sender account or the
-         *                                           "validUntilBlock" property was not set.
+         * @throws TransactionConfigurationException if either no signer was set or the
+         *                                           valid-until-block property was not set.
          */
         public Transaction build() {
-            if (this.sender == null) {
-                throw new TransactionConfigurationException("A transaction requires a sender " +
-                        "account.");
-            }
-
             if (this.validUntilBlock == null) {
                 throw new TransactionConfigurationException("A transaction needs to be set up " +
                         "with a block number up to which this it is considered valid.");
             }
 
-            if (getCosigners().isEmpty()) {
-                // Add default restrictive witness scope.
-                this.attributes.add(Cosigner.calledByEntry(this.sender));
+            if (this.signers.isEmpty()) {
+                throw new TransactionConfigurationException("No signers are specified for this "
+                        + "transaction. A transaction requires at least one signer account that "
+                        + "can cover the network and system fees.");
             }
             return new Transaction(this);
         }
@@ -469,10 +478,6 @@ public class Transaction extends NeoSerializable {
             return validUntilBlock;
         }
 
-        public ScriptHash getSender() {
-            return sender;
-        }
-
         public long getSystemFee() {
             return systemFee;
         }
@@ -481,11 +486,8 @@ public class Transaction extends NeoSerializable {
             return networkFee;
         }
 
-        public List<Cosigner> getCosigners() {
-            return this.attributes.stream()
-                    .filter(a -> a.type.equals(TransactionAttributeType.COSIGNER))
-                    .map(a -> ((Cosigner) a))
-                    .collect(Collectors.toList());
+        public List<Signer> getSigners() {
+            return signers;
         }
 
         public byte[] getScript() {

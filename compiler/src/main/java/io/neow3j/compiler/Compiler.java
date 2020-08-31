@@ -12,10 +12,11 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.framework.ScriptContainer;
 import io.neow3j.devpack.framework.annotations.Appcall;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
+import io.neow3j.devpack.framework.annotations.Features;
 import io.neow3j.devpack.framework.annotations.Instruction;
 import io.neow3j.devpack.framework.annotations.Instruction.Instructions;
 import io.neow3j.devpack.framework.annotations.ManifestExtra.ManifestExtras;
-import io.neow3j.devpack.framework.annotations.ManifestFeature;
+import io.neow3j.devpack.framework.annotations.SupportedStandards;
 import io.neow3j.devpack.framework.annotations.Syscall;
 import io.neow3j.devpack.framework.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
@@ -30,7 +31,9 @@ import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -47,12 +51,18 @@ import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.IincInsnNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TableSwitchInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.slf4j.Logger;
@@ -75,6 +85,10 @@ public class Compiler {
     private static final String THIS_KEYWORD = "this";
     private static final String OBJECT_INTERNAL_NAME = Type.getInternalName(Object.class);
     private static final String VALUEOF_METHOD_NAME = "valueOf";
+    private static final String HASH_CODE_METHOD_NAME = "hashCode";
+    private static final String EQUALS_METHOD_NAME = "hashCode";
+    private static final String STRING_INTERNAL_NAME = Type.getInternalName(String.class);
+
     private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
             "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
     private static final List<String> PRIMITIVE_TYPE_WRAPPER_CLASSES = Arrays.asList(
@@ -83,16 +97,47 @@ public class Compiler {
 
     private NeoModule neoModule;
 
+    private ClassLoader classLoader;
+
+    public Compiler() {
+    }
+
+    public Compiler(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
     /**
-     * Compiles the class with the given name to NeoVM code.
+     * Compiles the given class to NeoVM code.
      *
-     * @param name the fully qualified name of the class.
+     * @param fullyQualifiedClassName the fully qualified name of the class.
+     * @return the compilation result info represented by {@link CompilationResult}
      */
-    public CompilationResult compileClass(String name) throws IOException {
-        ClassNode asmClass = getAsmClass(name);
-        this.neoModule = new NeoModule(asmClass);
-        collectAndInitializeStaticFields(asmClass);
-        collectAndInitializeMethods(asmClass);
+    public CompilationResult compileClass(String fullyQualifiedClassName) throws IOException {
+        ClassNode asmClass = getAsmClass(fullyQualifiedClassName);
+        return compileClass(asmClass);
+    }
+
+    /**
+     * Compiles the given class to NeoVM code.
+     *
+     * @param classStream the {@link InputStream} pointing to a class file.
+     * @return the compilation result info represented by {@link CompilationResult}
+     */
+    public CompilationResult compileClass(InputStream classStream) throws IOException {
+        ClassNode asmClass = getAsmClass(classStream);
+        return compileClass(asmClass);
+    }
+
+    /**
+     * Compiles the given class to NeoVM code.
+     *
+     * @param classNode the {@link ClassNode} representing a class file.
+     * @return the compilation result info represented by {@link CompilationResult}
+     */
+    private CompilationResult compileClass(ClassNode classNode) throws IOException {
+        this.neoModule = new NeoModule(classNode);
+        collectAndInitializeStaticFields(classNode);
+        collectAndInitializeMethods(classNode);
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -197,40 +242,80 @@ public class Compiler {
                 .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class)));
     }
 
-    private ClassNode getAsmClass(String name) throws IOException {
-        ClassReader reader = new ClassReader(name);
+    private ClassNode getAsmClass(String fullyQualifiedClassName) throws IOException {
+        if (classLoader != null) {
+            return getAsmClass(
+                    classLoader
+                            .getResourceAsStream(
+                                    fullyQualifiedClassName.replace('.', '/') + ".class"));
+        }
+        return getAsmClass(
+                this.getClass().getClassLoader()
+                        .getResourceAsStream(fullyQualifiedClassName.replace('.', '/') + ".class"));
+    }
+
+    private ClassNode getAsmClass(InputStream classStream) throws IOException {
+        ClassReader classReader = new ClassReader(classStream);
+        return getAsmClass(classReader);
+    }
+
+    private ClassNode getAsmClass(ClassReader classReader) throws IOException {
+        if (classReader == null) {
+            throw new InvalidParameterException("Class reader not found.");
+        }
         ClassNode asmClass = new ClassNode();
-        reader.accept(asmClass, 0);
+        classReader.accept(asmClass, 0);
         return asmClass;
     }
 
     private void compileMethod(NeoMethod neoMethod) throws IOException {
-        for (int insnAddr = 0; insnAddr < neoMethod.asmMethod.instructions.size(); insnAddr++) {
-            handleInsn(neoMethod, neoMethod.asmMethod, insnAddr);
+        AbstractInsnNode insn = neoMethod.asmMethod.instructions.get(0);
+        while (insn != null) {
+            insn = handleInsn(neoMethod, insn);
+            insn = insn.getNext();
         }
     }
 
-    // Returns the number additional addresses that where processed when handling the given
-    // instruction. This usually means that this number of addresses does not have to processed
-    // again in the calling method.
-    private void handleInsn(NeoMethod neoMethod, MethodNode asmMethod, int insnAddr)
+    // Returns the last insn node that was processed, i.e., the returned insn can be used to
+    // obtain the next innsn that should be processed.
+    private AbstractInsnNode handleInsn(NeoMethod neoMethod, AbstractInsnNode insn)
             throws IOException {
-
-        AbstractInsnNode insn = asmMethod.instructions.get(insnAddr);
+        if (insn.getType() == AbstractInsnNode.LINE) {
+            neoMethod.currentLine = ((LineNumberNode) insn).line;
+        }
+        if (insn.getType() == AbstractInsnNode.LABEL) {
+            neoMethod.currentLabel = ((LabelNode) insn).getLabel();
+        }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
-            return;
+            return insn;
         }
         log.info(opcode.toString());
         switch (opcode) {
-            case INVOKESTATIC:
-            case INVOKEVIRTUAL:
-            case INVOKESPECIAL:
-                handleMethodInstruction(insn, neoMethod);
+
+            // region ### OBJECTS ###
+            case PUTSTATIC:
+                addStoreStaticField(insn, neoMethod);
                 break;
-            case LDC:
-                addLoadConstant(insn, neoMethod);
+            case GETSTATIC:
+                addLoadStaticField(insn, neoMethod);
                 break;
+            case CHECKCAST:
+                // Check if the object on the operand stack can be cast to a given type.
+                // There is no corresponding NeoVM opcode.
+                break;
+            case NEW:
+                handleNew(insn, neoMethod);
+                break;
+            case ARRAYLENGTH:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SIZE));
+                break;
+            case INSTANCEOF:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### OBJECTS ###
+
+                // region ### CONSTANTS ###
             case ICONST_M1:
             case ICONST_0:
             case ICONST_1:
@@ -240,16 +325,45 @@ public class Compiler {
             case ICONST_5:
                 addPushNumber(opcode.getOpcode() - 3, neoMethod);
                 break;
+            case LCONST_0:
+                addPushNumber(0, neoMethod);
+                break;
+            case LCONST_1:
+                addPushNumber(1, neoMethod);
+                break;
+            case LDC:
+            case LDC_W:
+            case LDC2_W:
+                addLoadConstant(insn, neoMethod);
+                break;
+            case ACONST_NULL:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSHNULL));
+                break;
             case BIPUSH: // Has an operand with an int value from -128 to 127.
             case SIPUSH: // Has an operand with an int value from -32768 to 32767.
                 addPushNumber(((IntInsnNode) insn).operand, neoMethod);
                 break;
+            // endregion ### CONSTANTS ###
+
+            // region ### METHODS ###
             case RETURN:
             case IRETURN:
             case ARETURN:
             case LRETURN:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.RET));
                 break;
+            case INVOKESTATIC:
+            case INVOKEVIRTUAL:
+            case INVOKESPECIAL:
+                insn = handleMethodInstruction(insn, neoMethod);
+                break;
+            case INVOKEINTERFACE:
+            case INVOKEDYNAMIC:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### METHODS ###
+
+                // region ### LOCAL VARIABLES ###
             case ASTORE:
             case ASTORE_0:
             case ASTORE_1:
@@ -265,17 +379,20 @@ public class Compiler {
             case LSTORE_1:
             case LSTORE_2:
             case LSTORE_3:
-                addStoreLocalVariable(insn, neoMethod);
+                addStoreLocalVariable(((VarInsnNode) insn).var, neoMethod);
                 break;
             case ALOAD:
+            case ALOAD_0:
             case ALOAD_1:
             case ALOAD_2:
             case ALOAD_3:
             case ILOAD:
+            case ILOAD_0:
             case ILOAD_1:
             case ILOAD_2:
             case ILOAD_3:
             case LLOAD:
+            case LLOAD_0:
             case LLOAD_1:
             case LLOAD_2:
             case LLOAD_3:
@@ -283,14 +400,14 @@ public class Compiler {
                 // method parameter or a normal variable in the method body. The index of the
                 // variable in the pool is given in the instruction and not on the operand
                 // stack.
-                addLoadLocalVariable(insn, neoMethod);
+                addLoadLocalVariable(((VarInsnNode) insn).var, neoMethod);
                 break;
+            // endregion ### LOCAL VARIABLES ###
+
+            // region ### ARRAYS ###
             case NEWARRAY:
             case ANEWARRAY:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
-                break;
-            case DUP:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
                 break;
             case BASTORE:
             case IASTORE:
@@ -303,6 +420,18 @@ public class Compiler {
                 // `DASTORE` and `FASTORE` are not covered because NeoVM does not support
                 // doubles and floats.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
+                break;
+            case AALOAD:
+            case BALOAD:
+            case CALOAD:
+            case IALOAD:
+            case LALOAD:
+            case SALOAD:
+                // Load an element from an array. Before calling this OpCode an array references
+                // and an index must have been pushed onto the operand stack. JVM and NeoVM both
+                // place the loaded element onto the operand stack. JVM opcodes `DALOAD` and
+                // `FALOAD` are not covered because NeoVM does not support doubles and floats.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
                 break;
             case PUTFIELD:
                 // Sets a value for a field variable on an object. The compiler doesn't
@@ -317,42 +446,410 @@ public class Compiler {
                 // of the operand stack.
                 addGetField(insn, neoMethod);
                 break;
-            case PUTSTATIC:
-                addStoreStaticField(insn, neoMethod);
+            case MULTIANEWARRAY:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### ARRAYS ###
+
+                // region ### STACK MANIPULATION ###
+            case NOP:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NOP));
                 break;
-            case GETSTATIC:
-                addLoadStaticField(insn, neoMethod);
+            case DUP:
+            case DUP2:
+                // TODO: here we assume that DUP2 is only applied to long values in which case
+                //  NeoVM DUP is the correct mapping. But if the stack contains integers then the
+                //  upper two ints on the stack must be duplicated. For this we need to know which
+                //  Java type lies on top of the operand stack.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
                 break;
             case POP:
+            case POP2:
+                // TODO: here we assume that POP2 is only applied to long values in which case
+                //  NeoVM DROP is the correct mapping. But if the stack contains integers then the
+                //  upper two ints on the stack must be dropped. For this we need to know which
+                //  Java type lies on top of the operand stack.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 break;
-            case CHECKCAST:
-                // Check if the object on the operand stack can be cast to a given type.
-                // There is no corresponding NeoVM opcode.
+            case SWAP:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
+            case DUP_X1:
+            case DUP_X2:
+            case DUP2_X1:
+            case DUP2_X2:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### STACK MANIPULATION ###
+
+                // region ### JUMP OPCODES ###
+                // Java jump addresses are restricted to 2 bytes, i.e. there are no 4-byte jump
+                // addresses as in NeoVM. It is simpler for the compiler implementation to always
+                // use the 4-byte NeoVM jump opcodes and then optimize (to 1-byte addresses) in a
+                // second step. This is how the dotnet-devpack handles it too.
+
+                // region ### OBJECT COMPARISON ###
+            case IF_ACMPEQ:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
                 break;
-            case AALOAD:
-            case BALOAD:
-            case CALOAD:
-            case IALOAD:
-            case LALOAD:
-            case SALOAD:
-                // Load an element from an array. Before calling this OpCode an array references
-                // and an index must have been pushed onto the operand stack. JVM and NeoVM both
-                // place the loaded element onto the operand stack. JVM opcodes `DALOAD` and
-                // `FALOAD` are not covered because NeoVM does not support doubles and floats.
-                neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
+            case IF_ACMPNE:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NOTEQUAL));
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
                 break;
+            // endregion ### OBJECT COMPARISON ###
+
+            // region ### INTEGER COMPARISON ###
+            case IF_ICMPEQ:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPEQ_L);
+                break;
+            case IF_ICMPNE: // integer comparison
+                addJumpInstruction(neoMethod, insn, OpCode.JMPNE_L);
+                break;
+            case IF_ICMPLT:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
+                break;
+            case IF_ICMPGT:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
+                break;
+            case IF_ICMPLE:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
+                break;
+            case IF_ICMPGE:
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
+                break;
+            // endregion ### INTEGER COMPARISON ###
+
+            // region ### INTEGER COMPARISON WITH ZERO ###
+            // These opcodes operate on boolean, byte, char, short, and int. In the latter four
+            // cases (IFLT, IFLE, IFGT, and IFGE) the NeoVM opcode is switched, e.g., from GT to
+            // LE because zero value will be on top of the stack and not the integer value.
+            case IFEQ: // Tests if the value on the stack is equal to zero.
+            case IFNULL: // Object comparison with null.
+                // JMPIFNOT_L means that the process should jump if the value is not set, is null,
+                // or is zero.
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIFNOT_L);
+                break;
+            case IFNE: // Tests if the value on the stack is not equal to zero.
+            case IFNONNULL: // Object comparison with null.
+                // JMPIF_L means that the process should jump if the value is set, is not null, or
+                // not zero.
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
+                break;
+            case IFLT: // Tests if the value on the stack is less than zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
+                break;
+            case IFLE: // Tests if the value on the stack is less than or equal to zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
+                break;
+            case IFGT: // Tests if the value on the stack is greater than zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
+                break;
+            case IFGE: // Tests if the value on the stack is greater than or equal to zero.
+                addPushNumber(0, neoMethod);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
+                break;
+            // endregion ### INTEGER COMPARISON WITH ZERO ###
+
+            case LCMP:
+                // Comparison of two longs resulting in an integer with value -1, 0, or 1.
+                // This opcode has no direct counterpart in NeoVM because NeoVM does not
+                // differentiate between int and long.
+                insn = handleLongComparison(neoMethod, insn);
+                break;
+            case GOTO:
+            case GOTO_W:
+                // Unconditionally branch of to another code location.
+                neoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
+                        ((JumpInsnNode) insn).label.getLabel()));
+                break;
+            case LOOKUPSWITCH:
+                handleLookupSwitch(neoMethod, insn);
+                break;
+            case TABLESWITCH:
+                handleTableSwitch(neoMethod, insn);
+                break;
+            case JSR:
+            case RET:
+            case JSR_W:
+                throw new CompilerException("Instruction " + opcode + " in " +
+                        neoMethod.asmMethod.name + " not yet supported.");
+                // endregion ### JUMP OPCODES ###
+
+                // region ### CONVERSION ###
             case I2B:
-                // Convert an integer to byte by truncating. Because integers and bytes are
-                // handled equally by NeoVM there is nothing to do.
+            case L2I:
+            case I2L:
+            case I2C:
+            case I2S:
+                // Nothing to do because the NeoVM treats these types all the same.
                 break;
-            case NEW:
-                handleNew(insn, neoMethod);
+            // endregion ### CONVERSION ###
+
+            // region ### ARITHMETICS ###
+            case IINC:
+                handleIntegerIncrement(neoMethod, insn);
                 break;
+            case IADD:
+            case LADD:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ADD));
+                break;
+            case ISUB:
+            case LSUB:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SUB));
+                break;
+            case IMUL:
+            case LMUL:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.MUL));
+                break;
+            case IDIV:
+            case LDIV:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.DIV));
+                break;
+            case IREM:
+            case LREM:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.MOD));
+                break;
+            case INEG:
+            case LNEG:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NEGATE));
+                break;
+            // endregion ### ARITHMETICS ###
+
+            // region ### BIT OPERATIONS ###
+            case ISHL:
+            case LSHL:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SHL));
+                break;
+            case ISHR:
+            case LSHR:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SHR));
+                break;
+            case IUSHR:
+            case LUSHR:
+                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine, "Logical "
+                        + "bit-shifts are not supported.");
+            case IAND:
+            case LAND:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.AND));
+                break;
+            case IOR:
+            case LOR:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.OR));
+                break;
+            case IXOR:
+            case LXOR:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.XOR));
+                break;
+            // endregion ### BIT OPERATIONS ###
+
+            // region ### FLOATING POINT (unsupported) ###
+            case FCMPL:
+            case FCMPG:
+            case DCMPL:
+            case DCMPG:
+            case FRETURN:
+            case DRETURN:
+            case F2I:
+            case F2L:
+            case F2D:
+            case D2I:
+            case D2L:
+            case D2F:
+            case I2F:
+            case I2D:
+            case L2F:
+            case L2D:
+            case FNEG:
+            case DNEG:
+            case FDIV:
+            case DDIV:
+            case FREM:
+            case DREM:
+            case FMUL:
+            case DMUL:
+            case FSUB:
+            case DSUB:
+            case FADD:
+            case DADD:
+            case FASTORE:
+            case DASTORE:
+            case FALOAD:
+            case DALOAD:
+            case FSTORE:
+            case DSTORE:
+            case FCONST_0:
+            case FCONST_1:
+            case FCONST_2:
+            case DCONST_0:
+            case DCONST_1:
+            case FSTORE_0:
+            case FSTORE_1:
+            case FSTORE_2:
+            case FSTORE_3:
+            case DSTORE_0:
+            case DSTORE_1:
+            case DSTORE_2:
+            case DSTORE_3:
+            case FLOAD_0:
+            case FLOAD_1:
+            case FLOAD_2:
+            case FLOAD_3:
+            case DLOAD_0:
+            case DLOAD_1:
+            case DLOAD_2:
+            case DLOAD_3:
+            case FLOAD:
+            case DLOAD:
+                throw new CompilerException("Floating point numbers are not supported.");
+                // endregion ### FLOATING POINT (unsupported) ###
+
+                // region ### MISCELLANEOUS ###
+            case ATHROW:
+            case MONITORENTER:
+            case MONITOREXIT:
+            case WIDE:
+                // endregion ### MISCELLANEOUS ###
+
             default:
                 throw new CompilerException("Unsupported instruction " + opcode + " in: " +
-                        asmMethod.name + ".");
+                        neoMethod.asmMethod.name + ".");
         }
+        return insn;
+    }
+
+    private void handleIntegerIncrement(NeoMethod neoMethod, AbstractInsnNode insn) {
+        IincInsnNode incInsn = (IincInsnNode) insn;
+        if (incInsn.incr == 0) {
+            // This case probably never happens, but if it does, do nothing.
+            return;
+        }
+
+        addLoadLocalVariable(incInsn.var, neoMethod); // Load local variable
+        if (incInsn.incr == 1) {
+            neoMethod.addInstruction(new NeoInstruction(OpCode.INC));
+        } else if (incInsn.incr == -1) {
+            neoMethod.addInstruction(new NeoInstruction(OpCode.DEC));
+        } else if (incInsn.incr > 1) {
+            addPushNumber(incInsn.incr, neoMethod);
+            neoMethod.addInstruction(new NeoInstruction(OpCode.ADD));
+        } else if (incInsn.incr < -1) {
+            addPushNumber(-incInsn.incr, neoMethod);
+            neoMethod.addInstruction(new NeoInstruction(OpCode.SUB));
+        }
+        addStoreLocalVariable(incInsn.var, neoMethod); // Store incremented local variable.
+    }
+
+    private void handleTableSwitch(NeoMethod neoMethod, AbstractInsnNode insn) {
+        TableSwitchInsnNode switchNode = (TableSwitchInsnNode) insn;
+        for (int i = 0; i < switchNode.labels.size(); i++) {
+            if (switchNode.labels.get(i).getLabel() == switchNode.dflt.getLabel()) {
+                // We don't handle the cases that the Java compiler only to reach sequential values.
+                continue;
+            }
+            int key = switchNode.min + i;
+            processCase(i, key, switchNode.labels, switchNode.dflt.getLabel(), neoMethod);
+        }
+        // After handling the `TableSwitchInsnNode` the compiler can continue processing all the
+        // case branches in its `handleInsn(...)` method.
+    }
+
+    private void handleLookupSwitch(NeoMethod neoMethod, AbstractInsnNode insn) {
+        LookupSwitchInsnNode switchNode = (LookupSwitchInsnNode) insn;
+        for (int i = 0; i < switchNode.keys.size(); i++) {
+            int key = switchNode.keys.get(i);
+            processCase(i, key, switchNode.labels, switchNode.dflt.getLabel(), neoMethod);
+        }
+        // After handling the `LookupSwitchInsnNode` the compiler can continue processing all the
+        // case branches in its `handleInsn(...)` method.
+    }
+
+    private void processCase(int i, int key, List<LabelNode> labels, Label defaultLabel,
+            NeoMethod neoMethod) {
+        // The nextCaseLabel is used to connect the current case with the next case. If the
+        // current case is not successful, then the process will jump to the next case marked
+        // with this label.
+        Label nextCaseLabel;
+        boolean isLastCase = isLastCase(i, labels, defaultLabel);
+        if (isLastCase) {
+            // If this is the last case statement (before the `default`) then we don't
+            // need to duplicate the value and the next label is the one of the default body.
+            nextCaseLabel = defaultLabel;
+        } else {
+            nextCaseLabel = new Label();
+            // The value being compared in the switch needs to be duplicated before each case.
+            neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
+        }
+        addPushNumber(key, neoMethod);
+        neoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPNE_L, nextCaseLabel));
+
+        if (!isLastCase) {
+            // If the case is the right one we need to drop the value duplicated before.
+            // But not for the last `case` statement (before the default).
+            neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
+        }
+        Label jmpLabel = labels.get(i).getLabel();
+        neoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L, jmpLabel));
+        // Set the nextCaseLabel on the NeoMethod so that the next added instruction becomes
+        // the jump target.
+        neoMethod.currentLabel = nextCaseLabel;
+    }
+
+    // Checks if the given index marks the last case in the given list of case statements (i.e.
+    // labels of the cases' jump targets). If the case is only followed by cases that target the
+    // default case it is still considered to be last.
+    private boolean isLastCase(int i, List<LabelNode> labelNodes, Label defaultLbl) {
+        assert i < labelNodes.size() && i >= 0 : "Index was outside of the list of label nodes.";
+        if (i == labelNodes.size() - 1 && !(labelNodes.get(i).getLabel() == defaultLbl)) {
+            return true;
+        }
+        for (; i < labelNodes.size(); i++) {
+            LabelNode labelNode = labelNodes.get(i);
+            if (labelNode.getLabel() != defaultLbl) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private AbstractInsnNode handleLongComparison(NeoMethod neoMethod, AbstractInsnNode insn) {
+        JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
+        JVMOpcode jvmOpcode = JVMOpcode.get(jumpInsn.getOpcode());
+        if (jvmOpcode == null) {
+            throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine, "Jump opcode "
+                    + "of jump instruction was null.");
+        }
+        switch (jvmOpcode) {
+            case IFEQ:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPEQ_L);
+                break;
+            case IFNE:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPNE_L);
+                break;
+            case IFLT:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPLT_L);
+                break;
+            case IFGT:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGT_L);
+                break;
+            case IFLE:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPLE_L);
+                break;
+            case IFGE:
+                addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGE_L);
+                break;
+            default:
+                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine,
+                        "Unexpected opcode " + jvmOpcode.name() + " following long comparison.");
+        }
+        return jumpInsn;
+    }
+
+    private void addJumpInstruction(NeoMethod neoMethod, AbstractInsnNode insn, OpCode jmpOpcode) {
+        Label jmpLabel = ((JumpInsnNode) insn).label.getLabel();
+        neoMethod.addInstruction(new NeoJumpInstruction(jmpOpcode, jmpLabel));
     }
 
     private void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
@@ -416,6 +913,7 @@ public class Compiler {
     }
 
     private void initializeMethod(NeoMethod neoMethod) {
+        checkForUnsupportedLocalVariableTypes(neoMethod);
         if ((neoMethod.asmMethod.access & Opcodes.ACC_PUBLIC) > 0 &&
                 neoMethod.ownerType.equals(this.neoModule.asmSmartContractClass)) {
             // Only contract methods that are public and on the smart contract class are added to
@@ -424,41 +922,103 @@ public class Compiler {
         }
         neoMethod.isEntryPoint = isEntryPoint(neoMethod.asmMethod);
 
-        // Look for method params and local variables and add them to the NeoMethod. Note that
-        // JVM does not have a special opcode for method parameters like NeoVM has with LDARG and
-        // STARG.
-        if (neoMethod.asmMethod.localVariables == null
-                || neoMethod.asmMethod.localVariables.size() == 0) {
-            return;
+        // Look for method params and local variables and add them to the NeoMethod. Note that Java
+        // mixes method params and local variables.
+        if (neoMethod.asmMethod.maxLocals == 0) {
+            return; // There are no local variables or parameters to process.
         }
-        int paramCount = 0;
-        if (neoMethod.asmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+        int nextVarIdx = collectMethodParameters(neoMethod);
+        collectLocalVariables(neoMethod, nextVarIdx);
+
+        // Add the INITSLOT opcode as first instruction of the method if the method has parameters
+        // and/or local variables.
+        if (neoMethod.variablesByNeoIndex.size() + neoMethod.parametersByNeoIndex.size() > 0) {
+            neoMethod.addInstruction(new NeoInstruction(
+                    OpCode.INITSLOT, new byte[]{(byte) neoMethod.variablesByNeoIndex.size(),
+                    (byte) neoMethod.parametersByNeoIndex.size()}));
+        }
+    }
+
+    private void checkForUnsupportedLocalVariableTypes(NeoMethod neoMethod) {
+        for (LocalVariableNode varNode : neoMethod.asmMethod.localVariables) {
+            if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE
+                    || Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
+                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine,
+                        "Method '" + neoMethod.asmMethod.name + "' has unsupported parameter or "
+                                + "variable types.");
+            }
+        }
+    }
+
+    private void collectLocalVariables(NeoMethod neoMethod, int nextVarIdx) {
+        int paramCount = Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
+        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
             paramCount++;
         }
-        paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
-        int localVarCount = neoMethod.asmMethod.localVariables.size() - paramCount;
-        if (paramCount > MAX_PARAMS_COUNT) {
-            throw new CompilerException("The method has more than the max number of parameters.");
-        }
+        int localVarCount = neoMethod.asmMethod.maxLocals - paramCount;
         if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
             throw new CompilerException("The method has more than the max number of local "
                     + "variables.");
         }
-        for (int i = 0; i < paramCount; i++) {
-            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
-            neoMethod.addParameter(new NeoVariable(i, varNode.index, varNode));
+        int neoIdx = 0;
+        int jvmIdx = nextVarIdx;
+        while (neoIdx < localVarCount) {
+            // The variables' indices start where the parameters left off. Nonetheless, we need to
+            // look through all local variables because the ordering is not necessarily according to
+            // the indices.
+            NeoVariable neoVar = null;
+            for (LocalVariableNode varNode : locVars) {
+                if (varNode.index == jvmIdx) {
+                    neoVar = new NeoVariable(neoIdx, jvmIdx, varNode);
+                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
+                        // Long vars/params use two index slots, i.e. we increment one more time.
+                        jvmIdx++;
+                    }
+                    break;
+                }
+            }
+            if (neoVar == null) {
+                // Not all local variables show up in ASM's `localVariables` list, e.g. when a
+                // String-based switch-case occurs.
+                neoVar = new NeoVariable(neoIdx, jvmIdx, null);
+            }
+            neoMethod.addVariable(neoVar);
+            jvmIdx++;
+            neoIdx++;
         }
-        for (int i = paramCount; i < neoMethod.asmMethod.localVariables.size(); i++) {
-            LocalVariableNode varNode = neoMethod.asmMethod.localVariables.get(i);
-            neoMethod.addVariable(new NeoVariable(i - paramCount, varNode.index, varNode));
-        }
+    }
 
-        // Add the INITSLOT opcode as first instruction of the method if the method has parameters
-        // and/or local variables.
-        if (paramCount + localVarCount > 0) {
-            neoMethod.addInstruction(new NeoInstruction(
-                    OpCode.INITSLOT, new byte[]{(byte) localVarCount, (byte) paramCount}));
+    // Retruns the next index of the local variables after the method parameter slots.
+    private int collectMethodParameters(NeoMethod neoMethod) {
+        int paramCount = 0;
+        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
+            paramCount++;
         }
+        paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
+        if (paramCount > MAX_PARAMS_COUNT) {
+            throw new CompilerException("The method has more than the max number of parameters.");
+        }
+        int jvmIdx = 0;
+        int neoIdx = 0;
+        while (neoIdx < paramCount) {
+            // The parameters' indices start at zero. Nonetheless, we need to look through all local
+            // variables because the ordering is not necessarily according to the indices.
+            for (LocalVariableNode varNode : locVars) {
+                if (varNode.index == jvmIdx) {
+                    neoMethod.addParameter(new NeoVariable(neoIdx, jvmIdx, varNode));
+                    jvmIdx++;
+                    neoIdx++;
+                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
+                        // Long vars/params use two index slots, i.e. we increment one more time.
+                        jvmIdx++;
+                    }
+                    break;
+                }
+            }
+        }
+        return jvmIdx;
     }
 
     private int extractPushedNumber(NeoInstruction insn) {
@@ -473,31 +1033,31 @@ public class Compiler {
                 "Couldn't parse get number from instruction " + insn.toString());
     }
 
-    private void addLoadLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
-        addLoadOrStoreLocalVariable((VarInsnNode) insn, neoMethod, OpCode.LDARG, OpCode.LDLOC);
+    private void addLoadLocalVariable(int varIndex, NeoMethod neoMethod) {
+        addLoadOrStoreLocalVariable(varIndex, neoMethod, OpCode.LDARG, OpCode.LDLOC);
     }
 
-    private void addStoreLocalVariable(AbstractInsnNode insn, NeoMethod neoMethod) {
-        addLoadOrStoreLocalVariable((VarInsnNode) insn, neoMethod, OpCode.STARG, OpCode.STLOC);
+    private void addStoreLocalVariable(int varIndex, NeoMethod neoMethod) {
+        addLoadOrStoreLocalVariable(varIndex, neoMethod, OpCode.STARG, OpCode.STLOC);
     }
 
-    private void addLoadOrStoreLocalVariable(VarInsnNode insn, NeoMethod neoMethod,
+    private void addLoadOrStoreLocalVariable(int varIndex, NeoMethod neoMethod,
             OpCode argOpcode, OpCode varOpcode) {
 
-        if (insn.var >= MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("Local variable index to high. Was " + insn + " but "
+        if (varIndex >= MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("Local variable index to high. Was " + varIndex + " but "
                     + "maximally " + MAX_LOCAL_VARIABLES_COUNT + " local variables are supported.");
         }
         // The local variable can either be a method parameter or a normal variable defined in
         // the method body. The NeoMethod has been initialized with all the local variables.
         // Therefore, we can check here if it is a parameter or a normal variable and treat it
         // accordingly.
-        NeoVariable param = neoMethod.getParameterByJVMIndex(insn.var);
+        NeoVariable param = neoMethod.getParameterByJVMIndex(varIndex);
         if (param != null) {
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.index, argOpcode));
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.neoIndex, argOpcode));
         } else {
-            NeoVariable var = neoMethod.getVariableByJVMIndex(insn.var);
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.index, varOpcode));
+            NeoVariable var = neoMethod.getVariableByJVMIndex(varIndex);
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.neoIndex, varOpcode));
         }
     }
 
@@ -514,19 +1074,17 @@ public class Compiler {
     }
 
     private void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
-        assert insn.getType() == AbstractInsnNode.LDC_INSN : "Instruction type doesn't match "
-                + "opcode.";
         LdcInsnNode ldcInsn = (LdcInsnNode) insn;
         if (ldcInsn.cst instanceof String) {
             addPushDataArray(((String) ldcInsn.cst).getBytes(UTF_8), neoMethod);
-        }
-        if (ldcInsn.cst instanceof Integer) {
+        } else if (ldcInsn.cst instanceof Integer) {
             addPushNumber(((Integer) ldcInsn.cst), neoMethod);
-        }
-        if (ldcInsn.cst instanceof Long) {
+        } else if (ldcInsn.cst instanceof Long) {
             addPushNumber(((Long) ldcInsn.cst), neoMethod);
+        } else if (ldcInsn.cst instanceof Float || ldcInsn.cst instanceof Double) {
+            throw new CompilerException("Compiler does not support floating point numbers.");
         }
-        // TODO: Handle other types.
+        // TODO: Handle `org.objectweb.asm.Type`.
     }
 
     private void addPushDataArray(byte[] data, NeoMethod neoMethod) {
@@ -536,8 +1094,8 @@ public class Compiler {
                 OpCode.get(insnBytes[0]), operand));
     }
 
-    private void handleMethodInstruction(AbstractInsnNode insn, NeoMethod callingNeoMethod)
-            throws IOException {
+    private AbstractInsnNode handleMethodInstruction(AbstractInsnNode insn,
+            NeoMethod callingNeoMethod) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
         ClassNode owner = getAsmClass(Type.getObjectType(methodInsn.owner).getClassName());
@@ -564,58 +1122,157 @@ public class Compiler {
         } else if (hasAppcallAnnotation(calledAsmMethod)) {
             addAppcall(calledAsmMethod, callingNeoMethod);
         } else {
-            handleMethodCall(callingNeoMethod, owner, calledAsmMethod);
+            return handleMethodCall(callingNeoMethod, owner, calledAsmMethod, methodInsn);
         }
+        return insn;
     }
 
-    private void handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
-            MethodNode calledAsmMethod) throws IOException {
+    private AbstractInsnNode handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode calledAsmMethod, MethodInsnNode methodInsn) throws IOException {
+
+        String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
+        if (this.neoModule.methods.containsKey(calledMethodId)) {
+            // If the module already compiled the method simply add a CALL instruction.
+            NeoMethod calledNeoMethod = this.neoModule.methods.get(calledMethodId);
+            addReverseArguments(calledAsmMethod, callingNeoMethod);
+            // The actual address offset for the method call is set at a later point in compilation.
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4])
+                    .setExtra(calledNeoMethod));
+        } else {
+            return handleSpecialMethodCall(callingNeoMethod, owner, calledAsmMethod, methodInsn);
+        }
+        return methodInsn;
+    }
+
+    private AbstractInsnNode handleSpecialMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode calledAsmMethod, MethodInsnNode methodInsn) throws IOException {
 
         if (isPrimitiveTypeCast(calledAsmMethod, owner)) {
             // Nothing to do if Java casts between primitive type and wrapper classes.
-            return;
+            return methodInsn;
         }
-        // Checks if the called method is already in the NeoModule. If yes, then simply adds a call
-        // opcode with that method. If not, creates a new NeoMethod, adds it to the module, and
-        // compiles it to NeoVM code.
-        String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
-        NeoMethod calledNeoMethod;
-        if (this.neoModule.methods.containsKey(calledMethodId)) {
-            calledNeoMethod = this.neoModule.methods.get(calledMethodId);
-        } else {
-            calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
-            if (calledAsmMethod.name.equals(INSTANCE_CTOR)) {
-                if (!hasInstructions(calledAsmMethod)) {
-                    // If the constructor is empty we don't need to parse it. The DUP opcode
-                    // added before must be removed again.
-                    int lastKey = callingNeoMethod.instructions.lastKey();
-                    assert callingNeoMethod.instructions.get(lastKey).opcode.equals(OpCode.DUP);
-                    callingNeoMethod.instructions.remove(lastKey);
-                    return;
-                }
-                // After this removal the method will be compiled if it were a normal method.
-                removeInsnsUpToObjectCtorCall(calledNeoMethod.asmMethod);
+        if (calledAsmMethod.name.equals(HASH_CODE_METHOD_NAME)
+                && owner.name.equals(STRING_INTERNAL_NAME)
+                && methodInsn.getNext() instanceof LookupSwitchInsnNode) {
+            return handleStringSwitch(callingNeoMethod, methodInsn);
+        }
+        if (calledAsmMethod.name.equals(INSTANCE_CTOR)) {
+            // Handle a constructor call
+            if (!hasInstructions(calledAsmMethod)) {
+                // If the constructor is empty we don't need to parse it. The DUP opcode
+                // added before must be removed again.
+                int lastKey = callingNeoMethod.instructions.lastKey();
+                assert callingNeoMethod.instructions.get(lastKey).opcode.equals(OpCode.DUP);
+                callingNeoMethod.instructions.remove(lastKey);
+                return methodInsn;
             }
-            this.neoModule.addMethod(calledNeoMethod);
-            initializeMethod(calledNeoMethod);
-            compileMethod(calledNeoMethod);
+            // After this removal the method will be compiled as if it were a normal method.
+            removeInsnsUpToObjectCtorCall(calledAsmMethod);
         }
+        NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
+        this.neoModule.addMethod(calledNeoMethod);
+        initializeMethod(calledNeoMethod);
+        compileMethod(calledNeoMethod);
         addReverseArguments(calledAsmMethod, callingNeoMethod);
-        // We explicitly add the 4-element byte array as an operand so that instruction addresses
-        // can easily be calculated even before the correct offset is set on the CALL_L opcode.
-        // The actual setting of the correct offset happens in NeoModule.
-        NeoInstruction invokeInsn = new NeoInstruction(OpCode.CALL_L, new byte[4])
-                .setExtra(calledNeoMethod);
-        // Note that we never make use of Opcode.CALL because that complicates calculation of
-        // instruction addresses in the NeoModule.
-        callingNeoMethod.addInstruction(invokeInsn);
+        // The actual address offset for the method call is set at a later point in compilation.
+        callingNeoMethod.addInstruction(
+                new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
+        return methodInsn;
+    }
+
+    // Converts the instructions of a string switch from JVM bytecode to NeoVM code. The
+    // `MethodInsnNode` is expected represent a call to the `String.hashCode()` method.
+    private AbstractInsnNode handleStringSwitch(NeoMethod callingNeoMethod,
+            MethodInsnNode methodInsn) {
+        // Before the call to `hashCode()` there the opcodes ICONST_M1, ISTORE,
+        // and ALOAD occured. The compiler already converted them and added them to the
+        // `NeoMethod` at this point. But they are not needed when converting the switch to
+        // NeoVM code. Thus, they must to be removed again.
+        callingNeoMethod.removeLastInstruction();
+        callingNeoMethod.removeLastInstruction();
+        callingNeoMethod.removeLastInstruction();
+        // TODO: Besides removing the last few instructions we could also clean up the variable
+        //  initialization (in INTISLOT).
+        LookupSwitchInsnNode lookupSwitchInsn = (LookupSwitchInsnNode) methodInsn.getNext();
+        AbstractInsnNode insn = lookupSwitchInsn.getNext();
+        // The TABLESWITCH instruction will be needed several times in the following.
+        TableSwitchInsnNode tableSwitchInsn = (TableSwitchInsnNode)
+                skipToInstructionType(insn, AbstractInsnNode.TABLESWITCH_INSN);
+        for (int i = 0; i < lookupSwitchInsn.labels.size(); i++) {
+            // First, instruction in each `case` loads the string var that is evaluated.
+            insn = skipToInstructionType(insn, AbstractInsnNode.VAR_INSN);
+            addLoadLocalVariable(((VarInsnNode) insn).var, callingNeoMethod);
+            // Next, the constant string to compare with is loaded.
+            insn = insn.getNext();
+            addLoadConstant(insn, callingNeoMethod);
+            // Next, the method call to String.equals() follows.
+            insn = insn.getNext();
+            assert isStringEqualsMethodCall(insn);
+            // Next is the jump instruction for the inequality case. We ignore this because
+            // it will be the last instruction after all `cases` have been passed.
+            JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
+            assert jumpInsn.getOpcode() == JVMOpcode.IFEQ.getOpcode();
+            // Next, follow instructions for the equality case. We retrieve the number that
+            // points us to the correct case in the TABLESWITCH instruction following later.
+            InsnNode branchNumberInsn = (InsnNode) jumpInsn.getNext();
+            int branchNr = branchNumberInsn.getOpcode() - 3;
+            // The branch number gets stored to a local variable in the next opcode. But we
+            // can ignore that.
+            insn = branchNumberInsn.getNext();
+            assert insn.getType() == AbstractInsnNode.VAR_INSN;
+            // The next instruction opcode jumps to the TABLESWITCH instruction but we need
+            // to replace this with a jump directly to the correct branch after the TABLESWITCH.
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
+            callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPIF_L,
+                    tableSwitchInsn.labels.get(branchNr).getLabel()));
+        }
+        callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
+                tableSwitchInsn.dflt.getLabel()));
+        return tableSwitchInsn;
+    }
+
+    private LabelNode skipToLabel(AbstractInsnNode insn, Label label) {
+        while (insn.getNext() != null) {
+            insn = insn.getNext();
+            if (insn.getType() == AbstractInsnNode.LABEL) {
+                LabelNode labelNode = (LabelNode) insn;
+                if (labelNode.getLabel() == label) {
+                    return labelNode;
+                }
+            }
+        }
+        throw new CompilerException("Couldn't find node with label " + label.toString());
+    }
+
+    private AbstractInsnNode skipToInstructionType(AbstractInsnNode insn, int type) {
+        while (insn.getNext() != null) {
+            insn = insn.getNext();
+            if (insn.getType() == type) {
+                return insn;
+            }
+        }
+        throw new CompilerException("Couldn't find node of type " + type);
+    }
+
+    // Checks if the given instruction is a method call to the `String.equals()` method.
+    private boolean isStringEqualsMethodCall(AbstractInsnNode insn) {
+        if (insn.getType() == AbstractInsnNode.METHOD_INSN
+                && insn.getOpcode() == JVMOpcode.INVOKEVIRTUAL.getOpcode()) {
+
+            MethodInsnNode equalsCallInsn = (MethodInsnNode) insn;
+            return equalsCallInsn.name.equals(EQUALS_METHOD_NAME)
+                    && equalsCallInsn.owner.equals(STRING_INTERNAL_NAME);
+        }
+        return false;
     }
 
     private boolean isPrimitiveTypeCast(MethodNode calledAsmMethod, ClassNode owner) {
-        boolean isConversionFromPrimitiveType = calledAsmMethod.name.equals(VALUEOF_METHOD_NAME);
+        boolean isConversionFromPrimitiveType = calledAsmMethod.name.equals(
+                VALUEOF_METHOD_NAME);
         boolean isConversionToPrimitiveType =
                 PRIMITIVE_TYPE_CAST_METHODS.contains(calledAsmMethod.name);
-        boolean isOwnerPrimitiveTypeWrapper = PRIMITIVE_TYPE_WRAPPER_CLASSES.contains(owner.name);
+        boolean isOwnerPrimitiveTypeWrapper = PRIMITIVE_TYPE_WRAPPER_CLASSES.contains(
+                owner.name);
         return (isConversionFromPrimitiveType || isConversionToPrimitiveType)
                 && isOwnerPrimitiveTypeWrapper;
     }
@@ -772,7 +1429,8 @@ public class Compiler {
     private void addAppcall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         addReverseArguments(calledAsmMethod, callingNeoMethod);
         AnnotationNode appCallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Appcall.class))).findFirst().get();
+                .filter(a -> a.desc.equals(Type.getDescriptor(Appcall.class))).findFirst()
+                .get();
         String scriptHash = (String) appCallAnnotation.values.get(1);
         byte[] data = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(scriptHash));
         addPushDataArray(data, callingNeoMethod);
@@ -782,7 +1440,8 @@ public class Compiler {
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {
-        byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number)).toArray();
+        byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number))
+                .toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
@@ -791,13 +1450,15 @@ public class Compiler {
         List<ContractGroup> groups = new ArrayList<>();
         ContractFeatures features = buildContractFeatures(neoModule.asmSmartContractClass);
         ContractABI abi = buildABI(neoModule, scriptHash);
+        Map<String, String> extras = buildManifestExtra(neoModule.asmSmartContractClass);
+        List<String> supportedStandards = buildSupportedStandards(neoModule.asmSmartContractClass);
+        // TODO: Fill the remaining manifest fields below.
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));
         List<String> trusts = new ArrayList<>();
         List<String> safeMethods = new ArrayList<>();
-        Map<String, String> extras = buildManifestExtra(neoModule.asmSmartContractClass);
-        return new ContractManifest(groups, features, abi, permissions, trusts, safeMethods,
-                extras);
+        return new ContractManifest(groups, features, supportedStandards, abi, permissions, trusts,
+                safeMethods, extras);
     }
 
     private ContractABI buildABI(NeoModule neoModule, ScriptHash scriptHash) {
@@ -810,7 +1471,7 @@ public class Compiler {
                 continue; // Only add methods to the ABI that appear in the contract itself.
             }
             List<ContractParameter> contractParams = new ArrayList<>();
-            for (NeoVariable var : neoMethod.parameters) {
+            for (NeoVariable var : neoMethod.parametersByNeoIndex.values()) {
                 contractParams.add(new ContractParameter(var.asmVariable.name,
                         mapTypeToParameterType(Type.getType(var.asmVariable.desc)), null));
             }
@@ -819,7 +1480,7 @@ public class Compiler {
             methods.add(new ContractMethod(neoMethod.name, contractParams, paramType,
                     neoMethod.startAddress));
         }
-        return new ContractABI(scriptHash.toString(), methods, events);
+        return new ContractABI(Numeric.prependHexPrefix(scriptHash.toString()), methods, events);
     }
 
     private ContractParameterType mapTypeToParameterType(Type type) {
@@ -832,7 +1493,11 @@ public class Compiler {
                 || typeName.equals(Long.class.getTypeName())
                 || typeName.equals(long.class.getTypeName())
                 || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())) {
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
             return ContractParameterType.INTEGER;
         }
         if (typeName.equals(Boolean.class.getTypeName())
@@ -864,7 +1529,7 @@ public class Compiler {
 
     private ContractFeatures buildContractFeatures(ClassNode n) {
         Optional<AnnotationNode> opt = n.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(ManifestFeature.class)))
+                .filter(a -> a.desc.equals(Type.getDescriptor(Features.class)))
                 .findFirst();
         boolean payable = false;
         boolean hasStorage = false;
@@ -898,6 +1563,21 @@ public class Compiler {
             extras.put(key, value);
         }
         return extras;
+    }
+
+    private List<String> buildSupportedStandards(ClassNode asmClass) {
+        Optional<AnnotationNode> opt = asmClass.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(SupportedStandards.class)))
+                .findFirst();
+        if (!opt.isPresent()) {
+            return new ArrayList<>();
+        }
+        AnnotationNode ann = opt.get();
+        List<String> standards = new ArrayList<>();
+        for (Object standard : (List<?>) ann.values.get(1)) {
+            standards.add((String) standard);
+        }
+        return standards;
     }
 
     public static class CompilationResult {

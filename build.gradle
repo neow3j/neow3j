@@ -25,7 +25,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.0'
+        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.2'
         classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
     }
 }
@@ -33,6 +33,7 @@ buildscript {
 plugins {
     id 'com.jfrog.bintray' version '1.7.3'
     id 'org.unbroken-dome.test-sets' version '1.4.2'
+    id 'com.gradle.plugin-publish' version '0.12.0' apply false
 }
 
 apply plugin: 'java'
@@ -49,7 +50,7 @@ allprojects {
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.1.0'
+    version '3.2.0'
     archivesBaseName = "${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -99,6 +100,11 @@ allprojects {
 subprojects {
     apply plugin: 'java'
     apply plugin: 'org.unbroken-dome.test-sets'
+
+    if (project.name.startsWith('gradle-plugin')) {
+        apply plugin: 'java-gradle-plugin'
+        apply plugin: 'com.gradle.plugin-publish'
+    }
 
     testSets {
         integrationTest { dirName = 'test-integration' }

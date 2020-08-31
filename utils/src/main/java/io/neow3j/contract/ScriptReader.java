@@ -1,15 +1,35 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.constants.OperandSize;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * Reads Neo VM scripts and converts them to a more human-readable representation.
  */
 public class ScriptReader {
+
+    /**
+     * Gets the InteropService that creates the provided hash.
+     *
+     * @param hash The hash of the InteropServiceCode.
+     * @return The InteropServiceCode matching the hash.
+     */
+    public static InteropServiceCode getInteropServiceCode(String hash) {
+        HashMap<String, InteropServiceCode> interopServiceCodeMap = new HashMap<>();
+        for (InteropServiceCode code : InteropServiceCode.values()) {
+            interopServiceCodeMap.put(code.getHash(), code);
+        }
+        if (interopServiceCodeMap.containsKey(hash)) {
+            return interopServiceCodeMap.get(hash);
+        } else {
+            throw new IllegalArgumentException("Code is not a valid InteropServiceCode Hash.");
+        }
+    }
 
     /**
      * Converts a Neo VM script into a string representation using OpCode names.

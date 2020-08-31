@@ -72,7 +72,7 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<UnspentTransaction> unspentTransactions;
 
-        @JsonProperty("asset_hash")
+        @JsonProperty("assethash")
         private String assetHash;
 
         @JsonProperty("asset")

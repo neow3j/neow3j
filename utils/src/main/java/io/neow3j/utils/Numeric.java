@@ -215,6 +215,22 @@ public final class Numeric {
         return HEX_PREFIX + result;
     }
 
+    /**
+     * Converts the given integer to a hexadecimal string with an even number of characters by
+     * padding in the front with a zero if the string is not already even.
+     *
+     * @param value The integer to convert.
+     * @return The hex string with even length.
+     */
+    public static String toHexStringNoPrefixZeroPadded(BigInteger value) {
+        String result = toHexStringNoPrefix(value);
+        if (result.length() % 2 == 0) {
+            return result;
+        } else {
+            return toHexStringZeroPadded(value, result.length() + 1, false);
+        }
+    }
+
     public static String toHexStringNoPrefixZeroPadded(BigInteger value, int size) {
         return toHexStringZeroPadded(value, size, false);
     }

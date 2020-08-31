@@ -1,6 +1,6 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.getLastNBytes;
@@ -208,7 +208,7 @@ public class NEP2 {
 
     public static byte[] getAddressHash(ECKeyPair ecKeyPair) {
         String address = ecKeyPair.getAddress();
-        byte[] addressHashed = sha256(sha256(address.getBytes()));
+        byte[] addressHashed = hash256(address.getBytes());
         return getFirstNBytes(addressHashed, 4);
     }
 }

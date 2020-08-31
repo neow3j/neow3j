@@ -4,7 +4,7 @@
       "Engine": "LevelDBStore"
     },
     "Paths": {
-      "Chain": "Consensus_Chain_{0}",
+      "Chain": "Consensus_Chain_{0}"
     },
     "P2P": {
       "Port": 40333,

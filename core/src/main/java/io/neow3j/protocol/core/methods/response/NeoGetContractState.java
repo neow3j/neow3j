@@ -91,19 +91,26 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             @JsonProperty("features")
             private ContractFeatures features;
 
+            @JsonProperty("supportedstandards")
+            @JsonSetter(nulls = Nulls.AS_EMPTY)
+            @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+            private List<String> supportedStandards;
+
             @JsonProperty("abi")
             private ContractABI abi;
 
             @JsonProperty("permissions")
             private List<ContractPermission> permissions;
 
+            // TODO: If the wildcard character "*" is read the list should be empty or null.
             // List of trusted contracts
-            @JsonProperty("trusts") // TODO: 13.05.20  Wildcard
+            @JsonProperty("trusts")
             @JsonSetter(nulls = Nulls.AS_EMPTY)
             @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             private List<String> trusts;
 
-            @JsonProperty("safeMethods") // TODO: 13.05.20  Wildcard
+            // TODO: If the wildcard character "*" is read the list should be empty or null.
+            @JsonProperty("safemethods")
             @JsonSetter(nulls = Nulls.AS_EMPTY)
             @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             private List<String> safeMethods;
@@ -116,14 +123,16 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             }
 
             public ContractManifest(List<ContractGroup> groups,
-                                    ContractFeatures features,
-                                    ContractABI abi,
-                                    List<ContractPermission> permissions,
-                                    List<String> trusts,
-                                    List<String> safeMethods,
-                                    Object extra) {
+                    ContractFeatures features,
+                    List<String> supportedStandards,
+                    ContractABI abi,
+                    List<ContractPermission> permissions,
+                    List<String> trusts,
+                    List<String> safeMethods,
+                    Object extra) {
                 this.groups = groups;
                 this.features = features;
+                this.supportedStandards = supportedStandards;
                 this.abi = abi;
                 this.permissions = permissions;
                 this.trusts = trusts;
@@ -137,6 +146,10 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
 
             public ContractFeatures getFeatures() {
                 return features;
+            }
+
+            public List<String> getSupportedStandards() {
+                return supportedStandards;
             }
 
             public ContractABI getAbi() {
@@ -178,6 +191,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         Objects.equals(getPermissions(), that.getPermissions()) &&
                         Objects.equals(getTrusts(), that.getTrusts()) &&
                         Objects.equals(getSafeMethods(), that.getSafeMethods()) &&
+                        Objects.equals(getSupportedStandards(), that.getSupportedStandards()) &&
                         Objects.equals(getExtra(), that.getExtra());
             }
 
@@ -189,6 +203,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         getPermissions(),
                         getTrusts(),
                         getSafeMethods(),
+                        getSupportedStandards(),
                         getExtra());
             }
 
@@ -202,6 +217,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         ", permissions=" + permissions +
                         ", trusts=" + trusts +
                         ", safeMethods=" + safeMethods +
+                        ", supportedStandards=" + supportedStandards +
                         ", extra=" + extra +
                         '}';
             }
@@ -210,7 +226,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             @JsonIgnoreProperties(ignoreUnknown = true)
             public static class ContractGroup {
 
-                @JsonProperty("pubKey")
+                @JsonProperty("pubkey")
                 private String pubKey;
 
                 @JsonProperty("signature")
@@ -307,17 +323,13 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                 }
             }
 
-            // TODO: 13.05.20 Michael: This ContractABI class is currently mainly copied from contract module abi/model classes.
-            //  These need to be restructured and/or new positioned - same for ContractParameter
             @JsonIgnoreProperties(ignoreUnknown = true)
-            @JsonPropertyOrder({"hash", "methods", "events"})
             public static class ContractABI {
 
                 @JsonProperty("hash")
                 private String hash;
 
                 @JsonProperty("methods")
-                @JsonAlias({"functions"})
                 @JsonSetter(nulls = Nulls.AS_EMPTY)
                 private List<ContractMethod> methods;
 
@@ -383,7 +395,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     @JsonProperty("offset")
                     private int offset;
 
-                    @JsonProperty("returnType")
+                    @JsonProperty("returntype")
                     private ContractParameterType returnType;
 
                     public ContractMethod() {
@@ -450,18 +462,13 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     @JsonSetter(nulls = Nulls.AS_EMPTY)
                     private List<ContractParameter> parameters;
 
-                    @JsonProperty("returnType")
-                    private ContractParameterType returnType;
-
                     public ContractEvent() {
                     }
 
                     public ContractEvent(String name,
-                                         List<ContractParameter> parameters,
-                                         ContractParameterType returnType) {
+                                         List<ContractParameter> parameters) {
                         this.name = name;
                         this.parameters = parameters != null ? parameters : new ArrayList<>();
-                        this.returnType = returnType;
                     }
 
                     public String getName() {
@@ -472,23 +479,18 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         return parameters;
                     }
 
-                    public ContractParameterType getReturnType() {
-                        return returnType;
-                    }
-
                     @Override
                     public boolean equals(Object o) {
                         if (this == o) return true;
                         if (!(o instanceof ContractEvent)) return false;
                         ContractEvent that = (ContractEvent) o;
                         return Objects.equals(getName(), that.getName()) &&
-                                Objects.equals(getParameters(), that.getParameters()) &&
-                                Objects.equals(getReturnType(), that.getReturnType());
+                                Objects.equals(getParameters(), that.getParameters());
                     }
 
                     @Override
                     public int hashCode() {
-                        return Objects.hash(getName(), getParameters(), getReturnType());
+                        return Objects.hash(getName(), getParameters());
                     }
 
                     @Override
@@ -496,7 +498,6 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                         return "NeoContractEvent{" +
                                 "name='" + name + '\'' +
                                 ", parameters=" + parameters +
-                                ", returnType=" + returnType +
                                 '}';
                     }
                 }
