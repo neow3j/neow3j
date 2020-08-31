@@ -81,7 +81,7 @@ Maven:
 </dependency>
 ```
 
-For help on how to compile a contract, check out the documentation about the neow3j compiler at [neow3j.io](http://localhost:3000/#/../neo3_guides/contract_development?id=compilation).
+For help on how to compile a contract, check out the documentation about the neow3j compiler at [neow3j.io](https://neow3j.io/#/neo3_guides/contract_development?id=compilation).
 
 
 ## Donate
