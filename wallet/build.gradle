@@ -1,4 +1,4 @@
-description 'neow3j wallet'
+description 'neow3j: Wallet'
 
 dependencies {
     compile project(':crypto')

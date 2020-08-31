@@ -1,4 +1,4 @@
-description 'neow3j set of utils'
+description 'neow3j: Utils'
 
 dependencies {
     compile project(":model"),

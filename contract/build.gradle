@@ -1,4 +1,4 @@
-description 'NEO Smart Contracts'
+description 'neow3j: Smart Contracts'
 
 dependencies {
     compile project(':utils'),
