@@ -149,134 +149,138 @@ configure(subprojects.findAll()) {
         publishGitHubPassword = project.hasProperty('githubPassword') ? project.property('githubPassword') : ''
     }
 
-    publishing {
-        repositories {
-            maven {
-                def sonatypeReleasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                def sonatypeSnapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                def githubRepoUrl = "https://maven.pkg.github.com/neow3j/neow3j/"
-                if (project.hasProperty('sonatype')) {
-                    url = project.hasProperty('snapshot') ? sonatypeSnapshotsRepoUrl : sonatypeReleasesRepoUrl
-                    credentials {
-                        username publishSonaTypeUsername
-                        password publishSonaTypePassword
+    // Avoid to publish gradle-plugin module.
+    // See "gradle-plugin/README.md" for Gradle Plugin release procedures
+    if (!project.name.startsWith('gradle-plugin')) {
+        publishing {
+            repositories {
+                maven {
+                    def sonatypeReleasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                    def sonatypeSnapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+                    def githubRepoUrl = "https://maven.pkg.github.com/neow3j/neow3j/"
+                    if (project.hasProperty('sonatype')) {
+                        url = project.hasProperty('snapshot') ? sonatypeSnapshotsRepoUrl : sonatypeReleasesRepoUrl
+                        credentials {
+                            username publishSonaTypeUsername
+                            password publishSonaTypePassword
+                        }
                     }
-                }
-                if (project.hasProperty('github')) {
-                    url = githubRepoUrl
-                    credentials {
-                        username publishGitHubUsername
-                        password publishGitHubPassword
+                    if (project.hasProperty('github')) {
+                        url = githubRepoUrl
+                        credentials {
+                            username publishGitHubUsername
+                            password publishGitHubPassword
+                        }
                     }
                 }
             }
-        }
-        publications {
-            mavenJava(MavenPublication) {
+            publications {
+                mavenJava(MavenPublication) {
 
-                artifactId "${project.name}"
+                    artifactId "${project.name}"
 
-                from components.java
+                    from components.java
 
-                artifact sourcesJar {
-                    classifier = 'sources'
-                }
-
-                artifact javadocJar {
-                    classifier = 'javadoc'
-                }
-
-                artifact testJar {
-                    classifier = 'tests'
-                }
-
-                pom {
-                    name = 'Neow3j'
-                    packaging 'jar'
-                    description = project.description
-                    url = 'https://github.com/neow3j'
-
-                    scm {
-                        url = 'https://github.com/neow3j/neow3j'
-                        connection = 'scm:https://github.com/neow3j/neow3j.git'
-                        developerConnection = 'scm:https://github.com/neow3j/neow3j.git'
+                    artifact sourcesJar {
+                        classifier = 'sources'
                     }
 
-                    licenses {
-                        license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            distribution = 'repo'
+                    artifact javadocJar {
+                        classifier = 'javadoc'
+                    }
+
+                    artifact testJar {
+                        classifier = 'tests'
+                    }
+
+                    pom {
+                        name = 'Neow3j'
+                        packaging 'jar'
+                        description = project.description
+                        url = 'https://github.com/neow3j'
+
+                        scm {
+                            url = 'https://github.com/neow3j/neow3j'
+                            connection = 'scm:https://github.com/neow3j/neow3j.git'
+                            developerConnection = 'scm:https://github.com/neow3j/neow3j.git'
+                        }
+
+                        licenses {
+                            license {
+                                name = 'The Apache License, Version 2.0'
+                                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                                distribution = 'repo'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id = 'gsmachado'
+                                name = 'Guilherme Sperb Machado'
+                                email = 'guil@axlabs.com'
+                            }
+                            developer {
+                                id = 'claudemiller'
+                                name = 'Claude Müller'
+                                email = 'claude@axlabs.com'
+                            }
                         }
                     }
 
-                    developers {
-                        developer {
-                            id = 'gsmachado'
-                            name = 'Guilherme Sperb Machado'
-                            email = 'guil@axlabs.com'
-                        }
-                        developer {
-                            id = 'claudemiller'
-                            name = 'Claude Müller'
-                            email = 'claude@axlabs.com'
-                        }
-                    }
-                }
+                    // The code below was based on:
+                    // https://medium.com/@nmauti/sign-and-publish-on-maven-central-a-project-with-the-new-maven-publish-gradle-plugin-22a72a4bfd4b
 
-                // The code below was based on:
-                // https://medium.com/@nmauti/sign-and-publish-on-maven-central-a-project-with-the-new-maven-publish-gradle-plugin-22a72a4bfd4b
-
-                // create the sign pom artifact
-                pom.withXml {
-                    def pomFile = file("${project.buildDir}/generated-pom.xml")
-                    writeTo(pomFile)
-                    def pomAscFile = signing.sign(pomFile).signatureFiles[0]
-                    artifact(pomAscFile) {
-                        classifier = null
-                        extension = 'pom.asc'
-                    }
-                }
-
-                // create the signed artifacts
-                project.tasks.signArchives.signatureFiles.each {
-                    artifact(it) {
-                        println it.file
-                        def matcher = it.file =~ /-(sources|javadoc|tests)\.jar\.asc$/
-                        if (matcher.find()) {
-                            classifier = matcher.group(1)
-                        } else {
+                    // create the sign pom artifact
+                    pom.withXml {
+                        def pomFile = file("${project.buildDir}/generated-pom.xml")
+                        writeTo(pomFile)
+                        def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                        artifact(pomAscFile) {
                             classifier = null
+                            extension = 'pom.asc'
                         }
-                        extension = 'jar.asc'
+                    }
+
+                    // create the signed artifacts
+                    project.tasks.signArchives.signatureFiles.each {
+                        artifact(it) {
+                            println it.file
+                            def matcher = it.file =~ /-(sources|javadoc|tests)\.jar\.asc$/
+                            if (matcher.find()) {
+                                classifier = matcher.group(1)
+                            } else {
+                                classifier = null
+                            }
+                            extension = 'jar.asc'
+                        }
                     }
                 }
             }
         }
-    }
 
-    model {
-        tasks.generatePomFileForMavenJavaPublication {
-            destination = file("$buildDir/generated-pom.xml")
+        model {
+            tasks.generatePomFileForMavenJavaPublication {
+                destination = file("$buildDir/generated-pom.xml")
+            }
+            tasks.publishMavenJavaPublicationToMavenLocal {
+                dependsOn project.tasks.signArchives
+            }
+            tasks.publishMavenJavaPublicationToMavenRepository {
+                dependsOn project.tasks.signArchives
+            }
         }
-        tasks.publishMavenJavaPublicationToMavenLocal {
-            dependsOn project.tasks.signArchives
+
+        signing {
+            required { gradle.taskGraph.hasTask('publish') }  // only execute as part of this task
+            sign configurations.archives
         }
-        tasks.publishMavenJavaPublicationToMavenRepository {
-            dependsOn project.tasks.signArchives
+
+        task release {
+            dependsOn 'build'
+            dependsOn 'publish'
+
+            tasks.findByName('publish').mustRunAfter 'build'
         }
-    }
-
-    signing {
-        required { gradle.taskGraph.hasTask('publish') }  // only execute as part of this task
-        sign configurations.archives
-    }
-
-    task release {
-        dependsOn 'build'
-        dependsOn 'publish'
-
-        tasks.findByName('publish').mustRunAfter 'build'
     }
 }
 

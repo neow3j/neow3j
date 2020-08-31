@@ -1,3 +1,5 @@
+description 'neow3j: Gradle Plugin'
+
 dependencies {
     compile project(':compiler')
     compile gradleApi()
