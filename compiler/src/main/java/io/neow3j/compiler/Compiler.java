@@ -407,7 +407,12 @@ public class Compiler {
             // region ### ARRAYS ###
             case NEWARRAY:
             case ANEWARRAY:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+                if (((IntInsnNode)insn).operand == 8) {
+                    // If it's a byte array then instantiate a Buffer.
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWBUFFER));
+                } else {
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+                }
                 break;
             case BASTORE:
             case IASTORE:
