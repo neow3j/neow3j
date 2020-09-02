@@ -886,12 +886,13 @@ public class Compiler {
         neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
     }
 
-    private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) {
+    private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) throws IOException {
         // NeoVM gets fields of objects simply by calling PICKITEM. The operand stack has to have
         // an index on top that is used by PICKITEM. We get this index from the class to which the
         // field belongs to.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
+        ClassNode classNode = getAsmClass(Type.getObjectType(fieldInsn.owner).getClassName());
+        int idx = getFieldIndex(fieldInsn, classNode);
         addPushNumber(idx, neoMethod);
         neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
     }
