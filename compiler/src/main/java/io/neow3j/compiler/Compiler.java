@@ -542,19 +542,19 @@ public class Compiler {
                 break;
             case IFLT: // Tests if the value on the stack is less than zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
                 break;
             case IFLE: // Tests if the value on the stack is less than or equal to zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
                 break;
             case IFGT: // Tests if the value on the stack is greater than zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
                 break;
             case IFGE: // Tests if the value on the stack is greater than or equal to zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
                 break;
             // endregion ### INTEGER COMPARISON WITH ZERO ###
 
