@@ -88,6 +88,7 @@ public class Compiler {
     private static final String HASH_CODE_METHOD_NAME = "hashCode";
     private static final String EQUALS_METHOD_NAME = "hashCode";
     private static final String STRING_INTERNAL_NAME = Type.getInternalName(String.class);
+    private static final int BYTE_ARRAY_TYPE_CODE = 8;
 
     private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
             "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
@@ -407,7 +408,11 @@ public class Compiler {
             // region ### ARRAYS ###
             case NEWARRAY:
             case ANEWARRAY:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+                if (isByteArrayInstantiation(insn)) {
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWBUFFER));
+                } else {
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+                }
                 break;
             case BASTORE:
             case IASTORE:
@@ -718,6 +723,11 @@ public class Compiler {
                         neoMethod.asmMethod.name + ".");
         }
         return insn;
+    }
+
+    private boolean isByteArrayInstantiation(AbstractInsnNode insn) {
+        IntInsnNode intInsn = (IntInsnNode) insn;
+        return intInsn.operand == BYTE_ARRAY_TYPE_CODE;
     }
 
     private void handleIntegerIncrement(NeoMethod neoMethod, AbstractInsnNode insn) {
