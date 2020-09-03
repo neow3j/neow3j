@@ -19,6 +19,7 @@ import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances.Nep5Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -87,6 +88,7 @@ public class RelationalOperatorsTest {
         neow3jWrapper.openWallet();
 
         relationalOperatorsContract = deployContract("io.neow3j.compiler.contracts." + CONTRACT_NAME);
+        neow3jWrapper.waitUntilContractIsDeployed(relationalOperatorsContract.getScriptHash());
     }
 
     private static SmartContract deployContract(String fullyQualifiedName) throws IOException {
@@ -165,7 +167,7 @@ public class RelationalOperatorsTest {
             };
         }
 
-        private void waitUntil(Callable<Long> callable, Matcher<Long> matcher) {
+        private <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
             await().timeout(30, TimeUnit.SECONDS).until(callable, matcher);
         }
 
@@ -185,6 +187,25 @@ public class RelationalOperatorsTest {
             };
         }
 
+        private Callable<Boolean> callableGetContractState(ScriptHash contractScriptHash) {
+            return () -> {
+                try {
+                    NeoGetContractState response = getContractState(contractScriptHash.toString())
+                            .send();
+                    if (response.hasError()) {
+                        return false;
+                    }
+                    if (response.getContractState().getHash().equals("0x" +
+                            contractScriptHash.toString())) {
+                        return true;
+                    }
+                    return false;
+                } catch (IOException e) {
+                    return false;
+                }
+            };
+        }
+
         private void transferTokensToAddress(ScriptHash tokenScriptHash, String address,
                 long amount) throws IOException {
 
@@ -197,5 +218,10 @@ public class RelationalOperatorsTest {
         public void waitUntilBalancesIsGreaterThanZero(ScriptHash tokenScriptHash) {
             waitUntil(callableGetBalance(tokenScriptHash), Matchers.greaterThan(0L));
         }
+
+        public void waitUntilContractIsDeployed(ScriptHash contractScripHash) {
+            waitUntil(callableGetContractState(contractScripHash), Matchers.is(true));
+        }
+
     }
 }
