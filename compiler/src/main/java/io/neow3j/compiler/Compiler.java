@@ -259,7 +259,7 @@ public class Compiler {
         return getAsmClass(classReader);
     }
 
-    private ClassNode getAsmClass(ClassReader classReader) throws IOException {
+    private ClassNode getAsmClass(ClassReader classReader) {
         if (classReader == null) {
             throw new InvalidParameterException("Class reader not found.");
         }
