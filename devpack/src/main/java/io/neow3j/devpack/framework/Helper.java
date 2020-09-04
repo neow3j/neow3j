@@ -60,12 +60,12 @@ public class Helper {
      * <p>
      * Examples:
      * <ul>
-     *     <li>255 -> fault</li>
-     *     <li>-128 -> [0x80]</li>
-     *     <li>0 -> [0x00]</li>
-     *     <li>10 -> [0x0a]</li>
-     *     <li>127 -> [0x7f]</li>
-     * <ul>
+     *     <li>255: fault</li>
+     *     <li>-128: [0x80]</li>
+     *     <li>0: [0x00]</li>
+     *     <li>10: [0x0a]</li>
+     *     <li>127: [0x7f]</li>
+     * </ul>
      * @param value The value to cast.
      * @return the casted byte.
      */
