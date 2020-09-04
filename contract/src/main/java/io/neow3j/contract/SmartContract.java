@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
@@ -47,8 +49,8 @@ public class SmartContract {
     }
 
     /**
-     * Constructs a {@code SmartContract} with a NEF file and a manifest file for deployment
-     * with {@link SmartContract#deploy()}.
+     * Constructs a {@code SmartContract} with a NEF file and a manifest file for deployment with
+     * {@link SmartContract#deploy()}.
      *
      * @param neow         The {@link Neow3j} instance to use for deploying and invoking the
      *                     contract.
@@ -59,14 +61,21 @@ public class SmartContract {
      */
     public SmartContract(File nef, File manifestFile, Neow3j neow)
             throws IOException, DeserializationException {
+
+        this(NefFile.readFromFile(nef), objectMapper.readValue(new FileInputStream(manifestFile),
+                ContractManifest.class), neow);
+    }
+
+    public SmartContract(NefFile nef, ContractManifest manifest, Neow3j neow)
+            throws JsonProcessingException {
+
         if (neow == null) {
             throw new IllegalArgumentException("The Neow3j object must not be null.");
         }
         this.neow = neow;
-        this.nefFile = NefFile.readFromFile(nef);
+        this.nefFile = nef;
         this.scriptHash = this.nefFile.getScriptHash();
-        this.manifest = objectMapper.readValue(new FileInputStream(manifestFile),
-                ContractManifest.class);
+        this.manifest = manifest;
 
         if (!this.nefFile.getScriptHash().toString().equals(
                 Numeric.cleanHexPrefix(this.manifest.getAbi().getHash()))) {
@@ -79,13 +88,15 @@ public class SmartContract {
                     + "was " + manifestBytes.length + " bytes big, but a max of "
                     + NeoConstants.MAX_MANIFEST_SIZE + " is allowed.");
         }
+
     }
 
+
     /**
-     * Initializes an {@link Invocation.Builder} for a function invocation of this contract with
-     * the provided function and parameters. The order of the parameters is relevant.
+     * Initializes an {@link Invocation.Builder} for a function invocation of this contract with the
+     * provided function and parameters. The order of the parameters is relevant.
      *
-     * @param function The function to invoke.
+     * @param function           The function to invoke.
      * @param contractParameters The parameters to pass with the invocation.
      * @return An {@link Invocation} allowing to set further details of the invocation.
      */
@@ -144,7 +155,7 @@ public class SmartContract {
         throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
     }
 
-    protected NeoInvokeFunction invokeFunction(String function, ContractParameter... params)
+    public NeoInvokeFunction invokeFunction(String function, ContractParameter... params)
             throws IOException {
 
         return invoke(function, params).invokeFunction();
@@ -163,8 +174,8 @@ public class SmartContract {
     }
 
     /**
-     * Initializes an {@link Invocation.Builder} for deploying this contract.
-     * Deploys this contract by creating a deployment transaction and sending it to the neo-node
+     * Initializes an {@link Invocation.Builder} for deploying this contract. Deploys this contract
+     * by creating a deployment transaction and sending it to the neo-node
      *
      * @return The Neo node's response.
      * @throws IOException If something goes wrong when communicating with the Neo node.
