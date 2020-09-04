@@ -8,6 +8,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.JavaPlugin;
 
+@SuppressWarnings("unchecked")
 public class Neow3jCompileTask extends DefaultTask {
 
     public static final String NEOW3J_COMPILE_TASK_NAME = "neow3jCompile";
