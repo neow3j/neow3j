@@ -1,5 +1,6 @@
 package io.neow3j.devpack.gradle;
 
+import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
@@ -52,12 +53,19 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             CompilationResult compilationResult = n.compileClass(canonicalClassName);
             byte[] nefBytes = compilationResult.getNef().toArray();
 
-            // output the result to the output file
-            String outDir = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
+            // get the output directory
+            String outDirString = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
                     .toString();
+            Path outDirPath = Paths.get(outDirString);
+
+            // output the result to the output file
             String outFileName = getCompileOutputFileName(canonicalClassName);
-            Path outputFile = Paths.get(outDir, outFileName);
+            Path outputFile = Paths.get(outDirString, outFileName);
             writeToFile(outputFile.toFile(), nefBytes);
+
+            // generate the manifest to the output dir
+            generateContractManifestFile(compilationResult.getManifest(),
+                    outDirPath.toFile());
 
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");

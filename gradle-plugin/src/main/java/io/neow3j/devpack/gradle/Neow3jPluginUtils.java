@@ -1,5 +1,7 @@
 package io.neow3j.devpack.gradle;
 
+import static io.neow3j.utils.ClassUtils.getClassName;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -48,20 +50,6 @@ public class Neow3jPluginUtils {
             });
         });
         return urls;
-    }
-
-    static String getClassName(String fqClassName) {
-        if (fqClassName == null) {
-            return null;
-        }
-        int firstChar = fqClassName.lastIndexOf('.') + 1;
-        if (firstChar > 0) {
-            fqClassName = fqClassName.substring(firstChar);
-        }
-        if (fqClassName.length() == 0) {
-            return null;
-        }
-        return fqClassName;
     }
 
     static void writeToFile(File file, byte[] content) throws IOException {

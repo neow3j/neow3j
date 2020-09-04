@@ -219,6 +219,8 @@ subprojects {
         }
 
         signing {
+            // only execute as part of this task
+            required { gradle.taskGraph.hasTask('publish') }
             sign publishing.publications.mavenJava
         }
 
