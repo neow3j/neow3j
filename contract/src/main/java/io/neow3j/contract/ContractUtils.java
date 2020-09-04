@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +19,7 @@ public class ContractUtils {
     static {
         objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
     }
 
     public static String generateContractManifestFile(
@@ -34,7 +36,7 @@ public class ContractUtils {
         File destination = new File(destinationDirectory, fileName);
         objectMapper.writeValue(destination, manifest);
 
-        return fileName;
+        return destination.getAbsolutePath();
     }
 
     public static ContractManifest loadContractManifestFile(String absoluteFilePath)
