@@ -32,6 +32,7 @@ public class ContractUtilsTest {
     public void testGenerateContractManifestFile() throws Exception {
         File tempDir = Files.createTempDirectory(
                 ContractUtils.class.getSimpleName() + "-test-generate-manifest").toFile();
+        tempDir.deleteOnExit();
 
         ContractManifest cm = buildContractManifest();
 
