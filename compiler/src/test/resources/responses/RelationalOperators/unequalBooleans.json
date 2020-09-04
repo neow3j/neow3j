@@ -1,0 +1,13 @@
+{
+  "type": "Array",
+  "value": [
+    {
+      "type": "Boolean",
+      "value": false
+    },
+    {
+      "type": "Boolean",
+      "value": true
+    }
+  ]
+}
