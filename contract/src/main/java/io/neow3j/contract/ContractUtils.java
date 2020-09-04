@@ -50,7 +50,7 @@ public class ContractUtils {
         if (extra instanceof HashMap) {
             HashMap<String, String> eHashMap = (HashMap<String, String>) extra;
             if (eHashMap.containsKey("name")) {
-                return eHashMap.get("name") + MANIFEST_FILENAME_SUFFIX;
+                return eHashMap.get("name") + "." + MANIFEST_FILENAME_SUFFIX;
             }
         }
         return MANIFEST_FILENAME_SUFFIX;
