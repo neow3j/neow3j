@@ -60,7 +60,7 @@ public class ContractUtilsTest {
         extras.put("name", "blah");
         ContractManifest m = new ContractManifest(null, null, null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
-        assertThat(result, is("blah" + ContractUtils.MANIFEST_FILENAME_SUFFIX));
+        assertThat(result, is("blah" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
 
     @Test
