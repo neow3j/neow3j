@@ -59,17 +59,19 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             Path outDirPath = Paths.get(outDirString);
 
             // output the result to the output file
-            String outFileName = getCompileOutputFileName(canonicalClassName);
-            Path outputFile = Paths.get(outDirString, outFileName);
+            String nefOutFileName = getCompileOutputFileName(canonicalClassName);
+            Path outputFile = Paths.get(outDirString, nefOutFileName);
             writeToFile(outputFile.toFile(), nefBytes);
 
             // generate the manifest to the output dir
-            generateContractManifestFile(compilationResult.getManifest(),
+            String manifestOutFileName = generateContractManifestFile(
+                    compilationResult.getManifest(),
                     outDirPath.toFile());
 
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
-            System.out.println("NEF output file: " + outputFile.toAbsolutePath());
+            System.out.println("NEF file: " + outputFile.toAbsolutePath());
+            System.out.println("Manifest file: " + manifestOutFileName);
         } catch (Exception e) {
             System.out.println("Compilation failed. Reason: " + e.getMessage());
             e.printStackTrace();
