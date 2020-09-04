@@ -1459,10 +1459,15 @@ public class Compiler {
 
     private ContractManifest buildManifest(NeoModule neoModule, ScriptHash scriptHash) {
         List<ContractGroup> groups = new ArrayList<>();
-        ContractFeatures features = buildContractFeatures(neoModule.asmSmartContractClass);
+        ContractFeatures features = new ContractFeatures(false, false);
+        Map<String, String> extras = null;
+        List<String> supportedStandards = new ArrayList<>();
+        if (neoModule.asmSmartContractClass.invisibleAnnotations != null) {
+            features = buildContractFeatures(neoModule.asmSmartContractClass);
+            extras = buildManifestExtra(neoModule.asmSmartContractClass);
+            supportedStandards = buildSupportedStandards(neoModule.asmSmartContractClass);
+        }
         ContractABI abi = buildABI(neoModule, scriptHash);
-        Map<String, String> extras = buildManifestExtra(neoModule.asmSmartContractClass);
-        List<String> supportedStandards = buildSupportedStandards(neoModule.asmSmartContractClass);
         // TODO: Fill the remaining manifest fields below.
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));
