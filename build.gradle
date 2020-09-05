@@ -142,7 +142,7 @@ subprojects {
 
     // Avoid to publish gradle-plugin module.
     // See "gradle-plugin/README.md" for Gradle Plugin release procedures
-    if (!project.name.startsWith('gradle-plugin') ||
+    if (!project.name.startsWith('gradle-plugin') &&
             !project.name.startsWith(rootProject.name)) {
 
         apply plugin: 'com.jfrog.bintray'
