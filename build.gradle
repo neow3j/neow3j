@@ -270,21 +270,21 @@ subprojects {
 
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     dependsOn = subprojects.test
-    getAdditionalSourceDirs().setFrom(files(subprojects.sourceSets.main.allSource.srcDirs))
-    getSourceDirectories().setFrom(files(subprojects.sourceSets.main.allSource.srcDirs))
-    getClassDirectories().setFrom(files(subprojects.sourceSets.main.output))
-    getExecutionData().setFrom(files(subprojects.jacocoTestReport.executionData).filter { f -> f.exists() })
+    getAdditionalSourceDirs().from(subprojects.sourceSets.main.allSource.srcDirs)
+    getSourceDirectories().from(subprojects.sourceSets.main.allSource.srcDirs)
+    getClassDirectories().from(subprojects.sourceSets.main.output)
+    getExecutionData().from(subprojects.jacocoTestReport.executionData).filter { f -> f.exists() }
     reports {
         xml.enabled = true
     }
 
-    onlyIf = {
-        true
+    doFirst {
+        getExecutionData().from(executionData.findAll { it.exists() })
     }
 
-    doFirst {
-        getExecutionData().setFrom(files(executionData.findAll {
-            it.exists()
+    afterEvaluate {
+        getClassDirectories().from(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [ ])
         }))
     }
 }
