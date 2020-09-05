@@ -276,7 +276,6 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     getExecutionData().setFrom(files(subprojects.jacocoTestReport.executionData).filter { f -> f.exists() })
     reports {
         xml.enabled = true
-        html.enabled = true
     }
 
     onlyIf = {
