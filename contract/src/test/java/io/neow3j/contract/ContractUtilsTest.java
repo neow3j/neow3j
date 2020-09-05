@@ -39,7 +39,7 @@ public class ContractUtilsTest {
         generateContractManifestFile(cm, tempDir);
 
         File expectedOutputFile = Paths.get(tempDir.getAbsolutePath(),
-                "blah" + ContractUtils.MANIFEST_FILENAME_SUFFIX)
+                "blah" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX)
                 .toFile();
 
         assertTrue(expectedOutputFile.exists());
