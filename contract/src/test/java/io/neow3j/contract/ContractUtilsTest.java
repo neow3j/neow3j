@@ -39,7 +39,7 @@ public class ContractUtilsTest {
         generateContractManifestFile(cm, tempDir);
 
         File expectedOutputFile = Paths.get(tempDir.getAbsolutePath(),
-                "blah" + ContractUtils.MANIFEST_FILENAME_SUFFIX)
+                "blah" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX)
                 .toFile();
 
         assertTrue(expectedOutputFile.exists());
@@ -60,7 +60,7 @@ public class ContractUtilsTest {
         extras.put("name", "blah");
         ContractManifest m = new ContractManifest(null, null, null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
-        assertThat(result, is("blah" + ContractUtils.MANIFEST_FILENAME_SUFFIX));
+        assertThat(result, is("blah" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
 
     @Test

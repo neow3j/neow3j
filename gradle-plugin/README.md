@@ -5,7 +5,7 @@
 Publish to maven local:
 
 ```
-rm -rf ~/.m2/repository/io/neow3j/gradle-plugin && ./gradlew publishToMavenLocal
+rm -rf ~/.m2/repository/io/neow3j && ./gradlew clean publishToMavenLocal
 ```
 
 Then, on the Java project (using the plugin), add the following to the `settings.gradle`:
