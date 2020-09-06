@@ -274,12 +274,9 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     getSourceDirectories().from(subprojects.sourceSets.main.allSource.srcDirs)
     getClassDirectories().from(subprojects.sourceSets.main.output)
     getExecutionData().from(files(subprojects.jacocoTestReport.executionData).filter { f -> f.exists() })
+
     reports {
         xml.enabled = true
-    }
-
-    doFirst {
-        getExecutionData().from(executionData.findAll { it.exists() })
     }
 
     afterEvaluate {
