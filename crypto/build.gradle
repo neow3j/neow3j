@@ -1,4 +1,4 @@
-description 'Neow3j Crypto'
+description 'neow3j: Crypto tools'
 
 dependencies {
     compile project(':model'),
