@@ -26,7 +26,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.jfrog.bintray' version '1.8.5' apply false
+    id 'com.jfrog.bintray' version '1.8.5'
     id 'org.unbroken-dome.test-sets' version '3.0.1' apply false
     id "de.marcphilipp.nexus-publish" version '0.4.0' apply false
     id 'com.gradle.plugin-publish' version '0.12.0' apply false
@@ -45,7 +45,7 @@ ext {
 
 apply plugin: 'jacoco'
 
-allprojects {
+allprojects { thisproject ->
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
@@ -55,7 +55,7 @@ allprojects {
 
     group 'io.neow3j'
     version '3.2.1'
-    archivesBaseName = "${it.name}"
+    archivesBaseName = "${thisproject.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -93,6 +93,18 @@ allprojects {
 
     tasks.withType(Test) {
         reports.html.destination = file("${reporting.baseDir}/${name}")
+    }
+
+    bintray {
+        if (thisproject.name.startsWith(rootProject.name)) {
+            configurations = []
+            publications = []
+            pkg {
+                repo = 'maven'
+                name = rootProject.name
+                userOrg = 'neow3j'
+            }
+        }
     }
 
 //    checkstyle {
@@ -183,10 +195,9 @@ subprojects {
                     artifact testsJar
 
                     pom {
-                        name = 'Neow3j'
-                        packaging 'jar'
-                        description = project.description
-                        url = 'https://github.com/neow3j'
+                        name = 'neow3j'
+                        description.set(project.provider({ project.description }))
+                        url = 'https://neow3j.io'
 
                         scm {
                             url = 'https://github.com/neow3j/neow3j'
@@ -220,7 +231,11 @@ subprojects {
 
         signing {
             // only execute as part of this task
-            required { gradle.taskGraph.hasTask('publish') }
+            required {
+                (gradle.taskGraph.hasTask('publish')
+                        || gradle.taskGraph.hasTask('bintrayUpload')
+                        || gradle.taskGraph.hasTask('bintrayPublish'))
+            }
             sign publishing.publications.mavenJava
         }
 
@@ -232,6 +247,7 @@ subprojects {
         }
 
         bintray {
+            //dryRun = true
             user = publishJFrogUsername
             key = publishJFrogPassword
             def slug = rootProject.name
@@ -281,7 +297,7 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
 
     afterEvaluate {
         getClassDirectories().from(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [ ])
+            fileTree(dir: it, exclude: [])
         }))
     }
 }
