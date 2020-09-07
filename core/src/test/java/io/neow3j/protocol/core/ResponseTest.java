@@ -9,6 +9,7 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.ConsensusData;
+import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
@@ -541,7 +542,7 @@ public class ResponseTest extends ResponseTester {
                 is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
         assertThat(getContractState.getContractState().getScript(), is("QetD9PQ="));
 
-        NeoGetContractState.ContractState.ContractManifest manifest = getContractState.getContractState().getManifest();
+        ContractManifest manifest = getContractState.getContractState().getManifest();
         assertThat(manifest, is(notNullValue()));
         assertThat(manifest.getGroups(), is(notNullValue()));
         assertThat(manifest.getGroups(), hasSize(1));
@@ -557,7 +558,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getSupportedStandards(), hasSize(1));
         assertThat(manifest.getSupportedStandards().get(0), is("NEP-5"));
 
-        NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
+        ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
         assertThat(abi.getHash(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
 
@@ -671,7 +672,7 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
-        NeoGetContractState.ContractState.ContractManifest manifest = getContractState.getContractState().getManifest();
+        ContractManifest manifest = getContractState.getContractState().getManifest();
         assertTrue(manifest.trusts_isWildCard());
         assertTrue(manifest.safeMethods_isWildCard());
         assertThat(manifest.getExtra(), is("individual info"));

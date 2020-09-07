@@ -55,8 +55,31 @@ public class Helper {
     public static native byte[] toByteArray(String source);
 
     /**
-     * Checks if the given integer is in the range [0, 255], converts it to a signed byte or exits
-     * in fault state if not in range. Examples:
+     * Asserts that the given value is in the range [-128, 127], i.e., the value range of a signed
+     * byte. Returns the value as a signed byte if true, faults if not.
+     * <p>
+     * Examples:
+     * <ul>
+     *     <li>255: fault</li>
+     *     <li>-128: [0x80]</li>
+     *     <li>0: [0x00]</li>
+     *     <li>10: [0x0a]</li>
+     *     <li>127: [0x7f]</li>
+     * </ul>
+     * @param value The value to cast.
+     * @return the casted byte.
+     */
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.SIZE)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.NUMEQUAL)
+    @Instruction(opcode = OpCode.ASSERT)
+    public native static byte asByte(int value);
+
+
+    /**
+     * Asserts that the given value is in the range [0, 255], i.e., the range of an unsigned byte.
+     * Returns the value as a signed byte if true, faults if not.
      * <ul>
      *      <li>256: fault</li>
      *      <li>-1: fault</li>
@@ -67,15 +90,15 @@ public class Helper {
      *      <li>128: -128 [0x80]</li>
      * </ul>
      *
-     * @param source The integer to convert.
-     * @return the converted singed byte.
+     * @param value The value to cast.
+     * @return the casted byte.
      */
-    public static byte toByte(int source) {
-        assertTrue(within(source, 0, 256));
-        if (source > 127) {
-            source -= 256;
+    public static byte asSignedByte(int value) {
+        assertTrue(within(value, 0, 256));
+        if (value > 127) {
+            value -= 256;
         }
-        return (byte) source;
+        return (byte) value;
     }
 
     /**
@@ -93,6 +116,12 @@ public class Helper {
      * @param source The byte array to convert.
      * @return the converted integer.
      */
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
     public static native int toInt(byte[] source);
 

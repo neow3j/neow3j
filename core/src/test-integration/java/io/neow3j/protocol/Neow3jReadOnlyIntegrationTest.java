@@ -36,6 +36,7 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.Request;
+import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
@@ -274,7 +275,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(contractState.getHash(), is("0x" + NEO_HASH));
         assertThat(contractState.getScript(), is("DANORU9Ba2d4Cw=="));
 
-        NeoGetContractState.ContractState.ContractManifest manifest = contractState.getManifest();
+        ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
         assertNotNull(manifest.getGroups());
         assertThat(manifest.getGroups(), hasSize(0));
@@ -282,7 +283,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertTrue(manifest.getFeatures().getStorage());
         assertFalse(manifest.getFeatures().getPayable());
 
-        NeoGetContractState.ContractState.ContractManifest.ContractABI abi = manifest.getAbi();
+        ContractManifest.ContractABI abi = manifest.getAbi();
         assertNotNull(abi);
         assertThat(abi.getHash(), is("0x" + NEO_HASH));
 

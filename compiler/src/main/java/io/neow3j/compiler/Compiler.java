@@ -1,5 +1,7 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.utils.ClassUtils.getClassName;
+import static io.neow3j.utils.ClassUtils.internalNameToFullyQualifiedName;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.InteropServiceCode;
@@ -20,13 +22,13 @@ import io.neow3j.devpack.framework.annotations.SupportedStandards;
 import io.neow3j.devpack.framework.annotations.Syscall;
 import io.neow3j.devpack.framework.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI.ContractEvent;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractFeatures;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractGroup;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractFeatures;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
@@ -70,15 +72,12 @@ import org.slf4j.LoggerFactory;
 
 public class Compiler {
 
-    private static final Logger log = LoggerFactory.getLogger(Compiler.class);
-
     public static final String COMPILER_NAME = "neow3j";
     public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
-
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
     public static final int MAX_STATIC_FIELDS_COUNT = 255;
-
+    private static final Logger log = LoggerFactory.getLogger(Compiler.class);
     private static final String INSTANCE_CTOR = "<init>";
     private static final String CLASS_CTOR = "<clinit>";
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
@@ -88,6 +87,7 @@ public class Compiler {
     private static final String HASH_CODE_METHOD_NAME = "hashCode";
     private static final String EQUALS_METHOD_NAME = "hashCode";
     private static final String STRING_INTERNAL_NAME = Type.getInternalName(String.class);
+    private static final int BYTE_ARRAY_TYPE_CODE = 8;
 
     private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
             "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
@@ -259,7 +259,7 @@ public class Compiler {
         return getAsmClass(classReader);
     }
 
-    private ClassNode getAsmClass(ClassReader classReader) throws IOException {
+    private ClassNode getAsmClass(ClassReader classReader) {
         if (classReader == null) {
             throw new InvalidParameterException("Class reader not found.");
         }
@@ -407,7 +407,11 @@ public class Compiler {
             // region ### ARRAYS ###
             case NEWARRAY:
             case ANEWARRAY:
-                neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+                if (isByteArrayInstantiation(insn)) {
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWBUFFER));
+                } else {
+                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+                }
                 break;
             case BASTORE:
             case IASTORE:
@@ -537,19 +541,19 @@ public class Compiler {
                 break;
             case IFLT: // Tests if the value on the stack is less than zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
                 break;
             case IFLE: // Tests if the value on the stack is less than or equal to zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
                 break;
             case IFGT: // Tests if the value on the stack is greater than zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPLT_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGT_L);
                 break;
             case IFGE: // Tests if the value on the stack is greater than or equal to zero.
                 addPushNumber(0, neoMethod);
-                addJumpInstruction(neoMethod, insn, OpCode.JMPLE_L);
+                addJumpInstruction(neoMethod, insn, OpCode.JMPGE_L);
                 break;
             // endregion ### INTEGER COMPARISON WITH ZERO ###
 
@@ -720,6 +724,11 @@ public class Compiler {
         return insn;
     }
 
+    private boolean isByteArrayInstantiation(AbstractInsnNode insn) {
+        IntInsnNode intInsn = (IntInsnNode) insn;
+        return intInsn.operand == BYTE_ARRAY_TYPE_CODE;
+    }
+
     private void handleIntegerIncrement(NeoMethod neoMethod, AbstractInsnNode insn) {
         IincInsnNode incInsn = (IincInsnNode) insn;
         if (incInsn.incr == 0) {
@@ -876,12 +885,13 @@ public class Compiler {
         neoMethod.addInstruction(new NeoInstruction(OpCode.SETITEM));
     }
 
-    private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) {
+    private void addGetField(AbstractInsnNode insn, NeoMethod neoMethod) throws IOException {
         // NeoVM gets fields of objects simply by calling PICKITEM. The operand stack has to have
         // an index on top that is used by PICKITEM. We get this index from the class to which the
         // field belongs to.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
+        ClassNode classNode = getAsmClass(Type.getObjectType(fieldInsn.owner).getClassName());
+        int idx = getFieldIndex(fieldInsn, classNode);
         addPushNumber(idx, neoMethod);
         neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
     }
@@ -1448,10 +1458,15 @@ public class Compiler {
 
     private ContractManifest buildManifest(NeoModule neoModule, ScriptHash scriptHash) {
         List<ContractGroup> groups = new ArrayList<>();
-        ContractFeatures features = buildContractFeatures(neoModule.asmSmartContractClass);
+        ContractFeatures features = new ContractFeatures(false, false);
+        Map<String, String> extras = null;
+        List<String> supportedStandards = new ArrayList<>();
+        if (neoModule.asmSmartContractClass.invisibleAnnotations != null) {
+            features = buildContractFeatures(neoModule.asmSmartContractClass);
+            extras = buildManifestExtra(neoModule.asmSmartContractClass);
+            supportedStandards = buildSupportedStandards(neoModule.asmSmartContractClass);
+        }
         ContractABI abi = buildABI(neoModule, scriptHash);
-        Map<String, String> extras = buildManifestExtra(neoModule.asmSmartContractClass);
-        List<String> supportedStandards = buildSupportedStandards(neoModule.asmSmartContractClass);
         // TODO: Fill the remaining manifest fields below.
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));
@@ -1562,6 +1577,16 @@ public class Compiler {
             value = (String) manifestExtra.values.get(i + 1);
             extras.put(key, value);
         }
+
+        // if "name" is not found in the manifest
+        // then default to: attribute with className
+
+        if (!extras.containsKey("name")) {
+            String fqn = internalNameToFullyQualifiedName(classNode.name);
+            String className = getClassName(fqn);
+            extras.put("name", className);
+        }
+
         return extras;
     }
 

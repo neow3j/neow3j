@@ -1,5 +1,6 @@
 package io.neow3j.devpack.gradle;
 
+import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
@@ -52,16 +53,25 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             CompilationResult compilationResult = n.compileClass(canonicalClassName);
             byte[] nefBytes = compilationResult.getNef().toArray();
 
-            // output the result to the output file
-            String outDir = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
+            // get the output directory
+            String outDirString = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
                     .toString();
-            String outFileName = getCompileOutputFileName(canonicalClassName);
-            Path outputFile = Paths.get(outDir, outFileName);
+            Path outDirPath = Paths.get(outDirString);
+
+            // output the result to the output file
+            String nefOutFileName = getCompileOutputFileName(canonicalClassName);
+            Path outputFile = Paths.get(outDirString, nefOutFileName);
             writeToFile(outputFile.toFile(), nefBytes);
+
+            // generate the manifest to the output dir
+            String manifestOutFileName = generateContractManifestFile(
+                    compilationResult.getManifest(),
+                    outDirPath.toFile());
 
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
-            System.out.println("NEF output file: " + outputFile.toAbsolutePath());
+            System.out.println("NEF file: " + outputFile.toAbsolutePath());
+            System.out.println("Manifest file: " + manifestOutFileName);
         } catch (Exception e) {
             System.out.println("Compilation failed. Reason: " + e.getMessage());
             e.printStackTrace();

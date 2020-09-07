@@ -1,4 +1,4 @@
-description 'neow3j is a Java library to interact with the NEO blockchain'
+description 'neow3j: Java/Kotlin/Android Development Toolkit for the Neo Blockchain'
 
 dependencies {
     compile project(':model'),

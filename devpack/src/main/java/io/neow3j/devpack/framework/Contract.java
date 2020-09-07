@@ -21,6 +21,13 @@ public class Contract {
     public final byte[] script;
 
     /**
+     * The contract's manifest.
+     */
+    // TODO: Clarify what the format of the manifest string is and add that info to the
+    //  documentation.
+    public final String manifest;
+
+    /**
      * States if this contract needs/has storage.
      */
     public final boolean hasStorage;
@@ -32,6 +39,7 @@ public class Contract {
 
     private Contract() {
         script = new byte[0];
+        manifest = null;
         isPayable = false;
         hasStorage = false;
     }
