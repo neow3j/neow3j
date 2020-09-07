@@ -13,12 +13,12 @@ cache:
 script: "./gradlew --info --warning-mode=all check jacocoRootTestReport"
 after_success:
 - bash <(curl -s https://codecov.io/bash)
-deploy:
-- provider: script
-  script: bash ./scripts/deploy.sh
-  skip_cleanup: true
-  on:
-    tags: true
+#deploy:
+#- provider: script
+#  script: bash ./scripts/deploy.sh
+#  skip_cleanup: true
+#  on:
+#    tags: true
 env:
   global:
   - secure: Rhx9UeSCL12Q9ZMcqebSHoKk7DxXUrtU3o7xXp4kWiqUidIqxaB7+Gy3mLnAvRTaxOvGjkL8PsQDSSdVo4VBmiMoWYHk4gHoxKB9Lakzoa+sPBw3c0ufAbtOdSinkfNwL8wpVsNrioGrrkWOAOHY3b1h6IR2kE42lGFqF5TX5+pi5I6tXbYfG/9VnR5UoHQ9NXl/qGUX0fTYvXiIl8u/SO36pHXpA75yV5Ba+bPmYd1ZSFk+r1to2ExE7FYp81JutFmL44GddUKgZjBxQfjQjj3ExI0Hi6XNG9Wwr8tXSMHZ8rhGh8hXdCMGiMZ7xrfITKSyo4g9Hr3/3SFFeGEDDU+JYmsJ7v3JktA/56VKUhj9j6jSlyN9UK7wO+jDgSf8uOZmzPd3v0gvI3d8T0Qny3NKUSWc0Eo5fZK26sWkMPx8z0lYnejj9Nojpd59EsnpgDh6ix32jJ6JO5CKoLagNLrLmME3ulGZw9uMURZGxax/vVVsu1HHKNpasqrtllX6WQCXHqPIxcyOtsBFvanasfvDOLEFtSkOub1cHWDfHtbKg80SuY3BGkjW8qq+ngVE/RfZ/8kg6eZuUCTsOYquyBQNrPKQYP0OE+V4WqLWkK8Mu310ruQTZ3ivuncasWVDKjXDgEs1vSAJwSlA3s9tvIoKA19pEZHw0KfQ/WfgGAY=
