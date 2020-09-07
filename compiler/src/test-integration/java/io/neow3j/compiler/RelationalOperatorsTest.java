@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.CompilerTest.deployContract;
-import static io.neow3j.compiler.CompilerTest.loadExpectedResultFile;
+import static io.neow3j.compiler.CompilerTestSuite.deployContract;
+import static io.neow3j.compiler.CompilerTestSuite.loadExpectedResultFile;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -19,28 +19,28 @@ import org.junit.rules.TestName;
 
 public class RelationalOperatorsTest {
 
-    private static String CONTRACT_NAME = RelationalOperators.class.getSimpleName();
-    private static SmartContract relationalOperatorsContract;
+    private static String CONTRACT_NAME = RelationalOperators.class.getName();
+    private static SmartContract contract;
 
     // These are the names of the methods inside of the smart contract under test.
     private final static String INTEGERS_MTHD_NAME = "integers";
     private final static String LONGS_MTHD_NAME = "longs";
     private final static String BOOLEANS_MTHD_NAME = "booleans";
-
+    private static final String STRINGS_MTHD_NAME = "strings";
 
     @Rule
     public TestName testName = new TestName();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        CompilerTest.setUp();
-        relationalOperatorsContract = deployContract("io.neow3j.compiler." + CONTRACT_NAME);
-        CompilerTest.waitUntilContractIsDeployed(relationalOperatorsContract.getScriptHash());
+        CompilerTestSuite.setUp();
+        contract = deployContract(CONTRACT_NAME);
+        CompilerTestSuite.waitUntilContractIsDeployed(contract.getScriptHash());
     }
 
     @Test
     public void unequalSmallIntegers() throws IOException {
-        NeoInvokeFunction response = relationalOperatorsContract.invokeFunction(
+        NeoInvokeFunction response = contract.invokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
@@ -52,7 +52,7 @@ public class RelationalOperatorsTest {
 
     @Test
     public void equalLargeIntegers() throws IOException, InterruptedException {
-        NeoInvokeFunction response = relationalOperatorsContract.invokeFunction(
+        NeoInvokeFunction response = contract.invokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
@@ -64,7 +64,7 @@ public class RelationalOperatorsTest {
 
     @Test
     public void unequalSmallLongs() throws IOException {
-        NeoInvokeFunction response = relationalOperatorsContract.invokeFunction(
+        NeoInvokeFunction response = contract.invokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
@@ -76,7 +76,7 @@ public class RelationalOperatorsTest {
 
     @Test
     public void equalLargeLongs() throws IOException {
-        NeoInvokeFunction response = relationalOperatorsContract.invokeFunction(
+        NeoInvokeFunction response = contract.invokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
@@ -88,7 +88,7 @@ public class RelationalOperatorsTest {
 
     @Test
     public void equalBooleans() throws IOException {
-        NeoInvokeFunction response = relationalOperatorsContract.invokeFunction(
+        NeoInvokeFunction response = contract.invokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(true),
                 ContractParameter.bool(true));
@@ -100,10 +100,22 @@ public class RelationalOperatorsTest {
 
     @Test
     public void unequalBooleans() throws IOException {
-        NeoInvokeFunction response = relationalOperatorsContract.invokeFunction(
+        NeoInvokeFunction response = contract.invokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(false),
                 ContractParameter.bool(true));
+
+        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
+                ArrayStackItem.class);
+        assertThat(response.getInvocationResult().getStack().get(0), is(expected));
+    }
+
+    @Test
+    public void equalStrings() throws IOException {
+        NeoInvokeFunction response = contract.invokeFunction(
+                STRINGS_MTHD_NAME,
+                ContractParameter.string("hello, world!"),
+                ContractParameter.string("hello, world!"));
 
         ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
                 ArrayStackItem.class);
@@ -143,4 +155,10 @@ class RelationalOperators {
         return b;
     }
 
+    public static boolean[] strings(String s1, String s2) {
+        boolean[] b = new boolean[2];
+        b[0] = s1 == s2;
+        b[1] = s1 != s2;
+        return b;
+    }
 }

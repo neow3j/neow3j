@@ -39,7 +39,7 @@ import org.testcontainers.utility.MountableFile;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({RelationalOperatorsTest.class})
-public class CompilerTest {
+public class CompilerTestSuite {
 
     private static final String NODE_WALLET_FILE = "wallet.json";
     private static final String NODE_WALLET_PASSWORD = "neo";
@@ -113,13 +113,14 @@ public class CompilerTest {
         return sc;
     }
 
-    protected static <T extends StackItem> T loadExpectedResultFile(String contractName,
+    protected static <T extends StackItem> T loadExpectedResultFile(String contractFqn,
             String methodName, Class<T> stackItemType) throws IOException {
 
-        InputStream s = CompilerTest.class.getClassLoader()
-                .getResourceAsStream(getResultFilePath(contractName, methodName));
+        String[] splitName = contractFqn.split("\\.");
+        InputStream s = CompilerTestSuite.class.getClassLoader()
+                .getResourceAsStream(getResultFilePath(splitName[splitName.length-1], methodName));
         return getObjectMapper().readValue(s, stackItemType);
-    }
+
 
     protected static Neow3j getNeow3j() {
         return neow3j;
