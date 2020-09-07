@@ -23,34 +23,38 @@ buildscript {
         mavenCentral()
         jcenter()
     }
-
-    dependencies {
-        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.21.2'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
-    }
 }
 
 plugins {
-    id 'com.jfrog.bintray' version '1.7.3'
-    id 'org.unbroken-dome.test-sets' version '1.4.2'
+    id 'com.jfrog.bintray' version '1.8.5' apply false
+    id 'org.unbroken-dome.test-sets' version '3.0.1' apply false
+    id "de.marcphilipp.nexus-publish" version '0.4.0' apply false
     id 'com.gradle.plugin-publish' version '0.12.0' apply false
 }
 
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'io.codearte.nexus-staging'
-apply plugin: 'jacoco'
-
 description 'neow3j Project'
+
+ext {
+    publishSonaTypeUsername = project.hasProperty('nexusUsername') ? project.property('nexusUsername') : ''
+    publishSonaTypePassword = project.hasProperty('nexusPassword') ? project.property('nexusPassword') : ''
+    publishGitHubUsername = project.hasProperty('githubUsername') ? project.property('githubUsername') : ''
+    publishGitHubPassword = project.hasProperty('githubPassword') ? project.property('githubPassword') : ''
+    publishJFrogUsername = project.hasProperty('jfrogUsername') ? project.property('jfrogUsername') : ''
+    publishJFrogPassword = project.hasProperty('jfrogPassword') ? project.property('jfrogPassword') : ''
+}
+
+apply plugin: 'jacoco'
 
 allprojects {
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
+    apply plugin: 'idea'
+    apply plugin: 'signing'
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.2.0'
+    version '3.2.1'
     archivesBaseName = "${it.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -116,42 +120,35 @@ subprojects {
                 "org.hamcrest:hamcrest-all:$hamcrestVersion",
                 "org.testcontainers:testcontainers:$testcontainersVersion"
     }
-}
 
-configure(subprojects.findAll()) {
-
-    apply plugin: 'signing'
-    apply plugin: 'maven-publish'
-
-    task javadocJar(type: Jar) {
-        classifier = 'javadoc'
+    task javadocsJar(type: Jar) {
+        archiveClassifier = 'javadoc'
         from javadoc
     }
 
     task sourcesJar(type: Jar) {
-        classifier = 'sources'
+        archiveClassifier = 'sources'
         from sourceSets.main.allSource
     }
 
-    task testJar(type: Jar) {
-        classifier = 'tests'
+    task testsJar(type: Jar) {
+        archiveClassifier = 'tests'
         from sourceSets.test.output
     }
 
-    artifacts {
-        archives sourcesJar, javadocJar, testJar
-    }
+    javadoc { options.encoding = 'UTF-8' }
 
-    ext {
-        publishSonaTypeUsername = project.hasProperty('nexusUsername') ? project.property('nexusUsername') : ''
-        publishSonaTypePassword = project.hasProperty('nexusPassword') ? project.property('nexusPassword') : ''
-        publishGitHubUsername = project.hasProperty('githubUsername') ? project.property('githubUsername') : ''
-        publishGitHubPassword = project.hasProperty('githubPassword') ? project.property('githubPassword') : ''
-    }
+    artifacts { archives sourcesJar, javadocsJar, testsJar }
 
     // Avoid to publish gradle-plugin module.
     // See "gradle-plugin/README.md" for Gradle Plugin release procedures
-    if (!project.name.startsWith('gradle-plugin')) {
+    if (!project.name.startsWith('gradle-plugin') &&
+            !project.name.startsWith(rootProject.name)) {
+
+        apply plugin: 'com.jfrog.bintray'
+        apply plugin: 'maven-publish'
+        apply plugin: "de.marcphilipp.nexus-publish"
+
         publishing {
             repositories {
                 maven {
@@ -181,17 +178,9 @@ configure(subprojects.findAll()) {
 
                     from components.java
 
-                    artifact sourcesJar {
-                        classifier = 'sources'
-                    }
-
-                    artifact javadocJar {
-                        classifier = 'javadoc'
-                    }
-
-                    artifact testJar {
-                        classifier = 'tests'
-                    }
+                    artifact sourcesJar
+                    artifact javadocsJar
+                    artifact testsJar
 
                     pom {
                         name = 'Neow3j'
@@ -209,7 +198,6 @@ configure(subprojects.findAll()) {
                             license {
                                 name = 'The Apache License, Version 2.0'
                                 url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                                distribution = 'repo'
                             }
                         }
 
@@ -220,59 +208,20 @@ configure(subprojects.findAll()) {
                                 email = 'guil@axlabs.com'
                             }
                             developer {
-                                id = 'claudemiller'
+                                id = 'csmuller'
                                 name = 'Claude Müller'
                                 email = 'claude@axlabs.com'
                             }
-                        }
-                    }
-
-                    // The code below was based on:
-                    // https://medium.com/@nmauti/sign-and-publish-on-maven-central-a-project-with-the-new-maven-publish-gradle-plugin-22a72a4bfd4b
-
-                    // create the sign pom artifact
-                    pom.withXml {
-                        def pomFile = file("${project.buildDir}/generated-pom.xml")
-                        writeTo(pomFile)
-                        def pomAscFile = signing.sign(pomFile).signatureFiles[0]
-                        artifact(pomAscFile) {
-                            classifier = null
-                            extension = 'pom.asc'
-                        }
-                    }
-
-                    // create the signed artifacts
-                    project.tasks.signArchives.signatureFiles.each {
-                        artifact(it) {
-                            println it.file
-                            def matcher = it.file =~ /-(sources|javadoc|tests)\.jar\.asc$/
-                            if (matcher.find()) {
-                                classifier = matcher.group(1)
-                            } else {
-                                classifier = null
-                            }
-                            extension = 'jar.asc'
                         }
                     }
                 }
             }
         }
 
-        model {
-            tasks.generatePomFileForMavenJavaPublication {
-                destination = file("$buildDir/generated-pom.xml")
-            }
-            tasks.publishMavenJavaPublicationToMavenLocal {
-                dependsOn project.tasks.signArchives
-            }
-            tasks.publishMavenJavaPublicationToMavenRepository {
-                dependsOn project.tasks.signArchives
-            }
-        }
-
         signing {
-            required { gradle.taskGraph.hasTask('publish') }  // only execute as part of this task
-            sign configurations.archives
+            // only execute as part of this task
+            required { gradle.taskGraph.hasTask('publish') }
+            sign publishing.publications.mavenJava
         }
 
         task release {
@@ -281,26 +230,58 @@ configure(subprojects.findAll()) {
 
             tasks.findByName('publish').mustRunAfter 'build'
         }
+
+        bintray {
+            user = publishJFrogUsername
+            key = publishJFrogPassword
+            def slug = rootProject.name
+            if (project.hasProperty('rootProjectOverride')) {
+                slug = project.rootProjectOverride
+            }
+            publications = ['mavenJava']
+            publish = true
+            override = true
+            // The filesSpec clause below is based on:
+            // https://github.com/bintray/gradle-bintray-plugin/issues/255
+            // The problem solved is: .asc files (signatures) are not
+            // uploaded by the bintrayUpload
+            filesSpec {
+                from("${buildDir}/libs") {
+                    include '*.jar.asc'
+                }
+                from("${buildDir}/publications/mavenJava") {
+                    include 'pom-default.xml.asc'
+                    rename 'pom-default.xml.asc', "${project.name}-${project.version}.pom.asc"
+                }
+                into "${project.group.replaceAll(/\./, '/')}/${project.name}/${project.version}"
+            }
+            pkg {
+                repo = 'maven'
+                name = slug
+                userOrg = 'neow3j'
+                licenses = ['Apache-2.0']
+                publicDownloadNumbers = true
+                vcsUrl = 'https://github.com/neow3j/neow3j.git'
+            }
+        }
+
     }
 }
 
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     dependsOn = subprojects.test
-    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
-    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories =  files(subprojects.sourceSets.main.output)
-    executionData = files(subprojects.jacocoTestReport.executionData)
+    getAdditionalSourceDirs().from(subprojects.sourceSets.main.allSource.srcDirs)
+    getSourceDirectories().from(subprojects.sourceSets.main.allSource.srcDirs)
+    getClassDirectories().from(subprojects.sourceSets.main.output)
+    getExecutionData().from(files(subprojects.jacocoTestReport.executionData).filter { f -> f.exists() })
+
     reports {
         xml.enabled = true
     }
 
-    onlyIf = {
-        true
-    }
-
-    doFirst {
-        executionData = files(executionData.findAll {
-            it.exists()
-        })
+    afterEvaluate {
+        getClassDirectories().from(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [ ])
+        }))
     }
 }

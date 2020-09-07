@@ -1,5 +1,7 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.utils.ClassUtils.getClassName;
+import static io.neow3j.utils.ClassUtils.internalNameToFullyQualifiedName;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.InteropServiceCode;
@@ -20,13 +22,13 @@ import io.neow3j.devpack.framework.annotations.SupportedStandards;
 import io.neow3j.devpack.framework.annotations.Syscall;
 import io.neow3j.devpack.framework.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI.ContractEvent;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractFeatures;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractGroup;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractFeatures;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
@@ -70,15 +72,12 @@ import org.slf4j.LoggerFactory;
 
 public class Compiler {
 
-    private static final Logger log = LoggerFactory.getLogger(Compiler.class);
-
     public static final String COMPILER_NAME = "neow3j";
     public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
-
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
     public static final int MAX_STATIC_FIELDS_COUNT = 255;
-
+    private static final Logger log = LoggerFactory.getLogger(Compiler.class);
     private static final String INSTANCE_CTOR = "<init>";
     private static final String CLASS_CTOR = "<clinit>";
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
@@ -260,7 +259,7 @@ public class Compiler {
         return getAsmClass(classReader);
     }
 
-    private ClassNode getAsmClass(ClassReader classReader) throws IOException {
+    private ClassNode getAsmClass(ClassReader classReader) {
         if (classReader == null) {
             throw new InvalidParameterException("Class reader not found.");
         }
@@ -1578,6 +1577,16 @@ public class Compiler {
             value = (String) manifestExtra.values.get(i + 1);
             extras.put(key, value);
         }
+
+        // if "name" is not found in the manifest
+        // then default to: attribute with className
+
+        if (!extras.containsKey("name")) {
+            String fqn = internalNameToFullyQualifiedName(classNode.name);
+            String className = getClassName(fqn);
+            extras.put("name", className);
+        }
+
         return extras;
     }
 
