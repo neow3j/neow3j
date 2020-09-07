@@ -4,19 +4,19 @@ This file describes the required steps to release neow3j.
 
 ## Release the Source Code
 
-1. Bump the version on the develop branch (e.g., `develop-3.x`) -- in the `build.gradle` file, search for `group`
+- Bump the version on the develop branch (e.g., `develop-3.x`) -- in the `build.gradle` file, search for `group`
 and `version` clauses
-2. Create a Pull Request from develop to master (e.g., from `develop-3.x` to `master-3.x`) -- this
+- Create a Pull Request from develop to master (e.g., from `develop-3.x` to `master-3.x`) -- this
 is called a "Release Pull Request"
   - Set the name as, e.g., "Release 3.2.1"
   - Set the correct milestone
   - Set the label (e.g., neo3 or related ones)
   - Assign a reviewer (yourself if no one of the team is available)
-3. Review the Release Pull Request, mainly checking for critical changes **or**
+- Review the Release Pull Request, mainly checking for critical changes **or**
 changes that shouldn't be in the release
-4. Get approval for the Release Pull Request (i.e., click on approve)
-5. Merge the Release Pull Request
-6. Tag the Pull Request with the version to be release (e.g., `3.2.1`)
+- Get approval for the Release Pull Request (i.e., click on approve)
+- Merge the Release Pull Request
+- Tag the Pull Request with the version to be release (e.g., `3.2.1`)
 
 ## Credentials
 
