@@ -14,7 +14,6 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.Invocation.Builder;
 import io.neow3j.contract.exceptions.InvocationConfigurationException;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -45,7 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class InvocationTest {
+public class TransactionBuilderTest {
 
     private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     private static final String NEP5_TRANSFER = "transfer";
@@ -86,14 +85,14 @@ public class InvocationTest {
     @Test
     public void failWithoutSettingSenderAccount() {
         exceptionRule.expect(IllegalArgumentException.class);
-        new Invocation.Builder(null);
+        new TransactionBuilder(null);
     }
 
     @Test
     public void failWithoutSettingWallet() throws IOException {
-        Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction("name");
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function("name");
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("wallet");
         b.build();
@@ -105,11 +104,12 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
         ContractTestHelper.setUpWireMockForGetBlockCount(1000);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
                 .build();
-        assertThat(i.getTransaction().getValidUntilBlock(),
+
+        assertThat(tx.getValidUntilBlock(),
                 is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT + 1000 - 1));
     }
 
@@ -118,38 +118,39 @@ public class InvocationTest {
         Wallet wallet = Wallet.createWallet();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction("name")
-                .withWallet(wallet)
-                .withValidUntilBlock(1000)
+        Transaction tx = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function("name")
+                .wallet(wallet)
+                .validUntilBlock(1000)
                 .build();
 
-        assertThat(Numeric.toHexStringNoPrefix(i.getTransaction().getScript()), is(SCRIPT));
+        assertThat(Numeric.toHexStringNoPrefix(tx.getScript()), is(SCRIPT));
     }
 
     @Test
     public void testAutomaticSettingOfSystemFee() throws IOException {
         Wallet wallet = Wallet.createWallet();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withValidUntilBlock(1000)
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .validUntilBlock(1000)
                 .build();
-        assertThat(i.getTransaction().getSystemFee(), is(1007390L));
+
+        assertThat(tx.getSystemFee(), is(1007390L));
 
         // With fail on false.
         String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238";
         setUpWireMockForCall("invokescript", "invokescript_name_neo_fail_on_false.json", script);
-        i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(script))
-                .withWallet(wallet)
-                .withValidUntilBlock(1000)
+        tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(script))
+                .wallet(wallet)
+                .validUntilBlock(1000)
                 .failOnFalse()
                 .build();
 
-        assertThat(i.getTransaction().getSystemFee(), is(1007420L));
+        assertThat(tx.getSystemFee(), is(1007420L));
     }
 
     @Test
@@ -158,19 +159,20 @@ public class InvocationTest {
 
         Wallet wallet = Wallet.withAccounts(account1);
         long additionalFee = 100_000_000; // Additional fee of 1 GAS.
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withValidUntilBlock(1000)
-                .withAdditionalNetworkFee(additionalFee)
-                .build();
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .validUntilBlock(1000)
+                .additionalNetworkFee(additionalFee);
+        Transaction tx = b.build();
 
-        int signedTxSize = i.sign().getTransaction().getSize();
+        int signedTxSize = b.sign().getSize();
         long sizeFee = signedTxSize * NeoConstants.GAS_PER_BYTE;
         // PUSHDATA1 + PUSHDATA1 + PUSHNULL + ECDsaVerify
         long expectedVerificationFee = 180 + 180 + 30 + 1_000_000;
         long expectedFee = sizeFee + expectedVerificationFee + additionalFee;
-        assertThat(i.getTransaction().getNetworkFee(), is(expectedFee));
+
+        assertThat(tx.getNetworkFee(), is(expectedFee));
     }
 
     @Test
@@ -178,23 +180,23 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
         Wallet wallet = Wallet.withAccounts(multiSigAcc, account1, account2);
         long additionalFee = 100_000_000;
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withSigners(Signer.calledByEntry(multiSigAcc.getScriptHash()))
-                .withValidUntilBlock(1000)
-                .withAdditionalNetworkFee(additionalFee) // Additional fee of 1 GAS.
-                .build()
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(multiSigAcc.getScriptHash()))
+                .validUntilBlock(1000)
+                .additionalNetworkFee(additionalFee) // Additional fee of 1 GAS.
                 .sign();
 
-        int signedTxSize = i.getTransaction().getSize();
+        int signedTxSize = tx.getSize();
         long expectedSizeFee = signedTxSize * NeoConstants.GAS_PER_BYTE;
         int m = 2;
         int n = 2;
         // PUSHDATA1 * m + PUSH2 + PUSHDATA1 * n + PUSH2 + PUSHNULL + ECDsaVerify * n
         long expectedVerificationFee = (180 * m) + 30 + (180 * n) + 30 + 30 + (1_000_000 * n);
         long expectedFee = expectedSizeFee + expectedVerificationFee + additionalFee;
-        assertThat(i.getTransaction().getNetworkFee(), is(expectedFee));
+
+        assertThat(tx.getNetworkFee(), is(expectedFee));
     }
 
     @Test
@@ -202,15 +204,14 @@ public class InvocationTest {
         Wallet w = Wallet.createWallet("neo");
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withSender(w.getAccounts().get(0).getScriptHash())
-                .withWallet(w)
-                .withValidUntilBlock(1000)
-                .build();
+        TransactionBuilder builder = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .sender(w.getAccounts().get(0).getScriptHash())
+                .wallet(w)
+                .validUntilBlock(1000);
 
         exceptionRule.expect(InvocationConfigurationException.class);
-        i.sign();
+        builder.sign();
     }
 
     @Test
@@ -225,15 +226,14 @@ public class InvocationTest {
         a2.encryptPrivateKey("neo");
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(w)
-                .withSender(multiSigAcc.getScriptHash())
-                .withValidUntilBlock(1000)
-                .build();
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(w)
+                .sender(multiSigAcc.getScriptHash())
+                .validUntilBlock(1000);
 
         exceptionRule.expect(InvocationConfigurationException.class);
-        i.sign();
+        b.sign();
     }
 
     @Test
@@ -242,16 +242,16 @@ public class InvocationTest {
         Wallet wallet = Wallet.createWallet();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withValidUntilBlock(1000)
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSigners(), hasSize(1));
-        assertThat(i.getTransaction().getSigners().get(0).getScriptHash(),
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(wallet.getDefaultAccount().getScriptHash()));
-        assertThat(i.getTransaction().getSigners().get(0).getScopes(),
+        assertThat(tx.getSigners().get(0).getScopes(),
                 contains(WitnessScope.FEE_ONLY));
     }
 
@@ -264,16 +264,16 @@ public class InvocationTest {
         Signer signer = Signer.calledByEntry(acc.getScriptHash());
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withSigners(signer)
-                .withValidUntilBlock(1000)
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .signers(signer)
+                .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSigners(), hasSize(1));
-        assertThat(i.getTransaction().getSigners().get(0).getScriptHash(), is(acc.getScriptHash()));
-        assertThat(i.getTransaction().getSigners().get(0).getScopes(),
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(acc.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(),
                 contains(WitnessScope.CALLED_BY_ENTRY));
     }
 
@@ -286,17 +286,17 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT); // expected script
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withSender(senderAcc.getScriptHash())
-                .withValidUntilBlock(1000)
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .sender(senderAcc.getScriptHash())
+                .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSigners(), hasSize(1));
-        assertThat(i.getTransaction().getSigners().get(0).getScriptHash(),
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(senderAcc.getScriptHash()));
-        assertThat(i.getTransaction().getSigners().get(0).getScopes(),
+        assertThat(tx.getSigners().get(0).getScopes(),
                 contains(WitnessScope.FEE_ONLY));
     }
 
@@ -313,22 +313,22 @@ public class InvocationTest {
         Signer signer = Signer.calledByEntry(other.getScriptHash());
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withSender(senderAcc.getScriptHash())
-                .withSigners(signer)
-                .withValidUntilBlock(1000)
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .sender(senderAcc.getScriptHash())
+                .signers(signer)
+                .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSigners(), hasSize(2));
-        assertThat(i.getTransaction().getSigners().get(0).getScriptHash(),
+        assertThat(tx.getSigners(), hasSize(2));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(senderAcc.getScriptHash()));
-        assertThat(i.getTransaction().getSigners().get(0).getScopes(),
+        assertThat(tx.getSigners().get(0).getScopes(),
                 contains(WitnessScope.FEE_ONLY));
-        assertThat(i.getTransaction().getSigners().get(1).getScriptHash(),
+        assertThat(tx.getSigners().get(1).getScriptHash(),
                 is(signer.getScriptHash()));
-        assertThat(i.getTransaction().getSigners().get(1).getScopes(), is(signer.getScopes()));
+        assertThat(tx.getSigners().get(1).getScopes(), is(signer.getScopes()));
     }
 
     @Test
@@ -339,18 +339,18 @@ public class InvocationTest {
         Wallet wallet = Wallet.withAccounts(senderAcc);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(wallet)
-                .withSender(senderAcc.getScriptHash())
-                .withSigners(Signer.calledByEntry(senderAcc.getScriptHash()))
-                .withValidUntilBlock(1000)
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(wallet)
+                .sender(senderAcc.getScriptHash())
+                .signers(Signer.calledByEntry(senderAcc.getScriptHash()))
+                .validUntilBlock(1000)
                 .build();
 
-        assertThat(i.getTransaction().getSigners(), hasSize(1));
-        assertThat(i.getTransaction().getSigners().get(0).getScriptHash(),
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(senderAcc.getScriptHash()));
-        assertThat(i.getTransaction().getSigners().get(0).getScopes(),
+        assertThat(tx.getSigners().get(0).getScopes(),
                 contains(WitnessScope.CALLED_BY_ENTRY));
     }
 
@@ -359,16 +359,15 @@ public class InvocationTest {
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
         Wallet w = Wallet.withAccounts(account1, account2);
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(w)
-                .withSigners(Signer.calledByEntry(account1.getScriptHash()),
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()),
                         Signer.calledByEntry(account2.getScriptHash()))
-                .withValidUntilBlock(1000)
-                .build()
+                .validUntilBlock(1000)
                 .sign();
 
-        List<Witness> witnesses = i.getTransaction().getWitnesses();
+        List<Witness> witnesses = tx.getWitnesses();
         assertThat(witnesses, hasSize(2));
         List<ECPublicKey> signers = witnesses.stream()
                 .map(wit -> wit.getVerificationScript().getPublicKeys().get(0))
@@ -385,11 +384,11 @@ public class InvocationTest {
         Wallet w = Wallet.createWallet();
         Account signer = Account.createAccount();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
-        Invocation.Builder b = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(w)
-                .withSigners(Signer.calledByEntry(signer.getScriptHash()))
-                .withValidUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(w)
+                .signers(Signer.calledByEntry(signer.getScriptHash()))
+                .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(
                 new StringContains("Wallet does not contain the account for signer" +
@@ -406,18 +405,17 @@ public class InvocationTest {
         w.addAccounts(account);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(w)
-                .withSigners(Signer.calledByEntry(account.getScriptHash()))
-                .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
-                .build();
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(w)
+                .signers(Signer.calledByEntry(account.getScriptHash()))
+                .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         w.removeAccount(account.getScriptHash());
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("Can't create transaction "
                 + "signature. Wallet does not contain the signer account with script "
                 + "hash " + account.getScriptHash()));
-        i.sign();
+        b.sign();
     }
 
     @Test
@@ -429,17 +427,17 @@ public class InvocationTest {
         w.addAccounts(signer);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(w)
-                .withSigners(Signer.calledByEntry(signer.getScriptHash()))
-                .withValidUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(w)
+                .signers(Signer.calledByEntry(signer.getScriptHash()))
+                .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .build();
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("The transaction does not have a signature"
                 + " for each of its signers"));
-        i.send();
+        tx.send();
     }
 
     @Test
@@ -449,15 +447,14 @@ public class InvocationTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
         Wallet w = Wallet.withAccounts(account1);
-        NeoSendRawTransaction i = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction(NEP5_TRANSFER)
-                .withWallet(w)
-                .withParameters(
+        NeoSendRawTransaction i = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function(NEP5_TRANSFER)
+                .wallet(w)
+                .parameters(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
-                .build()
                 .sign()
                 .send();
 
@@ -480,19 +477,18 @@ public class InvocationTest {
         byte[] expectedVerificationScript = account1.getVerificationScript().getScript();
 
         Wallet w = Wallet.withAccounts(account1);
-        Invocation i = new Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction(NEP5_TRANSFER)
-                .withWallet(w)
-                .withValidUntilBlock(100)
-                .withParameters(
+        Transaction tx = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function(NEP5_TRANSFER)
+                .wallet(w)
+                .validUntilBlock(100)
+                .parameters(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
                 .failOnFalse()
-                .build().sign();
+                .sign();
 
-        Transaction tx = i.getTransaction();
         assertThat(tx.getScript(), is(expectedScript));
         List<Witness> witnesses = tx.getWitnesses();
         assertThat(witnesses, hasSize(1));
@@ -515,20 +511,18 @@ public class InvocationTest {
         byte[] expectedVerificationScript = multiSigAcc.getVerificationScript().getScript();
 
         Wallet w = Wallet.withAccounts(multiSigAcc, account1, account2);
-        Invocation i = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction(NEP5_TRANSFER)
-                .withWallet(w)
-                .withValidUntilBlock(100)
-                .withParameters(
+        Transaction tx = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function(NEP5_TRANSFER)
+                .wallet(w)
+                .validUntilBlock(100)
+                .parameters(
                         ContractParameter.hash160(multiSigAcc.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(1))  // 1 NEO
                 .failOnFalse()
-                .build()
                 .sign();
 
-        Transaction tx = i.getTransaction();
         assertThat(tx.getScript(), is(expectedScript));
         List<Witness> witnesses = tx.getWitnesses();
         assertThat(witnesses, hasSize(1));
@@ -543,10 +537,10 @@ public class InvocationTest {
                 NEO_TOKEN_SCRIPT_HASH.toString(), NEP5_TRANSFER,
                 account1.getScriptHash().toString(), recipient.toString(), "5"); // the params
 
-        NeoInvokeFunction i = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction(NEP5_TRANSFER)
-                .withParameters(
+        NeoInvokeFunction i = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function(NEP5_TRANSFER)
+                .parameters(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
@@ -568,10 +562,10 @@ public class InvocationTest {
         );
         Wallet w = Wallet.withAccounts(account1);
 
-        NeoInvokeFunction i = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction("name")
-                .withWallet(w)
+        NeoInvokeFunction i = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function("name")
+                .wallet(w)
                 .failOnFalse()
                 .invokeFunction();
 
@@ -592,22 +586,22 @@ public class InvocationTest {
         BigInteger expectedFees = BigInteger.valueOf(netFee + sysFee);
         BigInteger expectedBalance = BigInteger.valueOf(1_000_000L);
         AtomicBoolean tested = new AtomicBoolean(false);
-        new Builder(neow)
-                .withContract(GasToken.SCRIPT_HASH)
-                .withFunction(NEP5_TRANSFER)
-                .withWallet(w)
-                .withValidUntilBlock(2000000)
+        new TransactionBuilder(neow)
+                .contract(GasToken.SCRIPT_HASH)
+                .function(NEP5_TRANSFER)
+                .wallet(w)
+                .validUntilBlock(2000000)
                 .failOnFalse()
-                .withParameters(
+                .parameters(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(2_000_000))
-                .build()
                 .doIfSenderCannotCoverFees((fee, balance) -> {
                     assertThat(fee, is(expectedFees));
                     assertThat(balance, is(expectedBalance));
                     tested.set(true);
-                });
+                })
+                .build();
         assertTrue(tested.get()); // Assert that the test actually called the lambda function.
     }
 
@@ -621,20 +615,19 @@ public class InvocationTest {
 
         Wallet w = Wallet.withAccounts(account1);
 
-        Invocation i = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withFunction(NEP5_TRANSFER)
-                .withWallet(w)
-                .withValidUntilBlock(2000000)
-                .withParameters(
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .function(NEP5_TRANSFER)
+                .wallet(w)
+                .validUntilBlock(2000000)
+                .parameters(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
-                .failOnFalse()
-                .build();
+                .failOnFalse();
 
         exceptionRule.expect(IllegalStateException.class);
-        i.throwIfSenderCannotCoverFees(IllegalStateException::new);
+        b.throwIfSenderCannotCoverFees(IllegalStateException::new);
     }
 
     @Test
@@ -646,9 +639,9 @@ public class InvocationTest {
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
 
-        NeoInvokeScript response = new Invocation.Builder(neow)
-                .withScript(Numeric.hexStringToByteArray(SCRIPT))
-                .withWallet(w)
+        NeoInvokeScript response = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT))
+                .wallet(w)
                 .invokeScript();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("NEO"));
@@ -665,16 +658,16 @@ public class InvocationTest {
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("Cannot make an 'invokescript' call");
-        new Invocation.Builder(neow)
-                .withWallet(w)
+        new TransactionBuilder(neow)
+                .wallet(w)
                 .invokeScript();
     }
 
     @Test
     public void invokeFunctionWithoutSettingContract() throws IOException {
-        Invocation.Builder b = new Invocation.Builder(neow)
-                .withFunction(NEP5_TRANSFER)
-                .withWallet(Wallet.createWallet());
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .function(NEP5_TRANSFER)
+                .wallet(Wallet.createWallet());
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("contract");
@@ -683,9 +676,9 @@ public class InvocationTest {
 
     @Test
     public void invokeFunctionWithoutSettingFunction() throws IOException {
-        Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withWallet(Wallet.createWallet());
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .wallet(Wallet.createWallet());
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage("function");
@@ -694,9 +687,9 @@ public class InvocationTest {
 
     @Test
     public void buildWithoutSettingScriptNorContract() throws IOException {
-        Invocation.Builder b = new Invocation.Builder(neow)
-                .withWallet(Wallet.createWallet())
-                .withValidUntilBlock(1000);
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .wallet(Wallet.createWallet())
+                .validUntilBlock(1000);
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList("script", "contract")));
@@ -705,10 +698,10 @@ public class InvocationTest {
 
     @Test
     public void buildWithSettingContractButNoFunction() throws IOException {
-        Invocation.Builder b = new Invocation.Builder(neow)
-                .withContract(NEO_TOKEN_SCRIPT_HASH)
-                .withWallet(Wallet.createWallet())
-                .withValidUntilBlock(1000);
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .contract(NEO_TOKEN_SCRIPT_HASH)
+                .wallet(Wallet.createWallet())
+                .validUntilBlock(1000);
 
         exceptionRule.expect(InvocationConfigurationException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList("contract",
