@@ -95,7 +95,7 @@ public class PolicyContract extends SmartContract {
     }
 
     // Method extracted for testability.
-    Invocation buildSetFeePerByteInvocation(Integer fee, Wallet wallet, ScriptHash signer)
+    TransactionBuilder buildSetFeePerByteInvocation(Integer fee, Wallet wallet, ScriptHash signer)
             throws IOException {
 
         return invoke(SET_FEE_PER_BYTE)
@@ -124,7 +124,7 @@ public class PolicyContract extends SmartContract {
     }
 
     // Method extracted for testability.
-    Invocation buildSetMaxTxPerBlockInvocation(Integer maxTxPerBlock, Wallet wallet,
+    TransactionBuilder buildSetMaxTxPerBlockInvocation(Integer maxTxPerBlock, Wallet wallet,
             ScriptHash signer) throws IOException {
 
         return invoke(SET_MAX_TX_PER_BLOCK)
@@ -152,7 +152,7 @@ public class PolicyContract extends SmartContract {
     }
 
     // Method extracted for testability.
-    Invocation buildBlockAccountInvocation(ScriptHash accountToBlock, Wallet wallet,
+    TransactionBuilder buildBlockAccountInvocation(ScriptHash accountToBlock, Wallet wallet,
             ScriptHash signer) throws IOException {
 
         return invoke(BLOCK_ACCOUNT)
@@ -181,7 +181,7 @@ public class PolicyContract extends SmartContract {
     }
 
     // Method extracted for testability.
-    Invocation buildUnblockAccountInvocation(ScriptHash accountToUnblock, Wallet wallet,
+    TransactionBuilder buildUnblockAccountInvocation(ScriptHash accountToUnblock, Wallet wallet,
             ScriptHash signer) throws IOException {
 
         return invoke(UNBLOCK_ACCOUNT)

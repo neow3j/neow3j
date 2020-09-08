@@ -168,7 +168,7 @@ public class SmartContractTest {
 
         Wallet w = Wallet.withAccounts(account1);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
-        Invocation i = sc.invoke(NEP5_TRANSFER,
+        TransactionBuilder i = sc.invoke(NEP5_TRANSFER,
                 ContractParameter.hash160(account1.getScriptHash()),
                 ContractParameter.hash160(recipient),
                 ContractParameter.integer(5))
@@ -257,7 +257,7 @@ public class SmartContractTest {
                 TEST_CONTRACT_1_DEPLOY_SCRIPT);
 
         Wallet w = Wallet.withAccounts(account1);
-        Invocation i = new SmartContract(nefFile, manifestFile, neow).deploy()
+        TransactionBuilder i = new SmartContract(nefFile, manifestFile, neow).deploy()
                 .withSender(account1.getScriptHash())
                 .withWallet(w)
                 .withValidUntilBlock(1000)

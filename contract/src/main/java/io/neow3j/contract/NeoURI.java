@@ -79,7 +79,7 @@ public class NeoURI {
      *
      * @return an Invocation object.
      */
-    public Invocation.Builder invocationBuilder() throws IOException {
+    public TransactionBuilder.Builder invocationBuilder() throws IOException {
         if (this.neow3j == null) {
             throw new IllegalStateException("Neow3j instance is not set.");
         }
@@ -109,7 +109,7 @@ public class NeoURI {
             contract = new ScriptHash(this.asset);
         }
 
-        return new Invocation.Builder(this.neow3j)
+        return new TransactionBuilder.Builder(this.neow3j)
                 .withWallet(this.wallet)
                 .withContract(contract)
                 .withFunction(TRANSFER_FUNCTION)
@@ -135,7 +135,7 @@ public class NeoURI {
     }
 
     private int getDecimals(Neow3j neow3j, String asset) throws IOException {
-        NeoInvokeFunction invocation = new Invocation.Builder(neow3j)
+        NeoInvokeFunction invocation = new TransactionBuilder.Builder(neow3j)
                 .withContract(new ScriptHash(asset))
                 .withFunction("decimals")
                 .invokeFunction();

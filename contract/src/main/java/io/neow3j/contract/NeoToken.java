@@ -117,7 +117,7 @@ public class NeoToken extends Nep5Token {
     }
 
     // Method extracted for testability.
-    Invocation buildRegisterInvocation(ScriptHash candidate, Wallet wallet,
+    TransactionBuilder buildRegisterInvocation(ScriptHash candidate, Wallet wallet,
             ECPublicKey candidateKey)
             throws IOException {
 
@@ -229,7 +229,7 @@ public class NeoToken extends Nep5Token {
     }
 
     // Method extracted for testability.
-    Invocation buildVoteInvocation(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
+    TransactionBuilder buildVoteInvocation(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
             throws IOException {
 
         ContractParameter[] validatorParams = Stream.of(validators)

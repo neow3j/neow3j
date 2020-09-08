@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
 
 /**
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
@@ -93,19 +92,19 @@ public class SmartContract {
 
 
     /**
-     * Initializes an {@link Invocation.Builder} for a function invocation of this contract with the
+     * Initializes an {@link TransactionBuilder.Builder} for a function invocation of this contract with the
      * provided function and parameters. The order of the parameters is relevant.
      *
      * @param function           The function to invoke.
      * @param contractParameters The parameters to pass with the invocation.
-     * @return An {@link Invocation} allowing to set further details of the invocation.
+     * @return An {@link TransactionBuilder} allowing to set further details of the invocation.
      */
-    public Invocation.Builder invoke(String function, ContractParameter... contractParameters) {
+    public TransactionBuilder.Builder invoke(String function, ContractParameter... contractParameters) {
         if (function == null || function.isEmpty()) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        return new Invocation.Builder(neow)
+        return new TransactionBuilder.Builder(neow)
                 .withContract(this.scriptHash)
                 .withFunction(function)
                 .withParameters(contractParameters);
@@ -174,13 +173,13 @@ public class SmartContract {
     }
 
     /**
-     * Initializes an {@link Invocation.Builder} for deploying this contract. Deploys this contract
+     * Initializes an {@link TransactionBuilder.Builder} for deploying this contract. Deploys this contract
      * by creating a deployment transaction and sending it to the neo-node
      *
      * @return The Neo node's response.
      * @throws IOException If something goes wrong when communicating with the Neo node.
      */
-    public Invocation.Builder deploy() throws IOException {
+    public TransactionBuilder.Builder deploy() throws IOException {
         if (this.nefFile == null) {
             throw new IllegalStateException("This smart contract instance was not constructed for"
                     + " deployment. It is missing its NEF file.");
@@ -191,7 +190,7 @@ public class SmartContract {
                 .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CREATE)
                 .toArray();
 
-        return new Invocation.Builder(neow)
+        return new TransactionBuilder.Builder(neow)
                 .withScript(script);
     }
 }

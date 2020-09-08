@@ -101,7 +101,7 @@ public class PolicyContractTest {
                 SET_FEE_PER_BYTE, Arrays.asList(ContractParameter.integer(20))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        Invocation inv = new PolicyContract(neow3j)
+        TransactionBuilder inv = new PolicyContract(neow3j)
                 .buildSetFeePerByteInvocation(20, w, account1.getScriptHash());
         Transaction tx = inv.getTransaction();
         assertThat(tx.getSigners(), hasSize(1));
@@ -121,7 +121,7 @@ public class PolicyContractTest {
                 SET_MAX_TX_PER_BLOCK, Arrays.asList(ContractParameter.integer(500))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        Invocation inv = new PolicyContract(neow3j)
+        TransactionBuilder inv = new PolicyContract(neow3j)
                 .buildSetMaxTxPerBlockInvocation(500, w, account1.getScriptHash());
 
         Transaction tx = inv.getTransaction();
@@ -142,7 +142,7 @@ public class PolicyContractTest {
                 Arrays.asList(ContractParameter.hash160(recipient))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        Invocation inv = new PolicyContract(neow3j)
+        TransactionBuilder inv = new PolicyContract(neow3j)
                 .buildBlockAccountInvocation(recipient, w, account1.getScriptHash());
 
         Transaction tx = inv.getTransaction();
@@ -163,7 +163,7 @@ public class PolicyContractTest {
                 UNBLOCK_ACCOUNT, Arrays.asList(ContractParameter.hash160(recipient))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        Invocation inv = new PolicyContract(neow3j)
+        TransactionBuilder inv = new PolicyContract(neow3j)
                 .buildUnblockAccountInvocation(recipient, w, account1.getScriptHash());
 
         Transaction tx = inv.getTransaction();

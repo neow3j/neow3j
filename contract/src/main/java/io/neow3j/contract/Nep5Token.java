@@ -189,12 +189,12 @@ public class Nep5Token extends SmartContract {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
-        Invocation inv = buildTransferScript(wallet, to, amount);
+        TransactionBuilder inv = buildTransferScript(wallet, to, amount);
         return inv.send();
     }
 
     // Method extracted for testability.
-    Invocation buildTransferScript(Wallet wallet, ScriptHash to, BigDecimal amount)
+    TransactionBuilder buildTransferScript(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
         List<Account> accountsOrdered = new ArrayList<>(wallet.getAccounts());
         accountsOrdered.remove(wallet.getDefaultAccount());
@@ -245,7 +245,7 @@ public class Nep5Token extends SmartContract {
         return buildMultiTransferInvocation(wallet, to, amount, accounts).send();
     }
 
-    Invocation buildMultiTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount,
+    TransactionBuilder buildMultiTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount,
             List<Account> accounts) throws IOException {
 
         List<byte[]> scripts = new ArrayList<>(); // List of the individual invocation scripts.
@@ -292,7 +292,7 @@ public class Nep5Token extends SmartContract {
         return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
     }
 
-    private Invocation buildTransferInvocation(Wallet wallet, List<byte[]> scripts,
+    private TransactionBuilder buildTransferInvocation(Wallet wallet, List<byte[]> scripts,
             List<Signer> signers) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         for (byte[] script : scripts) {
@@ -300,7 +300,7 @@ public class Nep5Token extends SmartContract {
         }
         byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
 
-        Invocation.Builder invocationBuilder = new Invocation.Builder(neow)
+        TransactionBuilder.Builder invocationBuilder = new TransactionBuilder.Builder(neow)
                 .withWallet(wallet)
                 .withScript(concatenatedScript)
                 .failOnFalse();
@@ -352,7 +352,7 @@ public class Nep5Token extends SmartContract {
     }
 
     // Method extracted for testability.
-    Invocation buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
+    TransactionBuilder buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
 
         Account acc = wallet.getDefaultAccount();

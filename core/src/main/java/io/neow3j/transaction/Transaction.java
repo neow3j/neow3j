@@ -10,6 +10,8 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.NeoConfig;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -20,7 +22,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ public class Transaction extends NeoSerializable {
             8 +  // Network fee int64
             4; // Valid until block uint32
 
+    protected Neow3j neow;
     private byte version;
     /**
      * Is a random number added to the transaction to prevent replay attacks. It is an unsigned
@@ -70,6 +72,21 @@ public class Transaction extends NeoSerializable {
         this.attributes = builder.attributes;
         this.script = builder.script;
         this.witnesses = builder.witnesses;
+    }
+
+    // used temporarily for api changes
+    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock, List<Signer> signers, long systemFee,
+            long networkFee, List<TransactionAttribute> attributes, byte[] script, List<Witness> witnesses) {
+        this.neow = neow;
+        this.version = version;
+        this.nonce = nonce;
+        this.validUntilBlock = validUntilBlock;
+        this.signers = signers;
+        this.systemFee = systemFee;
+        this.networkFee = networkFee;
+        this.attributes = attributes;
+        this.script = script;
+        this.witnesses = witnesses;
     }
 
     public byte getVersion() {
@@ -149,6 +166,29 @@ public class Transaction extends NeoSerializable {
     public String getTxId() {
         byte[] hash = hash256(getHashData());
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
+    }
+
+    /**
+     * Sends this invocation transaction to the neo-node via the `sendrawtransaction` RPC.
+     *
+     * @return the Neo node's response.
+     * @throws IOException                       if a problem in communicating with the Neo node
+     *                                           occurs.
+     * @throws TransactionConfigurationException if signatures are missing for one or more signers of
+     *                                           the transaction.
+     */
+    public NeoSendRawTransaction send() throws IOException {
+        List<ScriptHash> witnesses = this.getWitnesses().stream()
+                .map(Witness::getScriptHash).collect(Collectors.toList());
+
+        for (Signer signer : this.getSigners()) {
+            if (!witnesses.contains(signer.getScriptHash())) {
+                throw new TransactionConfigurationException("The transaction does not have a "
+                        + "signature for each of its signers.");
+            }
+        }
+        String hex = Numeric.toHexStringNoPrefix(this.toArray());
+        return neow.sendRawTransaction(hex).send();
     }
 
     @Override

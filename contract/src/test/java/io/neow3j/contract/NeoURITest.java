@@ -233,7 +233,7 @@ public class NeoURITest {
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
                 .invocationBuilder(),
-                is(instanceOf(Invocation.Builder.class)));
+                is(instanceOf(TransactionBuilder.Builder.class)));
     }
 
     @Test
@@ -244,7 +244,7 @@ public class NeoURITest {
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
                 .invocationBuilder(),
-                is(instanceOf(Invocation.Builder.class)));
+                is(instanceOf(TransactionBuilder.Builder.class)));
     }
 
     @Test(expected = IllegalStateException.class)
