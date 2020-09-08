@@ -1,26 +1,18 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.CompilerTestSuite.deployContract;
-import static io.neow3j.compiler.CompilerTestSuite.loadExpectedResultFile;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 
-public class RelationalOperatorsTest {
-
-    private static String CONTRACT_NAME = RelationalOperators.class.getName();
-    private static SmartContract contract;
+public class RelationalOperatorsTest extends CompilerTest {
 
     // These are the names of the methods inside of the smart contract under test.
     private final static String INTEGERS_MTHD_NAME = "integers";
@@ -28,14 +20,9 @@ public class RelationalOperatorsTest {
     private final static String BOOLEANS_MTHD_NAME = "booleans";
     private static final String STRINGS_MTHD_NAME = "strings";
 
-    @Rule
-    public TestName testName = new TestName();
-
     @BeforeClass
-    public static void beforeClass() throws Exception {
-        CompilerTestSuite.setUp();
-        contract = deployContract(CONTRACT_NAME);
-        CompilerTestSuite.waitUntilContractIsDeployed(contract.getScriptHash());
+    public static void setUp() throws Exception {
+        setUp(RelationalOperators.class.getName());
     }
 
     @Test
@@ -45,20 +32,18 @@ public class RelationalOperatorsTest {
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
 
-        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
-                ArrayStackItem.class);
+        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
     @Test
-    public void equalLargeIntegers() throws IOException, InterruptedException {
+    public void equalLargeIntegers() throws IOException {
         NeoInvokeFunction response = contract.invokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
 
-        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
-                ArrayStackItem.class);
+        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
@@ -69,8 +54,7 @@ public class RelationalOperatorsTest {
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
 
-        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
-                ArrayStackItem.class);
+        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
@@ -81,8 +65,7 @@ public class RelationalOperatorsTest {
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
 
-        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
-                ArrayStackItem.class);
+        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
@@ -93,8 +76,7 @@ public class RelationalOperatorsTest {
                 ContractParameter.bool(true),
                 ContractParameter.bool(true));
 
-        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
-                ArrayStackItem.class);
+        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
@@ -105,8 +87,7 @@ public class RelationalOperatorsTest {
                 ContractParameter.bool(false),
                 ContractParameter.bool(true));
 
-        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
-                ArrayStackItem.class);
+        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
@@ -117,8 +98,7 @@ public class RelationalOperatorsTest {
                 ContractParameter.string("hello, world!"),
                 ContractParameter.string("hello, world!"));
 
-        ArrayStackItem expected = loadExpectedResultFile(CONTRACT_NAME, testName.getMethodName(),
-                ArrayStackItem.class);
+        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 }

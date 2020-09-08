@@ -13,6 +13,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances.Nep5Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -28,30 +29,26 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
 import org.junit.ClassRule;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({RelationalOperatorsTest.class})
-public class CompilerTestSuite {
+public class CompilerTest {
+
+    // Exposed port of the neo node running in the docker container.
+    protected static int EXPOSED_JSONRPC_PORT = 40332;
+    protected static final String NEO3_PRIVATENET_CONTAINER_IMG =
+            "docker.pkg.github.com/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
 
     private static final String NODE_WALLET_FILE = "wallet.json";
     private static final String NODE_WALLET_PASSWORD = "neo";
 
     protected static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
-
-    private static final String NEO3_PRIVATENET_CONTAINER_IMG =
-            "docker.pkg.github.com/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
-
-    // Exposed port of the neo node running in the docker container.
-    protected static int EXPOSED_JSONRPC_PORT = 40332;
 
     @ClassRule
     public static GenericContainer privateNetContainer = new GenericContainer(
@@ -71,24 +68,27 @@ public class CompilerTestSuite {
     protected static Account account;
     protected static Account multiSigAcc;
     protected static Wallet wallet;
-
     protected static Neow3j neow3j;
+    protected static SmartContract contract;
+    protected static String contractName;
 
-    protected static void setUp() throws Exception {
+    @Rule
+    public TestName testName = new TestName();
+
+    protected String getTestName() {
+        return testName.getMethodName();
+    }
+
+    public static void setUp(String name) throws Exception {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-
         account = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         multiSigAcc = Account.createMultiSigAccount(
                 Arrays.asList(account.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(account, multiSigAcc);
-
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
-        openWallet();
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        privateNetContainer.stop();
+        contractName = name;
+        contract = deployContract(contractName);
+        waitUntilContractIsDeployed(contract.getScriptHash());
     }
 
     protected static String getResultFilePath(String testClassName, String methodName) {
@@ -111,19 +111,6 @@ public class CompilerTestSuite {
             throw new RuntimeException(response.getError().getMessage());
         }
         return sc;
-    }
-
-    protected static <T extends StackItem> T loadExpectedResultFile(String contractFqn,
-            String methodName, Class<T> stackItemType) throws IOException {
-
-        String[] splitName = contractFqn.split("\\.");
-        InputStream s = CompilerTestSuite.class.getClassLoader()
-                .getResourceAsStream(getResultFilePath(splitName[splitName.length-1], methodName));
-        return getObjectMapper().readValue(s, stackItemType);
-
-
-    protected static Neow3j getNeow3j() {
-        return neow3j;
     }
 
     protected static void openWallet() throws Exception {
@@ -198,5 +185,16 @@ public class CompilerTestSuite {
         waitUntil(callableGetContractState(contractScripHash), Matchers.is(true));
     }
 
-}
+    protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)
+            throws IOException {
 
+        String[] splitName = contractName.split("\\.");
+        InputStream s = this.getClass().getClassLoader().getResourceAsStream(
+                getResultFilePath(splitName[splitName.length - 1], getTestName()));
+        return getObjectMapper().readValue(s, stackItemType);
+    }
+
+    protected StackItem getFirstStackItem(NeoInvokeFunction response) {
+        return response.getInvocationResult().getStack().get(0);
+    }
+}
