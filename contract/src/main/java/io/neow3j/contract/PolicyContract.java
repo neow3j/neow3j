@@ -99,9 +99,9 @@ public class PolicyContract extends SmartContract {
             throws IOException {
 
         return invoke(SET_FEE_PER_BYTE)
-                .withSigners(Signer.calledByEntry(signer))
-                .withWallet(wallet)
-                .withParameters(ContractParameter.integer(fee))
+                .signers(Signer.calledByEntry(signer))
+                .wallet(wallet)
+                .parameters(ContractParameter.integer(fee))
                 .build()
                 .sign();
     }
@@ -128,9 +128,9 @@ public class PolicyContract extends SmartContract {
             ScriptHash signer) throws IOException {
 
         return invoke(SET_MAX_TX_PER_BLOCK)
-                .withSigners(Signer.calledByEntry(signer))
-                .withWallet(wallet)
-                .withParameters(ContractParameter.integer(maxTxPerBlock))
+                .signers(Signer.calledByEntry(signer))
+                .wallet(wallet)
+                .parameters(ContractParameter.integer(maxTxPerBlock))
                 .build()
                 .sign();
     }
@@ -156,9 +156,9 @@ public class PolicyContract extends SmartContract {
             ScriptHash signer) throws IOException {
 
         return invoke(BLOCK_ACCOUNT)
-                .withSigners(Signer.calledByEntry(signer))
-                .withWallet(wallet)
-                .withParameters(ContractParameter.hash160(accountToBlock))
+                .signers(Signer.calledByEntry(signer))
+                .wallet(wallet)
+                .parameters(ContractParameter.hash160(accountToBlock))
                 .build()
                 .sign();
     }
@@ -185,9 +185,9 @@ public class PolicyContract extends SmartContract {
             ScriptHash signer) throws IOException {
 
         return invoke(UNBLOCK_ACCOUNT)
-                .withSigners(Signer.calledByEntry(signer))
-                .withWallet(wallet)
-                .withParameters(ContractParameter.hash160(accountToUnblock))
+                .signers(Signer.calledByEntry(signer))
+                .wallet(wallet)
+                .parameters(ContractParameter.hash160(accountToUnblock))
                 .build()
                 .sign();
     }

@@ -300,13 +300,13 @@ public class Nep5Token extends SmartContract {
         }
         byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
 
-        TransactionBuilder.Builder invocationBuilder = new TransactionBuilder.Builder(neow)
-                .withWallet(wallet)
-                .withScript(concatenatedScript)
+        TransactionBuilder invocationBuilder = new TransactionBuilder(neow)
+                .wallet(wallet)
+                .script(concatenatedScript)
                 .failOnFalse();
 
         for (Signer signer : signers) {
-            invocationBuilder.withSigners(signer);
+            invocationBuilder.signers(signer);
         }
 
         return invocationBuilder.build().sign();
@@ -364,9 +364,9 @@ public class Nep5Token extends SmartContract {
                     + " only holds " + accBalance.toString() + " (in token fractions).");
         }
         return invoke(NEP5_TRANSFER)
-                .withSigners(Signer.calledByEntry(acc.getScriptHash()))
-                .withWallet(wallet)
-                .withParameters(
+                .signers(Signer.calledByEntry(acc.getScriptHash()))
+                .wallet(wallet)
+                .parameters(
                         ContractParameter.hash160(acc.getScriptHash()),
                         ContractParameter.hash160(to),
                         ContractParameter.integer(fractions)

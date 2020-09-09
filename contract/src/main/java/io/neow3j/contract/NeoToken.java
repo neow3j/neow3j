@@ -8,6 +8,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -117,16 +118,15 @@ public class NeoToken extends Nep5Token {
     }
 
     // Method extracted for testability.
-    TransactionBuilder buildRegisterInvocation(ScriptHash candidate, Wallet wallet,
+    Transaction buildRegisterInvocation(ScriptHash candidate, Wallet wallet,
             ECPublicKey candidateKey)
             throws IOException {
 
         return invoke(REGISTER_CANDIDATE)
-                .withSender(candidate)
-                .withWallet(wallet)
-                .withParameters(ContractParameter.publicKey(candidateKey.getEncoded(true)))
-                .withSigners(Signer.global(candidate))
-                .build()
+                .sender(candidate)
+                .wallet(wallet)
+                .parameters(ContractParameter.publicKey(candidateKey.getEncoded(true)))
+                .signers(Signer.global(candidate))
                 .sign();
     }
 
@@ -229,7 +229,7 @@ public class NeoToken extends Nep5Token {
     }
 
     // Method extracted for testability.
-    TransactionBuilder buildVoteInvocation(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
+    Transaction buildVoteInvocation(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
             throws IOException {
 
         ContractParameter[] validatorParams = Stream.of(validators)
@@ -237,12 +237,11 @@ public class NeoToken extends Nep5Token {
                 .toArray(ContractParameter[]::new);
 
         return invoke(VOTE)
-                .withSender(voter)
-                .withWallet(wallet)
-                .withParameters(ContractParameter.hash160(voter))
-                .withParameters(validatorParams)
-                .withSigners(Signer.global(voter))
-                .build()
+                .sender(voter)
+                .wallet(wallet)
+                .parameters(ContractParameter.hash160(voter))
+                .parameters(validatorParams)
+                .signers(Signer.global(voter))
                 .sign();
     }
 }

@@ -2,6 +2,7 @@ package io.neow3j.contract;
 
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -566,7 +567,6 @@ public class TransactionBuilderTest {
                 .contract(NEO_TOKEN_SCRIPT_HASH)
                 .function("name")
                 .wallet(w)
-                .failOnFalse()
                 .invokeFunction();
 
         assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), is("NEO"));
@@ -664,48 +664,22 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void invokeFunctionWithoutSettingContract() throws IOException {
-        TransactionBuilder b = new TransactionBuilder(neow)
-                .function(NEP5_TRANSFER)
-                .wallet(Wallet.createWallet());
-
-        exceptionRule.expect(InvocationConfigurationException.class);
-        exceptionRule.expectMessage("contract");
-        b.invokeFunction();
-    }
-
-    @Test
     public void invokeFunctionWithoutSettingFunction() throws IOException {
+        SmartContract neo = new SmartContract(NEO_TOKEN_SCRIPT_HASH, neow);
+        List<ContractParameter> params = new ArrayList<>();
+
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("function");
+        neo.invokeFunction("", params);
+    }
+
+    @Test
+    public void buildWithoutSettingScript() throws IOException {
         TransactionBuilder b = new TransactionBuilder(neow)
-                .contract(NEO_TOKEN_SCRIPT_HASH)
                 .wallet(Wallet.createWallet());
 
-        exceptionRule.expect(InvocationConfigurationException.class);
-        exceptionRule.expectMessage("function");
-        b.invokeFunction();
-    }
-
-    @Test
-    public void buildWithoutSettingScriptNorContract() throws IOException {
-        TransactionBuilder b = new TransactionBuilder(neow)
-                .wallet(Wallet.createWallet())
-                .validUntilBlock(1000);
-
-        exceptionRule.expect(InvocationConfigurationException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList("script", "contract")));
-        b.build();
-    }
-
-    @Test
-    public void buildWithSettingContractButNoFunction() throws IOException {
-        TransactionBuilder b = new TransactionBuilder(neow)
-                .contract(NEO_TOKEN_SCRIPT_HASH)
-                .wallet(Wallet.createWallet())
-                .validUntilBlock(1000);
-
-        exceptionRule.expect(InvocationConfigurationException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList("contract",
-                "function")));
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("script");
         b.build();
     }
 }

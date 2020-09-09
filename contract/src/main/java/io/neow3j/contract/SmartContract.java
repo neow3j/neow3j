@@ -11,11 +11,14 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Numeric;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
@@ -65,14 +68,14 @@ public class SmartContract {
                 ContractManifest.class), neow);
     }
 
-    public SmartContract(NefFile nef, ContractManifest manifest, Neow3j neow)
+    public SmartContract(NefFile nefFile, ContractManifest manifest, Neow3j neow)
             throws JsonProcessingException {
 
         if (neow == null) {
             throw new IllegalArgumentException("The Neow3j object must not be null.");
         }
         this.neow = neow;
-        this.nefFile = nef;
+        this.nefFile = nefFile;
         this.scriptHash = this.nefFile.getScriptHash();
         this.manifest = manifest;
 
@@ -90,24 +93,25 @@ public class SmartContract {
 
     }
 
-
+    // TODO: 09.09.20 Michael: Rename to `invokeFunction`.
     /**
-     * Initializes an {@link TransactionBuilder.Builder} for a function invocation of this contract with the
+     * Initializes an {@link TransactionBuilder} for a function invocation of this contract with the
      * provided function and parameters. The order of the parameters is relevant.
      *
      * @param function           The function to invoke.
      * @param contractParameters The parameters to pass with the invocation.
      * @return An {@link TransactionBuilder} allowing to set further details of the invocation.
      */
-    public TransactionBuilder.Builder invoke(String function, ContractParameter... contractParameters) {
+    public TransactionBuilder invoke(String function, ContractParameter... contractParameters) {
         if (function == null || function.isEmpty()) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        return new TransactionBuilder.Builder(neow)
-                .withContract(this.scriptHash)
-                .withFunction(function)
-                .withParameters(contractParameters);
+        ScriptBuilder b = new ScriptBuilder()
+                .contractCall(scriptHash, function, Arrays.asList(contractParameters));
+        byte[] script = b.toArray();
+
+        return new TransactionBuilder(neow).script(script);
     }
 
     /**
@@ -125,7 +129,8 @@ public class SmartContract {
     public String callFuncReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
 
-        StackItem item = invokeFunction(function, params).getInvocationResult().getStack().get(0);
+        StackItem item = invokeFunction(function, Arrays.asList(params))
+                .getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.BYTE_STRING)) {
             return item.asByteString().getAsString();
         }
@@ -147,21 +152,43 @@ public class SmartContract {
     public BigInteger callFuncReturningInt(String function, ContractParameter... params)
             throws IOException, UnexpectedReturnTypeException {
 
-        StackItem item = invokeFunction(function, params).getInvocationResult().getStack().get(0);
+        StackItem item = invokeFunction(function, Arrays.asList(params))
+                .getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue();
         }
         throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
     }
 
-    public NeoInvokeFunction invokeFunction(String function, ContractParameter... params)
+    /**
+     * Does an {@code invokefunction} call to the given contract function.
+     *
+     * @param function  The function to call.
+     * @param params    The contract parameters to include in the call.
+     * @param signers   The list of signers for this contract call.
+     * @return The call's response.
+     * @throws IOException  if something goes wrong when communicating with the neo-node.
+     */
+    // TODO: 09.09.20 Michael: Rename to `callInvokeFunction`.
+    public NeoInvokeFunction invokeFunction(String function, List<ContractParameter> params,
+            Signer... signers)
             throws IOException {
-
-        return invoke(function, params).invokeFunction();
+        // Remark: The list of signers is required for `invokefunction` calls that will hit a
+        // CheckWitness check in the smart contract. We add the signers even if that is not the
+        // case because we cannot know if the invoked function needs it or not and it doesn't
+        // lead to failures if we add them in any case.
+        if (function == null || function.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The invocation function must not be null or empty.");
+        }
+        if (params.isEmpty()) {
+            return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();
+        }
+        return neow.invokeFunction(scriptHash.toString(), function, params, signers).send();
     }
 
     public ScriptHash getScriptHash() {
-        return this.scriptHash;
+        return scriptHash;
     }
 
     public NefFile getNefFile() {
@@ -173,24 +200,24 @@ public class SmartContract {
     }
 
     /**
-     * Initializes an {@link TransactionBuilder.Builder} for deploying this contract. Deploys this contract
+     * Initializes an {@link TransactionBuilder} for deploying this contract. Deploys this contract
      * by creating a deployment transaction and sending it to the neo-node
      *
      * @return The Neo node's response.
      * @throws IOException If something goes wrong when communicating with the Neo node.
      */
-    public TransactionBuilder.Builder deploy() throws IOException {
-        if (this.nefFile == null) {
+    public TransactionBuilder deploy() throws IOException {
+        if (nefFile == null) {
             throw new IllegalStateException("This smart contract instance was not constructed for"
                     + " deployment. It is missing its NEF file.");
         }
         byte[] script = new ScriptBuilder()
-                .pushData(objectMapper.writeValueAsBytes(this.manifest))
-                .pushData(this.nefFile.getScript())
+                .pushData(objectMapper.writeValueAsBytes(manifest))
+                .pushData(nefFile.getScript())
                 .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CREATE)
                 .toArray();
 
-        return new TransactionBuilder.Builder(neow)
-                .withScript(script);
+        return new TransactionBuilder(neow)
+                .script(script);
     }
 }

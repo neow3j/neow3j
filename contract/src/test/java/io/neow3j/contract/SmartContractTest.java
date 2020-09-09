@@ -172,7 +172,7 @@ public class SmartContractTest {
                 ContractParameter.hash160(account1.getScriptHash()),
                 ContractParameter.hash160(recipient),
                 ContractParameter.integer(5))
-                .withWallet(w)
+                .wallet(w)
                 .build()
                 .sign();
 
@@ -241,8 +241,8 @@ public class SmartContractTest {
                 .getResource(TEST_CONTRACT_1_MANIFEST).toURI());
         Wallet w = Wallet.withAccounts(account1);
         NeoInvokeScript response = new SmartContract(nef, manifest, neow).deploy()
-                .withSender(account1.getScriptHash())
-                .withWallet(w)
+                .sender(account1.getScriptHash())
+                .wallet(w)
                 .invokeScript();
 
         assertThat(response.getInvocationResult().getScript(), is(TEST_CONTRACT_1_DEPLOY_SCRIPT));
@@ -258,10 +258,9 @@ public class SmartContractTest {
 
         Wallet w = Wallet.withAccounts(account1);
         TransactionBuilder i = new SmartContract(nefFile, manifestFile, neow).deploy()
-                .withSender(account1.getScriptHash())
-                .withWallet(w)
-                .withValidUntilBlock(1000)
-                .build()
+                .sender(account1.getScriptHash())
+                .wallet(w)
+                .validUntilBlock(1000)
                 .sign();
 
         assertThat(i.getTransaction().getScript(),
