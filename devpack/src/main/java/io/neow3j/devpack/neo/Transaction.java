@@ -1,4 +1,6 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
+
+import io.neow3j.devpack.ScriptContainer;
 
 /**
  * Represents a transaction and provides transaction-related information. It is returned for example

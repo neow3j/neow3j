@@ -1,4 +1,4 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 /**
  * Represents a block and provides block-related information. It is returned for example when

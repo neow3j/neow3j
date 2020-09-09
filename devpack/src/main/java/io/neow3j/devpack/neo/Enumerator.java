@@ -1,11 +1,11 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_CONCAT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_CREATE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_NEXT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_VALUE;
 
-import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * A NeoVM-specific enumerator used to iterate over a set of values.

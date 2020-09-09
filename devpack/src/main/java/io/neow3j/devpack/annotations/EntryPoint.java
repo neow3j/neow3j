@@ -1,4 +1,4 @@
-package io.neow3j.devpack.framework.annotations;
+package io.neow3j.devpack.annotations;
 
 import java.lang.annotation.*;
 

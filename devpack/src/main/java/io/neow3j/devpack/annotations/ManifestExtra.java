@@ -1,6 +1,6 @@
-package io.neow3j.devpack.framework.annotations;
+package io.neow3j.devpack.annotations;
 
-import io.neow3j.devpack.framework.annotations.ManifestExtra.ManifestExtras;
+import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Target;

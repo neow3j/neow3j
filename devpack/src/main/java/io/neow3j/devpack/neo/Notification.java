@@ -1,4 +1,4 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 /**
  * A notification consists of a script hash (the sender of the notification) and content itself

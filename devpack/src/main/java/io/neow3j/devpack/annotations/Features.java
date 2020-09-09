@@ -1,4 +1,4 @@
-package io.neow3j.devpack.framework.annotations;
+package io.neow3j.devpack.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -8,7 +8,10 @@ import java.lang.annotation.Target;
  * contract's manifest file.
  */
 @Target(ElementType.TYPE)
-public @interface SupportedStandards {
+public @interface Features {
 
-    String[] value();
+    boolean hasStorage() default false;
+
+    boolean payable() default false;
+
 }

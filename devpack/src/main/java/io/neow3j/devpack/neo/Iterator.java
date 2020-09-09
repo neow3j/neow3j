@@ -1,4 +1,4 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_NEXT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_VALUE;
@@ -8,7 +8,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_KEY;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_KEYS;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_VALUES;
 
-import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * A NeoVM-specific iterator used to iterate over a set of key-value elements.

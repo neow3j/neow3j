@@ -1,11 +1,11 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_DESERIALIZE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_SERIALIZE;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.devpack.framework.annotations.Instruction;
-import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.model.types.StackItemType;
 
 /**

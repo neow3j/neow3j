@@ -1,4 +1,4 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETBLOCK;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETCONTRACT;
@@ -7,7 +7,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSA
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT;
 
-import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * Provides a set of methods for accessing blockchain data.

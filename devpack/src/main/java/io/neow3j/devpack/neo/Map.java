@@ -1,7 +1,7 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.devpack.framework.annotations.Instruction;
+import io.neow3j.devpack.annotations.Instruction;
 
 /**
  * A NeoVM-specific map for mapping keys to values of any NeoVM-compatible types.

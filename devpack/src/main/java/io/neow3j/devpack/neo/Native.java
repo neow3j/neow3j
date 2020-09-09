@@ -1,6 +1,6 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
-import io.neow3j.devpack.framework.annotations.Appcall;
+import io.neow3j.devpack.annotations.Appcall;
 
 /**
  * Provides convenience methods to call Neo-native contracts (NEO, GAS, and Policy)

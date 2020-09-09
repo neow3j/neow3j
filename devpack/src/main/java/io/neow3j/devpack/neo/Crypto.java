@@ -1,7 +1,7 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * Offers cryptographic functions for use in smart contracts.

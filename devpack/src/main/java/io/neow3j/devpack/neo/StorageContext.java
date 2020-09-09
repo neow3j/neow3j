@@ -1,9 +1,9 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_ASREADONLY;
-import static io.neow3j.devpack.framework.Helper.toByteArray;
+import static io.neow3j.devpack.Helper.toByteArray;
 
-import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * A <tt>StorageContext</tt> is the gateway to a contracts storage. It can be passed to other

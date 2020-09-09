@@ -1,4 +1,4 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_DELETE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_FIND;
@@ -8,7 +8,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_GETREADONLYC
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_PUT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_PUTEX;
 
-import io.neow3j.devpack.framework.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * Provides a set of methods to insert, query, and delete data in the persistent storage of smart

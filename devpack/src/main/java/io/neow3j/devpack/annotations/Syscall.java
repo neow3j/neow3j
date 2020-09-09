@@ -1,7 +1,7 @@
-package io.neow3j.devpack.framework.annotations;
+package io.neow3j.devpack.annotations;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.framework.annotations.Syscall.Syscalls;
+import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Target;

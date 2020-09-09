@@ -1,7 +1,7 @@
-package io.neow3j.devpack.framework;
+package io.neow3j.devpack.neo;
 
-import static io.neow3j.devpack.framework.Helper.concat;
-import static io.neow3j.devpack.framework.Helper.toByteArray;
+import static io.neow3j.devpack.Helper.concat;
+import static io.neow3j.devpack.Helper.toByteArray;
 
 /**
  * A key-value view on the entries of smart contract's storage with a specific prefix.
