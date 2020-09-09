@@ -15,7 +15,6 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -104,12 +103,12 @@ public class NeoTokenTest {
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        Transaction tx = new NeoToken(neow).buildRegisterInvocation(
+        TransactionBuilder b = new NeoToken(neow).buildRegisterInvocation(
                 account1.getScriptHash(), w, account1.getECKeyPair().getPublicKey());
 
-        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
-        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
@@ -196,11 +195,11 @@ public class NeoTokenTest {
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        Transaction tx = new NeoToken(neow).buildVoteInvocation(account1.getScriptHash(), w,
+        TransactionBuilder b = new NeoToken(neow).buildVoteTransaction(account1.getScriptHash(), w,
                 new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2));
 
-        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
-        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        assertThat(b.getScript(), is(expectedScript));
     }
 }

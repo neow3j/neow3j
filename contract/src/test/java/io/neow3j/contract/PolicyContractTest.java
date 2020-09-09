@@ -101,9 +101,10 @@ public class PolicyContractTest {
                 SET_FEE_PER_BYTE, Arrays.asList(ContractParameter.integer(20))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder inv = new PolicyContract(neow3j)
-                .buildSetFeePerByteInvocation(20, w, account1.getScriptHash());
-        Transaction tx = inv.getTransaction();
+        Transaction tx = new PolicyContract(neow3j)
+                .buildSetFeePerByteInvocation(20, w, account1.getScriptHash())
+                .sign();
+
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
@@ -121,10 +122,10 @@ public class PolicyContractTest {
                 SET_MAX_TX_PER_BLOCK, Arrays.asList(ContractParameter.integer(500))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder inv = new PolicyContract(neow3j)
-                .buildSetMaxTxPerBlockInvocation(500, w, account1.getScriptHash());
+        Transaction tx = new PolicyContract(neow3j)
+                .buildSetMaxTxPerBlockInvocation(500, w, account1.getScriptHash())
+                .sign();
 
-        Transaction tx = inv.getTransaction();
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
@@ -142,10 +143,10 @@ public class PolicyContractTest {
                 Arrays.asList(ContractParameter.hash160(recipient))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder inv = new PolicyContract(neow3j)
-                .buildBlockAccountInvocation(recipient, w, account1.getScriptHash());
+        Transaction tx = new PolicyContract(neow3j)
+                .buildBlockAccountInvocation(recipient, w, account1.getScriptHash())
+                .sign();
 
-        Transaction tx = inv.getTransaction();
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
@@ -163,10 +164,10 @@ public class PolicyContractTest {
                 UNBLOCK_ACCOUNT, Arrays.asList(ContractParameter.hash160(recipient))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder inv = new PolicyContract(neow3j)
-                .buildUnblockAccountInvocation(recipient, w, account1.getScriptHash());
+        Transaction tx = new PolicyContract(neow3j)
+                .buildUnblockAccountInvocation(recipient, w, account1.getScriptHash())
+                .sign();
 
-        Transaction tx = inv.getTransaction();
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
