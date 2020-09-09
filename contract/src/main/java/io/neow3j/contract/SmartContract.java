@@ -9,6 +9,7 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
@@ -93,7 +94,6 @@ public class SmartContract {
 
     }
 
-    // TODO: 09.09.20 Michael: Rename to `invokeFunction`.
     /**
      * Initializes an {@link TransactionBuilder} for a function invocation of this contract with the
      * provided function and parameters. The order of the parameters is relevant.
@@ -102,7 +102,7 @@ public class SmartContract {
      * @param contractParameters The parameters to pass with the invocation.
      * @return An {@link TransactionBuilder} allowing to set further details of the invocation.
      */
-    public TransactionBuilder invoke(String function, ContractParameter... contractParameters) {
+    public TransactionBuilder invokeFunction(String function, ContractParameter... contractParameters) {
         if (function == null || function.isEmpty()) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
@@ -129,7 +129,7 @@ public class SmartContract {
     public String callFuncReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
 
-        StackItem item = invokeFunction(function, Arrays.asList(params))
+        StackItem item = callInvokeFunction(function, Arrays.asList(params))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.BYTE_STRING)) {
             return item.asByteString().getAsString();
@@ -152,12 +152,20 @@ public class SmartContract {
     public BigInteger callFuncReturningInt(String function, ContractParameter... params)
             throws IOException, UnexpectedReturnTypeException {
 
-        StackItem item = invokeFunction(function, Arrays.asList(params))
+        StackItem item = callInvokeFunction(function, Arrays.asList(params))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue();
         }
         throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
+    }
+
+    public NeoInvokeFunction callInvokeFunction(String function, Signer... signers)
+            throws IOException {
+        if (function == null || function.isEmpty()) {
+            throw new IllegalArgumentException("The invocation function must not be null or empty.");
+        }
+        return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();
     }
 
     /**
@@ -169,8 +177,7 @@ public class SmartContract {
      * @return The call's response.
      * @throws IOException  if something goes wrong when communicating with the neo-node.
      */
-    // TODO: 09.09.20 Michael: Rename to `callInvokeFunction`.
-    public NeoInvokeFunction invokeFunction(String function, List<ContractParameter> params,
+    public NeoInvokeFunction callInvokeFunction(String function, List<ContractParameter> params,
             Signer... signers)
             throws IOException {
         // Remark: The list of signers is required for `invokefunction` calls that will hit a
@@ -178,8 +185,7 @@ public class SmartContract {
         // case because we cannot know if the invoked function needs it or not and it doesn't
         // lead to failures if we add them in any case.
         if (function == null || function.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The invocation function must not be null or empty.");
+            throw new IllegalArgumentException("The invocation function must not be null or empty.");
         }
         if (params.isEmpty()) {
             return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();

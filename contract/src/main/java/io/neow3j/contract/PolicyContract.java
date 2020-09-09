@@ -2,11 +2,13 @@ package io.neow3j.contract;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.crypto.Sign;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.util.List;
@@ -68,7 +70,7 @@ public class PolicyContract extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<ScriptHash> getBlockedAccounts() throws IOException {
-        StackItem arrayItem = invokeFunction(GET_BLOCKED_ACCOUNTS).getInvocationResult().getStack()
+        StackItem arrayItem = callInvokeFunction(GET_BLOCKED_ACCOUNTS).getInvocationResult().getStack()
                 .get(0);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
@@ -88,22 +90,18 @@ public class PolicyContract extends SmartContract {
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction setFeePerByte(Integer fee, Wallet wallet, ScriptHash signer)
+    public TransactionBuilder setFeePerByte(Integer fee, Wallet wallet, ScriptHash signer)
             throws IOException {
 
-        return buildSetFeePerByteInvocation(fee, wallet, signer).send();
+        return buildSetFeePerByteInvocation(fee, wallet, signer);
     }
 
     // Method extracted for testability.
-    TransactionBuilder buildSetFeePerByteInvocation(Integer fee, Wallet wallet, ScriptHash signer)
-            throws IOException {
+    TransactionBuilder buildSetFeePerByteInvocation(Integer fee, Wallet wallet, ScriptHash signer) {
 
-        return invoke(SET_FEE_PER_BYTE)
-                .signers(Signer.calledByEntry(signer))
+        return invokeFunction(SET_FEE_PER_BYTE, ContractParameter.integer(fee))
                 .wallet(wallet)
-                .parameters(ContractParameter.integer(fee))
-                .build()
-                .sign();
+                .signers(Signer.calledByEntry(signer));
     }
 
     /**
@@ -117,22 +115,19 @@ public class PolicyContract extends SmartContract {
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction setMaxTransactionsPerBlock(Integer maxTxPerBlock, Wallet wallet,
-            ScriptHash signer) throws IOException {
+    public TransactionBuilder setMaxTransactionsPerBlock(Integer maxTxPerBlock, Wallet wallet,
+            ScriptHash signer) {
 
-        return buildSetMaxTxPerBlockInvocation(maxTxPerBlock, wallet, signer).send();
+        return buildSetMaxTxPerBlockInvocation(maxTxPerBlock, wallet, signer);
     }
 
     // Method extracted for testability.
     TransactionBuilder buildSetMaxTxPerBlockInvocation(Integer maxTxPerBlock, Wallet wallet,
-            ScriptHash signer) throws IOException {
+            ScriptHash signer) {
 
-        return invoke(SET_MAX_TX_PER_BLOCK)
-                .signers(Signer.calledByEntry(signer))
+        return invokeFunction(SET_MAX_TX_PER_BLOCK, ContractParameter.integer(maxTxPerBlock))
                 .wallet(wallet)
-                .parameters(ContractParameter.integer(maxTxPerBlock))
-                .build()
-                .sign();
+                .signers(Signer.calledByEntry(signer));
     }
 
     /**
@@ -145,22 +140,19 @@ public class PolicyContract extends SmartContract {
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction blockAccount(ScriptHash accountToBlock, Wallet wallet,
+    public TransactionBuilder blockAccount(ScriptHash accountToBlock, Wallet wallet,
             ScriptHash signer) throws IOException {
 
-        return buildBlockAccountInvocation(accountToBlock, wallet, signer).send();
+        return buildBlockAccountInvocation(accountToBlock, wallet, signer);
     }
 
     // Method extracted for testability.
     TransactionBuilder buildBlockAccountInvocation(ScriptHash accountToBlock, Wallet wallet,
-            ScriptHash signer) throws IOException {
+            ScriptHash signer) {
 
-        return invoke(BLOCK_ACCOUNT)
-                .signers(Signer.calledByEntry(signer))
+        return invokeFunction(BLOCK_ACCOUNT, ContractParameter.hash160(accountToBlock))
                 .wallet(wallet)
-                .parameters(ContractParameter.hash160(accountToBlock))
-                .build()
-                .sign();
+                .signers(Signer.calledByEntry(signer));
     }
 
     /**
@@ -174,21 +166,19 @@ public class PolicyContract extends SmartContract {
      * @return the response from the neo-node.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public NeoSendRawTransaction unblockAccount(ScriptHash accountToUnblock, Wallet wallet,
+    public TransactionBuilder unblockAccount(ScriptHash accountToUnblock, Wallet wallet,
             ScriptHash signer) throws IOException {
 
-        return buildUnblockAccountInvocation(accountToUnblock, wallet, signer).send();
+        return buildUnblockAccountInvocation(accountToUnblock, wallet, signer);
     }
 
     // Method extracted for testability.
     TransactionBuilder buildUnblockAccountInvocation(ScriptHash accountToUnblock, Wallet wallet,
-            ScriptHash signer) throws IOException {
+            ScriptHash signer) {
 
-        return invoke(UNBLOCK_ACCOUNT)
-                .signers(Signer.calledByEntry(signer))
+        return invokeFunction(UNBLOCK_ACCOUNT,
+                ContractParameter.hash160(accountToUnblock))
                 .wallet(wallet)
-                .parameters(ContractParameter.hash160(accountToUnblock))
-                .build()
-                .sign();
+                .signers(Signer.calledByEntry(signer));
     }
 }

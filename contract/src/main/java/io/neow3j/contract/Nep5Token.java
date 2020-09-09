@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.Account;
@@ -183,14 +182,13 @@ public class Nep5Token extends SmartContract {
      * @return The transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NeoSendRawTransaction transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
+    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
             throws IOException {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
-        TransactionBuilder inv = buildTransferScript(wallet, to, amount);
-        return inv.send();
+        return buildTransferScript(wallet, to, amount);
     }
 
     // Method extracted for testability.
@@ -218,7 +216,7 @@ public class Nep5Token extends SmartContract {
      * @return The transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NeoSendRawTransaction transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
+    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
             BigDecimal amount, ScriptHash... from) throws IOException {
 
         if (from.length == 0) {
@@ -242,7 +240,7 @@ public class Nep5Token extends SmartContract {
             }
             accounts.add(a);
         }
-        return buildMultiTransferInvocation(wallet, to, amount, accounts).send();
+        return buildMultiTransferInvocation(wallet, to, amount, accounts);
     }
 
     TransactionBuilder buildMultiTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount,
@@ -300,16 +298,15 @@ public class Nep5Token extends SmartContract {
         }
         byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
 
-        TransactionBuilder invocationBuilder = new TransactionBuilder(neow)
+        TransactionBuilder b = new TransactionBuilder(neow)
                 .wallet(wallet)
-                .script(concatenatedScript)
-                .failOnFalse();
+                .script(concatenatedScript);
 
         for (Signer signer : signers) {
-            invocationBuilder.signers(signer);
+            b.signers(signer);
         }
 
-        return invocationBuilder.build().sign();
+        return b;
     }
 
     private boolean privateKeysArePresentForMultiSig(Wallet wallet, ScriptHash multiSig) {
@@ -338,17 +335,17 @@ public class Nep5Token extends SmartContract {
      * @param wallet The wallet from which to send the tokens from.
      * @param to     The script hash of the receiver.
      * @param amount The amount to transfer as a decimal number (not token fractions).
-     * @return The transaction id.
+     * @return The transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NeoSendRawTransaction transferFromDefaultAccount(Wallet wallet, ScriptHash to,
+    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, ScriptHash to,
             BigDecimal amount) throws IOException {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
 
-        return buildTransferInvocation(wallet, to, amount).send();
+        return buildTransferInvocation(wallet, to, amount);
     }
 
     // Method extracted for testability.
@@ -363,16 +360,13 @@ public class Nep5Token extends SmartContract {
                     + " tokens. Transfer amount is " + fractions.toString() + " but account"
                     + " only holds " + accBalance.toString() + " (in token fractions).");
         }
-        return invoke(NEP5_TRANSFER)
-                .signers(Signer.calledByEntry(acc.getScriptHash()))
+
+        return invokeFunction(NEP5_TRANSFER,
+                ContractParameter.hash160(acc.getScriptHash()),
+                ContractParameter.hash160(to),
+                ContractParameter.integer(fractions))
                 .wallet(wallet)
-                .parameters(
-                        ContractParameter.hash160(acc.getScriptHash()),
-                        ContractParameter.hash160(to),
-                        ContractParameter.integer(fractions)
-                )
-                .build()
-                .sign();
+                .signers(Signer.calledByEntry(acc.getScriptHash()));
     }
 
     private BigInteger getAmountAsBigInteger(BigDecimal amount) throws IOException {
