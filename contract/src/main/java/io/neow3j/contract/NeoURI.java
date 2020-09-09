@@ -74,51 +74,47 @@ public class NeoURI {
     }
 
     /**
-     * Builds an Invocation from this NeoURI.
-     * Needs all necessary parameters to create an invocation object.
+     * Builds a transaction builder {@code TransactionBuilder} from this NeoURI.
+     * Needs all necessary parameters to create a transfer invocation.
      *
-     * @return an Invocation object.
+     * @return a TransactionBuilder object.
      */
-    public TransactionBuilderF invocationBuilder() throws IOException {
-        if (this.neow3j == null) {
+    public TransactionBuilder transferBuilder() throws IOException {
+        if (neow3j == null) {
             throw new IllegalStateException("Neow3j instance is not set.");
         }
-        if (this.address == null) {
+        if (address == null) {
             throw new IllegalStateException("Recipient not set.");
         }
-        if (this.wallet == null) {
+        if (wallet == null) {
             throw new IllegalStateException("Wallet not set.");
         }
-        if (this.amount == null) {
+        if (amount == null) {
             throw new IllegalStateException("Amount is not set.");
         }
 
         BigInteger fractions;
         BigDecimal factor;
         ScriptHash contract;
-        if (isNeoToken(this.asset)) {
+        if (isNeoToken(asset)) {
             factor = BigDecimal.TEN.pow(NeoToken.DECIMALS);
-            fractions = this.amount.multiply(factor).toBigInteger();
+            fractions = amount.multiply(factor).toBigInteger();
             contract = NeoToken.SCRIPT_HASH;
-        } else if (isGasToken(this.asset)) {
+        } else if (isGasToken(asset)) {
             factor = BigDecimal.TEN.pow(GasToken.DECIMALS);
-            fractions = this.amount.multiply(factor).toBigInteger();
+            fractions = amount.multiply(factor).toBigInteger();
             contract = GasToken.SCRIPT_HASH;
         } else {
-            fractions = computeFractions(this.neow3j, this.asset);
-            contract = new ScriptHash(this.asset);
+            fractions = computeFractions(neow3j, asset);
+            contract = new ScriptHash(asset);
         }
 
-        return new TransactionBuilder(this.neow3j)
-                .wallet(this.wallet)
-                .contract(contract)
-                .withFunction(TRANSFER_FUNCTION)
-                .withParameters(
-                        ContractParameter.hash160(this.wallet.getDefaultAccount().getScriptHash()),
-                        ContractParameter.hash160(this.address),
-                        ContractParameter.integer(fractions)
-                )
-                .failOnFalse();
+        return new SmartContract(contract, neow3j)
+                .invokeFunction(TRANSFER_FUNCTION,
+                        ContractParameter.hash160(wallet.getDefaultAccount().getScriptHash()),
+                        ContractParameter.hash160(address),
+                        ContractParameter.integer(fractions))
+                .wallet(wallet);
     }
 
     private boolean isNeoToken(String asset) {
@@ -135,11 +131,9 @@ public class NeoURI {
     }
 
     private int getDecimals(Neow3j neow3j, String asset) throws IOException {
-        NeoInvokeFunction invocation = new TransactionBuilder(neow3j)
-                .contract(new ScriptHash(asset))
-                .withFunction("decimals")
-                .invokeFunction();
-        StackItem item = invocation.getInvocationResult().getStack().get(0);
+        NeoInvokeFunction response = new SmartContract(new ScriptHash(asset), neow3j)
+                .callInvokeFunction("decimals");
+        StackItem item = response.getInvocationResult().getStack().get(0);
 
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue().intValue();
