@@ -2,6 +2,8 @@ package io.neow3j.contract;
 
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -146,14 +148,14 @@ public class SmartContractTest {
     public void invokeWithNullString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("null"));
-        new SmartContract(NEO_SCRIPT_HASH, this.neow).invoke(null);
+        new SmartContract(NEO_SCRIPT_HASH, this.neow).invokeFunction(null);
     }
 
     @Test
     public void invokeWithEmptyString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("empty"));
-        new SmartContract(NEO_SCRIPT_HASH, this.neow).invoke("");
+        new SmartContract(NEO_SCRIPT_HASH, this.neow).invokeFunction("");
     }
 
     @Test
@@ -168,15 +170,14 @@ public class SmartContractTest {
 
         Wallet w = Wallet.withAccounts(account1);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
-        TransactionBuilder i = sc.invoke(NEP5_TRANSFER,
+        Transaction tx = sc.invokeFunction(NEP5_TRANSFER,
                 ContractParameter.hash160(account1.getScriptHash()),
                 ContractParameter.hash160(recipient),
                 ContractParameter.integer(5))
                 .wallet(w)
-                .build()
                 .sign();
 
-        assertThat(i.getTransaction().getScript(), is(expectedScript));
+        assertThat(tx.getScript(), is(expectedScript));
     }
 
     @Test
@@ -223,8 +224,8 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), NEP5_BALANCEOF, account1.getScriptHash().toString());
 
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
-        NeoInvokeFunction response = sc.invokeFunction(NEP5_BALANCEOF,
-                ContractParameter.hash160(account1.getScriptHash()));
+        NeoInvokeFunction response = sc.callInvokeFunction(NEP5_BALANCEOF,
+                Arrays.asList(ContractParameter.hash160(account1.getScriptHash())));
         assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(3)));
     }
@@ -243,7 +244,7 @@ public class SmartContractTest {
         NeoInvokeScript response = new SmartContract(nef, manifest, neow).deploy()
                 .sender(account1.getScriptHash())
                 .wallet(w)
-                .invokeScript();
+                .callInvokeScript();
 
         assertThat(response.getInvocationResult().getScript(), is(TEST_CONTRACT_1_DEPLOY_SCRIPT));
         assertThat(response.getInvocationResult().getStack().get(0).getType(),
@@ -257,13 +258,12 @@ public class SmartContractTest {
                 TEST_CONTRACT_1_DEPLOY_SCRIPT);
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder i = new SmartContract(nefFile, manifestFile, neow).deploy()
-                .sender(account1.getScriptHash())
+        Transaction tx = new SmartContract(nefFile, manifestFile, neow).deploy()
                 .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
                 .validUntilBlock(1000)
                 .sign();
 
-        assertThat(i.getTransaction().getScript(),
-                is(Numeric.hexStringToByteArray(TEST_CONTRACT_1_DEPLOY_SCRIPT)));
+        assertThat(tx.getScript(), is(Numeric.hexStringToByteArray(TEST_CONTRACT_1_DEPLOY_SCRIPT)));
     }
 }

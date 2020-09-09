@@ -221,7 +221,7 @@ public class NeoURITest {
                 .wallet(WALLET)
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
-                .invocationBuilder();
+                .transferBuilder();
     }
 
     @Test
@@ -232,7 +232,7 @@ public class NeoURITest {
                 .wallet(WALLET)
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
-                .invocationBuilder(),
+                .transferBuilder(),
                 is(instanceOf(TransactionBuilder.class)));
     }
 
@@ -243,7 +243,7 @@ public class NeoURITest {
                 .wallet(WALLET)
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
-                .invocationBuilder(),
+                .transferBuilder(),
                 is(instanceOf(TransactionBuilder.class)));
     }
 
@@ -251,7 +251,7 @@ public class NeoURITest {
     public void testURI_InvocationBuilder_NoNeow3j() throws IOException {
         new NeoURI()
                 .toAddress(ADDRESS)
-                .invocationBuilder();
+                .transferBuilder();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -260,7 +260,7 @@ public class NeoURITest {
                 .asset(NeoToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .amount(AMOUNT)
-                .invocationBuilder();
+                .transferBuilder();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -269,7 +269,7 @@ public class NeoURITest {
                 .asset(NeoToken.SCRIPT_HASH)
                 .toAddress(ADDRESS)
                 .amount(AMOUNT)
-                .invocationBuilder();
+                .transferBuilder();
     }
 
     @Test(expected = IllegalStateException.class)
@@ -278,6 +278,6 @@ public class NeoURITest {
                 .asset(NeoToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .toAddress(ADDRESS)
-                .invocationBuilder();
+                .transferBuilder();
     }
 }
