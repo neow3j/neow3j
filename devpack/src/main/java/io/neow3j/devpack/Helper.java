@@ -128,20 +128,20 @@ public class Helper {
     /**
      * Casts the given byte array to a string.
      * <p>
-     * Examples
+     * In the NeoVM strings are represented as byte strings. Hence the method name.
+     * <p>
+     * Examples:
      * <ul>
      *     <li>[0x68656c6c6f]: "hello"</li>
      *     <li>[]: ""</li>
      *     <li>[0x4e656f]: "Neo"</li>
      * </ul>
-     * This doesn't actually require an operation in the NeoVM. I.e., calling this doesn't
-     * add anything to the compiled script.
      *
      * @param source The byte array to cast.
      * @return the string.
      */
-    @Instruction() // Nothing to do.
-    public native static String asString(byte[] source);
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native static String toByteString(byte[] source);
 
     /**
      * Checks if the value of x is in the range [a, b).
