@@ -207,24 +207,6 @@ public class Helper {
     @Instruction(opcode = OpCode.REVERSEITEMS)
     public static native byte[] reverse(byte[] source);
 
-    /**
-     * Attempts to serialize the given object to a byte array.
-     *
-     * @param source the object to serialize.
-     * @return the serialized byte array.
-     */
-    @Syscall(SYSTEM_BINARY_SERIALIZE)
-    public static native byte[] serialize(Object source);
-
-    /**
-     * Attempts to deserialize the given byte array. It is up to the developer to know what type to
-     * expect from the deserialization.
-     *
-     * @param source the byte array to deserialize.
-     * @return the deserialized object.
-     */
-    @Syscall(SYSTEM_BINARY_DESERIALIZE)
-    public static native Object deserialize(byte[] source);
 
     // TODO: Add support for the following function that manipulate static string literals.
 //    /**
