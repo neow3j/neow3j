@@ -13,7 +13,6 @@ import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.ScriptContainer;
 import io.neow3j.devpack.annotations.Appcall;
-import io.neow3j.devpack.annotations.EntryPoint;
 import io.neow3j.devpack.annotations.Features;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
@@ -211,7 +210,6 @@ public class Compiler {
     }
 
     private void collectAndInitializeMethods(ClassNode asmClass) {
-        boolean entryPointFound = false;
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
                 continue; // Handled in method `collectAndInitializeStaticFields()`.
@@ -223,23 +221,8 @@ public class Compiler {
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
             initializeMethod(neoMethod);
-            if (entryPointFound && neoMethod.isEntryPoint) {
-                throw new CompilerException("Multiple entry points found. Only one method of "
-                        + "a smart contract can be the entry point.");
-            } else {
-                entryPointFound = entryPointFound || neoMethod.isEntryPoint;
-            }
             this.neoModule.addMethod(neoMethod);
         }
-        if (!entryPointFound) {
-            throw new CompilerException("No entry point found. Specify one method as the entry "
-                    + "point of the smart contract.");
-        }
-    }
-
-    private boolean isEntryPoint(MethodNode asmMethod) {
-        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
-                .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class)));
     }
 
     private ClassNode getAsmClass(String fullyQualifiedClassName) throws IOException {
@@ -930,7 +913,6 @@ public class Compiler {
             // the ABI and are invokable.
             neoMethod.isAbiMethod = true;
         }
-        neoMethod.isEntryPoint = isEntryPoint(neoMethod.asmMethod);
 
         // Look for method params and local variables and add them to the NeoMethod. Note that Java
         // mixes method params and local variables.
