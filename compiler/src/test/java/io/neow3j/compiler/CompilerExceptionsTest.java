@@ -6,6 +6,7 @@ import io.neow3j.devpack.framework.Storage;
 import io.neow3j.devpack.framework.annotations.EntryPoint;
 import java.io.IOException;
 import org.hamcrest.core.StringContains;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -17,6 +18,7 @@ public class CompilerExceptionsTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
+    @Ignore("This behavior is not yet implemented.")
     @Test
     public void failOnObjectComparison() throws IOException {
         exceptionRule.expect(CompilerException.class);

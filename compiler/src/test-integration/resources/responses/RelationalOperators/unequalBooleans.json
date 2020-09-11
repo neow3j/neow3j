@@ -2,12 +2,12 @@
   "type": "Array",
   "value": [
     {
-      "type": "Boolean",
-      "value": false
+      "type": "Integer",
+      "value": 0
     },
     {
-      "type": "Boolean",
-      "value": true
+      "type": "Integer",
+      "value": 1
     }
   ]
 }
