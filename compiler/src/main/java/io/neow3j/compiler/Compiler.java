@@ -1582,7 +1582,7 @@ public class Compiler {
         // then default to: attribute with className
 
         if (!extras.containsKey("name")) {
-            String fqn = internalNameToFullyQualifiedName(classNode.name);
+            String fqn = getFullyQualifiedNameForInternalName(classNode.name);
             String className = getClassName(fqn);
             extras.put("name", className);
         }

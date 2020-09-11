@@ -1,7 +1,8 @@
 package io.neow3j.utils;
 
 import static io.neow3j.utils.ClassUtils.getClassName;
-import static io.neow3j.utils.ClassUtils.internalNameToFullyQualifiedName;
+import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -18,7 +19,7 @@ public class ClassUtilsTest {
 
     @Test
     public void testGetClassNameHappyPathWithSlashes() {
-        String fqn = internalNameToFullyQualifiedName("io/neow3j/blah/Test");
+        String fqn = getFullyQualifiedNameForInternalName("io/neow3j/blah/Test");
         String simpleClassName = getClassName(fqn);
         assertThat(simpleClassName, is("Test"));
     }
@@ -37,14 +38,26 @@ public class ClassUtilsTest {
 
     @Test
     public void testInternalNameToFQNHappyPath() {
-        String fqn = internalNameToFullyQualifiedName("io/neow3j/blah/Test");
+        String fqn = getFullyQualifiedNameForInternalName("io/neow3j/blah/Test");
         assertThat(fqn, is("io.neow3j.blah.Test"));
     }
 
     @Test
     public void testInternalNameToFQNEmpty() {
-        String fqn = internalNameToFullyQualifiedName("");
+        String fqn = getFullyQualifiedNameForInternalName("");
         assertThat(fqn, is(""));
+    }
+
+    @Test
+    void getClassNameFromInternalNameReturnsCorrectNameForProperInternalName() {
+        String result = getClassNameForInternalName("io/neow3j/blah/Test");
+        assertThat(result, is("Test"));
+    }
+
+    @Test
+    void getClassNameFromInternalNameReturnsEmptyStringForEmptyInternalName() {
+        String result = getClassNameForInternalName("");
+        assertThat(result, is(""));
     }
 
 }
