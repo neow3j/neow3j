@@ -1,0 +1,17 @@
+{
+  "type": "Array",
+  "value": [
+    {
+      "type": "Integer",
+      "value": 1
+    },
+    {
+      "type": "Integer",
+      "value": -99
+    },
+    {
+      "type": "Integer",
+      "value": 100
+    }
+  ]
+}
