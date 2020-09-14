@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;

@@ -45,7 +45,6 @@ public class TransactionBuilder {
     protected Wallet wallet;
     protected Transaction transaction;
 
-    // from transaction class
     private byte version;
     private long nonce;
     private Long validUntilBlock;
@@ -254,7 +253,6 @@ public class TransactionBuilder {
                 consumer.accept(fees, senderGasBalance);
             }
         }
-
         return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
                 networkFee, attributes, script, witnesses);
     }

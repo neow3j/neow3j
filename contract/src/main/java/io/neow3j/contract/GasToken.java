@@ -53,5 +53,4 @@ public class GasToken extends Nep5Token {
     public int getDecimals() {
         return DECIMALS;
     }
-
 }

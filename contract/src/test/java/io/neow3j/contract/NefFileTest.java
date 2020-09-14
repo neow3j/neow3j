@@ -124,5 +124,4 @@ public class NefFileTest {
     public void getVersionSize() {
         assertThat(new NefFile.Version().getSize(), is(4 * 32));
     }
-
 }

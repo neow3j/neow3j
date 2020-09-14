@@ -2,16 +2,12 @@ package io.neow3j.contract;
 
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
-import io.neow3j.transaction.TransactionAttribute;
-import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -638,15 +634,6 @@ public class TransactionBuilderTest {
                                 ContractParameter.integer(5)
                         )
                 );
-
-//        NeoInvokeFunction i = new TransactionBuilder(neow)
-//                .contract(NEO_TOKEN_SCRIPT_HASH)
-//                .function(NEP5_TRANSFER)
-//                .parameters(
-//                        ContractParameter.hash160(account1.getScriptHash()),
-//                        ContractParameter.hash160(recipient),
-//                        ContractParameter.integer(5))
-//                .invokeFunction();
 
         // The script that's in the `invokefunction_transfer_neo.json` response file.
         String scriptInResponse =
