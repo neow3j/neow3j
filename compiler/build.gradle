@@ -8,5 +8,6 @@ dependencies {
             "org.ow2.asm:asm:$asmVersion",
             project(':devpack')
 
-    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion",
+            "org.awaitility:awaitility:$awaitility"
 }
