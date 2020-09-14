@@ -184,13 +184,14 @@ public class Compiler {
         if (instanceCtor.isPresent()) {
             AbstractInsnNode insn = findSuperCallToObjectCtor(instanceCtor.get());
             insn = insn.getNext();
-            while(insn != null) {
+            while (insn != null) {
                 if (insn.getType() != AbstractInsnNode.LINE &&
                         insn.getType() != AbstractInsnNode.LABEL &&
                         insn.getType() != AbstractInsnNode.FRAME &&
                         insn.getOpcode() != JVMOpcode.RETURN.getOpcode()) {
                     throw new CompilerException(format("Class %s has an explicit instance "
-                            + "constructor or static constructor, but, neither is supported.",
+                                    + "constructor or static constructor, but, neither is "
+                                    + "supported.",
                             getFullyQualifiedNameForInternalName(asmClass.name)));
                 }
                 insn = insn.getNext();
@@ -742,6 +743,7 @@ public class Compiler {
     /**
      * Handles the concatenation of strings, as in {@code "hello" + " world"}. Java in the
      * background uses a StringBuilder for this.
+     *
      * @param typeInsnNode The NEW instruction concerning the StringBuilder.
      * @return the last processed instruction.
      */
@@ -765,9 +767,9 @@ public class Compiler {
                 break; // End of string concatenation.
             }
             if (isCallToAnyScriptBuilderMethod(insn)) {
-                    throw new CompilerException(neoModule.asmSmartContractClass, neoMethod.currentLine,
-                            format("Only 'append(and 'toString()' are supported for StringBuilder, "
-                                    + "but '%s' was called", ((MethodInsnNode) insn).name));
+                throw new CompilerException(neoModule.asmSmartContractClass, neoMethod.currentLine,
+                        format("Only 'append()' and 'toString()' are supported for StringBuilder, "
+                                + "but '%s' was called", ((MethodInsnNode) insn).name));
             }
             insn = handleInsn(neoMethod, insn);
             insn = insn.getNext();
@@ -787,8 +789,8 @@ public class Compiler {
 
     private boolean isCallToScriptBuilderToString(AbstractInsnNode insn) {
         return insn instanceof MethodInsnNode
-            && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class))
-            && ((MethodInsnNode) insn).name.equals(TOSTRING_METHOD_NAME);
+                && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class))
+                && ((MethodInsnNode) insn).name.equals(TOSTRING_METHOD_NAME);
     }
 
     private boolean isCallToAnyScriptBuilderMethod(AbstractInsnNode insn) {
@@ -984,9 +986,8 @@ public class Compiler {
             throws IOException {
 
         TypeInsnNode typeInsn = (TypeInsnNode) insn;
-        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() &&
-                typeInsn.getNext().getNext().getOpcode() == JVMOpcode.INVOKESPECIAL.getOpcode()
-                : "Expected DUP and INVOKESPECIAL after NEW but got other instructions";
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode()
+                : "Expected DUP after NEW but got other instructions";
 
         if (typeInsn.desc.equals(getInternalName(StringBuilder.class))) {
             // Java, in the background, performs String concatenation, like `s1 + s2`, with the
@@ -995,26 +996,58 @@ public class Compiler {
         }
 
         ClassNode owner = getClassNodeForInternalName(typeInsn.desc);
-        MethodInsnNode ctorMethodInsn = (MethodInsnNode) typeInsn.getNext().getNext();
-        Optional<MethodNode> ctorMethod = getMethodNode(ctorMethodInsn, owner);
-        if (!ctorMethod.isPresent()) {
-            throw new CompilerException(owner, callingNeoMethod.currentLine,
-                    format("Couldn't find constructor '%s' on class '%s'.", ctorMethodInsn.name,
-                            getClassNameForInternalName(owner.name)));
-        }
+        MethodInsnNode ctorMethodInsn = skipToCtorMethodInstruction(typeInsn.getNext(), owner);
+        MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner).orElseThrow(() ->
+                new CompilerException(owner, callingNeoMethod.currentLine, format(
+                        "Couldn't find constructor '%s' on class '%s'.",
+                        ctorMethodInsn.name, getClassNameForInternalName(owner.name))));
 
-        if (hasSyscallAnnotation(ctorMethod.get())) {
-            addSyscall(ctorMethod.get(), callingNeoMethod);
-        } else if (hasInstructionAnnotation(ctorMethod.get())) {
-            addInstruction(ctorMethod.get(), callingNeoMethod);
+        if (ctorMethod.invisibleAnnotations == null
+                || ctorMethod.invisibleAnnotations.size() == 0) {
+            // It's a generic constructor without any Neo-specific annotations.
+            return convertConstructorCall(typeInsn, ctorMethod, owner, callingNeoMethod);
         } else {
-            convertConstructorCall(callingNeoMethod, owner, ctorMethod.get());
+            // The constructor has some Neo-specific annotation. No NEWARRAY/NEWSTRUCT or DUP is
+            // needed here.
+            // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can
+            // follow. Those are handled in the following while.
+            insn = insn.getNext().getNext();
+            while (!isCallToCtor(insn, owner)) {
+                insn = handleInsn(callingNeoMethod, insn);
+                insn = insn.getNext();
+            }
+            // Now we're at the INVOKESPECIAL call and can convert the ctor method.
+            if (hasSyscallAnnotation(ctorMethod)) {
+                addSyscall(ctorMethod, callingNeoMethod);
+            } else if (hasInstructionAnnotation(ctorMethod)) {
+                addInstruction(ctorMethod, callingNeoMethod);
+            }
+            return insn;
         }
-        return ctorMethodInsn;
     }
 
-    private void convertConstructorCall(NeoMethod callingNeoMethod, ClassNode owner,
-            MethodNode ctorMethod) throws IOException {
+    // Checks if the given instruction is a call to the given classes constructor (i.e., <init>).
+    private boolean isCallToCtor(AbstractInsnNode insn, ClassNode owner) {
+        return insn.getType() == AbstractInsnNode.METHOD_INSN
+                && ((MethodInsnNode) insn).owner.equals(owner.name)
+                && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
+    }
+
+    private MethodInsnNode skipToCtorMethodInstruction(AbstractInsnNode insn,
+            ClassNode owner) {
+
+        while (insn.getNext() != null) {
+            insn = insn.getNext();
+            if (isCallToCtor(insn, owner)) {
+                return (MethodInsnNode) insn;
+            }
+        }
+        throw new CompilerException(format("Couldn't find call to constructor of class %s",
+                getFullyQualifiedNameForInternalName(owner.name)));
+    }
+
+    private AbstractInsnNode convertConstructorCall(TypeInsnNode typeInsn, MethodNode ctorMethod,
+            ClassNode owner, NeoMethod callingNeoMethod) throws IOException {
 
         NeoMethod calledNeoMethod;
         String ctorMethodId = NeoMethod.getMethodId(ctorMethod, owner);
@@ -1039,14 +1072,19 @@ public class Compiler {
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
         // TODO: Determine when to use NEWSTRUCT.
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
-        // Reverse the arguments to the constructor. Plus one because the object on which the
-        // constructor is called is also a parameter. Plus another one because that object has been
-        // duplicated on the stack.
-        int itemsToReverse = Type.getMethodType(ctorMethod.desc).getArgumentTypes().length + 2;
-        addReverseArguments(callingNeoMethod, itemsToReverse);
+        // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can
+        // follow. Those are handled in the following while.
+        AbstractInsnNode insn = typeInsn.getNext().getNext();
+        while (!isCallToCtor(insn, owner)) {
+            insn = handleInsn(callingNeoMethod, insn);
+            insn = insn.getNext();
+        }
+        // Reverse the arguments that are passed to the constructor call.
+        addReverseArguments(ctorMethod, callingNeoMethod);
         // The actual address offset for the method call is set at a later point.
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4])
                 .setExtra(calledNeoMethod));
+        return insn;
     }
 
     private void initializeMethod(NeoMethod neoMethod) {
@@ -1234,7 +1272,8 @@ public class Compiler {
 
     /**
      * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor
-     * calls (INVOKESPECIAL) are handled in {@link Compiler#handleNew(AbstractInsnNode, NeoMethod)}.
+     * calls (INVOKESPECIAL) are handled in {@link Compiler#handleNew(AbstractInsnNode,
+     * NeoMethod)}.
      */
     private AbstractInsnNode handleInvoke(AbstractInsnNode insn, NeoMethod callingNeoMethod)
             throws IOException {
@@ -1487,8 +1526,7 @@ public class Compiler {
         addReverseArguments(callingNeoMethod, paramsCount);
     }
 
-    private void addReverseArguments(NeoMethod callingNeoMethod,
-            int paramsCount) {
+    private void addReverseArguments(NeoMethod callingNeoMethod, int paramsCount) {
         if (paramsCount == 2) {
             callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
         } else if (paramsCount == 3) {
