@@ -397,8 +397,9 @@ public class TransactionBuilder {
             if (wallet.holdsAccount(signer.getScriptHash())) {
                 sigAccounts.add(wallet.getAccount(signer.getScriptHash()));
             } else {
-                throw new TransactionConfigurationException("Wallet does not contain the "
-                        + "account for signer with script hash " + signer.getScriptHash());
+                throw new TransactionConfigurationException("Can't create transaction signature. " +
+                        "Wallet does not contain the signer account with script hash " +
+                        signer.getScriptHash());
             }
         });
         return sigAccounts;
@@ -533,6 +534,9 @@ public class TransactionBuilder {
                 multiSigVerifScript));
     }
 
+    // TODO: 14.09.20 Michael: Fix this. Should only be called, once the system and network fees are set or
+    //  calculated. E.g. after constructing a Transaction instance. However, this method cannot work in the
+    //  class Transaction.java, since it does not have the necessary dependencies.
     /**
      * Checks if the sender account of this transaction can cover the network and system fees. If
      * not, executes the given consumer supplying it with the required fee and the sender's GAS
@@ -553,6 +557,9 @@ public class TransactionBuilder {
         return this;
     }
 
+    // TODO: 14.09.20 Michael: Fix this. Should only be called, once the system and network fees are set or
+    //  calculated. E.g. after constructing a Transaction instance. However, this method cannot work in the
+    //  class Transaction.java, since it does not have the necessary dependencies.
     /**
      * Checks if the sender account of this transaction can cover the network and system fees. If
      * not, otherwise throw an exception created by the provided supplier.
