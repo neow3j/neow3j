@@ -68,7 +68,7 @@ public class SmartContract {
                 ContractManifest.class), neow);
     }
 
-    public SmartContract(NefFile nefFile, ContractManifest manifest, Neow3j neow)
+    private SmartContract(NefFile nefFile, ContractManifest manifest, Neow3j neow)
             throws JsonProcessingException {
 
         if (neow == null) {
@@ -90,11 +90,10 @@ public class SmartContract {
                     + "was " + manifestBytes.length + " bytes big, but a max of "
                     + NeoConstants.MAX_MANIFEST_SIZE + " is allowed.");
         }
-
     }
 
     /**
-     * Initializes an {@link TransactionBuilder} for a function invocation of this contract with the
+     * Initializes a {@link TransactionBuilder} for a function invocation of this contract with the
      * provided function and parameters. The order of the parameters is relevant.
      *
      * @param function           The function to invoke.
@@ -164,6 +163,14 @@ public class SmartContract {
         throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
     }
 
+    /**
+     * Does an {@code invokefunction} call to the given contract function.
+     *
+     * @param function  The function to call.
+     * @param signers   The list of signers for this contract call.
+     * @return The call's response.
+     * @throws IOException  if something goes wrong when communicating with the neo-node.
+     */
     public NeoInvokeFunction callInvokeFunction(String function, Signer... signers)
             throws IOException {
         if (function == null || function.isEmpty()) {
@@ -197,26 +204,41 @@ public class SmartContract {
         return neow.invokeFunction(scriptHash.toString(), function, params, signers).send();
     }
 
+    /**
+     * Gets the script hash of this smart contract.
+     *
+     * @return The script hash of this smart contract.
+     */
     public ScriptHash getScriptHash() {
         return scriptHash;
     }
 
+    /**
+     * Gets the {@link NefFile} of this smart contract.
+     *
+     * @return The {@link NefFile} of this smart contract.
+     */
     public NefFile getNefFile() {
         return nefFile;
     }
 
+    /**
+     * Gets the manifest of this smart contract.
+     *
+     * @return The manifest of this smart contract.
+     */
     public ContractManifest getManifest() {
         return manifest;
     }
 
     /**
-     * Initializes an {@link TransactionBuilder} for deploying this contract. Deploys this contract
-     * by creating a deployment transaction and sending it to the neo-node
+     * Initializes a {@link TransactionBuilder} for deploying this contract. Deploys this contract
+     * by creating a deployment transaction and sending it to the neo-node.
      *
-     * @return The Neo node's response.
-     * @throws IOException If something goes wrong when communicating with the Neo node.
+     * @return A {@link TransactionBuilder}.
+     * @throws JsonProcessingException If something goes wrong when processing the manifest.
      */
-    public TransactionBuilder deploy() throws IOException {
+    public TransactionBuilder deploy() throws JsonProcessingException {
         if (nefFile == null) {
             throw new IllegalStateException("This smart contract instance was not constructed for"
                     + " deployment. It is missing its NEF file.");

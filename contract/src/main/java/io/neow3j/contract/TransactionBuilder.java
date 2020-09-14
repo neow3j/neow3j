@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Used to build transaction scripts.
+ * Used to build a {@link Transaction}.
  * When signing the {@code TransactionBuilder}, a transaction is created that can be sent to the
  * Neo node.
  */
@@ -456,13 +456,13 @@ public class TransactionBuilder {
     }
 
     /**
-     * Creates signatures for every signer of the transaction and adds them to the
+     * Builds a transaction, creates signatures for every signer and adds them to the
      * transaction as witnesses.
      * <p>
-     * For each signer set on the transaction a corresponding account with an EC key pair must exist
-     * in the wallet set on the builder.
+     * For each signer of the transaction, a corresponding account with an EC key pair
+     * must exist in the wallet set on this transaction builder.
      *
-     * @return this.
+     * @return A signed transaction.
      */
     public Transaction sign() throws Throwable {
         transaction = buildTransaction();
@@ -485,12 +485,14 @@ public class TransactionBuilder {
     }
 
     /**
-     * Gets the transaction for signing it.
+     * Builds a {@link Transaction} from this {@code TransactionBuilder} and gets its
+     * hash data for signing.
      *
      * @return the transaction data ready for creating a signature.
      */
-    public byte[] getTransactionForSigning() {
-        return this.transaction.getHashData();
+    public byte[] getTransactionForSigning() throws Throwable {
+         transaction = buildTransaction();
+        return transaction.getHashData();
     }
 
     private void signWithNormalAccount(byte[] txBytes, Account acc) {
@@ -530,9 +532,9 @@ public class TransactionBuilder {
      * not, executes the given consumer supplying it with the required fee and the sender's GAS
      * balance.
      * <p>
-     * The check is only done after the transaction is built.
+     * The check and potential execution of the consumer is only done after the transaction is built.
      *
-     * @return this.
+     * @return this transaction builder.
      */
     public TransactionBuilder doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer) {
         if (supplier != null) {
@@ -547,9 +549,9 @@ public class TransactionBuilder {
      * Checks if the sender account of this transaction can cover the network and system fees. If
      * not, otherwise throw an exception created by the provided supplier.
      * <p>
-     * The check is only done after the transaction is built.
+     * The check and the potential exception throw is only done after the transaction is built.
      *
-     * @return this.
+     * @return this transaction builder.
      */
     public TransactionBuilder throwIfSenderCannotCoverFees(
             Supplier<? extends Throwable> exceptionSupplier) {
@@ -594,10 +596,20 @@ public class TransactionBuilder {
         return fees.compareTo(getSenderGasBalance()) < 0;
     }
 
+    /**
+     * Gets the script of this transaction builder.
+     *
+     * @return the script set on this transaction builder.
+     */
     public byte[] getScript() {
         return script;
     }
 
+    /**
+     * Gets the list of signers of this transaction builder.
+     *
+     * @return the list of signers of this transaction builder.
+     */
     public List<Signer> getSigners() {
         return signers;
     }
