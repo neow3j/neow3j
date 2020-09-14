@@ -169,20 +169,6 @@ public class TransactionBuilder {
         return this;
     }
 
-//    /**
-//     * Sets the system fee for this transaction.
-//     * <p>
-//     * The system fee is the amount of GAS needed to execute this transaction's script in the
-//     * NeoVM. It is distributed to all NEO holders.
-//     *
-//     * @param systemFee The system fee in fractions of GAS (10^-8)
-//     * @return this transaction builder.
-//     */
-//    public TransactionBuilder systemFee(Long systemFee) {
-//        this.systemFee = systemFee;
-//        return this;
-//    }
-
     /**
      * Configures the transaction with an additional network fee.
      * <p>
@@ -469,8 +455,6 @@ public class TransactionBuilder {
         return neow.invokeScript(script, signers).send();
     }
 
-    //    // sign and getTransactionForSigning
-    // private build method to check for valid construction of Transaction object
     /**
      * Creates signatures for every signer of the transaction and adds them to the
      * transaction as witnesses.
@@ -574,9 +558,6 @@ public class TransactionBuilder {
                     "will be executed if the sender cannot cover the fees.");
         }
         supplier = exceptionSupplier;
-//        if (!canSenderCoverFees()) {
-//            throw exceptionSupplier.get();
-//        }
         return this;
     }
 
@@ -620,65 +601,4 @@ public class TransactionBuilder {
     public List<Signer> getSigners() {
         return signers;
     }
-
-    //    // send method
-//
-//    /**
-//     * Sends this invocation transaction to the neo-node via the `sendrawtransaction` RPC.
-//     *
-//     * @return the Neo node's response.
-//     * @throws IOException                      if a problem in communicating with the Neo node
-//     *                                          occurs.
-//     * @throws InvocationConfigurationException if signatures are missing for one or more signers of
-//     *                                          the transaction.
-//     */
-//    public NeoSendRawTransaction send() throws IOException {
-//        if (this.transaction == null) {
-//            throw new IllegalStateException("No transaction present to be sent.");
-//        }
-//        List<ScriptHash> witnesses = this.transaction.getWitnesses().stream()
-//                .map(Witness::getScriptHash).collect(Collectors.toList());
-//
-//        for (Signer signer : this.transaction.getSigners()) {
-//            if (!witnesses.contains(signer.getScriptHash())) {
-//                throw new InvocationConfigurationException("The transaction does not have a "
-//                        + "signature for each of its signers.");
-//            }
-//        }
-//        String hex = Numeric.toHexStringNoPrefix(this.transaction.toArray());
-//        return neow.sendRawTransaction(hex).send();
-//    }
-
-//    /**
-//     * Adds the given witnesses to the invocation transaction.
-//     * <p>
-//     * Use this method if you can't use the automatic signing method {@link TransactionBuilder#sign()},
-//     * e.g., because the configured wallet does not contain all accounts needed for signing.
-//     *
-//     * @param witnesses The witnesses to add.
-//     */
-//    public void addWitnesses(Witness... witnesses) {
-//        for (Witness witness : witnesses) {
-//            this.transaction.addWitness(witness);
-//        }
-//    }
-
-//    /**
-//     * Gets the transaction.
-//     *
-//     * @return the transaction.
-//     */
-//    public Transaction getTransaction() {
-//        return this.transaction;
-//    }
-//
-//    // utility methods
-//
-
-//    // Checks if there is a signer (excluding the sender) with a feeOnly scope.
-//    private boolean hasSignerWithFeeOnlyScope() {
-//        return this.getSigners().stream()
-//                .anyMatch(s -> s.getScopes().contains(WitnessScope.FEE_ONLY)
-//                        && !s.getScriptHash().equals(this.sender));
-//    }
 }
