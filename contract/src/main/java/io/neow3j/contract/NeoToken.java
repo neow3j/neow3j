@@ -102,22 +102,15 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
-     * Creates and sends a transaction registering a validator candidate.
+     * Creates a transaction script for registering a validator candidate and initializes
+     * a {@link TransactionBuilder} based on this script.
      *
      * @param candidate    The script hash of the candidate's account.
      * @param wallet       The wallet containing the candidate's account.
      * @param candidateKey The public key to register as a candidate.
-     * @return the hash of the created transaction.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @return A transaction builder.
      */
     public TransactionBuilder registerCandidate(ScriptHash candidate, Wallet wallet,
-            ECPublicKey candidateKey) {
-
-        return buildRegisterInvocation(candidate, wallet, candidateKey);
-    }
-
-    // Method extracted for testability.
-    TransactionBuilder buildRegisterInvocation(ScriptHash candidate, Wallet wallet,
             ECPublicKey candidateKey) {
 
         return invokeFunction(REGISTER_CANDIDATE,
@@ -211,22 +204,15 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
-     * Creates and sends a transaction that votes for the given validators.
+     * Creates a transaction script to vote for the given validators and initializes
+     * a {@link TransactionBuilder} based on this script.
      *
      * @param voter      The account that casts the vote.
      * @param wallet     The wallet that contains the vote-casting account.
      * @param validators The validators for which to vote for.
-     * @return the response from the neo-node.
-     * @throws IOException if something goes wrong when communicating with the neo-node.
+     * @return A transaction builder.
      */
-    public TransactionBuilder vote(ScriptHash voter, Wallet wallet, ECPublicKey... validators)
-            throws IOException {
-
-        return buildVoteTransaction(voter, wallet, validators);
-    }
-
-    // Method extracted for testability.
-    TransactionBuilder buildVoteTransaction(ScriptHash voter, Wallet wallet, ECPublicKey... validators) {
+    public TransactionBuilder vote(ScriptHash voter, Wallet wallet, ECPublicKey... validators) {
         List<ContractParameter> validatorParams = Stream.of(validators)
                 .map(v -> ContractParameter.publicKey(v.getEncoded(true)))
                 .collect(Collectors.toList());
@@ -238,14 +224,5 @@ public class NeoToken extends Nep5Token {
         return invokeFunction(VOTE, params.toArray(new ContractParameter[]{}))
                 .wallet(wallet)
                 .signers(Signer.global(voter));
-
-//        return invokeFunction(VOTE)
-//                .sender(voter)
-//                .wallet(wallet)
-//                .parameters(ContractParameter.hash160(voter))
-//                .parameters(validatorParams)
-//                .signers(Signer.global(voter))
-//                .sign();
     }
 }
-

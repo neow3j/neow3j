@@ -188,12 +188,7 @@ public class Nep5Token extends SmartContract {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
-        return buildTransferScript(wallet, to, amount);
-    }
 
-    // Method extracted for testability.
-    TransactionBuilder buildTransferScript(Wallet wallet, ScriptHash to, BigDecimal amount)
-            throws IOException {
         List<Account> accountsOrdered = new ArrayList<>(wallet.getAccounts());
         accountsOrdered.remove(wallet.getDefaultAccount());
         accountsOrdered.add(0, wallet.getDefaultAccount()); // Start with default account.
@@ -344,13 +339,6 @@ public class Nep5Token extends SmartContract {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
-
-        return buildTransferInvocation(wallet, to, amount);
-    }
-
-    // Method extracted for testability.
-    TransactionBuilder buildTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount)
-            throws IOException {
 
         Account acc = wallet.getDefaultAccount();
         BigInteger fractions = getAmountAsBigInteger(amount);

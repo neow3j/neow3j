@@ -103,7 +103,7 @@ public class NeoTokenTest {
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder b = new NeoToken(neow).buildRegisterInvocation(
+        TransactionBuilder b = new NeoToken(neow).registerCandidate(
                 account1.getScriptHash(), w, account1.getECKeyPair().getPublicKey());
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
@@ -195,7 +195,7 @@ public class NeoTokenTest {
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder b = new NeoToken(neow).buildVoteTransaction(account1.getScriptHash(), w,
+        TransactionBuilder b = new NeoToken(neow).vote(account1.getScriptHash(), w,
                 new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));

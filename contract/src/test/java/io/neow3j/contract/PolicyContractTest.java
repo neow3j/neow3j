@@ -102,7 +102,7 @@ public class PolicyContractTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new PolicyContract(neow3j)
-                .buildSetFeePerByteInvocation(20, w, account1.getScriptHash())
+                .setFeePerByte(20, w, account1.getScriptHash())
                 .sign();
 
         assertThat(tx.getSigners(), hasSize(1));
@@ -123,7 +123,7 @@ public class PolicyContractTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new PolicyContract(neow3j)
-                .buildSetMaxTxPerBlockInvocation(500, w, account1.getScriptHash())
+                .setMaxTransactionsPerBlock(500, w, account1.getScriptHash())
                 .sign();
 
         assertThat(tx.getSigners(), hasSize(1));
@@ -144,7 +144,7 @@ public class PolicyContractTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new PolicyContract(neow3j)
-                .buildBlockAccountInvocation(recipient, w, account1.getScriptHash())
+                .blockAccount(recipient, w, account1.getScriptHash())
                 .sign();
 
         assertThat(tx.getSigners(), hasSize(1));
@@ -165,7 +165,7 @@ public class PolicyContractTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new PolicyContract(neow3j)
-                .buildUnblockAccountInvocation(recipient, w, account1.getScriptHash())
+                .unblockAccount(recipient, w, account1.getScriptHash())
                 .sign();
 
         assertThat(tx.getSigners(), hasSize(1));
