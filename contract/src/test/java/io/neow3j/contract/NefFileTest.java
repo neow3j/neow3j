@@ -10,6 +10,8 @@ import io.neow3j.utils.Numeric;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Objects;
+
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,14 +45,17 @@ public class NefFileTest {
         assertThat(nef.getScriptHash().toString(), is(referenceScriptHash));
         assertThat(nef.getScript(), is(script));
         assertThat(nef.getVersion().getMajor(), is(3));
+        assertThat(nef.getVersion().getMinor(), is(0));
+        assertThat(nef.getVersion().getBuild(), is(0));
+        assertThat(nef.getVersion().getRevision(), is(0));
         assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is(referenceChecksum));
     }
 
     @Test
     public void readFromFileThatIsTooLarge() throws URISyntaxException, DeserializationException,
             IOException {
-        File file = new File(NefFileTest.class.getClassLoader()
-                .getResource("contracts/too_large.nef").toURI());
+        File file = new File(Objects.requireNonNull(NefFileTest.class.getClassLoader()
+                .getResource("contracts/too_large.nef")).toURI());
         expectedException.expect(IllegalArgumentException.class);
         NefFile.readFromFile(file);
     }
@@ -59,8 +64,8 @@ public class NefFileTest {
     public void readFromFileProducesCorrectChecksum() throws URISyntaxException,
             DeserializationException, IOException {
 
-        File file = new File(NefFileTest.class.getClassLoader()
-                .getResource("contracts/test.nef").toURI());
+        File file = new File(Objects.requireNonNull(NefFileTest.class.getClassLoader()
+                .getResource("contracts/test.nef")).toURI());
         NefFile nef = NefFile.readFromFile(file);
         assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is(referenceChecksum));
     }

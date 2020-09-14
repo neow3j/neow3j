@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 
+/**
+ * Wrapper class to generate NEP-9 compatible URI schemes for NEP-5 Token transfers.
+ */
 public class NeoURI {
 
     private URI uri;
@@ -138,8 +141,7 @@ public class NeoURI {
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue().intValue();
         } else {
-            throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
-                    StackItemType.BYTE_STRING);
+            throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
         }
     }
 
@@ -153,10 +155,6 @@ public class NeoURI {
     }
 
     public NeoURI toAddress(ScriptHash address) {
-        if (!AddressUtils.isValidAddress(address.toAddress())) {
-            throw new IllegalArgumentException("Invalid address used.");
-        }
-
         this.address = address;
         return this;
     }

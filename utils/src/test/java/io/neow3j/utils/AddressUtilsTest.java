@@ -47,6 +47,11 @@ public class AddressUtilsTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void addressToScriptHash_InvalidAddress() {
+        AddressUtils.addressToScriptHash("Aa63RMYRWHPRcrZNzUnq5SNrPqoV866Sp");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testToScriptHashLargerThan25Chars() {
         AddressUtils.addressToScriptHash("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8yyyy");
     }
