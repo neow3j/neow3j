@@ -1008,37 +1008,45 @@ public class Compiler {
         } else if (hasInstructionAnnotation(ctorMethod.get())) {
             addInstruction(ctorMethod.get(), callingNeoMethod);
         } else {
-            addPushNumber(owner.fields.size(), callingNeoMethod);
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
-            // TODO: Determine when to use NEWSTRUCT.
-            String ctorMethodId = NeoMethod.getMethodId(ctorMethod.get(), owner);
-            if (this.neoModule.methods.containsKey(ctorMethodId)) {
-                // If the module already compiled the ctor simply add a CALL instruction.
-                NeoMethod calledNeoMethod = this.neoModule.methods.get(ctorMethodId);
-                addReverseArguments(ctorMethod.get(), callingNeoMethod);
-                // The actual address offset for the method call is set at a later point.
-                callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4])
-                        .setExtra(calledNeoMethod));
-            } else {
-                // Create a new NeoMethod, i.e., convert the constructor to NeoVM code.
-                // Skip the call to the Object ctor and continue processing the rest of the ctor.
-                NeoMethod calledNeoMethod = new NeoMethod(ctorMethod.get(), owner);
-                this.neoModule.addMethod(calledNeoMethod);
-                initializeMethod(calledNeoMethod);
-                insn = findSuperCallToObjectCtor(ctorMethod.get());
-                insn = insn.getNext();
-                while (insn != null) {
-                    insn = handleInsn(calledNeoMethod, insn);
-                    insn = insn.getNext();
-                }
-                addReverseArguments(ctorMethod.get(), callingNeoMethod);
-                // The actual address offset for the method call is set at a later point.
-                callingNeoMethod.addInstruction(
-                        new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
-            }
+            convertConstructorCall(callingNeoMethod, owner, ctorMethod.get());
         }
         return ctorMethodInsn;
+    }
+
+    private void convertConstructorCall(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode ctorMethod) throws IOException {
+
+        NeoMethod calledNeoMethod;
+        String ctorMethodId = NeoMethod.getMethodId(ctorMethod, owner);
+        if (this.neoModule.methods.containsKey(ctorMethodId)) {
+            // If the module already contains the converted ctor.
+            calledNeoMethod = this.neoModule.methods.get(ctorMethodId);
+        } else {
+            // Create a new NeoMethod, i.e., convert the constructor to NeoVM code.
+            // Skip the call to the Object ctor and continue processing the rest of the ctor.
+            calledNeoMethod = new NeoMethod(ctorMethod, owner);
+            this.neoModule.addMethod(calledNeoMethod);
+            initializeMethod(calledNeoMethod);
+            AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod);
+            insn = insn.getNext();
+            while (insn != null) {
+                insn = handleInsn(calledNeoMethod, insn);
+                insn = insn.getNext();
+            }
+        }
+
+        addPushNumber(owner.fields.size(), callingNeoMethod);
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+        // TODO: Determine when to use NEWSTRUCT.
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
+        // Reverse the arguments to the constructor. Plus one because the object on which the
+        // constructor is called is also a parameter. Plus another one because that object has been
+        // duplicated on the stack.
+        int itemsToReverse = Type.getMethodType(ctorMethod.desc).getArgumentTypes().length + 2;
+        addReverseArguments(callingNeoMethod, itemsToReverse);
+        // The actual address offset for the method call is set at a later point.
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4])
+                .setExtra(calledNeoMethod));
     }
 
     private void initializeMethod(NeoMethod neoMethod) {
@@ -1476,6 +1484,11 @@ public class Compiler {
             // also an argument.
             paramsCount++;
         }
+        addReverseArguments(callingNeoMethod, paramsCount);
+    }
+
+    private void addReverseArguments(NeoMethod callingNeoMethod,
+            int paramsCount) {
         if (paramsCount == 2) {
             callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
         } else if (paramsCount == 3) {
