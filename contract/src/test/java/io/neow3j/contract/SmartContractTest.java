@@ -177,6 +177,7 @@ public class SmartContractTest {
                 ContractParameter.hash160(recipient),
                 ContractParameter.integer(5))
                 .wallet(w)
+                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));
@@ -244,7 +245,7 @@ public class SmartContractTest {
                 .getResource(TEST_CONTRACT_1_MANIFEST).toURI());
         Wallet w = Wallet.withAccounts(account1);
         NeoInvokeScript response = new SmartContract(nef, manifest, neow).deploy()
-                .sender(account1.getScriptHash())
+                .signers(Signer.feeOnly(account1.getScriptHash()))
                 .wallet(w)
                 .callInvokeScript();
 

@@ -116,8 +116,7 @@ public class NeoToken extends Nep5Token {
         return invokeFunction(REGISTER_CANDIDATE,
                 ContractParameter.publicKey(candidateKey.getEncoded(true)))
                 .wallet(wallet)
-                .signers(Signer.global(candidate))
-                .sender(candidate);
+                .signers(Signer.global(candidate));
     }
 
     /**
