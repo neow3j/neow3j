@@ -71,7 +71,7 @@ public class Nep5TokenTest {
     }
 
     @Test
-    public void transferFromDefaultAccountShouldAddAccountAsSigner() throws Exception {
+    public void transferFromDefaultAccountShouldAddAccountAsSigner() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
         setUpWireMockForGetBlockCount(1000);
@@ -88,7 +88,7 @@ public class Nep5TokenTest {
     }
 
     @Test
-    public void transferFromDefaultAccountShouldCreateTheCorrectScript() throws Exception {
+    public void transferFromDefaultAccountShouldCreateTheCorrectScript() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
         setUpWireMockForGetBlockCount(1000);

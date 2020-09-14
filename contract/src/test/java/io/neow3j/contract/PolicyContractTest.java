@@ -93,7 +93,7 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void settingFeePerByteProducesCorrectTransaction() throws IOException {
+    public void settingFeePerByteProducesCorrectTransaction() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_setFeePerByte.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
@@ -114,7 +114,7 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void setMaxTxPerBlockProducesCorrectTransaction() throws IOException {
+    public void setMaxTxPerBlockProducesCorrectTransaction() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_setMaxTransactionsPerBlock.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
@@ -135,7 +135,7 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void testBlockAccount() throws IOException {
+    public void testBlockAccount() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_blockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
@@ -156,7 +156,7 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void testUnblockAccount() throws IOException {
+    public void testUnblockAccount() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_unblockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 

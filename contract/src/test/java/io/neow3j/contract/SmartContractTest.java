@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.List;
+
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Before;
@@ -159,7 +161,7 @@ public class SmartContractTest {
     }
 
     @Test
-    public void invokeShouldProduceCorrectScript() throws IOException {
+    public void invokeShouldProduceCorrectScript() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
         byte[] expectedScript = new ScriptBuilder()
@@ -251,8 +253,19 @@ public class SmartContractTest {
                 is(StackItemType.INTEROP_INTERFACE));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void callInvokeFunction_missingFunction() throws IOException {
+        new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("",
+                Arrays.asList(ContractParameter.hash160(account1.getScriptHash())));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void callInvokeFunctionWithoutParameters_missingFunction() throws IOException {
+        new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("");
+    }
+
     @Test
-    public void deployProducesCorrectScript() throws IOException, DeserializationException {
+    public void deployProducesCorrectScript() throws Throwable {
         setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
         setUpWireMockForCall("invokescript", "invokescript_deploy.json",
                 TEST_CONTRACT_1_DEPLOY_SCRIPT);

@@ -52,11 +52,13 @@ public class TransactionBuilder {
     private long nonce;
     private Long validUntilBlock;
     private List<Signer> signers;
-    private long systemFee;
     private long additionalNetworkFee;
     private List<TransactionAttribute> attributes;
     private byte[] script;
     private List<Witness> witnesses;
+
+    private BiConsumer<BigInteger, BigInteger> consumer;
+    private Supplier<? extends Throwable> supplier;
 
     protected TransactionBuilder(Neow3j neow) {
         this.neow = neow;
@@ -65,7 +67,6 @@ public class TransactionBuilder {
         this.nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
         this.version = NeoConstants.CURRENT_TX_VERSION;
         this.script = new byte[]{};
-        this.systemFee = 0L;
         this.additionalNetworkFee = 0L;
         this.signers = new ArrayList<>();
         this.witnesses = new ArrayList<>();
@@ -168,19 +169,19 @@ public class TransactionBuilder {
         return this;
     }
 
-    /**
-     * Sets the system fee for this transaction.
-     * <p>
-     * The system fee is the amount of GAS needed to execute this transaction's script in the
-     * NeoVM. It is distributed to all NEO holders.
-     *
-     * @param systemFee The system fee in fractions of GAS (10^-8)
-     * @return this transaction builder.
-     */
-    public TransactionBuilder systemFee(Long systemFee) {
-        this.systemFee = systemFee;
-        return this;
-    }
+//    /**
+//     * Sets the system fee for this transaction.
+//     * <p>
+//     * The system fee is the amount of GAS needed to execute this transaction's script in the
+//     * NeoVM. It is distributed to all NEO holders.
+//     *
+//     * @param systemFee The system fee in fractions of GAS (10^-8)
+//     * @return this transaction builder.
+//     */
+//    public TransactionBuilder systemFee(Long systemFee) {
+//        this.systemFee = systemFee;
+//        return this;
+//    }
 
     /**
      * Configures the transaction with an additional network fee.
@@ -265,7 +266,7 @@ public class TransactionBuilder {
     }
 
     // package-private visible for testability purpose.
-    Transaction buildTransaction() throws IOException {
+    Transaction buildTransaction() throws Throwable {
         if (wallet == null) {
             throw new TransactionConfigurationException("Cannot build a transaction without a wallet.");
         }
@@ -286,15 +287,21 @@ public class TransactionBuilder {
         if (signers.isEmpty()) {
             signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()));
         }
-//        if (signers.isEmpty()) {
-//            throw new TransactionConfigurationException("No signers are specified for this transaction. " +
-//                    "A transaction requires at least one signer account that can cover the network and " +
-//                    "system fees.");
-//        }
+
         prepareTransactionSigners();
 
-        this.systemFee(getSystemFeeForScript());
+        long systemFee = getSystemFeeForScript();
         long networkFee = calcNetworkFee() + additionalNetworkFee;
+        BigInteger fees = BigInteger.valueOf(systemFee + networkFee);
+
+        if (supplier != null && !canSenderCoverFees(fees)) {
+            throw supplier.get();
+        } else if (consumer != null) {
+            BigInteger senderGasBalance = getSenderGasBalance();
+            if (fees.compareTo(senderGasBalance) > 0) {
+                consumer.accept(fees, senderGasBalance);
+            }
+        }
 
         return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
                 networkFee, attributes, script, witnesses);
@@ -473,7 +480,7 @@ public class TransactionBuilder {
      *
      * @return this.
      */
-    public Transaction sign() throws IOException {
+    public Transaction sign() throws Throwable {
         transaction = buildTransaction();
         byte[] txBytes = getTransactionForSigning();
         transaction.getSigners().forEach(signer -> {
@@ -534,54 +541,76 @@ public class TransactionBuilder {
                 multiSigVerifScript));
     }
 
-    // TODO: 14.09.20 Michael: Fix this. Should only be called, once the system and network fees are set or
-    //  calculated. E.g. after constructing a Transaction instance. However, this method cannot work in the
-    //  class Transaction.java, since it does not have the necessary dependencies.
     /**
      * Checks if the sender account of this transaction can cover the network and system fees. If
      * not, executes the given consumer supplying it with the required fee and the sender's GAS
      * balance.
+     * <p>
+     * The check is only done after the transaction is built.
      *
      * @return this.
-     * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public TransactionBuilder doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer)
-            throws IOException {
-        BigInteger fees = BigInteger.valueOf(
-                this.transaction.getSystemFee() + this.transaction.getNetworkFee());
-        BigInteger senderGasBalance = new GasToken(this.neow)
-                .getBalanceOf(this.transaction.getSender());
-        if (fees.compareTo(senderGasBalance) > 0) {
-            consumer.accept(fees, senderGasBalance);
+    public TransactionBuilder doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer) {
+        if (supplier != null) {
+            throw new IllegalStateException("Can't handle a consumer for this case, since an exception " +
+                    "will be thrown if the sender cannot cover the fees.");
         }
+        this.consumer = consumer;
         return this;
     }
 
-    // TODO: 14.09.20 Michael: Fix this. Should only be called, once the system and network fees are set or
-    //  calculated. E.g. after constructing a Transaction instance. However, this method cannot work in the
-    //  class Transaction.java, since it does not have the necessary dependencies.
     /**
      * Checks if the sender account of this transaction can cover the network and system fees. If
      * not, otherwise throw an exception created by the provided supplier.
+     * <p>
+     * The check is only done after the transaction is built.
      *
      * @return this.
-     * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public <T extends Throwable> TransactionBuilder throwIfSenderCannotCoverFees(
-            Supplier<? extends T> exceptionSupplier) throws IOException, T {
-
-        if (!canSenderCoverFees()) {
-            throw exceptionSupplier.get();
+    public TransactionBuilder throwIfSenderCannotCoverFees(
+            Supplier<? extends Throwable> exceptionSupplier) {
+        if (consumer != null) {
+            throw new IllegalStateException("Can't handle a supplier for this case, since a consumer " +
+                    "will be executed if the sender cannot cover the fees.");
         }
+        supplier = exceptionSupplier;
+//        if (!canSenderCoverFees()) {
+//            throw exceptionSupplier.get();
+//        }
         return this;
     }
 
-    private boolean canSenderCoverFees() throws IOException {
-        BigInteger fees = BigInteger.valueOf(
-                this.transaction.getSystemFee() + this.transaction.getNetworkFee());
-        BigInteger senderGasBalance = new GasToken(this.neow)
-                .getBalanceOf(this.transaction.getSender());
-        return fees.compareTo(senderGasBalance) < 0;
+    private BigInteger getSenderGasBalance() throws IOException {
+        return new GasToken(neow).getBalanceOf(getSender());
+    }
+
+    private ScriptHash getSender() {
+        if (sender != null) {
+            if (hasSignerWithFeeOnlyScope()) {
+                throw new TransactionConfigurationException("The list of transaction signers "
+                        + "contained a signer with the fee-only scope and at the same time a "
+                        + "sender was set. Either a fee-only signer, or a sender is allowed, "
+                        + "but not both at the same time.");
+            } else {
+                return sender;
+            }
+        }
+
+        if (signers.isEmpty()) {
+            return null;
+        }
+        // First we look for a signer that has the fee-only scope. The signer with that scope is
+        // the sender of the transaction. If there is no such signer then the order of the
+        // signers defines the sender, i.e., the first signer is the sender of the transaction.
+        return signers.stream()
+                .filter(signer -> signer.getScopes().contains(WitnessScope.FEE_ONLY))
+                .findFirst()
+                .orElse(signers.get(0))
+                .getScriptHash();
+    }
+
+    private boolean canSenderCoverFees(BigInteger fees) throws IOException {
+        return fees.compareTo(getSenderGasBalance()) < 0;
     }
 
     public byte[] getScript() {
