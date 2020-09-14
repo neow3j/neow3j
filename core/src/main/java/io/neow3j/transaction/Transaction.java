@@ -18,14 +18,9 @@ import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Transaction extends NeoSerializable {
 
@@ -58,25 +53,14 @@ public class Transaction extends NeoSerializable {
     private List<Witness> witnesses;
 
     public Transaction() {
-        this.attributes = new ArrayList<>();
-        this.witnesses = new ArrayList<>();
+        signers = new ArrayList<>();
+        attributes = new ArrayList<>();
+        witnesses = new ArrayList<>();
     }
 
-    protected Transaction(Builder builder) {
-        this.version = builder.version;
-        this.nonce = builder.nonce;
-        this.validUntilBlock = builder.validUntilBlock;
-        this.signers = builder.signers;
-        this.systemFee = builder.systemFee;
-        this.networkFee = builder.networkFee;
-        this.attributes = builder.attributes;
-        this.script = builder.script;
-        this.witnesses = builder.witnesses;
-    }
-
-    // used temporarily for api changes
-    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock, List<Signer> signers, long systemFee,
-            long networkFee, List<TransactionAttribute> attributes, byte[] script, List<Witness> witnesses) {
+    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock, List<Signer> signers,
+            long systemFee, long networkFee, List<TransactionAttribute> attributes, byte[] script,
+            List<Witness> witnesses) {
         this.neow = neow;
         this.version = version;
         this.nonce = nonce;
@@ -112,9 +96,6 @@ public class Transaction extends NeoSerializable {
      * @return the sender account's script hash.
      */
     public ScriptHash getSender() {
-        if (signers.isEmpty()) {
-            return null;
-        }
         // First we look for a signer that has the fee-only scope. The signer with that scope is
         // the sender of the transaction. If there is no such signer then the order of the
         // signers defines the sender, i.e., the first signer is the sender of the transaction.
@@ -287,259 +268,5 @@ public class Transaction extends NeoSerializable {
     @Override
     public byte[] toArray() {
         return super.toArray();
-    }
-
-    public static class Builder {
-
-        private long nonce;
-        private byte version;
-        private Long validUntilBlock;
-        private List<Signer> signers;
-        private long systemFee;
-        private long networkFee;
-        private byte[] script;
-        private List<TransactionAttribute> attributes;
-        private List<Witness> witnesses;
-
-        public Builder() {
-            // The random value used to initialize the nonce does not need cryptographic security,
-            // therefore we can use ThreadLocalRandom to generate it.
-            this.nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
-            this.version = NeoConstants.CURRENT_TX_VERSION;
-            this.signers = new ArrayList<>();
-            this.networkFee = 0L;
-            this.systemFee = 0L;
-            this.attributes = new ArrayList<>();
-            this.witnesses = new ArrayList<>();
-            this.script = new byte[]{};
-        }
-
-        /**
-         * Sets the version for this transaction.
-         * <p>
-         * It is set to {@link NeoConstants#CURRENT_TX_VERSION} by default.
-         *
-         * @param version The transaction version number.
-         * @return this builder.
-         */
-        public Builder version(byte version) {
-            this.version = version;
-            return this;
-        }
-
-        /**
-         * Sets the nonce (number used once) for this transaction. The nonce is a number from 0 to
-         * 2<sup>32</sup>.
-         * <p>
-         * It is set to a random value by default.
-         *
-         * @param nonce The transaction nonce.
-         * @return this builder.
-         * @throws TransactionConfigurationException if the nonce is not in the range [0, 2^32).
-         */
-        public Builder nonce(Long nonce) {
-            if (nonce < 0 || nonce >= (long) Math.pow(2, 32)) {
-                throw new TransactionConfigurationException("The value of the transaction nonce " +
-                        "must be in the interval [0, 2^32).");
-            }
-            this.nonce = nonce;
-            return this;
-        }
-
-        /**
-         * Sets the number of the block up to which this transaction can be included.
-         * <p>
-         * If that block number is reached in the network and this transaction is not yet included
-         * in a block, it becomes invalid. Note that the given block number must not be higher than
-         * the current chain height plus the increment specified in {@link
-         * NeoConstants#MAX_VALID_UNTIL_BLOCK_INCREMENT}.
-         * <p>
-         * This property is <b>mandatory</b>.
-         *
-         * @param blockNr The block number.
-         * @return this builder.
-         * @throws TransactionConfigurationException if the block number is not in the range [0,
-         *                                           2^32).
-         */
-        public Builder validUntilBlock(long blockNr) {
-            if (blockNr < 0 || blockNr >= (long) Math.pow(2, 32)) {
-                throw new TransactionConfigurationException("The block number up to which this " +
-                        "transaction can be included cannot be less than zero or more than 2^32.");
-            }
-            this.validUntilBlock = blockNr;
-            return this;
-        }
-
-        /**
-         * Adds the given signers to this transaction.
-         * <p>
-         * The first signer will be used as the sender of this transaction, i.e. the payer of the
-         * transaction fees.
-         *
-         * @param signers Signers for this transaction.
-         * @return this builder.
-         */
-        public Builder signers(Signer... signers) {
-            if (containsDuplicateSigners(signers)) {
-                throw new TransactionConfigurationException("Can't add multiple signers" +
-                        " concerning the same account.");
-            }
-            this.signers.addAll(Arrays.asList(signers));
-            return this;
-        }
-
-        /**
-         * Sets the system fee for this transaction.
-         * <p>
-         * The system fee is the amount of GAS needed to execute this transaction's script in the
-         * NeoVM. It is distributed to all NEO holders.
-         *
-         * @param systemFee The system fee in fractions of GAS (10^-8)
-         * @return this builder.
-         */
-        public Builder systemFee(Long systemFee) {
-            this.systemFee = systemFee;
-            return this;
-        }
-
-        /**
-         * Sets the network fee for this transaction.
-         * <p>
-         * The network fee is the GAS cost for transaction size and verification. It is distributed
-         * to the consensus nodes.
-         *
-         * @param networkFee The network fee in fractions of GAS (10^-8)
-         * @return this builder.
-         */
-        public Builder networkFee(Long networkFee) {
-            this.networkFee = networkFee;
-            return this;
-        }
-
-        /**
-         * Sets the contract script for this transaction.
-         * <p>
-         * The script defines the actions that this transaction will perform on the blockchain.
-         *
-         * @param script The contract script.
-         * @return this builder.
-         */
-        public Builder script(byte[] script) {
-            this.script = script;
-            return this;
-        }
-
-        /**
-         * Adds the given attributes to this transaction.
-         * <p>
-         * The maximum number of attributes on a transaction is given in {@link
-         * NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
-         *
-         * @param attributes The attributes.
-         * @return this builder.
-         * @throws TransactionConfigurationException when attempting to add more than {@link
-         *                                           NeoConstants#MAX_TRANSACTION_ATTRIBUTES}
-         *                                           attributes.
-         */
-        public Builder attributes(TransactionAttribute... attributes) {
-            if (this.attributes.size() + attributes.length >
-                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-                throw new TransactionConfigurationException("A transaction cannot have more "
-                        + "than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
-            }
-            this.attributes.addAll(Arrays.asList(attributes));
-            return this;
-        }
-
-        private boolean containsDuplicateSigners(Signer... signers) {
-            List<ScriptHash> newSignersList = Stream.of(signers)
-                    .map(Signer::getScriptHash)
-                    .collect(Collectors.toList());
-            Set<ScriptHash> newSignersSet = new HashSet<>(newSignersList);
-            if (newSignersList.size() != newSignersSet.size()) {
-                // The new singers list contains duplicates in itself.
-                return true;
-            }
-            return this.signers.stream()
-                    .map(Signer::getScriptHash)
-                    .anyMatch(newSignersSet::contains);
-        }
-
-        /**
-         * Adds the given witnesses to this transaction.
-         * <p>
-         * Witness data is used to check the transaction validity. It usually consists of the
-         * signature generated by the transacting account but can also be other validating data.
-         *
-         * @param witnesses The witnesses.
-         * @return this builder.
-         */
-        public Builder witnesses(Witness... witnesses) {
-            for (Witness witness : witnesses) {
-                if (witness.getScriptHash() == null) {
-                    throw new IllegalArgumentException("The script hash of the given script is " +
-                            "empty. Please set the script hash.");
-                }
-            }
-            this.witnesses.addAll(Arrays.asList(witnesses));
-            return this;
-        }
-
-        /**
-         * Builds the transaction.
-         *
-         * @return The transaction.
-         * @throws TransactionConfigurationException if either no signer was set or the
-         *                                           valid-until-block property was not set.
-         */
-        public Transaction build() {
-            if (this.validUntilBlock == null) {
-                throw new TransactionConfigurationException("A transaction needs to be set up " +
-                        "with a block number up to which this it is considered valid.");
-            }
-
-            if (this.signers.isEmpty()) {
-                throw new TransactionConfigurationException("No signers are specified for this "
-                        + "transaction. A transaction requires at least one signer account that "
-                        + "can cover the network and system fees.");
-            }
-            return new Transaction(this);
-        }
-
-        public long getNonce() {
-            return nonce;
-        }
-
-        public byte getVersion() {
-            return version;
-        }
-
-        public Long getValidUntilBlock() {
-            return validUntilBlock;
-        }
-
-        public long getSystemFee() {
-            return systemFee;
-        }
-
-        public long getNetworkFee() {
-            return networkFee;
-        }
-
-        public List<Signer> getSigners() {
-            return signers;
-        }
-
-        public byte[] getScript() {
-            return script;
-        }
-
-        public List<TransactionAttribute> getAttributes() {
-            return attributes;
-        }
-
-        public List<Witness> getWitnesses() {
-            return witnesses;
-        }
     }
 }
