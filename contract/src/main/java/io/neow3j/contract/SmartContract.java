@@ -9,7 +9,6 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoInvoke;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
@@ -152,8 +151,13 @@ public class SmartContract {
     public BigInteger callFuncReturningInt(String function, ContractParameter... params)
             throws IOException, UnexpectedReturnTypeException {
 
-        StackItem item = callInvokeFunction(function, Arrays.asList(params))
-                .getInvocationResult().getStack().get(0);
+        StackItem item;
+        if (params.length == 0) {
+            item = callInvokeFunction(function).getInvocationResult().getStack().get(0);
+        } else {
+            item = callInvokeFunction(function, Arrays.asList(params))
+                    .getInvocationResult().getStack().get(0);
+        }
         if (item.getType().equals(StackItemType.INTEGER)) {
             return item.asInteger().getValue();
         }
