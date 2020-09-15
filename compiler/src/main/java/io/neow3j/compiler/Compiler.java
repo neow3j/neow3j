@@ -26,6 +26,7 @@ import io.neow3j.devpack.annotations.SupportedStandards;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
@@ -749,6 +750,8 @@ public class Compiler {
                 continue;
             }
             if (isCallToScriptBuilderToString(insn)) {
+                neoMethod.addInstruction(new NeoInstruction(OpCode.CONVERT,
+                        new byte[]{StackItemType.BYTE_STRING.byteValue()}));
                 break; // End of string concatenation.
             }
             if (isCallToAnyScriptBuilderMethod(insn)) {
