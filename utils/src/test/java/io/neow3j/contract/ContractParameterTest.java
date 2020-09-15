@@ -4,6 +4,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.eq;
 
@@ -245,6 +246,6 @@ public class ContractParameterTest {
     @Test
     public void testHashCode() {
         int result = contractParameter.hashCode();
-        assertThat(result, not(eq(0)));
+        assertNotEquals(0, result);
     }
 }

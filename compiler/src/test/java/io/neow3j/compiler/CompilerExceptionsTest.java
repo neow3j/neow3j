@@ -1,9 +1,8 @@
 package io.neow3j.compiler;
 
 import io.neow3j.compiler.Compiler.CompilationResult;
-import io.neow3j.devpack.framework.Iterator;
-import io.neow3j.devpack.framework.Storage;
-import io.neow3j.devpack.framework.annotations.EntryPoint;
+import io.neow3j.devpack.neo.Iterator;
+import io.neow3j.devpack.neo.Storage;
 import java.io.IOException;
 import org.hamcrest.core.StringContains;
 import org.junit.Ignore;
@@ -30,7 +29,6 @@ public class CompilerExceptionsTest {
 
 class Contract {
 
-    @EntryPoint
     public static boolean objectComparison() {
         Iterator<String, byte[]> it1 = Storage.find("prefix");
         Iterator<String, byte[]> it2 = Storage.find("otherPrefix");

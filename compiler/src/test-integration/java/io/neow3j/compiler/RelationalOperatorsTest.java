@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.framework.annotations.EntryPoint;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
@@ -107,7 +106,6 @@ public class RelationalOperatorsTest extends CompilerTest {
 
 class RelationalOperators {
 
-    @EntryPoint
     public static boolean[] integers(int i, int j) {
         boolean[] b = new boolean[6];
         b[0] = i == j;

@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.framework.annotations.EntryPoint;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
@@ -90,7 +89,6 @@ public class ArithmeticOperatorsTest extends CompilerTest {
 
 class ArithmeticOperators {
 
-    @EntryPoint
     public static int[] allOperators(int i, int j) {
         int[] arr = new int[5];
         arr[0] = i + j;
