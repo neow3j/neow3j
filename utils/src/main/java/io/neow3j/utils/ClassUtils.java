@@ -17,9 +17,6 @@ public class ClassUtils {
         if (firstChar > 0) {
             fqClassName = fqClassName.substring(firstChar);
         }
-        if (fqClassName.length() == 0) {
-            return null;
-        }
         return fqClassName;
     }
 

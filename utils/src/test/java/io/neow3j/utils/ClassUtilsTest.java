@@ -27,13 +27,13 @@ public class ClassUtilsTest {
     @Test
     public void testGetClassNameNoClass() {
         String simpleClassName = getClassName("io.neow3j.blah.");
-        assertThat(simpleClassName, is(nullValue()));
+        assertThat(simpleClassName, is(""));
     }
 
     @Test
     public void testGetClassNameEmpty() {
         String simpleClassName = getClassName("");
-        assertThat(simpleClassName, is(nullValue()));
+        assertThat(simpleClassName, is(""));
     }
 
     @Test
@@ -49,13 +49,13 @@ public class ClassUtilsTest {
     }
 
     @Test
-    void getClassNameFromInternalNameReturnsCorrectNameForProperInternalName() {
+    public void getClassNameFromInternalNameReturnsCorrectNameForProperInternalName() {
         String result = getClassNameForInternalName("io/neow3j/blah/Test");
         assertThat(result, is("Test"));
     }
 
     @Test
-    void getClassNameFromInternalNameReturnsEmptyStringForEmptyInternalName() {
+    public void getClassNameFromInternalNameReturnsEmptyStringForEmptyInternalName() {
         String result = getClassNameForInternalName("");
         assertThat(result, is(""));
     }
