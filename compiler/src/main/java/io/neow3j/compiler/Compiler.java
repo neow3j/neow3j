@@ -1579,15 +1579,20 @@ public class Compiler {
     }
 
     private byte[] getOperand(AnnotationNode insnAnnotation, OpCode opcode) {
-        List<?> operandAsList = (List<?>) insnAnnotation.values.get(3);
-        if (operandAsList.size() != OpCode.getOperandSize(opcode).size()) {
-            throw new CompilerException("Opcode " + opcode.name() + " was used with a wrong "
-                    + "number of operand byts.");
+        byte[] operand = new byte[]{};
+        if (insnAnnotation.values.get(3) instanceof byte[]) {
+            operand = (byte[]) insnAnnotation.values.get(3);
+        } else if (insnAnnotation.values.get(3) instanceof List) {
+            List<?> operandAsList = (List<?>) insnAnnotation.values.get(3);
+            operand = new byte[operandAsList.size()];
+            int i = 0;
+            for (Object element : operandAsList) {
+                operand[i++] = (byte) element;
+            }
         }
-        byte[] operand = new byte[operandAsList.size()];
-        int i = 0;
-        for (Object element : operandAsList) {
-            operand[i++] = (byte) element;
+        if (operand.length != OpCode.getOperandSize(opcode).size()) {
+            throw new CompilerException("Opcode " + opcode.name() + " was used with a wrong number "
+                    + "of operand bytes.");
         }
         return operand;
     }
