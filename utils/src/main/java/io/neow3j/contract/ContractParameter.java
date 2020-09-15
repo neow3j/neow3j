@@ -1,5 +1,7 @@
 package io.neow3j.contract;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -14,10 +16,10 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
+import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,34 +82,31 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(byte[] byteArray) {
-        return new ContractParameter(ContractParameterType.BYTE_ARRAY, byteArray);
+        return new ContractParameter(ContractParameterType.BYTE_ARRAY, Base64.encode(byteArray));
     }
 
     /**
-     * <p>Creates a byte array parameter from the given hex string.</p>
-     * <br>
-     * <p>Make sure that the value is already in the right order. E.g. Fixed8 numbers need to be in
-     * little-endian order. It will be sent in the order provided.</p>
+     * Creates a byte array parameter from the given hex string.
      *
-     * @param value The value as a string.
+     * @param hexString The hexadecimal string.
      * @return the contract parameter.
      */
-    public static ContractParameter byteArray(String value) {
-        if (!Numeric.isValidHexString(value)) {
+    public static ContractParameter byteArray(String hexString) {
+        if (!Numeric.isValidHexString(hexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number");
         }
-        return byteArray(Numeric.hexStringToByteArray(value));
+        return byteArray(Numeric.hexStringToByteArray(hexString));
     }
 
     /**
-     * Creates a byte array parameter from the given number, transforming it to the Fixed8 number
-     * format in little-endian order.
+     * Create a byte array parameter from a string by converting the string to bytes using the UTF-8
+     * character set.
      *
-     * @param number A decimal number
+     * @param value The parameter value.
      * @return the contract parameter.
      */
-    public static ContractParameter fixed8ByteArray(BigDecimal number) {
-        return byteArray(Numeric.fromDecimalToFixed8ByteArray(number));
+    public static ContractParameter byteArrayFromString(String value) {
+        return byteArray(value.getBytes(UTF_8));
     }
 
     /**
@@ -122,7 +121,6 @@ public class ContractParameter {
         }
         return signature(Numeric.hexStringToByteArray(signatureHexString));
     }
-
 
     /**
      * Creates a signature parameter from the given signature.
@@ -221,7 +219,7 @@ public class ContractParameter {
     public static ContractParameter publicKey(byte[] publicKey) {
         if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
             throw new IllegalArgumentException("Public key argument must be " +
-                    NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length +" bytes");
+                    NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length + " bytes");
         }
         return new ContractParameter(ContractParameterType.PUBLIC_KEY, publicKey);
     }
@@ -304,7 +302,6 @@ public class ContractParameter {
 
         private void serializeValue(ContractParameter p, JsonGenerator gen) throws IOException {
             switch (p.getParamType()) {
-                case BYTE_ARRAY:
                 case SIGNATURE:
                 case HASH256:
                 case PUBLIC_KEY:
@@ -312,6 +309,10 @@ public class ContractParameter {
                     // byte order is not changed.
                     gen.writeStringField("value",
                             Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
+                    break;
+                case BYTE_ARRAY:
+                    // The value is expected to be a Base64 encoded byte array.
+                    gen.writeStringField("value", ((String) p.getValue()));
                     break;
                 case BOOLEAN:
                     // Convert to true or false without quotes
@@ -401,13 +402,14 @@ public class ContractParameter {
                 throws JsonProcessingException {
 
             switch (type) {
-                case BYTE_ARRAY:
                 case SIGNATURE:
                 case HASH256:
                 case PUBLIC_KEY:
-                    // For byte array and signature the data is expected to be a hex string in the
-                    // correct ordering. E.g. little-endian for Fixed8 numbers.
+                    // Expected to be a hexadecimal string.
                     return Numeric.hexStringToByteArray(value.asText());
+                case BYTE_ARRAY:
+                    // Expected to be a Base64-encoded byte array.
+                    return Base64.decode(value.asText());
                 case STRING:
                     return value.asText();
                 case BOOLEAN:
