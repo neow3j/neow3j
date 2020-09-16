@@ -59,11 +59,6 @@ public class NeoMethod {
     SortedMap<Integer, NeoVariable> parametersByJVMIndex = new TreeMap<>();
 
     /**
-     * Determines if a method is a contract's entry point.
-     */
-    boolean isEntryPoint = false;
-
-    /**
      * Determines if this method will show up in the contract's ABI.
      */
     boolean isAbiMethod = false;

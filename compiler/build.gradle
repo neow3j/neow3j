@@ -1,4 +1,4 @@
-description 'Neo Java Compiler'
+description 'neow3j: JVM Compiler to NeoVM'
 
 dependencies {
     compile "org.ow2.asm:asm-tree:$asmVersion",
@@ -8,5 +8,6 @@ dependencies {
             "org.ow2.asm:asm:$asmVersion",
             project(':devpack')
 
-    testCompile "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion",
+            "org.awaitility:awaitility:$awaitility"
 }

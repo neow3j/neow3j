@@ -1,27 +1,28 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.utils.ClassUtils.getClassName;
 import static io.neow3j.utils.ClassUtils.internalNameToFullyQualifiedName;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.devpack.framework.ScriptContainer;
-import io.neow3j.devpack.framework.annotations.Appcall;
-import io.neow3j.devpack.framework.annotations.EntryPoint;
-import io.neow3j.devpack.framework.annotations.Features;
-import io.neow3j.devpack.framework.annotations.Instruction;
-import io.neow3j.devpack.framework.annotations.Instruction.Instructions;
-import io.neow3j.devpack.framework.annotations.ManifestExtra;
-import io.neow3j.devpack.framework.annotations.ManifestExtra.ManifestExtras;
-import io.neow3j.devpack.framework.annotations.SupportedStandards;
-import io.neow3j.devpack.framework.annotations.Syscall;
-import io.neow3j.devpack.framework.annotations.Syscall.Syscalls;
+import io.neow3j.devpack.ScriptContainer;
+import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.annotations.Features;
+import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.Instruction.Instructions;
+import io.neow3j.devpack.annotations.ManifestExtra;
+import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
+import io.neow3j.devpack.annotations.SupportedStandards;
+import io.neow3j.devpack.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
@@ -212,7 +213,6 @@ public class Compiler {
     }
 
     private void collectAndInitializeMethods(ClassNode asmClass) {
-        boolean entryPointFound = false;
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
                 continue; // Handled in method `collectAndInitializeStaticFields()`.
@@ -224,23 +224,8 @@ public class Compiler {
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
             initializeMethod(neoMethod);
-            if (entryPointFound && neoMethod.isEntryPoint) {
-                throw new CompilerException("Multiple entry points found. Only one method of "
-                        + "a smart contract can be the entry point.");
-            } else {
-                entryPointFound = entryPointFound || neoMethod.isEntryPoint;
-            }
             this.neoModule.addMethod(neoMethod);
         }
-        if (!entryPointFound) {
-            throw new CompilerException("No entry point found. Specify one method as the entry "
-                    + "point of the smart contract.");
-        }
-    }
-
-    private boolean isEntryPoint(MethodNode asmMethod) {
-        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
-                .anyMatch(a -> a.desc.equals(Type.getDescriptor(EntryPoint.class)));
     }
 
     private ClassNode getAsmClass(String fullyQualifiedClassName) throws IOException {
@@ -931,7 +916,6 @@ public class Compiler {
             // the ABI and are invokable.
             neoMethod.isAbiMethod = true;
         }
-        neoMethod.isEntryPoint = isEntryPoint(neoMethod.asmMethod);
 
         // Look for method params and local variables and add them to the NeoMethod. Note that Java
         // mixes method params and local variables.
@@ -1098,11 +1082,17 @@ public class Compiler {
         // TODO: Handle `org.objectweb.asm.Type`.
     }
 
+    private void addPushDataArray(String data, NeoMethod neoMethod) {
+        addInstructionFromBytes(new ScriptBuilder().pushData(data).toArray(), neoMethod);
+    }
+
     private void addPushDataArray(byte[] data, NeoMethod neoMethod) {
-        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
+        addInstructionFromBytes(new ScriptBuilder().pushData(data).toArray(), neoMethod);
+    }
+
+    private void addInstructionFromBytes(byte[] insnBytes, NeoMethod neoMethod) {
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        neoMethod.addInstruction(new NeoInstruction(
-                OpCode.get(insnBytes[0]), operand));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
 
     private AbstractInsnNode handleMethodInstruction(AbstractInsnNode insn,
@@ -1130,8 +1120,8 @@ public class Compiler {
             addSyscall(calledAsmMethod, callingNeoMethod);
         } else if (hasInstructionAnnotation(calledAsmMethod)) {
             addInstruction(calledAsmMethod, callingNeoMethod);
-        } else if (hasAppcallAnnotation(calledAsmMethod)) {
-            addAppcall(calledAsmMethod, callingNeoMethod);
+        } else if (isContractCall(owner)) {
+            addContractCall(calledAsmMethod, callingNeoMethod, owner);
         } else {
             return handleMethodCall(callingNeoMethod, owner, calledAsmMethod, methodInsn);
         }
@@ -1333,9 +1323,12 @@ public class Compiler {
                         || a.desc.equals(Type.getDescriptor(Instruction.class)));
     }
 
-    private boolean hasAppcallAnnotation(MethodNode asmMethod) {
-        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
-                .anyMatch(a -> a.desc.equals(Type.getDescriptor(Appcall.class)));
+    /**
+     * Checks if the given class node carries the {@link Contract} annotation.
+     */
+    private boolean isContractCall(ClassNode owner) {
+        return owner.invisibleAnnotations != null && owner.invisibleAnnotations.stream().
+                anyMatch(a -> a.desc.equals(Type.getDescriptor(Contract.class)));
     }
 
     private void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
@@ -1437,17 +1430,32 @@ public class Compiler {
         return operand;
     }
 
-    private void addAppcall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
-        addReverseArguments(calledAsmMethod, callingNeoMethod);
-        AnnotationNode appCallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Appcall.class))).findFirst()
-                .get();
-        String scriptHash = (String) appCallAnnotation.values.get(1);
-        byte[] data = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(scriptHash));
-        addPushDataArray(data, callingNeoMethod);
-        byte[] callHash = Numeric.hexStringToByteArray(
-                InteropServiceCode.SYSTEM_CONTRACT_CALL.getHash());
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, callHash));
+    private void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
+            ClassNode owner) {
+
+        AnnotationNode annotation = owner.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(Contract.class))).findFirst().get();
+        byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
+        if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
+            throw new CompilerException("Script hash on contract class '"
+                    + getClassName(internalNameToFullyQualifiedName(owner.name)) + "' does not "
+                    + "have the correct length.");
+        }
+
+        int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;
+        addPushNumber(nrOfParams, callingNeoMethod);
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
+        addPushDataArray(calledAsmMethod.name, callingNeoMethod);
+        addPushDataArray(ArrayUtils.reverseArray(scriptHash), callingNeoMethod);
+        byte[] contractSyscall = Numeric.hexStringToByteArray(SYSTEM_CONTRACT_CALL.getHash());
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, contractSyscall));
+
+        // If the return type is void, insert a DROP.
+        String returnType = Type.getMethodType(calledAsmMethod.desc).getReturnType().getClassName();
+        if (returnType.equals(void.class.getTypeName())
+                || returnType.equals(Void.class.getTypeName())) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
+        }
     }
 
     private void addPushNumber(long number, NeoMethod neoMethod) {
