@@ -741,7 +741,7 @@ public class Compiler {
 
         boolean isFirstCall = true;
         while (insn != null) {
-            if (isCallToScriptBuilderAppend(insn)) {
+            if (isCallToStringBuilderAppend(insn)) {
                 if (!isFirstCall) {
                     neoMethod.addInstruction(new NeoInstruction(OpCode.CAT));
                 }
@@ -749,12 +749,12 @@ public class Compiler {
                 insn = insn.getNext();
                 continue;
             }
-            if (isCallToScriptBuilderToString(insn)) {
+            if (isCallToStringBuilderToString(insn)) {
                 neoMethod.addInstruction(new NeoInstruction(OpCode.CONVERT,
                         new byte[]{StackItemType.BYTE_STRING.byteValue()}));
                 break; // End of string concatenation.
             }
-            if (isCallToAnyScriptBuilderMethod(insn)) {
+            if (isCallToAnyStringBuilderMethod(insn)) {
                 throw new CompilerException(neoModule.asmSmartContractClass, neoMethod.currentLine,
                         format("Only 'append()' and 'toString()' are supported for StringBuilder, "
                                 + "but '%s' was called", ((MethodInsnNode) insn).name));
@@ -769,19 +769,19 @@ public class Compiler {
         return insn;
     }
 
-    private boolean isCallToScriptBuilderAppend(AbstractInsnNode insn) {
+    private boolean isCallToStringBuilderAppend(AbstractInsnNode insn) {
         return insn instanceof MethodInsnNode
                 && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class))
                 && ((MethodInsnNode) insn).name.equals(APPEND_METHOD_NAME);
     }
 
-    private boolean isCallToScriptBuilderToString(AbstractInsnNode insn) {
+    private boolean isCallToStringBuilderToString(AbstractInsnNode insn) {
         return insn instanceof MethodInsnNode
                 && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class))
                 && ((MethodInsnNode) insn).name.equals(TOSTRING_METHOD_NAME);
     }
 
-    private boolean isCallToAnyScriptBuilderMethod(AbstractInsnNode insn) {
+    private boolean isCallToAnyStringBuilderMethod(AbstractInsnNode insn) {
         return insn instanceof MethodInsnNode
                 && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class));
     }
