@@ -21,6 +21,7 @@ import io.neow3j.devpack.annotations.Contract;
 import io.neow3j.devpack.annotations.Features;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
+import io.neow3j.devpack.annotations.ManifestExtra;
 import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
 import io.neow3j.devpack.annotations.SupportedStandards;
 import io.neow3j.devpack.annotations.Syscall;
@@ -1734,35 +1735,40 @@ public class Compiler {
         return new ContractFeatures(hasStorage, payable);
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, String> buildManifestExtra(ClassNode classNode) {
-        Optional<AnnotationNode> opt = classNode.invisibleAnnotations.stream()
+        List<AnnotationNode> annotations = new ArrayList<>();
+        // First check if multiple @ManifestExtra where added to the contract. In this case the
+        // expected annotation is a @ManifestExtras (plural).
+        Optional<AnnotationNode> annotation = classNode.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(ManifestExtras.class)))
                 .findFirst();
-        if (!opt.isPresent()) {
-            return null;
+        if (annotation.isPresent()) {
+            annotations = (List<AnnotationNode>) annotation.get().values.get(1);
+        } else {
+            // If there is no @ManifestExtras, there could still be a single @ManifestExtra.
+            annotation = classNode.invisibleAnnotations.stream()
+                    .filter(a -> a.desc.equals(Type.getDescriptor(ManifestExtra.class)))
+                    .findFirst();
+            if (annotation.isPresent()) {
+                annotations.add(annotation.get());
+            }
         }
-        AnnotationNode ann = opt.get();
         Map<String, String> extras = new HashMap<>();
-        String key;
-        String value;
-        for (Object a : (List<?>) ann.values.get(1)) {
-            AnnotationNode manifestExtra = (AnnotationNode) a;
-            int i = manifestExtra.values.indexOf("key");
-            key = (String) manifestExtra.values.get(i + 1);
-            i = manifestExtra.values.indexOf("value");
-            value = (String) manifestExtra.values.get(i + 1);
+        for (AnnotationNode node : annotations) {
+            int i = node.values.indexOf("key");
+            String key = (String) node.values.get(i + 1);
+            i = node.values.indexOf("value");
+            String value = (String) node.values.get(i + 1);
             extras.put(key, value);
         }
 
-        // if "name" is not found in the manifest
-        // then default to: attribute with className
-
+        // If "name" was not explicitly set by the developer then set it to the class name.
         if (!extras.containsKey("name")) {
             String fqn = getFullyQualifiedNameForInternalName(classNode.name);
             String className = getClassName(fqn);
             extras.put("name", className);
         }
-
         return extras;
     }
 

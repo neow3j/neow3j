@@ -2,27 +2,35 @@ package io.neow3j.compiler;
 
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 import io.neow3j.compiler.Compiler.CompilationResult;
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances.Nep5Balance;
+import io.neow3j.protocol.core.methods.response.NeoGetStorage;
+import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
+import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -44,11 +52,10 @@ public class CompilerTest {
     protected static final String NEO3_PRIVATENET_CONTAINER_IMG =
             "docker.pkg.github.com/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
 
-    private static final String NODE_WALLET_FILE = "wallet.json";
-    private static final String NODE_WALLET_PASSWORD = "neo";
-
     protected static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
+    protected static final String VM_STATE_HALT = "HALT";
+    protected static final String VM_STATE_FAULT = "FAULT";
 
     @ClassRule
     public static GenericContainer privateNetContainer = new GenericContainer(
@@ -113,22 +120,50 @@ public class CompilerTest {
         return sc;
     }
 
-    protected static void openWallet() throws Exception {
-        neow3j.openWallet(NODE_WALLET_FILE, NODE_WALLET_PASSWORD).send();
+    /**
+     * Asserts that the given expected value is in the contracts storage under the given key.
+     * <p>
+     * The key is converted into a UTF-8 encoded byte array.
+     *
+     * @param key           The key to check.
+     * @param expectedValue The expected value.
+     */
+    protected void assertStorageContains(String key, String expectedValue) throws IOException {
+        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(),
+                HexParameter.valueOf(key)).send();
+        String value = new String(
+                Numeric.hexStringToByteArray(response.getStorage()),
+                StandardCharsets.UTF_8);
+
+        assertThat(value, is(expectedValue));
     }
 
-    private static Callable<Long> callableGetTxHash(String txHash) {
-        return () -> {
-            try {
-                NeoGetTransactionHeight tx = neow3j.getTransactionHeight(txHash).send();
-                if (tx.hasError()) {
-                    return null;
-                }
-                return tx.getHeight().longValue();
-            } catch (IOException e) {
-                return null;
-            }
-        };
+    /**
+     * Builds and sends a transaction invoking the contract under test with the given function and
+     * parameters.
+     * <p>
+     * The multi-sig account at {@link CompilerTest#multiSigAcc} is used to sign the transaction.
+     *
+     * @param function The function to call.
+     * @param params   The parameters to pass with the function call.
+     * @return the hash of the sent transaction.
+     */
+    protected String sendInvokeTransaction(String function, ContractParameter... params)
+            throws IOException {
+
+        return contract.invoke(function, params)
+                .withWallet(wallet)
+                .withSigners(Signer.calledByEntry(multiSigAcc.getScriptHash()))
+                .build()
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+    }
+
+    protected void assertVMExitedWithHalt(String hash) throws IOException {
+        NeoGetTransaction response = neow3j.getTransaction(hash).send();
+        assertThat(response.getTransaction().getVMState(), is(VM_STATE_HALT));
     }
 
     private static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
@@ -167,13 +202,18 @@ public class CompilerTest {
         };
     }
 
-    private void transferTokensToAddress(ScriptHash tokenScriptHash, String address,
-            long amount) throws IOException {
-
-        NeoSendToAddress r = neow3j.sendToAddress(tokenScriptHash.toString(), address,
-                String.valueOf(amount)).send();
-        // ensure that the transaction is sent
-        waitUntilBalancesIsGreaterThanZero(address, tokenScriptHash);
+    private static Callable<Long> callableGetTxHash(String txHash) {
+        return () -> {
+            try {
+                NeoGetTransactionHeight tx = neow3j.getTransactionHeight(txHash).send();
+                if (tx.hasError()) {
+                    return null;
+                }
+                return tx.getHeight().longValue();
+            } catch (IOException e) {
+                return null;
+            }
+        };
     }
 
     public static void waitUntilBalancesIsGreaterThanZero(String address,
@@ -183,6 +223,10 @@ public class CompilerTest {
 
     public static void waitUntilContractIsDeployed(ScriptHash contractScripHash) {
         waitUntil(callableGetContractState(contractScripHash), Matchers.is(true));
+    }
+
+    public static void waitUntilTransactionIsExecuted(String txHash) {
+        waitUntil(callableGetTxHash(txHash), notNullValue());
     }
 
     protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)
@@ -197,4 +241,12 @@ public class CompilerTest {
     protected StackItem getFirstStackItem(NeoInvokeFunction response) {
         return response.getInvocationResult().getStack().get(0);
     }
+
+//    protected void transferTokensTogTgT
+//    NeoSendToAddress send = super.sendToAddress(NEO_HASH, toAddress, amount).send();
+//    // ensure that the transaction is sent
+//    waitUntilSendToAddressTransactionHasBeenExecuted();
+//    // store the transaction hash to use this transaction in the tests
+//        return send.getSendToAddress().getHash();
+//
 }
