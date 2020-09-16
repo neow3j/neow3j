@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -173,11 +174,8 @@ public class SmartContract {
      */
     public NeoInvokeFunction callInvokeFunction(String function, Signer... signers)
             throws IOException {
-        if (function == null || function.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The invocation function must not be null or empty.");
-        }
-        return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();
+
+        return callInvokeFunction(function, new ArrayList<>(), signers);
     }
 
     /**
@@ -190,8 +188,7 @@ public class SmartContract {
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public NeoInvokeFunction callInvokeFunction(String function, List<ContractParameter> params,
-            Signer... signers)
-            throws IOException {
+            Signer... signers) throws IOException {
         // Remark: The list of signers is required for `invokefunction` calls that will hit a
         // CheckWitness check in the smart contract. We add the signers even if that is not the
         // case because we cannot know if the invoked function needs it or not and it doesn't
@@ -200,7 +197,7 @@ public class SmartContract {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        if (params.isEmpty()) {
+        if (params == null || params.isEmpty()) {
             return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();
         }
         return neow.invokeFunction(scriptHash.toString(), function, params, signers).send();

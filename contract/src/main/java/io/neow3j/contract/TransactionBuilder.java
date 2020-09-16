@@ -335,9 +335,9 @@ public class TransactionBuilder {
             if (wallet.holdsAccount(signer.getScriptHash())) {
                 sigAccounts.add(wallet.getAccount(signer.getScriptHash()));
             } else {
-                throw new TransactionConfigurationException("Can't create transaction signature. " +
-                        "Wallet does not contain the signer account with script hash " +
-                        signer.getScriptHash());
+                throw new TransactionConfigurationException("Cannot find account with script hash '"
+                        + signer.getScriptHash().toString() + "' in wallet set on this transaction "
+                        + "builder.");
             }
         });
         return sigAccounts;

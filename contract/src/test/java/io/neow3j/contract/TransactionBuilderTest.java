@@ -41,6 +41,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.hamcrest.core.StringContains;
+import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -184,7 +185,7 @@ public class TransactionBuilderTest {
     }
 
     @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMultipleSignersConcerningTheSameAccount1() {
+    public void failAddingMultipleSignersConcerningTheSameAccount() {
         TransactionBuilder b = new TransactionBuilder(neow);
         b.signers(Signer.global(account1.getScriptHash()),
                 Signer.calledByEntry(account1.getScriptHash()));
@@ -200,6 +201,7 @@ public class TransactionBuilderTest {
     @Test
     public void failAddingMultipleFeeOnlySigners() {
         TransactionBuilder b = new TransactionBuilder(neow);
+        exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("fee-only witness scope"));
         b.signers(Signer.feeOnly(account1.getScriptHash()),
                 Signer.feeOnly(account2.getScriptHash()));
@@ -209,6 +211,7 @@ public class TransactionBuilderTest {
     public void failAddingMultipleFeeOnlySignersSequentially() {
         TransactionBuilder b = new TransactionBuilder(neow);
         b.signers(Signer.feeOnly(account1.getScriptHash()));
+        exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("fee-only witness scope"));
         b.signers(Signer.feeOnly(account2.getScriptHash()));
     }
@@ -450,21 +453,6 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners().get(1).getScopes(), is(signer.getScopes()));
     }
 
-    @Test(expected = TransactionConfigurationException.class)
-    public void throwIfAddingSignerMultipleTimes() throws Throwable {
-        // WIF from key 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f.
-        final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
-        Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
-        Wallet wallet = Wallet.withAccounts(senderAcc);
-        setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
-
-        new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT))
-                .wallet(wallet)
-                .signers(Signer.feeOnly(senderAcc.getScriptHash()),
-                        Signer.calledByEntry(senderAcc.getScriptHash()));
-    }
-
     @Test
     public void signTransactionWithAdditionalSigners() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
@@ -489,9 +477,7 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failBuildingTransactionBecauseWalletDoesntContainSignerAccount()
-            throws Throwable {
-
+    public void failBuildingTransactionBecauseWalletDoesntContainSignerAccount() throws Throwable {
         Wallet w = Wallet.createWallet();
         Account signer = Account.createAccount();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json", SCRIPT);
@@ -501,16 +487,13 @@ public class TransactionBuilderTest {
                 .signers(Signer.calledByEntry(signer.getScriptHash()))
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(
-                new StringContains("Can't create transaction signature. Wallet does not " +
-                        "contain the signer account with script hash " + signer.getScriptHash()));
+        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
+                "Cannot find account", signer.getScriptHash().toString())));
         b.buildTransaction();
     }
 
     @Test
-    public void failSigningTransactionBecauseWalletDoesntContainSignerAccount()
-            throws Throwable {
-
+    public void failSigningTransactionBecauseWalletDoesntContainSignerAccount() throws Throwable {
         Wallet w = Wallet.createWallet();
         Account account = Account.createAccount();
         w.addAccounts(account);
@@ -523,9 +506,8 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         w.removeAccount(account.getScriptHash());
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("Can't create transaction "
-                + "signature. Wallet does not contain the signer account with script "
-                + "hash " + account.getScriptHash()));
+        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
+                "Cannot find account", account.getScriptHash().toString())));
         b.sign();
     }
 
