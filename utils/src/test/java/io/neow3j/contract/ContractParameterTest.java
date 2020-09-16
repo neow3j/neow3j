@@ -1,13 +1,12 @@
 package io.neow3j.contract;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.eq;
 
+import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
 import java.math.BigDecimal;
@@ -39,32 +38,29 @@ public class ContractParameterTest {
     public void testByteArrayParamCreation() {
         byte[] bytes = new byte[]{0x01, 0x01};
         ContractParameter p = ContractParameter.byteArray(bytes);
-        assertArrayEquals(bytes, (byte[]) p.getValue());
+        assertThat((String) p.getValue(), is(Base64.encode(bytes)));
         assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
+    }
 
-        String value = "0xa602";
-        p = ContractParameter.byteArray(value);
-        assertArrayEquals(new byte[]{(byte) 0xa6, 0x02}, (byte[]) p.getValue());
+    @Test
+    public void testByteArrayParamCreationFromHexString() {
+        ContractParameter p = ContractParameter.byteArray("0xa602");
+        assertThat(Base64.decode((String) p.getValue()), is(new byte[]{(byte) 0xa6, 0x02}));
+        assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
+    }
+
+    @Test
+    public void testByteArrayParamCreationFromString() {
+        ContractParameter p =ContractParameter.byteArrayFromString("Neo");
+        assertThat(Base64.decode((String) p.getValue()),
+        is(new byte[] {(byte) 0x4e, (byte) 0x65, (byte) 0x6f}));
         assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testByteArrayParamCreationFromInvalidString() {
+    public void testByteArrayParamCreationFromInvalidHexString() {
         String value = "value";
         ContractParameter.byteArray(value);
-    }
-
-    @Test
-    public void testByteArrayParamCreationFromFixed8() {
-        BigDecimal value = BigDecimal.ONE;
-        ContractParameter p = ContractParameter.fixed8ByteArray(value);
-        assertArrayEquals(Numeric.hexStringToByteArray("00e1f50500000000"), (byte[]) p.getValue());
-        assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
-
-        value = new BigDecimal("109.2345");
-        p = ContractParameter.fixed8ByteArray(value);
-        assertArrayEquals(Numeric.hexStringToByteArray("909e168b02000000"), (byte[]) p.getValue());
-        assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
     }
 
     @Test
@@ -197,7 +193,7 @@ public class ContractParameterTest {
         ContractParameter p = ContractParameter.hash256(hashValue);
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[])(p.getValue())));
+        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[]) (p.getValue())));
     }
 
     @Test
@@ -206,7 +202,7 @@ public class ContractParameterTest {
         ContractParameter p = ContractParameter.hash256(Numeric.hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[])(p.getValue())));
+        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[]) (p.getValue())));
     }
 
     @Test(expected = IllegalArgumentException.class)
