@@ -434,9 +434,8 @@ public class TransactionBuilder {
      *
      * @return the transaction data ready for creating a signature.
      */
-    public byte[] getTransactionForSigning() throws Throwable {
-        transaction = buildTransaction();
-        return transaction.getHashData();
+    public Transaction getUnsignedTransaction() throws Throwable {
+        return buildTransaction();
     }
 
     private void signWithNormalAccount(byte[] txBytes, Account acc) {
@@ -478,7 +477,7 @@ public class TransactionBuilder {
      * <p>
      * The check and potential execution of the consumer is only performed when the transaction is
      * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
-     * TransactionBuilder#getTransactionForSigning()}.
+     * TransactionBuilder#getUnsignedTransaction()}.
      *
      * @return this transaction builder.
      */
@@ -499,7 +498,7 @@ public class TransactionBuilder {
      * <p>
      * The check and potential throwing of the exception is only performed when the transaction is
      * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
-     * TransactionBuilder#getTransactionForSigning()}.
+     * TransactionBuilder#getUnsignedTransaction()}.
      *
      * @return this transaction builder.
      */
