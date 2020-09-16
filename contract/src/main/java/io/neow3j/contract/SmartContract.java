@@ -13,6 +13,8 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.Strings;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -69,7 +71,7 @@ public class SmartContract {
                 ContractManifest.class), neow);
     }
 
-    private SmartContract(NefFile nefFile, ContractManifest manifest, Neow3j neow)
+    public SmartContract(NefFile nefFile, ContractManifest manifest, Neow3j neow)
             throws JsonProcessingException {
 
         if (neow == null) {
@@ -104,7 +106,7 @@ public class SmartContract {
     public TransactionBuilder invokeFunction(String function,
             ContractParameter... contractParameters) {
 
-        if (function == null || function.isEmpty()) {
+        if (Strings.isEmpty(function)) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
@@ -114,8 +116,8 @@ public class SmartContract {
     }
 
     /**
-     * Does an {@code invokefunction} RPC call to the given contract function expecting a String as
-     * return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a String
+     * as return type.
      *
      * @param function The function to call.
      * @param params   The contract parameters to include in the call.
@@ -137,7 +139,7 @@ public class SmartContract {
     }
 
     /**
-     * Does an {@code invokefunction} RPC call to the given contract function expecting an integer
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an integer
      * as return type.
      *
      * @param function The function to call.
@@ -165,7 +167,7 @@ public class SmartContract {
     }
 
     /**
-     * Does an {@code invokefunction} RPC call to the given contract function.
+     * Sends an {@code invokefunction} RPC call to the given contract function.
      *
      * @param function The function to call.
      * @param signers  The list of signers for this contract call.
@@ -174,12 +176,14 @@ public class SmartContract {
      */
     public NeoInvokeFunction callInvokeFunction(String function, Signer... signers)
             throws IOException {
-
+        if (Strings.isEmpty(function)) {
+            throw new IllegalArgumentException("The invocation function must not be null or empty.");
+        }
         return callInvokeFunction(function, new ArrayList<>(), signers);
     }
 
     /**
-     * Does an {@code invokefunction} RPC call to the given contract function.
+     * Sends an {@code invokefunction} RPC call to the given contract function.
      *
      * @param function The function to call.
      * @param params   The contract parameters to include in the call.
@@ -193,7 +197,7 @@ public class SmartContract {
         // CheckWitness check in the smart contract. We add the signers even if that is not the
         // case because we cannot know if the invoked function needs it or not and it doesn't
         // lead to failures if we add them in any case.
-        if (function == null || function.isEmpty()) {
+        if (Strings.isEmpty(function)) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
