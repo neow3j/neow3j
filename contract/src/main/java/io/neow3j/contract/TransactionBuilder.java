@@ -138,18 +138,26 @@ public class TransactionBuilder {
     }
 
     /**
-     * Adds the given signers to this transaction.
-     * <p>
-     * If no sender is set explicitly, the first signer will be used as the sender of this transaction,
-     * i.e. the payer of the transaction fees.
+     * Adds the given signers to this transaction. If multiple signers are added the first one is
+     * used as the sender of this transaction, meaning that it is used to cover the transaction
+     * fees. If an account with the fee-only witness scope (see {@link WitnessScope#FEE_ONLY}) is
+     * added, then that account is used to cover the fees.
      *
      * @param signers Signers for this transaction.
      * @return this transaction builder.
+     * @throws TransactionConfigurationException if multiple signers of the same account, or
+     *                                           multiple signers with the fee-only witness scope
+     *                                           are added.
      */
     public TransactionBuilder signers(Signer... signers) {
         if (containsDuplicateSigners(signers)) {
             throw new TransactionConfigurationException("Can't add multiple signers" +
                     " concerning the same account.");
+        }
+        if (containsMultipleFeeOnlySigners(signers)) {
+            throw new TransactionConfigurationException("Can't add multiple signers with the "
+                    + "fee-only witness scope. Only one signer can be used to cover the "
+                    + "transaction fees.");
         }
         this.signers.addAll(Arrays.asList(signers));
         return this;
@@ -203,8 +211,8 @@ public class TransactionBuilder {
         return this;
     }
 
-    private boolean containsDuplicateSigners(Signer... signers) {
-        List<ScriptHash> newSignersList = Stream.of(signers)
+    private boolean containsDuplicateSigners(Signer... newSigners) {
+        List<ScriptHash> newSignersList = Stream.of(newSigners)
                 .map(Signer::getScriptHash)
                 .collect(Collectors.toList());
         Set<ScriptHash> newSignersSet = new HashSet<>(newSignersList);
@@ -216,6 +224,20 @@ public class TransactionBuilder {
                 .map(Signer::getScriptHash)
                 .anyMatch(newSignersSet::contains);
     }
+
+    private boolean containsMultipleFeeOnlySigners(Signer[] newSigners) {
+        boolean newSignersContainMultipleFeeOnlySigners = Stream.of(newSigners)
+                .filter(s -> s.getScopes().contains(WitnessScope.FEE_ONLY))
+                .count() > 1;
+        boolean signersContainFeeOnlySigner = this.signers.stream()
+                .anyMatch(s -> s.getScopes().contains(WitnessScope.FEE_ONLY));
+        boolean newSignersContainFeeOnlySigner = Stream.of(newSigners)
+                .anyMatch(s -> s.getScopes().contains(WitnessScope.FEE_ONLY));
+
+        return newSignersContainMultipleFeeOnlySigners ||
+                (signersContainFeeOnlySigner && newSignersContainFeeOnlySigner);
+    }
+
 
     // package-private visible for testability purpose.
     Transaction buildTransaction() throws Throwable {

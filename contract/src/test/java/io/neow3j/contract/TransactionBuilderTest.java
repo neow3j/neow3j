@@ -2,7 +2,6 @@ package io.neow3j.contract;
 
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
-import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -12,6 +11,7 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -28,6 +28,7 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -40,7 +41,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.hamcrest.core.StringContains;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -186,7 +186,8 @@ public class TransactionBuilderTest {
     @Test(expected = TransactionConfigurationException.class)
     public void failAddingMultipleSignersConcerningTheSameAccount1() {
         TransactionBuilder b = new TransactionBuilder(neow);
-        b.signers(Signer.global(account1.getScriptHash()), Signer.calledByEntry(account1.getScriptHash()));
+        b.signers(Signer.global(account1.getScriptHash()),
+                Signer.calledByEntry(account1.getScriptHash()));
     }
 
     @Test(expected = TransactionConfigurationException.class)
@@ -194,6 +195,22 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow);
         b.signers(Signer.global(account1.getScriptHash()));
         b.signers(Signer.calledByEntry(account1.getScriptHash()));
+    }
+
+    @Test
+    public void failAddingMultipleFeeOnlySigners() {
+        TransactionBuilder b = new TransactionBuilder(neow);
+        exceptionRule.expectMessage(new StringContains("fee-only witness scope"));
+        b.signers(Signer.feeOnly(account1.getScriptHash()),
+                Signer.feeOnly(account2.getScriptHash()));
+    }
+
+    @Test
+    public void failAddingMultipleFeeOnlySignersSequentially() {
+        TransactionBuilder b = new TransactionBuilder(neow);
+        b.signers(Signer.feeOnly(account1.getScriptHash()));
+        exceptionRule.expectMessage(new StringContains("fee-only witness scope"));
+        b.signers(Signer.feeOnly(account2.getScriptHash()));
     }
 
     // TODO: 14.09.20 Michael: Once TransactionAttributes are defined, write this test
@@ -315,7 +332,8 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failTryingToSignTransactionWithMultiSigAccountMissingAPrivateKey() throws Throwable {
+    public void failTryingToSignTransactionWithMultiSigAccountMissingAPrivateKey()
+            throws Throwable {
         Wallet w = Wallet.createWallet();
         Account a2 = Account.createAccount();
         List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
