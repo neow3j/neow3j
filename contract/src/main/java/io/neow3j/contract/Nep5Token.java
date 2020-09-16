@@ -273,7 +273,7 @@ public class Nep5Token extends SmartContract {
                     + amountToCover.toString() + " " + getSymbol() + " but the wallet only holds "
                     + coveredAmount.toString() + " " + getSymbol() + " (in token fractions).");
         }
-        return buildTransferInvocation(wallet, scripts, signers);
+        return assembleMultiTransferTransaction(wallet, scripts, signers);
     }
 
     private byte[] buildSingleTransferScript(Account acc, ScriptHash to, BigInteger amount) {
@@ -285,23 +285,19 @@ public class Nep5Token extends SmartContract {
         return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
     }
 
-    private TransactionBuilder buildTransferInvocation(Wallet wallet, List<byte[]> scripts,
+    private TransactionBuilder assembleMultiTransferTransaction(Wallet wallet, List<byte[]> scripts,
             List<Signer> signers) throws IOException {
+
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         for (byte[] script : scripts) {
             byteArrayOutputStream.write(script);
         }
         byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
 
-        TransactionBuilder b = new TransactionBuilder(neow)
+        return new TransactionBuilder(neow)
                 .wallet(wallet)
-                .script(concatenatedScript);
-
-        for (Signer signer : signers) {
-            b.signers(signer);
-        }
-
-        return b;
+                .script(concatenatedScript)
+                .signers(signers.toArray(new Signer[]{}));
     }
 
     private boolean privateKeysArePresentForMultiSig(Wallet wallet, ScriptHash multiSig) {

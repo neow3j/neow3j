@@ -77,7 +77,8 @@ public class NeoURI {
     }
 
     /**
-     * Builds a transaction builder {@code TransactionBuilder} from this NeoURI.
+     * Builds a {@code TransactionBuilder} from this NeoURI.
+     * <p>
      * Needs all necessary parameters to create a transfer invocation.
      *
      * @return a TransactionBuilder object.
@@ -129,20 +130,9 @@ public class NeoURI {
     }
 
     private BigInteger computeFractions(Neow3j neow3j, String asset) throws IOException {
-        BigDecimal factor = BigDecimal.TEN.pow(getDecimals(neow3j, asset));
+        int decimals = new Nep5Token(new ScriptHash(asset), neow3j).getDecimals();
+        BigDecimal factor = BigDecimal.TEN.pow(decimals);
         return this.amount.multiply(factor).toBigInteger();
-    }
-
-    private int getDecimals(Neow3j neow3j, String asset) throws IOException {
-        NeoInvokeFunction response = new SmartContract(new ScriptHash(asset), neow3j)
-                .callInvokeFunction("decimals");
-        StackItem item = response.getInvocationResult().getStack().get(0);
-
-        if (item.getType().equals(StackItemType.INTEGER)) {
-            return item.asInteger().getValue().intValue();
-        } else {
-            throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
-        }
     }
 
     public NeoURI toAddress(String address) {
@@ -159,6 +149,7 @@ public class NeoURI {
         return this;
     }
 
+    // TODO: This method does the same as the second method below. What shoul done differently?
     public NeoURI assetFromByteArray(String asset) {
         this.asset = asset;
         return this;

@@ -10,17 +10,16 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
-import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -35,9 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Used to build a {@link Transaction}.
- * When signing the {@code TransactionBuilder}, a transaction is created that can be sent to the
- * Neo node.
+ * Used to build a {@link Transaction}. When signing the {@code TransactionBuilder}, a transaction
+ * is created that can be sent to the Neo node.
  */
 public class TransactionBuilder {
 
@@ -72,6 +70,8 @@ public class TransactionBuilder {
 
     /**
      * Sets the wallet used for this transaction.
+     * <p>
+     * The wallet is required for retrieving the signer accounts when signing the transaction.
      *
      * @param wallet The wallet.
      * @return this transaction builder.
@@ -114,19 +114,16 @@ public class TransactionBuilder {
     }
 
     /**
-     * Sets the number of the block up to which this transaction can be included.
+     * Sets the number of the block up to which this transaction can be included. If that block
+     * number is reached in the network and this transaction is not yet included in a block, it
+     * becomes invalid.
      * <p>
-     * If that block number is reached in the network and this transaction is not yet included
-     * in a block, it becomes invalid. Note that the given block number must not be higher than
-     * the current chain height plus the increment specified in {@link
+     * By default it is set to the maximum, which is the current chain height plus {@link
      * NeoConstants#MAX_VALID_UNTIL_BLOCK_INCREMENT}.
-     * <p>
-     * This property is <b>mandatory</b>.
      *
      * @param blockNr The block number.
      * @return this transaction builder.
-     * @throws TransactionConfigurationException if the block number is not in the range [0,
-     *                                           2^32).
+     * @throws TransactionConfigurationException if the block number is not in the range [0, 2^32).
      */
     public TransactionBuilder validUntilBlock(long blockNr) {
         if (blockNr < 0 || blockNr >= (long) Math.pow(2, 32)) {
@@ -177,9 +174,8 @@ public class TransactionBuilder {
     }
 
     /**
-     * Sets the contract script for this transaction.
-     * <p>
-     * The script defines the actions that this transaction will perform on the blockchain.
+     * Sets the script for this transaction. It defines the actions that this transaction will
+     * perform on the blockchain.
      *
      * @param script The contract script.
      * @return this transaction builder.
@@ -204,8 +200,8 @@ public class TransactionBuilder {
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
         if (this.attributes.size() + attributes.length >
                 NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-            throw new TransactionConfigurationException("A transaction cannot have more "
-                    + "than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
+            throw new TransactionConfigurationException("A transaction cannot have more than "
+                    + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
         }
         this.attributes.addAll(Arrays.asList(attributes));
         return this;
@@ -238,22 +234,22 @@ public class TransactionBuilder {
                 (signersContainFeeOnlySigner && newSignersContainFeeOnlySigner);
     }
 
-
     // package-private visible for testability purpose.
     Transaction buildTransaction() throws Throwable {
         if (wallet == null) {
-            throw new TransactionConfigurationException("Cannot build a transaction without a wallet.");
+            throw new TransactionConfigurationException(
+                    "Cannot build a transaction without a wallet.");
         }
 
         if (script == null || script.length == 0) {
-            throw new TransactionConfigurationException("Cannot build a transaction without a script.");
+            throw new TransactionConfigurationException(
+                    "Cannot build a transaction without a script.");
         }
 
         if (validUntilBlock == null) {
-            // If validUntilBlock is not set explicitly set, then set it to the current max.
-            // It can happen that the neo-node refuses the valid until block because of
-            // it being over the max. Therefore, we decrement it by 1, to make sure that
-            // the node doesn't reject the transaction.
+            // If validUntilBlock is not set explicitly, then set it to the current max. It can
+            // happen that the neo-node rejects the transaction when we set the validUntilBlock
+            // to the max. To be sure that this does not happen, we decrement the max by 1.
             this.validUntilBlock(
                     fetchCurrentBlockNr() + NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT - 1);
         }
@@ -405,17 +401,17 @@ public class TransactionBuilder {
     }
 
     /**
-     * Builds a transaction, creates signatures for every signer and adds them to the
-     * transaction as witnesses.
+     * Builds the transaction, creates signatures for every signer and adds them to the transaction
+     * as witnesses.
      * <p>
-     * For each signer of the transaction, a corresponding account with an EC key pair
-     * must exist in the wallet set on this transaction builder.
+     * For each signer of the transaction, a corresponding account with an EC key pair must exist in
+     * the wallet set on this transaction builder.
      *
-     * @return A signed transaction.
+     * @return the signed transaction.
      */
     public Transaction sign() throws Throwable {
         transaction = buildTransaction();
-        byte[] txBytes = getTransactionForSigning();
+        byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
             if (!this.wallet.holdsAccount(signer.getScriptHash())) {
                 throw new TransactionConfigurationException("Can't create transaction "
@@ -434,13 +430,12 @@ public class TransactionBuilder {
     }
 
     /**
-     * Builds a {@link Transaction} from this {@code TransactionBuilder} and gets its
-     * hash data for signing.
+     * Builds the transaction and gets its hash data for signing.
      *
      * @return the transaction data ready for creating a signature.
      */
     public byte[] getTransactionForSigning() throws Throwable {
-         transaction = buildTransaction();
+        transaction = buildTransaction();
         return transaction.getHashData();
     }
 
@@ -467,10 +462,10 @@ public class TransactionBuilder {
         }
         int m = multiSigVerifScript.getSigningThreshold();
         if (sigs.size() < m) {
-            throw new TransactionConfigurationException("Can't create transaction "
-                    + "signature. Wallet does not contain enough accounts (with decrypted "
-                    + "private keys) that are part of the multi-sig account with script "
-                    + "hash " + signerAcc.getScriptHash() + ".");
+            throw new TransactionConfigurationException("Can't create transaction signature. "
+                    + "Wallet does not contain enough accounts (with decrypted private keys) that "
+                    + "are part of the multi-sig account with script hash "
+                    + signerAcc.getScriptHash() + ".");
         }
         this.transaction.addWitness(Witness.createMultiSigWitness(sigs,
                 multiSigVerifScript));
@@ -481,14 +476,18 @@ public class TransactionBuilder {
      * not, executes the given consumer supplying it with the required fee and the sender's GAS
      * balance.
      * <p>
-     * The check and potential execution of the consumer is only done after the transaction is built.
+     * The check and potential execution of the consumer is only performed when the transaction is
+     * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
+     * TransactionBuilder#getTransactionForSigning()}.
      *
      * @return this transaction builder.
      */
-    public TransactionBuilder doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer) {
+    public TransactionBuilder doIfSenderCannotCoverFees(
+            BiConsumer<BigInteger, BigInteger> consumer) {
         if (supplier != null) {
-            throw new IllegalStateException("Can't handle a consumer for this case, since an exception " +
-                    "will be thrown if the sender cannot cover the fees.");
+            throw new IllegalStateException(
+                    "Can't handle a consumer for this case, since an exception " +
+                            "will be thrown if the sender cannot cover the fees.");
         }
         this.consumer = consumer;
         return this;
@@ -498,15 +497,18 @@ public class TransactionBuilder {
      * Checks if the sender account of this transaction can cover the network and system fees. If
      * not, otherwise throw an exception created by the provided supplier.
      * <p>
-     * The check and the potential exception throw is only done after the transaction is built.
+     * The check and potential throwing of the exception is only performed when the transaction is
+     * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
+     * TransactionBuilder#getTransactionForSigning()}.
      *
      * @return this transaction builder.
      */
     public TransactionBuilder throwIfSenderCannotCoverFees(
             Supplier<? extends Throwable> exceptionSupplier) {
         if (consumer != null) {
-            throw new IllegalStateException("Can't handle a supplier for this case, since a consumer " +
-                    "will be executed if the sender cannot cover the fees.");
+            throw new IllegalStateException(
+                    "Can't handle a supplier for this case, since a consumer " +
+                            "will be executed if the sender cannot cover the fees.");
         }
         supplier = exceptionSupplier;
         return this;
@@ -531,21 +533,13 @@ public class TransactionBuilder {
         return fees.compareTo(getSenderGasBalance()) < 0;
     }
 
-    /**
-     * Gets the script of this transaction builder.
-     *
-     * @return the script set on this transaction builder.
-     */
-    public byte[] getScript() {
+    // For testability only
+    protected byte[] getScript() {
         return script;
     }
 
-    /**
-     * Gets the list of signers of this transaction builder.
-     *
-     * @return the list of signers of this transaction builder.
-     */
-    public List<Signer> getSigners() {
+    // For testability only
+    protected List<Signer> getSigners() {
         return signers;
     }
 }

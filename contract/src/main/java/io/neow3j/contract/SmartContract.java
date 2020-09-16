@@ -93,27 +93,27 @@ public class SmartContract {
     }
 
     /**
-     * Initializes a {@link TransactionBuilder} for a function invocation of this contract with the
-     * provided function and parameters. The order of the parameters is relevant.
+     * Initializes a {@link TransactionBuilder} for an invocation of this contract with the provided
+     * function and parameters. The order of the parameters is relevant.
      *
      * @param function           The function to invoke.
      * @param contractParameters The parameters to pass with the invocation.
      * @return An {@link TransactionBuilder} allowing to set further details of the invocation.
      */
-    public TransactionBuilder invokeFunction(String function, ContractParameter... contractParameters) {
+    public TransactionBuilder invokeFunction(String function,
+            ContractParameter... contractParameters) {
+
         if (function == null || function.isEmpty()) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
         ScriptBuilder b = new ScriptBuilder()
                 .contractCall(scriptHash, function, Arrays.asList(contractParameters));
-        byte[] script = b.toArray();
-
-        return new TransactionBuilder(neow).script(script);
+        return new TransactionBuilder(neow).script(b.toArray());
     }
 
     /**
-     * Does an {@code invokefunction} call to the given contract function expecting a String as
+     * Does an {@code invokefunction} RPC call to the given contract function expecting a String as
      * return type.
      *
      * @param function The function to call.
@@ -136,8 +136,8 @@ public class SmartContract {
     }
 
     /**
-     * Does an {@code invokefunction} call to the given contract function expecting an integer as
-     * return type.
+     * Does an {@code invokefunction} RPC call to the given contract function expecting an integer
+     * as return type.
      *
      * @param function The function to call.
      * @param params   The contract parameters to include in the call.
@@ -164,29 +164,30 @@ public class SmartContract {
     }
 
     /**
-     * Does an {@code invokefunction} call to the given contract function.
+     * Does an {@code invokefunction} RPC call to the given contract function.
      *
-     * @param function  The function to call.
-     * @param signers   The list of signers for this contract call.
+     * @param function The function to call.
+     * @param signers  The list of signers for this contract call.
      * @return The call's response.
-     * @throws IOException  if something goes wrong when communicating with the neo-node.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public NeoInvokeFunction callInvokeFunction(String function, Signer... signers)
             throws IOException {
         if (function == null || function.isEmpty()) {
-            throw new IllegalArgumentException("The invocation function must not be null or empty.");
+            throw new IllegalArgumentException(
+                    "The invocation function must not be null or empty.");
         }
         return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();
     }
 
     /**
-     * Does an {@code invokefunction} call to the given contract function.
+     * Does an {@code invokefunction} RPC call to the given contract function.
      *
-     * @param function  The function to call.
-     * @param params    The contract parameters to include in the call.
-     * @param signers   The list of signers for this contract call.
+     * @param function The function to call.
+     * @param params   The contract parameters to include in the call.
+     * @param signers  The list of signers for this contract call.
      * @return The call's response.
-     * @throws IOException  if something goes wrong when communicating with the neo-node.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public NeoInvokeFunction callInvokeFunction(String function, List<ContractParameter> params,
             Signer... signers)
@@ -196,7 +197,8 @@ public class SmartContract {
         // case because we cannot know if the invoked function needs it or not and it doesn't
         // lead to failures if we add them in any case.
         if (function == null || function.isEmpty()) {
-            throw new IllegalArgumentException("The invocation function must not be null or empty.");
+            throw new IllegalArgumentException(
+                    "The invocation function must not be null or empty.");
         }
         if (params.isEmpty()) {
             return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();
@@ -232,8 +234,7 @@ public class SmartContract {
     }
 
     /**
-     * Initializes a {@link TransactionBuilder} for deploying this contract. Deploys this contract
-     * by creating a deployment transaction and sending it to the neo-node.
+     * Initializes a {@link TransactionBuilder} for deploying this contract.
      *
      * @return A {@link TransactionBuilder}.
      * @throws JsonProcessingException If something goes wrong when processing the manifest.
