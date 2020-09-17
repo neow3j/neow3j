@@ -236,11 +236,11 @@ public class TransactionBuilder {
     }
 
     private boolean containsDuplicateSigners(Signer... signers) {
-        List<ScriptHash> newSignersList = Stream.of(signers)
+        List<ScriptHash> signerList = Stream.of(signers)
                 .map(Signer::getScriptHash)
                 .collect(Collectors.toList());
-        Set<ScriptHash> newSignersSet = new HashSet<>(newSignersList);
-        return newSignersList.size() != newSignersSet.size();
+        Set<ScriptHash> signerSet = new HashSet<>(signerList);
+        return signerList.size() != signerSet.size();
     }
 
     private boolean containsMultipleFeeOnlySigners(Signer[] newSigners) {
