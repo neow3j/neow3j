@@ -135,10 +135,38 @@ public class TransactionBuilder {
     }
 
     /**
-     * Adds the given signers to this transaction. If multiple signers are added the first one is
-     * used as the sender of this transaction, meaning that it is used to cover the transaction
-     * fees. If an account with the fee-only witness scope (see {@link WitnessScope#FEE_ONLY}) is
-     * added, then that account is used to cover the fees.
+     * Sets the signer with script hash {@code sender} to the first index of the list of signers
+     * for this transaction. The first signer covers the fees for the transaction if there is
+     * no signer present with fee-only witness scope (see {@link WitnessScope#FEE_ONLY}).
+     *
+     * @param sender the script hash of the signer to be set to the first index.
+     * @return this transaction builder.
+     */
+    public TransactionBuilder setFirstSigner(ScriptHash sender) {
+        if (signers.stream()
+                .map(Signer::getScopes)
+                .anyMatch(scopes -> scopes.contains(WitnessScope.FEE_ONLY))) {
+            throw new IllegalStateException("This transaction contains a signer with " +
+                    "fee-only witness scope that will cover the fees. Hence, the order " +
+                    "of the signers does not affect the payment of the fees.");
+        } else {
+            Signer s = signers.stream()
+                    .filter(signer -> signer.getScriptHash().equals(sender))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Could not find a signer with " +
+                            "script hash " + sender.toString() + ". Make sure to add the " +
+                            "signer before calling this method."));
+            signers.remove(s);
+            signers.add(0, s);
+            }
+        return this;
+    }
+
+    /**
+     * Sets the given signers to this transaction. If one of the signers has the fee-only witness
+     * scope (see {@link WitnessScope#FEE_ONLY}), this account is used to cover the transaction fees.
+     * Otherwise, the first signer is used as the sender of this transaction, meaning that it is used
+     * to cover the transaction fees.
      *
      * @param signers Signers for this transaction.
      * @return this transaction builder.
@@ -156,7 +184,7 @@ public class TransactionBuilder {
                     + "fee-only witness scope. Only one signer can be used to cover the "
                     + "transaction fees.");
         }
-        this.signers.addAll(Arrays.asList(signers));
+        this.signers = new ArrayList<>(Arrays.asList(signers));
         return this;
     }
 
@@ -414,26 +442,23 @@ public class TransactionBuilder {
         transaction = buildTransaction();
         byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
-            if (!this.wallet.holdsAccount(signer.getScriptHash())) {
-                throw new TransactionConfigurationException("Can't create transaction "
-                        + "signature. Wallet does not contain the signer account with script "
-                        + "hash " + signer.getScriptHash());
+            // There's no need to check if every signer has its account in the wallet here.
+            // This check has already been executed within building the transaction above
+            // when calculating the network fees.
+            Account signerAcc = wallet.getAccount(signer.getScriptHash());
+            if (signerAcc.isMultiSig()) {
+                signWithMultiSigAccount(txBytes, signerAcc);
             } else {
-                Account signerAcc = this.wallet.getAccount(signer.getScriptHash());
-                if (signerAcc.isMultiSig()) {
-                    signWithMultiSigAccount(txBytes, signerAcc);
-                } else {
-                    signWithNormalAccount(txBytes, signerAcc);
-                }
+                signWithNormalAccount(txBytes, signerAcc);
             }
         });
         return this.transaction;
     }
 
     /**
-     * Builds the transaction and gets its hash data for signing.
+     * Builds the transaction without signing it.
      *
-     * @return the transaction data ready for creating a signature.
+     * @return the unsigned transaction.
      */
     public Transaction getUnsignedTransaction() throws Throwable {
         return buildTransaction();
@@ -533,6 +558,10 @@ public class TransactionBuilder {
         return fees.compareTo(getSenderGasBalance()) < 0;
     }
 
+    // For testability only
+    protected byte getVersion() {
+        return version;
+    }
     // For testability only
     protected byte[] getScript() {
         return script;
