@@ -256,7 +256,8 @@ public class TransactionBuilder {
 
         if (signers.isEmpty()) {
             throw new IllegalStateException("Can't create a transaction without any signer. " +
-                    "A transaction at least requires a signer with witness scope fee-only.");
+                    "A transaction requires at least one signer with witness scope fee-only " +
+                    "or higher.");
         }
 
         long systemFee = getSystemFeeForScript();

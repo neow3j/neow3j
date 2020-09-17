@@ -142,8 +142,10 @@ public class TransactionBuilderTest {
         }
     }
 
-    @Test(expected = TransactionConfigurationException.class)
+    @Test
     public void failBuildingTransactionWithNegativeValidUntilBlockNumber() {
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("cannot be less than zero");
         new TransactionBuilder(neow)
                 .validUntilBlock(-1L)
                 .wallet(Wallet.withAccounts(account1))
@@ -151,8 +153,10 @@ public class TransactionBuilderTest {
                 .signers(Signer.calledByEntry(account1.getScriptHash()));
     }
 
-    @Test(expected = TransactionConfigurationException.class)
+    @Test
     public void failBuildingTransactionWithTooHighValidUntilBlockNumber() {
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("cannot be less than zero or more than 2^32");
         new TransactionBuilder(neow)
                 .validUntilBlock((long) Math.pow(2, 32))
                 .wallet(Wallet.withAccounts(account1))
@@ -161,7 +165,7 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void automaticallyFetchValidUntilBlock() throws Throwable {
+    public void automaticallySetNonce() throws Throwable {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
 
@@ -175,8 +179,10 @@ public class TransactionBuilderTest {
         assertThat(transaction.getNonce(), lessThanOrEqualTo((long) Math.pow(2, 32)));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void failBuildingTxWithoutAnySigner() throws Throwable {
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("without any signer");
         new TransactionBuilder(neow)
                 .validUntilBlock(100L)
                 .wallet(Wallet.withAccounts(account1))
@@ -184,16 +190,20 @@ public class TransactionBuilderTest {
                 .buildTransaction();
     }
 
-    @Test(expected = TransactionConfigurationException.class)
+    @Test
     public void failAddingMultipleSignersConcerningTheSameAccount() {
         TransactionBuilder b = new TransactionBuilder(neow);
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("concerning the same account");
         b.signers(Signer.global(account1.getScriptHash()),
                 Signer.calledByEntry(account1.getScriptHash()));
     }
 
-    @Test(expected = TransactionConfigurationException.class)
+    @Test
     public void failAddingMultipleSignersConcerningTheSameAccount_sequential() {
         TransactionBuilder b = new TransactionBuilder(neow);
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("concerning the same account");
         b.signers(Signer.global(account1.getScriptHash()));
         b.signers(Signer.calledByEntry(account1.getScriptHash()));
     }
@@ -202,7 +212,8 @@ public class TransactionBuilderTest {
     public void failAddingMultipleFeeOnlySigners() {
         TransactionBuilder b = new TransactionBuilder(neow);
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("fee-only witness scope"));
+        exceptionRule.expectMessage(
+                new StringContains("Can't add multiple signers with the fee-only witness scope"));
         b.signers(Signer.feeOnly(account1.getScriptHash()),
                 Signer.feeOnly(account2.getScriptHash()));
     }
@@ -212,14 +223,16 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow);
         b.signers(Signer.feeOnly(account1.getScriptHash()));
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("fee-only witness scope"));
+        exceptionRule.expectMessage(
+                new StringContains("Can't add multiple signers with the fee-only witness scope"));
         b.signers(Signer.feeOnly(account2.getScriptHash()));
     }
 
     // TODO: 14.09.20 Michael: Once TransactionAttributes are defined, write this test
     @Ignore
-    @Test(expected = TransactionConfigurationException.class)
+    @Test
     public void failAddingMoreThanMaxAttributesToTxBuilder() {
+        exceptionRule.expect(TransactionConfigurationException.class);
     }
 
     @Test
