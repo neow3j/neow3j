@@ -235,18 +235,12 @@ public class TransactionBuilder {
         return this;
     }
 
-    private boolean containsDuplicateSigners(Signer... newSigners) {
-        List<ScriptHash> newSignersList = Stream.of(newSigners)
+    private boolean containsDuplicateSigners(Signer... signers) {
+        List<ScriptHash> newSignersList = Stream.of(signers)
                 .map(Signer::getScriptHash)
                 .collect(Collectors.toList());
         Set<ScriptHash> newSignersSet = new HashSet<>(newSignersList);
-        if (newSignersList.size() != newSignersSet.size()) {
-            // The new signers list contains duplicates in itself.
-            return true;
-        }
-        return this.signers.stream()
-                .map(Signer::getScriptHash)
-                .anyMatch(newSignersSet::contains);
+        return newSignersList.size() != newSignersSet.size();
     }
 
     private boolean containsMultipleFeeOnlySigners(Signer[] newSigners) {
