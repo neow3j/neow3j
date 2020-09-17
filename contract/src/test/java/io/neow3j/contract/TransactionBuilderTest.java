@@ -668,6 +668,15 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void doIfSenderCannotCoverFees_alreadySpecifiedASupplier() {
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .throwIfSenderCannotCoverFees(IllegalStateException::new);
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("Can't handle a consumer for this case, since an exception");
+        b.doIfSenderCannotCoverFees((fee, balance) -> System.out.println(fee));
+    }
+
+    @Test
     public void throwIfSenderCannotCoverFees() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
@@ -684,10 +693,22 @@ public class TransactionBuilderTest {
                         ContractParameter.integer(5))
                 .wallet(w)
                 .validUntilBlock(2000000)
-                .throwIfSenderCannotCoverFees(IllegalStateException::new);
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .throwIfSenderCannotCoverFees(
+                        () -> new IllegalStateException("test throwIfSenderCannotCoverFees"));
 
         exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("test throwIfSenderCannotCoverFees");
         b.buildTransaction();
+    }
+
+    @Test
+    public void throwIfSenderCannotCoverFees_alreadySpecifiedAConsumer() {
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .doIfSenderCannotCoverFees((fee, balance) -> System.out.println(fee));
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("Can't handle a supplier for this case, since a consumer");
+        b.throwIfSenderCannotCoverFees(IllegalStateException::new);
     }
 
     @Test
@@ -733,5 +754,75 @@ public class TransactionBuilderTest {
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("script");
         b.buildTransaction();
+    }
+
+    @Test
+    public void testGetUnsignedTransaction() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new TransactionBuilder(neow)
+                .wallet(w)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .getUnsignedTransaction();
+
+        assertThat(tx.getVersion(), is((byte) 0));
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0), is(Signer.calledByEntry(account1.getScriptHash())));
+        assertThat(tx.getWitnesses(), hasSize(0));
+    }
+
+    @Test
+    public void testVersion() {
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .version((byte) 1);
+        assertThat(b.getVersion(), is((byte) 1));
+    }
+
+    @Test
+    public void testSetFirstSigner() {
+        Signer s1 = Signer.global(account1.getScriptHash());
+        Signer s2 = Signer.calledByEntry(account2.getScriptHash());
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
+                .wallet(Wallet.createWallet())
+                .signers(s1, s2);
+        assertThat(b.getSigners().get(0), is(s1));
+        assertThat(b.getSigners().get(1), is(s2));
+
+        b.setFirstSigner(s2.getScriptHash());
+        assertThat(b.getSigners().get(0), is(s2));
+        assertThat(b.getSigners().get(1), is(s1));
+    }
+
+    @Test
+    public void testSetFirstSigner_feeOnlyPresent() {
+        Signer s1 = Signer.feeOnly(account1.getScriptHash());
+        Signer s2 = Signer.calledByEntry(account2.getScriptHash());
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
+                .wallet(Wallet.createWallet())
+                .signers(s1, s2);
+        assertThat(b.getSigners().get(0), is(s1));
+        assertThat(b.getSigners().get(1), is(s2));
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("contains a signer with fee-only witness scope");
+        b.setFirstSigner(s2.getScriptHash());
+    }
+
+    @Test
+    public void testSetFirstSigner_notPresent() {
+        Signer s1 = Signer.global(account1.getScriptHash());
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
+                .wallet(Wallet.createWallet())
+                .signers(s1);
+        assertThat(b.getSigners().get(0), is(s1));
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("Could not find a signer with script hash");
+        b.setFirstSigner(account2.getScriptHash());
     }
 }
