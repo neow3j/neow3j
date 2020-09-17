@@ -176,9 +176,6 @@ public class SmartContract {
      */
     public NeoInvokeFunction callInvokeFunction(String function, Signer... signers)
             throws IOException {
-        if (Strings.isEmpty(function)) {
-            throw new IllegalArgumentException("The invocation function must not be null or empty.");
-        }
         return callInvokeFunction(function, new ArrayList<>(), signers);
     }
 
