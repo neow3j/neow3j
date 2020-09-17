@@ -1,11 +1,7 @@
 package io.neow3j.devpack;
 
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_DESERIALIZE;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_SERIALIZE;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.model.types.StackItemType;
 
 /**
@@ -66,6 +62,7 @@ public class Helper {
      *     <li>10: [0x0a]</li>
      *     <li>127: [0x7f]</li>
      * </ul>
+     *
      * @param value The value to cast.
      * @return the casted byte.
      */
@@ -207,35 +204,36 @@ public class Helper {
     @Instruction(opcode = OpCode.REVERSEITEMS)
     public static native byte[] reverse(byte[] source);
 
+    /**
+     * Converts the given Neo address to its script hash (little-endian byte array).
+     * <p>
+     * This method can only be applied to constant string literals in static variable
+     * initializations.
+     * <p>
+     * Example: addressToScriptHash("AFsCjUGzicZmXQtWpwVt6hNeJTBwSipJMS") generates
+     * 0102030405060708090a0b0c0d0e0faabbccddee
+     */
+    public static native byte[] addressToScriptHash(String address);
 
-    // TODO: Add support for the following function that manipulate static string literals.
-//    /**
-//     * Converts the given Base-58 address to its script hash as a little-endian byte array. This
-//     * method can only be applied to string literals, otherwise the compiler will throw an
-//     * exception.
-//     * <p>
-//     * Example: "AFsCjUGzicZmXQtWpwVt6hNeJTBwSipJMS".ToScriptHash() generates
-//     * 0102030405060708090a0b0c0d0e0faabbccddee
-//     */
-//    @NonemitWithConvert(method = ConvertMethod.toScriptHash)
-//    public static native byte[] addressToScriptHash(String address);
-//
-//    /**
-//     * Converts the given hex string to a byte array. This method can only be applied to string
-//     * literals, otherwise the compiler will throw an exception.
-//     * <p>
-//     * Example: "0102030405060708090a0b0c0d0e0faabbccddee".hexToBytes() generates the
-//     * corresponding byte array.
-//     */
-//    @NonemitWithConvert(method = ConvertMethod.toHexToBytes)
-//    public static native byte[] hexToBytes(String hex);
-//
-//    /**
-//     * Converts the given string, representing a number, to an integer. This method can only be
-//     * applied to string literals, otherwise the compiler will throw an exception.
-//     * <p>
-//     * Example: "10000".stringToInt() generates the int with the value 10000.
-//     */
-//    @NonemitWithConvert(method = ConvertMethod.toInt)
-//    public static native int stringToInt(String text);
+    /**
+     * Converts the given hex string to a byte array.
+     * <p>
+     * This method can only be applied to constant string literals in static variable
+     * initializations.
+     * <p>
+     * Example: hexToBytes("0102030405060708090a0b0c0d0e0faabbccddee") generates the corresponding
+     * byte array.
+     */
+    public static native byte[] hexToBytes(String hex);
+
+    /**
+     * Converts the given number string to an integer.
+     * <p>
+     * This method can only be applied to constant string literals in static variable
+     * initializations.
+     * <p>
+     * Example: stringToInt("10000") generates the int with the value 10000.
+     */
+    public static native int stringToInt(String text);
+
 }
