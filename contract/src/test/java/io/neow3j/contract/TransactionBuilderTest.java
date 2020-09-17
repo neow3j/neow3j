@@ -260,19 +260,6 @@ public class TransactionBuilderTest {
                 .buildTransaction();
 
         assertThat(tx.getSystemFee(), is(1007390L));
-
-        // With fail on false.
-        String script = "10c00c046e616d650c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b5238";
-        setUpWireMockForCall("invokescript", "invokescript_name_neo_fail_on_false.json",
-                script);
-        tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(script))
-                .wallet(wallet)
-                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
-                .validUntilBlock(1000)
-                .buildTransaction();
-
-        assertThat(tx.getSystemFee(), is(1007420L));
     }
 
     @Test
