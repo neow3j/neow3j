@@ -200,12 +200,15 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failAddingMultipleSignersConcerningTheSameAccount_sequential() {
+    public void overrideSigner() {
         TransactionBuilder b = new TransactionBuilder(neow);
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("concerning the same account");
         b.signers(Signer.global(account1.getScriptHash()));
-        b.signers(Signer.calledByEntry(account1.getScriptHash()));
+        assertThat(b.getSigners(), hasSize(1));
+        assertThat(b.getSigners().get(0), is(Signer.global(account1.getScriptHash())));
+
+        b.signers(Signer.calledByEntry(account2.getScriptHash()));
+        assertThat(b.getSigners(), hasSize(1));
+        assertThat(b.getSigners().get(0), is(Signer.calledByEntry(account2.getScriptHash())));
     }
 
     @Test
