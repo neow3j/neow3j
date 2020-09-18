@@ -29,8 +29,6 @@ public class ArithmeticOperatorsTest extends CompilerTest {
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
-    @Ignore("The assignment operators in connection with arrays produce a DUP2 JVM opcode which is "
-            + "not correctly handled by the compiler at the moment.")
     @Test
     public void allAssignmentOperators() throws IOException {
         NeoInvokeFunction response = contract.invokeFunction(

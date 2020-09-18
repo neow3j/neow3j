@@ -463,38 +463,82 @@ public class Compiler {
                 neoMethod.addInstruction(new NeoInstruction(OpCode.NOP));
                 break;
             case DUP:
-            case DUP2:
-                // TODO: here we assume that DUP2 is only applied to long values in which case
-                //  NeoVM DUP is the correct mapping. But if the stack contains integers then the
-                //  upper two ints on the stack must be duplicated. For this we need to know which
-                //  Java type lies on top of the operand stack.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
                 break;
+            case DUP2:
+                // DUP2 operates differently on computational types of category 1 and 2.
+                // Category 1 types are int, short, byte, boolean, char. Category 2 types are
+                // long and double. The latter need double the space of the former on the stack.
+                // Therefore DUP2 copies the last two stack items if they are of the
+                // first type category and only copies the last stack item if it is of
+                // type category 2.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently
+                //  under this opcode. Either implement special handling or remove support for longs
+                //  from the compiler.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.OVER));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.OVER));
+                break;
             case POP:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
+                break;
             case POP2:
-                // TODO: here we assume that POP2 is only applied to long values in which case
-                //  NeoVM DROP is the correct mapping. But if the stack contains integers then the
-                //  upper two ints on the stack must be dropped. For this we need to know which
-                //  Java type lies on top of the operand stack.
+                // See comment at DUP2 opcode.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently
+                //  under this opcode. Either implement special handling or remove support for longs
+                //  from the compiler.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 break;
             case SWAP:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
+                break;
             case DUP_X1:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.TUCK));
+                break;
             case DUP_X2:
+                // See comment at DUP2 opcode.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently
+                //  under this opcode. Either implement special handling or remove support for longs
+                //  from the compiler.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH2));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
+                break;
             case DUP2_X1:
+                // DUP2_X1 handles types of category 1 and 2 differently but we only handle
+                // category 1.
+                // TODO: At the moment we ignore the category 2 types here. Either implement
+                //  special handling for them or remove support for longs from the compiler.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH2));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH2));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
+                break;
             case DUP2_X2:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.asmMethod.name + " not yet supported.");
-                // endregion ### STACK MANIPULATION ###
+                // See comment at DUP2 opcode.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently
+                //  under this opcode. Either implement special handling or remove support for longs
+                //  from the compiler.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH3));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ROLL));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH3));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH3));
+                neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
+                break;
+            // endregion ### STACK MANIPULATION ###
 
-                // region ### JUMP OPCODES ###
-                // Java jump addresses are restricted to 2 bytes, i.e. there are no 4-byte jump
-                // addresses as in NeoVM. It is simpler for the compiler implementation to always
-                // use the 4-byte NeoVM jump opcodes and then optimize (to 1-byte addresses) in a
-                // second step. This is how the dotnet-devpack handles it too.
+            // region ### JUMP OPCODES ###
+            // Java jump addresses are restricted to 2 bytes, i.e. there are no 4-byte jump
+            // addresses as in NeoVM. It is simpler for the compiler implementation to always
+            // use the 4-byte NeoVM jump opcodes and then optimize (to 1-byte addresses) in a
+            // second step. This is how the dotnet-devpack handles it too.
 
-                // region ### OBJECT COMPARISON ###
+            // region ### OBJECT COMPARISON ###
             case IF_ACMPEQ:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
                 addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
