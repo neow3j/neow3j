@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
+import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getClassName;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
@@ -16,6 +17,7 @@ import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.ScriptContainer;
 import io.neow3j.devpack.annotations.Contract;
 import io.neow3j.devpack.annotations.Features;
@@ -35,6 +37,7 @@ import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.Con
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractFeatures;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
+import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
@@ -93,6 +96,9 @@ public class Compiler {
     private static final String APPEND_METHOD_NAME = "append";
     private static final String TOSTRING_METHOD_NAME = "toString";
     private static final int BYTE_ARRAY_TYPE_CODE = 8;
+    private static final String ADDRESS_TO_SCRIPTHASH_METHOD = "addressToScriptHash";
+    private static final String HEX_TO_BYTES_METHOD = "hexToBytes";
+    private static final String STRING_TO_INT_METHOD = "stringToInt";
 
     private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
             "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
@@ -238,9 +244,9 @@ public class Compiler {
                 continue; // Handled in method `collectAndInitializeStaticFields()`.
             }
             if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
-                throw new CompilerException("Method " + asmClass.name + "." + asmMethod.name
-                        + "() is an non-static method but only static smart contract methods are "
-                        + "supported.");
+                throw new CompilerException(format("Method '%s' of class %s is non-static but "
+                                + "only static methods are allowed in smart contracts.",
+                        asmMethod.name, getFullyQualifiedNameForInternalName(asmClass.name)));
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
             initializeMethod(neoMethod);
@@ -1335,10 +1341,68 @@ public class Compiler {
             addInstruction(calledAsmMethod.get(), callingNeoMethod);
         } else if (isContractCall(owner)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, owner);
+        } else if (isStaticFieldConverter(calledAsmMethod.get(), owner)) {
+            handleStaticFieldConverter(calledAsmMethod.get(), callingNeoMethod);
         } else {
             return handleMethodCall(callingNeoMethod, owner, calledAsmMethod.get(), methodInsn);
         }
         return insn;
+    }
+
+    private boolean isStaticFieldConverter(MethodNode methodNode, ClassNode owner) {
+        return owner.name.equals(Type.getInternalName(Helper.class))
+                && (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD)
+                || methodNode.name.equals(HEX_TO_BYTES_METHOD)
+                || methodNode.name.equals(STRING_TO_INT_METHOD));
+    }
+
+    private void handleStaticFieldConverter(MethodNode methodNode, NeoMethod callingNeoMethod) {
+        if (!callingNeoMethod.name.equals(INITSSLOT_METHOD_NAME)) {
+            throw new CompilerException(neoModule, callingNeoMethod, format("The static field "
+                    + "converter method %s was used outside of the static variable initialization "
+                    + "scope.", methodNode.name));
+        }
+
+        NeoInstruction lastNeoInsn = callingNeoMethod.getLastInstruction();
+        if (!lastNeoInsn.opcode.equals(OpCode.PUSHDATA1)
+                && !lastNeoInsn.opcode.equals(OpCode.PUSHDATA2)
+                && !lastNeoInsn.opcode.equals(OpCode.PUSHDATA4)) {
+            throw new CompilerException(neoModule, callingNeoMethod, "Static field converter "
+                    + "methods can only be applied to constant string literals.");
+        }
+        int pushDataPrefixSize = getOperandSize(lastNeoInsn.opcode).prefixSize();
+        String stringLiteral = new String(ArrayUtils.getLastNBytes(lastNeoInsn.operand,
+                lastNeoInsn.operand.length - pushDataPrefixSize), UTF_8);
+        byte[] newInsnBytes = null;
+
+        if (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD)) {
+            if (!AddressUtils.isValidAddress(stringLiteral)) {
+                throw new CompilerException(neoModule, callingNeoMethod, format("Invalid address "
+                        + "(\"%s\") used in static field initialization.", stringLiteral));
+            }
+            byte[] scriptHash = AddressUtils.addressToScriptHash(stringLiteral);
+            newInsnBytes = new ScriptBuilder().pushData(scriptHash).toArray();
+
+        } else if (methodNode.name.equals(HEX_TO_BYTES_METHOD)) {
+            if (!Numeric.isValidHexString(stringLiteral)) {
+                throw new CompilerException(neoModule, callingNeoMethod, format("Invalid hex "
+                        + "string (\"%s\") used in static field initialization.", stringLiteral));
+            }
+            byte[] bytes = Numeric.hexStringToByteArray(stringLiteral);
+            newInsnBytes = new ScriptBuilder().pushData(bytes).toArray();
+
+        } else if (methodNode.name.equals(STRING_TO_INT_METHOD)) {
+            try {
+                newInsnBytes = new ScriptBuilder().pushInteger(new BigInteger(stringLiteral))
+                        .toArray();
+            } catch (NumberFormatException e) {
+                throw new CompilerException(neoModule, callingNeoMethod, format("Invalid number "
+                        + "string (\"%s\") used in static field initialization.", stringLiteral));
+            }
+        }
+        byte[] newOperand = Arrays.copyOfRange(newInsnBytes, 1, newInsnBytes.length);
+        lastNeoInsn.setOpcode(OpCode.get(newInsnBytes[0]));
+        lastNeoInsn.setOperand(newOperand);
     }
 
     private Optional<MethodNode> getMethodNode(MethodInsnNode methodInsn, ClassNode owner) {
@@ -1635,7 +1699,7 @@ public class Compiler {
                 operand[i++] = (byte) element;
             }
         }
-        if (operand.length != OpCode.getOperandSize(opcode).size()) {
+        if (operand.length != getOperandSize(opcode).size()) {
             throw new CompilerException("Opcode " + opcode.name() + " was used with a wrong number "
                     + "of operand bytes.");
         }

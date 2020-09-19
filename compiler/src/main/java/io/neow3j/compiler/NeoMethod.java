@@ -180,6 +180,10 @@ public class NeoMethod {
         this.nextAddress -= (1 + lastInsn.operand.length);
     }
 
+    NeoInstruction getLastInstruction() {
+        return this.instructions.get(this.instructions.lastKey());
+    }
+
     /**
      * Serializes this method to a byte array, by serializing all its instructions ordered by
      * instruction address.

@@ -75,6 +75,10 @@ public class NeoInstruction {
         return opcode.toString() + " " + Numeric.toHexStringNoPrefix(operand);
     }
 
+    public void setOpcode(OpCode opcode) {
+        this.opcode = opcode;
+    }
+
     void setLineNr(int lineNr) {
         this.lineNr = lineNr;
     }

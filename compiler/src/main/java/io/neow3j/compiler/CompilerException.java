@@ -12,6 +12,10 @@ public class CompilerException extends RuntimeException {
         super(owner.sourceFile + ":" + lineNr + ": error:\n" + s);
     }
 
+    public CompilerException(NeoModule module, NeoMethod method, String s) {
+        this(module.asmSmartContractClass, method.currentLine, s);
+    }
+
     public CompilerException(ClassNotFoundException e) {
         super(e);
     }
