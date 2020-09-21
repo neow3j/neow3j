@@ -163,10 +163,12 @@ public class TransactionBuilder {
     }
 
     /**
-     * Sets the given signers to this transaction. If one of the signers has the fee-only witness
-     * scope (see {@link WitnessScope#FEE_ONLY}), this account is used to cover the transaction fees.
-     * Otherwise, the first signer is used as the sender of this transaction, meaning that it is used
-     * to cover the transaction fees.
+     * Sets the signers of this transaction. If the list of signers already contains signers, they
+     * are replaced.
+     * <p>
+     * If one of the signers has the fee-only witness scope (see {@link WitnessScope#FEE_ONLY}),
+     * this account is used to cover the transaction fees. Otherwise, the first signer is used as
+     * the sender of this transaction, meaning that it is used to cover the transaction fees.
      *
      * @param signers Signers for this transaction.
      * @return this transaction builder.
