@@ -1,11 +1,8 @@
 package io.neow3j.contract;
 
-import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.AddressUtils;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Strings;
 import io.neow3j.wallet.Wallet;
 
@@ -17,18 +14,22 @@ import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 
+/**
+ * Wrapper class to generate NEP-9 compatible URI schemes for NEP-5 Token transfers.
+ */
 public class NeoURI {
 
     private URI uri;
 
     private Neow3j neow3j;
     private Wallet wallet;
-    private ScriptHash address;
-    private String asset;
+    private ScriptHash toAddress;
+    private ScriptHash asset;
     private BigDecimal amount;
 
     private static final String NEO_SCHEME = "neo";
     private static final String TRANSFER_FUNCTION = "transfer";
+    private static final int MIN_NEP9_URI_LENGTH = 38;
 
     public NeoURI() {
     }
@@ -45,12 +46,16 @@ public class NeoURI {
      * @throws IllegalFormatException if the provided URI has an invalid format.
      */
     public static NeoURI fromURI(String uriString) throws IllegalFormatException {
-        if (uriString == null) throw new IllegalArgumentException("The provided String is null.");
+        if (uriString == null) {
+            throw new IllegalArgumentException("The provided String is null.");
+        }
+
         String[] baseAndQuery = uriString.split("\\?");
         String[] beginTx = baseAndQuery[0].split(":");
 
-        if (beginTx.length != 2 || !beginTx[0].equals(NEO_SCHEME)) {
-            throw new IllegalArgumentException("Invalid uri.");
+        if (!beginTx[0].equals(NEO_SCHEME) || beginTx.length != 2 ||
+                uriString.length() < MIN_NEP9_URI_LENGTH) {
+            throw new IllegalArgumentException("The provided string does not conform to the NEP-9 standard.");
         }
         NeoURI neoURI = new NeoURI();
 
@@ -64,7 +69,14 @@ public class NeoURI {
                 String[] singleQueryParts = singleQuery.split("=", 2);
                 if (singleQueryParts.length != 2) throw new IllegalArgumentException("This uri contains invalid queries.");
                 if (singleQueryParts[0].equals("asset") && neoURI.asset == null) {
-                    neoURI.asset = singleQueryParts[1];
+                    String assetID = singleQueryParts[1];
+                    if (assetID.equals(NeoToken.SYMBOL)) {
+                        neoURI.asset = NeoToken.SCRIPT_HASH;
+                    } else if (assetID.equals(GasToken.SYMBOL)) {
+                        neoURI.asset = GasToken.SCRIPT_HASH;
+                    } else {
+                        neoURI.asset = new ScriptHash(assetID);
+                    }
                 } else if (singleQueryParts[0].equals("amount") && neoURI.amount == null) {
                     neoURI.amount = new BigDecimal(singleQueryParts[1]);
                 }
@@ -74,139 +86,186 @@ public class NeoURI {
     }
 
     /**
-     * Builds an Invocation from this NeoURI.
-     * Needs all necessary parameters to create an invocation object.
+     * Builds a {@code TransactionBuilder} from this NeoURI.
+     * <p>
+     * Needs all necessary parameters to create a transfer invocation.
      *
-     * @return an Invocation object.
+     * @return a TransactionBuilder object.
      */
-    public Invocation.Builder invocationBuilder() throws IOException {
-        if (this.neow3j == null) {
+    public TransactionBuilder buildTransfer() throws IOException {
+        if (neow3j == null) {
             throw new IllegalStateException("Neow3j instance is not set.");
         }
-        if (this.address == null) {
-            throw new IllegalStateException("Recipient not set.");
+        if (toAddress == null) {
+            throw new IllegalStateException("Recipient address is not set.");
         }
-        if (this.wallet == null) {
-            throw new IllegalStateException("Wallet not set.");
+        if (wallet == null) {
+            throw new IllegalStateException("Wallet is not set.");
         }
-        if (this.amount == null) {
+        if (amount == null) {
             throw new IllegalStateException("Amount is not set.");
         }
 
         BigInteger fractions;
         BigDecimal factor;
-        ScriptHash contract;
-        if (isNeoToken(this.asset)) {
+        if (isNeoToken(asset)) {
             factor = BigDecimal.TEN.pow(NeoToken.DECIMALS);
-            fractions = this.amount.multiply(factor).toBigInteger();
-            contract = NeoToken.SCRIPT_HASH;
-        } else if (isGasToken(this.asset)) {
+            fractions = amount.multiply(factor).toBigInteger();
+        } else if (isGasToken(asset)) {
             factor = BigDecimal.TEN.pow(GasToken.DECIMALS);
-            fractions = this.amount.multiply(factor).toBigInteger();
-            contract = GasToken.SCRIPT_HASH;
+            fractions = amount.multiply(factor).toBigInteger();
         } else {
-            fractions = computeFractions(this.neow3j, this.asset);
-            contract = new ScriptHash(this.asset);
+            fractions = computeFractions(neow3j, asset);
         }
 
-        return new Invocation.Builder(this.neow3j)
-                .withWallet(this.wallet)
-                .withContract(contract)
-                .withFunction(TRANSFER_FUNCTION)
-                .withParameters(
-                        ContractParameter.hash160(this.wallet.getDefaultAccount().getScriptHash()),
-                        ContractParameter.hash160(this.address),
-                        ContractParameter.integer(fractions)
-                )
-                .failOnFalse();
+        return new SmartContract(asset, neow3j)
+                .invokeFunction(TRANSFER_FUNCTION,
+                        ContractParameter.hash160(wallet.getDefaultAccount().getScriptHash()),
+                        ContractParameter.hash160(toAddress),
+                        ContractParameter.integer(fractions))
+                .wallet(wallet);
     }
 
-    private boolean isNeoToken(String asset) {
-        return asset.equals(NeoToken.SCRIPT_HASH.toString()) || asset.equals("neo");
+    private boolean isNeoToken(ScriptHash asset) {
+        return asset.equals(NeoToken.SCRIPT_HASH);
     }
 
-    private boolean isGasToken(String asset) {
-        return asset.equals(GasToken.SCRIPT_HASH.toString()) || asset.equals("gas");
+    private boolean isGasToken(ScriptHash asset) {
+        return asset.equals(GasToken.SCRIPT_HASH);
     }
 
-    private BigInteger computeFractions(Neow3j neow3j, String asset) throws IOException {
-        BigDecimal factor = BigDecimal.TEN.pow(getDecimals(neow3j, asset));
-        return this.amount.multiply(factor).toBigInteger();
+    private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset) throws IOException {
+        int decimals = new Nep5Token(asset, neow3j).getDecimals();
+        BigDecimal factor = BigDecimal.TEN.pow(decimals);
+        return amount.multiply(factor).toBigInteger();
     }
 
-    private int getDecimals(Neow3j neow3j, String asset) throws IOException {
-        NeoInvokeFunction invocation = new Invocation.Builder(neow3j)
-                .withContract(new ScriptHash(asset))
-                .withFunction("decimals")
-                .invokeFunction();
-        StackItem item = invocation.getInvocationResult().getStack().get(0);
-
-        if (item.getType().equals(StackItemType.INTEGER)) {
-            return item.asInteger().getValue().intValue();
-        } else {
-            throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER,
-                    StackItemType.BYTE_STRING);
-        }
-    }
-
+    /**
+     * Sets the recipient address.
+     *
+     * @param address the recipient address.
+     * @return this.
+     */
     public NeoURI toAddress(String address) {
         if (!AddressUtils.isValidAddress(address)) {
             throw new IllegalArgumentException("Invalid address used.");
         }
 
-        this.address = ScriptHash.fromAddress(address);
+        toAddress = ScriptHash.fromAddress(address);
         return this;
     }
 
+    /**
+     * Sets the recipient address.
+     *
+     * @param address the recipient address.
+     * @return this.
+     */
     public NeoURI toAddress(ScriptHash address) {
-        if (!AddressUtils.isValidAddress(address.toAddress())) {
-            throw new IllegalArgumentException("Invalid address used.");
-        }
-
-        this.address = address;
+        toAddress = address;
         return this;
     }
 
-    public NeoURI assetFromByteArray(String asset) {
-        this.asset = asset;
+    /**
+     * Sets the asset.
+     *
+     * @param asset the asset script hash as big endian byte array.
+     * @return this.
+     */
+    public NeoURI asset(byte[] asset) {
+        this.asset = new ScriptHash(ArrayUtils.reverseArray(asset));
         return this;
     }
 
+    /**
+     * Sets the asset.
+     *
+     * @param asset the asset.
+     * @return this.
+     */
     public NeoURI asset(ScriptHash asset) {
-        this.asset = asset.toString();
-        return this;
-    }
-
-    public NeoURI asset(String asset) {
         this.asset = asset;
         return this;
     }
 
+    /**
+     * Sets the asset.
+     *
+     * @param asset the asset.
+     * @return this.
+     */
+    public NeoURI asset(String asset) {
+        if (asset.equals("neo")) {
+            this.asset = NeoToken.SCRIPT_HASH;
+        } else if (asset.equals("gas")) {
+            this.asset = GasToken.SCRIPT_HASH;
+        } else {
+            this.asset = new ScriptHash(asset);
+        }
+        return this;
+    }
+
+    /**
+     * Sets the amount.
+     *
+     * @param amount the amount.
+     * @return this.
+     */
     public NeoURI amount(String amount) {
         this.amount = new BigDecimal(amount);
         return this;
     }
 
+    /**
+     * Sets the amount.
+     *
+     * @param amount the amount.
+     * @return this.
+     */
     public NeoURI amount(Integer amount) {
         this.amount = new BigDecimal(amount);
         return this;
     }
 
+    /**
+     * Sets the amount.
+     *
+     * @param amount the amount.
+     * @return this.
+     */
     public NeoURI amount(BigInteger amount) {
         this.amount = new BigDecimal(amount);
         return this;
     }
 
+    /**
+     * Sets the amount.
+     *
+     * @param amount the amount.
+     * @return this.
+     */
     public NeoURI amount(BigDecimal amount) {
         this.amount = amount;
         return this;
     }
 
+    /**
+     * Sets the neow3j instance.
+     *
+     * @param neow3j the neow3j instance.
+     * @return this.
+     */
     public NeoURI neow3j(Neow3j neow3j) {
         this.neow3j = neow3j;
         return this;
     }
 
+    /**
+     * Sets the wallet.
+     *
+     * @param wallet the wallet.
+     * @return this.
+     */
     public NeoURI wallet(Wallet wallet) {
         this.wallet = wallet;
         return this;
@@ -214,20 +273,31 @@ public class NeoURI {
 
     private String buildQueryPart() {
         List<String> query = new ArrayList<>();
-        if (this.asset != null) {
-            query.add("asset=" + this.asset);
+        if (asset != null) {
+            if (asset.equals(NeoToken.SCRIPT_HASH)) {
+                query.add("asset=neo");
+            } else if (asset.equals(GasToken.SCRIPT_HASH)) {
+                query.add("asset=gas");
+            } else {
+                query.add("asset=" + asset.toString());
+            }
         }
-        if (this.amount != null) {
-            query.add("amount=" + this.amount.toString());
+        if (amount != null) {
+            query.add("amount=" + amount.toString());
         }
         return Strings.join(query, "&");
     }
 
+    /**
+     * Builds a NEP-9 URI from the set variables.
+     *
+     * @return this.
+     */
     public NeoURI buildURI() {
-        if (this.address == null) {
-            throw new IllegalStateException("Recipient address not set.");
+        if (toAddress == null) {
+            throw new IllegalStateException("Could not create a NEP-9 URI without a recipient address.");
         }
-        String basePart = NEO_SCHEME + ":" + this.address.toAddress();
+        String basePart = NEO_SCHEME + ":" + toAddress.toAddress();
         String queryPart = buildQueryPart();
 
         String uri;
@@ -241,53 +311,89 @@ public class NeoURI {
         return this;
     }
 
-    // Getters
-
+    /**
+     * Gets the NEP-9 URI of this instance.
+     *
+     * @return the URI of this instance.
+     */
     public URI getURI() {
-        return this.uri;
+        return uri;
     }
 
+    /**
+     * Gets the NEP-9 URI of this instance.
+     *
+     * @return the URI of this instance as string.
+     */
     public String getURIAsString() {
-        return this.uri.toString();
+        return uri.toString();
     }
 
-    public String getAddress() {
-        return this.address.toAddress();
+    /**
+     * Gets the recipient address.
+     *
+     * @return the recipient address.
+     */
+    public String getToAddress() {
+        return toAddress.toAddress();
     }
 
+    /**
+     * Gets the recipient address.
+     *
+     * @return the recipient address as script hash.
+     */
     public ScriptHash getAddressAsScriptHash() {
-        return this.address;
+        return toAddress;
     }
 
-    public String getAsset() {
-        return this.asset;
+    /**
+     * Gets the asset.
+     *
+     * @return the asset.
+     */
+    public ScriptHash getAsset() {
+        return asset;
     }
 
-    public ScriptHash getAssetAsScriptHash() {
-        if (this.asset.equals("neo")) {
-            return NeoToken.SCRIPT_HASH;
-        } else if (this.asset.equals("gas")) {
-            return GasToken.SCRIPT_HASH;
-        } else {
-            return new ScriptHash(this.asset);
+    /**
+     * Gets the asset.
+     *
+     * @return the asset as string.
+     */
+    public String getAssetAsString() {
+        if (asset.equals(NeoToken.SCRIPT_HASH)) {
+            return NeoToken.SYMBOL;
+        } else if (asset.equals(GasToken.SCRIPT_HASH)) {
+            return GasToken.SYMBOL;
         }
+        return asset.toString();
     }
 
+    /**
+     * Gets the asset.
+     *
+     * @return the asset as address.
+     */
     public String getAssetAsAddress() {
-        if (this.asset.equals("neo")) {
-            return NeoToken.SCRIPT_HASH.toAddress();
-        } else if (this.asset.equals("gas")) {
-            return GasToken.SCRIPT_HASH.toAddress();
-        } else {
-            return new ScriptHash(this.asset).toAddress();
-        }
+        return asset.toAddress();
     }
 
+    /**
+     * Gets the amount.
+     *
+     * @return the amount.
+     */
     public BigDecimal getAmount() {
-        return this.amount;
+        return amount;
     }
 
+    /**
+     * Gets the amount.
+     *
+     * @return the amount as string.
+     */
     public String getAmountAsString() {
-        return this.amount.toString();
+        return amount.toString();
     }
 }

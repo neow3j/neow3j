@@ -55,5 +55,4 @@ public class ContractUtils {
         }
         return MANIFEST_FILENAME_SUFFIX;
     }
-
 }

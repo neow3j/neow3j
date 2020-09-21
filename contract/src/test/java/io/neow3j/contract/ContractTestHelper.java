@@ -88,5 +88,4 @@ public class ContractTestHelper {
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
                 .reduce((a, b) -> a + b).get();
     }
-
 }
