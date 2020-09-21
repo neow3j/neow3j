@@ -221,16 +221,6 @@ public class TransactionBuilderTest {
                 Signer.feeOnly(account2.getScriptHash()));
     }
 
-    @Test
-    public void failAddingMultipleFeeOnlySignersSequentially() {
-        TransactionBuilder b = new TransactionBuilder(neow);
-        b.signers(Signer.feeOnly(account1.getScriptHash()));
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(
-                new StringContains("Can't add multiple signers with the fee-only witness scope"));
-        b.signers(Signer.feeOnly(account2.getScriptHash()));
-    }
-
     // TODO: 14.09.20 Michael: Once TransactionAttributes are defined, write this test
     @Ignore
     @Test

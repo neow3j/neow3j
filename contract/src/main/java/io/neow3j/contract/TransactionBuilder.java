@@ -243,17 +243,10 @@ public class TransactionBuilder {
         return signerList.size() != signerSet.size();
     }
 
-    private boolean containsMultipleFeeOnlySigners(Signer[] newSigners) {
-        boolean newSignersContainMultipleFeeOnlySigners = Stream.of(newSigners)
+    private boolean containsMultipleFeeOnlySigners(Signer... signers) {
+        return Stream.of(signers)
                 .filter(s -> s.getScopes().contains(WitnessScope.FEE_ONLY))
                 .count() > 1;
-        boolean signersContainFeeOnlySigner = this.signers.stream()
-                .anyMatch(s -> s.getScopes().contains(WitnessScope.FEE_ONLY));
-        boolean newSignersContainFeeOnlySigner = Stream.of(newSigners)
-                .anyMatch(s -> s.getScopes().contains(WitnessScope.FEE_ONLY));
-
-        return newSignersContainMultipleFeeOnlySigners ||
-                (signersContainFeeOnlySigner && newSignersContainFeeOnlySigner);
     }
 
     // package-private visible for testability purpose.
