@@ -28,7 +28,7 @@ public class Bip39Account extends Account {
         super(ecKeyPair);
     }
 
-    private Bip39Account setMnemonic(String mnemonic) {
+    private Bip39Account mnemonic(String mnemonic) {
         this.mnemonic = mnemonic;
         return this;
     }
@@ -51,7 +51,7 @@ public class Bip39Account extends Account {
         ECKeyPair keyPair = ECKeyPair.create(sha256(seed));
 
         return new Bip39Account(keyPair)
-                .setMnemonic(mnemonic);
+                .mnemonic(mnemonic);
     }
 
     /**
@@ -64,7 +64,7 @@ public class Bip39Account extends Account {
     public static Bip39Account fromBip39Mnemonic(String password, String mnemonic) {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair ecKeyPair = ECKeyPair.create(sha256(seed));
-        return new Bip39Account(ecKeyPair).setMnemonic(mnemonic);
+        return new Bip39Account(ecKeyPair).mnemonic(mnemonic);
     }
 
     public String getMnemonic() {

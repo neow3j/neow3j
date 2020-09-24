@@ -15,6 +15,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -38,6 +39,7 @@ public class NeoTokenTest {
     private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     private static final String VOTE = NeoToken.VOTE;
     private static final String REGISTER_CANDIDATE = NeoToken.REGISTER_CANDIDATE;
+    private static final String UNREGISTER_CANDIDATE = NeoToken.UNREGISTER_CANDIDATE;
     private Neow3j neow;
 
     @Before
@@ -88,7 +90,7 @@ public class NeoTokenTest {
                         .withBody(responseBody)));
 
         BigInteger result = new NeoToken(neow)
-                .getUnclaimedGas(ScriptHash.fromAddress("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"), 100);
+                .unclaimedGas(ScriptHash.fromAddress("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"), 100);
         assertThat(result, is(new BigInteger("60000000000")));
     }
 
@@ -103,8 +105,9 @@ public class NeoTokenTest {
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder b = new NeoToken(neow).registerCandidate(
-                account1.getScriptHash(), w, account1.getECKeyPair().getPublicKey());
+        TransactionBuilder b = new NeoToken(neow).registerCandidate(account1.getECKeyPair().getPublicKey())
+                .wallet(w)
+                .signers(Signer.global(account1.getScriptHash()));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
@@ -112,24 +115,23 @@ public class NeoTokenTest {
     }
 
     @Test
-    public void getValidators() throws IOException {
-        String responseBody = ContractTestHelper.loadFile(
-                "/responses/invokefunction_getvalidators.json");
-        WireMock.stubFor(post(urlEqualTo("/"))
-                .withRequestBody(new RegexPattern(""
-                        + ".*\"method\":\"invokefunction\""
-                        + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
-                        + ".*\"getValidators\".*" // function
-                ))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(responseBody)));
+    public void unregisterCandidate() throws IOException {
+        setUpWireMockForCall("invokescript", "invokescript_unregistercandidate.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        List<ECPublicKey> result = new NeoToken(neow).getValidators();
-        String expKeyHex = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
-        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
-        assertThat(result, contains(expKey));
+        byte[] pubKeyBytes = account1.getECKeyPair().getPublicKey().getEncoded(true);
+        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+                UNREGISTER_CANDIDATE, Arrays.asList(ContractParameter.publicKey(pubKeyBytes)))
+                .toArray();
+
+        Wallet w = Wallet.withAccounts(account1);
+        TransactionBuilder b = new NeoToken(neow).unregisterCandidate(account1.getECKeyPair().getPublicKey())
+                .wallet(w)
+                .signers(Signer.global(account1.getScriptHash()));
+
+        assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
@@ -155,6 +157,49 @@ public class NeoTokenTest {
                         "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"))
         ));
         assertThat(result.values(), contains(100, 49999900));
+    }
+
+    @Test
+    public void getValidators() throws IOException {
+        String responseBody = ContractTestHelper.loadFile(
+                "/responses/invokefunction_getvalidators.json");
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(""
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"getValidators\".*" // function
+                ))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+
+        List<ECPublicKey> result = new NeoToken(neow).getValidators();
+        String expKeyHex = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
+        System.out.println(Numeric.toBigInt(Numeric.hexStringToByteArray(expKeyHex)));
+        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
+        assertThat(result, contains(expKey));
+    }
+
+    @Test
+    public void getCommittee() throws IOException {
+        String responseBody = ContractTestHelper.loadFile(
+                "/responses/invokefunction_getcommittee.json");
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(""
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"getCommittee\".*" // function
+                ))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+
+        List<ECPublicKey> result = new NeoToken(neow).getCommittee();
+        String expKeyHex = "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d";
+        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
+        assertThat(result, contains(expKey));
     }
 
     @Test
@@ -195,8 +240,9 @@ public class NeoTokenTest {
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder b = new NeoToken(neow).vote(account1.getScriptHash(), w,
-                new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2));
+        TransactionBuilder b = new NeoToken(neow).vote(account1.getScriptHash(),
+                new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2))
+                .signers(Signer.global(account1.getScriptHash()));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));

@@ -784,7 +784,7 @@ public class TransactionBuilderTest {
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
 
-        b.setFirstSigner(s2.getScriptHash());
+        b.firstSigner(s2.getScriptHash());
         assertThat(b.getSigners().get(0), is(s2));
         assertThat(b.getSigners().get(1), is(s1));
     }
@@ -802,7 +802,7 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("contains a signer with fee-only witness scope");
-        b.setFirstSigner(s2.getScriptHash());
+        b.firstSigner(s2.getScriptHash());
     }
 
     @Test
@@ -816,6 +816,6 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Could not find a signer with script hash");
-        b.setFirstSigner(account2.getScriptHash());
+        b.firstSigner(account2.getScriptHash());
     }
 }

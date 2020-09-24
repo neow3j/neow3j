@@ -77,8 +77,8 @@ public class AccountTest {
     @Test
     public void testFromNewECKeyPair() {
         Account a = Account.fromNewECKeyPair()
-                .setLabel("example")
-                .setLocked();
+                .label("example")
+                .lock();
 
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
@@ -330,10 +330,10 @@ public class AccountTest {
 
     @Test
     public void testUnsetLocked() {
-        Account a = Account.fromAddress(ADDRESS).setLocked();
+        Account a = Account.fromAddress(ADDRESS).lock();
         assertTrue(a.isLocked());
 
-        a.unsetLocked();
+        a.unlock();
         assertFalse(a.isLocked());
     }
 
@@ -344,7 +344,7 @@ public class AccountTest {
 
         assertFalse(a.isDefault());
 
-        wallet.setDefaultAccount(a.getScriptHash());
+        wallet.defaultAccount(a.getScriptHash());
         assertTrue(a.isDefault());
     }
 

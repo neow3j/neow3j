@@ -142,7 +142,7 @@ public class TransactionBuilder {
      * @param sender the script hash of the signer to be set to the first index.
      * @return this transaction builder.
      */
-    public TransactionBuilder setFirstSigner(ScriptHash sender) {
+    public TransactionBuilder firstSigner(ScriptHash sender) {
         if (signers.stream()
                 .map(Signer::getScopes)
                 .anyMatch(scopes -> scopes.contains(WitnessScope.FEE_ONLY))) {

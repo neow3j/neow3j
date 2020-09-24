@@ -205,7 +205,7 @@ public class WalletTest {
         String walletName = "TestWallet";
         Account a = new Account(ECKeyPair.createEcKeyPair());
         Wallet w = Wallet.withAccounts(a)
-                .setName(walletName);
+                .name(walletName);
         w.encryptAllAccounts("12345678");
 
         NEP6Account nep6acct = new NEP6Account(a.getAddress(), a.getLabel(), false, false,
@@ -334,7 +334,7 @@ public class WalletTest {
 
         Account a = Account.createAccount();
         w.addAccounts(a);
-        w.setDefaultAccount(a.getScriptHash());
+        w.defaultAccount(a.getScriptHash());
         assertThat(w.getDefaultAccount(), notNullValue());
         assertEquals(a, w.getDefaultAccount());
     }
@@ -343,7 +343,7 @@ public class WalletTest {
     public void failSettingDefaultAccountNotContainedInWallet() {
         Wallet w = Wallet.createWallet();
         Account a = Account.createAccount();
-        w.setDefaultAccount(a.getScriptHash());
+        w.defaultAccount(a.getScriptHash());
     }
 
     @Test
