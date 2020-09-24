@@ -6,8 +6,6 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.transaction.Signer;
-import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,10 +30,12 @@ public class NeoToken extends Nep5Token {
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
     public static final String REGISTER_CANDIDATE = "registerCandidate";
-    public static final String GET_VALIDATORS = "getValidators";
-    public static final String GET_CANDIDATES = "getCandidates";
-    public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
+    public static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
     public static final String VOTE = "vote";
+    public static final String GET_CANDIDATES = "getCandidates";
+    public static final String GET_VALIDATORS = "getValidators";
+    public static final String GET_COMMITTEE = "getCommittee";
+    public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
 
     /**
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
@@ -95,7 +95,7 @@ public class NeoToken extends Nep5Token {
      * @return the amount of unclaimed GAS
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public BigInteger getUnclaimedGas(ScriptHash scriptHash, long blockHeight) throws IOException {
+    public BigInteger unclaimedGas(ScriptHash scriptHash, long blockHeight) throws IOException {
         ContractParameter accParam = ContractParameter.hash160(scriptHash);
         ContractParameter heightParam = ContractParameter.integer(BigInteger.valueOf(blockHeight));
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
@@ -105,18 +105,26 @@ public class NeoToken extends Nep5Token {
      * Creates a transaction script for registering a validator candidate and initializes
      * a {@link TransactionBuilder} based on this script.
      *
-     * @param candidate    The script hash of the candidate's account.
-     * @param wallet       The wallet containing the candidate's account.
      * @param candidateKey The public key to register as a candidate.
      * @return A transaction builder.
      */
-    public TransactionBuilder registerCandidate(ScriptHash candidate, Wallet wallet,
-            ECPublicKey candidateKey) {
+    public TransactionBuilder registerCandidate(ECPublicKey candidateKey) {
 
         return invokeFunction(REGISTER_CANDIDATE,
-                ContractParameter.publicKey(candidateKey.getEncoded(true)))
-                .wallet(wallet)
-                .signers(Signer.global(candidate));
+                ContractParameter.publicKey(candidateKey.getEncoded(true)));
+    }
+
+    /**
+     * Creates a transaction script for registering a validator candidate and initializes
+     * a {@link TransactionBuilder} based on this script.
+     *
+     * @param candidateKey The public key to register as a candidate.
+     * @return A transaction builder.
+     */
+    public TransactionBuilder unregisterCandidate(ECPublicKey candidateKey) {
+
+        return invokeFunction(UNREGISTER_CANDIDATE,
+                ContractParameter.publicKey(candidateKey.getEncoded(true)));
     }
 
     /**
@@ -133,6 +141,19 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
+     * Gets the public keys of the current committee members.
+     *
+     * @return the committee members' public keys.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException If the return type is not an array or the returned
+     *                                       array's elements are not public keys.
+     */
+    public List<ECPublicKey> getCommittee() throws IOException {
+        return callFunctionReturningListOfPublicKeys(GET_COMMITTEE);
+    }
+
+    /**
      * Gets the public keys of currently registered validator candidates and their NEO balances.
      *
      * @return the candidate public keys and their NEO balances.
@@ -142,8 +163,7 @@ public class NeoToken extends Nep5Token {
      *                                       elements are not public keys and node counts.
      */
     public Map<ECPublicKey, Integer> getCandidates() throws IOException {
-        StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(
-                0);
+        StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(0);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }
@@ -207,11 +227,10 @@ public class NeoToken extends Nep5Token {
      * a {@link TransactionBuilder} based on this script.
      *
      * @param voter      The account that casts the vote.
-     * @param wallet     The wallet that contains the vote-casting account.
      * @param validators The validators for which to vote for.
      * @return A transaction builder.
      */
-    public TransactionBuilder vote(ScriptHash voter, Wallet wallet, ECPublicKey... validators) {
+    public TransactionBuilder vote(ScriptHash voter, ECPublicKey... validators) {
         List<ContractParameter> validatorParams = Stream.of(validators)
                 .map(v -> ContractParameter.publicKey(v.getEncoded(true)))
                 .collect(Collectors.toList());
@@ -220,8 +239,6 @@ public class NeoToken extends Nep5Token {
         params.add(ContractParameter.hash160(voter));
         params.addAll(validatorParams);
 
-        return invokeFunction(VOTE, params.toArray(new ContractParameter[]{}))
-                .wallet(wallet)
-                .signers(Signer.global(voter));
+        return invokeFunction(VOTE, params.toArray(new ContractParameter[]{}));
     }
 }
