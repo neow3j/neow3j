@@ -73,7 +73,7 @@ public class Wallet {
      * @param accountScriptHash The new default account.
      * @throws IllegalArgumentException if the given account is not in this wallet.
      */
-    public Wallet setDefaultAccount(ScriptHash accountScriptHash) {
+    public Wallet defaultAccount(ScriptHash accountScriptHash) {
         if (accountScriptHash == null) throw new IllegalArgumentException("No account provided to set default.");
         if (!this.accounts.containsKey(accountScriptHash)) {
             throw new IllegalArgumentException("Can't set default account on wallet. Wallet does "
@@ -107,17 +107,17 @@ public class Wallet {
         return getDefaultAccount().getScriptHash().equals(accountScriptHash);
     }
 
-    public Wallet setName(String name) {
+    public Wallet name(String name) {
         this.name = name;
         return this;
     }
 
-    public Wallet setVersion(String version) {
+    public Wallet version(String version) {
         this.version = version;
         return this;
     }
 
-    public Wallet setScryptParams(ScryptParams scryptParams) {
+    public Wallet scryptParams(ScryptParams scryptParams) {
         this.scryptParams = scryptParams;
         return this;
     }
@@ -169,7 +169,7 @@ public class Wallet {
             ScriptHash newDefaultAccountScriptHash = this.accounts.entrySet().stream()
                     .filter(e -> !e.getKey().equals(scriptHash))
                     .iterator().next().getKey();
-            this.setDefaultAccount(newDefaultAccountScriptHash);
+            this.defaultAccount(newDefaultAccountScriptHash);
         }
         return accounts.remove(scriptHash) != null;
     }
@@ -226,11 +226,11 @@ public class Wallet {
         if (defaultAccount.isPresent()) {
             ScriptHash defaultAccountScriptHash = Account.fromNEP6Account(defaultAccount.get()).getScriptHash();
             return new Wallet()
-                    .setName(nep6Wallet.getName())
-                    .setVersion(nep6Wallet.getVersion())
-                    .setScryptParams(nep6Wallet.getScrypt())
+                    .name(nep6Wallet.getName())
+                    .version(nep6Wallet.getVersion())
+                    .scryptParams(nep6Wallet.getScrypt())
                     .addAccounts(accs)
-                    .setDefaultAccount(defaultAccountScriptHash);
+                    .defaultAccount(defaultAccountScriptHash);
         } else {
             throw new IllegalArgumentException("The Nep-6 wallet does not contain any default account.");
         }
@@ -283,7 +283,7 @@ public class Wallet {
      */
     public static Wallet createWallet() {
         Account a = Account.fromNewECKeyPair();
-        return new Wallet().addAccounts(a).setDefaultAccount(a.getScriptHash());
+        return new Wallet().addAccounts(a).defaultAccount(a.getScriptHash());
     }
 
     /**
@@ -331,7 +331,7 @@ public class Wallet {
         }
         return new Wallet()
                 .addAccounts(accounts)
-                .setDefaultAccount(accounts[0].getScriptHash());
+                .defaultAccount(accounts[0].getScriptHash());
     }
 
     public boolean holdsAccount(ScriptHash scriptHash) {
