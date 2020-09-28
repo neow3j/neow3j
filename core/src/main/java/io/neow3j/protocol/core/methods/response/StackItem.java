@@ -12,11 +12,11 @@ import io.neow3j.model.types.StackItemType;
 @JsonTypeInfo(use = Id.NAME, property = "type", include = As.EXISTING_PROPERTY)
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = AnyStackItem.class, name = StackItemType.ANY_VALUE),
-//        @JsonSubTypes.Type(value = PointerStackItem.class, name = StackItemType.POINTER_VALUE),
+        @JsonSubTypes.Type(value = PointerStackItem.class, name = StackItemType.POINTER_VALUE),
         @JsonSubTypes.Type(value = BooleanStackItem.class, name = StackItemType.BOOLEAN_VALUE),
         @JsonSubTypes.Type(value = IntegerStackItem.class, name = StackItemType.INTEGER_VALUE),
         @JsonSubTypes.Type(value = ByteStringStackItem.class, name = StackItemType.BYTE_STRING_VALUE),
-//        @JsonSubTypes.Type(value = BufferStackItem.class, name = StackItemType.BUFFER_VALUE),
+        @JsonSubTypes.Type(value = BufferStackItem.class, name = StackItemType.BUFFER_VALUE),
         @JsonSubTypes.Type(value = ArrayStackItem.class, name = StackItemType.ARRAY_VALUE),
         @JsonSubTypes.Type(value = StructStackItem.class, name = StackItemType.STRUCT_VALUE),
         @JsonSubTypes.Type(value = MapStackItem.class, name = StackItemType.MAP_VALUE),
@@ -61,6 +61,22 @@ public abstract class StackItem {
     }
 
     /**
+     * Casts this stack item to a {@link PointerStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link PointerStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link PointerStackItem}.
+     */
+    @JsonIgnore
+    public PointerStackItem asPointer() {
+        if (this instanceof PointerStackItem) {
+            return (PointerStackItem) this;
+        }
+        throw new IllegalStateException("This stack item is not of type " +
+                StackItemType.POINTER.jsonValue() + " but of " + this.type.jsonValue());
+    }
+
+    /**
      * Casts this stack item to a {@link BooleanStackItem}, if possible, and returns it.
      *
      * @return this stack item as a {@link BooleanStackItem}.
@@ -90,6 +106,22 @@ public abstract class StackItem {
         }
         throw new IllegalStateException("This stack item is not of type " +
                 StackItemType.INTEGER.jsonValue() + " but of " + this.type.jsonValue());
+    }
+
+    /**
+     * Casts this stack item to a {@link BufferStackItem}, if possible, and returns it.
+     *
+     * @return this stack item as a {@link BufferStackItem}.
+     * @throws IllegalStateException if this stack item is not an instance of
+     *                               {@link BufferStackItem}.
+     */
+    @JsonIgnore
+    public BufferStackItem asBuffer() {
+        if (this instanceof BufferStackItem) {
+            return (BufferStackItem) this;
+        }
+        throw new IllegalStateException("This stack item is not of type " +
+                StackItemType.BUFFER.jsonValue() + " but of " + this.type.jsonValue());
     }
 
     /**

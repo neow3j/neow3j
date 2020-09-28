@@ -1214,6 +1214,72 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
+    public void testStackItem_invokeFunction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"state\": \"HALT\",\n" +
+                        "        \"gasconsumed\": \"2007570\",\n" +
+                        "        \"stack\": [\n" +
+                        "            {\n" +
+                        "                \"type\": \"Buffer\",\n" +
+                        "                \"value\": \"dHJhbnNmZXI=\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"type\": \"Pointer\",\n" +
+                        "                \"value\": \"123\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"type\": \"Map\",\n" +
+                        "                \"value\": [\n" +
+                        "                    {\n" +
+                        "                        \"key\": {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
+                        "                        },\n" +
+                        "                        \"value\": {\n" +
+                        "                            \"type\": \"Pointer\",\n" +
+                        "                            \"value\": \"12\"\n" +
+                        "                        }\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT"));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
+
+        assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(3));
+
+        StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
+        assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
+        assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
+
+        StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
+        assertThat(stackItem1.getType(), is(StackItemType.POINTER));
+        assertThat(stackItem1.asPointer().getValue(), is(new BigInteger("123")));
+
+        StackItem stackItem2 = invokeFunction.getInvocationResult().getStack().get(2);
+        assertThat(stackItem2.getType(), is(StackItemType.MAP));
+        assertThat(stackItem2.asMap().size(), equalTo(1));
+        BigInteger value = stackItem2.asMap()
+                .get(Numeric.hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96"))
+                .asPointer()
+                .getValue();
+        assertThat(value, is(new BigInteger("12")));
+    }
+
+    @Test
     public void testInvokeFunction_empty_Stack() {
         buildResponse(
                 "{\n" +
