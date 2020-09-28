@@ -67,6 +67,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 
 import java.math.BigInteger;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -1229,6 +1230,14 @@ public class ResponseTest extends ResponseTester {
                         "                \"value\": \"dHJhbnNmZXI=\"\n" +
                         "            },\n" +
                         "            {\n" +
+                        "                \"type\": \"Buffer\",\n" +
+                        "                \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"type\": \"Buffer\",\n" +
+                        "                \"value\": \"wWq=\"\n" +
+                        "            },\n" +
+                        "            {\n" +
                         "                \"type\": \"Pointer\",\n" +
                         "                \"value\": \"123\"\n" +
                         "            },\n" +
@@ -1259,20 +1268,29 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
-        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(3));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(5));
 
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
         assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
 
         StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
-        assertThat(stackItem1.getType(), is(StackItemType.POINTER));
-        assertThat(stackItem1.asPointer().getValue(), is(new BigInteger("123")));
+        assertThat(stackItem1.getType(), is(StackItemType.BUFFER));
+        assertThat(stackItem1.asBuffer().getAsAddress(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
 
         StackItem stackItem2 = invokeFunction.getInvocationResult().getStack().get(2);
-        assertThat(stackItem2.getType(), is(StackItemType.MAP));
-        assertThat(stackItem2.asMap().size(), equalTo(1));
-        BigInteger value = stackItem2.asMap()
+        assertThat(stackItem2.getType(), is(StackItemType.BUFFER));
+        assertArrayEquals(Numeric.hexStringToByteArray("c16a"), stackItem2.asBuffer().getValue());
+        assertThat(stackItem2.asBuffer().getAsNumber(), is(new BigInteger("27329")));
+
+        StackItem stackItem3 = invokeFunction.getInvocationResult().getStack().get(3);
+        assertThat(stackItem3.getType(), is(StackItemType.POINTER));
+        assertThat(stackItem3.asPointer().getValue(), is(new BigInteger("123")));
+
+        StackItem stackItem4 = invokeFunction.getInvocationResult().getStack().get(4);
+        assertThat(stackItem4.getType(), is(StackItemType.MAP));
+        assertThat(stackItem4.asMap().size(), equalTo(1));
+        BigInteger value = stackItem4.asMap()
                 .get(Numeric.hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96"))
                 .asPointer()
                 .getValue();

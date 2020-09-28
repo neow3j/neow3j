@@ -35,16 +35,16 @@ public class BufferStackItem extends StackItem {
         return this.value;
     }
 
-//    /**
-//     * <p>Gets this byte array's value as an address.</p>
-//     * <br>
-//     * <p>Expects the byte array to be a script hash in little-endian order.</p>
-//     *
-//     * @return the address represented by this byte array.
-//     */
-//    public String getAsAddress() {
-//        return new ScriptHash(getValue()).toAddress();
-//    }
+    /**
+     * <p>Gets this byte array's value as an address.</p>
+     * <br>
+     * <p>Expects the byte array to be a script hash in little-endian order.</p>
+     *
+     * @return the address represented by this byte array.
+     */
+    public String getAsAddress() {
+        return new ScriptHash(getValue()).toAddress();
+    }
 
     /**
      * <p>Gets this byte array's value as string.</p>
