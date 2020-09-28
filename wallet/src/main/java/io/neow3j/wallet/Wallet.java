@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -248,6 +249,10 @@ public class Wallet {
             throw new IllegalArgumentException("Destination file cannot be null");
         }
         NEP6Wallet nep6Wallet = toNEP6Wallet();
+        if (destination.isDirectory()) {
+            String fileName = getName() + ".json";
+            destination = Paths.get(destination.toString(), fileName).toFile();
+        }
         OBJECT_MAPPER.writeValue(destination, nep6Wallet);
         return this;
     }
