@@ -1242,7 +1242,7 @@ public class ResponseTest extends ResponseTester {
                         "                        },\n" +
                         "                        \"value\": {\n" +
                         "                            \"type\": \"Pointer\",\n" +
-                        "                            \"value\": \"12\"\n" +
+                        "                            \"value\": 12\n" +
                         "                        }\n" +
                         "                    }\n" +
                         "                ]\n" +
