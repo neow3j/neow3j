@@ -9,7 +9,7 @@ import org.junit.Ignore;
 public class StaticFieldConverterTest extends CompilerTest {
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() throws Throwable {
         setUp(StaticFieldConverter.class.getName());
     }
 
@@ -18,7 +18,7 @@ public class StaticFieldConverterTest extends CompilerTest {
             + " which asks if this is intended behavior of the VM. Additionally the `Buffer` "
             + "`StackItemType` is not yet implemented in neow3j.")
     public void addressToScriptHashConverter() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(getTestName());
+        NeoInvokeFunction response = callInvokeFunction();
 //            assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
 //                    is(expected));
     }
@@ -28,7 +28,7 @@ public class StaticFieldConverterTest extends CompilerTest {
             + " which asks if this is intended behavior of the VM. Additionally the `Buffer` "
             + "`StackItemType` is not yet implemented in neow3j.")
     public void hexStringToByteArrayConverter() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(getTestName());
+        NeoInvokeFunction response = callInvokeFunction();
 //            assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
 //                    is(expected));
     }
@@ -38,7 +38,7 @@ public class StaticFieldConverterTest extends CompilerTest {
             + "which asks if this is intended behavior of the VM.")
 
     public void stringToIntegerConverter() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(getTestName());
+        NeoInvokeFunction response = callInvokeFunction();
 //            assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
 //                    is(expected));
     }

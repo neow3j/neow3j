@@ -15,14 +15,13 @@ import org.junit.Test;
 public class StringConcatenationTest extends CompilerTest {
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() throws Throwable {
         setUp(StringConcatenation.class.getName());
     }
 
     @Test
     public void concatTwoStrings() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.string("one"),
                 ContractParameter.string("two"));
 
@@ -32,8 +31,7 @@ public class StringConcatenationTest extends CompilerTest {
 
     @Test
     public void concatStringsFromMixedSources() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.string("one"),
                 ContractParameter.string("two"),
                 ContractParameter.byteArray("4e656f")); // byte array representation of "Neo".
@@ -44,7 +42,7 @@ public class StringConcatenationTest extends CompilerTest {
 
     @Test
     public void concatInStaticVariable() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(getTestName());
+        NeoInvokeFunction response = callInvokeFunction();
 
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("onetwoNEO"));
