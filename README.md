@@ -22,7 +22,7 @@ The neow3j development toolkit is composed of:
 - neow3j devpack
 - neow3j compiler
 
-Visit http://neow3j.io for more information on neow3j and the technical documentation.
+Visit [neow3j.io](https://neow3j.io) for more information on neow3j and the technical documentation.
 
 ## Using the *neow3j SDK*
 
@@ -65,7 +65,7 @@ __Maven__
 
 ## Using the *neow3j devpack* and *compiler*
 
-The devpack offers methods and annotations to write Neo smart contracts in Java. To try it out, add the following dependency to your project.
+The devpack offers all the necessary tools to write Neo smart contracts in Java. To try it out, add the following dependency to your project.
 
 Gradle:
 ```groovy
@@ -76,12 +76,12 @@ Maven:
 ```xml
 <dependency>
     <groupId>io.neow3j</groupId>
-    <artifactId>compiler</artifactId>
+    <artifactId>devpack</artifactId>
     <version>[3.0.0,4.0.0)</version>
 </dependency>
 ```
 
-For help on how to compile a contract, check out the documentation about the neow3j compiler at [neow3j.io](https://neow3j.io/#/neo3_guides/contract_development?id=compilation).
+For help on how to compile a contract, check out the documentation about the neow3j compiler at [neow3j.io](https://neow3j.io/#/neo3_guides/compiler_devpack/compilation?id=compilation).
 
 
 ## Donate
@@ -97,7 +97,7 @@ Help the development of neow3j by donating to the following addresses:
 
 ## Thanks and Credits
 
-* [NEO Foundation](https://neo.org/team) & [NEO Global Development (NGD)](https://neo.org/team)
+* [NEO Foundation](https://neo.org/contributors) & [NEO Global Development (NGD)](https://neo.org/contributors)
 * This project was strongly based on [web3j](https://web3j.io),
 a library originally developed by [Conor Svensson](http://conorsvensson.com), latest on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254).
 We are really thankful for it. :-)
