@@ -39,5 +39,4 @@ public class GasTokenTest {
     public void getDecimals() {
         assertThat(new GasToken(neow).getDecimals(), is(8));
     }
-
 }

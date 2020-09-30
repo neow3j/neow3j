@@ -77,8 +77,8 @@ public class AccountTest {
     @Test
     public void testFromNewECKeyPair() {
         Account a = Account.fromNewECKeyPair()
-                .setLabel("example")
-                .setLocked();
+                .label("example")
+                .lock();
 
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
@@ -231,8 +231,6 @@ public class AccountTest {
                 .opCode(OpCode.PUSHNULL)
                 .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
                 .toArray());
-//        String expectedScript = Base64.encode(Numeric.hexStringToByteArray(
-//                "0c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d0b4195440d78"));
         assertThat(nep6.getContract().getScript(), is(expectedScript));
         assertThat(nep6.getKey(), is(ACCOUNT_JSON_KEY));
         assertFalse(nep6.getDefault());
@@ -332,10 +330,10 @@ public class AccountTest {
 
     @Test
     public void testUnsetLocked() {
-        Account a = Account.fromAddress(ADDRESS).setLocked();
+        Account a = Account.fromAddress(ADDRESS).lock();
         assertTrue(a.isLocked());
 
-        a.unsetLocked();
+        a.unlock();
         assertFalse(a.isLocked());
     }
 
@@ -346,7 +344,7 @@ public class AccountTest {
 
         assertFalse(a.isDefault());
 
-        wallet.setDefaultAccount(a.getScriptHash());
+        wallet.defaultAccount(a.getScriptHash());
         assertTrue(a.isDefault());
     }
 

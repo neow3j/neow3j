@@ -73,7 +73,7 @@ public class Account {
         return label;
     }
 
-    public Account setLabel(String label) {
+    public Account label(String label) {
         this.label = label;
         return this;
     }
@@ -96,12 +96,12 @@ public class Account {
         return isLocked;
     }
 
-    public Account setLocked() {
+    public Account lock() {
         this.isLocked = true;
         return this;
     }
 
-    public void unsetLocked() {
+    public void unlock() {
         this.isLocked = false;
     }
 

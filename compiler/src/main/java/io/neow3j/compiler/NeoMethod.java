@@ -59,11 +59,6 @@ public class NeoMethod {
     SortedMap<Integer, NeoVariable> parametersByJVMIndex = new TreeMap<>();
 
     /**
-     * Determines if a method is a contract's entry point.
-     */
-    boolean isEntryPoint = false;
-
-    /**
      * Determines if this method will show up in the contract's ABI.
      */
     boolean isAbiMethod = false;
@@ -183,6 +178,10 @@ public class NeoMethod {
         this.instructions.remove(this.instructions.lastKey());
         this.jumpInstructions.remove(lastInsn);
         this.nextAddress -= (1 + lastInsn.operand.length);
+    }
+
+    NeoInstruction getLastInstruction() {
+        return this.instructions.get(this.instructions.lastKey());
     }
 
     /**

@@ -1,26 +1,25 @@
 package io.neow3j.transaction;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.NeoConfig;
-import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,6 +29,8 @@ public class TransactionTest {
     private ScriptHash account2;
     private ScriptHash account3;
 
+    private Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
+
     @Before
     public void setUp() {
         account1 = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
@@ -38,134 +39,23 @@ public class TransactionTest {
     }
 
     @Test
-    public void buildMinimalTransaction() {
-        long validUntilBlock = 100L;
-        Transaction t = new Transaction.Builder()
-                .validUntilBlock(validUntilBlock)
-                .signers(Signer.feeOnly(account1))
-                .build();
-
-        assertThat(t.getVersion(), is(NeoConstants.CURRENT_TX_VERSION));
-        assertThat(t.getNetworkFee(), is(0L));
-        assertThat(t.getSystemFee(), is(0L));
-        assertThat(t.getAttributes(), is(notNullValue()));
-        assertThat(t.getAttributes(), hasSize(0));
-        assertThat(t.getSigners(), hasSize(1));
-        assertThat(t.getSigners().get(0).getScriptHash(), is(account1));
-        assertThat(t.getSigners().get(0).getScopes(), contains(WitnessScope.FEE_ONLY));
-        assertThat(t.getScript().length, is(0));
-        assertThat(t.getNonce(), notNullValue());
-        assertThat(t.getWitnesses(), empty());
-    }
-
-    @Test
-    public void buildTransactionWithCorrectNonce() {
-        Long nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
-        Transaction.Builder b = new Transaction.Builder()
-                .validUntilBlock(1L)
-                .signers(Signer.calledByEntry(account1));
-        Transaction t = b.nonce(nonce).build();
-        assertThat(t.getNonce(), is(nonce));
-
-        nonce = 0L;
-        t = b.nonce(0L).build();
-        assertThat(t.getNonce(), is(nonce));
-
-        nonce = (long) Math.pow(2, 32) - 1;
-        t = b.nonce(nonce).build();
-        assertThat(t.getNonce(), is(nonce));
-
-        nonce = Integer.toUnsignedLong(-1);
-        t = b.nonce(nonce).build();
-        assertThat(t.getNonce(), is(nonce));
-    }
-
-    @Test
-    public void failBuildingTransactionWithIncorrectNonce() {
-        Transaction.Builder b = new Transaction.Builder()
-                .validUntilBlock(1L)
-                .signers(Signer.calledByEntry(account1));
-        try {
-            Long nonce = Integer.toUnsignedLong(-1) + 1;
-            b.nonce(nonce);
-            fail();
-        } catch (TransactionConfigurationException ignored) {
-        }
-
-        try {
-            Long nonce = (long) Math.pow(2, 32);
-            b.nonce(nonce);
-            fail();
-        } catch (TransactionConfigurationException ignored) {
-        }
-
-        try {
-            Long nonce = -1L;
-            b.nonce(nonce);
-            fail();
-        } catch (TransactionConfigurationException ignored) {
-        }
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failBuildingTransactionWithNegativeValidUntilBlockNumber() {
-        new Transaction.Builder().validUntilBlock(-1L);
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failBuildingTransactionWithTooHighValidUntilBlockNumber() {
-        new Transaction.Builder().validUntilBlock((long) Math.pow(2, 32));
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failBuildingTxWithoutValidUntilBlockProperty() {
-        new Transaction.Builder()
-                .signers(Signer.calledByEntry(account1))
-                .build();
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failBuildingTxWithoutSenderAccount() {
-        new Transaction.Builder()
-                .validUntilBlock(100L)
-                .build();
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMultipleSignersConcerningTheSameAccount1() {
-        Transaction.Builder b = new Transaction.Builder();
-        b.signers(Signer.global(account1), Signer.calledByEntry(account1));
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMultipleSignersConcerningTheSameAccount2() {
-        Transaction.Builder b = new Transaction.Builder();
-        b.signers(Signer.global(account1));
-        b.signers(Signer.calledByEntry(account1));
-    }
-
-    @Test(expected = TransactionConfigurationException.class)
-    public void failAddingMoreThanMaxAttributesToTxBuilder() {
-        // Add one too many attributes.
-        Signer[] singers =
-                new Signer[NeoConstants.MAX_SIGNER_SUBITEMS + 1];
-        for (int i = 0; i <= NeoConstants.MAX_SIGNER_SUBITEMS; i++) {
-            singers[i] = new Signer();
-        }
-        new Transaction.Builder().signers(singers);
-    }
-
-    @Test
     public void serializeWithoutAttributesAndWitnesses() {
-        Transaction tx = new Transaction.Builder()
-                .signers(Signer.calledByEntry(account1))
-                .version((byte) 0)
-                .nonce((long) 0x01020304)
-                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
-                .networkFee(1L) // 1 fraction of GAS
-                .validUntilBlock(0x01020304L)
-                .script(new byte[]{(byte) OpCode.PUSH1.getCode()})
-                .build();
+        List<Signer> signers = new ArrayList<>();
+        signers.add(Signer.calledByEntry(account1));
+
+        List<Witness> witnesses = new ArrayList<>();
+        witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
+
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
 
         byte[] actual = tx.toArray();
         byte[] expected = Numeric.hexStringToByteArray(""
@@ -185,16 +75,23 @@ public class TransactionTest {
 
     @Test
     public void serializeWithAttributesAndWitnesses() {
-        Transaction tx = new Transaction.Builder()
-                .version((byte) 0)
-                .nonce((long) 0x01020304)
-                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
-                .networkFee(1L) // 1 fraction of GAS
-                .validUntilBlock(0x01020304L)
-                .signers(Signer.global(account1), Signer.calledByEntry(account2))
-                .script(new byte[]{(byte) OpCode.PUSH1.getCode()})
-                .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
-                .build();
+        List<Signer> signers = new ArrayList<>();
+        signers.add(Signer.global(account1));
+        signers.add(Signer.calledByEntry(account2));
+
+        List<Witness> witnesses = new ArrayList<>();
+        witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
+
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                witnesses);
 
         byte[] actual = tx.toArray();
         byte[] expected = Numeric.hexStringToByteArray(""
@@ -237,6 +134,7 @@ public class TransactionTest {
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
+        assertThat(tx.getAttributes(), hasSize(0));
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
@@ -248,16 +146,23 @@ public class TransactionTest {
 
     @Test
     public void getSize() {
-        Transaction tx = new Transaction.Builder()
-                .version((byte) 0)
-                .nonce((long) 0x01020304)
-                .systemFee(BigInteger.TEN.pow(8).longValue()) // 1 GAS
-                .networkFee(1L) // 1 fraction of GAS
-                .validUntilBlock(0x01020304L)
-                .signers(Signer.global(account1), Signer.calledByEntry(account2))
-                .script(new byte[]{(byte) OpCode.PUSH1.getCode()})
-                .witnesses(new Witness(new byte[]{0x00}, new byte[]{0x00}))
-                .build();
+        List<Signer> signers = new ArrayList<>();
+        signers.add(Signer.global(account1));
+        signers.add(Signer.calledByEntry(account2));
+
+        List<Witness> witnesses = new ArrayList<>();
+        witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
+
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                witnesses);
 
         int expectedSize = 1 +  // Version
                 4 +  // Nonce
@@ -299,68 +204,75 @@ public class TransactionTest {
     }
 
     @Test
-    public void getTxId() throws DeserializationException {
+    public void getTxId() {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        Transaction tx = new Transaction.Builder()
-                .nonce(226292130L)
-                .version((byte) 0)
-                .validUntilBlock(2103398)
-                .networkFee(1244390L)
-                .systemFee(9007990L)
-                .signers(Signer.calledByEntry(account3))
-                .script(Numeric.hexStringToByteArray(
-                        "110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238"))
-                .attributes()
-                .witnesses(new Witness(
-                        Numeric.hexStringToByteArray(
-                                "0c407ffa520060cc7c6d89c073963ed80d94af1dd27fdbd8a1a7c56104b394e1719e2469dfb5534460c15a40216f3b74f6e384cfd2a49905698fa5861d0d491cc917"),
-                        Numeric.hexStringToByteArray(
-                                "0c21030ba3f5cb0676ef4eadc89f4da74a6eade644b87aed9a123a117f144ff247052c0b4195440d78")))
-                .build();
+
+        List<Signer> signers = new ArrayList<>();
+        signers.add(Signer.calledByEntry(account3));
+
+        List<Witness> witnesses = new ArrayList<>();
+        witnesses.add(new Witness(Numeric.hexStringToByteArray(
+                "0c407ffa520060cc7c6d89c073963ed80d94af1dd27fdbd8a1a7c56104b394e1719e2469dfb5534460c15a40216f3b74f6e384cfd2a49905698fa5861d0d491cc917"),
+                Numeric.hexStringToByteArray(
+                        "0c21030ba3f5cb0676ef4eadc89f4da74a6eade644b87aed9a123a117f144ff247052c0b4195440d78")));
+
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                226292130L,
+                2103398,
+                signers,
+                9007990L,
+                1244390L,
+                new ArrayList<>(),
+                Numeric.hexStringToByteArray(
+                        "110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238"),
+                new ArrayList<>());
 
         assertThat(tx.getTxId(),
                 is("066c44b4540ee7b5a3a57fcfcc272353560af792acc3c95da3e18efc962556a2"));
     }
 
     @Test
-    public void toArrayWithoutWitness() throws DeserializationException {
-        Transaction tx = new Transaction.Builder()
-                .nonce(226292130L)
-                .version((byte) 0)
-                .validUntilBlock(2103398)
-                .networkFee(1244390L)
-                .systemFee(9007990L)
-                .signers(Signer.calledByEntry(account3))
-                .script(Numeric.hexStringToByteArray(
-                        "110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238"))
-                .attributes()
-                .witnesses()
-                .build();
+    public void toArrayWithoutWitness() {
+        List<Signer> signers = new ArrayList<>();
+        signers.add(Signer.calledByEntry(account3));
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                226292130L,
+                2103398,
+                signers,
+                9007990L,
+                1244390L,
+                new ArrayList<>(),
+                Numeric.hexStringToByteArray(
+                        "110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238"),
+                new ArrayList<>());
+
         byte[] expectedUnsignedBytes = Numeric.hexStringToByteArray(
                 "00a2f17c0d7673890000000000e6fc1200000000006618200001c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f7010055110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238");
         assertThat(tx.toArrayWithoutWitnesses(), is(expectedUnsignedBytes));
     }
 
     @Test
-    public void getHashData() throws DeserializationException {
+    public void getHashData() {
         byte[] magicNumber = new byte[]{0x4e, 0x45, 0x4F, 0x00};
         NeoConfig.setMagicNumber(magicNumber);
-        Transaction tx = new Transaction.Builder()
-                .nonce(0L)
-                .version((byte) 0)
-                .validUntilBlock(0)
-                .networkFee(0L)
-                .systemFee(0L)
-                .signers(Signer.feeOnly(account1))
-                .script(new byte[]{1, 2, 3})
-                .attributes()
-                .witnesses()
-                .build();
+
+        List<Signer> signers = new ArrayList<>();
+        signers.add(Signer.feeOnly(account1));
+        Transaction tx = new Transaction(neow, (byte) 0,
+                0L,
+                0L,
+                signers,
+                0L,
+                0L,
+                new ArrayList<>(),
+                new byte[]{1, 2, 3},
+                new ArrayList<>());
 
         byte[] txHexWithoutWitness = Numeric.hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000123ba2703c53263e8d6e522dc32203339dcd8eee9000003010203");
         byte[] expectedData = ArrayUtils.concatenate(magicNumber, txHexWithoutWitness);
         assertThat(tx.getHashData(), is(expectedData));
     }
-
 }

@@ -147,5 +147,4 @@ public class ContractUtilsTest {
 
         return cm;
     }
-
 }

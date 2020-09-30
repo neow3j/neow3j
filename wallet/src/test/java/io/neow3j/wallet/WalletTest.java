@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.common.io.Files;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
@@ -205,7 +206,7 @@ public class WalletTest {
         String walletName = "TestWallet";
         Account a = new Account(ECKeyPair.createEcKeyPair());
         Wallet w = Wallet.withAccounts(a)
-                .setName(walletName);
+                .name(walletName);
         w.encryptAllAccounts("12345678");
 
         NEP6Account nep6acct = new NEP6Account(a.getAddress(), a.getLabel(), false, false,
@@ -274,6 +275,55 @@ public class WalletTest {
     }
 
     @Test
+    public void testCreateGenericWalletAndSaveItToDir_withCustomName()
+            throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
+        File tempDir = createTempDir();
+
+        Wallet w1 = Wallet.createWallet()
+                .name("customWalletName");
+        w1.encryptAllAccounts("12345678");
+        w1.saveNEP6Wallet(tempDir);
+
+        assertEquals("customWalletName", w1.getName());
+        assertEquals(Wallet.CURRENT_VERSION, w1.getVersion());
+        assertEquals(NEP2.DEFAULT_SCRYPT_PARAMS, w1.getScryptParams());
+        assertEquals(1, w1.getAccounts().size());
+        assertThat(w1.getAccounts(), not(empty()));
+        assertTrue(tempDir.exists());
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), is(nullValue()));
+
+        File file = new File(tempDir, "customWalletName.json");
+        Wallet w2 = Wallet.fromNEP6Wallet(file.toURI());
+        w2.decryptAllAccounts("12345678");
+
+        assertEquals(w2.toNEP6Wallet(), w1.toNEP6Wallet());
+    }
+
+    @Test
+    public void testCreateGenericWalletAndSaveItToDir_withDefaultName()
+            throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
+        File tempDir = createTempDir();
+
+        Wallet w1 = Wallet.createWallet();
+        w1.encryptAllAccounts("12345678");
+        w1.saveNEP6Wallet(tempDir);
+
+        assertEquals("neow3jWallet", w1.getName());
+        assertEquals(Wallet.CURRENT_VERSION, w1.getVersion());
+        assertEquals(NEP2.DEFAULT_SCRYPT_PARAMS, w1.getScryptParams());
+        assertEquals(1, w1.getAccounts().size());
+        assertThat(w1.getAccounts(), not(empty()));
+        assertTrue(tempDir.exists());
+        assertThat(w1.getAccounts().get(0).getECKeyPair(), is(nullValue()));
+
+        File file = new File(tempDir, "neow3jWallet.json");
+        Wallet w2 = Wallet.fromNEP6Wallet(file.toURI());
+        w2.decryptAllAccounts("12345678");
+
+        assertEquals(w2.toNEP6Wallet(), w1.toNEP6Wallet());
+    }
+
+    @Test
     public void testCreateGenericWalletAndSaveToFileWithPasswordAndDestination()
             throws CipherException, IOException, NEP2InvalidFormat, NEP2InvalidPassphrase {
         File tempFile = createTempFile();
@@ -307,6 +357,12 @@ public class WalletTest {
         return testFile;
     }
 
+    private File createTempDir() {
+        File tempDir = Files.createTempDir();
+        tempDir.deleteOnExit();
+        return tempDir;
+    }
+
     @Test
     public void testCreateGenericWalletWithPassword()
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
@@ -334,7 +390,7 @@ public class WalletTest {
 
         Account a = Account.createAccount();
         w.addAccounts(a);
-        w.setDefaultAccount(a.getScriptHash());
+        w.defaultAccount(a.getScriptHash());
         assertThat(w.getDefaultAccount(), notNullValue());
         assertEquals(a, w.getDefaultAccount());
     }
@@ -343,7 +399,7 @@ public class WalletTest {
     public void failSettingDefaultAccountNotContainedInWallet() {
         Wallet w = Wallet.createWallet();
         Account a = Account.createAccount();
-        w.setDefaultAccount(a.getScriptHash());
+        w.defaultAccount(a.getScriptHash());
     }
 
     @Test
