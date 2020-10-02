@@ -22,13 +22,13 @@ public class RelationalOperatorsTest extends CompilerTest {
     private static final String STRINGS_MTHD_NAME = "strings";
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() throws Throwable {
         setUp(RelationalOperators.class.getName());
     }
 
     @Test
     public void unequalSmallIntegers() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
+        NeoInvokeFunction response = callInvokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
@@ -39,7 +39,7 @@ public class RelationalOperatorsTest extends CompilerTest {
 
     @Test
     public void equalLargeIntegers() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
+        NeoInvokeFunction response = callInvokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
@@ -50,7 +50,7 @@ public class RelationalOperatorsTest extends CompilerTest {
 
     @Test
     public void unequalSmallLongs() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
+        NeoInvokeFunction response = callInvokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
@@ -61,7 +61,7 @@ public class RelationalOperatorsTest extends CompilerTest {
 
     @Test
     public void equalLargeLongs() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
+        NeoInvokeFunction response = callInvokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
@@ -72,7 +72,7 @@ public class RelationalOperatorsTest extends CompilerTest {
 
     @Test
     public void equalBooleans() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
+        NeoInvokeFunction response = callInvokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(true),
                 ContractParameter.bool(true));
@@ -83,7 +83,7 @@ public class RelationalOperatorsTest extends CompilerTest {
 
     @Test
     public void unequalBooleans() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
+        NeoInvokeFunction response = callInvokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(false),
                 ContractParameter.bool(true));
@@ -94,7 +94,7 @@ public class RelationalOperatorsTest extends CompilerTest {
 
     @Test
     public void equalStrings() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
+        NeoInvokeFunction response = callInvokeFunction(
                 STRINGS_MTHD_NAME,
                 ContractParameter.string("hello, world!"),
                 ContractParameter.string("hello, world!"));

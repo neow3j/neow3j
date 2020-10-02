@@ -24,15 +24,6 @@ public class NeoModule {
      */
     List<NeoMethod> sortedMethods = new ArrayList<>();
 
-    /**
-     * The smart contract class that this module is compiled from.
-     */
-    ClassNode asmSmartContractClass;
-
-    public NeoModule(ClassNode asmSmartContractClass) {
-        this.asmSmartContractClass = asmSmartContractClass;
-    }
-
     void addMethod(NeoMethod method) {
         methods.put(method.id, method);
         sortedMethods.add(method);

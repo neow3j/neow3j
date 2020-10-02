@@ -14,14 +14,13 @@ import org.junit.Test;
 public class ArithmeticOperatorsTest extends CompilerTest {
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() throws Throwable {
         setUp(ArithmeticOperators.class.getName());
     }
 
     @Test
     public void allOperators() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.integer(-100),
                 ContractParameter.integer(30));
 
@@ -31,9 +30,7 @@ public class ArithmeticOperatorsTest extends CompilerTest {
 
     @Test
     public void allAssignmentOperators() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
-                ContractParameter.integer(-100));
+        NeoInvokeFunction response = callInvokeFunction(ContractParameter.integer(-100));
 
         ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
@@ -41,8 +38,7 @@ public class ArithmeticOperatorsTest extends CompilerTest {
 
     @Test
     public void addAndIncrement() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
@@ -52,8 +48,7 @@ public class ArithmeticOperatorsTest extends CompilerTest {
 
     @Test
     public void incrementAndAdd() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
@@ -63,8 +58,7 @@ public class ArithmeticOperatorsTest extends CompilerTest {
 
     @Test
     public void subtractAndDecrement() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
@@ -74,8 +68,7 @@ public class ArithmeticOperatorsTest extends CompilerTest {
 
     @Test
     public void decrementAndSubtract() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
