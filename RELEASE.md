@@ -1,6 +1,8 @@
 # Release Instructions/Checklist
 
 This file describes the required steps to release neow3j.
+Before releasing make sure that the external documentation at [neow3j.io](https://neow3j.io) is up 
+to date.
 
 ## Release the Source Code
 
@@ -53,12 +55,24 @@ Where:
 5. Run `./gradlew build` to build the whole project
 6. Run `./gradlew signMavenJavaPublication` to sign the artifacts
 7. Run `./gradlew bintrayUpload` to upload the files to Bintray
-8. Run `./gradlew :gradle-plugin:publishPlugin`
-9. Go to [https://bintray.com/neow3j/maven/neow3j](https://bintray.com/neow3j/maven/neow3j), click
+8. Go to [https://bintray.com/neow3j/maven/neow3j](https://bintray.com/neow3j/maven/neow3j), click
 on the Maven Central tab and Sync the repositories (providing the necessary SonaType API tokens)
-10. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/) and search for `io.neow3j` to make
+9. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/) and search for `io.neow3j` to make
 sure that the synchronization with Maven Central worked
+10. Run `./gradlew :gradle-plugin:publishPlugin`
 
-## Smoke Tests
+## neow3j-examples and Smoke Tests
 
-TBD.
+- Update the neow3j-examples repository to use the new neow3j version. 
+- Run some of the examples as smoke tests. 
+- Add and run examples that cover new or changed functionality.
+- Compile example smart contracts with the Gradle plugin and programmatically with the `Compiler`.
+
+## Github release
+
+1. Create a release draft on Github
+    - Title format: "neow3j: 3.x.x"
+    - The body should contain the sections "Changes", "New Features", and "Fixes" in that order. 
+    If one section doesn't have content it can be omitted.
+2. Let the team review the draft.
+3. Publish the release.
