@@ -1,8 +1,8 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.addLoadLocalVariable;
 import static io.neow3j.compiler.Compiler.addPushNumber;
-import static io.neow3j.compiler.Compiler.addStoreLocalVariable;
+import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
+import static io.neow3j.compiler.LocalVariableHelper.addStoreLocalVariable;
 
 import io.neow3j.constants.OpCode;
 import java.io.IOException;

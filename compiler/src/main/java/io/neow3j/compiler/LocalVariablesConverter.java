@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.addLoadLocalVariable;
-import static io.neow3j.compiler.Compiler.addStoreLocalVariable;
+import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
+import static io.neow3j.compiler.LocalVariableHelper.addStoreLocalVariable;
 
 import java.io.IOException;
 import org.objectweb.asm.tree.AbstractInsnNode;

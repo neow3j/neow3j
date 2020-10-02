@@ -3,6 +3,9 @@ package io.neow3j.compiler;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Maps JVM opcodes to converter classes that convert those opcodes to neo-vm instructions.
+ */
 public class ConverterMap {
 
     private static final Map<JVMOpcode, Converter> converterMap = new HashMap<>();
@@ -118,9 +121,9 @@ public class ConverterMap {
         converterMap.put(JVMOpcode.IF_ICMPGE, conv);
         converterMap.put(JVMOpcode.IFEQ, conv);
         converterMap.put(JVMOpcode.IFNULL, conv);
-        converterMap.put(JVMOpcode.IFNE , conv);
-        converterMap.put(JVMOpcode.IFNONNULL , conv);
-        converterMap.put(JVMOpcode.IFLT , conv);
+        converterMap.put(JVMOpcode.IFNE, conv);
+        converterMap.put(JVMOpcode.IFNONNULL, conv);
+        converterMap.put(JVMOpcode.IFLT, conv);
         converterMap.put(JVMOpcode.IFLE, conv);
         converterMap.put(JVMOpcode.IFGT, conv);
         converterMap.put(JVMOpcode.IFGE, conv);

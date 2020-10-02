@@ -1,27 +1,22 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.constants.OpCode.getOperandSize;
-import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.annotations.Contract;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +37,6 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
-import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -58,7 +52,7 @@ public class Compiler {
     public static final String INSTANCE_CTOR = "<init>";
     private static final String CLASS_CTOR = "<clinit>";
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
-    private static final String THIS_KEYWORD = "this";
+    public static final String THIS_KEYWORD = "this";
 
     private CompilationUnit compilationUnit;
 
@@ -74,9 +68,9 @@ public class Compiler {
      * Compiles the given class to NeoVM code.
      *
      * @param fullyQualifiedClassName the fully qualified name of the class.
-     * @return the compilation result info represented by {@link CompilationResult}
+     * @return the compilation unit holding the NEF and contract manifest.
      */
-    public CompilationResult compileClass(String fullyQualifiedClassName) throws IOException {
+    public CompilationUnit compileClass(String fullyQualifiedClassName) throws IOException {
         return compileClass(getAsmClass(fullyQualifiedClassName, compilationUnit.getClassLoader()));
     }
 
@@ -84,22 +78,22 @@ public class Compiler {
      * Compiles the given class to NeoVM code.
      *
      * @param classStream the {@link InputStream} pointing to a class file.
-     * @return the compilation result info represented by {@link CompilationResult}
+     * @return the compilation unit holding the NEF and contract manifest.
      */
-    public CompilationResult compileClass(InputStream classStream) throws IOException {
+    public CompilationUnit compileClass(InputStream classStream) throws IOException {
         return compileClass(getAsmClass(classStream));
     }
 
     /**
      * Compiles the given class to NeoVM code.
      *
-     * @param classNode the {@link ClassNode} representing a class file.
-     * @return the compilation result info represented by {@link CompilationResult}
+     * @param contractClassNode the {@link ClassNode} representing a class file.
+     * @return the compilation unit holding the NEF and contract manifest.
      */
-    private CompilationResult compileClass(ClassNode classNode) throws IOException {
-        compilationUnit.setNeoModule(new NeoModule(classNode));
-        collectAndInitializeStaticFields(classNode);
-        collectAndInitializeMethods(classNode);
+    private CompilationUnit compileClass(ClassNode contractClassNode) throws IOException {
+        compilationUnit.setAsmClass(contractClassNode);
+        collectAndInitializeStaticFields(contractClassNode);
+        collectAndInitializeMethods(contractClassNode);
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -110,9 +104,11 @@ public class Compiler {
         compilationUnit.getNeoModule().finalizeModule();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
                 compilationUnit.getNeoModule().toByteArray());
-        ContractManifest manifest = ManifestBuilder.buildManifest(compilationUnit.getNeoModule(),
+        ContractManifest manifest = ManifestBuilder.buildManifest(compilationUnit,
                 nef.getScriptHash());
-        return new CompilationResult(nef, manifest);
+        compilationUnit.setNef(nef);
+        compilationUnit.setManifest(manifest);
+        return compilationUnit;
     }
 
     private void collectAndInitializeStaticFields(ClassNode asmClass) {
@@ -191,18 +187,20 @@ public class Compiler {
         return neoMethod;
     }
 
+    // Collects all static methods and initializes them, e.g., sets the parameters and local
+    // variables.
     private void collectAndInitializeMethods(ClassNode asmClass) {
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
                 continue; // Handled in method `collectAndInitializeStaticFields()`.
             }
             if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
-                throw new CompilerException(format("Method '%s' of class %s is non-static but "
-                                + "only static methods are allowed in smart contracts.",
+                throw new CompilerException(asmClass, format("Method '%s' of class %s is non-static"
+                                + " but only static methods are allowed in smart contracts.",
                         asmMethod.name, getFullyQualifiedNameForInternalName(asmClass.name)));
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            initializeMethod(neoMethod, compilationUnit);
+            MethodInitializer.initializeMethod(neoMethod, compilationUnit);
             compilationUnit.getNeoModule().addMethod(neoMethod);
         }
     }
@@ -211,16 +209,18 @@ public class Compiler {
             throws IOException {
         AbstractInsnNode insn = neoMethod.asmMethod.instructions.get(0);
         while (insn != null) {
-            insn = handleInsn(neoMethod, insn, compUnit);
+            insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
         }
     }
 
-    // Returns the last insn node that was processed, i.e., the returned insn can be used to
-    // obtain the next innsn that should be processed.
-    public static AbstractInsnNode handleInsn(NeoMethod neoMethod, AbstractInsnNode insn,
-            CompilationUnit compUnit)
-            throws IOException {
+    // Handles/converts the given instruction. The given NeoMethod is the method that the
+    // instruction belongs to and the converted instruction will be added to that method. Returns
+    // the last instruction node that was processed, i.e., the returned instruction can be used
+    // to obtain the next instruction that should be processed.
+    public static AbstractInsnNode handleInsn(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+
         if (insn.getType() == AbstractInsnNode.LINE) {
             neoMethod.currentLine = ((LineNumberNode) insn).line;
         }
@@ -233,12 +233,11 @@ public class Compiler {
         }
         Converter converter = ConverterMap.get(opcode);
         if (converter == null) {
-            throw new CompilerException("Unsupported instruction " + opcode + " in: " +
-                    neoMethod.asmMethod.name + ".");
+            throw new CompilerException(compUnit, neoMethod,
+                    format("Unsupported instruction %s.", opcode.toString()));
         }
         return converter.convert(insn, neoMethod, compUnit);
     }
-
 
     public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {
         int idx = 0;
@@ -268,155 +267,6 @@ public class Compiler {
         }
     }
 
-    public static void initializeMethod(NeoMethod neoMethod, CompilationUnit compUnit) {
-        checkForUnsupportedLocalVariableTypes(neoMethod);
-        if ((neoMethod.asmMethod.access & Opcodes.ACC_PUBLIC) > 0
-                && (neoMethod.asmMethod.access & Opcodes.ACC_STATIC) > 0
-                && neoMethod.ownerType.equals(compUnit.getNeoModule().asmSmartContractClass)) {
-            // Only contract methods that are public, static and on the smart contract class are
-            // added to the ABI and are invokable.
-            neoMethod.isAbiMethod = true;
-        }
-
-        // Look for method params and local variables and add them to the NeoMethod. Note that Java
-        // mixes method params and local variables.
-        if (neoMethod.asmMethod.maxLocals == 0) {
-            return; // There are no local variables or parameters to process.
-        }
-        int nextVarIdx = collectMethodParameters(neoMethod);
-        collectLocalVariables(neoMethod, nextVarIdx);
-
-        // Add the INITSLOT opcode as first instruction of the method if the method has parameters
-        // and/or local variables.
-        if (neoMethod.variablesByNeoIndex.size() + neoMethod.parametersByNeoIndex.size() > 0) {
-            neoMethod.addInstruction(new NeoInstruction(
-                    OpCode.INITSLOT, new byte[]{(byte) neoMethod.variablesByNeoIndex.size(),
-                    (byte) neoMethod.parametersByNeoIndex.size()}));
-        }
-    }
-
-    private static void checkForUnsupportedLocalVariableTypes(NeoMethod neoMethod) {
-        for (LocalVariableNode varNode : neoMethod.asmMethod.localVariables) {
-            if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE
-                    || Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
-                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine,
-                        "Method '" + neoMethod.asmMethod.name + "' has unsupported parameter or "
-                                + "variable types.");
-            }
-        }
-    }
-
-    private static void collectLocalVariables(NeoMethod neoMethod, int nextVarIdx) {
-        int paramCount = Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
-        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
-        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
-            paramCount++;
-        }
-        int localVarCount = neoMethod.asmMethod.maxLocals - paramCount;
-        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("The method has more than the max number of local "
-                    + "variables.");
-        }
-        int neoIdx = 0;
-        int jvmIdx = nextVarIdx;
-        while (neoIdx < localVarCount) {
-            // The variables' indices start where the parameters left off. Nonetheless, we need to
-            // look through all local variables because the ordering is not necessarily according to
-            // the indices.
-            NeoVariable neoVar = null;
-            for (LocalVariableNode varNode : locVars) {
-                if (varNode.index == jvmIdx) {
-                    neoVar = new NeoVariable(neoIdx, jvmIdx, varNode);
-                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
-                        // Long vars/params use two index slots, i.e. we increment one more time.
-                        jvmIdx++;
-                    }
-                    break;
-                }
-            }
-            if (neoVar == null) {
-                // Not all local variables show up in ASM's `localVariables` list, e.g. when a
-                // String-based switch-case occurs.
-                neoVar = new NeoVariable(neoIdx, jvmIdx, null);
-            }
-            neoMethod.addVariable(neoVar);
-            jvmIdx++;
-            neoIdx++;
-        }
-    }
-
-    // Retruns the next index of the local variables after the method parameter slots.
-    private static int collectMethodParameters(NeoMethod neoMethod) {
-        int paramCount = 0;
-        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
-        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
-            paramCount++;
-        }
-        paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
-        if (paramCount > MAX_PARAMS_COUNT) {
-            throw new CompilerException("The method has more than the max number of parameters.");
-        }
-        int jvmIdx = 0;
-        int neoIdx = 0;
-        while (neoIdx < paramCount) {
-            // The parameters' indices start at zero. Nonetheless, we need to look through all local
-            // variables because the ordering is not necessarily according to the indices.
-            for (LocalVariableNode varNode : locVars) {
-                if (varNode.index == jvmIdx) {
-                    neoMethod.addParameter(new NeoVariable(neoIdx, jvmIdx, varNode));
-                    jvmIdx++;
-                    neoIdx++;
-                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
-                        // Long vars/params use two index slots, i.e. we increment one more time.
-                        jvmIdx++;
-                    }
-                    break;
-                }
-            }
-        }
-        return jvmIdx;
-    }
-
-    public static void addLoadLocalVariable(int varIndex, NeoMethod neoMethod) {
-        addLoadOrStoreLocalVariable(varIndex, neoMethod, OpCode.LDARG, OpCode.LDLOC);
-    }
-
-    public static void addStoreLocalVariable(int varIndex, NeoMethod neoMethod) {
-        addLoadOrStoreLocalVariable(varIndex, neoMethod, OpCode.STARG, OpCode.STLOC);
-    }
-
-    private static void addLoadOrStoreLocalVariable(int varIndex, NeoMethod neoMethod,
-            OpCode argOpcode, OpCode varOpcode) {
-
-        if (varIndex >= MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("Local variable index to high. Was " + varIndex + " but "
-                    + "maximally " + MAX_LOCAL_VARIABLES_COUNT + " local variables are supported.");
-        }
-        // The local variable can either be a method parameter or a normal variable defined in
-        // the method body. The NeoMethod has been initialized with all the local variables.
-        // Therefore, we can check here if it is a parameter or a normal variable and treat it
-        // accordingly.
-        NeoVariable param = neoMethod.getParameterByJVMIndex(varIndex);
-        if (param != null) {
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.neoIndex, argOpcode));
-        } else {
-            NeoVariable var = neoMethod.getVariableByJVMIndex(varIndex);
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.neoIndex, varOpcode));
-        }
-    }
-
-    public static NeoInstruction buildStoreOrLoadVariableInsn(int index, OpCode opcode) {
-        NeoInstruction neoInsn;
-        if (index <= 6) {
-            OpCode storeCode = OpCode.get(opcode.getCode() - 7 + index);
-            neoInsn = new NeoInstruction(storeCode);
-        } else {
-            byte[] operand = new byte[]{(byte) index};
-            neoInsn = new NeoInstruction(opcode, operand);
-        }
-        return neoInsn;
-    }
-
     public static void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
         LdcInsnNode ldcInsn = (LdcInsnNode) insn;
         if (ldcInsn.cst instanceof String) {
@@ -431,15 +281,15 @@ public class Compiler {
         // TODO: Handle `org.objectweb.asm.Type`.
     }
 
-    public static void addPushDataArray(String data, NeoMethod neoMethod) {
-        addInstructionFromBytes(new ScriptBuilder().pushData(data).toArray(), neoMethod);
-    }
-
     public static void addPushDataArray(byte[] data, NeoMethod neoMethod) {
         addInstructionFromBytes(new ScriptBuilder().pushData(data).toArray(), neoMethod);
     }
 
-    public static void addInstructionFromBytes(byte[] insnBytes, NeoMethod neoMethod) {
+    public static void addPushDataArray(String data, NeoMethod neoMethod) {
+        addInstructionFromBytes(new ScriptBuilder().pushData(data).toArray(), neoMethod);
+    }
+
+    private static void addInstructionFromBytes(byte[] insnBytes, NeoMethod neoMethod) {
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
@@ -518,7 +368,7 @@ public class Compiler {
         }
     }
 
-    public static void addSingleInstruction(AnnotationNode insnAnnotation, NeoMethod neoMethod) {
+    private static void addSingleInstruction(AnnotationNode insnAnnotation, NeoMethod neoMethod) {
         // Setting a default value on the Instruction annotation does not have an effect on ASM.
         // The default value does not show up in the ASM annotation node. I.e. the annotation
         // values can be null if the default values were used.
@@ -540,7 +390,7 @@ public class Compiler {
         }
     }
 
-    public static byte[] getOperand(AnnotationNode insnAnnotation, OpCode opcode) {
+    private static byte[] getOperand(AnnotationNode insnAnnotation, OpCode opcode) {
         byte[] operand = new byte[]{};
         if (insnAnnotation.values.get(3) instanceof byte[]) {
             operand = (byte[]) insnAnnotation.values.get(3);
@@ -559,68 +409,10 @@ public class Compiler {
         return operand;
     }
 
-    public static void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
-            ClassNode owner) {
-
-        AnnotationNode annotation = owner.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Contract.class))).findFirst().get();
-        byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
-        if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
-            throw new CompilerException("Script hash on contract class '"
-                    + getClassNameForInternalName(owner.name) + "' does not have the correct "
-                    + "length.");
-        }
-
-        int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;
-        addPushNumber(nrOfParams, callingNeoMethod);
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
-        addPushDataArray(calledAsmMethod.name, callingNeoMethod);
-        addPushDataArray(ArrayUtils.reverseArray(scriptHash), callingNeoMethod);
-        byte[] contractSyscall = Numeric.hexStringToByteArray(SYSTEM_CONTRACT_CALL.getHash());
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, contractSyscall));
-
-        // If the return type is void, insert a DROP.
-        String returnType = Type.getMethodType(calledAsmMethod.desc).getReturnType().getClassName();
-        if (returnType.equals(void.class.getTypeName())
-                || returnType.equals(Void.class.getTypeName())) {
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
-        }
-    }
-
     public static void addPushNumber(long number, NeoMethod neoMethod) {
         byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number))
                 .toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
-
-    public static AbstractInsnNode skipToInstructionType(AbstractInsnNode insn, int type) {
-        while (insn.getNext() != null) {
-            insn = insn.getNext();
-            if (insn.getType() == type) {
-                return insn;
-            }
-        }
-        throw new CompilerException("Couldn't find node of type " + type);
-    }
-
-    public static class CompilationResult {
-
-        private final NefFile nef;
-        private final ContractManifest manifest;
-
-        private CompilationResult(NefFile nef, ContractManifest manifest) {
-            this.nef = nef;
-            this.manifest = manifest;
-        }
-
-        public NefFile getNef() {
-            return nef;
-        }
-
-        public ContractManifest getManifest() {
-            return manifest;
-        }
-    }
-
 }

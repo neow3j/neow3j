@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.compiler.Compiler.CompilationResult;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
 import io.neow3j.contract.NeoToken;
@@ -108,7 +107,7 @@ public class CompilerTest {
     }
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
-        CompilationResult res = new Compiler().compileClass(fullyQualifiedName);
+        CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
         SmartContract sc = new SmartContract(res.getNef(), res.getManifest(), neow3j);
         NeoSendRawTransaction response = sc.deploy()
                 .wallet(wallet)

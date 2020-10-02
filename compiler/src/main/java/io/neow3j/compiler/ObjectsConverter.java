@@ -8,11 +8,11 @@ import static io.neow3j.compiler.Compiler.addInstruction;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
-import static io.neow3j.compiler.Compiler.buildStoreOrLoadVariableInsn;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
 import static io.neow3j.compiler.Compiler.getFieldIndex;
 import static io.neow3j.compiler.Compiler.handleInsn;
-import static io.neow3j.compiler.Compiler.initializeMethod;
+import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
+import static io.neow3j.compiler.MethodInitializer.initializeMethod;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -110,7 +110,7 @@ public class ObjectsConverter implements Converter {
             // follow. Those are handled in the following while.
             insn = insn.getNext().getNext();
             while (!isCallToCtor(insn, owner)) {
-                insn = handleInsn(callingNeoMethod, insn, compUnit);
+                insn = handleInsn(insn, callingNeoMethod, compUnit);
                 insn = insn.getNext();
             }
             // Now we're at the INVOKESPECIAL call and can convert the ctor method.
@@ -152,16 +152,15 @@ public class ObjectsConverter implements Converter {
                 break; // End of string concatenation.
             }
             if (isCallToAnyStringBuilderMethod(insn)) {
-                throw new CompilerException(compUnit.getNeoModule().asmSmartContractClass,
-                        neoMethod.currentLine,
+                throw new CompilerException(compUnit.getContractClassNode(), neoMethod.currentLine,
                         format("Only 'append()' and 'toString()' are supported for StringBuilder, "
                                 + "but '%s' was called", ((MethodInsnNode) insn).name));
             }
-            insn = handleInsn(neoMethod, insn, compUnit);
+            insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
         }
         if (insn == null) {
-            throw new CompilerException(compUnit.getNeoModule().asmSmartContractClass,
+            throw new CompilerException(compUnit.getContractClassNode(),
                     neoMethod.currentLine,
                     "Expected to find ScriptBuilder.toString() but reached end of method.");
         }
@@ -216,7 +215,7 @@ public class ObjectsConverter implements Converter {
             AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod);
             insn = insn.getNext();
             while (insn != null) {
-                insn = handleInsn(calledNeoMethod, insn, compUnit);
+                insn = handleInsn(insn, calledNeoMethod, compUnit);
                 insn = insn.getNext();
             }
         }
@@ -229,7 +228,7 @@ public class ObjectsConverter implements Converter {
         // follow. Those are handled in the following while.
         AbstractInsnNode insn = typeInsn.getNext().getNext();
         while (!isCallToCtor(insn, owner)) {
-            insn = handleInsn(callingNeoMethod, insn, compUnit);
+            insn = handleInsn(insn, callingNeoMethod, compUnit);
             insn = insn.getNext();
         }
         // Reverse the arguments that are passed to the constructor call.

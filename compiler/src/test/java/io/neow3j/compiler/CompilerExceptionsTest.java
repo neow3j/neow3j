@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.Compiler.CompilationResult;
 import io.neow3j.devpack.neo.Iterator;
 import io.neow3j.devpack.neo.Storage;
 import java.io.IOException;
@@ -22,7 +21,7 @@ public class CompilerExceptionsTest {
     public void failOnObjectComparison() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContains("compare object"));
-        CompilationResult res = new Compiler().compileClass(CONTRACT_NAME);
+        CompilationUnit res = new Compiler().compileClass(CONTRACT_NAME);
     }
 
 }

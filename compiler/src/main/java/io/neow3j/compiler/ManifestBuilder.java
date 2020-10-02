@@ -29,19 +29,22 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 
+/**
+ * Contains all functionality required to build a contract manifest from a compilation unit.
+ */
 public class ManifestBuilder {
 
-    public static ContractManifest buildManifest(NeoModule neoModule, ScriptHash scriptHash) {
+    public static ContractManifest buildManifest(CompilationUnit compUnit, ScriptHash scriptHash) {
         List<ContractGroup> groups = new ArrayList<>();
         ContractFeatures features = new ContractFeatures(false, false);
         Map<String, String> extras = null;
         List<String> supportedStandards = new ArrayList<>();
-        if (neoModule.asmSmartContractClass.invisibleAnnotations != null) {
-            features = buildContractFeatures(neoModule.asmSmartContractClass);
-            extras = buildManifestExtra(neoModule.asmSmartContractClass);
-            supportedStandards = buildSupportedStandards(neoModule.asmSmartContractClass);
+        if (compUnit.getContractClassNode().invisibleAnnotations != null) {
+            features = buildContractFeatures(compUnit.getContractClassNode());
+            extras = buildManifestExtra(compUnit.getContractClassNode());
+            supportedStandards = buildSupportedStandards(compUnit.getContractClassNode());
         }
-        ContractABI abi = buildABI(neoModule, scriptHash);
+        ContractABI abi = buildABI(compUnit.getNeoModule(), scriptHash);
         // TODO: Fill the remaining manifest fields below.
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));

@@ -10,8 +10,8 @@ import static io.neow3j.devpack.gradle.Neow3jPluginUtils.writeToFile;
 import static java.nio.file.Files.createDirectories;
 import static java.util.Optional.ofNullable;
 
+import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
-import io.neow3j.compiler.Compiler.CompilationResult;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -50,8 +50,8 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
         try {
             // compile
-            CompilationResult compilationResult = n.compileClass(canonicalClassName);
-            byte[] nefBytes = compilationResult.getNef().toArray();
+            CompilationUnit compilationUnit = n.compileClass(canonicalClassName);
+            byte[] nefBytes = compilationUnit.getNef().toArray();
 
             // get the output directory
             String outDirString = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
@@ -65,7 +65,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
             // generate the manifest to the output dir
             String manifestOutFileName = generateContractManifestFile(
-                    compilationResult.getManifest(),
+                    compilationUnit.getManifest(),
                     outDirPath.toFile());
 
             // if everything goes fine, print info
