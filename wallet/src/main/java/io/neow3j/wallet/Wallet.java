@@ -307,7 +307,7 @@ public class Wallet {
      *
      * @return the new wallet.
      */
-    public static Wallet createWallet() {
+    public static Wallet create() {
         Account a = Account.fromNewECKeyPair();
         return new Wallet().addAccounts(a).defaultAccount(a.getScriptHash());
     }
@@ -320,9 +320,9 @@ public class Wallet {
      * @return the new wallet.
      * @throws CipherException throws if failed encrypt the created wallet.
      */
-    public static Wallet createWallet(final String password)
+    public static Wallet create(final String password)
             throws CipherException {
-        Wallet w = createWallet();
+        Wallet w = create();
         w.encryptAllAccounts(password);
         return w;
     }
@@ -337,9 +337,9 @@ public class Wallet {
      * @throws IOException     throws if failed to create the wallet on disk.
      * @throws CipherException throws if failed encrypt the created wallet.
      */
-    public static Wallet createWallet(String password, File destination)
+    public static Wallet create(String password, File destination)
             throws CipherException, IOException {
-        Wallet wallet = createWallet(password);
+        Wallet wallet = create(password);
         wallet.saveNEP6Wallet(destination);
         return wallet;
     }

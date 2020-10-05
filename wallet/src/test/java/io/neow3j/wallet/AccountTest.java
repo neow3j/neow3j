@@ -372,7 +372,7 @@ public class AccountTest {
     @Test
     public void testIsDefault() {
         Account a = Account.fromAddress(ADDRESS);
-        Wallet wallet = Wallet.createWallet().addAccounts(a);
+        Wallet wallet = Wallet.create().addAccounts(a);
 
         assertFalse(a.isDefault());
 
@@ -383,7 +383,7 @@ public class AccountTest {
     @Test
     public void testWalletLink() {
         Account a = Account.fromAddress(ADDRESS);
-        Wallet wallet = Wallet.createWallet();
+        Wallet wallet = Wallet.create();
 
         assertNull(a.getWallet());
 

@@ -238,7 +238,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testAutomaticSettingOfValidUntilBlockVariable() throws Throwable {
-        Wallet wallet = Wallet.createWallet();
+        Wallet wallet = Wallet.create();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_NAME);
         ContractTestHelper.setUpWireMockForGetBlockCount(1000);
@@ -255,7 +255,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testAutomaticSettingOfSystemFee() throws Throwable {
-        Wallet wallet = Wallet.createWallet();
+        Wallet wallet = Wallet.create();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_NAME);
         Transaction tx = new TransactionBuilder(neow)
@@ -319,7 +319,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failTryingToSignTransactionWithAccountMissingAPrivateKey() throws Throwable {
-        Wallet w = Wallet.createWallet("neo");
+        Wallet w = Wallet.create("neo");
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_NAME);
 
@@ -336,7 +336,7 @@ public class TransactionBuilderTest {
     @Test
     public void failTryingToSignTransactionWithMultiSigAccountMissingAPrivateKey()
             throws Throwable {
-        Wallet w = Wallet.createWallet();
+        Wallet w = Wallet.create();
         Account a2 = Account.create();
         List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
@@ -360,7 +360,7 @@ public class TransactionBuilderTest {
     @Test
     public void addDefaultAccountSignerIfNotExplicitlySet() throws Throwable {
 
-        Wallet wallet = Wallet.createWallet();
+        Wallet wallet = Wallet.create();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_NAME);
 
@@ -482,7 +482,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failBuildingTransactionBecauseWalletDoesntContainSignerAccount() throws Throwable {
-        Wallet w = Wallet.createWallet();
+        Wallet w = Wallet.create();
         Account signer = Account.create();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_NAME);
@@ -501,7 +501,7 @@ public class TransactionBuilderTest {
     public void failSendingTransactionBecauseItDoesntContainSignaturesForAllSigners()
             throws Throwable {
 
-        Wallet w = Wallet.createWallet();
+        Wallet w = Wallet.create();
         Account signer = Account.create();
         w.addAccounts(signer);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
@@ -742,7 +742,7 @@ public class TransactionBuilderTest {
     @Test
     public void buildWithoutSettingScript() throws Throwable {
         TransactionBuilder b = new TransactionBuilder(neow)
-                .wallet(Wallet.createWallet());
+                .wallet(Wallet.create());
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("script");
@@ -779,7 +779,7 @@ public class TransactionBuilderTest {
         Signer s2 = Signer.calledByEntry(account2.getScriptHash());
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
-                .wallet(Wallet.createWallet())
+                .wallet(Wallet.create())
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
@@ -795,7 +795,7 @@ public class TransactionBuilderTest {
         Signer s2 = Signer.calledByEntry(account2.getScriptHash());
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
-                .wallet(Wallet.createWallet())
+                .wallet(Wallet.create())
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
@@ -811,7 +811,7 @@ public class TransactionBuilderTest {
         Signer s2 = Signer.calledByEntry(account2.getScriptHash());
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
-                .wallet(Wallet.createWallet())
+                .wallet(Wallet.create())
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
@@ -826,7 +826,7 @@ public class TransactionBuilderTest {
         Signer s1 = Signer.global(account1.getScriptHash());
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
-                .wallet(Wallet.createWallet())
+                .wallet(Wallet.create())
                 .signers(s1);
         assertThat(b.getSigners().get(0), is(s1));
 

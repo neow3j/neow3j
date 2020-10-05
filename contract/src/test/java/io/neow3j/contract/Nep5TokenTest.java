@@ -386,7 +386,7 @@ public class Nep5TokenTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransfer_InvalidAmount() throws IOException {
-        neoToken.transfer(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH, new BigDecimal(-1));
+        neoToken.transfer(Wallet.create(), RECIPIENT_SCRIPT_HASH, new BigDecimal(-1));
     }
 
     @Test(expected = InsufficientFundsException.class)
@@ -541,13 +541,13 @@ public class Nep5TokenTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransferFromSpecificAccounts_noAccountProvided() throws IOException {
-        neoToken.transferFromSpecificAccounts(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH,
+        neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("1"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransferFromSpecificAccounts_illegalAmountProvided() throws IOException {
-        neoToken.transferFromSpecificAccounts(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH,
+        neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("-2"), account1.getScriptHash());
     }
 }
