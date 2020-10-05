@@ -466,11 +466,13 @@ public class TransactionBuilder {
     }
 
     private void signWithNormalAccount(byte[] txBytes, Account acc) {
-        ECKeyPair keyPair = acc.getECKeyPair();
-        if (keyPair == null) {
-            throw new TransactionConfigurationException("Can't create transaction signature "
-                    + "because account with script " + acc.getScriptHash() + " doesn't hold a "
-                    + "private key.");
+        ECKeyPair keyPair;
+        try {
+            keyPair = acc.getECKeyPair();
+        } catch (IllegalStateException e) {
+            throw new TransactionConfigurationException("Can't create transaction signature " +
+                    "because account with script " + acc.getScriptHash() + " doesn't hold a " +
+                    "private key.", e);
         }
         this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
     }
@@ -481,10 +483,16 @@ public class TransactionBuilder {
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
             ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
             Account a = this.wallet.getAccount(accScriptHash);
-            if (a == null || a.getECKeyPair() == null) {
+            if (a == null) {
                 continue;
             }
-            sigs.add(Sign.signMessage(txBytes, a.getECKeyPair()));
+            ECKeyPair ecKeyPair;
+            try {
+                ecKeyPair = a.getECKeyPair();
+            } catch (IllegalStateException e) {
+                continue;
+            }
+            sigs.add(Sign.signMessage(txBytes, ecKeyPair));
         }
         int m = multiSigVerifScript.getSigningThreshold();
         if (sigs.size() < m) {
