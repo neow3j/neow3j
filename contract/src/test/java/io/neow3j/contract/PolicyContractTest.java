@@ -229,6 +229,29 @@ public class PolicyContractTest {
     }
 
     @Test
+    public void testBlockAccount_address() throws Throwable {
+        setUpWireMockForCall("invokescript", "policy_blockAccount.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH, "blockAccount",
+                Arrays.asList(ContractParameter.hash160(recipient))).toArray();
+
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new PolicyContract(neow3j)
+                .blockAccount(recipient.toAddress())
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
     public void testUnblockAccount() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_unblockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
@@ -239,6 +262,29 @@ public class PolicyContractTest {
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new PolicyContract(neow3j)
                 .unblockAccount(recipient)
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testUnblockAccount_address() throws Throwable {
+        setUpWireMockForCall("invokescript", "policy_unblockAccount.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
+                "unblockAccount", Arrays.asList(ContractParameter.hash160(recipient))).toArray();
+
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new PolicyContract(neow3j)
+                .unblockAccount(recipient.toAddress())
                 .wallet(w)
                 .signers(Signer.calledByEntry(account1.getScriptHash()))
                 .sign();
