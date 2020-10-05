@@ -46,14 +46,27 @@ public class ECKeyPair {
     private final ECPublicKey publicKey;
 
     public ECKeyPair(ECPrivateKey privateKey, ECPublicKey publicKey) {
+        if (privateKey == null) {
+            throw new IllegalArgumentException("A ECKeyPair cannot be created without a private key.");
+        }
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
 
+    /**
+     * Gets the private key of this EC key pair.
+     *
+     * @return the private key.
+     */
     public ECPrivateKey getPrivateKey() {
         return privateKey;
     }
 
+    /**
+     * Gets the public key of this EC key pair.
+     *
+     * @return the public key.
+     */
     public ECPublicKey getPublicKey() {
         return publicKey;
     }
@@ -110,6 +123,12 @@ public class ECKeyPair {
         return signature;
     }
 
+    /**
+     * Creates an EC key pair from a key pair.
+     *
+     * @param keyPair the key pair.
+     * @return the EC key pair.
+     */
     public static ECKeyPair create(KeyPair keyPair) {
         BCECPrivateKey privateKey = (BCECPrivateKey) keyPair.getPrivate();
         BCECPublicKey publicKey = (BCECPublicKey) keyPair.getPublic();
@@ -119,14 +138,32 @@ public class ECKeyPair {
                 new ECPublicKey(publicKey.getQ()));
     }
 
+    /**
+     * Creates an EC key pair from a private key.
+     *
+     * @param privateKey the private key.
+     * @return the EC key pair.
+     */
     public static ECKeyPair create(ECPrivateKey privateKey) {
         return new ECKeyPair(privateKey, Sign.publicKeyFromPrivate(privateKey));
     }
 
+    /**
+     * Creates an EC key pair from a private key.
+     *
+     * @param privateKey the private key.
+     * @return the EC key pair.
+     */
     public static ECKeyPair create(BigInteger privateKey) {
         return create(new ECPrivateKey(privateKey));
     }
 
+    /**
+     * Creates an EC key pair from a private key.
+     *
+     * @param privateKey the private key.
+     * @return the EC key pair.
+     */
     public static ECKeyPair create(byte[] privateKey) {
         return create(new ECPrivateKey(privateKey));
     }
@@ -162,6 +199,11 @@ public class ECKeyPair {
         return keyPairGenerator.generateKeyPair();
     }
 
+    /**
+     * Creates a WIF of this ECKeyPair.
+     *
+     * @return the WIF of this ECKeyPair.
+     */
     public String exportAsWIF() {
         byte[] data = ArrayUtils.concatenate(
                 new byte[]{(byte) 0x80},
@@ -282,6 +324,17 @@ public class ECKeyPair {
         private ECPoint ecPoint;
 
         public ECPublicKey() {
+        }
+
+        /**
+         * Creates a new instance from the given encoded public key in hex format. The public key
+         * must be encoded as defined in section 2.3.3 of <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
+         * It can be in compressed or uncompressed format.
+         *
+         * @param publicKey The public key in hex format.
+         */
+        public ECPublicKey (String publicKey) {
+            this(Numeric.hexStringToByteArray(publicKey));
         }
 
         /**
