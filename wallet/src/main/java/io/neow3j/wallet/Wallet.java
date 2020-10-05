@@ -101,6 +101,16 @@ public class Wallet {
     /**
      * Checks whether an account is the default account in the wallet.
      *
+     * @param account the account to be checked.
+     * @return Whether the given account is the default account in this wallet.
+     */
+    public Boolean isDefault(Account account) {
+        return isDefault(account.getScriptHash());
+    }
+
+    /**
+     * Checks whether an account is the default account in the wallet.
+     *
      * @param accountScriptHash the account to be checked.
      * @return Whether the given account is the default account in this wallet.
      */
@@ -144,6 +154,17 @@ public class Wallet {
             acct.setWallet(this);
         }
         return this;
+    }
+
+    /**
+     * Removes the account from this wallet.
+     * If there is only one account in the wallet left, this account can not be removed.
+     *
+     * @param account the account to be removed.
+     * @return true if an account was removed, false if no account with the given address was found.
+     */
+    public boolean removeAccount(Account account) {
+        return removeAccount(account.getScriptHash());
     }
 
     /**

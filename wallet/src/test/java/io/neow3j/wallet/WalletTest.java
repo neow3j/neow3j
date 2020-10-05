@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
@@ -57,8 +58,8 @@ public class WalletTest {
 
     @Test
     public void testCreateWalletWithAccounts() {
-        Account acct1 = Account.createAccount();
-        Account acct2 = Account.createAccount();
+        Account acct1 = Account.create();
+        Account acct2 = Account.create();
         Wallet wallet = Wallet.withAccounts(acct1, acct2);
 
         assertEquals(acct1, wallet.getDefaultAccount());
@@ -71,8 +72,15 @@ public class WalletTest {
     }
 
     @Test
+    public void testIsDefault_account() {
+        Account account = Account.create();
+        Wallet wallet = Wallet.withAccounts(account);
+        assertTrue(wallet.isDefault(account));
+    }
+
+    @Test
     public void testHoldsAccount() {
-        Account account = Account.createAccount();
+        Account account = Account.create();
         Wallet wallet = Wallet.createWallet();
         wallet.addAccounts(account);
 
@@ -174,9 +182,21 @@ public class WalletTest {
     }
 
     @Test
+    public void testRemoveAccounts_accountParam() {
+        Account a1 = Account.create();
+        Account a2 = Account.create();
+        Wallet wallet = Wallet.withAccounts(a1, a2);
+
+        assertThat(wallet.getAccounts(), hasSize(2));
+        assertTrue(wallet.removeAccount(a2));
+        assertThat(wallet.getAccounts(), hasSize(1));
+        assertThat(wallet.getAccounts().get(0), is(a1));
+    }
+
+    @Test
     public void testRemoveAccounts_defaultAccount() {
-        Account acct1 = Account.createAccount();
-        Account acct2 = Account.createAccount();
+        Account acct1 = Account.create();
+        Account acct2 = Account.create();
         Wallet wallet = Wallet.withAccounts(acct1, acct2);
 
         assertEquals(2, wallet.getAccounts().size());
@@ -388,7 +408,7 @@ public class WalletTest {
         Wallet w = Wallet.createWallet();
         assertThat(w.getDefaultAccount(), notNullValue());
 
-        Account a = Account.createAccount();
+        Account a = Account.create();
         w.addAccounts(a);
         w.defaultAccount(a.getScriptHash());
         assertThat(w.getDefaultAccount(), notNullValue());
@@ -398,14 +418,14 @@ public class WalletTest {
     @Test(expected = IllegalArgumentException.class)
     public void failSettingDefaultAccountNotContainedInWallet() {
         Wallet w = Wallet.createWallet();
-        Account a = Account.createAccount();
+        Account a = Account.create();
         w.defaultAccount(a.getScriptHash());
     }
 
     @Test
     public void encryptWallet() throws CipherException {
         Wallet w = Wallet.createWallet();
-        w.addAccounts(Account.createAccount());
+        w.addAccounts(Account.create());
         assertThat(w.getAccounts().get(0).getECKeyPair(), notNullValue());
         assertThat(w.getAccounts().get(1).getECKeyPair(), notNullValue());
         w.encryptAllAccounts("pw");
