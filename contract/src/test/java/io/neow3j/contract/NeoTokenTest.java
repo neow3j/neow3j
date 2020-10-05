@@ -92,6 +92,10 @@ public class NeoTokenTest {
         BigInteger result = new NeoToken(neow)
                 .unclaimedGas(ScriptHash.fromAddress("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"), 100);
         assertThat(result, is(new BigInteger("60000000000")));
+
+        result = new NeoToken(neow)
+                .unclaimedGas(Account.fromAddress("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"), 100);
+        assertThat(result, is(new BigInteger("60000000000")));
     }
 
     @Test
@@ -242,6 +246,13 @@ public class NeoTokenTest {
         Wallet w = Wallet.withAccounts(account1);
         TransactionBuilder b = new NeoToken(neow).vote(account1.getScriptHash(),
                 new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2))
+                .signers(Signer.global(account1.getScriptHash()));
+
+        assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
+        assertThat(b.getScript(), is(expectedScript));
+
+        b = new NeoToken(neow).vote(account1, new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2))
                 .signers(Signer.global(account1.getScriptHash()));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));

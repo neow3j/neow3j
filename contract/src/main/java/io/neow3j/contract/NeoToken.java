@@ -6,6 +6,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -90,8 +91,20 @@ public class NeoToken extends Nep5Token {
     /**
      * Gets the amount of unclaimed GAS at the given height for the given account.
      *
-     * @param scriptHash  The account's script hash.
-     * @param blockHeight The block height.
+     * @param account  the account.
+     * @param blockHeight the block height.
+     * @return the amount of unclaimed GAS
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger unclaimedGas(Account account, long blockHeight) throws IOException {
+        return unclaimedGas(account.getScriptHash(), blockHeight);
+    }
+
+    /**
+     * Gets the amount of unclaimed GAS at the given height for the given account.
+     *
+     * @param scriptHash  the account's script hash.
+     * @param blockHeight the block height.
      * @return the amount of unclaimed GAS
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -220,6 +233,18 @@ public class NeoToken extends Nep5Token {
             throw new UnexpectedReturnTypeException("Byte array return type did not contain "
                     + "public key in expected format.", e);
         }
+    }
+
+    /**
+     * Creates a transaction script to vote for the given validators and initializes
+     * a {@link TransactionBuilder} based on this script.
+     *
+     * @param voter      The account that casts the vote.
+     * @param validators The validators for which to vote for.
+     * @return A transaction builder.
+     */
+    public TransactionBuilder vote(Account voter, ECPublicKey... validators) {
+        return vote(voter.getScriptHash(), validators);
     }
 
     /**
