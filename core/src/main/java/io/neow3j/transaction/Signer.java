@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-
 /**
  * A signer of a transaction. It defines a scope in which the signer's signature is valid.
  */
@@ -59,6 +58,20 @@ public class Signer extends NeoSerializable {
      * Creates a Signer for the given account with fee only witness scope ({@link
      * WitnessScope#FEE_ONLY}).
      *
+     * @param address The originator of the witness.
+     * @return {@link Signer}
+     */
+    public static Signer feeOnly(String address) {
+        return new Builder()
+                .account(ScriptHash.fromAddress(address))
+                .scopes(WitnessScope.FEE_ONLY)
+                .build();
+    }
+
+    /**
+     * Creates a Signer for the given account with fee only witness scope ({@link
+     * WitnessScope#FEE_ONLY}).
+     *
      * @param account The originator of the witness.
      * @return {@link Signer}
      */
@@ -73,6 +86,20 @@ public class Signer extends NeoSerializable {
      * Creates a Signer for the given account with the most restrictive witness scope ({@link
      * WitnessScope#CALLED_BY_ENTRY}).
      *
+     * @param address The originator of the witness.
+     * @return {@link Signer}
+     */
+    public static Signer calledByEntry(String address) {
+        return new Builder()
+                .account(ScriptHash.fromAddress(address))
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .build();
+    }
+
+    /**
+     * Creates a Signer for the given account with the most restrictive witness scope ({@link
+     * WitnessScope#CALLED_BY_ENTRY}).
+     *
      * @param account The originator of the witness.
      * @return {@link Signer}
      */
@@ -80,6 +107,20 @@ public class Signer extends NeoSerializable {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .build();
+    }
+
+    /**
+     * Creates a Signer for the given account with global witness scope ({@link
+     * WitnessScope#GLOBAL}).
+     *
+     * @param address The originator of the witness.
+     * @return {@link Signer}
+     */
+    public static Signer global(String address) {
+        return new Builder()
+                .account(ScriptHash.fromAddress(address))
+                .scopes(WitnessScope.GLOBAL)
                 .build();
     }
 
@@ -195,6 +236,17 @@ public class Signer extends NeoSerializable {
             this.scopes = new ArrayList<>();
             this.allowedContracts = new ArrayList<>();
             this.allowedGroups = new ArrayList<>();
+        }
+
+        /**
+         * Sets the account for which this Signer object specifies the witness scopes.
+         *
+         * @param address the account's address
+         * @return this builder.
+         */
+        public Builder account(String address) {
+            this.account = ScriptHash.fromAddress(address);
+            return this;
         }
 
         /**
