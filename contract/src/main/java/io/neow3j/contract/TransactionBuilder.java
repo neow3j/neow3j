@@ -135,6 +135,18 @@ public class TransactionBuilder {
     }
 
     /**
+     * Sets the signer belonging to the given {@code sender} account to the first index of the list
+     * of signers for this transaction. The first signer covers the fees for the transaction if
+     * there is no signer present with fee-only witness scope (see {@link WitnessScope#FEE_ONLY}).
+     *
+     * @param sender the account of the signer to be set to the first index.
+     * @return this transaction builder.
+     */
+    public TransactionBuilder firstSigner(Account sender) {
+        return firstSigner(sender.getScriptHash());
+    }
+
+    /**
      * Sets the signer with script hash {@code sender} to the first index of the list of signers
      * for this transaction. The first signer covers the fees for the transaction if there is
      * no signer present with fee-only witness scope (see {@link WitnessScope#FEE_ONLY}).

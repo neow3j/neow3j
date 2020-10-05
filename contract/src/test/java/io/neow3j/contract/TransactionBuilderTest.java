@@ -790,6 +790,22 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void testSetFirstSigner_account() {
+        Signer s1 = Signer.global(account1.getScriptHash());
+        Signer s2 = Signer.calledByEntry(account2.getScriptHash());
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_NAME))
+                .wallet(Wallet.createWallet())
+                .signers(s1, s2);
+        assertThat(b.getSigners().get(0), is(s1));
+        assertThat(b.getSigners().get(1), is(s2));
+
+        b.firstSigner(account2);
+        assertThat(b.getSigners().get(0), is(s2));
+        assertThat(b.getSigners().get(1), is(s1));
+    }
+
+    @Test
     public void testSetFirstSigner_feeOnlyPresent() {
         Signer s1 = Signer.feeOnly(account1.getScriptHash());
         Signer s2 = Signer.calledByEntry(account2.getScriptHash());
