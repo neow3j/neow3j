@@ -37,7 +37,7 @@ public class WitnessTest {
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
-        Witness witness = Witness.createWitness(message, keyPair);
+        Witness witness = Witness.create(message, keyPair);
 
         // Test invocation script
         SignatureData expectedSig = Sign.signMessage(message, keyPair);
@@ -70,7 +70,7 @@ public class WitnessTest {
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 10);
         ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
-        Witness witness = Witness.createWitness(message, keyPair);
+        Witness witness = Witness.create(message, keyPair);
 
         byte[] invScript = InvocationScript.fromMessageAndKeyPair(message, keyPair).getScript();
         byte[] invScriptLen = BigInteger.valueOf(invScript.length).toByteArray();
@@ -182,7 +182,7 @@ public class WitnessTest {
         ECKeyPair keyPair = ECKeyPair.create(Numeric.hexStringToByteArray(sk));
         byte[] message = new byte[10];
         Arrays.fill(message, (byte) 1);
-        Witness script = Witness.createWitness(message, keyPair);
+        Witness script = Witness.create(message, keyPair);
 
         String expectedVerificationScript = ""
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key

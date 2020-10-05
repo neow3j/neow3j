@@ -474,7 +474,7 @@ public class TransactionBuilder {
                     "because account with script " + acc.getScriptHash() + " doesn't hold a " +
                     "private key.", e);
         }
-        this.transaction.addWitness(Witness.createWitness(txBytes, keyPair));
+        this.transaction.addWitness(Witness.create(txBytes, keyPair));
     }
 
     private void signWithMultiSigAccount(byte[] txBytes, Account signerAcc) {
