@@ -13,6 +13,7 @@ buildscript {
     ext.junitVersion = '4.11'
     ext.junitBenchmarkVersion = '0.7.2'
     ext.logbackVersion = '1.2.3'
+    ext.jetbrainsAnnotationsVersion = '20.1.0'
     ext.mockitoVersion = '1.10.19'
     ext.hamcrestVersion = '1.3'
     ext.testcontainersVersion = '1.15.0-rc2'
