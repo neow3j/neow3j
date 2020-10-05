@@ -4,7 +4,6 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -41,8 +40,8 @@ public class Nep5Token extends SmartContract {
      * Constructs a new {@code Nep5Token} representing the token contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
-     * @param scriptHash The token contract's script hash
-     * @param neow       The {@link Neow3j} instance to use for invocations.
+     * @param scriptHash the token contract's script hash
+     * @param neow       the {@link Neow3j} instance to use for invocations.
      */
     public Nep5Token(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
@@ -121,7 +120,7 @@ public class Nep5Token extends SmartContract {
     }
 
     /**
-     * Gets the token balance for the given account script hash.
+     * Gets the token balance for the given account.
      * <p>
      * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
@@ -129,7 +128,28 @@ public class Nep5Token extends SmartContract {
      * The balance is not cached locally. Every time this method is called requests are send to the
      * neo-node.
      *
-     * @param address The address of the account to fetch the balance for.
+     * @param account the account to fetch the balance for.
+     * @return the token balance.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a number.
+     */
+    public BigInteger getBalanceOf(Account account) throws IOException,
+            UnexpectedReturnTypeException {
+        return getBalanceOf(account.getScriptHash());
+    }
+
+    /**
+     * Gets the token balance for the given account address.
+     * <p>
+     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * The balance is not cached locally. Every time this method is called requests are send to the
+     * neo-node.
+     *
+     * @param address the address of the account to fetch the balance for.
      * @return the token balance.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -150,7 +170,7 @@ public class Nep5Token extends SmartContract {
      * The balance is not cached locally. Every time this method is called requests are send to the
      * neo-node.
      *
-     * @param scriptHash The script hash of the account to fetch the balance for.
+     * @param scriptHash the script hash of the account to fetch the balance for.
      * @return the token balance.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -173,7 +193,7 @@ public class Nep5Token extends SmartContract {
      * The balance is not cached locally. Every time this method is called requests are send to the
      * neo-node.
      *
-     * @param wallet The wallet to fetch the balance for.
+     * @param wallet the wallet to fetch the balance for.
      * @return the token balance.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -198,10 +218,10 @@ public class Nep5Token extends SmartContract {
      * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
      * the amount can be covered, all necessary transfers are sent in one transaction.
      *
-     * @param wallet The wallet from which to send the tokens from.
-     * @param to     The address of the receiver.
-     * @param amount The amount to transfer as a decimal number (not token fractions).
-     * @return The transaction id.
+     * @param wallet the wallet from which to send the tokens from.
+     * @param to     the address of the receiver.
+     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @return the transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount)
@@ -217,10 +237,10 @@ public class Nep5Token extends SmartContract {
      * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
      * the amount can be covered, all necessary transfers are sent in one transaction.
      *
-     * @param wallet The wallet from which to send the tokens from.
-     * @param to     The script hash of the receiver.
-     * @param amount The amount to transfer as a decimal number (not token fractions).
-     * @return The transaction id.
+     * @param wallet the wallet from which to send the tokens from.
+     * @param to     the script hash of the receiver.
+     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @return the transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
@@ -244,12 +264,33 @@ public class Nep5Token extends SmartContract {
      * amount and so on. If the amount can be covered, all necessary transfers are sent in one
      * transaction.
      *
-     * @param wallet The wallet from which to send the tokens from.
-     * @param to     The script hash of the receiver.
-     * @param amount The amount to transfer as a decimal number (not token fractions).
-     * @param from   The script hashes of the accounts in the wallet that should be used to cover
+     * @param wallet the wallet from which to send the tokens from.
+     * @param to     the address of the receiver.
+     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param from   the script hashes of the accounts in the wallet that should be used to cover
      *               the amount.
      * @return The transaction id.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String to,
+            BigDecimal amount, ScriptHash... from) throws IOException {
+        return transferFromSpecificAccounts(wallet, ScriptHash.fromAddress(to), amount, from);
+    }
+
+    /**
+     * Creates and sends a transfer transaction that uses the provided accounts.
+     * <p>
+     * The accounts are used in the order provided to cover the transaction amount. If the first
+     * account cannot cover the full amount, the second account is used to cover the remaining
+     * amount and so on. If the amount can be covered, all necessary transfers are sent in one
+     * transaction.
+     *
+     * @param wallet the wallet from which to send the tokens from.
+     * @param to     the script hash of the receiver.
+     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param from   the script hashes of the accounts in the wallet that should be used to cover
+     *               the amount.
+     * @return the transaction id.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
@@ -364,10 +405,10 @@ public class Nep5Token extends SmartContract {
      * <p>
      * Uses only the wallet's default account to cover the token amount.
      *
-     * @param wallet The wallet from which to send the tokens from.
-     * @param to     The address of the receiver.
-     * @param amount The amount to transfer as a decimal number (not token fractions).
-     * @return The transaction builder.
+     * @param wallet the wallet from which to send the tokens from.
+     * @param to     the address of the receiver.
+     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @return the transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
@@ -380,10 +421,10 @@ public class Nep5Token extends SmartContract {
      * <p>
      * Uses only the wallet's default account to cover the token amount.
      *
-     * @param wallet The wallet from which to send the tokens from.
-     * @param to     The script hash of the receiver.
-     * @param amount The amount to transfer as a decimal number (not token fractions).
-     * @return The transaction builder.
+     * @param wallet the wallet from which to send the tokens from.
+     * @param to     the script hash of the receiver.
+     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @return the transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, ScriptHash to,

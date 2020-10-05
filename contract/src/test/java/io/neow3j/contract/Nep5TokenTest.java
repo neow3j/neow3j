@@ -140,6 +140,22 @@ public class Nep5TokenTest {
     }
 
     @Test
+    public void testGetBalanceOfAccount_address() throws Exception {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_300000000.json");
+        assertThat(gasToken.getBalanceOf(account1.getAddress()),
+                is(new BigInteger("300000000")));
+    }
+
+    @Test
+    public void testGetBalanceOfAccount_account() throws Exception {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_300000000.json");
+        assertThat(gasToken.getBalanceOf(account1),
+                is(new BigInteger("300000000")));
+    }
+
+    @Test
     public void testGetBalanceOfWallet() throws Exception {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_300000000.json",
                 "balanceOf", account1.getScriptHash().toString());
