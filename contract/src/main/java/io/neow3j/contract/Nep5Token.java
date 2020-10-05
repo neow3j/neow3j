@@ -4,6 +4,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -128,6 +129,27 @@ public class Nep5Token extends SmartContract {
      * The balance is not cached locally. Every time this method is called requests are send to the
      * neo-node.
      *
+     * @param address The address of the account to fetch the balance for.
+     * @return the token balance.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
+     *                                       interpretable as a number.
+     */
+    public BigInteger getBalanceOf(String address) throws IOException,
+            UnexpectedReturnTypeException {
+        return getBalanceOf(ScriptHash.fromAddress(address));
+    }
+
+    /**
+     * Gets the token balance for the given account script hash.
+     * <p>
+     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
+     * 1*10^8 GAS fractions.
+     * <p>
+     * The balance is not cached locally. Every time this method is called requests are send to the
+     * neo-node.
+     *
      * @param scriptHash The script hash of the account to fetch the balance for.
      * @return the token balance.
      * @throws IOException                   if there was a problem fetching information from the
@@ -166,6 +188,25 @@ public class Nep5Token extends SmartContract {
             sum = sum.add(getBalanceOf(a.getScriptHash()));
         }
         return sum;
+    }
+
+    /**
+     * Creates and sends a transfer transaction that uses all accounts in the wallet to cover the
+     * amount.
+     * <p>
+     * The default account is used first to cover the amount. If it cannot cover the full amount,
+     * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
+     * the amount can be covered, all necessary transfers are sent in one transaction.
+     *
+     * @param wallet The wallet from which to send the tokens from.
+     * @param to     The address of the receiver.
+     * @param amount The amount to transfer as a decimal number (not token fractions).
+     * @return The transaction id.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount)
+            throws IOException {
+        return transfer(wallet, ScriptHash.fromAddress(to), amount);
     }
 
     /**
@@ -316,6 +357,22 @@ public class Nep5Token extends SmartContract {
         }
         int signingThreshold = multiSigVerifScript.getSigningThreshold();
         return signers >= signingThreshold;
+    }
+
+    /**
+     * Creates and sends a transfer transaction.
+     * <p>
+     * Uses only the wallet's default account to cover the token amount.
+     *
+     * @param wallet The wallet from which to send the tokens from.
+     * @param to     The address of the receiver.
+     * @param amount The amount to transfer as a decimal number (not token fractions).
+     * @return The transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
+            BigDecimal amount) throws IOException {
+        return transferFromDefaultAccount(wallet, ScriptHash.fromAddress(to), amount);
     }
 
     /**
