@@ -140,6 +140,22 @@ public class Nep5TokenTest {
     }
 
     @Test
+    public void testGetBalanceOfAccount_address() throws Exception {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_300000000.json");
+        assertThat(gasToken.getBalanceOf(account1.getAddress()),
+                is(new BigInteger("300000000")));
+    }
+
+    @Test
+    public void testGetBalanceOfAccount_account() throws Exception {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_300000000.json");
+        assertThat(gasToken.getBalanceOf(account1),
+                is(new BigInteger("300000000")));
+    }
+
+    @Test
     public void testGetBalanceOfWallet() throws Exception {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_300000000.json",
                 "balanceOf", account1.getScriptHash().toString());
@@ -370,7 +386,7 @@ public class Nep5TokenTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransfer_InvalidAmount() throws IOException {
-        neoToken.transfer(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH, new BigDecimal(-1));
+        neoToken.transfer(Wallet.create(), RECIPIENT_SCRIPT_HASH, new BigDecimal(-1));
     }
 
     @Test(expected = InsufficientFundsException.class)
@@ -525,13 +541,13 @@ public class Nep5TokenTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransferFromSpecificAccounts_noAccountProvided() throws IOException {
-        neoToken.transferFromSpecificAccounts(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH,
+        neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("1"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransferFromSpecificAccounts_illegalAmountProvided() throws IOException {
-        neoToken.transferFromSpecificAccounts(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH,
+        neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("-2"), account1.getScriptHash());
     }
 }

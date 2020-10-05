@@ -38,7 +38,7 @@ public class NeoURITest {
             "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1&asset=gas&amount=80";
 
     private static Neow3j neow3j;
-    private static final Wallet WALLET = Wallet.createWallet();
+    private static final Wallet WALLET = Wallet.create();
 
     private static final String ADDRESS = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
     private static final ScriptHash ADDRESS_SCRIPT_HASH = ScriptHash.fromAddress(ADDRESS);

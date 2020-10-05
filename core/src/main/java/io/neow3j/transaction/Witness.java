@@ -87,7 +87,7 @@ public class Witness extends NeoSerializable {
      *                      from the public key.
      * @return the constructed witness/script.
      */
-    public static Witness createWitness(byte[] messageToSign, ECKeyPair keyPair) {
+    public static Witness create(byte[] messageToSign, ECKeyPair keyPair) {
         InvocationScript i = InvocationScript.fromMessageAndKeyPair(messageToSign, keyPair);
         VerificationScript v = new VerificationScript(keyPair.getPublicKey());
         return new Witness(i, v);

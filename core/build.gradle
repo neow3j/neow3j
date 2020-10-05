@@ -12,7 +12,8 @@ dependencies {
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "org.slf4j:slf4j-api:$slf4jVersion"
     testCompile "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
-            "ch.qos.logback:logback-classic:$logbackVersion"
+            "ch.qos.logback:logback-classic:$logbackVersion",
+            "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
     integrationTestCompile "org.awaitility:awaitility:$awaitility"
 }
 
