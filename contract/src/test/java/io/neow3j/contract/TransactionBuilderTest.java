@@ -337,7 +337,7 @@ public class TransactionBuilderTest {
     public void failTryingToSignTransactionWithMultiSigAccountMissingAPrivateKey()
             throws Throwable {
         Wallet w = Wallet.createWallet();
-        Account a2 = Account.createAccount();
+        Account a2 = Account.create();
         List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
         Account multiSigAcc = Account.createMultiSigAccount(keys, 2);
@@ -432,7 +432,7 @@ public class TransactionBuilderTest {
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
         Wallet wallet = Wallet.withAccounts(senderAcc);
-        Account other = Account.createAccount();
+        Account other = Account.create();
         wallet.addAccounts(other);
         Signer signer = Signer.calledByEntry(other.getScriptHash());
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
@@ -483,7 +483,7 @@ public class TransactionBuilderTest {
     @Test
     public void failBuildingTransactionBecauseWalletDoesntContainSignerAccount() throws Throwable {
         Wallet w = Wallet.createWallet();
-        Account signer = Account.createAccount();
+        Account signer = Account.create();
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_NAME);
         TransactionBuilder b = new TransactionBuilder(neow)
@@ -502,7 +502,7 @@ public class TransactionBuilderTest {
             throws Throwable {
 
         Wallet w = Wallet.createWallet();
-        Account signer = Account.createAccount();
+        Account signer = Account.create();
         w.addAccounts(signer);
         setUpWireMockForCall("invokescript", "invokescript_name_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_NAME);

@@ -61,12 +61,15 @@ public class Account {
     }
 
     /**
-     * Gets this account's EC key pair if available.
+     * Gets this account's EC key pair.
      *
      * @return the key pair.
      */
     public ECKeyPair getECKeyPair() {
-        return this.keyPair;
+        if (keyPair == null) {
+            throw new IllegalStateException("This account does not hold an EC key pair.");
+        }
+        return keyPair;
     }
 
     public String getLabel() {
@@ -251,6 +254,40 @@ public class Account {
     }
 
     /**
+     * Creates an account from the given verification script.
+     *
+     * @param script the verification script.
+     * @return the account with a verification script.
+     */
+    public static Account fromVerificationScript(VerificationScript script) {
+        String address = ScriptHash.fromScript(script.getScript()).toAddress();
+        Account account = new Account();
+        account.address = address;
+        account.label = address;
+        account.verificationScript = script;
+        return account;
+    }
+
+    /**
+     * Creates an account from the given public key.
+     * <p>
+     * Derives the verification script from the public key, which is needed to
+     * calculate the network fee of a transaction.
+     *
+     * @param publicKey The public key.
+     * @return the account with a verification script.
+     */
+    public static Account fromPublicKey(ECPublicKey publicKey) {
+        VerificationScript script = new VerificationScript(publicKey);
+        String address = ScriptHash.fromScript(script.getScript()).toAddress();
+        Account account = new Account();
+        account.address = address;
+        account.label = address;
+        account.verificationScript = script;
+        return account;
+    }
+
+    /**
      * Creates a multi-sig account from the given public keys. Mind that the ordering of the
      * keys is important for later usage of the account.
      *
@@ -315,7 +352,7 @@ public class Account {
      *
      * @return the new account.
      */
-    public static Account createAccount() {
+    public static Account create() {
         return fromNewECKeyPair();
     }
 }
