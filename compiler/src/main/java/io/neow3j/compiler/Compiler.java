@@ -124,19 +124,17 @@ public class Compiler {
             throw new CompilerException("Class " + asmClass.name + " has non-static fields but only"
                     + " static fields are supported in smart contracts.");
         }
-        checkForUsageOfStaticConstructor(asmClass);
+        checkForUsageOfInstanceConstructor(asmClass);
         NeoMethod neoMethod = createInitsslotMethod(asmClass);
         compilationUnit.getNeoModule().addMethod(neoMethod);
     }
 
-    // Checks if there are any instructions in the given classes <init> method besides the call to
-    // the `Object` constructor. I.e., only line, label, frame, and return instructions are allowed.
-    // THe <init> method is checked because in case of a static constructor, its instructions
-    // are placed into the <init> method and not into the <clinit> as one would expect.
-    // If other instructions are found an exception is thrown because the compiler currently does
-    // not support static constructors, but only initialization of static variables directly at
-    // their definition.
-    private void checkForUsageOfStaticConstructor(ClassNode asmClass) {
+    // Checks if there are any instructions in the given classes <init> method (the instance
+    // initializer) besides the call to the `Object` constructor. I.e., only line, label, frame, and
+    // return instructions are allowed.
+    // If instructions are found an exception is thrown because the compiler does not support
+    // instance constructors.
+    private void checkForUsageOfInstanceConstructor(ClassNode asmClass) {
         Optional<MethodNode> instanceCtor = asmClass.methods.stream()
                 .filter(m -> m.name.equals(INSTANCE_CTOR)).findFirst();
         if (instanceCtor.isPresent()) {
@@ -148,8 +146,7 @@ public class Compiler {
                         insn.getType() != AbstractInsnNode.FRAME &&
                         insn.getOpcode() != JVMOpcode.RETURN.getOpcode()) {
                     throw new CompilerException(format("Class %s has an explicit instance "
-                                    + "constructor or static constructor, but, neither is "
-                                    + "supported.",
+                                    + "constructor, which is supported by the compiler.",
                             getFullyQualifiedNameForInternalName(asmClass.name)));
                 }
                 insn = insn.getNext();
