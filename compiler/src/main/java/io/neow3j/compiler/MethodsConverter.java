@@ -22,7 +22,7 @@ import static org.objectweb.asm.Type.getInternalName;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.Helper;
+import io.neow3j.devpack.StaticVariableHelper;
 import io.neow3j.devpack.annotations.Contract;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
@@ -181,7 +181,7 @@ public class MethodsConverter implements Converter {
     }
 
     public static boolean isStaticFieldConverter(MethodNode methodNode, ClassNode owner) {
-        return owner.name.equals(Type.getInternalName(Helper.class))
+        return owner.name.equals(Type.getInternalName(StaticVariableHelper.class))
                 && (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)
                 || methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)
                 || methodNode.name.equals(STRING_TO_INT_METHOD_NAME));
