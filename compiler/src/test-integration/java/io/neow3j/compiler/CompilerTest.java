@@ -108,7 +108,7 @@ public class CompilerTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        SmartContract sc = new SmartContract(res.getNef(), res.getManifest(), neow3j);
+        SmartContract sc = new SmartContract(res.getNefFile(), res.getManifest(), neow3j);
         NeoSendRawTransaction response = sc.deploy()
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(multiSigAcc.getScriptHash()))

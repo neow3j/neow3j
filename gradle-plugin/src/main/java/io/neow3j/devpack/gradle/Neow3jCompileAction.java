@@ -51,7 +51,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         try {
             // compile
             CompilationUnit compilationUnit = n.compileClass(canonicalClassName);
-            byte[] nefBytes = compilationUnit.getNef().toArray();
+            byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
             // get the output directory
             String outDirString = createDirectories(neow3jPluginCompile.getCompilerOutputDir())

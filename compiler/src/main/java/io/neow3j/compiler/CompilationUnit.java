@@ -13,70 +13,88 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public class CompilationUnit {
 
-    public CompilationUnit(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-        this.neoModule = new NeoModule();
-    }
-
     /**
      * The class loader used to get and load classes needed in the compilation of a smart contract.
      */
     private ClassLoader classLoader;
 
     /**
-     *
+     * The module containing the compiled classes and methods.
      */
     private NeoModule neoModule;
 
     /**
      * The smart contract class that this compilation unit is concerned with.
      */
-    ClassNode contractClassNode;
+    private ClassNode contractClassNode;
 
-    NefFile nef;
+    /**
+     * The NEF file containing the compiled script.
+     */
+    private NefFile nef;
 
-    ContractManifest manifest;
+    /**
+     * The compiled contract's manifest.
+     */
+    private ContractManifest manifest;
 
-    public ClassLoader getClassLoader() {
+    /**
+     * The debug information to be used for debugging the compiled contact.
+     */
+    private DebugInfo debugInfo;
+
+
+    public CompilationUnit(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+        this.neoModule = new NeoModule();
+    }
+
+
+    protected ClassLoader getClassLoader() {
         return classLoader;
     }
 
-    public NeoModule getNeoModule() {
+    protected NeoModule getNeoModule() {
         return neoModule;
     }
 
-    public ClassNode getContractClassNode() {
+    protected ClassNode getContractClassNode() {
         return contractClassNode;
     }
 
-    public NefFile getNef() {
+    public NefFile getNefFile() {
         return nef;
     }
 
     public ContractManifest getManifest() {
         return manifest;
     }
-    public void setClassLoader(ClassLoader classLoader) {
+
+    public DebugInfo getDebugInfo() {
+        return debugInfo;
+    }
+
+    protected void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
-    public void setNeoModule(NeoModule neoModule) {
+    protected void setNeoModule(NeoModule neoModule) {
         this.neoModule = neoModule;
     }
 
-    public void setAsmClass(ClassNode asmClass) {
+    protected void setAsmClass(ClassNode asmClass) {
         this.contractClassNode = asmClass;
     }
 
-    public void throwErr(NeoMethod neoMethod, String message) {
-        throw new CompilerException(this, neoMethod, message);
-    }
-
-    public void setNef(NefFile nef) {
+    protected void setNef(NefFile nef) {
         this.nef = nef;
     }
 
-    public void setManifest(ContractManifest manifest) {
+    protected void setManifest(ContractManifest manifest) {
         this.manifest = manifest;
+    }
+
+    protected void setDebugInfo(DebugInfo debugInfo) {
+        this.debugInfo = debugInfo;
     }
 }
