@@ -7,8 +7,6 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
 
-import io.neow3j.compiler.DebugInfo.Event;
-import io.neow3j.compiler.DebugInfo.Method;
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
@@ -23,7 +21,6 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -158,7 +155,6 @@ public class Compiler {
                 nef.getScriptHash());
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
-        compUnit.setDebugInfo(buildDebugInfo(compUnit));
         return compUnit;
     }
 
@@ -463,60 +459,5 @@ public class Compiler {
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
-
-    private DebugInfo buildDebugInfo(CompilationUnit compUnit) {
-        String sourceFile = compUnit.getClassLoader()
-                .getResource(compUnit.getContractClassNode().name + ".class")
-                .getPath();
-
-        List<Method> methods = new ArrayList<>();
-        for (NeoMethod neoMethod : compUnit.getNeoModule().getSortedMethods()) {
-            String name = ClassUtils.getFullyQualifiedNameForInternalName(neoMethod.getOwnerType().name)
-                    + "," + neoMethod.getName();
-            String range = neoMethod.getInstructions().firstKey() + "-"
-                    + neoMethod.getInstructions().lastKey();
-            List<String> params = new ArrayList<>();
-            for (NeoVariable param : neoMethod.getParametersByNeoIndex().values()) {
-                String type = mapTypeToParameterType(Type.getType(param.getDescriptor()))
-                        .jsonValue();
-                params.add(param.getName() + "," + type);
-            }
-            String returnType = Compiler.mapTypeToParameterType(
-                    Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType()).jsonValue();
-
-            List<String> vars = new ArrayList<>();
-            for (NeoVariable var : neoMethod.getVariablesByNeoIndex().values()) {
-                String type = mapTypeToParameterType(Type.getType(var.getDescriptor()))
-                        .jsonValue();
-                vars.add(var.getName() + "," + type);
-            }
-            // TODO: Fill sequencePoints
-            List<String> sequencePoints = new ArrayList<>();
-            for (NeoInstruction insn : neoMethod.getInstructions().values()) {
-                sequencePoints.add(new StringBuilder()
-                        .append(insn.getAddress())
-                        // TODO: Change once it is possible to sread a contract over multiple files.
-                        .append("[0]")
-                        .append(insn.getLineNr())
-                        // TODO: Change once it is possible to know the instruction's column number.
-                        .append(":0-")
-                        .append(insn.getLineNr())
-                        .append(":0")
-                        .toString());
-            }
-            methods.add(new Method(neoMethod.getId(), name, range, params, returnType, vars,
-                    sequencePoints));
-        }
-
-        // TODO: Build events.
-        List<Event> events = new ArrayList<>();
-//        for (NeoEvent neoEvent : compUnit.getNeoModule().sortedMethods) {
-//            events.add(new Event());
-//        }
-        return new DebugInfo(compUnit.getNefFile().getScriptHash(), Arrays.asList(sourceFile),
-                methods,
-                events);
-    }
-
 
 }
