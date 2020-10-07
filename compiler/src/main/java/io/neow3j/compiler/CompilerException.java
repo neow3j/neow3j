@@ -17,7 +17,7 @@ public class CompilerException extends RuntimeException {
     }
 
     public CompilerException(CompilationUnit compUnit, NeoMethod method, String s) {
-        this(compUnit.getContractClassNode(), method.currentLine, s);
+        this(compUnit.getContractClassNode(), method.getCurrentLine(), s);
     }
 
     public CompilerException(ClassNotFoundException e) {

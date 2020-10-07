@@ -132,15 +132,16 @@ public class CompilerTest {
     }
 
     /**
-     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function and
-     * the given parameters.
+     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function and the
+     * given parameters.
      *
      * @param function The function to call.
-     * @param params The parameters to provide to the function call.
+     * @param params   The parameters to provide to the function call.
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params) throws IOException {
+    protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
+            throws IOException {
         return contract.callInvokeFunction(function, Arrays.asList(params));
     }
 
@@ -183,8 +184,8 @@ public class CompilerTest {
 
     /**
      * Builds and sends a transaction that invokes the contract under test, the function with the
-     * name of the current test method, with the given parameters. Sleeps until the transaction
-     * is included in a block.
+     * name of the current test method, with the given parameters. Sleeps until the transaction is
+     * included in a block.
      * <p>
      * The multi-sig account at {@link CompilerTest#multiSigAcc} is used to sign the transaction.
      *

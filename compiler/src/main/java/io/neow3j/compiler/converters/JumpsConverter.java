@@ -1,7 +1,13 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.Compiler.addPushNumber;
 
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.CompilerException;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoInstruction;
+import io.neow3j.compiler.NeoJumpInstruction;
+import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
 import java.io.IOException;
 import java.util.List;
@@ -113,7 +119,7 @@ public class JumpsConverter implements Converter {
             case RET:
             case JSR_W:
                 throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.asmMethod.name + " not yet supported.");
+                        neoMethod.getAsmMethod().name + " not yet supported.");
         }
         return insn;
     }
@@ -129,8 +135,8 @@ public class JumpsConverter implements Converter {
         JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
         JVMOpcode jvmOpcode = JVMOpcode.get(jumpInsn.getOpcode());
         if (jvmOpcode == null) {
-            throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine, "Jump opcode "
-                    + "of jump instruction was null.");
+            throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(),
+                    "Jump opcode of jump instruction was null.");
         }
         switch (jvmOpcode) {
             case IFEQ:
@@ -152,7 +158,7 @@ public class JumpsConverter implements Converter {
                 addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGE_L);
                 break;
             default:
-                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine,
+                throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(),
                         "Unexpected opcode " + jvmOpcode.name() + " following long comparison.");
         }
         return jumpInsn;
@@ -196,7 +202,7 @@ public class JumpsConverter implements Converter {
         neoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L, jmpLabel));
         // Set the nextCaseLabel on the NeoMethod so that the next added instruction becomes
         // the jump target.
-        neoMethod.currentLabel = nextCaseLabel;
+        neoMethod.setCurrentLabel(nextCaseLabel);
     }
 
     // Checks if the given index marks the last case in the given list of case statements (i.e.

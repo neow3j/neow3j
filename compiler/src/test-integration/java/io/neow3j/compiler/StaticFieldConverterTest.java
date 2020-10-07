@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Helper;
+import io.neow3j.devpack.StaticVariableHelper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import org.junit.BeforeClass;
@@ -46,10 +46,10 @@ public class StaticFieldConverterTest extends CompilerTest {
 
 class StaticFieldConverter {
 
-    private static final byte[] scriptHash = Helper.addressToScriptHash(
+    private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
             "AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
-    private static final byte[] bytes = Helper.hexToBytes("0x010203");
-    private static final int integer = Helper.stringToInt("1000000000000000000000000000000");
+    private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x010203");
+    private static final int integer = StaticVariableHelper.stringToInt("1000000000000000000000000000000");
 
     public static byte[] addressToScriptHashConverter() {
         return scriptHash;
