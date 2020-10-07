@@ -5,7 +5,6 @@ import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.devpack.ScriptContainer;
 import io.neow3j.devpack.annotations.Features;
 import io.neow3j.devpack.annotations.ManifestExtra;
 import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
@@ -58,66 +57,22 @@ public class ManifestBuilder {
         List<ContractMethod> methods = new ArrayList<>();
         // TODO: Fill events list.
         List<ContractEvent> events = new ArrayList<>();
-        for (NeoMethod neoMethod : neoModule.methods.values()) {
-            if (!neoMethod.isAbiMethod) {
+        for (NeoMethod neoMethod : neoModule.getSortedMethods()) {
+            if (!neoMethod.isAbiMethod()) {
                 // TODO: This needs to change when enabling inheritance.
                 continue; // Only add methods to the ABI that appear in the contract itself.
             }
             List<ContractParameter> contractParams = new ArrayList<>();
-            for (NeoVariable var : neoMethod.parametersByNeoIndex.values()) {
-                contractParams.add(new ContractParameter(var.asmVariable.name,
-                        mapTypeToParameterType(Type.getType(var.asmVariable.desc)), null));
+            for (NeoVariable var : neoMethod.getParametersByNeoIndex().values()) {
+                contractParams.add(new ContractParameter(var.getName(),
+                        Compiler.mapTypeToParameterType(Type.getType(var.getDescriptor())), null));
             }
-            ContractParameterType paramType = mapTypeToParameterType(
-                    Type.getMethodType(neoMethod.asmMethod.desc).getReturnType());
-            methods.add(new ContractMethod(neoMethod.name, contractParams, paramType,
-                    neoMethod.startAddress));
+            ContractParameterType paramType = Compiler.mapTypeToParameterType(
+                    Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType());
+            methods.add(new ContractMethod(neoMethod.getName(), contractParams, paramType,
+                    neoMethod.getStartAddress()));
         }
         return new ContractABI(Numeric.prependHexPrefix(scriptHash.toString()), methods, events);
-    }
-
-    private static ContractParameterType mapTypeToParameterType(Type type) {
-        String typeName = type.getClassName();
-        if (typeName.equals(String.class.getTypeName())) {
-            return ContractParameterType.STRING;
-        }
-        if (typeName.equals(Integer.class.getTypeName())
-                || typeName.equals(int.class.getTypeName())
-                || typeName.equals(Long.class.getTypeName())
-                || typeName.equals(long.class.getTypeName())
-                || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())
-                || typeName.equals(Short.class.getTypeName())
-                || typeName.equals(short.class.getTypeName())
-                || typeName.equals(Character.class.getTypeName())
-                || typeName.equals(char.class.getTypeName())) {
-            return ContractParameterType.INTEGER;
-        }
-        if (typeName.equals(Boolean.class.getTypeName())
-                || typeName.equals(boolean.class.getTypeName())) {
-            return ContractParameterType.BOOLEAN;
-        }
-        if (typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())) {
-            return ContractParameterType.BYTE_ARRAY;
-        }
-        if (typeName.equals(Void.class.getTypeName())
-                || typeName.equals(void.class.getTypeName())) {
-            return ContractParameterType.VOID;
-        }
-        if (typeName.equals(ScriptContainer.class.getTypeName())) {
-            return ContractParameterType.INTEROP_INTERFACE;
-        }
-        try {
-            typeName = type.getDescriptor().replace("/", ".");
-            Class<?> clazz = Class.forName(typeName);
-            if (clazz.isArray()) {
-                return ContractParameterType.ARRAY;
-            }
-        } catch (ClassNotFoundException e) {
-            throw new CompilerException(e);
-        }
-        throw new CompilerException("Unsupported type: " + type.getClassName());
     }
 
     private static ContractFeatures buildContractFeatures(ClassNode n) {

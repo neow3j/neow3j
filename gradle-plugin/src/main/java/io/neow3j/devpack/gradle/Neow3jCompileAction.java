@@ -12,15 +12,26 @@ import static java.util.Optional.ofNullable;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
+import io.neow3j.compiler.DebugInfo;
+import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.utils.ClassUtils;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.gradle.api.Action;
 
 public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
+
+    public static final String NEFDBGNFO_SUFFIX = ".nefdbgnfo";
+    public static final String DEBUG_JSON_SUFFIX = ".debug.json";
 
     @Override
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
@@ -68,15 +79,41 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
                     compilationUnit.getManifest(),
                     outDirPath.toFile());
 
+            // Pack the debug info into a ZIP archive.
+            String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
+                    outDirString, ClassUtils.getClassName(canonicalClassName));
+
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
             System.out.println("NEF file: " + outputFile.toAbsolutePath());
             System.out.println("Manifest file: " + manifestOutFileName);
+            System.out.println("Debug info zip file: " + debugInfoZipFileName);
         } catch (Exception e) {
             System.out.println("Compilation failed. Reason: " + e.getMessage());
             e.printStackTrace();
-            return;
         }
+    }
+
+    private String generateDebugInfoZip(DebugInfo debugInfo,
+            String outDirString, String fileName) throws IOException {
+
+        File tmpFile = File.createTempFile("contract", ".debug.json");
+        tmpFile.deleteOnExit();
+        // Write the debug JSON to a temporary file.
+        try (FileOutputStream s = new FileOutputStream(tmpFile)) {
+            ObjectMapperFactory.getObjectMapper().writeValue(s, debugInfo);
+        }
+        // Then put it into a ZIP archive.
+        String zipName = fileName + NEFDBGNFO_SUFFIX;
+        String zipEntryName = fileName + DEBUG_JSON_SUFFIX;
+        File zipOutputFile = Paths.get(outDirString, zipName).toFile();
+        try (ZipOutputStream s = new ZipOutputStream(new FileOutputStream(zipOutputFile))) {
+            s.putNextEntry(new ZipEntry(zipEntryName));
+            byte[] bytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(debugInfo);
+            s.write(bytes);
+            s.closeEntry();
+        }
+        return zipOutputFile.getAbsolutePath();
     }
 
 }

@@ -14,17 +14,17 @@ public class MethodInitializer {
 
     public static void initializeMethod(NeoMethod neoMethod, CompilationUnit compUnit) {
         checkForUnsupportedLocalVariableTypes(neoMethod);
-        if ((neoMethod.asmMethod.access & Opcodes.ACC_PUBLIC) > 0
-                && (neoMethod.asmMethod.access & Opcodes.ACC_STATIC) > 0
-                && neoMethod.ownerType.equals(compUnit.getContractClassNode())) {
+        if ((neoMethod.getAsmMethod().access & Opcodes.ACC_PUBLIC) > 0
+                && (neoMethod.getAsmMethod().access & Opcodes.ACC_STATIC) > 0
+                && neoMethod.getOwnerType().equals(compUnit.getContractClassNode())) {
             // Only contract methods that are public, static and on the smart contract class are
             // added to the ABI and are invokable.
-            neoMethod.isAbiMethod = true;
+            neoMethod.setIsAbiMethod(true);
         }
 
         // Look for method params and local variables and add them to the NeoMethod. Note that Java
         // mixes method params and local variables.
-        if (neoMethod.asmMethod.maxLocals == 0) {
+        if (neoMethod.getAsmMethod().maxLocals == 0) {
             return; // There are no local variables or parameters to process.
         }
         int nextVarIdx = collectMethodParameters(neoMethod);
@@ -32,31 +32,31 @@ public class MethodInitializer {
 
         // Add the INITSLOT opcode as first instruction of the method if the method has parameters
         // and/or local variables.
-        if (neoMethod.variablesByNeoIndex.size() + neoMethod.parametersByNeoIndex.size() > 0) {
+        if (neoMethod.getVariablesByNeoIndex().size() + neoMethod.getParametersByNeoIndex().size() > 0) {
             neoMethod.addInstruction(new NeoInstruction(
-                    OpCode.INITSLOT, new byte[]{(byte) neoMethod.variablesByNeoIndex.size(),
-                    (byte) neoMethod.parametersByNeoIndex.size()}));
+                    OpCode.INITSLOT, new byte[]{(byte) neoMethod.getVariablesByNeoIndex().size(),
+                    (byte) neoMethod.getParametersByNeoIndex().size()}));
         }
     }
 
     private static void checkForUnsupportedLocalVariableTypes(NeoMethod neoMethod) {
-        for (LocalVariableNode varNode : neoMethod.asmMethod.localVariables) {
+        for (LocalVariableNode varNode : neoMethod.getAsmMethod().localVariables) {
             if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE
                     || Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
-                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine,
-                        "Method '" + neoMethod.asmMethod.name + "' has unsupported parameter or "
+                throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(),
+                        "Method '" + neoMethod.getAsmMethod().name + "' has unsupported parameter or "
                                 + "variable types.");
             }
         }
     }
 
     private static void collectLocalVariables(NeoMethod neoMethod, int nextVarIdx) {
-        int paramCount = Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
-        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
+        int paramCount = Type.getArgumentTypes(neoMethod.getAsmMethod().desc).length;
+        List<LocalVariableNode> locVars = neoMethod.getAsmMethod().localVariables;
         if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
             paramCount++;
         }
-        int localVarCount = neoMethod.asmMethod.maxLocals - paramCount;
+        int localVarCount = neoMethod.getAsmMethod().maxLocals - paramCount;
         if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
             throw new CompilerException("The method has more than the max number of local "
                     + "variables.");
@@ -92,11 +92,11 @@ public class MethodInitializer {
     // Retruns the next index of the local variables after the method parameter slots.
     private static int collectMethodParameters(NeoMethod neoMethod) {
         int paramCount = 0;
-        List<LocalVariableNode> locVars = neoMethod.asmMethod.localVariables;
+        List<LocalVariableNode> locVars = neoMethod.getAsmMethod().localVariables;
         if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
             paramCount++;
         }
-        paramCount += Type.getArgumentTypes(neoMethod.asmMethod.desc).length;
+        paramCount += Type.getArgumentTypes(neoMethod.getAsmMethod().desc).length;
         if (paramCount > MAX_PARAMS_COUNT) {
             throw new CompilerException("The method has more than the max number of parameters.");
         }

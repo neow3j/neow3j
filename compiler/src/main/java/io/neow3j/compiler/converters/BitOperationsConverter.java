@@ -1,5 +1,10 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.CompilerException;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoInstruction;
+import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
@@ -21,7 +26,7 @@ public class BitOperationsConverter implements Converter {
                 break;
             case IUSHR:
             case LUSHR:
-                throw new CompilerException(neoMethod.ownerType, neoMethod.currentLine, "Logical "
+                throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(), "Logical "
                         + "bit-shifts are not supported.");
             case IAND:
             case LAND:

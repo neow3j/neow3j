@@ -1,10 +1,13 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.Compiler.addLoadConstant;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoInstruction;
+import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
-import java.io.IOException;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 
