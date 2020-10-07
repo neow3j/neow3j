@@ -1,4 +1,4 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
@@ -19,10 +19,17 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
 
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.CompilerException;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoInstruction;
+import io.neow3j.compiler.NeoJumpInstruction;
+import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.Helper;
+import io.neow3j.devpack.StaticVariableHelper;
 import io.neow3j.devpack.annotations.Contract;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
@@ -70,7 +77,7 @@ public class MethodsConverter implements Converter {
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
                 throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.asmMethod.name + " not yet supported.");
+                        neoMethod.getAsmMethod().name + " not yet supported.");
         }
         return insn;
     }
@@ -129,9 +136,9 @@ public class MethodsConverter implements Converter {
             throws IOException {
 
         String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
-        if (compUnit.getNeoModule().methods.containsKey(calledMethodId)) {
+        if (compUnit.getNeoModule().hasMethod(calledMethodId)) {
             // If the module already compiled the method simply add a CALL instruction.
-            NeoMethod calledNeoMethod = compUnit.getNeoModule().methods.get(calledMethodId);
+            NeoMethod calledNeoMethod = compUnit.getNeoModule().getMethod(calledMethodId);
             addReverseArguments(calledAsmMethod, callingNeoMethod);
             // The actual address offset for the method call is set at a later point in compilation.
             callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4])
@@ -181,7 +188,7 @@ public class MethodsConverter implements Converter {
     }
 
     public static boolean isStaticFieldConverter(MethodNode methodNode, ClassNode owner) {
-        return owner.name.equals(Type.getInternalName(Helper.class))
+        return owner.name.equals(Type.getInternalName(StaticVariableHelper.class))
                 && (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)
                 || methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)
                 || methodNode.name.equals(STRING_TO_INT_METHOD_NAME));
@@ -189,22 +196,22 @@ public class MethodsConverter implements Converter {
 
     private static void handleStaticFieldConverter(MethodNode methodNode,
             NeoMethod callingNeoMethod, CompilationUnit compUnit) {
-        if (!callingNeoMethod.name.equals(INITSSLOT_METHOD_NAME)) {
+        if (!callingNeoMethod.getName().equals(INITSSLOT_METHOD_NAME)) {
             throw new CompilerException(compUnit, callingNeoMethod, format("The static field "
                     + "converter method %s was used outside of the static variable "
                     + "initialization scope.", methodNode.name));
         }
 
         NeoInstruction lastNeoInsn = callingNeoMethod.getLastInstruction();
-        if (!lastNeoInsn.opcode.equals(OpCode.PUSHDATA1)
-                && !lastNeoInsn.opcode.equals(OpCode.PUSHDATA2)
-                && !lastNeoInsn.opcode.equals(OpCode.PUSHDATA4)) {
+        if (!lastNeoInsn.getOpcode().equals(OpCode.PUSHDATA1)
+                && !lastNeoInsn.getOpcode().equals(OpCode.PUSHDATA2)
+                && !lastNeoInsn.getOpcode().equals(OpCode.PUSHDATA4)) {
             throw new CompilerException(compUnit, callingNeoMethod, "Static field converter "
                     + "methods can only be applied to constant string literals.");
         }
-        int pushDataPrefixSize = getOperandSize(lastNeoInsn.opcode).prefixSize();
-        String stringLiteral = new String(ArrayUtils.getLastNBytes(lastNeoInsn.operand,
-                lastNeoInsn.operand.length - pushDataPrefixSize), UTF_8);
+        int pushDataPrefixSize = getOperandSize(lastNeoInsn.getOpcode()).prefixSize();
+        String stringLiteral = new String(ArrayUtils.getLastNBytes(lastNeoInsn.getOperand(),
+                lastNeoInsn.getOperand().length - pushDataPrefixSize), UTF_8);
         byte[] newInsnBytes = null;
 
         if (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)) {

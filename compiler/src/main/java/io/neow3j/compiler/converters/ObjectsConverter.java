@@ -1,4 +1,4 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
@@ -18,6 +18,11 @@ import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static org.objectweb.asm.Type.getInternalName;
 
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.CompilerException;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoInstruction;
+import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
@@ -62,20 +67,20 @@ public class ObjectsConverter implements Converter {
                 break;
             case INSTANCEOF:
                 throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.asmMethod.name + " not yet supported.");
+                        neoMethod.getAsmMethod().name + " not yet supported.");
         }
         return insn;
     }
 
     public static void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
     }
 
     public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
     }
 
@@ -95,7 +100,7 @@ public class ObjectsConverter implements Converter {
         ClassNode owner = getClassNodeForInternalName(typeInsn.desc, compUnit.getClassLoader());
         MethodInsnNode ctorMethodInsn = skipToCtorMethodInstruction(typeInsn.getNext(), owner);
         MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner).orElseThrow(() ->
-                new CompilerException(owner, callingNeoMethod.currentLine, format(
+                new CompilerException(owner, callingNeoMethod.getCurrentLine(), format(
                         "Couldn't find constructor '%s' on class '%s'.",
                         ctorMethodInsn.name, getClassNameForInternalName(owner.name))));
 
@@ -152,7 +157,7 @@ public class ObjectsConverter implements Converter {
                 break; // End of string concatenation.
             }
             if (isCallToAnyStringBuilderMethod(insn)) {
-                throw new CompilerException(compUnit.getContractClassNode(), neoMethod.currentLine,
+                throw new CompilerException(compUnit.getContractClassNode(), neoMethod.getCurrentLine(),
                         format("Only 'append()' and 'toString()' are supported for StringBuilder, "
                                 + "but '%s' was called", ((MethodInsnNode) insn).name));
             }
@@ -161,7 +166,7 @@ public class ObjectsConverter implements Converter {
         }
         if (insn == null) {
             throw new CompilerException(compUnit.getContractClassNode(),
-                    neoMethod.currentLine,
+                    neoMethod.getCurrentLine(),
                     "Expected to find ScriptBuilder.toString() but reached end of method.");
         }
         return insn;
@@ -203,9 +208,9 @@ public class ObjectsConverter implements Converter {
 
         NeoMethod calledNeoMethod;
         String ctorMethodId = NeoMethod.getMethodId(ctorMethod, owner);
-        if (compUnit.getNeoModule().methods.containsKey(ctorMethodId)) {
+        if (compUnit.getNeoModule().hasMethod(ctorMethodId)) {
             // If the module already contains the converted ctor.
-            calledNeoMethod = compUnit.getNeoModule().methods.get(ctorMethodId);
+            calledNeoMethod = compUnit.getNeoModule().getMethod(ctorMethodId);
         } else {
             // Create a new NeoMethod, i.e., convert the constructor to NeoVM code.
             // Skip the call to the Object ctor and continue processing the rest of the ctor.

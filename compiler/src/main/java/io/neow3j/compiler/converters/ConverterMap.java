@@ -1,5 +1,6 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
+import io.neow3j.compiler.JVMOpcode;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -27,10 +27,10 @@ public class LocalVariableHelper {
         // accordingly.
         NeoVariable param = neoMethod.getParameterByJVMIndex(varIndex);
         if (param != null) {
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.neoIndex, argOpcode));
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(param.getNeoIndex(), argOpcode));
         } else {
             NeoVariable var = neoMethod.getVariableByJVMIndex(varIndex);
-            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.neoIndex, varOpcode));
+            neoMethod.addInstruction(buildStoreOrLoadVariableInsn(var.getNeoIndex(), varOpcode));
         }
     }
 

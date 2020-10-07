@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Helper;
+import io.neow3j.devpack.StaticVariableHelper;
 import io.neow3j.devpack.neo.Runtime;
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,7 +56,7 @@ public class StaticFieldConvertersTest {
 
 class InvalidAddressVariable {
 
-    private static final byte[] scriptHash = Helper.addressToScriptHash(
+    private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
             "A0unErzotcQTNWP2qktA7LgkXZVdHea97H");
 
     public static byte[] main() {
@@ -66,7 +66,7 @@ class InvalidAddressVariable {
 
 class InvalidHexStringVariable {
 
-    private static final byte[] bytes = Helper.hexToBytes("0x0h02");
+    private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x0h02");
 
     public static byte[] main() {
         return bytes;
@@ -75,7 +75,7 @@ class InvalidHexStringVariable {
 
 class InvalidIntStringVariable {
 
-    private static final int integer = Helper.stringToInt("100e0000000000000000000000000000");
+    private static final int integer = StaticVariableHelper.stringToInt("100e0000000000000000000000000000");
 
     public static int main() {
         return integer;
@@ -84,7 +84,7 @@ class InvalidIntStringVariable {
 
 class IllegalInputConverterMethod {
 
-    private static final byte[] bytes = Helper.hexToBytes(Runtime.getPlatform());
+    private static final byte[] bytes = StaticVariableHelper.hexToBytes(Runtime.getPlatform());
 
     public static byte[] main() {
         return bytes;
@@ -101,6 +101,6 @@ class IllegalUseOfConverterMethod {
     }
 
     public static byte[] getScriptHash() {
-        return Helper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
+        return StaticVariableHelper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
     }
 }

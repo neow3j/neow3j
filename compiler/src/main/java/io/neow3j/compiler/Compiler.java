@@ -7,15 +7,19 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
 
+import io.neow3j.compiler.converters.Converter;
+import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.devpack.ScriptContainer;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
@@ -54,14 +58,58 @@ public class Compiler {
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
     public static final String THIS_KEYWORD = "this";
 
-    private CompilationUnit compilationUnit;
+    private CompilationUnit compUnit;
 
     public Compiler() {
-        compilationUnit = new CompilationUnit(this.getClass().getClassLoader());
+        compUnit = new CompilationUnit(this.getClass().getClassLoader());
     }
 
     public Compiler(ClassLoader classLoader) {
-        compilationUnit = new CompilationUnit(classLoader);
+        compUnit = new CompilationUnit(classLoader);
+    }
+
+    public static ContractParameterType mapTypeToParameterType(Type type) {
+        String typeName = type.getClassName();
+        if (typeName.equals(String.class.getTypeName())) {
+            return ContractParameterType.STRING;
+        }
+        if (typeName.equals(Integer.class.getTypeName())
+                || typeName.equals(int.class.getTypeName())
+                || typeName.equals(Long.class.getTypeName())
+                || typeName.equals(long.class.getTypeName())
+                || typeName.equals(Byte.class.getTypeName())
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
+            return ContractParameterType.INTEGER;
+        }
+        if (typeName.equals(Boolean.class.getTypeName())
+                || typeName.equals(boolean.class.getTypeName())) {
+            return ContractParameterType.BOOLEAN;
+        }
+        if (typeName.equals(Byte[].class.getTypeName())
+                || typeName.equals(byte[].class.getTypeName())) {
+            return ContractParameterType.BYTE_ARRAY;
+        }
+        if (typeName.equals(Void.class.getTypeName())
+                || typeName.equals(void.class.getTypeName())) {
+            return ContractParameterType.VOID;
+        }
+        if (typeName.equals(ScriptContainer.class.getTypeName())) {
+            return ContractParameterType.INTEROP_INTERFACE;
+        }
+        try {
+            typeName = type.getDescriptor().replace("/", ".");
+            Class<?> clazz = Class.forName(typeName);
+            if (clazz.isArray()) {
+                return ContractParameterType.ARRAY;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new CompilerException(e);
+        }
+        throw new CompilerException("Unsupported type: " + type.getClassName());
     }
 
     /**
@@ -71,7 +119,7 @@ public class Compiler {
      * @return the compilation unit holding the NEF and contract manifest.
      */
     public CompilationUnit compileClass(String fullyQualifiedClassName) throws IOException {
-        return compileClass(getAsmClass(fullyQualifiedClassName, compilationUnit.getClassLoader()));
+        return compileClass(getAsmClass(fullyQualifiedClassName, compUnit.getClassLoader()));
     }
 
     /**
@@ -91,24 +139,23 @@ public class Compiler {
      * @return the compilation unit holding the NEF and contract manifest.
      */
     private CompilationUnit compileClass(ClassNode contractClassNode) throws IOException {
-        compilationUnit.setAsmClass(contractClassNode);
+        compUnit.setAsmClass(contractClassNode);
         collectAndInitializeStaticFields(contractClassNode);
         collectAndInitializeMethods(contractClassNode);
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
-        for (NeoMethod neoMethod : new ArrayList<>(
-                compilationUnit.getNeoModule().methods.values())) {
-            compileMethod(neoMethod, compilationUnit);
+        for (NeoMethod neoMethod : new ArrayList<>(compUnit.getNeoModule().getSortedMethods())) {
+            compileMethod(neoMethod, compUnit);
         }
-        compilationUnit.getNeoModule().finalizeModule();
+        compUnit.getNeoModule().finalizeModule();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
-                compilationUnit.getNeoModule().toByteArray());
-        ContractManifest manifest = ManifestBuilder.buildManifest(compilationUnit,
+                compUnit.getNeoModule().toByteArray());
+        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit,
                 nef.getScriptHash());
-        compilationUnit.setNef(nef);
-        compilationUnit.setManifest(manifest);
-        return compilationUnit;
+        compUnit.setNef(nef);
+        compUnit.setManifest(manifest);
+        return compUnit;
     }
 
     private void collectAndInitializeStaticFields(ClassNode asmClass) {
@@ -124,19 +171,17 @@ public class Compiler {
             throw new CompilerException("Class " + asmClass.name + " has non-static fields but only"
                     + " static fields are supported in smart contracts.");
         }
-        checkForUsageOfStaticConstructor(asmClass);
+        checkForUsageOfInstanceConstructor(asmClass);
         NeoMethod neoMethod = createInitsslotMethod(asmClass);
-        compilationUnit.getNeoModule().addMethod(neoMethod);
+        compUnit.getNeoModule().addMethod(neoMethod);
     }
 
-    // Checks if there are any instructions in the given classes <init> method besides the call to
-    // the `Object` constructor. I.e., only line, label, frame, and return instructions are allowed.
-    // THe <init> method is checked because in case of a static constructor, its instructions
-    // are placed into the <init> method and not into the <clinit> as one would expect.
-    // If other instructions are found an exception is thrown because the compiler currently does
-    // not support static constructors, but only initialization of static variables directly at
-    // their definition.
-    private void checkForUsageOfStaticConstructor(ClassNode asmClass) {
+    // Checks if there are any instructions in the given classes <init> method (the instance
+    // initializer) besides the call to the `Object` constructor. I.e., only line, label, frame, and
+    // return instructions are allowed.
+    // If instructions are found an exception is thrown because the compiler does not support
+    // instance constructors.
+    private void checkForUsageOfInstanceConstructor(ClassNode asmClass) {
         Optional<MethodNode> instanceCtor = asmClass.methods.stream()
                 .filter(m -> m.name.equals(INSTANCE_CTOR)).findFirst();
         if (instanceCtor.isPresent()) {
@@ -148,8 +193,7 @@ public class Compiler {
                         insn.getType() != AbstractInsnNode.FRAME &&
                         insn.getOpcode() != JVMOpcode.RETURN.getOpcode()) {
                     throw new CompilerException(format("Class %s has an explicit instance "
-                                    + "constructor or static constructor, but, neither is "
-                                    + "supported.",
+                                    + "constructor, which is supported by the compiler.",
                             getFullyQualifiedNameForInternalName(asmClass.name)));
                 }
                 insn = insn.getNext();
@@ -180,8 +224,8 @@ public class Compiler {
             initsslotMethod.access = Opcodes.ACC_STATIC;
         }
         NeoMethod neoMethod = new NeoMethod(initsslotMethod, asmClass);
-        neoMethod.name = INITSSLOT_METHOD_NAME;
-        neoMethod.isAbiMethod = true;
+        neoMethod.setName(INITSSLOT_METHOD_NAME);
+        neoMethod.setIsAbiMethod(true);
         byte[] operand = new byte[]{(byte) asmClass.fields.size()};
         neoMethod.addInstruction(new NeoInstruction(OpCode.INITSSLOT, operand));
         return neoMethod;
@@ -200,14 +244,14 @@ public class Compiler {
                         asmMethod.name, getFullyQualifiedNameForInternalName(asmClass.name)));
             }
             NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            MethodInitializer.initializeMethod(neoMethod, compilationUnit);
-            compilationUnit.getNeoModule().addMethod(neoMethod);
+            MethodInitializer.initializeMethod(neoMethod, compUnit);
+            compUnit.getNeoModule().addMethod(neoMethod);
         }
     }
 
     public static void compileMethod(NeoMethod neoMethod, CompilationUnit compUnit)
             throws IOException {
-        AbstractInsnNode insn = neoMethod.asmMethod.instructions.get(0);
+        AbstractInsnNode insn = neoMethod.getAsmMethod().instructions.get(0);
         while (insn != null) {
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
@@ -222,10 +266,10 @@ public class Compiler {
             CompilationUnit compUnit) throws IOException {
 
         if (insn.getType() == AbstractInsnNode.LINE) {
-            neoMethod.currentLine = ((LineNumberNode) insn).line;
+            neoMethod.setCurrentLine(((LineNumberNode) insn).line);
         }
         if (insn.getType() == AbstractInsnNode.LABEL) {
-            neoMethod.currentLabel = ((LabelNode) insn).getLabel();
+            neoMethod.setCurrentLabel(((LabelNode) insn).getLabel());
         }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
@@ -415,4 +459,5 @@ public class Compiler {
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
+
 }

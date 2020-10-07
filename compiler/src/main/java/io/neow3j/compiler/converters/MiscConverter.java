@@ -1,5 +1,10 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.CompilerException;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoMethod;
+import io.neow3j.compiler.converters.Converter;
 import java.io.IOException;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
@@ -88,7 +93,7 @@ public class MiscConverter implements Converter {
             case MONITOREXIT:
             case WIDE:
                 throw new CompilerException("Unsupported instruction " + opcode + " in: " +
-                        neoMethod.asmMethod.name + ".");
+                        neoMethod.getAsmMethod().name + ".");
                 // endregion ### MISCELLANEOUS ###
         }
         return insn;

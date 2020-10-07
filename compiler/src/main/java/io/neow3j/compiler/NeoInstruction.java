@@ -12,39 +12,105 @@ import java.io.IOException;
  */
 public class NeoInstruction {
 
-    /**
-     * The NeoVM opcode.
-     */
-    OpCode opcode;
+    // The NeoVM opcode.
+    private OpCode opcode;
 
-    /**
-     * One or multiple operands of variable byte size, joined together in one byte array.
-     */
-    byte[] operand;
+    // One or multiple operands of variable byte size, joined together in one byte array.
+    private byte[] operand;
 
     // Stores data depending on the type of this transaction. If this transaction is a method
     // call, this object should be the called `NeoMethod`.
-    Object extra;
+    private Object extra;
 
     // The corresponding line number in the source code file that this instructions originates from.
-    int lineNr;
+    private int lineNr;
 
     // The NeoVM script address of this instruction in its respective method. This is not the
     // absolute address in the script, but only relative to the method.
-    int address;
+    private int address;
 
-    NeoInstruction(OpCode opcode, byte[] operand) {
+    /**
+     * Constructs a new instruction with the given opcode and operand. The operand needs to "fit"
+     * the opcode, i.e., must have a length that is supported by the given opcode.
+     *
+     * @param opcode  the Neo opcode of this instruction.
+     * @param operand the operand.
+     */
+    public NeoInstruction(OpCode opcode, byte[] operand) {
         this.opcode = opcode;
         checkOperandSize(operand);
         this.operand = operand;
     }
 
-    NeoInstruction(OpCode opcode) {
+    /**
+     * Constructs a new instruction with the given opcode and an empty operand.
+     *
+     * @param opcode the Neo opcode of this instruction.
+     */
+    public NeoInstruction(OpCode opcode) {
         this.opcode = opcode;
         this.operand = new byte[]{};
     }
 
-    NeoInstruction setExtra(Object extra) {
+    /**
+     * Gets the opcode of this instruction.
+     *
+     * @return the opcode.
+     */
+    public OpCode getOpcode() {
+        return opcode;
+    }
+
+    /**
+     * Gets the operand of this instruction if it has one. If this instruction doesn't have an
+     * operand, an empty array is returned.
+     *
+     * @return the operand.
+     */
+    public byte[] getOperand() {
+        return operand;
+    }
+
+    /**
+     * Gets the line number in the source file that this instruction corresponds to.
+     *
+     * @return the line number.
+     */
+    public int getLineNr() {
+        return lineNr;
+    }
+
+    /**
+     * Gets this instruction's byte address, i.e., its position in the method it belongs to.
+     * <p>
+     * The address is absolute in the method that this instruction lives in but not in the whole
+     * module.
+     *
+     * @return the address.
+     */
+    public int getAddress() {
+        return address;
+    }
+
+    /**
+     * Gets the extra information set on this instruction.
+     *
+     * @return the extra or null if no auxiliary data was set.
+     */
+    public Object getExtra() {
+        return extra;
+    }
+
+    /**
+     * Sets the given object as extra information on this instruction.
+     * <p>
+     * This is used, for example, for setting a reference to a method that this instruction jumps
+     * to.
+     *
+     * @param extra the extra information.
+     * @return this.
+     */
+    public NeoInstruction setExtra(Object extra) {
         this.extra = extra;
         return this;
     }
@@ -87,6 +153,12 @@ public class NeoInstruction {
         this.address = address;
     }
 
+    /**
+     * Sets the given operand on this instruction. Overwrites if there was one set before. Checks if
+     * the operand's size is supported by this instruction's opcode.
+     *
+     * @param operand The operand.
+     */
     public void setOperand(byte[] operand) {
         checkOperandSize(operand);
         this.operand = operand;

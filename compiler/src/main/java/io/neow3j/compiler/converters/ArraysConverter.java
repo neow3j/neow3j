@@ -1,9 +1,14 @@
-package io.neow3j.compiler;
+package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.getFieldIndex;
 
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.CompilerException;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoInstruction;
+import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
 import java.io.IOException;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -68,7 +73,7 @@ public class ArraysConverter implements Converter {
                 break;
             case MULTIANEWARRAY:
                 throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.asmMethod.name + " not yet supported.");
+                        neoMethod.getAsmMethod().name + " not yet supported.");
         }
         return insn;
     }
@@ -83,7 +88,7 @@ public class ArraysConverter implements Converter {
         // field variables of an object then simply becomes an index in the array. This is done
         // with the SETITEM opcode.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.ownerType);
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
         addPushNumber(idx, neoMethod);
         // SETITEM expects the item to be on top of the stack (item -> index -> array)
         neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));

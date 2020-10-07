@@ -1,8 +1,12 @@
 package io.neow3j.compiler;
 
+import static java.lang.String.format;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.List;
@@ -10,9 +14,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.util.Printer;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceMethodVisitor;
 
 public class AsmHelper {
 
@@ -64,6 +73,62 @@ public class AsmHelper {
         return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
                 .anyMatch(methodAnnotation -> descriptors.stream()
                         .anyMatch(desc -> methodAnnotation.desc.equals(desc)));
+    }
+
+
+    /**
+     * Prints the JVM instructions for the given class.
+     *
+     * @param fullyQualifiedClassName The fully qualified name of the class to print the
+     *                                instructions for.
+     * @throws IOException If there are problems reading the class file.
+     */
+    public static void printJVMInstructions(String fullyQualifiedClassName) throws IOException {
+        InputStream in = AsmHelper.class.getClassLoader().getResourceAsStream(
+                fullyQualifiedClassName.replace('.', '/') + ".class");
+        if (in == null) {
+            throw new IllegalArgumentException(
+                    format("Couldn't find .class file for %s.", fullyQualifiedClassName));
+        }
+        try (InputStream bufferedInputStream = new BufferedInputStream(in)) {
+            bufferedInputStream.mark(0);
+            printJVMInstructions(bufferedInputStream);
+            bufferedInputStream.reset();
+        }
+    }
+
+    /**
+     * Prints the instructions of the given class input stream.
+     *
+     * @param in The input stream of the class.
+     * @throws IOException If there are problems reading the class file.
+     */
+    public static void printJVMInstructions(InputStream in) throws IOException {
+        ClassReader reader = new ClassReader(in);
+        ClassNode classNode = new ClassNode();
+        Printer printer = new Textifier();
+        TraceMethodVisitor methodVisitor = new TraceMethodVisitor(printer);
+        // change the "parsing options" if you would like to
+        // see debug symbols from the JVM bytecode
+        reader.accept(classNode, 2);
+        final List<MethodNode> methods = classNode.methods;
+        for (MethodNode m : methods) {
+            InsnList inList = m.instructions;
+            System.out.println(m.name);
+            for (int i = 0; i < inList.size(); i++) {
+                System.out.print(insnToString(inList.get(i), methodVisitor, printer));
+                printer.getText().clear();
+            }
+        }
+    }
+
+    private static String insnToString(AbstractInsnNode insn, TraceMethodVisitor methodVisitor,
+            Printer printer) {
+
+        insn.accept(methodVisitor);
+        StringWriter sw = new StringWriter();
+        printer.print(new PrintWriter(sw));
+        return sw.toString();
     }
 
 }
