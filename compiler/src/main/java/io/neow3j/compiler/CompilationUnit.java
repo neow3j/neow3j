@@ -49,16 +49,15 @@ public class CompilationUnit {
         this.neoModule = new NeoModule();
     }
 
-
-    protected ClassLoader getClassLoader() {
+    public ClassLoader getClassLoader() {
         return classLoader;
     }
 
-    protected NeoModule getNeoModule() {
+    public NeoModule getNeoModule() {
         return neoModule;
     }
 
-    protected ClassNode getContractClassNode() {
+    public ClassNode getContractClassNode() {
         return contractClassNode;
     }
 
