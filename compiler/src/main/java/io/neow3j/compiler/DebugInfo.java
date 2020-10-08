@@ -40,6 +40,22 @@ public class DebugInfo {
         this.events = events;
     }
 
+    public String getHash() {
+        return hash;
+    }
+
+    public List<String> getDocuments() {
+        return documents;
+    }
+
+    public List<Method> getMethods() {
+        return methods;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Method {
 
@@ -84,6 +100,34 @@ public class DebugInfo {
             this.variables = variables;
             this.sequencePoints = sequencePoints;
         }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getRange() {
+            return range;
+        }
+
+        public List<String> getParams() {
+            return params;
+        }
+
+        public String getReturnType() {
+            return returnType;
+        }
+
+        public List<String> getVariables() {
+            return variables;
+        }
+
+        public List<String> getSequencePoints() {
+            return sequencePoints;
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -107,6 +151,18 @@ public class DebugInfo {
             this.id = id;
             this.name = name;
             this.params = params;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<String> getParams() {
+            return params;
         }
     }
 }
