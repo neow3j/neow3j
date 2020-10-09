@@ -41,7 +41,7 @@ public class NeoModule {
             // At this point, the `nextAddress` should be set to one byte after the last
             // instruction byte of a method. So we can simply add this number to the current
             // start address and get the start address of the next method.
-            startAddress += method.getNextAddress();
+            startAddress += method.getLastAddress();
         }
         for (NeoMethod method : sortedMethods) {
             for (Entry<Integer, NeoInstruction> entry : method.getInstructions().entrySet()) {

@@ -49,7 +49,7 @@ public class NeoMethod {
     // The address after this method's last instruction byte. I.e. the next free address. This
     // address is not absolute in relation to the {@link NeoModule} this method belongs to. It is a
     // method-internal address.
-    private int nextAddress = 0;
+    private int lastAddress = 0;
 
     // The address in the NeoModule at which this method starts.
     private Integer startAddress = null;
@@ -214,8 +214,8 @@ public class NeoMethod {
      *
      * @return the next instruction address.
      */
-    public int getNextAddress() {
-        return nextAddress;
+    public int getLastAddress() {
+        return lastAddress;
     }
 
 
@@ -272,12 +272,12 @@ public class NeoMethod {
             this.jumpTargets.put(this.currentLabel, neoInsn);
             this.currentLabel = null;
         }
-        neoInsn.setAddress(this.nextAddress);
-        this.instructions.put(this.nextAddress, neoInsn);
+        neoInsn.setAddress(this.lastAddress);
+        this.instructions.put(this.lastAddress, neoInsn);
         if (neoInsn instanceof NeoJumpInstruction) {
             this.jumpInstructions.add((NeoJumpInstruction) neoInsn);
         }
-        this.nextAddress += 1 + neoInsn.getOperand().length;
+        this.lastAddress += 1 + neoInsn.getOperand().length;
     }
 
     public void removeLastInstruction() {
@@ -289,7 +289,7 @@ public class NeoMethod {
         }
         this.instructions.remove(this.instructions.lastKey());
         this.jumpInstructions.remove(lastInsn);
-        this.nextAddress -= (1 + lastInsn.getOperand().length);
+        this.lastAddress -= (1 + lastInsn.getOperand().length);
     }
 
     public NeoInstruction getLastInstruction() {

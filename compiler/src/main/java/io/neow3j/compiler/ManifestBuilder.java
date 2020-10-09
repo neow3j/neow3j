@@ -34,6 +34,8 @@ import org.objectweb.asm.tree.ClassNode;
 public class ManifestBuilder {
 
     public static ContractManifest buildManifest(CompilationUnit compUnit, ScriptHash scriptHash) {
+        // TODO: Once the compiler supports multiple classes the annotation going into the
+        //  manifest must be restricted to only one of the classes. Throw an exception otherwise.
         List<ContractGroup> groups = new ArrayList<>();
         ContractFeatures features = new ContractFeatures(false, false);
         Map<String, String> extras = null;
