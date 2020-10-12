@@ -20,21 +20,10 @@ import java.util.List;
 /**
  * Represents a NEP-5 token contract and provides methods to invoke it.
  */
-public class Nep5Token extends SmartContract {
+public class Nep5Token extends Token {
 
-    private static final String NEP5_NAME = "name";
-    private static final String NEP5_TOTAL_SUPPLY = "totalSupply";
-    private static final String NEP5_SYMBOL = "symbol";
-    private static final String NEP5_DECIMALS = "decimals";
-    private static final String NEP5_BALANCE_OF = "balanceOf";
-    private static final String NEP5_TRANSFER = "transfer";
-
-    private String name;
-    // It is expected that Nep5 contracts return the total supply in fractions of their token.
-    // Therefore an integer is used here instead of a decimal number.
-    private BigInteger totalSupply;
-    private Integer decimals;
-    private String symbol;
+    private static final String BALANCE_OF = "balanceOf";
+    private static final String TRANSFER = "transfer";
 
     /**
      * Constructs a new {@code Nep5Token} representing the token contract with the given script
@@ -45,78 +34,6 @@ public class Nep5Token extends SmartContract {
      */
     public Nep5Token(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
-    }
-
-    /**
-     * Gets the name of this token.
-     * <p>
-     * The return value is retrieved form the neo-node only once and then cached.
-     *
-     * @return the name.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a string.
-     */
-    public String getName() throws IOException, UnexpectedReturnTypeException {
-        if (this.name == null) {
-            this.name = callFuncReturningString(NEP5_NAME);
-        }
-        return this.name;
-    }
-
-    /**
-     * Gets the symbol of this token.
-     * <p>
-     * The return value is retrieved form the neo-node only once and then cached.
-     *
-     * @return the symbol.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a string.
-     */
-    public String getSymbol() throws IOException, UnexpectedReturnTypeException {
-        if (this.symbol == null) {
-            this.symbol = callFuncReturningString(NEP5_SYMBOL);
-        }
-        return this.symbol;
-    }
-
-    /**
-     * Gets the total supply of this token in fractions.
-     * <p>
-     * The return value is retrieved form the neo-node only once and then cached.
-     *
-     * @return the total supply.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a number.
-     */
-    public BigInteger getTotalSupply() throws IOException, UnexpectedReturnTypeException {
-        if (this.totalSupply == null) {
-            this.totalSupply = callFuncReturningInt(NEP5_TOTAL_SUPPLY);
-        }
-        return this.totalSupply;
-    }
-
-    /**
-     * Gets the number of fractions that one unit of this token can be divided into.
-     * <p>
-     * The return value is retrieved form the neo-node only once and then cached.
-     *
-     * @return the the number of fractions.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a number.
-     */
-    public int getDecimals() throws IOException, UnexpectedReturnTypeException {
-        if (this.decimals == null) {
-            this.decimals = callFuncReturningInt(NEP5_DECIMALS).intValue();
-        }
-        return this.decimals;
     }
 
     /**
@@ -181,7 +98,7 @@ public class Nep5Token extends SmartContract {
             UnexpectedReturnTypeException {
 
         ContractParameter ofParam = ContractParameter.hash160(scriptHash);
-        return callFuncReturningInt(NEP5_BALANCE_OF, ofParam);
+        return callFuncReturningInt(BALANCE_OF, ofParam);
     }
 
     /**
@@ -364,7 +281,7 @@ public class Nep5Token extends SmartContract {
                 ContractParameter.hash160(to),
                 ContractParameter.integer(amount));
 
-        return new ScriptBuilder().contractCall(scriptHash, NEP5_TRANSFER, params).toArray();
+        return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
     }
 
     private TransactionBuilder assembleMultiTransferTransaction(Wallet wallet, List<byte[]> scripts,
@@ -443,7 +360,7 @@ public class Nep5Token extends SmartContract {
                     + " only holds " + accBalance.toString() + " (in token fractions).");
         }
 
-        return invokeFunction(NEP5_TRANSFER,
+        return invokeFunction(TRANSFER,
                 ContractParameter.hash160(acc.getScriptHash()),
                 ContractParameter.hash160(to),
                 ContractParameter.integer(fractions))

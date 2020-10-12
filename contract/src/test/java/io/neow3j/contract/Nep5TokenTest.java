@@ -108,30 +108,6 @@ public class Nep5TokenTest {
     }
 
     @Test
-    public void testGetName() throws IOException {
-        setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
-        assertThat(neoToken.getName(), is("NEO"));
-    }
-
-    @Test
-    public void testGetSymbol() throws IOException {
-        setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
-        assertThat(neoToken.getSymbol(), is("neo"));
-    }
-
-    @Test
-    public void testGetDecimals() throws Exception {
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
-        assertThat(gasToken.getDecimals(), is(8));
-    }
-
-    @Test
-    public void testGetTotalSupply() throws Exception {
-        setUpWireMockForInvokeFunction("totalSupply", "invokefunction_totalSupply.json");
-        assertThat(gasToken.getTotalSupply(), is(new BigInteger("3000000000000000")));
-    }
-
-    @Test
     public void testGetBalanceOfAccount() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
