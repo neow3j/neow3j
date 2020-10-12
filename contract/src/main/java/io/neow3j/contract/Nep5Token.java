@@ -128,17 +128,16 @@ public class Nep5Token extends Token {
     }
 
     /**
-     * Creates and sends a transfer transaction that uses all accounts in the wallet to cover the
-     * amount.
+     * Creates a transfer transaction that uses all accounts in the wallet to cover the amount.
      * <p>
      * The default account is used first to cover the amount. If it cannot cover the full amount,
      * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
-     * the amount can be covered, all necessary transfers are sent in one transaction.
+     * the amount can be covered, all necessary transfers are packed in one transaction.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @return the transaction id.
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount)
@@ -147,17 +146,16 @@ public class Nep5Token extends Token {
     }
 
     /**
-     * Creates and sends a transfer transaction that uses all accounts in the wallet to cover the
-     * amount.
+     * Creates a transfer transaction that uses all accounts in the wallet to cover the amount.
      * <p>
      * The default account is used first to cover the amount. If it cannot cover the full amount,
      * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
-     * the amount can be covered, all necessary transfers are sent in one transaction.
+     * the amount can be covered, all necessary transfers packed in one transaction.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @return the transaction id.
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
@@ -174,19 +172,19 @@ public class Nep5Token extends Token {
     }
 
     /**
-     * Creates and sends a transfer transaction that uses the provided accounts.
+     * Creates a transfer transaction that uses the provided accounts.
      * <p>
      * The accounts are used in the order provided to cover the transaction amount. If the first
      * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered, all necessary transfers are sent in one
-     * transaction.
+     * amount and so on. If the amount can be covered by the specified accounts, all necessary
+     * transfers are packed in one transaction.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
      * @param from   the script hashes of the accounts in the wallet that should be used to cover
      *               the amount.
-     * @return The transaction id.
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String to,
@@ -195,19 +193,19 @@ public class Nep5Token extends Token {
     }
 
     /**
-     * Creates and sends a transfer transaction that uses the provided accounts.
+     * Creates a transfer transaction that uses the provided accounts.
      * <p>
      * The accounts are used in the order provided to cover the transaction amount. If the first
      * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered, all necessary transfers are sent in one
-     * transaction.
+     * amount and so on. If the amount can be covered by the specified accounts, all necessary
+     * transfers are packed in one transaction.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
      * @param from   the script hashes of the accounts in the wallet that should be used to cover
      *               the amount.
-     * @return the transaction id.
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
@@ -318,14 +316,14 @@ public class Nep5Token extends Token {
     }
 
     /**
-     * Creates and sends a transfer transaction.
+     * Creates a transfer transaction.
      * <p>
      * Uses only the wallet's default account to cover the token amount.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @return the transaction builder.
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
@@ -334,14 +332,14 @@ public class Nep5Token extends Token {
     }
 
     /**
-     * Creates and sends a transfer transaction.
+     * Creates a transfer transaction.
      * <p>
      * Uses only the wallet's default account to cover the token amount.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @return the transaction builder.
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, ScriptHash to,
