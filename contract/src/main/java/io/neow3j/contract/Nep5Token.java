@@ -224,7 +224,8 @@ public class Nep5Token extends Token {
         for (ScriptHash fromScriptHash : from) {
             Account a = wallet.getAccount(fromScriptHash);
             // Verify that potential multi-sig accounts can be used.
-            if (a.isMultiSig() && !privateKeysArePresentForMultiSig(wallet, fromScriptHash)) {
+            if (a.isMultiSig() && a.getVerificationScript() != null &&
+                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
                 throw new IllegalArgumentException("The multi-sig account with script hash "
                         + fromScriptHash.toString() + " does not have the corresponding private "
                         + "keys in the wallet that are required for signing the transfer "
@@ -244,7 +245,8 @@ public class Nep5Token extends Token {
         BigInteger remainingAmount = getAmountAsBigInteger(amount);
         while (remainingAmount.signum() > 0 && it.hasNext()) {
             Account a = it.next();
-            if (a.isMultiSig() && !privateKeysArePresentForMultiSig(wallet, a.getScriptHash())) {
+            if (a.isMultiSig() && a.getVerificationScript() != null &&
+                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
                 continue;
             }
             BigInteger balance = getBalanceOf(a.getScriptHash());
@@ -295,24 +297,6 @@ public class Nep5Token extends Token {
                 .wallet(wallet)
                 .script(concatenatedScript)
                 .signers(signers.toArray(new Signer[]{}));
-    }
-
-    private boolean privateKeysArePresentForMultiSig(Wallet wallet, ScriptHash multiSig) {
-        VerificationScript multiSigVerifScript = wallet.getAccount(multiSig)
-                .getVerificationScript();
-        int signers = 0;
-        Account account;
-        for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
-            ScriptHash scriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
-            if (wallet.holdsAccount(scriptHash)) {
-                account = wallet.getAccount(scriptHash);
-                if (account != null && account.getECKeyPair() != null) {
-                    signers += 1;
-                }
-            }
-        }
-        int signingThreshold = multiSigVerifScript.getSigningThreshold();
-        return signers >= signingThreshold;
     }
 
     /**
