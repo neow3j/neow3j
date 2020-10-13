@@ -7,6 +7,8 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
 
+import io.neow3j.compiler.DebugInfo.Event;
+import io.neow3j.compiler.DebugInfo.Method;
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
@@ -21,15 +23,27 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -112,6 +126,39 @@ public class Compiler {
         throw new CompilerException("Unsupported type: " + type.getClassName());
     }
 
+    public CompilationUnit compile(String sourceFileDir) throws Exception {
+        Neow3jJavaCompiler javac = new Neow3jJavaCompiler();
+        List<File> sourceFiles = new ArrayList<>();
+        Files.walkFileTree(new File(sourceFileDir).toPath(), new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                if(file.getFileName().toString().endsWith(".java")) {
+                    sourceFiles.add(file.toFile());
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        File classesDir = javac.addSources(sourceFiles).compileAll();
+        List<File> classFiles = new ArrayList<>();
+        Files.walkFileTree(classesDir.toPath(), new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                if(file.getFileName().toString().endsWith(".class")) {
+                    classFiles.add(file.toFile());
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+
+        // Add the classes dir to the class loader.
+        compUnit.setClassLoader(new URLClassLoader(new URL[]{classesDir.toURI().toURL()},
+                compUnit.getClassLoader()));
+        compUnit.setSourceFiles(sourceFiles);
+        // TODO: Adapt this for multi file support.
+        FileInputStream in = new FileInputStream(classFiles.get(0));
+        return compileClass(in);
+    }
+
     /**
      * Compiles the given class to NeoVM code.
      *
@@ -155,6 +202,9 @@ public class Compiler {
                 nef.getScriptHash());
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
+        if (!compUnit.getSourceFiles().isEmpty()) {
+            compUnit.setDebugInfo(buildDebugInfo(compUnit));
+        }
         return compUnit;
     }
 
@@ -460,4 +510,59 @@ public class Compiler {
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
     }
 
+    private DebugInfo buildDebugInfo(CompilationUnit compUnit) {
+        List<Method> methods = new ArrayList<>();
+        for (NeoMethod neoMethod : compUnit.getNeoModule().getSortedMethods()) {
+            String name = ClassUtils.getFullyQualifiedNameForInternalName(
+                    neoMethod.getOwnerType().name)
+                    + "," + neoMethod.getName();
+            String range = (neoMethod.getStartAddress() + neoMethod.getInstructions().firstKey())
+                    + "-" + (neoMethod.getStartAddress() + neoMethod.getInstructions().lastKey());
+            List<String> params = new ArrayList<>();
+            for (NeoVariable param : neoMethod.getParametersByNeoIndex().values()) {
+                String type = mapTypeToParameterType(Type.getType(param.getDescriptor()))
+                        .jsonValue();
+                params.add(param.getName() + "," + type);
+            }
+            String returnType = Compiler.mapTypeToParameterType(
+                    Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType()).jsonValue();
+
+            List<String> vars = new ArrayList<>();
+            for (NeoVariable var : neoMethod.getVariablesByNeoIndex().values()) {
+                String type = mapTypeToParameterType(Type.getType(var.getDescriptor()))
+                        .jsonValue();
+                vars.add(var.getName() + "," + type);
+            }
+            // TODO: Fill sequencePoints
+            List<String> sequencePoints = new ArrayList<>();
+            for (NeoInstruction insn : neoMethod.getInstructions().values()) {
+                sequencePoints.add(new StringBuilder()
+                        .append(neoMethod.getStartAddress() + insn.getAddress())
+                        // TODO: Change once it is possible to spread a contract over multiple
+                        //  files.
+                        .append("[0]")
+                        .append(insn.getLineNr())
+                        // TODO: Change once it is possible to know the instruction's column number.
+                        .append(":0-")
+                        .append(insn.getLineNr())
+                        .append(":0")
+                        .toString());
+            }
+            methods.add(new Method(neoMethod.getId(), name, range, params, returnType, vars,
+                    sequencePoints));
+        }
+
+        // TODO: Build events.
+        List<Event> events = new ArrayList<>();
+//        for (NeoEvent neoEvent : compUnit.getNeoModule().sortedMethods) {
+//            events.add(new Event());
+//        }
+        return new DebugInfo(
+                compUnit.getNefFile().getScriptHash(),
+                compUnit.getSourceFiles().stream()
+                        .map(File::getAbsolutePath)
+                        .collect(Collectors.toList()),
+                methods,
+                events);
+    }
 }

@@ -4,6 +4,9 @@ import static java.lang.String.format;
 
 import io.neow3j.contract.NefFile;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
@@ -43,10 +46,16 @@ public class CompilationUnit {
      */
     private DebugInfo debugInfo;
 
+    /**
+     * The list of source files from which this unit has been compiled.
+     */
+    private List<File> sourceFiles;
+
 
     public CompilationUnit(ClassLoader classLoader) {
         this.classLoader = classLoader;
         this.neoModule = new NeoModule();
+        this.sourceFiles = new ArrayList<>();
     }
 
     public ClassLoader getClassLoader() {
@@ -73,6 +82,10 @@ public class CompilationUnit {
         return debugInfo;
     }
 
+    public List<File> getSourceFiles() {
+        return sourceFiles;
+    }
+
     protected void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
@@ -95,5 +108,15 @@ public class CompilationUnit {
 
     protected void setDebugInfo(DebugInfo debugInfo) {
         this.debugInfo = debugInfo;
+    }
+
+    public void setSourceFiles(List<File> sourceFiles) {
+        for (File f : sourceFiles) {
+            if (!f.exists()) {
+                throw new IllegalArgumentException(
+                        format("Source file %s does not exist.", f.getName()));
+            }
+        }
+        this.sourceFiles = sourceFiles;
     }
 }
