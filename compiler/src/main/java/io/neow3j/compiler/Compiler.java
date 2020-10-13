@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -132,7 +131,7 @@ public class Compiler {
         Files.walkFileTree(new File(sourceFileDir).toPath(), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if(file.getFileName().toString().endsWith(".java")) {
+                if (file.getFileName().toString().endsWith(".java")) {
                     sourceFiles.add(file.toFile());
                 }
                 return FileVisitResult.CONTINUE;
@@ -143,7 +142,7 @@ public class Compiler {
         Files.walkFileTree(classesDir.toPath(), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if(file.getFileName().toString().endsWith(".class")) {
+                if (file.getFileName().toString().endsWith(".class")) {
                     classFiles.add(file.toFile());
                 }
                 return FileVisitResult.CONTINUE;
@@ -536,6 +535,9 @@ public class Compiler {
             // TODO: Fill sequencePoints
             List<String> sequencePoints = new ArrayList<>();
             for (NeoInstruction insn : neoMethod.getInstructions().values()) {
+                if (insn.getLineNr() == null) {
+                    continue;
+                }
                 sequencePoints.add(new StringBuilder()
                         .append(neoMethod.getStartAddress() + insn.getAddress())
                         // TODO: Change once it is possible to spread a contract over multiple
