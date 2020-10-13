@@ -1,12 +1,21 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.compiler.Compiler.mapTypeToParameterType;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.utils.ClassUtils;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.stream.Collectors;
+import org.objectweb.asm.Type;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DebugInfo {
@@ -54,6 +63,65 @@ public class DebugInfo {
 
     public List<Event> getEvents() {
         return events;
+    }
+
+    public static DebugInfo buildDebugInfo(CompilationUnit compUnit) {
+        // Build method information.
+        List<Method> methods = new ArrayList<>();
+        for (NeoMethod neoMethod : compUnit.getNeoModule().getSortedMethods()) {
+            String name = ClassUtils.getFullyQualifiedNameForInternalName(
+                    neoMethod.getOwnerType().name) + "," + neoMethod.getName();
+            String range = (neoMethod.getStartAddress() + neoMethod.getInstructions().firstKey())
+                    + "-" + (neoMethod.getStartAddress() + neoMethod.getInstructions().lastKey());
+            List<String> params = collectVars(neoMethod.getParametersByNeoIndex().values());
+            List<String> vars = collectVars(neoMethod.getVariablesByNeoIndex().values());
+            String returnType = mapTypeToParameterType(
+                    Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType()).jsonValue();
+            List<String> sequencePoints = collectSequencePoints(neoMethod);
+            methods.add(new Method(neoMethod.getId(), name, range, params, returnType, vars,
+                    sequencePoints));
+        }
+
+        // TODO: Build event information.
+        List<Event> events = new ArrayList<>();
+
+        return new DebugInfo(
+                compUnit.getNefFile().getScriptHash(),
+                compUnit.getSourceFiles().stream()
+                        .map(File::getAbsolutePath)
+                        .collect(Collectors.toList()),
+                methods,
+                events);
+    }
+
+    private static List<String> collectSequencePoints(NeoMethod neoMethod) {
+        List<String> sequencePoints = new ArrayList<>();
+        for (NeoInstruction insn : neoMethod.getInstructions().values()) {
+            if (insn.getLineNr() == null) {
+                continue;
+            }
+            sequencePoints.add(new StringBuilder()
+                    .append(neoMethod.getStartAddress() + insn.getAddress())
+                    // TODO: Change once it is possible to spread a contract over multiple
+                    //  files.
+                    .append("[0]")
+                    .append(insn.getLineNr())
+                    // TODO: Change once it is possible to know the instruction's column number.
+                    .append(":0-")
+                    .append(insn.getLineNr())
+                    .append(":0")
+                    .toString());
+        }
+        return sequencePoints;
+    }
+
+    private static List<String> collectVars(Collection<NeoVariable> vars) {
+        List<String> varStrings = new ArrayList<>();
+        for (NeoVariable var : vars) {
+            String type = mapTypeToParameterType(Type.getType(var.getDescriptor())).jsonValue();
+            varStrings.add(var.getName() + "," + type);
+        }
+        return varStrings;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
