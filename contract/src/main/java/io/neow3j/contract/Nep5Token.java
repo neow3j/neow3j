@@ -1,10 +1,8 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
@@ -223,6 +221,8 @@ public class Nep5Token extends Token {
         List<Account> accounts = new ArrayList<>();
         for (ScriptHash fromScriptHash : from) {
             Account a = wallet.getAccount(fromScriptHash);
+            // TODO: 15.10.20 Michael: Remove this multi-sig check. The signers for a multi-sig can still
+            //  be added to the TransactionBuilder.
             // Verify that potential multi-sig accounts can be used.
             if (a.isMultiSig() && a.getVerificationScript() != null &&
                     !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
@@ -348,10 +348,5 @@ public class Nep5Token extends Token {
                 ContractParameter.integer(fractions))
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(acc.getScriptHash()));
-    }
-
-    private BigInteger getAmountAsBigInteger(BigDecimal amount) throws IOException {
-        BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
-        return amount.multiply(factor).toBigInteger();
     }
 }

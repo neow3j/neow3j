@@ -139,7 +139,7 @@ public class SmartContract {
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting an integer
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an Integer
      * as return type.
      *
      * @param function The function to call.
