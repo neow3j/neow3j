@@ -66,21 +66,21 @@ public class ObjectsConverter implements Converter {
                 neoMethod.addInstruction(new NeoInstruction(OpCode.SIZE));
                 break;
             case INSTANCEOF:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.getAsmMethod().name + " not yet supported.");
+                throw new CompilerException(format("Instruction %s in %s is not supported.",
+                        opcode.name(), neoMethod.getSourceMethodName()));
         }
         return insn;
     }
 
     public static void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
     }
 
     public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
     }
 
@@ -100,9 +100,9 @@ public class ObjectsConverter implements Converter {
         ClassNode owner = getClassNodeForInternalName(typeInsn.desc, compUnit.getClassLoader());
         MethodInsnNode ctorMethodInsn = skipToCtorMethodInstruction(typeInsn.getNext(), owner);
         MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner).orElseThrow(() ->
-                new CompilerException(owner, callingNeoMethod.getCurrentLine(), format(
-                        "Couldn't find constructor '%s' on class '%s'.",
-                        ctorMethodInsn.name, getClassNameForInternalName(owner.name))));
+                new CompilerException(compUnit, callingNeoMethod, format("Couldn't find "
+                                + "constructor '%s' on class '%s'.", ctorMethodInsn.name,
+                        getClassNameForInternalName(owner.name))));
 
         if (ctorMethod.invisibleAnnotations == null
                 || ctorMethod.invisibleAnnotations.size() == 0) {
@@ -157,17 +157,16 @@ public class ObjectsConverter implements Converter {
                 break; // End of string concatenation.
             }
             if (isCallToAnyStringBuilderMethod(insn)) {
-                throw new CompilerException(compUnit.getContractClassNode(), neoMethod.getCurrentLine(),
-                        format("Only 'append()' and 'toString()' are supported for StringBuilder, "
-                                + "but '%s' was called", ((MethodInsnNode) insn).name));
+                throw new CompilerException(compUnit, neoMethod, format("Only 'append()' and "
+                                + "'toString()' are supported for StringBuilder, but '%s' was "
+                                + "called", ((MethodInsnNode) insn).name));
             }
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
         }
         if (insn == null) {
-            throw new CompilerException(compUnit.getContractClassNode(),
-                    neoMethod.getCurrentLine(),
-                    "Expected to find ScriptBuilder.toString() but reached end of method.");
+            throw new CompilerException(compUnit, neoMethod, "Expected to find "
+                    + "ScriptBuilder.toString() but reached end of method.");
         }
         return insn;
     }

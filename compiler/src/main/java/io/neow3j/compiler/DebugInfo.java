@@ -9,12 +9,9 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.utils.ClassUtils;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.stream.Collectors;
 import org.objectweb.asm.Type;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -68,16 +65,26 @@ public class DebugInfo {
     public static DebugInfo buildDebugInfo(CompilationUnit compUnit) {
         // Build method information.
         List<Method> methods = new ArrayList<>();
+        List<String> documents = new ArrayList<>();
         for (NeoMethod neoMethod : compUnit.getNeoModule().getSortedMethods()) {
+            String sourceFilePath = compUnit.getSourceFile(neoMethod.getOwnerClassName());
+            if (sourceFilePath == null) {
+                continue;
+            }
+            int docIdx = documents.indexOf(sourceFilePath);
+            if (docIdx == -1) {
+                documents.add(sourceFilePath);
+                docIdx = documents.size() - 1;
+            }
             String name = ClassUtils.getFullyQualifiedNameForInternalName(
-                    neoMethod.getOwnerType().name) + "," + neoMethod.getName();
+                    neoMethod.getOwnerClass().name) + "," + neoMethod.getName();
             String range = (neoMethod.getStartAddress() + neoMethod.getInstructions().firstKey())
                     + "-" + (neoMethod.getStartAddress() + neoMethod.getInstructions().lastKey());
             List<String> params = collectVars(neoMethod.getParametersByNeoIndex().values());
             List<String> vars = collectVars(neoMethod.getVariablesByNeoIndex().values());
             String returnType = mapTypeToParameterType(
                     Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType()).jsonValue();
-            List<String> sequencePoints = collectSequencePoints(neoMethod);
+            List<String> sequencePoints = collectSequencePoints(neoMethod, docIdx);
             methods.add(new Method(neoMethod.getId(), name, range, params, returnType, vars,
                     sequencePoints));
         }
@@ -85,16 +92,10 @@ public class DebugInfo {
         // TODO: Build event information.
         List<Event> events = new ArrayList<>();
 
-        return new DebugInfo(
-                compUnit.getNefFile().getScriptHash(),
-                compUnit.getSourceFiles().stream()
-                        .map(File::getAbsolutePath)
-                        .collect(Collectors.toList()),
-                methods,
-                events);
+        return new DebugInfo(compUnit.getNefFile().getScriptHash(), documents, methods, events);
     }
 
-    private static List<String> collectSequencePoints(NeoMethod neoMethod) {
+    private static List<String> collectSequencePoints(NeoMethod neoMethod, int documentIndex) {
         List<String> sequencePoints = new ArrayList<>();
         for (NeoInstruction insn : neoMethod.getInstructions().values()) {
             if (insn.getLineNr() == null) {
@@ -102,9 +103,7 @@ public class DebugInfo {
             }
             sequencePoints.add(new StringBuilder()
                     .append(neoMethod.getStartAddress() + insn.getAddress())
-                    // TODO: Change once it is possible to spread a contract over multiple
-                    //  files.
-                    .append("[0]")
+                    .append("[").append(documentIndex).append("]")
                     .append(insn.getLineNr())
                     // TODO: Change once it is possible to know the instruction's column number.
                     .append(":0-")

@@ -4,15 +4,14 @@ import static java.lang.String.format;
 
 import io.neow3j.contract.NefFile;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
- * Acts as the central object that is passed around in the compilation process and holds the
- * class loader to use for loading classes required for the compilation, the {@link NeoModule}
- * that is built in the compilation, and the Java smart contract class that is compiled.
+ * Acts as the central object that is passed around in the compilation process and holds the class
+ * loader to use for loading classes required for the compilation, the {@link NeoModule} that is
+ * built in the compilation, and the Java smart contract class that is compiled.
  */
 public class CompilationUnit {
 
@@ -25,11 +24,6 @@ public class CompilationUnit {
      * The module containing the compiled classes and methods.
      */
     private NeoModule neoModule;
-
-    /**
-     * The smart contract class that this compilation unit is concerned with.
-     */
-    private ClassNode contractClassNode;
 
     /**
      * The NEF file containing the compiled script.
@@ -46,16 +40,14 @@ public class CompilationUnit {
      */
     private DebugInfo debugInfo;
 
-    /**
-     * The list of source files from which this unit has been compiled.
-     */
-    private List<File> sourceFiles;
+    private Set<ClassNode> contractClasses;
 
+    private SourceLookupProvider sourceLookup = new SourceLookupProvider();
 
     public CompilationUnit(ClassLoader classLoader) {
         this.classLoader = classLoader;
         this.neoModule = new NeoModule();
-        this.sourceFiles = new ArrayList<>();
+        this.contractClasses = new HashSet<>();
     }
 
     public ClassLoader getClassLoader() {
@@ -64,10 +56,6 @@ public class CompilationUnit {
 
     public NeoModule getNeoModule() {
         return neoModule;
-    }
-
-    public ClassNode getContractClassNode() {
-        return contractClassNode;
     }
 
     public NefFile getNefFile() {
@@ -82,20 +70,12 @@ public class CompilationUnit {
         return debugInfo;
     }
 
-    public List<File> getSourceFiles() {
-        return sourceFiles;
-    }
-
     protected void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
     protected void setNeoModule(NeoModule neoModule) {
         this.neoModule = neoModule;
-    }
-
-    protected void setAsmClass(ClassNode asmClass) {
-        this.contractClassNode = asmClass;
     }
 
     protected void setNef(NefFile nef) {
@@ -110,13 +90,42 @@ public class CompilationUnit {
         this.debugInfo = debugInfo;
     }
 
-    public void setSourceFiles(List<File> sourceFiles) {
-        for (File f : sourceFiles) {
-            if (!f.exists()) {
-                throw new IllegalArgumentException(
-                        format("Source file %s does not exist.", f.getName()));
-            }
-        }
-        this.sourceFiles = sourceFiles;
+    /**
+     * Adds the given {@code ClassNode} to the list of classes that form the smart contract. I.e.,
+     * only classes that are added here will can contribute to a contract's public interface.
+     *
+     * @param classNode The class to add.
+     */
+    protected void addContractClass(ClassNode classNode) {
+        contractClasses.add(classNode);
     }
+
+    /**
+     * Gets the set of classes that make up the smart contract being compiled.
+     *
+     * @return the contract classes.
+     */
+    protected Set<ClassNode> getContractClasses() {
+        return contractClasses;
+    }
+
+    /**
+     * Gets the absolute path of the source file corresponding to the given class.
+     * @param fullyQualifiedClassName The name of the class.
+     * @return the absolute path of the source file.
+     */
+    protected String getSourceFile(String fullyQualifiedClassName) {
+        return sourceLookup.getSourceFilePath(fullyQualifiedClassName);
+    }
+
+    /**
+     * Adds the given mapping between the compiled class and the source file.
+     *
+     * @param className The fully qualified name of the class.
+     * @param sourceFile The absolute path to the source file that the class was compiled from.
+     */
+    protected void addClassToSourceMapping(String className, String sourceFile) {
+        sourceLookup.addClassToSourceMapping(className, sourceFile);
+    }
+
 }

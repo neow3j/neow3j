@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.utils.ClassUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public class NeoMethod {
     private final MethodNode asmMethod;
 
     // The type that contains this method.
-    private final ClassNode ownerType;
+    private final ClassNode sourceClass;
 
     // The method's name that is, e.g., used when generating the contract's ABI.
     private String name;
@@ -68,18 +69,43 @@ public class NeoMethod {
     // opcodes like JMPIF.
     private Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
 
-    public NeoMethod(MethodNode asmMethod, ClassNode owner) {
+    /**
+     * Constructs a new Neo method.
+     *
+     * @param asmMethod   The Java method this Neo method is converted from.
+     * @param sourceClass The Java class from which this method originates.
+     */
+    public NeoMethod(MethodNode asmMethod, ClassNode sourceClass) {
         this.asmMethod = asmMethod;
         this.name = asmMethod.name;
-        this.ownerType = owner;
+        this.sourceClass = sourceClass;
     }
 
+    /**
+     * Gets the corresponding JVM method that this method was converted from.
+     *
+     * @return the method.
+     */
     public MethodNode getAsmMethod() {
         return asmMethod;
     }
 
-    public ClassNode getOwnerType() {
-        return ownerType;
+    /**
+     * Gets the class that this method is converted from.
+     *
+     * @return The class.
+     */
+    public ClassNode getOwnerClass() {
+        return sourceClass;
+    }
+
+    /**
+     * Gets the fully qualified name of the class that this method was converted from.
+     *
+     * @return the fully qualified name of the corresponding class.
+     */
+    public String getOwnerClassName() {
+        return ClassUtils.getFullyQualifiedNameForInternalName(sourceClass.name);
     }
 
     /**
@@ -89,7 +115,7 @@ public class NeoMethod {
      * @return this method's ID.
      */
     public String getId() {
-        return getMethodId(asmMethod, ownerType);
+        return getMethodId(asmMethod, sourceClass);
     }
 
     /**
@@ -99,6 +125,17 @@ public class NeoMethod {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Gets the name of the JVM method that this Neo method was derived from.
+     * <p>
+     * This will most often be equal to the name returned by {@link NeoMethod#getName()}.
+     *
+     * @return the name of the corresponding source method.
+     */
+    public String getSourceMethodName() {
+        return asmMethod.name;
     }
 
     /**
@@ -217,7 +254,6 @@ public class NeoMethod {
     public int getLastAddress() {
         return lastAddress;
     }
-
 
     /**
      * Adds a parameter to this method.

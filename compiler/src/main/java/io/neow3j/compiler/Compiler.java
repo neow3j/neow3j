@@ -8,8 +8,6 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
 
-import io.neow3j.compiler.DebugInfo.Event;
-import io.neow3j.compiler.DebugInfo.Method;
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
@@ -40,10 +38,14 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -82,53 +84,18 @@ public class Compiler {
         compUnit = new CompilationUnit(classLoader);
     }
 
-    public static ContractParameterType mapTypeToParameterType(Type type) {
-        String typeName = type.getClassName();
-        if (typeName.equals(String.class.getTypeName())) {
-            return ContractParameterType.STRING;
-        }
-        if (typeName.equals(Integer.class.getTypeName())
-                || typeName.equals(int.class.getTypeName())
-                || typeName.equals(Long.class.getTypeName())
-                || typeName.equals(long.class.getTypeName())
-                || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())
-                || typeName.equals(Short.class.getTypeName())
-                || typeName.equals(short.class.getTypeName())
-                || typeName.equals(Character.class.getTypeName())
-                || typeName.equals(char.class.getTypeName())) {
-            return ContractParameterType.INTEGER;
-        }
-        if (typeName.equals(Boolean.class.getTypeName())
-                || typeName.equals(boolean.class.getTypeName())) {
-            return ContractParameterType.BOOLEAN;
-        }
-        if (typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())) {
-            return ContractParameterType.BYTE_ARRAY;
-        }
-        if (typeName.equals(Void.class.getTypeName())
-                || typeName.equals(void.class.getTypeName())) {
-            return ContractParameterType.VOID;
-        }
-        if (typeName.equals(ScriptContainer.class.getTypeName())) {
-            return ContractParameterType.INTEROP_INTERFACE;
-        }
-        try {
-            typeName = type.getDescriptor().replace("/", ".");
-            Class<?> clazz = Class.forName(typeName);
-            if (clazz.isArray()) {
-                return ContractParameterType.ARRAY;
-            }
-        } catch (ClassNotFoundException e) {
-            throw new CompilerException(e);
-        }
-        throw new CompilerException("Unsupported type: " + type.getClassName());
-    }
-
-    public CompilationUnit compile(String sourceFileDir) throws Exception {
+    /**
+     * Compiles the Java files in the given directory and subdirectories to neo-vm code and produces
+     * debugging information for usage with the Neo Debugger.
+     *
+     * @param sourceFileDir The directory to look for Java smart contract files.
+     * @return the compilation results.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     */
+    public CompilationUnit compileJavaFiles(String sourceFileDir) throws IOException {
         Neow3jJavaCompiler javac = new Neow3jJavaCompiler();
         List<File> sourceFiles = new ArrayList<>();
+        // Collect source files in the source file directory.
         Files.walkFileTree(new File(sourceFileDir).toPath(), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
@@ -138,9 +105,56 @@ public class Compiler {
                 return FileVisitResult.CONTINUE;
             }
         });
-        File classesDir = javac.addSources(sourceFiles).compileAll();
+
+        // Compile all source files.
+        StandardJavaFileManager fileManager = javac.addSources(sourceFiles).compileAll();
+
+        // Add the class output directory to the class loader.
+        List<URL> classDirs = new ArrayList<>();
+        for (File f : fileManager.getLocation(StandardLocation.CLASS_OUTPUT)) {
+            classDirs.add(f.toURI().toURL());
+        }
+        compUnit.setClassLoader(new URLClassLoader(
+                classDirs.toArray(new URL[]{}), compUnit.getClassLoader()));
+
+        // Get all compiled class files and
+        Iterable<JavaFileObject> classFiles = fileManager.list(StandardLocation.CLASS_OUTPUT, "",
+                Collections.singleton(Kind.CLASS), true);
+        List<ClassNode> asmClasses = new ArrayList<>();
+        for (JavaFileObject classFile : classFiles) {
+            ClassNode asmClass = getAsmClass(classFile.openInputStream());
+            asmClasses.add(asmClass);
+            String sourceFileName = asmClass.sourceFile.substring(0,
+                    asmClass.sourceFile.indexOf("."));
+            JavaFileObject sourceFile = fileManager.getJavaFileForInput(
+                    StandardLocation.SOURCE_PATH, sourceFileName, Kind.SOURCE);
+            compUnit.addClassToSourceMapping(
+                    ClassUtils.getFullyQualifiedNameForInternalName(asmClass.name),
+                    sourceFile.getName());
+        }
+
+        for (ClassNode asmClass : asmClasses) {
+            compileClass(asmClass);
+        }
+        return compUnit;
+    }
+
+    /**
+     * Converts the JVM class files in the given directory and subdirectories to a neo-vm script. No
+     * debugging information is created because the source files are unknown.
+     *
+     * @param classFileDir The directory to look for class files.
+     * @return The compilation result.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     */
+    public CompilationUnit compileClassFiles(String classFileDir) throws IOException {
+        // Add the classes dir to the class loader.
+        compUnit.setClassLoader(new URLClassLoader(new URL[]{new File(classFileDir)
+                .toURI().toURL()},
+                compUnit.getClassLoader()));
+        // Add mappings from class names to source files for later use in the debug information.
         List<File> classFiles = new ArrayList<>();
-        Files.walkFileTree(classesDir.toPath(), new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(new File(classFileDir).toPath(), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if (file.getFileName().toString().endsWith(".class")) {
@@ -149,14 +163,10 @@ public class Compiler {
                 return FileVisitResult.CONTINUE;
             }
         });
-
-        // Add the classes dir to the class loader.
-        compUnit.setClassLoader(new URLClassLoader(new URL[]{classesDir.toURI().toURL()},
-                compUnit.getClassLoader()));
-        compUnit.setSourceFiles(sourceFiles);
-        // TODO: Adapt this for multi file support.
-        FileInputStream in = new FileInputStream(classFiles.get(0));
-        return compileClass(in);
+        for (File classFile : classFiles) {
+            compileClass(new FileInputStream(classFile));
+        }
+        return compUnit;
     }
 
     /**
@@ -182,13 +192,13 @@ public class Compiler {
     /**
      * Compiles the given class to NeoVM code.
      *
-     * @param contractClassNode the {@link ClassNode} representing a class file.
+     * @param classNode the {@link ClassNode} representing a class file.
      * @return the compilation unit holding the NEF and contract manifest.
      */
-    private CompilationUnit compileClass(ClassNode contractClassNode) throws IOException {
-        compUnit.setAsmClass(contractClassNode);
-        collectAndInitializeStaticFields(contractClassNode);
-        collectAndInitializeMethods(contractClassNode);
+    private CompilationUnit compileClass(ClassNode classNode) throws IOException {
+        compUnit.addContractClass(classNode);
+        collectAndInitializeStaticFields(classNode);
+        collectAndInitializeMethods(classNode);
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -202,9 +212,7 @@ public class Compiler {
                 nef.getScriptHash());
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
-        if (!compUnit.getSourceFiles().isEmpty()) {
-            compUnit.setDebugInfo(buildDebugInfo(compUnit));
-        }
+        compUnit.setDebugInfo(buildDebugInfo(compUnit));
         return compUnit;
     }
 
@@ -293,9 +301,11 @@ public class Compiler {
                                 + " but only static methods are allowed in smart contracts.",
                         asmMethod.name, getFullyQualifiedNameForInternalName(asmClass.name)));
             }
-            NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            MethodInitializer.initializeMethod(neoMethod, compUnit);
-            compUnit.getNeoModule().addMethod(neoMethod);
+            if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
+                NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
+                MethodInitializer.initializeMethod(neoMethod, compUnit);
+                compUnit.getNeoModule().addMethod(neoMethod);
+            }
         }
     }
 
@@ -331,6 +341,50 @@ public class Compiler {
                     format("Unsupported instruction %s.", opcode.toString()));
         }
         return converter.convert(insn, neoMethod, compUnit);
+    }
+
+    public static ContractParameterType mapTypeToParameterType(Type type) {
+        String typeName = type.getClassName();
+        if (typeName.equals(String.class.getTypeName())) {
+            return ContractParameterType.STRING;
+        }
+        if (typeName.equals(Integer.class.getTypeName())
+                || typeName.equals(int.class.getTypeName())
+                || typeName.equals(Long.class.getTypeName())
+                || typeName.equals(long.class.getTypeName())
+                || typeName.equals(Byte.class.getTypeName())
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
+            return ContractParameterType.INTEGER;
+        }
+        if (typeName.equals(Boolean.class.getTypeName())
+                || typeName.equals(boolean.class.getTypeName())) {
+            return ContractParameterType.BOOLEAN;
+        }
+        if (typeName.equals(Byte[].class.getTypeName())
+                || typeName.equals(byte[].class.getTypeName())) {
+            return ContractParameterType.BYTE_ARRAY;
+        }
+        if (typeName.equals(Void.class.getTypeName())
+                || typeName.equals(void.class.getTypeName())) {
+            return ContractParameterType.VOID;
+        }
+        if (typeName.equals(ScriptContainer.class.getTypeName())) {
+            return ContractParameterType.INTEROP_INTERFACE;
+        }
+        try {
+            typeName = type.getDescriptor().replace("/", ".");
+            Class<?> clazz = Class.forName(typeName);
+            if (clazz.isArray()) {
+                return ContractParameterType.ARRAY;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new CompilerException(e);
+        }
+        throw new CompilerException("Unsupported type: " + type.getClassName());
     }
 
     public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {

@@ -76,8 +76,8 @@ public class MethodsConverter implements Converter {
                 break;
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.getAsmMethod().name + " not yet supported.");
+                throw new CompilerException(format("Instruction %s in %s is not supported.",
+                        opcode.name(), neoMethod.getSourceMethodName()));
         }
         return insn;
     }
