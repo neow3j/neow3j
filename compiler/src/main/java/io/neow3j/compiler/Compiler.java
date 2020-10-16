@@ -314,7 +314,8 @@ public class Compiler {
     public static void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
         LdcInsnNode ldcInsn = (LdcInsnNode) insn;
         if (ldcInsn.cst instanceof String) {
-            addPushDataArray(((String) ldcInsn.cst).getBytes(UTF_8), neoMethod);
+            byte[] data = ((String) ldcInsn.cst).getBytes(UTF_8);
+            neoMethod.addInstruction(buildPushDataInsn(data));
         } else if (ldcInsn.cst instanceof Integer) {
             addPushNumber(((Integer) ldcInsn.cst), neoMethod);
         } else if (ldcInsn.cst instanceof Long) {
@@ -325,17 +326,16 @@ public class Compiler {
         // TODO: Handle `org.objectweb.asm.Type`.
     }
 
-    public static void addPushDataArray(byte[] data, NeoMethod neoMethod) {
-        addInstructionFromBytes(new ScriptBuilder().pushData(data).toArray(), neoMethod);
-    }
-
-    public static void addPushDataArray(String data, NeoMethod neoMethod) {
-        addInstructionFromBytes(new ScriptBuilder().pushData(data).toArray(), neoMethod);
-    }
-
-    private static void addInstructionFromBytes(byte[] insnBytes, NeoMethod neoMethod) {
+    public static NeoInstruction buildPushDataInsn(byte[] data) {
+        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
+        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
+    }
+
+    public static NeoInstruction buildPushDataInsn(String data) {
+        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
+        byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
+        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
     }
 
     // Goes through the instructions of the given method and looks for the call to the `Object`
