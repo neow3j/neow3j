@@ -122,6 +122,8 @@ public class CompilerTest {
     /**
      * Does a {@code invokefunction} JSON-RPC to the setup contract, the function with the current
      * test's name, and the given parameters.
+     * <p>
+     * Doesn't add a signer to the invocation.
      *
      * @param params The parameters to provide to the function call.
      * @return The result of the call.
@@ -132,8 +134,25 @@ public class CompilerTest {
     }
 
     /**
+     * Does a {@code invokefunction} JSON-RPC to the contract contract under test, the function
+     * with the current test's name, with the given parameters and signer.
+     *
+     * @param params The parameters to provide to the function call.
+     * @param signer The signer to add to the invocation.
+     * @return The result of the call.
+     * @throws IOException if something goes wrong in the communication with the neo-node.
+     */
+    protected NeoInvokeFunction callInvokeFunction(Signer signer, ContractParameter... params)
+            throws IOException {
+
+        return callInvokeFunction(getTestName(), signer, params);
+    }
+
+    /**
      * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function and the
      * given parameters.
+     * <p>
+     * Doesn't add a signer to the invocation.
      *
      * @param function The function to call.
      * @param params   The parameters to provide to the function call.
@@ -142,7 +161,25 @@ public class CompilerTest {
      */
     protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
             throws IOException {
-        return contract.callInvokeFunction(function, Arrays.asList(params));
+        return callInvokeFunction(function, null, params);
+    }
+
+    /**
+     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function,
+     * with the given parameters and signer.
+     *
+     * @param function The function to call.
+     * @param signer The signer to add to the invocation.
+     * @param params   The parameters to provide to the function call.
+     * @return The result of the call.
+     * @throws IOException if something goes wrong in the communication with the neo-node.
+     */
+    protected NeoInvokeFunction callInvokeFunction(String function, Signer signer,
+            ContractParameter... params) throws IOException {
+        if (signer == null) {
+            return contract.callInvokeFunction(function, Arrays.asList(params));
+        }
+        return contract.callInvokeFunction(function, Arrays.asList(params), signer);
     }
 
     /**
