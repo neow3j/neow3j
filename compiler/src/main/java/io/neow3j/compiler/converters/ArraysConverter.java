@@ -2,7 +2,14 @@ package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
 import static io.neow3j.compiler.Compiler.addPushNumber;
+import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.getFieldIndex;
+import static io.neow3j.compiler.JVMOpcode.BASTORE;
+import static io.neow3j.compiler.JVMOpcode.BIPUSH;
+import static io.neow3j.compiler.JVMOpcode.DUP;
+import static io.neow3j.compiler.JVMOpcode.ICONST_0;
+import static io.neow3j.compiler.JVMOpcode.ICONST_5;
+import static java.lang.String.format;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
@@ -10,6 +17,8 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
+import io.neow3j.model.types.StackItemType;
+import io.neow3j.utils.BigIntegers;
 import java.io.IOException;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -29,7 +38,7 @@ public class ArraysConverter implements Converter {
             case NEWARRAY:
             case ANEWARRAY:
                 if (isByteArrayInstantiation(insn)) {
-                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWBUFFER));
+                    insn = handleNewByteArray(insn, neoMethod);
                 } else {
                     neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
                 }
@@ -78,9 +87,86 @@ public class ArraysConverter implements Converter {
         return insn;
     }
 
+    private AbstractInsnNode handleNewByteArray(AbstractInsnNode insn, NeoMethod neoMethod) {
+        // The last added instruction contains the size of the array.
+        int arraySize = extractPushedNumber(neoMethod.getLastInstruction());
+        byte[] bytes = new byte[arraySize];
+        while (settingOfArrayElementFollows(insn)) {
+            // If there is an instruction sequence for setting an array element, we retrieve that
+            // element and skip the instruction sequence.
+            insn = insn.getNext().getNext(); // The instruction that pushed the index to the stack.
+            int idx = getPushedByte(insn);
+            insn = insn.getNext(); // The instruction that pushes the element's value to the stack.
+            int value = getPushedByte(insn);
+            bytes[idx] = (byte) value;
+            insn = insn.getNext(); // Skip to the BASTORE instruction.
+        }
+
+        // Replace the array size instruction with the PUSHDATA instruction and convert it to
+        // BUFFER which is a byte array in neo-vm.
+        neoMethod.replaceLastInstruction(buildPushDataInsn(bytes));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.CONVERT,
+                new byte[]{StackItemType.BUFFER.byteValue()}));
+        return insn;
+    }
+
+    private boolean settingOfArrayElementFollows(AbstractInsnNode insn) {
+        if (!nextInsnIsOpCode(insn, DUP)) {
+            return false;
+        }
+        insn = insn.getNext();
+        if (!nextInsnIsPushByte(insn)) {
+            return false;
+        }
+        insn = insn.getNext();
+        if (!nextInsnIsPushByte(insn)) {
+            return false;
+        }
+        insn = insn.getNext();
+        return nextInsnIsOpCode(insn, BASTORE);
+    }
+
+    private boolean nextInsnIsOpCode(AbstractInsnNode insn, JVMOpcode opcode) {
+        if (insn.getNext() == null) {
+            return false;
+        }
+        return insn.getNext().getOpcode() == opcode.getOpcode();
+    }
+
+    private boolean nextInsnIsPushByte(AbstractInsnNode insn) {
+        if (insn.getNext() == null) {
+            return false;
+        }
+        insn = insn.getNext();
+        return insn.getOpcode() >= ICONST_0.getOpcode() && insn.getOpcode() <= ICONST_5.getOpcode()
+                || insn.getOpcode() == BIPUSH.getOpcode();
+    }
+
+    private static int getPushedByte(AbstractInsnNode insn) {
+        if (insn.getOpcode() >= ICONST_0.getOpcode() && insn.getOpcode() <= ICONST_5.getOpcode()) {
+            return insn.getOpcode() - ICONST_0.getOpcode();
+        } else if (insn.getOpcode() == BIPUSH.getOpcode()) {
+            return ((IntInsnNode) insn).operand;
+        }
+        throw new CompilerException(format("Unexpected instruction with opcode %s.",
+                insn.getOpcode()));
+    }
+
     private static boolean isByteArrayInstantiation(AbstractInsnNode insn) {
         IntInsnNode intInsn = (IntInsnNode) insn;
         return intInsn.operand == BYTE_ARRAY_TYPE_CODE;
+    }
+
+    private int extractPushedNumber(NeoInstruction insn) {
+        if (insn.getOpcode().getCode() <= OpCode.PUSHINT256.getCode()) {
+            return BigIntegers.fromLittleEndianByteArray(insn.getOperand()).intValue();
+        }
+        if (insn.getOpcode().getCode() >= OpCode.PUSHM1.getCode()
+                && insn.getOpcode().getCode() <= OpCode.PUSH16.getCode()) {
+            return insn.getOpcode().getCode() - OpCode.PUSHM1.getCode() - 1;
+        }
+        throw new CompilerException("Couldn't parse get number from instruction "
+                + insn.toString());
     }
 
     private static void addSetItem(AbstractInsnNode insn, NeoMethod neoMethod) {

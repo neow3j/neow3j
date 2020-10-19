@@ -42,24 +42,25 @@ public class StaticFieldConverterTest extends CompilerTest {
 //            assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
 //                    is(expected));
     }
+
+    static class StaticFieldConverter {
+
+        private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
+                "AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
+        private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x010203");
+        private static final int integer = StaticVariableHelper.stringToInt("1000000000000000000000000000000");
+
+        public static byte[] addressToScriptHashConverter() {
+            return scriptHash;
+        }
+
+        public static byte[] hexStringToByteArrayConverter() {
+            return bytes;
+        }
+
+        public static int stringToIntegerConverter() {
+            return integer;
+        }
+    }
 }
 
-class StaticFieldConverter {
-
-    private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
-            "AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
-    private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x010203");
-    private static final int integer = StaticVariableHelper.stringToInt("1000000000000000000000000000000");
-
-    public static byte[] addressToScriptHashConverter() {
-        return scriptHash;
-    }
-
-    public static byte[] hexStringToByteArrayConverter() {
-        return bytes;
-    }
-
-    public static int stringToIntegerConverter() {
-        return integer;
-    }
-}

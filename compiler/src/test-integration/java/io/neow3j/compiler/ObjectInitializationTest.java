@@ -26,23 +26,24 @@ public class ObjectInitializationTest extends CompilerTest {
         assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
                 is(new byte[]{(byte) 0x4e, (byte) 0x65, (byte) 0x6f, 0x01}));
     }
-}
 
-class ObjectInitialization {
+    static class ObjectInitialization {
 
-    public static byte[] initializeCustomClass(String s, int i) {
-        MyClass c = new MyClass(s, i);
-        return Helper.concat(Helper.toByteArray(c.s), Helper.toByteArray(Helper.asByte(c.i)));
+        public static byte[] initializeCustomClass(String s, int i) {
+            MyClass c = new MyClass(s, i);
+            return Helper.concat(Helper.toByteArray(c.s), Helper.toByteArray(Helper.asByte(c.i)));
+        }
+    }
+
+    static class MyClass {
+
+        public String s;
+        public int i;
+
+        public MyClass(String s, int i) {
+            this.s = s;
+            this.i = i;
+        }
     }
 }
 
-class MyClass {
-
-    public String s;
-    public int i;
-
-    public MyClass(String s, int i) {
-        this.s = s;
-        this.i = i;
-    }
-}
