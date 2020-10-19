@@ -102,43 +102,44 @@ public class RelationalOperatorsTest extends CompilerTest {
         ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
+
+    static class RelationalOperators {
+
+        public static boolean[] integers(int i, int j) {
+            boolean[] b = new boolean[6];
+            b[0] = i == j;
+            b[1] = i != j;
+            b[2] = i < j;
+            b[3] = i <= j;
+            b[4] = i > j;
+            b[5] = i >= j;
+            return b;
+        }
+
+        public static boolean[] longs(long i, long j) {
+            boolean[] b = new boolean[6];
+            b[0] = i == j;
+            b[1] = i != j;
+            b[2] = i < j;
+            b[3] = i <= j;
+            b[4] = i > j;
+            b[5] = i >= j;
+            return b;
+        }
+
+        public static boolean[] booleans(boolean i, boolean j) {
+            boolean[] b = new boolean[2];
+            b[0] = i == j;
+            b[1] = i != j;
+            return b;
+        }
+
+        public static boolean[] strings(String s1, String s2) {
+            boolean[] b = new boolean[2];
+            b[0] = s1 == s2;
+            b[1] = s1 != s2;
+            return b;
+        }
+    }
 }
 
-class RelationalOperators {
-
-    public static boolean[] integers(int i, int j) {
-        boolean[] b = new boolean[6];
-        b[0] = i == j;
-        b[1] = i != j;
-        b[2] = i < j;
-        b[3] = i <= j;
-        b[4] = i > j;
-        b[5] = i >= j;
-        return b;
-    }
-
-    public static boolean[] longs(long i, long j) {
-        boolean[] b = new boolean[6];
-        b[0] = i == j;
-        b[1] = i != j;
-        b[2] = i < j;
-        b[3] = i <= j;
-        b[4] = i > j;
-        b[5] = i >= j;
-        return b;
-    }
-
-    public static boolean[] booleans(boolean i, boolean j) {
-        boolean[] b = new boolean[2];
-        b[0] = i == j;
-        b[1] = i != j;
-        return b;
-    }
-
-    public static boolean[] strings(String s1, String s2) {
-        boolean[] b = new boolean[2];
-        b[0] = s1 == s2;
-        b[1] = s1 != s2;
-        return b;
-    }
-}

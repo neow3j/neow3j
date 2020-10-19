@@ -47,22 +47,23 @@ public class StringConcatenationTest extends CompilerTest {
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("onetwoNEO"));
     }
+
+    static class StringConcatenation {
+
+        private static final String staticString = "one" + "two" + Runtime.getPlatform();
+
+        public static String concatTwoStrings(String s1, String s2) {
+            return s1 + s2;
+        }
+
+        public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
+            return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.name();
+        }
+
+        public static String concatInStaticVariable() {
+            return staticString;
+        }
+
+    }
 }
 
-class StringConcatenation {
-
-    private static final String staticString = "one" + "two" + Runtime.getPlatform();
-
-    public static String concatTwoStrings(String s1, String s2) {
-        return s1 + s2;
-    }
-
-    public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
-        return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.name();
-    }
-
-    public static String concatInStaticVariable() {
-        return staticString;
-    }
-
-}

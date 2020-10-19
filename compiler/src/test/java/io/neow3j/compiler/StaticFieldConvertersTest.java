@@ -52,55 +52,56 @@ public class StaticFieldConvertersTest {
         expected.expectMessage(new StringContains("static variable initialization scope"));
         new Compiler().compileClass(IllegalUseOfConverterMethod.class.getName());
     }
-}
 
-class InvalidAddressVariable {
+    static class InvalidAddressVariable {
 
-    private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
-            "A0unErzotcQTNWP2qktA7LgkXZVdHea97H");
+        private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
+                "A0unErzotcQTNWP2qktA7LgkXZVdHea97H");
 
-    public static byte[] main() {
-        return scriptHash;
+        public static byte[] main() {
+            return scriptHash;
+        }
+    }
+
+    static class InvalidHexStringVariable {
+
+        private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x0h02");
+
+        public static byte[] main() {
+            return bytes;
+        }
+    }
+
+    static class InvalidIntStringVariable {
+
+        private static final int integer = StaticVariableHelper.stringToInt("100e0000000000000000000000000000");
+
+        public static int main() {
+            return integer;
+        }
+    }
+
+    static class IllegalInputConverterMethod {
+
+        private static final byte[] bytes = StaticVariableHelper.hexToBytes(Runtime.getPlatform());
+
+        public static byte[] main() {
+            return bytes;
+        }
+
+    }
+
+    static class IllegalUseOfConverterMethod {
+
+        private static final byte[] scriptHash = getScriptHash();
+
+        public static byte[] main() {
+            return scriptHash;
+        }
+
+        public static byte[] getScriptHash() {
+            return StaticVariableHelper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
+        }
     }
 }
 
-class InvalidHexStringVariable {
-
-    private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x0h02");
-
-    public static byte[] main() {
-        return bytes;
-    }
-}
-
-class InvalidIntStringVariable {
-
-    private static final int integer = StaticVariableHelper.stringToInt("100e0000000000000000000000000000");
-
-    public static int main() {
-        return integer;
-    }
-}
-
-class IllegalInputConverterMethod {
-
-    private static final byte[] bytes = StaticVariableHelper.hexToBytes(Runtime.getPlatform());
-
-    public static byte[] main() {
-        return bytes;
-    }
-
-}
-
-class IllegalUseOfConverterMethod {
-
-    private static final byte[] scriptHash = getScriptHash();
-
-    public static byte[] main() {
-        return scriptHash;
-    }
-
-    public static byte[] getScriptHash() {
-        return StaticVariableHelper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
-    }
-}

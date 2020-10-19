@@ -27,20 +27,20 @@ public class SupportedStandardsTest {
         assertThat(res.getManifest().getSupportedStandards(), contains("NEP5"));
     }
 
-}
+    @SupportedStandards({"NEP5", "NEP10"})
+    static class MultiStandardContract {
 
-@SupportedStandards({"NEP5", "NEP10"})
-class MultiStandardContract {
-
-    public static boolean main(byte[] scriptHash) {
-        return Account.isStandard(scriptHash);
+        public static boolean main(byte[] scriptHash) {
+            return Account.isStandard(scriptHash);
+        }
     }
-}
 
-@SupportedStandards("NEP5")
-class SingleStandardContract {
+    @SupportedStandards("NEP5")
+    static class SingleStandardContract {
 
-    public static boolean main(byte[] scriptHash) {
-        return Account.isStandard(scriptHash);
+        public static boolean main(byte[] scriptHash) {
+            return Account.isStandard(scriptHash);
+        }
     }
+
 }

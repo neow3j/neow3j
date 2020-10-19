@@ -51,7 +51,7 @@ public class ByteArrayTest extends CompilerTest {
         assertThat(result.asBuffer().getValue(), is(new byte[]{0x00, 0x00, 0x01, 0x00, 0x00}));
     }
 
-    public static class ByteArrays {
+    static class ByteArrays {
 
         public static byte[] constructEmptyArray() {
             return new byte[]{};
