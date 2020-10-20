@@ -71,8 +71,8 @@ public class CompilerTest {
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());
 
-    protected static Account account;
-    protected static Account multiSigAcc;
+    protected static Account defaultAccount;
+    protected static Account committeeMember;
     protected static Wallet wallet;
     protected static Neow3j neow3j;
     protected static SmartContract contract;
@@ -81,16 +81,19 @@ public class CompilerTest {
     @Rule
     public TestName testName = new TestName();
 
+    private boolean signWithCommitteeMember = false;
+    private boolean signWithDefaultAccount = false;
+
     protected String getTestName() {
         return testName.getMethodName();
     }
 
     protected static void setUp(String name) throws Throwable {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        account = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
-        multiSigAcc = Account.createMultiSigAccount(
-                Arrays.asList(account.getECKeyPair().getPublicKey()), 1);
-        wallet = Wallet.withAccounts(account, multiSigAcc);
+        defaultAccount = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
+        committeeMember = Account.createMultiSigAccount(
+                Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
+        wallet = Wallet.withAccounts(defaultAccount, committeeMember);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         contractName = name;
         contract = deployContract(contractName);
@@ -111,7 +114,7 @@ public class CompilerTest {
         SmartContract sc = new SmartContract(res.getNef(), res.getManifest(), neow3j);
         NeoSendRawTransaction response = sc.deploy()
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(multiSigAcc.getScriptHash()))
+                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
                 .sign().send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
@@ -134,37 +137,6 @@ public class CompilerTest {
     }
 
     /**
-     * Does a {@code invokefunction} JSON-RPC to the contract contract under test, the function
-     * with the current test's name, with the given parameters and signer.
-     *
-     * @param params The parameters to provide to the function call.
-     * @param signer The signer to add to the invocation.
-     * @return The result of the call.
-     * @throws IOException if something goes wrong in the communication with the neo-node.
-     */
-    protected NeoInvokeFunction callInvokeFunction(Signer signer, ContractParameter... params)
-            throws IOException {
-
-        return callInvokeFunction(getTestName(), signer, params);
-    }
-
-    /**
-     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function and the
-     * given parameters.
-     * <p>
-     * Doesn't add a signer to the invocation.
-     *
-     * @param function The function to call.
-     * @param params   The parameters to provide to the function call.
-     * @return The result of the call.
-     * @throws IOException if something goes wrong in the communication with the neo-node.
-     */
-    protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
-            throws IOException {
-        return callInvokeFunction(function, null, params);
-    }
-
-    /**
      * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function,
      * with the given parameters and signer.
      *
@@ -174,12 +146,18 @@ public class CompilerTest {
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    protected NeoInvokeFunction callInvokeFunction(String function, Signer signer,
-            ContractParameter... params) throws IOException {
-        if (signer == null) {
-            return contract.callInvokeFunction(function, Arrays.asList(params));
+    protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
+            throws IOException {
+
+        if (signWithCommitteeMember) {
+            return contract.callInvokeFunction(function, Arrays.asList(params),
+                    Signer.calledByEntry(committeeMember.getScriptHash()));
         }
-        return contract.callInvokeFunction(function, Arrays.asList(params), signer);
+        if (signWithDefaultAccount) {
+            return contract.callInvokeFunction(function, Arrays.asList(params),
+                    Signer.calledByEntry(defaultAccount.getScriptHash()));
+        }
+        return contract.callInvokeFunction(function, Arrays.asList(params));
     }
 
     /**
@@ -204,7 +182,7 @@ public class CompilerTest {
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters.
      * <p>
-     * The multi-sig account at {@link CompilerTest#multiSigAcc} is used to sign the transaction.
+     * The multi-sig account at {@link CompilerTest#committeeMember} is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
@@ -212,7 +190,7 @@ public class CompilerTest {
     protected String invokeFunction(ContractParameter... params) throws Throwable {
         return contract.invokeFunction(getTestName(), params)
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(multiSigAcc.getScriptHash()))
+                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -224,7 +202,7 @@ public class CompilerTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link CompilerTest#multiSigAcc} is used to sign the transaction.
+     * The multi-sig account at {@link CompilerTest#committeeMember} is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
@@ -312,15 +290,12 @@ public class CompilerTest {
         return getObjectMapper().readValue(s, stackItemType);
     }
 
-    protected StackItem getFirstStackItem(NeoInvokeFunction response) {
-        return response.getInvocationResult().getStack().get(0);
+    protected void signWithCommitteeMember() {
+        signWithCommitteeMember = true;
     }
 
-//    protected void transferTokensTogTgT
-//    NeoSendToAddress send = super.sendToAddress(NEO_HASH, toAddress, amount).send();
-//    // ensure that the transaction is sent
-//    waitUntilSendToAddressTransactionHasBeenExecuted();
-//    // store the transaction hash to use this transaction in the tests
-//        return send.getSendToAddress().getHash();
-//
+    protected void signWithDefaultAccount() {
+        signWithDefaultAccount = true;
+    }
+
 }
