@@ -24,13 +24,14 @@ public class CompilerExceptionsTest {
         CompilationUnit res = new Compiler().compileClass(CONTRACT_NAME);
     }
 
-}
+    static class Contract {
 
-class Contract {
-
-    public static boolean objectComparison() {
-        Iterator<String, byte[]> it1 = Storage.find("prefix");
-        Iterator<String, byte[]> it2 = Storage.find("otherPrefix");
-        return it1 == it2;
+        public static boolean objectComparison() {
+            Iterator<String, byte[]> it1 = Storage.find("prefix");
+            Iterator<String, byte[]> it2 = Storage.find("otherPrefix");
+            return it1 == it2;
+        }
     }
+
 }
+
