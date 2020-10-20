@@ -30,7 +30,8 @@ public class BinaryTest extends CompilerTest {
         byte[] result = response.getInvocationResult().getStack().get(0).asByteString().getValue();
         assertThat(result[0], is(StackItemType.ARRAY.byteValue()));
         assertThat(result[1], is((byte) 0x02)); // Number of elements
-        // TODO: This should be a boolean but isn't with the current compiler implementation.
+        // TODO: This should be a Boolean but is a Integer.
+        //  See https://github.com/neo-project/neo/issues/1912
         assertThat(result[2], is(StackItemType.INTEGER.byteValue())); // type of first element
         assertThat(result[3], is((byte) 0x01)); // size of value
         assertThat(result[4], is((byte) 0x00)); // the value
@@ -45,7 +46,8 @@ public class BinaryTest extends CompilerTest {
         int i = 32069;
         NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        // TODO: This should be a boolean but isn't with the current compiler implementation.
+        // TODO: This should be a Boolean but is a Integer.
+        //  See https://github.com/neo-project/neo/issues/1912
         assertThat(res.get(0).asInteger().getValue(), is(BigInteger.ONE));
         assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(i)));
     }
@@ -65,8 +67,8 @@ public class BinaryTest extends CompilerTest {
     public void base64Decode() throws IOException {
         String encoded = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIDEzIGxhenkgZG9ncy4=";
         NeoInvokeFunction response = callInvokeFunction(string(encoded));
-        // TODO: This should be a Buffer but is a byte string with the current compiler
-        //  implementation.
+        // TODO: This should be a Buffer but is a ByteString.
+        //  See https://github.com/neo-project/neo/issues/1912
         String decoded = response.getInvocationResult().getStack().get(0).asByteString()
                 .getAsHexString();
         String expected =
