@@ -4,7 +4,9 @@ import static java.lang.String.format;
 
 import io.neow3j.contract.NefFile;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.objectweb.asm.tree.ClassNode;
 
@@ -40,14 +42,15 @@ public class CompilationUnit {
      */
     private DebugInfo debugInfo;
 
-    private Set<ClassNode> contractClasses;
+    // The set of classes that represent the compiled contract.
+    private Set<ClassNode> contractClasses = new HashSet<>();
 
-    private SourceLookupProvider sourceLookup = new SourceLookupProvider();
+    // Maps fully qualified class names to their source files (aboslute file paths).
+    private Map<String, String> sourceFileMap = new HashMap<>();
 
     public CompilationUnit(ClassLoader classLoader) {
         this.classLoader = classLoader;
         this.neoModule = new NeoModule();
-        this.contractClasses = new HashSet<>();
     }
 
     public ClassLoader getClassLoader() {
@@ -72,10 +75,6 @@ public class CompilationUnit {
 
     protected void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
-    }
-
-    protected void setNeoModule(NeoModule neoModule) {
-        this.neoModule = neoModule;
     }
 
     protected void setNef(NefFile nef) {
@@ -115,7 +114,7 @@ public class CompilationUnit {
      * @return the absolute path of the source file.
      */
     protected String getSourceFile(String fullyQualifiedClassName) {
-        return sourceLookup.getSourceFilePath(fullyQualifiedClassName);
+        return sourceFileMap.get(fullyQualifiedClassName);
     }
 
     /**
@@ -125,7 +124,7 @@ public class CompilationUnit {
      * @param sourceFile The absolute path to the source file that the class was compiled from.
      */
     protected void addClassToSourceMapping(String className, String sourceFile) {
-        sourceLookup.addClassToSourceMapping(className, sourceFile);
+        sourceFileMap.put(className, sourceFile);
     }
 
 }

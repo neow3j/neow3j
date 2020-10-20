@@ -22,7 +22,6 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,14 +37,10 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
+import java.util.Set;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -85,86 +80,52 @@ public class Compiler {
     }
 
     /**
-     * Compiles the Java files in the given directory and subdirectories to neo-vm code and produces
-     * debugging information for usage with the Neo Debugger.
+     * Converts the given classes to neo-vm code and generates debug information with the help of
+     * the given source file paths.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
+     * paths to the given class files.
      *
-     * @param sourceFileDir The directory to look for Java smart contract files.
+     * @param classNames      The fully qualified names of the classes
+     * @param sourceFilePaths The absolute paths to the source files of the given classes.
      * @return the compilation results.
      * @throws IOException if something goes wrong when reading Java and class files from disk.
      */
-    public CompilationUnit compileJavaFiles(String sourceFileDir) throws IOException {
-        Neow3jJavaCompiler javac = new Neow3jJavaCompiler();
-        List<File> sourceFiles = new ArrayList<>();
-        // Collect source files in the source file directory.
-        Files.walkFileTree(new File(sourceFileDir).toPath(), new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if (file.getFileName().toString().endsWith(".java")) {
-                    sourceFiles.add(file.toFile());
-                }
-                return FileVisitResult.CONTINUE;
-            }
-        });
+    public CompilationUnit compileClasses(Set<String> classNames, Set<String> sourceFilePaths)
+            throws IOException {
 
-        // Compile all source files.
-        StandardJavaFileManager fileManager = javac.addSources(sourceFiles).compileAll();
-
-        // Add the class output directory to the class loader.
-        List<URL> classDirs = new ArrayList<>();
-        for (File f : fileManager.getLocation(StandardLocation.CLASS_OUTPUT)) {
-            classDirs.add(f.toURI().toURL());
+        List<ClassNode> classes = new ArrayList<>();
+        for (String className : classNames) {
+            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+            classes.add(asmClass);
+            String relativePath = className.replace(".", "/");
+            String sourceFilePath = sourceFilePaths.stream()
+                    .filter(path -> path.contains(relativePath))
+                    .findFirst().orElseThrow(() -> new CompilerException(
+                            "Could not find source file for class " + className));
+            compUnit.addClassToSourceMapping(className, sourceFilePath);
         }
-        compUnit.setClassLoader(new URLClassLoader(
-                classDirs.toArray(new URL[]{}), compUnit.getClassLoader()));
-
-        // Get all compiled class files and
-        Iterable<JavaFileObject> classFiles = fileManager.list(StandardLocation.CLASS_OUTPUT, "",
-                Collections.singleton(Kind.CLASS), true);
-        List<ClassNode> asmClasses = new ArrayList<>();
-        for (JavaFileObject classFile : classFiles) {
-            ClassNode asmClass = getAsmClass(classFile.openInputStream());
-            asmClasses.add(asmClass);
-            String sourceFileName = asmClass.sourceFile.substring(0,
-                    asmClass.sourceFile.indexOf("."));
-            JavaFileObject sourceFile = fileManager.getJavaFileForInput(
-                    StandardLocation.SOURCE_PATH, sourceFileName, Kind.SOURCE);
-            compUnit.addClassToSourceMapping(
-                    ClassUtils.getFullyQualifiedNameForInternalName(asmClass.name),
-                    sourceFile.getName());
-        }
-
-        for (ClassNode asmClass : asmClasses) {
+        for (ClassNode asmClass : classes) {
             compileClass(asmClass);
         }
         return compUnit;
     }
 
     /**
-     * Converts the JVM class files in the given directory and subdirectories to a neo-vm script. No
-     * debugging information is created because the source files are unknown.
+     * Converts the given JVM class files a neo-vm script. No debugging information is created
+     * because the source files are unknown.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
+     * paths to the given class files.
      *
-     * @param classFileDir The directory to look for class files.
+     * @param classNames The fully qualified names of the classes to convert to neo-vm code.
      * @return The compilation result.
      * @throws IOException if something goes wrong when reading Java and class files from disk.
      */
-    public CompilationUnit compileClassFiles(String classFileDir) throws IOException {
-        // Add the classes dir to the class loader.
-        compUnit.setClassLoader(new URLClassLoader(new URL[]{new File(classFileDir)
-                .toURI().toURL()},
-                compUnit.getClassLoader()));
-        // Add mappings from class names to source files for later use in the debug information.
-        List<File> classFiles = new ArrayList<>();
-        Files.walkFileTree(new File(classFileDir).toPath(), new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if (file.getFileName().toString().endsWith(".class")) {
-                    classFiles.add(file.toFile());
-                }
-                return FileVisitResult.CONTINUE;
-            }
-        });
-        for (File classFile : classFiles) {
-            compileClass(new FileInputStream(classFile));
+    public CompilationUnit compileClasses(Set<String> classNames) throws IOException {
+        for (String className : classNames) {
+            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+            compileClass(asmClass);
         }
         return compUnit;
     }
