@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.objectweb.asm.Label;
@@ -30,7 +32,16 @@ public class NeoMethod {
     // This method's instructions sorted by their address. The addresses in this map are only
     // relative to this method and not the whole `NeoModule` in which this method lives in.
     private SortedMap<Integer, NeoInstruction> instructions = new TreeMap<>();
+
+    // This list contains those instructions that represent a jump, i.e. they remember a label to
+    // which they need to jump. All instructions in this list are also present in the `instructions`
+    // map.
     private List<NeoJumpInstruction> jumpInstructions = new ArrayList<>();
+
+    // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
+    // track of possible jump targets. This is needed when resolving jump addresses for
+    // opcodes like JMPIF.
+    private Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
 
     // This method's local variables (excl. method parametrs).
     private SortedMap<Integer, NeoVariable> variablesByNeoIndex = new TreeMap<>();
@@ -68,11 +79,6 @@ public class NeoMethod {
     // method. If it is the first instruction corresponding to the current line, then the line
     // number is added to the instruction.
     private boolean isFreshNewLine = true;
-
-    // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
-    // track of possible jump targets. This is needed when resolving jump addresses for
-    // opcodes like JMPIF.
-    private Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
 
     /**
      * Constructs a new Neo method.
@@ -297,8 +303,12 @@ public class NeoMethod {
         return this.parametersByJVMIndex.get(index);
     }
 
-    // Adds the given instruction to this method. The current source code line number and the
-    // current address (relative to this method) is added to the instruction.
+    /**
+     * Adds the given instruction to this method. The corresponding source code line number and the
+     * instruction's address (relative to this method) is added to the instruction object.
+     *
+     * @param neoInsn The instruction to add.
+     */
     public void addInstruction(NeoInstruction neoInsn) {
         if (isFreshNewLine) {
             neoInsn.setLineNr(currentLine);
@@ -317,26 +327,62 @@ public class NeoMethod {
             this.jumpTargets.put(this.currentLabel, neoInsn);
             this.currentLabel = null;
         }
-        neoInsn.setAddress(this.lastAddress);
-        this.instructions.put(this.lastAddress, neoInsn);
+        addInstructionInternal(neoInsn);
+    }
+
+    private void addInstructionInternal(NeoInstruction neoInsn) {
+        neoInsn.setAddress(lastAddress);
+        this.instructions.put(lastAddress, neoInsn);
         if (neoInsn instanceof NeoJumpInstruction) {
             this.jumpInstructions.add((NeoJumpInstruction) neoInsn);
         }
         this.lastAddress += 1 + neoInsn.getOperand().length;
     }
 
+    /**
+     * Removes the last instruction from this method. If the instruction is a jump target, i.e., has
+     * a label, an exception is thrown.
+     */
     public void removeLastInstruction() {
-        // What about the currentLabel?
         NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
         if (this.jumpTargets.containsValue(lastInsn)) {
             throw new CompilerException("Attempting to remove an instruction that potentially is a "
                     + "jump target for jump instruction.");
         }
-        this.instructions.remove(this.instructions.lastKey());
-        this.jumpInstructions.remove(lastInsn);
-        this.lastAddress -= (1 + lastInsn.getOperand().length);
+        removeLastInstructionInternal();
     }
 
+    private void removeLastInstructionInternal() {
+        NeoInstruction insn = instructions.remove(instructions.lastKey());
+        jumpInstructions.remove(insn);
+        lastAddress -= (1 + insn.getOperand().length);
+    }
+
+    /**
+     * Replaces the last instruction on this method with the given one. If the last instruction is a
+     * jump target, i.e., has a label set, the label will be transferred to the new instruction.
+     *
+     * @param newInsn The replacement instruction.
+     */
+    public void replaceLastInstruction(NeoInstruction newInsn) {
+        NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
+        if (jumpTargets.containsValue(lastInsn)) {
+            Optional<Entry<Label, NeoInstruction>> jumpTarget = jumpTargets.entrySet().stream()
+                    .filter(e -> e.getValue() == lastInsn).findFirst();
+            Label label = jumpTarget.get().getKey();
+            jumpTargets.remove(label);
+            jumpTargets.put(label, newInsn);
+        }
+        // TODO: Take the line number from the removed instruction and add it to the new one!
+        removeLastInstructionInternal();
+        addInstructionInternal(newInsn);
+    }
+
+    /**
+     * Gets the last instruction in this method.
+     *
+     * @return the last instruction.
+     */
     public NeoInstruction getLastInstruction() {
         return this.instructions.get(this.instructions.lastKey());
     }
@@ -363,13 +409,13 @@ public class NeoMethod {
      *
      * @return the byte-size of this method.
      */
-    int byteSize() {
+    protected int byteSize() {
         return this.instructions.values().stream()
                 .map(NeoInstruction::byteSize)
                 .reduce(Integer::sum).get();
     }
 
-    void finalizeMethod() {
+    protected void finalizeMethod() {
         // Update the jump instructions with the correct target address offset.
         for (NeoJumpInstruction jumpInsn : this.jumpInstructions) {
             if (!this.jumpTargets.containsKey(jumpInsn.getLabel())) {
@@ -385,4 +431,5 @@ public class NeoMethod {
                     .putInt(offset).array());
         }
     }
+
 }

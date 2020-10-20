@@ -39,20 +39,21 @@ public class StaticVariablesTest extends CompilerTest {
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 StringEndsWith.endsWith("NEO"));
     }
+
+    @Features(hasStorage = true)
+    static class StaticVariables {
+
+        private static final StorageMap map = Storage.getStorageContext().createMap("data");
+        private static final String platform = "The platform: " + Runtime.getPlatform() ;
+
+        public static void putToStaticStorageMap(String key, String value) {
+            map.put(key, value);
+        }
+
+        public static String stringConcatWithSyscall() {
+            return platform;
+        }
+
+    }
 }
 
-@Features(hasStorage = true)
-class StaticVariables {
-
-    private static final StorageMap map = Storage.getStorageContext().createMap("data");
-    private static final String platform = "The platform: " + Runtime.getPlatform() ;
-
-    public static void putToStaticStorageMap(String key, String value) {
-        map.put(key, value);
-    }
-
-    public static String stringConcatWithSyscall() {
-        return platform;
-    }
-
-}

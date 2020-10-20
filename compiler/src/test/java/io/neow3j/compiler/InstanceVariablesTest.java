@@ -30,32 +30,28 @@ public class InstanceVariablesTest {
         new Compiler().compileClass(IllegalUseOfInstanceVariables.class.getName());
     }
 
-}
+    static class IllegalUseOfInstanceInitializer {
 
-class IllegalUseOfInstanceInitializer {
+        private static String address;
 
-    private static String address;
+        {
+            address = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
+        }
 
-    {
-        address = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
+        public static String main() {
+            return address;
+        }
+
     }
 
-    public static String main() {
-        return address;
-    }
+    static class IllegalUseOfInstanceVariables {
 
-}
+        private String address;
 
-class IllegalUseOfInstanceVariables {
+        public static String main() {
+            return "hello, world";
+        }
 
-    private String address;
-
-    {
-        address = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
-    }
-
-    public static String main() {
-        return "hello, world";
     }
 
 }
