@@ -62,7 +62,12 @@ public class NeoMethod {
 
     // The current JVM instruction line number. Used in the compilation process to map line
     // numbers to `NeoInstructions`.
-    private Integer currentLine = null;
+    private int currentLine;
+
+    // Tells if the current line number should be added to an instruction that is added to this
+    // method. If it is the first instruction corresponding to the current line, then the line
+    // number is added to the instruction.
+    private boolean isFreshNewLine = true;
 
     // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
     // track of possible jump targets. This is needed when resolving jump addresses for
@@ -171,6 +176,7 @@ public class NeoMethod {
      */
     public void setCurrentLine(int currentLine) {
         this.currentLine = currentLine;
+        isFreshNewLine = true;
     }
 
     public void setCurrentLabel(Label currentLabel) {
@@ -294,9 +300,10 @@ public class NeoMethod {
     // Adds the given instruction to this method. The current source code line number and the
     // current address (relative to this method) is added to the instruction.
     public void addInstruction(NeoInstruction neoInsn) {
-        neoInsn.setLineNr(currentLine);
-        currentLine = null; // Use the current line only once.
-
+        if (isFreshNewLine) {
+            neoInsn.setLineNr(currentLine);
+            isFreshNewLine = false;
+        }
         if (this.currentLabel != null) {
             // When the compiler sees a `LabelNode` it stores it on the `currentLabelNode` field
             // and continues. The next instruction is the one that the label belongs. We expect
