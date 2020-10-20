@@ -21,6 +21,7 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,6 +101,9 @@ public class Compiler {
         if (typeName.equals(ScriptContainer.class.getTypeName())) {
             return ContractParameterType.INTEROP_INTERFACE;
         }
+        if (typeName.equals(Object.class.getTypeName())) {
+            return ContractParameterType.ARRAY;
+        }
         try {
             typeName = type.getDescriptor().replace("/", ".");
             Class<?> clazz = Class.forName(typeName);
@@ -109,7 +113,9 @@ public class Compiler {
         } catch (ClassNotFoundException e) {
             throw new CompilerException(e);
         }
-        throw new CompilerException("Unsupported type: " + type.getClassName());
+        typeName = ClassUtils.getFullyQualifiedNameForInternalName(type.getInternalName());
+        throw new CompilerException(format(
+                "No mapping from Java type '%s' to any neo-vm type.", typeName));
     }
 
     /**
