@@ -373,7 +373,9 @@ public class NeoMethod {
             jumpTargets.remove(label);
             jumpTargets.put(label, newInsn);
         }
-        // TODO: Take the line number from the removed instruction and add it to the new one!
+        if (lastInsn.getLineNr() != null) {
+            newInsn.setLineNr(lastInsn.getLineNr());
+        }
         removeLastInstructionInternal();
         addInstructionInternal(newInsn);
     }
