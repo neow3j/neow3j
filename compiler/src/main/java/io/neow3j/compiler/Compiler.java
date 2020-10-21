@@ -15,7 +15,7 @@ import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.ScriptContainer;
+import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
@@ -100,11 +100,16 @@ public class Compiler {
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
         }
-        if (typeName.equals(ScriptContainer.class.getTypeName())) {
-            return ContractParameterType.INTEROP_INTERFACE;
-        }
         if (typeName.equals(Object.class.getTypeName())) {
-            return ContractParameterType.ARRAY;
+            return ContractParameterType.ANY;
+        }
+        try {
+            typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
+            Class<?> clazz = Class.forName(typeName);
+            if (Arrays.asList(clazz.getInterfaces()).contains(ApiInterface.class)) {
+                return ContractParameterType.INTEROP_INTERFACE;
+            }
+        } catch (ClassNotFoundException ignore) {
         }
         try {
             typeName = type.getDescriptor().replace("/", ".");
@@ -112,8 +117,7 @@ public class Compiler {
             if (clazz.isArray()) {
                 return ContractParameterType.ARRAY;
             }
-        } catch (ClassNotFoundException e) {
-            throw new CompilerException(e);
+        } catch (ClassNotFoundException ignore) {
         }
         typeName = ClassUtils.getFullyQualifiedNameForInternalName(type.getInternalName());
         throw new CompilerException(format(
