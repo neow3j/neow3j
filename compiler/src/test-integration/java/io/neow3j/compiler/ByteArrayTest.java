@@ -11,7 +11,7 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ByteArrayTest extends CompilerTest {
+public class ByteArrayTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {

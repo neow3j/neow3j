@@ -12,7 +12,7 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class StringConcatenationTest extends CompilerTest {
+public class StringConcatenationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {

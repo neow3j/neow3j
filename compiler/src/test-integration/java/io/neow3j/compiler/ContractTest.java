@@ -45,7 +45,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-public class CompilerTest {
+public class ContractTest {
 
     // Exposed port of the neo node running in the docker container.
     protected static int EXPOSED_JSONRPC_PORT = 40332;
@@ -183,7 +183,7 @@ public class CompilerTest {
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters.
      * <p>
-     * The multi-sig account at {@link CompilerTest#committeeMember} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
@@ -203,7 +203,7 @@ public class CompilerTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link CompilerTest#committeeMember} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.

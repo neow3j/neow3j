@@ -17,7 +17,7 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BinaryTest extends CompilerTest {
+public class BinaryTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {

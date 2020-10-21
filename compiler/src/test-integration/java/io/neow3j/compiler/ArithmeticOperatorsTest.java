@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ArithmeticOperatorsTest extends CompilerTest {
+public class ArithmeticOperatorsTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {

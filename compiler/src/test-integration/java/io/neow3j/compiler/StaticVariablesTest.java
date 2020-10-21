@@ -14,7 +14,7 @@ import org.hamcrest.core.StringStartsWith;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class StaticVariablesTest extends CompilerTest {
+public class StaticVariablesTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
