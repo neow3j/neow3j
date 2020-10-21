@@ -27,18 +27,42 @@ import org.objectweb.asm.util.TraceMethodVisitor;
 
 public class AsmHelper {
 
+    /**
+     * Gets the {@code MethodNode} corresponding to the method called in the given instruction.
+     *
+     * @param methodInsn The method instruction.
+     * @param owner      The class that contains the method to be searched.
+     * @return the method.
+     */
     public static Optional<MethodNode> getMethodNode(MethodInsnNode methodInsn, ClassNode owner) {
         return owner.methods.stream()
                 .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
                 .findFirst();
     }
 
-    public static ClassNode getClassNodeForInternalName(String internalName,
+    /**
+     * Gets the {@code ClassNode} for the given class name using the given classloader.
+     *
+     * @param internalName The class name in internal name representation as provided by ASM, e.g.,
+     *                     in {@link Type#getInternalName()}.
+     * @param classLoader  The classloader to use.
+     * @return The class node.
+     * @throws IOException If an error occurs when reading class files.
+     */
+    public static ClassNode getAsmClassForInternalName(String internalName,
             ClassLoader classLoader) throws IOException {
 
         return getAsmClass(Type.getObjectType(internalName).getClassName(), classLoader);
     }
 
+    /**
+     * Gets the {@code ClassNode} for the given fully qualified class name.
+     *
+     * @param fullyQualifiedClassName The name of the class to fetch.
+     * @param classLoader             The classloader to use.
+     * @return The class node.
+     * @throws IOException If an error occurs when reading class files.
+     */
     public static ClassNode getAsmClass(String fullyQualifiedClassName, ClassLoader classLoader)
             throws IOException {
 
@@ -50,26 +74,26 @@ public class AsmHelper {
                 fullyQualifiedClassName.replace('.', '/') + ".class"));
     }
 
+    /**
+     * Gets the {@code ClassNode} from the given input stream.
+     *
+     * @param classStream The stream containing the byte code of a Java class.
+     * @return The class node.
+     * @throws IOException If an error occurs when reading the stream.
+     */
     public static ClassNode getAsmClass(InputStream classStream) throws IOException {
         ClassReader classReader = new ClassReader(classStream);
-        return getAsmClass(classReader);
-    }
-
-    public static ClassNode getAsmClass(ClassReader classReader) {
-        if (classReader == null) {
-            throw new InvalidParameterException("Class reader not found.");
-        }
         ClassNode asmClass = new ClassNode();
         classReader.accept(asmClass, 0);
         return asmClass;
     }
 
     /**
-     * Checks if the given {@code MethodNode} has any of the given annotations.
+     * Checks if the given method has one or more of the given annotations.
      *
      * @param asmMethod The method to check.
-     * @param annotations The annotations to check for.
-     * @return true if the method has one of the given annotations. False, otherwise.
+     * @param annotations The annotations.
+     * @return True if the method has one or more of the given annotations. False, otherwise.
      */
     public static boolean hasAnnotations(MethodNode asmMethod, Class<?>... annotations) {
         return hasAnnotation(asmMethod.invisibleAnnotations, annotations);

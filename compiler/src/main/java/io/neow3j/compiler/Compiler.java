@@ -22,19 +22,11 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -77,6 +69,55 @@ public class Compiler {
 
     public Compiler(ClassLoader classLoader) {
         compUnit = new CompilationUnit(classLoader);
+    }
+
+    public static ContractParameterType mapTypeToParameterType(Type type) {
+        String typeName = type.getClassName();
+        if (typeName.equals(String.class.getTypeName())) {
+            return ContractParameterType.STRING;
+        }
+        if (typeName.equals(Integer.class.getTypeName())
+                || typeName.equals(int.class.getTypeName())
+                || typeName.equals(Long.class.getTypeName())
+                || typeName.equals(long.class.getTypeName())
+                || typeName.equals(Byte.class.getTypeName())
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
+            return ContractParameterType.INTEGER;
+        }
+        if (typeName.equals(Boolean.class.getTypeName())
+                || typeName.equals(boolean.class.getTypeName())) {
+            return ContractParameterType.BOOLEAN;
+        }
+        if (typeName.equals(Byte[].class.getTypeName())
+                || typeName.equals(byte[].class.getTypeName())) {
+            return ContractParameterType.BYTE_ARRAY;
+        }
+        if (typeName.equals(Void.class.getTypeName())
+                || typeName.equals(void.class.getTypeName())) {
+            return ContractParameterType.VOID;
+        }
+        if (typeName.equals(ScriptContainer.class.getTypeName())) {
+            return ContractParameterType.INTEROP_INTERFACE;
+        }
+        if (typeName.equals(Object.class.getTypeName())) {
+            return ContractParameterType.ARRAY;
+        }
+        try {
+            typeName = type.getDescriptor().replace("/", ".");
+            Class<?> clazz = Class.forName(typeName);
+            if (clazz.isArray()) {
+                return ContractParameterType.ARRAY;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new CompilerException(e);
+        }
+        typeName = ClassUtils.getFullyQualifiedNameForInternalName(type.getInternalName());
+        throw new CompilerException(format(
+                "No mapping from Java type '%s' to any neo-vm type.", typeName));
     }
 
     /**
@@ -302,50 +343,6 @@ public class Compiler {
                     format("Unsupported instruction %s.", opcode.toString()));
         }
         return converter.convert(insn, neoMethod, compUnit);
-    }
-
-    public static ContractParameterType mapTypeToParameterType(Type type) {
-        String typeName = type.getClassName();
-        if (typeName.equals(String.class.getTypeName())) {
-            return ContractParameterType.STRING;
-        }
-        if (typeName.equals(Integer.class.getTypeName())
-                || typeName.equals(int.class.getTypeName())
-                || typeName.equals(Long.class.getTypeName())
-                || typeName.equals(long.class.getTypeName())
-                || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())
-                || typeName.equals(Short.class.getTypeName())
-                || typeName.equals(short.class.getTypeName())
-                || typeName.equals(Character.class.getTypeName())
-                || typeName.equals(char.class.getTypeName())) {
-            return ContractParameterType.INTEGER;
-        }
-        if (typeName.equals(Boolean.class.getTypeName())
-                || typeName.equals(boolean.class.getTypeName())) {
-            return ContractParameterType.BOOLEAN;
-        }
-        if (typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())) {
-            return ContractParameterType.BYTE_ARRAY;
-        }
-        if (typeName.equals(Void.class.getTypeName())
-                || typeName.equals(void.class.getTypeName())) {
-            return ContractParameterType.VOID;
-        }
-        if (typeName.equals(ScriptContainer.class.getTypeName())) {
-            return ContractParameterType.INTEROP_INTERFACE;
-        }
-        try {
-            typeName = type.getDescriptor().replace("/", ".");
-            Class<?> clazz = Class.forName(typeName);
-            if (clazz.isArray()) {
-                return ContractParameterType.ARRAY;
-            }
-        } catch (ClassNotFoundException e) {
-            throw new CompilerException(e);
-        }
-        throw new CompilerException("Unsupported type: " + type.getClassName());
     }
 
     public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {

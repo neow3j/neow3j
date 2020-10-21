@@ -1,6 +1,6 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.INSTANCE_CTOR;
@@ -97,7 +97,7 @@ public class ObjectsConverter implements Converter {
             return handleStringConcatenation(typeInsn, callingNeoMethod, compUnit);
         }
 
-        ClassNode owner = getClassNodeForInternalName(typeInsn.desc, compUnit.getClassLoader());
+        ClassNode owner = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
         MethodInsnNode ctorMethodInsn = skipToCtorMethodInstruction(typeInsn.getNext(), owner);
         MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner).orElseThrow(() ->
                 new CompilerException(compUnit, callingNeoMethod, format("Couldn't find "
