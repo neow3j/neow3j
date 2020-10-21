@@ -31,7 +31,7 @@ public class AsmHelper {
      * Gets the {@code MethodNode} corresponding to the method called in the given instruction.
      *
      * @param methodInsn The method instruction.
-     * @param owner      The class that contains the searched for method.
+     * @param owner      The class that contains the method to be searched.
      * @return the method.
      */
     public static Optional<MethodNode> getMethodNode(MethodInsnNode methodInsn, ClassNode owner) {
