@@ -1,6 +1,6 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.getFieldIndex;
@@ -187,7 +187,7 @@ public class ArraysConverter implements Converter {
         // an index on top that is used by PICKITEM. We get this index from the class to which the
         // field belongs to.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        ClassNode classNode = getClassNodeForInternalName(fieldInsn.owner,
+        ClassNode classNode = getAsmClassForInternalName(fieldInsn.owner,
                 compUnit.getClassLoader());
         int idx = getFieldIndex(fieldInsn, classNode);
         addPushNumber(idx, neoMethod);

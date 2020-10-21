@@ -1,6 +1,6 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.addInstruction;
@@ -103,7 +103,7 @@ public class MethodsConverter implements Converter {
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        ClassNode owner = getClassNodeForInternalName(methodInsn.owner, compUnit.getClassLoader());
+        ClassNode owner = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
         Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, owner);
         // If the called method cannot be found on the owner type, we look through the super
         // types until we find the method.
@@ -112,7 +112,7 @@ public class MethodsConverter implements Converter {
                 throw new CompilerException("Couldn't find method " + methodInsn.name + " on "
                         + "owning type and its super types.");
             }
-            owner = getClassNodeForInternalName(owner.superName, compUnit.getClassLoader());
+            owner = getAsmClassForInternalName(owner.superName, compUnit.getClassLoader());
             calledAsmMethod = getMethodNode(methodInsn, owner);
         }
         if (hasSyscallAnnotation(calledAsmMethod.get())) {
