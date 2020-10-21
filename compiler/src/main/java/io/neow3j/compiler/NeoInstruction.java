@@ -23,7 +23,7 @@ public class NeoInstruction {
     private Object extra;
 
     // The corresponding line number in the source code file that this instructions originates from.
-    private int lineNr;
+    private Integer lineNr = null;
 
     // The NeoVM script address of this instruction in its respective method. This is not the
     // absolute address in the script, but only relative to the method.
@@ -76,7 +76,7 @@ public class NeoInstruction {
      *
      * @return the line number.
      */
-    public int getLineNr() {
+    public Integer getLineNr() {
         return lineNr;
     }
 
@@ -145,7 +145,7 @@ public class NeoInstruction {
         this.opcode = opcode;
     }
 
-    void setLineNr(int lineNr) {
+    void setLineNr(Integer lineNr) {
         this.lineNr = lineNr;
     }
 

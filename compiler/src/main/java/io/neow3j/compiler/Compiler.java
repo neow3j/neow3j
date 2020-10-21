@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
+import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
 import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -22,14 +23,24 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.utils.Numeric;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -68,48 +79,55 @@ public class Compiler {
         compUnit = new CompilationUnit(classLoader);
     }
 
-    public static ContractParameterType mapTypeToParameterType(Type type) {
-        String typeName = type.getClassName();
-        if (typeName.equals(String.class.getTypeName())) {
-            return ContractParameterType.STRING;
+    /**
+     * Converts the given classes to neo-vm code and generates debug information with the help of
+     * the given source file paths.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
+     * paths to the given class files.
+     *
+     * @param classNames      The fully qualified names of the classes
+     * @param sourceFilePaths The absolute paths to the source files of the given classes.
+     * @return the compilation results.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     */
+    public CompilationUnit compileClasses(Set<String> classNames, Set<String> sourceFilePaths)
+            throws IOException {
+
+        List<ClassNode> classes = new ArrayList<>();
+        for (String className : classNames) {
+            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+            classes.add(asmClass);
+            String relativePath = className.replace(".", "/");
+            String sourceFilePath = sourceFilePaths.stream()
+                    .filter(path -> path.contains(relativePath))
+                    .findFirst().orElseThrow(() -> new CompilerException(
+                            "Could not find source file for class " + className));
+            compUnit.addClassToSourceMapping(className, sourceFilePath);
         }
-        if (typeName.equals(Integer.class.getTypeName())
-                || typeName.equals(int.class.getTypeName())
-                || typeName.equals(Long.class.getTypeName())
-                || typeName.equals(long.class.getTypeName())
-                || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())
-                || typeName.equals(Short.class.getTypeName())
-                || typeName.equals(short.class.getTypeName())
-                || typeName.equals(Character.class.getTypeName())
-                || typeName.equals(char.class.getTypeName())) {
-            return ContractParameterType.INTEGER;
+        for (ClassNode asmClass : classes) {
+            compileClass(asmClass);
         }
-        if (typeName.equals(Boolean.class.getTypeName())
-                || typeName.equals(boolean.class.getTypeName())) {
-            return ContractParameterType.BOOLEAN;
+        return compUnit;
+    }
+
+    /**
+     * Converts the given JVM class files a neo-vm script. No debugging information is created
+     * because the source files are unknown.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
+     * paths to the given class files.
+     *
+     * @param classNames The fully qualified names of the classes to convert to neo-vm code.
+     * @return The compilation result.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     */
+    public CompilationUnit compileClasses(Set<String> classNames) throws IOException {
+        for (String className : classNames) {
+            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+            compileClass(asmClass);
         }
-        if (typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())) {
-            return ContractParameterType.BYTE_ARRAY;
-        }
-        if (typeName.equals(Void.class.getTypeName())
-                || typeName.equals(void.class.getTypeName())) {
-            return ContractParameterType.VOID;
-        }
-        if (typeName.equals(ScriptContainer.class.getTypeName())) {
-            return ContractParameterType.INTEROP_INTERFACE;
-        }
-        try {
-            typeName = type.getDescriptor().replace("/", ".");
-            Class<?> clazz = Class.forName(typeName);
-            if (clazz.isArray()) {
-                return ContractParameterType.ARRAY;
-            }
-        } catch (ClassNotFoundException e) {
-            throw new CompilerException(e);
-        }
-        throw new CompilerException("Unsupported type: " + type.getClassName());
+        return compUnit;
     }
 
     /**
@@ -135,13 +153,13 @@ public class Compiler {
     /**
      * Compiles the given class to NeoVM code.
      *
-     * @param contractClassNode the {@link ClassNode} representing a class file.
+     * @param classNode the {@link ClassNode} representing a class file.
      * @return the compilation unit holding the NEF and contract manifest.
      */
-    private CompilationUnit compileClass(ClassNode contractClassNode) throws IOException {
-        compUnit.setAsmClass(contractClassNode);
-        collectAndInitializeStaticFields(contractClassNode);
-        collectAndInitializeMethods(contractClassNode);
+    private CompilationUnit compileClass(ClassNode classNode) throws IOException {
+        compUnit.addContractClass(classNode);
+        collectAndInitializeStaticFields(classNode);
+        collectAndInitializeMethods(classNode);
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -155,6 +173,7 @@ public class Compiler {
                 nef.getScriptHash());
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
+        compUnit.setDebugInfo(buildDebugInfo(compUnit));
         return compUnit;
     }
 
@@ -243,9 +262,11 @@ public class Compiler {
                                 + " but only static methods are allowed in smart contracts.",
                         asmMethod.name, getFullyQualifiedNameForInternalName(asmClass.name)));
             }
-            NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            MethodInitializer.initializeMethod(neoMethod, compUnit);
-            compUnit.getNeoModule().addMethod(neoMethod);
+            if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
+                NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
+                MethodInitializer.initializeMethod(neoMethod, compUnit);
+                compUnit.getNeoModule().addMethod(neoMethod);
+            }
         }
     }
 
@@ -281,6 +302,50 @@ public class Compiler {
                     format("Unsupported instruction %s.", opcode.toString()));
         }
         return converter.convert(insn, neoMethod, compUnit);
+    }
+
+    public static ContractParameterType mapTypeToParameterType(Type type) {
+        String typeName = type.getClassName();
+        if (typeName.equals(String.class.getTypeName())) {
+            return ContractParameterType.STRING;
+        }
+        if (typeName.equals(Integer.class.getTypeName())
+                || typeName.equals(int.class.getTypeName())
+                || typeName.equals(Long.class.getTypeName())
+                || typeName.equals(long.class.getTypeName())
+                || typeName.equals(Byte.class.getTypeName())
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
+            return ContractParameterType.INTEGER;
+        }
+        if (typeName.equals(Boolean.class.getTypeName())
+                || typeName.equals(boolean.class.getTypeName())) {
+            return ContractParameterType.BOOLEAN;
+        }
+        if (typeName.equals(Byte[].class.getTypeName())
+                || typeName.equals(byte[].class.getTypeName())) {
+            return ContractParameterType.BYTE_ARRAY;
+        }
+        if (typeName.equals(Void.class.getTypeName())
+                || typeName.equals(void.class.getTypeName())) {
+            return ContractParameterType.VOID;
+        }
+        if (typeName.equals(ScriptContainer.class.getTypeName())) {
+            return ContractParameterType.INTEROP_INTERFACE;
+        }
+        try {
+            typeName = type.getDescriptor().replace("/", ".");
+            Class<?> clazz = Class.forName(typeName);
+            if (clazz.isArray()) {
+                return ContractParameterType.ARRAY;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new CompilerException(e);
+        }
+        throw new CompilerException("Unsupported type: " + type.getClassName());
     }
 
     public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {

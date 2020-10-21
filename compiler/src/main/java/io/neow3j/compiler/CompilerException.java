@@ -8,8 +8,9 @@ public class CompilerException extends RuntimeException {
         super(s);
     }
 
-    public CompilerException(ClassNode owner, int lineNr, String s) {
-        super(owner.sourceFile + ":" + lineNr + ": error:\n" + s);
+    public CompilerException(NeoMethod neoMethod, String s) {
+        super(neoMethod.getOwnerClass().sourceFile + ":" + neoMethod.getCurrentLine() + ": "
+                + "error:\n" + s);
     }
 
     public CompilerException(ClassNode owner, String s) {
@@ -17,7 +18,8 @@ public class CompilerException extends RuntimeException {
     }
 
     public CompilerException(CompilationUnit compUnit, NeoMethod method, String s) {
-        this(compUnit.getContractClassNode(), method.getCurrentLine(), s);
+        super(compUnit.getSourceFile(method.getOwnerClassName()) + ":" + method.getCurrentLine()
+                + ": error:\n" + s);
     }
 
     public CompilerException(ClassNotFoundException e) {

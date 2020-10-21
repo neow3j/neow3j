@@ -3,6 +3,7 @@ package io.neow3j.devpack.gradle;
 import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.generateDebugInfoZip;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getCompileOutputFileName;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
@@ -12,6 +13,7 @@ import static java.util.Optional.ofNullable;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
+import io.neow3j.utils.ClassUtils;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -51,7 +53,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         try {
             // compile
             CompilationUnit compilationUnit = n.compileClass(canonicalClassName);
-            byte[] nefBytes = compilationUnit.getNef().toArray();
+            byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
             // get the output directory
             String outDirString = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
@@ -68,15 +70,20 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
                     compilationUnit.getManifest(),
                     outDirPath.toFile());
 
+            // Pack the debug info into a ZIP archive.
+            String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
+                    outDirString, ClassUtils.getClassName(canonicalClassName));
+
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
             System.out.println("NEF file: " + outputFile.toAbsolutePath());
             System.out.println("Manifest file: " + manifestOutFileName);
+            System.out.println("Debug info zip file: " + debugInfoZipFileName);
         } catch (Exception e) {
             System.out.println("Compilation failed. Reason: " + e.getMessage());
             e.printStackTrace();
-            return;
         }
     }
+
 
 }

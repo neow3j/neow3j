@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.utils.ClassUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class NeoMethod {
     private final MethodNode asmMethod;
 
     // The type that contains this method.
-    private final ClassNode ownerType;
+    private final ClassNode sourceClass;
 
     // The method's name that is, e.g., used when generating the contract's ABI.
     private String name;
@@ -60,7 +61,7 @@ public class NeoMethod {
     // The address after this method's last instruction byte. I.e. the next free address. This
     // address is not absolute in relation to the {@link NeoModule} this method belongs to. It is a
     // method-internal address.
-    private int nextAddress = 0;
+    private int lastAddress = 0;
 
     // The address in the NeoModule at which this method starts.
     private Integer startAddress = null;
@@ -74,18 +75,48 @@ public class NeoMethod {
     // numbers to `NeoInstructions`.
     private int currentLine;
 
-    public NeoMethod(MethodNode asmMethod, ClassNode owner) {
+    // Tells if the current line number should be added to an instruction that is added to this
+    // method. If it is the first instruction corresponding to the current line, then the line
+    // number is added to the instruction.
+    private boolean isFreshNewLine = true;
+
+    /**
+     * Constructs a new Neo method.
+     *
+     * @param asmMethod   The Java method this Neo method is converted from.
+     * @param sourceClass The Java class from which this method originates.
+     */
+    public NeoMethod(MethodNode asmMethod, ClassNode sourceClass) {
         this.asmMethod = asmMethod;
         this.name = asmMethod.name;
-        this.ownerType = owner;
+        this.sourceClass = sourceClass;
     }
 
+    /**
+     * Gets the corresponding JVM method that this method was converted from.
+     *
+     * @return the method.
+     */
     public MethodNode getAsmMethod() {
         return asmMethod;
     }
 
-    public ClassNode getOwnerType() {
-        return ownerType;
+    /**
+     * Gets the class that this method is converted from.
+     *
+     * @return The class.
+     */
+    public ClassNode getOwnerClass() {
+        return sourceClass;
+    }
+
+    /**
+     * Gets the fully qualified name of the class that this method was converted from.
+     *
+     * @return the fully qualified name of the corresponding class.
+     */
+    public String getOwnerClassName() {
+        return ClassUtils.getFullyQualifiedNameForInternalName(sourceClass.name);
     }
 
     /**
@@ -95,7 +126,7 @@ public class NeoMethod {
      * @return this method's ID.
      */
     public String getId() {
-        return getMethodId(asmMethod, ownerType);
+        return getMethodId(asmMethod, sourceClass);
     }
 
     /**
@@ -105,6 +136,17 @@ public class NeoMethod {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Gets the name of the JVM method that this Neo method was derived from.
+     * <p>
+     * This will most often be equal to the name returned by {@link NeoMethod#getName()}.
+     *
+     * @return the name of the corresponding source method.
+     */
+    public String getSourceMethodName() {
+        return asmMethod.name;
     }
 
     /**
@@ -140,6 +182,7 @@ public class NeoMethod {
      */
     public void setCurrentLine(int currentLine) {
         this.currentLine = currentLine;
+        isFreshNewLine = true;
     }
 
     public void setCurrentLabel(Label currentLabel) {
@@ -220,10 +263,9 @@ public class NeoMethod {
      *
      * @return the next instruction address.
      */
-    public int getNextAddress() {
-        return nextAddress;
+    public int getLastAddress() {
+        return lastAddress;
     }
-
 
     /**
      * Adds a parameter to this method.
@@ -268,6 +310,10 @@ public class NeoMethod {
      * @param neoInsn The instruction to add.
      */
     public void addInstruction(NeoInstruction neoInsn) {
+        if (isFreshNewLine) {
+            neoInsn.setLineNr(currentLine);
+            isFreshNewLine = false;
+        }
         if (this.currentLabel != null) {
             // When the compiler sees a `LabelNode` it stores it on the `currentLabelNode` field
             // and continues. The next instruction is the one that the label belongs. We expect
@@ -285,13 +331,12 @@ public class NeoMethod {
     }
 
     private void addInstructionInternal(NeoInstruction neoInsn) {
-        neoInsn.setLineNr(this.currentLine);
-        neoInsn.setAddress(this.nextAddress);
-        this.instructions.put(this.nextAddress, neoInsn);
+        neoInsn.setAddress(lastAddress);
+        this.instructions.put(lastAddress, neoInsn);
         if (neoInsn instanceof NeoJumpInstruction) {
             this.jumpInstructions.add((NeoJumpInstruction) neoInsn);
         }
-        this.nextAddress += 1 + neoInsn.getOperand().length;
+        this.lastAddress += 1 + neoInsn.getOperand().length;
     }
 
     /**
@@ -308,9 +353,9 @@ public class NeoMethod {
     }
 
     private void removeLastInstructionInternal() {
-        NeoInstruction insn = this.instructions.remove(this.instructions.lastKey());
-        this.jumpInstructions.remove(insn);
-        this.nextAddress -= (1 + insn.getOperand().length);
+        NeoInstruction insn = instructions.remove(instructions.lastKey());
+        jumpInstructions.remove(insn);
+        lastAddress -= (1 + insn.getOperand().length);
     }
 
     /**
@@ -327,6 +372,9 @@ public class NeoMethod {
             Label label = jumpTarget.get().getKey();
             jumpTargets.remove(label);
             jumpTargets.put(label, newInsn);
+        }
+        if (lastInsn.getLineNr() != null) {
+            newInsn.setLineNr(lastInsn.getLineNr());
         }
         removeLastInstructionInternal();
         addInstructionInternal(newInsn);

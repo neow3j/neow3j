@@ -1,7 +1,6 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.utils.ClassUtils.getClassName;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static java.lang.String.format;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ScriptHash;
@@ -24,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -36,12 +36,13 @@ public class ManifestBuilder {
     public static ContractManifest buildManifest(CompilationUnit compUnit, ScriptHash scriptHash) {
         List<ContractGroup> groups = new ArrayList<>();
         ContractFeatures features = new ContractFeatures(false, false);
-        Map<String, String> extras = null;
+        Map<String, String> extras = new HashMap<>();
         List<String> supportedStandards = new ArrayList<>();
-        if (compUnit.getContractClassNode().invisibleAnnotations != null) {
-            features = buildContractFeatures(compUnit.getContractClassNode());
-            extras = buildManifestExtra(compUnit.getContractClassNode());
-            supportedStandards = buildSupportedStandards(compUnit.getContractClassNode());
+        Optional<ClassNode> annotatedClass = getClassWithAnnotations(compUnit.getContractClasses());
+        if (annotatedClass.isPresent()) {
+            features = buildContractFeatures(annotatedClass.get());
+            extras = buildManifestExtra(annotatedClass.get());
+            supportedStandards = buildSupportedStandards(annotatedClass.get());
         }
         ContractABI abi = buildABI(compUnit.getNeoModule(), scriptHash);
         // TODO: Fill the remaining manifest fields below.
@@ -51,6 +52,24 @@ public class ManifestBuilder {
         List<String> safeMethods = new ArrayList<>();
         return new ContractManifest(groups, features, supportedStandards, abi, permissions, trusts,
                 safeMethods, extras);
+    }
+
+    // Throws an exception if multiple classes have the contract annotations.
+    private static Optional<ClassNode> getClassWithAnnotations(Set<ClassNode> asmClasses) {
+        Optional<ClassNode> annotatedClass = Optional.empty();
+        for (ClassNode asmClass : asmClasses) {
+            if (AsmHelper.hasAnnotations(asmClass, Features.class, ManifestExtra.class,
+                    ManifestExtras.class, SupportedStandards.class)) {
+                if (annotatedClass.isPresent()) {
+                    throw new CompilerException(format("Make sure that the annotations %s, %s and "
+                                    + "%s are only used on one class of a multi-file contract.",
+                            Features.class.getName(), ManifestExtra.class.getName(),
+                            SupportedStandards.class.getName()));
+                }
+                annotatedClass = Optional.of(asmClass);
+            }
+        }
+        return annotatedClass;
     }
 
     private static ContractABI buildABI(NeoModule neoModule, ScriptHash scriptHash) {
@@ -75,8 +94,8 @@ public class ManifestBuilder {
         return new ContractABI(Numeric.prependHexPrefix(scriptHash.toString()), methods, events);
     }
 
-    private static ContractFeatures buildContractFeatures(ClassNode n) {
-        Optional<AnnotationNode> opt = n.invisibleAnnotations.stream()
+    private static ContractFeatures buildContractFeatures(ClassNode classNode) {
+        Optional<AnnotationNode> opt = classNode.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Features.class)))
                 .findFirst();
         boolean payable = false;
@@ -119,12 +138,6 @@ public class ManifestBuilder {
             extras.put(key, value);
         }
 
-        // If "name" was not explicitly set by the developer then set it to the class name.
-        if (!extras.containsKey("name")) {
-            String fqn = getFullyQualifiedNameForInternalName(classNode.name);
-            String className = getClassName(fqn);
-            extras.put("name", className);
-        }
         return extras;
     }
 

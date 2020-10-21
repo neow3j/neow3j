@@ -81,8 +81,8 @@ public class ArraysConverter implements Converter {
                 addGetField(insn, neoMethod, compUnit);
                 break;
             case MULTIANEWARRAY:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.getAsmMethod().name + " not yet supported.");
+                throw new CompilerException(format("Instruction %s in %s is not supported.",
+                        opcode.name(), neoMethod.getSourceMethodName()));
         }
         return insn;
     }
@@ -174,7 +174,7 @@ public class ArraysConverter implements Converter {
         // field variables of an object then simply becomes an index in the array. This is done
         // with the SETITEM opcode.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
         addPushNumber(idx, neoMethod);
         // SETITEM expects the item to be on top of the stack (item -> index -> array)
         neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));

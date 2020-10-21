@@ -1,6 +1,7 @@
 package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.Compiler.addPushNumber;
+import static java.lang.String.format;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
@@ -22,7 +23,7 @@ public class JumpsConverter implements Converter {
 
     @Override
     public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
+            CompilationUnit compUnit) {
 
         // Java jump addresses are restricted to 2 bytes, i.e. there are no 4-byte jump
         // addresses as in NeoVM. It is simpler for the compiler implementation to always
@@ -118,8 +119,8 @@ public class JumpsConverter implements Converter {
             case JSR:
             case RET:
             case JSR_W:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.getAsmMethod().name + " not yet supported.");
+                throw new CompilerException(format("Instruction %s in %s is not supported.",
+                        opcode.name(), neoMethod.getSourceMethodName()));
         }
         return insn;
     }
@@ -135,8 +136,7 @@ public class JumpsConverter implements Converter {
         JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
         JVMOpcode jvmOpcode = JVMOpcode.get(jumpInsn.getOpcode());
         if (jvmOpcode == null) {
-            throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(),
-                    "Jump opcode of jump instruction was null.");
+            throw new CompilerException(neoMethod, "Jump opcode of jump instruction was null.");
         }
         switch (jvmOpcode) {
             case IFEQ:
@@ -158,8 +158,8 @@ public class JumpsConverter implements Converter {
                 addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGE_L);
                 break;
             default:
-                throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(),
-                        "Unexpected opcode " + jvmOpcode.name() + " following long comparison.");
+                throw new CompilerException("Unexpected opcode " + jvmOpcode.name()
+                        + " following long comparison.");
         }
         return jumpInsn;
     }

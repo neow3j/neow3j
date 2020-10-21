@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES_COUNT;
 import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
 import java.util.List;
@@ -12,11 +13,12 @@ import org.objectweb.asm.tree.LocalVariableNode;
 
 public class MethodInitializer {
 
+    // TODO: Move to NeoMethod
     public static void initializeMethod(NeoMethod neoMethod, CompilationUnit compUnit) {
         checkForUnsupportedLocalVariableTypes(neoMethod);
         if ((neoMethod.getAsmMethod().access & Opcodes.ACC_PUBLIC) > 0
                 && (neoMethod.getAsmMethod().access & Opcodes.ACC_STATIC) > 0
-                && neoMethod.getOwnerType().equals(compUnit.getContractClassNode())) {
+                && compUnit.getContractClasses().contains(neoMethod.getOwnerClass())) {
             // Only contract methods that are public, static and on the smart contract class are
             // added to the ABI and are invokable.
             neoMethod.setIsAbiMethod(true);
@@ -43,9 +45,8 @@ public class MethodInitializer {
         for (LocalVariableNode varNode : neoMethod.getAsmMethod().localVariables) {
             if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE
                     || Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
-                throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(),
-                        "Method '" + neoMethod.getAsmMethod().name + "' has unsupported parameter or "
-                                + "variable types.");
+                throw new CompilerException(neoMethod, format("Method '%s' has unsupported "
+                                + "parameter or variable types.", neoMethod.getSourceMethodName()));
             }
         }
     }
