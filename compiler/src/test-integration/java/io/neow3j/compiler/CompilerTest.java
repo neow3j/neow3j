@@ -42,6 +42,7 @@ import org.junit.rules.TestName;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 public class CompilerTest {
@@ -57,8 +58,8 @@ public class CompilerTest {
     protected static final String VM_STATE_FAULT = "FAULT";
 
     @ClassRule
-    public static GenericContainer privateNetContainer = new GenericContainer(
-            NEO3_PRIVATENET_CONTAINER_IMG)
+    public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
+            DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
             .withClasspathResourceMapping("/node-config/config.json",
                     "/neo-cli/config.json", BindMode.READ_ONLY)
             .withClasspathResourceMapping("/node-config/protocol.json",
@@ -111,7 +112,7 @@ public class CompilerTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        SmartContract sc = new SmartContract(res.getNef(), res.getManifest(), neow3j);
+        SmartContract sc = new SmartContract(res.getNefFile(), res.getManifest(), neow3j);
         NeoSendRawTransaction response = sc.deploy()
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committeeMember.getScriptHash()))

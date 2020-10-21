@@ -12,9 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -94,16 +96,33 @@ public class AsmHelper {
      * @return True if the method has one or more of the given annotations. False, otherwise.
      */
     public static boolean hasAnnotations(MethodNode asmMethod, Class<?>... annotations) {
-        if (annotations.length == 0) {
+        return hasAnnotation(asmMethod.invisibleAnnotations, annotations);
+    }
+
+    /**
+     * Checks if the given {@code ClassNode} has any of the given annotations.
+     *
+     * @param asmClass The class to check.
+     * @param annotations The annotations to check for.
+     * @return true if the class has one of the given annotations. False, otherwise.
+     */
+    public static boolean hasAnnotations(ClassNode asmClass, Class<?>... annotations) {
+        return hasAnnotation(asmClass.invisibleAnnotations, annotations);
+    }
+
+    private static boolean hasAnnotation(List<AnnotationNode> annotations,
+            Class<?>... annotationTypes) {
+
+        if (annotationTypes.length == 0) {
             throw new IllegalArgumentException("Provide at least one annotation class.");
         }
-        List<String> descriptors = Arrays.stream(annotations)
+        List<String> descriptors = Stream.of(annotationTypes)
                 .map(Type::getDescriptor)
                 .collect(Collectors.toList());
 
-        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
-                .anyMatch(methodAnnotation -> descriptors.stream()
-                        .anyMatch(desc -> methodAnnotation.desc.equals(desc)));
+        return annotations != null && annotations.stream()
+                .anyMatch(annotation -> descriptors.stream()
+                        .anyMatch(desc -> annotation.desc.equals(desc)));
     }
 
 

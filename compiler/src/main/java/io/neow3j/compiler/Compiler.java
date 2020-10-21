@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
+import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
 import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -31,6 +32,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -119,6 +121,57 @@ public class Compiler {
     }
 
     /**
+     * Converts the given classes to neo-vm code and generates debug information with the help of
+     * the given source file paths.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
+     * paths to the given class files.
+     *
+     * @param classNames      The fully qualified names of the classes
+     * @param sourceFilePaths The absolute paths to the source files of the given classes.
+     * @return the compilation results.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     */
+    public CompilationUnit compileClasses(Set<String> classNames, Set<String> sourceFilePaths)
+            throws IOException {
+
+        List<ClassNode> classes = new ArrayList<>();
+        for (String className : classNames) {
+            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+            classes.add(asmClass);
+            String relativePath = className.replace(".", "/");
+            String sourceFilePath = sourceFilePaths.stream()
+                    .filter(path -> path.contains(relativePath))
+                    .findFirst().orElseThrow(() -> new CompilerException(
+                            "Could not find source file for class " + className));
+            compUnit.addClassToSourceMapping(className, sourceFilePath);
+        }
+        for (ClassNode asmClass : classes) {
+            compileClass(asmClass);
+        }
+        return compUnit;
+    }
+
+    /**
+     * Converts the given JVM class files a neo-vm script. No debugging information is created
+     * because the source files are unknown.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
+     * paths to the given class files.
+     *
+     * @param classNames The fully qualified names of the classes to convert to neo-vm code.
+     * @return The compilation result.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     */
+    public CompilationUnit compileClasses(Set<String> classNames) throws IOException {
+        for (String className : classNames) {
+            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+            compileClass(asmClass);
+        }
+        return compUnit;
+    }
+
+    /**
      * Compiles the given class to NeoVM code.
      *
      * @param fullyQualifiedClassName the fully qualified name of the class.
@@ -141,13 +194,13 @@ public class Compiler {
     /**
      * Compiles the given class to NeoVM code.
      *
-     * @param contractClassNode the {@link ClassNode} representing a class file.
+     * @param classNode the {@link ClassNode} representing a class file.
      * @return the compilation unit holding the NEF and contract manifest.
      */
-    private CompilationUnit compileClass(ClassNode contractClassNode) throws IOException {
-        compUnit.setAsmClass(contractClassNode);
-        collectAndInitializeStaticFields(contractClassNode);
-        collectAndInitializeMethods(contractClassNode);
+    private CompilationUnit compileClass(ClassNode classNode) throws IOException {
+        compUnit.addContractClass(classNode);
+        collectAndInitializeStaticFields(classNode);
+        collectAndInitializeMethods(classNode);
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -161,6 +214,7 @@ public class Compiler {
                 nef.getScriptHash());
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
+        compUnit.setDebugInfo(buildDebugInfo(compUnit));
         return compUnit;
     }
 
@@ -249,9 +303,11 @@ public class Compiler {
                                 + " but only static methods are allowed in smart contracts.",
                         asmMethod.name, getFullyQualifiedNameForInternalName(asmClass.name)));
             }
-            NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-            MethodInitializer.initializeMethod(neoMethod, compUnit);
-            compUnit.getNeoModule().addMethod(neoMethod);
+            if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
+                NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
+                MethodInitializer.initializeMethod(neoMethod, compUnit);
+                compUnit.getNeoModule().addMethod(neoMethod);
+            }
         }
     }
 
