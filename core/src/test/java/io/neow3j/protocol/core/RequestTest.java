@@ -291,7 +291,8 @@ public class RequestTest extends RequestTester {
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"invokefunction\","
                         + "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\","
-                        + "\"decimals\""
+                        + "\"decimals\","
+                        + "[]"
                         + "],\"id\":1}"
         );
     }
