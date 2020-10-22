@@ -1,6 +1,7 @@
 package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.INSTANCE_CTOR;
@@ -9,10 +10,8 @@ import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
-import static io.neow3j.compiler.Compiler.getFieldIndex;
 import static io.neow3j.compiler.Compiler.handleInsn;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
-import static io.neow3j.compiler.MethodInitializer.initializeMethod;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -158,8 +157,8 @@ public class ObjectsConverter implements Converter {
             }
             if (isCallToAnyStringBuilderMethod(insn)) {
                 throw new CompilerException(compUnit, neoMethod, format("Only 'append()' and "
-                                + "'toString()' are supported for StringBuilder, but '%s' was "
-                                + "called", ((MethodInsnNode) insn).name));
+                        + "'toString()' are supported for StringBuilder, but '%s' was "
+                        + "called", ((MethodInsnNode) insn).name));
             }
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
@@ -215,7 +214,7 @@ public class ObjectsConverter implements Converter {
             // Skip the call to the Object ctor and continue processing the rest of the ctor.
             calledNeoMethod = new NeoMethod(ctorMethod, owner);
             compUnit.getNeoModule().addMethod(calledNeoMethod);
-            initializeMethod(calledNeoMethod, compUnit);
+            calledNeoMethod.initializeMethod(compUnit);
             AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod);
             insn = insn.getNext();
             while (insn != null) {

@@ -11,7 +11,6 @@ import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.compileMethod;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
-import static io.neow3j.compiler.MethodInitializer.initializeMethod;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
@@ -166,7 +165,7 @@ public class MethodsConverter implements Converter {
         }
         NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
         compUnit.getNeoModule().addMethod(calledNeoMethod);
-        initializeMethod(calledNeoMethod, compUnit);
+        calledNeoMethod.initializeMethod(compUnit);
         compileMethod(calledNeoMethod, compUnit);
         addReverseArguments(calledAsmMethod, callingNeoMethod);
         // The actual address offset for the method call is set at a later point in compilation.

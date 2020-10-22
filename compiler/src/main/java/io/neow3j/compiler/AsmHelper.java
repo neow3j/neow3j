@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.InvalidParameterException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,6 +16,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -91,7 +91,7 @@ public class AsmHelper {
     /**
      * Checks if the given method has one or more of the given annotations.
      *
-     * @param asmMethod The method to check.
+     * @param asmMethod   The method to check.
      * @param annotations The annotations.
      * @return True if the method has one or more of the given annotations. False, otherwise.
      */
@@ -102,7 +102,7 @@ public class AsmHelper {
     /**
      * Checks if the given {@code ClassNode} has any of the given annotations.
      *
-     * @param asmClass The class to check.
+     * @param asmClass    The class to check.
      * @param annotations The annotations to check for.
      * @return true if the class has one of the given annotations. False, otherwise.
      */
@@ -181,4 +181,14 @@ public class AsmHelper {
         return sw.toString();
     }
 
+    public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {
+        int idx = 0;
+        for (FieldNode field : owner.fields) {
+            if (field.name.equals(fieldInsn.name)) {
+                break;
+            }
+            idx++;
+        }
+        return idx;
+    }
 }

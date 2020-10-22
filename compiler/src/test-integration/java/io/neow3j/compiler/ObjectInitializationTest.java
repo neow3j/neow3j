@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ObjectInitializationTest extends CompilerTest {
+public class ObjectInitializationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {

@@ -15,7 +15,7 @@ import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.ScriptContainer;
+import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
@@ -100,11 +100,16 @@ public class Compiler {
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
         }
-        if (typeName.equals(ScriptContainer.class.getTypeName())) {
-            return ContractParameterType.INTEROP_INTERFACE;
-        }
         if (typeName.equals(Object.class.getTypeName())) {
-            return ContractParameterType.ARRAY;
+            return ContractParameterType.ANY;
+        }
+        try {
+            typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
+            Class<?> clazz = Class.forName(typeName);
+            if (Arrays.asList(clazz.getInterfaces()).contains(ApiInterface.class)) {
+                return ContractParameterType.INTEROP_INTERFACE;
+            }
+        } catch (ClassNotFoundException ignore) {
         }
         try {
             typeName = type.getDescriptor().replace("/", ".");
@@ -112,8 +117,7 @@ public class Compiler {
             if (clazz.isArray()) {
                 return ContractParameterType.ARRAY;
             }
-        } catch (ClassNotFoundException e) {
-            throw new CompilerException(e);
+        } catch (ClassNotFoundException ignore) {
         }
         typeName = ClassUtils.getFullyQualifiedNameForInternalName(type.getInternalName());
         throw new CompilerException(format(
@@ -305,7 +309,7 @@ public class Compiler {
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
                 NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-                MethodInitializer.initializeMethod(neoMethod, compUnit);
+                neoMethod.initializeMethod(compUnit);
                 compUnit.getNeoModule().addMethod(neoMethod);
             }
         }
@@ -343,17 +347,6 @@ public class Compiler {
                     format("Unsupported instruction %s.", opcode.toString()));
         }
         return converter.convert(insn, neoMethod, compUnit);
-    }
-
-    public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {
-        int idx = 0;
-        for (FieldNode field : owner.fields) {
-            if (field.name.equals(fieldInsn.name)) {
-                break;
-            }
-            idx++;
-        }
-        return idx;
     }
 
     public static void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {

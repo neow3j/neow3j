@@ -45,7 +45,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-public class CompilerTest {
+public class ContractTest {
 
     // Exposed port of the neo node running in the docker container.
     protected static int EXPOSED_JSONRPC_PORT = 40332;
@@ -138,11 +138,10 @@ public class CompilerTest {
     }
 
     /**
-     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function,
-     * with the given parameters and signer.
+     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function, with
+     * the given parameters and signer.
      *
      * @param function The function to call.
-     * @param signer The signer to add to the invocation.
      * @param params   The parameters to provide to the function call.
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
@@ -183,7 +182,8 @@ public class CompilerTest {
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters.
      * <p>
-     * The multi-sig account at {@link CompilerTest#committeeMember} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
@@ -199,17 +199,58 @@ public class CompilerTest {
     }
 
     /**
+     * Builds and sends a transaction that invokes the contract under test, the given function,
+     * with the given parameters.
+     * <p>
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
+     *
+     * @param function The function to call.
+     * @param params The parameters to pass with the function call.
+     * @return the hash of the sent transaction.
+     */
+    protected String invokeFunction(String function, ContractParameter... params) throws Throwable {
+        return contract.invokeFunction(function, params)
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+    }
+
+    /**
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link CompilerTest#committeeMember} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
     protected String invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
         String txHash = invokeFunction(params);
+        waitUntilTransactionIsExecuted(txHash);
+        return txHash;
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the contract under test, the given function, with
+     * the given parameters. Sleeps until the transaction is included in a block.
+     * <p>
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
+     *
+     * @param function The function to call.
+     * @param params   The parameters to pass with the function call.
+     * @return the hash of the transaction.
+     */
+    protected String invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
+            throws Throwable {
+
+        String txHash = invokeFunction(function, params);
         waitUntilTransactionIsExecuted(txHash);
         return txHash;
     }

@@ -6,7 +6,7 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 
-public class StaticFieldConverterTest extends CompilerTest {
+public class StaticFieldConverterTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {

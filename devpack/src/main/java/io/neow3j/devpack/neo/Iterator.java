@@ -8,12 +8,13 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_KEY;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_KEYS;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_VALUES;
 
+import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * A NeoVM-specific iterator used to iterate over a set of key-value elements.
  */
-public class Iterator<K, V> {
+public class Iterator<K, V> implements ApiInterface {
 
     /**
      * Creates an {@code Iterator} over the entries of the given {@link Map}. The keys and values

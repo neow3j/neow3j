@@ -331,6 +331,9 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
             String functionName, List<ContractParameter> contractParams, Signer... witnesses) {
 
+        if (contractParams == null) {
+            contractParams = new ArrayList<>();
+        }
         List<TransactionSigner> signers = new ArrayList<>();
         Arrays.stream(witnesses).map(TransactionSigner::new).forEach(signers::add);
         List<?> params;

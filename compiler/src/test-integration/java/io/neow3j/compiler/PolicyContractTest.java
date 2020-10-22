@@ -17,7 +17,7 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class PolicyContractTest extends CompilerTest {
+public class PolicyContractTest extends ContractTest {
 
     public static final long MAX_BLOCK_SYSTEM_FEE = 9000L * 100_000_000L; // GAS fractions
     public static final long MAX_BLOCK_SIZE = 1024 * 256;

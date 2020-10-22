@@ -3,7 +3,7 @@ package io.neow3j.compiler.converters;
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
-import static io.neow3j.compiler.Compiler.getFieldIndex;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.JVMOpcode.BASTORE;
 import static io.neow3j.compiler.JVMOpcode.BIPUSH;
 import static io.neow3j.compiler.JVMOpcode.DUP;
