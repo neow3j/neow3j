@@ -9,7 +9,7 @@ import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
-import static io.neow3j.compiler.Compiler.getFieldIndex;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.Compiler.handleInsn;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
 import static io.neow3j.compiler.MethodInitializer.initializeMethod;

@@ -349,17 +349,6 @@ public class Compiler {
         return converter.convert(insn, neoMethod, compUnit);
     }
 
-    public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {
-        int idx = 0;
-        for (FieldNode field : owner.fields) {
-            if (field.name.equals(fieldInsn.name)) {
-                break;
-            }
-            idx++;
-        }
-        return idx;
-    }
-
     public static void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Before doing the syscall the arguments have to be reversed.
         addReverseArguments(calledAsmMethod, callingNeoMethod);
