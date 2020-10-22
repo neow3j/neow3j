@@ -1,5 +1,11 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES_COUNT;
+import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
+import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static java.lang.String.format;
+
+import io.neow3j.constants.OpCode;
 import io.neow3j.utils.ClassUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,7 +18,10 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -432,6 +441,114 @@ public class NeoMethod {
             jumpInsn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
                     .putInt(offset).array());
         }
+    }
+
+    public void initializeMethod(CompilationUnit compUnit) {
+        checkForUnsupportedLocalVariableTypes();
+        if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0
+                && (asmMethod.access & Opcodes.ACC_STATIC) > 0
+                && compUnit.getContractClasses().contains(sourceClass)) {
+            // Only contract methods that are public, static and on the smart contract class are
+            // added to the ABI and are invokable.
+            setIsAbiMethod(true);
+        }
+
+        // Look for method params and local variables and add them to the NeoMethod. Note that Java
+        // mixes method params and local variables.
+        if (asmMethod.maxLocals == 0) {
+            return; // There are no local variables or parameters to process.
+        }
+        int nextVarIdx = collectMethodParameters();
+        collectLocalVariables(nextVarIdx);
+
+        // Add the INITSLOT opcode as first instruction of the method if the method has parameters
+        // and/or local variables.
+        if (variablesByNeoIndex.size() + parametersByNeoIndex.size() > 0) {
+            addInstruction(new NeoInstruction(OpCode.INITSLOT, new byte[]{
+                    (byte) variablesByNeoIndex.size(),
+                    (byte) parametersByNeoIndex.size()}));
+        }
+    }
+
+    private void checkForUnsupportedLocalVariableTypes() {
+        for (LocalVariableNode varNode : asmMethod.localVariables) {
+            if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE
+                    || Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
+                throw new CompilerException(this, format("Method '%s' has unsupported parameter or "
+                        + "variable types.", asmMethod.name));
+            }
+        }
+    }
+
+    private void collectLocalVariables(int nextVarIdx) {
+        int paramCount = Type.getArgumentTypes(asmMethod.desc).length;
+        List<LocalVariableNode> locVars = asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
+            paramCount++;
+        }
+        int localVarCount = asmMethod.maxLocals - paramCount;
+        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
+            throw new CompilerException("The method has more than the max number of local "
+                    + "variables.");
+        }
+        int neoIdx = 0;
+        int jvmIdx = nextVarIdx;
+        while (neoIdx < localVarCount) {
+            // The variables' indices start where the parameters left off. Nonetheless, we need to
+            // look through all local variables because the ordering is not necessarily according to
+            // the indices.
+            NeoVariable neoVar = null;
+            for (LocalVariableNode varNode : locVars) {
+                if (varNode.index == jvmIdx) {
+                    neoVar = new NeoVariable(neoIdx, jvmIdx, varNode);
+                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
+                        // Long vars/params use two index slots, i.e. we increment one more time.
+                        jvmIdx++;
+                    }
+                    break;
+                }
+            }
+            if (neoVar == null) {
+                // Not all local variables show up in ASM's `localVariables` list, e.g. when a
+                // String-based switch-case occurs.
+                neoVar = new NeoVariable(neoIdx, jvmIdx, null);
+            }
+            addVariable(neoVar);
+            jvmIdx++;
+            neoIdx++;
+        }
+    }
+
+    // Retruns the next index of the local variables after the method parameter slots.
+    private int collectMethodParameters() {
+        int paramCount = 0;
+        List<LocalVariableNode> locVars = asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
+            paramCount++;
+        }
+        paramCount += Type.getArgumentTypes(asmMethod.desc).length;
+        if (paramCount > MAX_PARAMS_COUNT) {
+            throw new CompilerException("The method has more than the max number of parameters.");
+        }
+        int jvmIdx = 0;
+        int neoIdx = 0;
+        while (neoIdx < paramCount) {
+            // The parameters' indices start at zero. Nonetheless, we need to look through all local
+            // variables because the ordering is not necessarily according to the indices.
+            for (LocalVariableNode varNode : locVars) {
+                if (varNode.index == jvmIdx) {
+                    addParameter(new NeoVariable(neoIdx, jvmIdx, varNode));
+                    jvmIdx++;
+                    neoIdx++;
+                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
+                        // Long vars/params use two index slots, i.e. we increment one more time.
+                        jvmIdx++;
+                    }
+                    break;
+                }
+            }
+        }
+        return jvmIdx;
     }
 
 }

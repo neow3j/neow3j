@@ -309,7 +309,7 @@ public class Compiler {
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
                 NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-                MethodInitializer.initializeMethod(neoMethod, compUnit);
+                neoMethod.initializeMethod(compUnit);
                 compUnit.getNeoModule().addMethod(neoMethod);
             }
         }
