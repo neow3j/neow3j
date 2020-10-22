@@ -34,7 +34,7 @@ public class BinaryTest extends ContractTest {
         //  See https://github.com/neo-project/neo/issues/1912
         assertThat(result[2], is(StackItemType.INTEGER.byteValue())); // type of first element
         assertThat(result[3], is((byte) 0x01)); // size of value
-        assertThat(result[4], is((byte) 0x00)); // the value
+        assertThat(result[4], is((byte) 0x01)); // the value
         assertThat(result[5], is(StackItemType.INTEGER.byteValue())); // type of first element
         assertThat(result[6], is((byte) 0x02)); // size of value
         assertThat(result[7], is((byte) 0x45)); // part 1 of the value (little-endian)
