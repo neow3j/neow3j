@@ -142,7 +142,6 @@ public class ContractTest {
      * with the given parameters and signer.
      *
      * @param function The function to call.
-     * @param signer The signer to add to the invocation.
      * @param params   The parameters to provide to the function call.
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
