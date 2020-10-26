@@ -11,7 +11,6 @@ import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
 import static io.neow3j.compiler.Compiler.handleInsn;
-import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -74,13 +73,24 @@ public class ObjectsConverter implements Converter {
     public static void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
+        neoMethod.addInstruction(buildStoreOrLoadStaticVariable(idx, OpCode.LDSFLD));
     }
 
     public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
+        neoMethod.addInstruction(buildStoreOrLoadStaticVariable(idx, OpCode.STSFLD));
+    }
+
+    public static NeoInstruction buildStoreOrLoadStaticVariable(int index, OpCode opcode) {
+        NeoInstruction neoInsn;
+        // TODO: Because of some bug in the neo-vm, the following code is not making use of
+        //  STSFLD0-6 and LDSTFLD0-6, instead it is just using the ones with an operand.
+        //  See neo-vm issue at https://github.com/neo-project/neo-vm/issues/375.
+        byte[] operand = new byte[]{(byte) index};
+        neoInsn = new NeoInstruction(opcode, operand);
+
+        return neoInsn;
     }
 
     public static AbstractInsnNode handleNew(AbstractInsnNode insn, NeoMethod callingNeoMethod,
