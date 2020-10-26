@@ -1,16 +1,16 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.StaticVariableHelper;
+import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 
-public class StaticFieldConverterTest extends ContractTest {
+public class StringLiteralsTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(StaticFieldConverter.class.getName());
+        setUp(StringLiterals.class.getName());
     }
 
     @Ignore("The return type of this function call is `Any` even though we would expect a "
@@ -43,12 +43,12 @@ public class StaticFieldConverterTest extends ContractTest {
 //                    is(expected));
     }
 
-    static class StaticFieldConverter {
+    static class StringLiterals {
 
-        private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
+        private static final byte[] scriptHash = StringLiteralHelper.addressToScriptHash(
                 "AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
-        private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x010203");
-        private static final int integer = StaticVariableHelper.stringToInt("1000000000000000000000000000000");
+        private static final byte[] bytes = StringLiteralHelper.hexToBytes("0x010203");
+        private static final int integer = StringLiteralHelper.stringToInt("1000000000000000000000000000000");
 
         public static byte[] addressToScriptHashConverter() {
             return scriptHash;

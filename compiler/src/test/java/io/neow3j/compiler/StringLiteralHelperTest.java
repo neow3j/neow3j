@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.StaticVariableHelper;
+import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.neo.Runtime;
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class StaticFieldConvertersTest {
+public class StringLiteralHelperTest {
 
     @Rule
     public ExpectedException expected = ExpectedException.none();
@@ -55,7 +55,7 @@ public class StaticFieldConvertersTest {
 
     static class InvalidAddressVariable {
 
-        private static final byte[] scriptHash = StaticVariableHelper.addressToScriptHash(
+        private static final byte[] scriptHash = StringLiteralHelper.addressToScriptHash(
                 "A0unErzotcQTNWP2qktA7LgkXZVdHea97H");
 
         public static byte[] main() {
@@ -65,7 +65,7 @@ public class StaticFieldConvertersTest {
 
     static class InvalidHexStringVariable {
 
-        private static final byte[] bytes = StaticVariableHelper.hexToBytes("0x0h02");
+        private static final byte[] bytes = StringLiteralHelper.hexToBytes("0x0h02");
 
         public static byte[] main() {
             return bytes;
@@ -74,7 +74,7 @@ public class StaticFieldConvertersTest {
 
     static class InvalidIntStringVariable {
 
-        private static final int integer = StaticVariableHelper.stringToInt("100e0000000000000000000000000000");
+        private static final int integer = StringLiteralHelper.stringToInt("100e0000000000000000000000000000");
 
         public static int main() {
             return integer;
@@ -83,7 +83,7 @@ public class StaticFieldConvertersTest {
 
     static class IllegalInputConverterMethod {
 
-        private static final byte[] bytes = StaticVariableHelper.hexToBytes(Runtime.getPlatform());
+        private static final byte[] bytes = StringLiteralHelper.hexToBytes(Runtime.getPlatform());
 
         public static byte[] main() {
             return bytes;
@@ -100,7 +100,7 @@ public class StaticFieldConvertersTest {
         }
 
         public static byte[] getScriptHash() {
-            return StaticVariableHelper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
+            return StringLiteralHelper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
         }
     }
 }
