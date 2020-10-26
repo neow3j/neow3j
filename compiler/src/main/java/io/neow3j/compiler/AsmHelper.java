@@ -7,15 +7,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.InvalidParameterException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -25,18 +27,42 @@ import org.objectweb.asm.util.TraceMethodVisitor;
 
 public class AsmHelper {
 
+    /**
+     * Gets the {@code MethodNode} corresponding to the method called in the given instruction.
+     *
+     * @param methodInsn The method instruction.
+     * @param owner      The class that contains the method to be searched.
+     * @return the method.
+     */
     public static Optional<MethodNode> getMethodNode(MethodInsnNode methodInsn, ClassNode owner) {
         return owner.methods.stream()
                 .filter(m -> m.desc.equals(methodInsn.desc) && m.name.equals(methodInsn.name))
                 .findFirst();
     }
 
-    public static ClassNode getClassNodeForInternalName(String internalName,
+    /**
+     * Gets the {@code ClassNode} for the given class name using the given classloader.
+     *
+     * @param internalName The class name in internal name representation as provided by ASM, e.g.,
+     *                     in {@link Type#getInternalName()}.
+     * @param classLoader  The classloader to use.
+     * @return The class node.
+     * @throws IOException If an error occurs when reading class files.
+     */
+    public static ClassNode getAsmClassForInternalName(String internalName,
             ClassLoader classLoader) throws IOException {
 
         return getAsmClass(Type.getObjectType(internalName).getClassName(), classLoader);
     }
 
+    /**
+     * Gets the {@code ClassNode} for the given fully qualified class name.
+     *
+     * @param fullyQualifiedClassName The name of the class to fetch.
+     * @param classLoader             The classloader to use.
+     * @return The class node.
+     * @throws IOException If an error occurs when reading class files.
+     */
     public static ClassNode getAsmClass(String fullyQualifiedClassName, ClassLoader classLoader)
             throws IOException {
 
@@ -48,31 +74,55 @@ public class AsmHelper {
                 fullyQualifiedClassName.replace('.', '/') + ".class"));
     }
 
+    /**
+     * Gets the {@code ClassNode} from the given input stream.
+     *
+     * @param classStream The stream containing the byte code of a Java class.
+     * @return The class node.
+     * @throws IOException If an error occurs when reading the stream.
+     */
     public static ClassNode getAsmClass(InputStream classStream) throws IOException {
         ClassReader classReader = new ClassReader(classStream);
-        return getAsmClass(classReader);
-    }
-
-    public static ClassNode getAsmClass(ClassReader classReader) {
-        if (classReader == null) {
-            throw new InvalidParameterException("Class reader not found.");
-        }
         ClassNode asmClass = new ClassNode();
         classReader.accept(asmClass, 0);
         return asmClass;
     }
 
+    /**
+     * Checks if the given method has one or more of the given annotations.
+     *
+     * @param asmMethod   The method to check.
+     * @param annotations The annotations.
+     * @return True if the method has one or more of the given annotations. False, otherwise.
+     */
     public static boolean hasAnnotations(MethodNode asmMethod, Class<?>... annotations) {
-        if (annotations.length == 0) {
+        return hasAnnotation(asmMethod.invisibleAnnotations, annotations);
+    }
+
+    /**
+     * Checks if the given {@code ClassNode} has any of the given annotations.
+     *
+     * @param asmClass    The class to check.
+     * @param annotations The annotations to check for.
+     * @return true if the class has one of the given annotations. False, otherwise.
+     */
+    public static boolean hasAnnotations(ClassNode asmClass, Class<?>... annotations) {
+        return hasAnnotation(asmClass.invisibleAnnotations, annotations);
+    }
+
+    private static boolean hasAnnotation(List<AnnotationNode> annotations,
+            Class<?>... annotationTypes) {
+
+        if (annotationTypes.length == 0) {
             throw new IllegalArgumentException("Provide at least one annotation class.");
         }
-        List<String> descriptors = Arrays.stream(annotations)
+        List<String> descriptors = Stream.of(annotationTypes)
                 .map(Type::getDescriptor)
                 .collect(Collectors.toList());
 
-        return asmMethod.invisibleAnnotations != null && asmMethod.invisibleAnnotations.stream()
-                .anyMatch(methodAnnotation -> descriptors.stream()
-                        .anyMatch(desc -> methodAnnotation.desc.equals(desc)));
+        return annotations != null && annotations.stream()
+                .anyMatch(annotation -> descriptors.stream()
+                        .anyMatch(desc -> annotation.desc.equals(desc)));
     }
 
 
@@ -131,4 +181,14 @@ public class AsmHelper {
         return sw.toString();
     }
 
+    public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {
+        int idx = 0;
+        for (FieldNode field : owner.fields) {
+            if (field.name.equals(fieldInsn.name)) {
+                break;
+            }
+            idx++;
+        }
+        return idx;
+    }
 }

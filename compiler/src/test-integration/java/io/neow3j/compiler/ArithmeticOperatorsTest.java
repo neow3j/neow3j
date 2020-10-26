@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ArithmeticOperatorsTest extends CompilerTest {
+public class ArithmeticOperatorsTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -75,48 +75,49 @@ public class ArithmeticOperatorsTest extends CompilerTest {
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
+    static class ArithmeticOperators {
+
+        public static int[] allOperators(int i, int j) {
+            int[] arr = new int[5];
+            arr[0] = i + j;
+            arr[1] = i - j;
+            arr[2] = i * j;
+            arr[3] = i / j;
+            arr[4] = i % j;
+            return arr;
+        }
+
+        public static int[] allAssignmentOperators(int i) {
+            int[] arr = new int[]{10, 10, 10, 10, 10};
+            arr[0] += i;
+            arr[1] -= i;
+            arr[2] *= i;
+            arr[3] /= i;
+            arr[4] %= i;
+            return arr;
+        }
+
+        public static int[] addAndIncrement(int i1, int i2) {
+            int i = i1++ + i2;
+            return new int[]{i, i1, i2};
+        }
+
+        public static int[] incrementAndAdd(int i1, int i2) {
+            int i = ++i1 + i2;
+            return new int[]{i, i1, i2};
+        }
+
+        public static int[] subtractAndDecrement(int i1, int i2) {
+            int i = i1-- - i2;
+            return new int[]{i, i1, i2};
+        }
+
+        public static int[] decrementAndSubtract(int i1, int i2) {
+            int i = --i1 - i2;
+            return new int[]{i, i1, i2};
+        }
+
+    }
+
 }
 
-class ArithmeticOperators {
-
-    public static int[] allOperators(int i, int j) {
-        int[] arr = new int[5];
-        arr[0] = i + j;
-        arr[1] = i - j;
-        arr[2] = i * j;
-        arr[3] = i / j;
-        arr[4] = i % j;
-        return arr;
-    }
-
-    public static int[] allAssignmentOperators(int i) {
-        int[] arr = new int[]{10, 10, 10, 10, 10};
-        arr[0] += i;
-        arr[1] -= i;
-        arr[2] *= i;
-        arr[3] /= i;
-        arr[4] %= i;
-        return arr;
-    }
-
-    public static int[] addAndIncrement(int i1, int i2) {
-        int i = i1++ + i2;
-        return new int[]{i, i1, i2};
-    }
-
-    public static int[] incrementAndAdd(int i1, int i2) {
-        int i = ++i1 + i2;
-        return new int[]{i, i1, i2};
-    }
-
-    public static int[] subtractAndDecrement(int i1, int i2) {
-        int i = i1-- - i2;
-        return new int[]{i, i1, i2};
-    }
-
-    public static int[] decrementAndSubtract(int i1, int i2) {
-        int i = --i1 - i2;
-        return new int[]{i, i1, i2};
-    }
-
-}

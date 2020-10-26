@@ -42,9 +42,10 @@ import org.junit.rules.TestName;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-public class CompilerTest {
+public class ContractTest {
 
     // Exposed port of the neo node running in the docker container.
     protected static int EXPOSED_JSONRPC_PORT = 40332;
@@ -57,8 +58,8 @@ public class CompilerTest {
     protected static final String VM_STATE_FAULT = "FAULT";
 
     @ClassRule
-    public static GenericContainer privateNetContainer = new GenericContainer(
-            NEO3_PRIVATENET_CONTAINER_IMG)
+    public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
+            DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
             .withClasspathResourceMapping("/node-config/config.json",
                     "/neo-cli/config.json", BindMode.READ_ONLY)
             .withClasspathResourceMapping("/node-config/protocol.json",
@@ -71,8 +72,8 @@ public class CompilerTest {
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());
 
-    protected static Account account;
-    protected static Account multiSigAcc;
+    protected static Account defaultAccount;
+    protected static Account committeeMember;
     protected static Wallet wallet;
     protected static Neow3j neow3j;
     protected static SmartContract contract;
@@ -81,16 +82,19 @@ public class CompilerTest {
     @Rule
     public TestName testName = new TestName();
 
+    private boolean signWithCommitteeMember = false;
+    private boolean signWithDefaultAccount = false;
+
     protected String getTestName() {
         return testName.getMethodName();
     }
 
     protected static void setUp(String name) throws Throwable {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        account = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
-        multiSigAcc = Account.createMultiSigAccount(
-                Arrays.asList(account.getECKeyPair().getPublicKey()), 1);
-        wallet = Wallet.withAccounts(account, multiSigAcc);
+        defaultAccount = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
+        committeeMember = Account.createMultiSigAccount(
+                Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
+        wallet = Wallet.withAccounts(defaultAccount, committeeMember);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         contractName = name;
         contract = deployContract(contractName);
@@ -108,10 +112,10 @@ public class CompilerTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        SmartContract sc = new SmartContract(res.getNef(), res.getManifest(), neow3j);
+        SmartContract sc = new SmartContract(res.getNefFile(), res.getManifest(), neow3j);
         NeoSendRawTransaction response = sc.deploy()
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(multiSigAcc.getScriptHash()))
+                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
                 .sign().send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
@@ -122,6 +126,8 @@ public class CompilerTest {
     /**
      * Does a {@code invokefunction} JSON-RPC to the setup contract, the function with the current
      * test's name, and the given parameters.
+     * <p>
+     * Doesn't add a signer to the invocation.
      *
      * @param params The parameters to provide to the function call.
      * @return The result of the call.
@@ -132,8 +138,8 @@ public class CompilerTest {
     }
 
     /**
-     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function and the
-     * given parameters.
+     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function, with
+     * the given parameters and signer.
      *
      * @param function The function to call.
      * @param params   The parameters to provide to the function call.
@@ -142,6 +148,15 @@ public class CompilerTest {
      */
     protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
             throws IOException {
+
+        if (signWithCommitteeMember) {
+            return contract.callInvokeFunction(function, Arrays.asList(params),
+                    Signer.calledByEntry(committeeMember.getScriptHash()));
+        }
+        if (signWithDefaultAccount) {
+            return contract.callInvokeFunction(function, Arrays.asList(params),
+                    Signer.calledByEntry(defaultAccount.getScriptHash()));
+        }
         return contract.callInvokeFunction(function, Arrays.asList(params));
     }
 
@@ -167,7 +182,8 @@ public class CompilerTest {
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters.
      * <p>
-     * The multi-sig account at {@link CompilerTest#multiSigAcc} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
@@ -175,7 +191,28 @@ public class CompilerTest {
     protected String invokeFunction(ContractParameter... params) throws Throwable {
         return contract.invokeFunction(getTestName(), params)
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(multiSigAcc.getScriptHash()))
+                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the contract under test, the given function,
+     * with the given parameters.
+     * <p>
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
+     *
+     * @param function The function to call.
+     * @param params The parameters to pass with the function call.
+     * @return the hash of the sent transaction.
+     */
+    protected String invokeFunction(String function, ContractParameter... params) throws Throwable {
+        return contract.invokeFunction(function, params)
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -187,13 +224,33 @@ public class CompilerTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link CompilerTest#multiSigAcc} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
     protected String invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
         String txHash = invokeFunction(params);
+        waitUntilTransactionIsExecuted(txHash);
+        return txHash;
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the contract under test, the given function, with
+     * the given parameters. Sleeps until the transaction is included in a block.
+     * <p>
+     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * transaction.
+     *
+     * @param function The function to call.
+     * @param params   The parameters to pass with the function call.
+     * @return the hash of the transaction.
+     */
+    protected String invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
+            throws Throwable {
+
+        String txHash = invokeFunction(function, params);
         waitUntilTransactionIsExecuted(txHash);
         return txHash;
     }
@@ -269,21 +326,18 @@ public class CompilerTest {
     protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)
             throws IOException {
 
-        String[] splitName = contractName.split("\\.");
+        String[] splitName = contractName.split("\\$");
         InputStream s = this.getClass().getClassLoader().getResourceAsStream(
                 getResultFilePath(splitName[splitName.length - 1], getTestName()));
         return getObjectMapper().readValue(s, stackItemType);
     }
 
-    protected StackItem getFirstStackItem(NeoInvokeFunction response) {
-        return response.getInvocationResult().getStack().get(0);
+    protected void signWithCommitteeMember() {
+        signWithCommitteeMember = true;
     }
 
-//    protected void transferTokensTogTgT
-//    NeoSendToAddress send = super.sendToAddress(NEO_HASH, toAddress, amount).send();
-//    // ensure that the transaction is sent
-//    waitUntilSendToAddressTransactionHasBeenExecuted();
-//    // store the transaction hash to use this transaction in the tests
-//        return send.getSendToAddress().getHash();
-//
+    protected void signWithDefaultAccount() {
+        signWithDefaultAccount = true;
+    }
+
 }

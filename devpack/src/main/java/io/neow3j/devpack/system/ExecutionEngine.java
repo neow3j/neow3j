@@ -1,7 +1,7 @@
 package io.neow3j.devpack.system;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.ScriptContainer;
+import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.neo.Transaction;
 
@@ -24,7 +24,7 @@ public class ExecutionEngine {
      * @return the script container.
      */
     @Syscall(InteropServiceCode.SYSTEM_RUNTIME_GETSCRIPTCONTAINER)
-    public static native ScriptContainer getScriptContainer();
+    public static native Transaction getScriptContainer();
 
     /**
      * Gets the script hash of the currently executing contract.

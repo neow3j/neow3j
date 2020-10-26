@@ -1,12 +1,12 @@
 package io.neow3j.devpack.neo;
 
-import io.neow3j.devpack.ScriptContainer;
+import io.neow3j.devpack.ApiInterface;
 
 /**
  * Represents a transaction and provides transaction-related information. It is returned for example
  * when calling {@link Blockchain#getTransaction(byte[])}.
  */
-public class Transaction implements ScriptContainer {
+public class Transaction implements ApiInterface {
 
     /**
      * The hash of the transaction.

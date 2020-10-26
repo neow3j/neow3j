@@ -26,8 +26,7 @@ public class BitOperationsConverter implements Converter {
                 break;
             case IUSHR:
             case LUSHR:
-                throw new CompilerException(neoMethod.getOwnerType(), neoMethod.getCurrentLine(), "Logical "
-                        + "bit-shifts are not supported.");
+                throw new CompilerException(neoMethod, "Logical bit-shifts are not supported.");
             case IAND:
             case LAND:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.AND));

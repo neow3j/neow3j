@@ -1,15 +1,27 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
+import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
+import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static java.lang.String.format;
+
+import io.neow3j.constants.OpCode;
+import io.neow3j.utils.ClassUtils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -21,7 +33,7 @@ public class NeoMethod {
     private final MethodNode asmMethod;
 
     // The type that contains this method.
-    private final ClassNode ownerType;
+    private final ClassNode sourceClass;
 
     // The method's name that is, e.g., used when generating the contract's ABI.
     private String name;
@@ -29,7 +41,16 @@ public class NeoMethod {
     // This method's instructions sorted by their address. The addresses in this map are only
     // relative to this method and not the whole `NeoModule` in which this method lives in.
     private SortedMap<Integer, NeoInstruction> instructions = new TreeMap<>();
+
+    // This list contains those instructions that represent a jump, i.e. they remember a label to
+    // which they need to jump. All instructions in this list are also present in the `instructions`
+    // map.
     private List<NeoJumpInstruction> jumpInstructions = new ArrayList<>();
+
+    // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
+    // track of possible jump targets. This is needed when resolving jump addresses for
+    // opcodes like JMPIF.
+    private Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
 
     // This method's local variables (excl. method parametrs).
     private SortedMap<Integer, NeoVariable> variablesByNeoIndex = new TreeMap<>();
@@ -49,7 +70,7 @@ public class NeoMethod {
     // The address after this method's last instruction byte. I.e. the next free address. This
     // address is not absolute in relation to the {@link NeoModule} this method belongs to. It is a
     // method-internal address.
-    private int nextAddress = 0;
+    private int lastAddress = 0;
 
     // The address in the NeoModule at which this method starts.
     private Integer startAddress = null;
@@ -63,23 +84,48 @@ public class NeoMethod {
     // numbers to `NeoInstructions`.
     private int currentLine;
 
-    // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
-    // track of possible jump targets. This is needed when resolving jump addresses for
-    // opcodes like JMPIF.
-    private Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
+    // Tells if the current line number should be added to an instruction that is added to this
+    // method. If it is the first instruction corresponding to the current line, then the line
+    // number is added to the instruction.
+    private boolean isFreshNewLine = true;
 
-    public NeoMethod(MethodNode asmMethod, ClassNode owner) {
+    /**
+     * Constructs a new Neo method.
+     *
+     * @param asmMethod   The Java method this Neo method is converted from.
+     * @param sourceClass The Java class from which this method originates.
+     */
+    public NeoMethod(MethodNode asmMethod, ClassNode sourceClass) {
         this.asmMethod = asmMethod;
         this.name = asmMethod.name;
-        this.ownerType = owner;
+        this.sourceClass = sourceClass;
     }
 
+    /**
+     * Gets the corresponding JVM method that this method was converted from.
+     *
+     * @return the method.
+     */
     public MethodNode getAsmMethod() {
         return asmMethod;
     }
 
-    public ClassNode getOwnerType() {
-        return ownerType;
+    /**
+     * Gets the class that this method is converted from.
+     *
+     * @return The class.
+     */
+    public ClassNode getOwnerClass() {
+        return sourceClass;
+    }
+
+    /**
+     * Gets the fully qualified name of the class that this method was converted from.
+     *
+     * @return the fully qualified name of the corresponding class.
+     */
+    public String getOwnerClassName() {
+        return ClassUtils.getFullyQualifiedNameForInternalName(sourceClass.name);
     }
 
     /**
@@ -89,7 +135,7 @@ public class NeoMethod {
      * @return this method's ID.
      */
     public String getId() {
-        return getMethodId(asmMethod, ownerType);
+        return getMethodId(asmMethod, sourceClass);
     }
 
     /**
@@ -99,6 +145,17 @@ public class NeoMethod {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Gets the name of the JVM method that this Neo method was derived from.
+     * <p>
+     * This will most often be equal to the name returned by {@link NeoMethod#getName()}.
+     *
+     * @return the name of the corresponding source method.
+     */
+    public String getSourceMethodName() {
+        return asmMethod.name;
     }
 
     /**
@@ -134,6 +191,7 @@ public class NeoMethod {
      */
     public void setCurrentLine(int currentLine) {
         this.currentLine = currentLine;
+        isFreshNewLine = true;
     }
 
     public void setCurrentLabel(Label currentLabel) {
@@ -214,10 +272,9 @@ public class NeoMethod {
      *
      * @return the next instruction address.
      */
-    public int getNextAddress() {
-        return nextAddress;
+    public int getLastAddress() {
+        return lastAddress;
     }
-
 
     /**
      * Adds a parameter to this method.
@@ -255,10 +312,17 @@ public class NeoMethod {
         return this.parametersByJVMIndex.get(index);
     }
 
-    // Adds the given instruction to this method. The current source code line number and the
-    // current address (relative to this method) is added to the instruction.
+    /**
+     * Adds the given instruction to this method. The corresponding source code line number and the
+     * instruction's address (relative to this method) is added to the instruction object.
+     *
+     * @param neoInsn The instruction to add.
+     */
     public void addInstruction(NeoInstruction neoInsn) {
-        neoInsn.setLineNr(this.currentLine);
+        if (isFreshNewLine) {
+            neoInsn.setLineNr(currentLine);
+            isFreshNewLine = false;
+        }
         if (this.currentLabel != null) {
             // When the compiler sees a `LabelNode` it stores it on the `currentLabelNode` field
             // and continues. The next instruction is the one that the label belongs. We expect
@@ -272,26 +336,65 @@ public class NeoMethod {
             this.jumpTargets.put(this.currentLabel, neoInsn);
             this.currentLabel = null;
         }
-        neoInsn.setAddress(this.nextAddress);
-        this.instructions.put(this.nextAddress, neoInsn);
+        addInstructionInternal(neoInsn);
+    }
+
+    private void addInstructionInternal(NeoInstruction neoInsn) {
+        neoInsn.setAddress(lastAddress);
+        this.instructions.put(lastAddress, neoInsn);
         if (neoInsn instanceof NeoJumpInstruction) {
             this.jumpInstructions.add((NeoJumpInstruction) neoInsn);
         }
-        this.nextAddress += 1 + neoInsn.getOperand().length;
+        this.lastAddress += 1 + neoInsn.getOperand().length;
     }
 
+    /**
+     * Removes the last instruction from this method.
+     *
+     * @throws CompilerException if the instruction is a jump target.
+     */
     public void removeLastInstruction() {
-        // What about the currentLabel?
         NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
         if (this.jumpTargets.containsValue(lastInsn)) {
-            throw new CompilerException("Attempting to remove an instruction that potentially is a "
-                    + "jump target for jump instruction.");
+            throw new CompilerException(this, "Attempting to remove an instruction that is a jump "
+                    + "target for another instruction.");
         }
-        this.instructions.remove(this.instructions.lastKey());
-        this.jumpInstructions.remove(lastInsn);
-        this.nextAddress -= (1 + lastInsn.getOperand().length);
+        removeLastInstructionInternal();
     }
 
+    private void removeLastInstructionInternal() {
+        NeoInstruction insn = instructions.remove(instructions.lastKey());
+        jumpInstructions.remove(insn);
+        lastAddress -= (1 + insn.getOperand().length);
+    }
+
+    /**
+     * Replaces the last instruction on this method with the given one. If the last instruction is a
+     * jump target, i.e., has a label set, the label will be transferred to the new instruction.
+     *
+     * @param newInsn The replacement instruction.
+     */
+    public void replaceLastInstruction(NeoInstruction newInsn) {
+        NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
+        if (jumpTargets.containsValue(lastInsn)) {
+            Optional<Entry<Label, NeoInstruction>> jumpTarget = jumpTargets.entrySet().stream()
+                    .filter(e -> e.getValue() == lastInsn).findFirst();
+            Label label = jumpTarget.get().getKey();
+            jumpTargets.remove(label);
+            jumpTargets.put(label, newInsn);
+        }
+        if (lastInsn.getLineNr() != null) {
+            newInsn.setLineNr(lastInsn.getLineNr());
+        }
+        removeLastInstructionInternal();
+        addInstructionInternal(newInsn);
+    }
+
+    /**
+     * Gets the last instruction in this method.
+     *
+     * @return the last instruction.
+     */
     public NeoInstruction getLastInstruction() {
         return this.instructions.get(this.instructions.lastKey());
     }
@@ -318,19 +421,19 @@ public class NeoMethod {
      *
      * @return the byte-size of this method.
      */
-    int byteSize() {
+    protected int byteSize() {
         return this.instructions.values().stream()
                 .map(NeoInstruction::byteSize)
                 .reduce(Integer::sum).get();
     }
 
-    void finalizeMethod() {
+    protected void finalizeMethod() {
         // Update the jump instructions with the correct target address offset.
         for (NeoJumpInstruction jumpInsn : this.jumpInstructions) {
             if (!this.jumpTargets.containsKey(jumpInsn.getLabel())) {
-                throw new CompilerException("Missing jump target for jump opcode "
-                        + jumpInsn.getOpcode().name() + ", at source code line number "
-                        + jumpInsn.getLineNr() + ".");
+                throw new CompilerException(format("Missing jump target for opcode %s, at source "
+                                + "code line number %d.", jumpInsn.getOpcode().name(),
+                        jumpInsn.getLineNr()));
             }
             NeoInstruction destinationInsn = this.jumpTargets.get(jumpInsn.getLabel());
             int offset = destinationInsn.getAddress() - jumpInsn.getAddress();
@@ -340,4 +443,116 @@ public class NeoMethod {
                     .putInt(offset).array());
         }
     }
+
+    public void initializeMethod(CompilationUnit compUnit) {
+        checkForUnsupportedLocalVariableTypes();
+        if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0
+                && (asmMethod.access & Opcodes.ACC_STATIC) > 0
+                && compUnit.getContractClasses().contains(sourceClass)) {
+            // Only contract methods that are public, static and on the smart contract class are
+            // added to the ABI and are invokable.
+            setIsAbiMethod(true);
+        }
+
+        // Look for method params and local variables and add them to the NeoMethod. Note that Java
+        // mixes method params and local variables.
+        if (asmMethod.maxLocals == 0) {
+            return; // There are no local variables or parameters to process.
+        }
+        int nextVarIdx = collectMethodParameters();
+        collectLocalVariables(nextVarIdx);
+
+        // Add the INITSLOT opcode as first instruction of the method if the method has parameters
+        // and/or local variables.
+        if (variablesByNeoIndex.size() + parametersByNeoIndex.size() > 0) {
+            addInstruction(new NeoInstruction(OpCode.INITSLOT, new byte[]{
+                    (byte) variablesByNeoIndex.size(),
+                    (byte) parametersByNeoIndex.size()}));
+        }
+    }
+
+    private void checkForUnsupportedLocalVariableTypes() {
+        for (LocalVariableNode varNode : asmMethod.localVariables) {
+            if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE
+                    || Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
+                throw new CompilerException(this, format("Method '%s' has unsupported parameter or "
+                        + "variable types.", asmMethod.name));
+            }
+        }
+    }
+
+    private void collectLocalVariables(int nextVarIdx) {
+        int paramCount = Type.getArgumentTypes(asmMethod.desc).length;
+        List<LocalVariableNode> locVars = asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
+            paramCount++;
+        }
+        int localVarCount = asmMethod.maxLocals - paramCount;
+        if (localVarCount > MAX_LOCAL_VARIABLES) {
+            throw new CompilerException(format("The method '%s' has %d local variables but only a "
+                            + "max of %d is supported.", getSourceMethodName(), localVarCount,
+                    MAX_LOCAL_VARIABLES));
+        }
+        int neoIdx = 0;
+        int jvmIdx = nextVarIdx;
+        while (neoIdx < localVarCount) {
+            // The variables' indices start where the parameters left off. Nonetheless, we need to
+            // look through all local variables because the ordering is not necessarily according to
+            // the indices.
+            NeoVariable neoVar = null;
+            for (LocalVariableNode varNode : locVars) {
+                if (varNode.index == jvmIdx) {
+                    neoVar = new NeoVariable(neoIdx, jvmIdx, varNode);
+                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
+                        // Long vars/params use two index slots, i.e. we increment one more time.
+                        jvmIdx++;
+                    }
+                    break;
+                }
+            }
+            if (neoVar == null) {
+                // Not all local variables show up in ASM's `localVariables` list, e.g. when a
+                // String-based switch-case occurs.
+                neoVar = new NeoVariable(neoIdx, jvmIdx, null);
+            }
+            addVariable(neoVar);
+            jvmIdx++;
+            neoIdx++;
+        }
+    }
+
+    // Retruns the next index of the local variables after the method parameter slots.
+    private int collectMethodParameters() {
+        int paramCount = 0;
+        List<LocalVariableNode> locVars = asmMethod.localVariables;
+        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
+            paramCount++;
+        }
+        paramCount += Type.getArgumentTypes(asmMethod.desc).length;
+        if (paramCount > MAX_PARAMS_COUNT) {
+            throw new CompilerException(format("The method '%s' has %d parameters but only a max "
+                            + "of %d is supported.", getSourceMethodName(), paramCount,
+                    MAX_PARAMS_COUNT));
+        }
+        int jvmIdx = 0;
+        int neoIdx = 0;
+        while (neoIdx < paramCount) {
+            // The parameters' indices start at zero. Nonetheless, we need to look through all local
+            // variables because the ordering is not necessarily according to the indices.
+            for (LocalVariableNode varNode : locVars) {
+                if (varNode.index == jvmIdx) {
+                    addParameter(new NeoVariable(neoIdx, jvmIdx, varNode));
+                    jvmIdx++;
+                    neoIdx++;
+                    if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
+                        // Long vars/params use two index slots, i.e. we increment one more time.
+                        jvmIdx++;
+                    }
+                    break;
+                }
+            }
+        }
+        return jvmIdx;
+    }
+
 }

@@ -1,5 +1,7 @@
 package io.neow3j.compiler.converters;
 
+import static java.lang.String.format;
+
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
@@ -84,7 +86,7 @@ public class MiscConverter implements Converter {
             case DLOAD_3:
             case FLOAD:
             case DLOAD:
-                throw new CompilerException("Floating point numbers are not supported.");
+                throw new CompilerException(neoMethod, "Floating point numbers are not supported.");
                 // endregion ### FLOATING POINT (unsupported) ###
 
                 // region ### MISCELLANEOUS ###
@@ -92,8 +94,8 @@ public class MiscConverter implements Converter {
             case MONITORENTER:
             case MONITOREXIT:
             case WIDE:
-                throw new CompilerException("Unsupported instruction " + opcode + " in: " +
-                        neoMethod.getAsmMethod().name + ".");
+                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
+                        opcode.name()));
                 // endregion ### MISCELLANEOUS ###
         }
         return insn;

@@ -1,6 +1,7 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.AsmHelper.getClassNodeForInternalName;
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.INSTANCE_CTOR;
@@ -9,10 +10,8 @@ import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
-import static io.neow3j.compiler.Compiler.getFieldIndex;
 import static io.neow3j.compiler.Compiler.handleInsn;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
-import static io.neow3j.compiler.MethodInitializer.initializeMethod;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -66,21 +65,21 @@ public class ObjectsConverter implements Converter {
                 neoMethod.addInstruction(new NeoInstruction(OpCode.SIZE));
                 break;
             case INSTANCEOF:
-                throw new CompilerException("Instruction " + opcode + " in " +
-                        neoMethod.getAsmMethod().name + " not yet supported.");
+                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
+                        opcode.name()));
         }
         return insn;
     }
 
     public static void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
     }
 
     public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerType());
+        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
     }
 
@@ -97,10 +96,11 @@ public class ObjectsConverter implements Converter {
             return handleStringConcatenation(typeInsn, callingNeoMethod, compUnit);
         }
 
-        ClassNode owner = getClassNodeForInternalName(typeInsn.desc, compUnit.getClassLoader());
-        MethodInsnNode ctorMethodInsn = skipToCtorMethodInstruction(typeInsn.getNext(), owner);
+        ClassNode owner = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
+        MethodInsnNode ctorMethodInsn = skipToCtorMethodInstruction(typeInsn.getNext(), owner,
+                callingNeoMethod);
         MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner).orElseThrow(() ->
-                new CompilerException(owner, callingNeoMethod.getCurrentLine(), format(
+                new CompilerException(callingNeoMethod, format(
                         "Couldn't find constructor '%s' on class '%s'.",
                         ctorMethodInsn.name, getClassNameForInternalName(owner.name))));
 
@@ -157,17 +157,16 @@ public class ObjectsConverter implements Converter {
                 break; // End of string concatenation.
             }
             if (isCallToAnyStringBuilderMethod(insn)) {
-                throw new CompilerException(compUnit.getContractClassNode(), neoMethod.getCurrentLine(),
-                        format("Only 'append()' and 'toString()' are supported for StringBuilder, "
-                                + "but '%s' was called", ((MethodInsnNode) insn).name));
+                throw new CompilerException(neoMethod, format("Only 'append()' and 'toString()' "
+                                + "are supported for StringBuilder, but '%s' was called",
+                        ((MethodInsnNode) insn).name));
             }
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
         }
         if (insn == null) {
-            throw new CompilerException(compUnit.getContractClassNode(),
-                    neoMethod.getCurrentLine(),
-                    "Expected to find ScriptBuilder.toString() but reached end of method.");
+            throw new CompilerException(neoMethod, "Expected to find ScriptBuilder.toString() but "
+                    + "reached end of method.");
         }
         return insn;
     }
@@ -190,7 +189,7 @@ public class ObjectsConverter implements Converter {
     }
 
     private static MethodInsnNode skipToCtorMethodInstruction(AbstractInsnNode insn,
-            ClassNode owner) {
+            ClassNode owner, NeoMethod neoMethod) {
 
         while (insn.getNext() != null) {
             insn = insn.getNext();
@@ -198,8 +197,10 @@ public class ObjectsConverter implements Converter {
                 return (MethodInsnNode) insn;
             }
         }
-        throw new CompilerException(format("Couldn't find call to constructor of class %s",
+        throw new CompilerException(neoMethod, format("Tried to skip to an instruction calling "
+                        + "the constructor of the class %s but reached the end of the method.",
                 getFullyQualifiedNameForInternalName(owner.name)));
+
     }
 
     private static AbstractInsnNode convertConstructorCall(TypeInsnNode typeInsn,
@@ -216,7 +217,7 @@ public class ObjectsConverter implements Converter {
             // Skip the call to the Object ctor and continue processing the rest of the ctor.
             calledNeoMethod = new NeoMethod(ctorMethod, owner);
             compUnit.getNeoModule().addMethod(calledNeoMethod);
-            initializeMethod(calledNeoMethod, compUnit);
+            calledNeoMethod.initializeMethod(compUnit);
             AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod);
             insn = insn.getNext();
             while (insn != null) {
