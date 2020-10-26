@@ -1,9 +1,10 @@
 package io.neow3j.protocol.core.methods.response;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
