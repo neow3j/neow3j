@@ -197,12 +197,6 @@ public class MethodsConverter implements Converter {
     private static void handleStaticFieldConverter(MethodNode methodNode,
             NeoMethod callingNeoMethod) {
 
-        if (!callingNeoMethod.getName().equals(INITSSLOT_METHOD_NAME)) {
-            throw new CompilerException(callingNeoMethod, format("The static field "
-                    + "converter method '%s' was used outside of the static variable "
-                    + "initialization scope.", methodNode.name));
-        }
-
         NeoInstruction lastNeoInsn = callingNeoMethod.getLastInstruction();
         if (!lastNeoInsn.getOpcode().equals(OpCode.PUSHDATA1)
                 && !lastNeoInsn.getOpcode().equals(OpCode.PUSHDATA2)
