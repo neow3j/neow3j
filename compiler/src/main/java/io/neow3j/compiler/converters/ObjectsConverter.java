@@ -11,6 +11,7 @@ import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
 import static io.neow3j.compiler.Compiler.handleInsn;
+import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -19,6 +20,7 @@ import static org.objectweb.asm.Type.getInternalName;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.LocalVariableHelper;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
@@ -73,24 +75,13 @@ public class ObjectsConverter implements Converter {
     public static void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadStaticVariable(idx, OpCode.LDSFLD));
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
     }
 
     public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadStaticVariable(idx, OpCode.STSFLD));
-    }
-
-    public static NeoInstruction buildStoreOrLoadStaticVariable(int index, OpCode opcode) {
-        NeoInstruction neoInsn;
-        // TODO: Because of some bug in the neo-vm, the following code is not making use of
-        //  STSFLD0-6 and LDSTFLD0-6, instead it is just using the ones with an operand.
-        //  See neo-vm issue at https://github.com/neo-project/neo-vm/issues/375.
-        byte[] operand = new byte[]{(byte) index};
-        neoInsn = new NeoInstruction(opcode, operand);
-
-        return neoInsn;
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
     }
 
     public static AbstractInsnNode handleNew(AbstractInsnNode insn, NeoMethod callingNeoMethod,

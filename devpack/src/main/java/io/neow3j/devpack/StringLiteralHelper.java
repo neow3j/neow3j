@@ -10,7 +10,8 @@ package io.neow3j.devpack;
 public class StringLiteralHelper {
 
     /**
-     * Converts the given Neo address to its script hash (little-endian byte array).
+     * Converts the given Neo address to the corresponding script hash as a little-endian byte
+     * array.
      * <p>
      * This method can only be applied to constant string literals in static variable
      * initializations.

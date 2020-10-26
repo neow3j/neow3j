@@ -122,8 +122,8 @@ public class MethodsConverter implements Converter {
             addInstruction(calledAsmMethod.get(), callingNeoMethod);
         } else if (isContractCall(owner)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, owner);
-        } else if (isStaticFieldConverter(calledAsmMethod.get(), owner)) {
-            handleStaticFieldConverter(calledAsmMethod.get(), callingNeoMethod);
+        } else if (isSrtingLiteralConverter(calledAsmMethod.get(), owner)) {
+            handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
         } else {
             return handleMethodCall(callingNeoMethod, owner, calledAsmMethod.get(), methodInsn,
                     compUnit);
@@ -187,14 +187,14 @@ public class MethodsConverter implements Converter {
                 && isOwnerPrimitiveTypeWrapper;
     }
 
-    public static boolean isStaticFieldConverter(MethodNode methodNode, ClassNode owner) {
+    public static boolean isSrtingLiteralConverter(MethodNode methodNode, ClassNode owner) {
         return owner.name.equals(Type.getInternalName(StringLiteralHelper.class))
                 && (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)
                 || methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)
                 || methodNode.name.equals(STRING_TO_INT_METHOD_NAME));
     }
 
-    private static void handleStaticFieldConverter(MethodNode methodNode,
+    private static void handleStringLiteralsConverter(MethodNode methodNode,
             NeoMethod callingNeoMethod) {
 
         NeoInstruction lastNeoInsn = callingNeoMethod.getLastInstruction();
@@ -235,8 +235,8 @@ public class MethodsConverter implements Converter {
             }
         }
         byte[] newOperand = Arrays.copyOfRange(newInsnBytes, 1, newInsnBytes.length);
-        lastNeoInsn.setOpcode(OpCode.get(newInsnBytes[0]));
-        lastNeoInsn.setOperand(newOperand);
+        callingNeoMethod.replaceLastInstruction(
+                new NeoInstruction(OpCode.get(newInsnBytes[0]), newOperand));
     }
 
     public static boolean hasSyscallAnnotation(MethodNode asmMethod) {

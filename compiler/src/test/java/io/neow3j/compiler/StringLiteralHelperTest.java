@@ -46,13 +46,6 @@ public class StringLiteralHelperTest {
         new Compiler().compileClass(IllegalInputConverterMethod.class.getName());
     }
 
-    @Test
-    public void illegalUseOfConverterMethodLeadsToCompilerException() throws IOException {
-        expected.expect(CompilerException.class);
-        expected.expectMessage(new StringContains("static variable initialization scope"));
-        new Compiler().compileClass(IllegalUseOfConverterMethod.class.getName());
-    }
-
     static class InvalidAddressVariable {
 
         private static final byte[] scriptHash = StringLiteralHelper.addressToScriptHash(
@@ -91,17 +84,5 @@ public class StringLiteralHelperTest {
 
     }
 
-    static class IllegalUseOfConverterMethod {
-
-        private static final byte[] scriptHash = getScriptHash();
-
-        public static byte[] main() {
-            return scriptHash;
-        }
-
-        public static byte[] getScriptHash() {
-            return StringLiteralHelper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
-        }
-    }
 }
 
