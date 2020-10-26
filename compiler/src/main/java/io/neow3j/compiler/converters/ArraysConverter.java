@@ -81,23 +81,23 @@ public class ArraysConverter implements Converter {
                 addGetField(insn, neoMethod, compUnit);
                 break;
             case MULTIANEWARRAY:
-                throw new CompilerException(format("Instruction %s in %s is not supported.",
-                        opcode.name(), neoMethod.getSourceMethodName()));
+                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
+                        opcode.name()));
         }
         return insn;
     }
 
     private AbstractInsnNode handleNewByteArray(AbstractInsnNode insn, NeoMethod neoMethod) {
         // The last added instruction contains the size of the array.
-        int arraySize = extractPushedNumber(neoMethod.getLastInstruction());
+        int arraySize = extractPushedNumber(neoMethod.getLastInstruction(), neoMethod);
         byte[] bytes = new byte[arraySize];
         while (settingOfArrayElementFollows(insn)) {
             // If there is an instruction sequence for setting an array element, we retrieve that
             // element and skip the instruction sequence.
             insn = insn.getNext().getNext(); // The instruction that pushed the index to the stack.
-            int idx = getPushedByte(insn);
+            int idx = getPushedByte(insn, neoMethod);
             insn = insn.getNext(); // The instruction that pushes the element's value to the stack.
-            int value = getPushedByte(insn);
+            int value = getPushedByte(insn, neoMethod);
             bytes[idx] = (byte) value;
             insn = insn.getNext(); // Skip to the BASTORE instruction.
         }
@@ -142,13 +142,13 @@ public class ArraysConverter implements Converter {
                 || insn.getOpcode() == BIPUSH.getOpcode();
     }
 
-    private static int getPushedByte(AbstractInsnNode insn) {
+    private static int getPushedByte(AbstractInsnNode insn, NeoMethod neoMethod) {
         if (insn.getOpcode() >= ICONST_0.getOpcode() && insn.getOpcode() <= ICONST_5.getOpcode()) {
             return insn.getOpcode() - ICONST_0.getOpcode();
         } else if (insn.getOpcode() == BIPUSH.getOpcode()) {
             return ((IntInsnNode) insn).operand;
         }
-        throw new CompilerException(format("Unexpected instruction with opcode %s.",
+        throw new CompilerException(neoMethod, format("Unexpected instruction with opcode %s.",
                 insn.getOpcode()));
     }
 
@@ -157,7 +157,7 @@ public class ArraysConverter implements Converter {
         return intInsn.operand == BYTE_ARRAY_TYPE_CODE;
     }
 
-    private int extractPushedNumber(NeoInstruction insn) {
+    private int extractPushedNumber(NeoInstruction insn, NeoMethod neoMethod) {
         if (insn.getOpcode().getCode() <= OpCode.PUSHINT256.getCode()) {
             return BigIntegers.fromLittleEndianByteArray(insn.getOperand()).intValue();
         }
@@ -165,7 +165,7 @@ public class ArraysConverter implements Converter {
                 && insn.getOpcode().getCode() <= OpCode.PUSH16.getCode()) {
             return insn.getOpcode().getCode() - OpCode.PUSHM1.getCode() - 1;
         }
-        throw new CompilerException("Couldn't parse get number from instruction "
+        throw new CompilerException(neoMethod, "Couldn't parse get number from instruction "
                 + insn.toString());
     }
 

@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES_COUNT;
+import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
+import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
 
@@ -17,9 +18,10 @@ public class LocalVariableHelper {
     private static void addLoadOrStoreLocalVariable(int varIndex, NeoMethod neoMethod,
             OpCode argOpcode, OpCode varOpcode) {
 
-        if (varIndex >= MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("Local variable index to high. Was " + varIndex + " but "
-                    + "maximally " + MAX_LOCAL_VARIABLES_COUNT + " local variables are supported.");
+        if (varIndex >= MAX_LOCAL_VARIABLES) {
+            throw new CompilerException(neoMethod, format("The variable index %d is higher than the"
+                            + " maximum supported number of local variables %d", varIndex,
+                    MAX_LOCAL_VARIABLES));
         }
         // The local variable can either be a method parameter or a normal variable defined in
         // the method body. The NeoMethod has been initialized with all the local variables.

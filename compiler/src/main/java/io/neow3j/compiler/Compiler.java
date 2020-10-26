@@ -38,8 +38,6 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -53,8 +51,8 @@ public class Compiler {
     public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
 
     public static final int MAX_PARAMS_COUNT = 255;
-    public static final int MAX_LOCAL_VARIABLES_COUNT = 255;
-    public static final int MAX_STATIC_FIELDS_COUNT = 255;
+    public static final int MAX_LOCAL_VARIABLES = 255;
+    public static final int MAX_STATIC_FIELDS = 255;
 
     public static final String INSTANCE_CTOR = "<init>";
     private static final String CLASS_CTOR = "<clinit>";
@@ -121,7 +119,7 @@ public class Compiler {
         }
         typeName = ClassUtils.getFullyQualifiedNameForInternalName(type.getInternalName());
         throw new CompilerException(format(
-                "No mapping from Java type '%s' to any neo-vm type.", typeName));
+                "No mapping from Java type '%s' to any neo-vm type found.", typeName));
     }
 
     /**
@@ -226,14 +224,15 @@ public class Compiler {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
             return;
         }
-        if (asmClass.fields.size() > MAX_STATIC_FIELDS_COUNT) {
-            throw new CompilerException("The method has more than the max number of static field "
-                    + "variables.");
+        if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
+            throw new CompilerException(format("The class %s has more than the max supported "
+                    + "number of static field variables (%d).",
+                    getFullyQualifiedNameForInternalName(asmClass.name), MAX_STATIC_FIELDS));
         }
-
         if (asmClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
-            throw new CompilerException("Class " + asmClass.name + " has non-static fields but only"
-                    + " static fields are supported in smart contracts.");
+            throw new CompilerException(format("Class %s has non-static fields but only"
+                    + " static fields are supported in smart contract classes.",
+                    getFullyQualifiedNameForInternalName(asmClass.name)));
         }
         checkForUsageOfInstanceConstructor(asmClass);
         NeoMethod neoMethod = createInitsslotMethod(asmClass);
@@ -257,7 +256,7 @@ public class Compiler {
                         insn.getType() != AbstractInsnNode.FRAME &&
                         insn.getOpcode() != JVMOpcode.RETURN.getOpcode()) {
                     throw new CompilerException(format("Class %s has an explicit instance "
-                                    + "constructor, which is supported by the compiler.",
+                                    + "constructor, which is not supported.",
                             getFullyQualifiedNameForInternalName(asmClass.name)));
                 }
                 insn = insn.getNext();
@@ -343,8 +342,10 @@ public class Compiler {
         }
         Converter converter = ConverterMap.get(opcode);
         if (converter == null) {
-            throw new CompilerException(compUnit, neoMethod,
-                    format("Unsupported instruction %s.", opcode.toString()));
+            throw new CompilerException(neoMethod,
+                    format("Unsupported instruction %s in method '%s' of class %s",
+                            opcode.toString(), neoMethod.getSourceMethodName(),
+                            getFullyQualifiedNameForInternalName(neoMethod.getOwnerClass().name)));
         }
         return converter.convert(insn, neoMethod, compUnit);
     }
@@ -376,7 +377,8 @@ public class Compiler {
         } else if (ldcInsn.cst instanceof Long) {
             addPushNumber(((Long) ldcInsn.cst), neoMethod);
         } else if (ldcInsn.cst instanceof Float || ldcInsn.cst instanceof Double) {
-            throw new CompilerException("Compiler does not support floating point numbers.");
+            throw new CompilerException(neoMethod, "Found use of float number but the compiler "
+                    + "does not support floats.");
         }
         // TODO: Handle `org.objectweb.asm.Type`.
     }
@@ -482,14 +484,21 @@ public class Compiler {
             return;
         }
         if (insnAnnotation.values.size() == 4) {
-            byte[] operand = getOperand(insnAnnotation, opcode);
+            byte[] operand = getOperand(insnAnnotation);
+            if (operand.length != getOperandSize(opcode).size()) {
+                throw new CompilerException(neoMethod, format("Operand extracted from annotation"
+                        + "%s did not have correct size for corresponding neo-vm opcode %s. Byte "
+                        + "size was %d but neo-vm opcode needs an operand of %d bytes.",
+                        insnAnnotation.desc, opcode.name(), operand.length,
+                        getOperandSize(opcode).size()));
+            }
             neoMethod.addInstruction(new NeoInstruction(opcode, operand));
         } else {
             neoMethod.addInstruction(new NeoInstruction(opcode));
         }
     }
 
-    private static byte[] getOperand(AnnotationNode insnAnnotation, OpCode opcode) {
+    private static byte[] getOperand(AnnotationNode insnAnnotation) {
         byte[] operand = new byte[]{};
         if (insnAnnotation.values.get(3) instanceof byte[]) {
             operand = (byte[]) insnAnnotation.values.get(3);
@@ -500,10 +509,6 @@ public class Compiler {
             for (Object element : operandAsList) {
                 operand[i++] = (byte) element;
             }
-        }
-        if (operand.length != getOperandSize(opcode).size()) {
-            throw new CompilerException("Opcode " + opcode.name() + " was used with a wrong number "
-                    + "of operand bytes.");
         }
         return operand;
     }

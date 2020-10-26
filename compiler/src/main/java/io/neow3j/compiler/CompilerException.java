@@ -17,12 +17,8 @@ public class CompilerException extends RuntimeException {
         super(owner.sourceFile + ": error:\n" + s);
     }
 
-    public CompilerException(CompilationUnit compUnit, NeoMethod method, String s) {
-        super(compUnit.getSourceFile(method.getOwnerClassName()) + ":" + method.getCurrentLine()
-                + ": error:\n" + s);
-    }
-
     public CompilerException(ClassNotFoundException e) {
         super(e);
     }
+
 }
