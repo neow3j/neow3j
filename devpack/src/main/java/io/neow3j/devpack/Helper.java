@@ -35,7 +35,10 @@ public class Helper {
     public static native byte[] toByteArray(byte source);
 
     /**
-     * Converts the given string to a byte array.
+     * Converts the given string to a byte array using UTF-8 encoding.
+     * <p>
+     * This method cannot be used to convert a Neo address to a valid script hash byte array, or
+     * a script hash in hexadecimal format into its corresponding byte array.
      * <p>
      * Examples
      * <ul>
@@ -123,9 +126,10 @@ public class Helper {
     public static native int toInt(byte[] source);
 
     /**
-     * Casts the given byte array to a string.
+     * Casts the given byte array to a string. Assumes that the byte array is a UTF-8 encoded
+     * string.
      * <p>
-     * In the NeoVM strings are represented as byte strings. Hence the method name.
+     * In the NeoVM strings are represented as {@code ByteStrings}. Hence the method name.
      * <p>
      * Examples:
      * <ul>
