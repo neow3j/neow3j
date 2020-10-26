@@ -118,8 +118,8 @@ public class NFToken extends Token {
      * @return a transaction builder
      */
     // According to the not yet final NEP-11 proposal, this method returns an enumerator that contains all
-    //  the co-owners that own the specified token. However, there no stack item type enumerator is
-    //  implemented yet. Hence, this method expects an array.
+    //  the co-owners that own the specified token. Hence, this method expects an array stack item
+    //  containing the co-owners.
     // TODO: 15.10.20 Michael: Adapt this method as soon as an implementation of the NEP-11 proposal exists.
     public List<ScriptHash> ownerOf(ScriptHash tokenId) throws IOException {
         return callFunctionReturningListOfScriptHashes(OWNER_OF,
@@ -141,9 +141,6 @@ public class NFToken extends Token {
     }
 
     private ScriptHash extractScriptHash(StackItem item) {
-        if (item == null) {
-            throw new IllegalArgumentException("Provided stack item was null.");
-        }
         if (!item.getType().equals(StackItemType.BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(item.getType(),
                     StackItemType.BYTE_STRING);
@@ -156,34 +153,11 @@ public class NFToken extends Token {
         }
     }
 
-//    /**
-//     * Gets the token balance for the given account script hash.
-//     * <p>
-//     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
-//     * 1*10^8 GAS fractions.
-//     * <p>
-//     * The balance is not cached locally. Every time this method is called requests are send to the
-//     * neo-node.
-//     *
-//     * @param owner The script hash of the account to fetch the balance for.
-//     * @return the token balance.
-//     * @throws IOException                   if there was a problem fetching information from the
-//     *                                       Neo node.
-//     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-//     *                                       interpretable as a number.
-//     */
-//    // Returns the total amount of NFTs owned by the specified address
-//    public BigInteger balanceOf(ScriptHash owner) {
-//
-//        // This method is only implemented on contracts with decimals = 0
-//        return new BigInteger("0");
-//    }
-
     /**
      * Gets the balance of the given token for the given account script hash.
      * <p>
-     * The balance is returned in token fractions. E.g., a balance of 5 for a token with 2 decimals
-     * is returned as 5*10^2 token fractions.
+     * The balance is returned in token fractions. E.g., a balance of 0.5 of a token with 2 decimals
+     * is returned as 50 (= 0.5 * 10^2) token fractions.
      * <p>
      * The balance is not cached locally. Every time this method is called requests are send to the
      * neo-node.
