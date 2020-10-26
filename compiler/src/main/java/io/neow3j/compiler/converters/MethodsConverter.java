@@ -28,7 +28,7 @@ import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.StaticVariableHelper;
+import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.Contract;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
@@ -122,8 +122,8 @@ public class MethodsConverter implements Converter {
             addInstruction(calledAsmMethod.get(), callingNeoMethod);
         } else if (isContractCall(owner)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, owner);
-        } else if (isStaticFieldConverter(calledAsmMethod.get(), owner)) {
-            handleStaticFieldConverter(calledAsmMethod.get(), callingNeoMethod);
+        } else if (isSrtingLiteralConverter(calledAsmMethod.get(), owner)) {
+            handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
         } else {
             return handleMethodCall(callingNeoMethod, owner, calledAsmMethod.get(), methodInsn,
                     compUnit);
@@ -187,21 +187,15 @@ public class MethodsConverter implements Converter {
                 && isOwnerPrimitiveTypeWrapper;
     }
 
-    public static boolean isStaticFieldConverter(MethodNode methodNode, ClassNode owner) {
-        return owner.name.equals(Type.getInternalName(StaticVariableHelper.class))
+    public static boolean isSrtingLiteralConverter(MethodNode methodNode, ClassNode owner) {
+        return owner.name.equals(Type.getInternalName(StringLiteralHelper.class))
                 && (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)
                 || methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)
                 || methodNode.name.equals(STRING_TO_INT_METHOD_NAME));
     }
 
-    private static void handleStaticFieldConverter(MethodNode methodNode,
+    private static void handleStringLiteralsConverter(MethodNode methodNode,
             NeoMethod callingNeoMethod) {
-
-        if (!callingNeoMethod.getName().equals(INITSSLOT_METHOD_NAME)) {
-            throw new CompilerException(callingNeoMethod, format("The static field "
-                    + "converter method '%s' was used outside of the static variable "
-                    + "initialization scope.", methodNode.name));
-        }
 
         NeoInstruction lastNeoInsn = callingNeoMethod.getLastInstruction();
         if (!lastNeoInsn.getOpcode().equals(OpCode.PUSHDATA1)
@@ -241,8 +235,8 @@ public class MethodsConverter implements Converter {
             }
         }
         byte[] newOperand = Arrays.copyOfRange(newInsnBytes, 1, newInsnBytes.length);
-        lastNeoInsn.setOpcode(OpCode.get(newInsnBytes[0]));
-        lastNeoInsn.setOperand(newOperand);
+        callingNeoMethod.replaceLastInstruction(
+                new NeoInstruction(OpCode.get(newInsnBytes[0]), newOperand));
     }
 
     public static boolean hasSyscallAnnotation(MethodNode asmMethod) {

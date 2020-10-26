@@ -20,6 +20,7 @@ import static org.objectweb.asm.Type.getInternalName;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.LocalVariableHelper;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;

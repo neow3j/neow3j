@@ -1,9 +1,17 @@
 package io.neow3j.devpack;
 
-public class StaticVariableHelper {
+/**
+ * Offers a few methods that take string literals and convert them to byte arrays, script hashes,
+ * or integers. All of these methods can only be used on constant string literals, and do not
+ * work on string variables or return values.
+ * <p>
+ * The conversion from string to the resulting type is made in compile time.
+ */
+public class StringLiteralHelper {
 
     /**
-     * Converts the given Neo address to its script hash (little-endian byte array).
+     * Converts the given Neo address to the corresponding script hash as a little-endian byte
+     * array.
      * <p>
      * This method can only be applied to constant string literals in static variable
      * initializations.
