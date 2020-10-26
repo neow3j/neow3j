@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES_COUNT;
+import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
 import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
 import static java.lang.String.format;
@@ -349,14 +349,15 @@ public class NeoMethod {
     }
 
     /**
-     * Removes the last instruction from this method. If the instruction is a jump target, i.e., has
-     * a label, an exception is thrown.
+     * Removes the last instruction from this method.
+     *
+     * @throws CompilerException if the instruction is a jump target.
      */
     public void removeLastInstruction() {
         NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
         if (this.jumpTargets.containsValue(lastInsn)) {
-            throw new CompilerException("Attempting to remove an instruction that potentially is a "
-                    + "jump target for jump instruction.");
+            throw new CompilerException(this, "Attempting to remove an instruction that is a jump "
+                    + "target for another instruction.");
         }
         removeLastInstructionInternal();
     }
@@ -430,9 +431,9 @@ public class NeoMethod {
         // Update the jump instructions with the correct target address offset.
         for (NeoJumpInstruction jumpInsn : this.jumpInstructions) {
             if (!this.jumpTargets.containsKey(jumpInsn.getLabel())) {
-                throw new CompilerException("Missing jump target for jump opcode "
-                        + jumpInsn.getOpcode().name() + ", at source code line number "
-                        + jumpInsn.getLineNr() + ".");
+                throw new CompilerException(format("Missing jump target for opcode %s, at source "
+                                + "code line number %d.", jumpInsn.getOpcode().name(),
+                        jumpInsn.getLineNr()));
             }
             NeoInstruction destinationInsn = this.jumpTargets.get(jumpInsn.getLabel());
             int offset = destinationInsn.getAddress() - jumpInsn.getAddress();
@@ -487,9 +488,10 @@ public class NeoMethod {
             paramCount++;
         }
         int localVarCount = asmMethod.maxLocals - paramCount;
-        if (localVarCount > MAX_LOCAL_VARIABLES_COUNT) {
-            throw new CompilerException("The method has more than the max number of local "
-                    + "variables.");
+        if (localVarCount > MAX_LOCAL_VARIABLES) {
+            throw new CompilerException(format("The method '%s' has %d local variables but only a "
+                            + "max of %d is supported.", getSourceMethodName(), localVarCount,
+                    MAX_LOCAL_VARIABLES));
         }
         int neoIdx = 0;
         int jvmIdx = nextVarIdx;
@@ -528,7 +530,9 @@ public class NeoMethod {
         }
         paramCount += Type.getArgumentTypes(asmMethod.desc).length;
         if (paramCount > MAX_PARAMS_COUNT) {
-            throw new CompilerException("The method has more than the max number of parameters.");
+            throw new CompilerException(format("The method '%s' has %d parameters but only a max "
+                            + "of %d is supported.", getSourceMethodName(), paramCount,
+                    MAX_PARAMS_COUNT));
         }
         int jvmIdx = 0;
         int neoIdx = 0;

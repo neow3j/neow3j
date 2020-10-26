@@ -1,5 +1,7 @@
 package io.neow3j.compiler;
 
+import static java.lang.String.format;
+
 import io.neow3j.constants.OpCode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -51,7 +53,9 @@ public class NeoModule {
                 // addresses of all following instructions.
                 if (insn.getOpcode().equals(OpCode.CALL_L)) {
                     if (!(insn.getExtra() instanceof NeoMethod)) {
-                        throw new CompilerException("Missing reference to method in CALL opcode.");
+                        throw new CompilerException(format("Instruction with %s opcode is "
+                                + "missing the reference to the called method. The jump address "
+                                + "cannot be resolved.", OpCode.CALL_L.name()));
                     }
                     NeoMethod calledMethod = (NeoMethod) insn.getExtra();
                     int offset = calledMethod.getStartAddress()

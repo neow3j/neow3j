@@ -119,8 +119,8 @@ public class JumpsConverter implements Converter {
             case JSR:
             case RET:
             case JSR_W:
-                throw new CompilerException(format("Instruction %s in %s is not supported.",
-                        opcode.name(), neoMethod.getSourceMethodName()));
+                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
+                        opcode.name()));
         }
         return insn;
     }
@@ -135,9 +135,7 @@ public class JumpsConverter implements Converter {
             AbstractInsnNode insn) {
         JumpInsnNode jumpInsn = (JumpInsnNode) insn.getNext();
         JVMOpcode jvmOpcode = JVMOpcode.get(jumpInsn.getOpcode());
-        if (jvmOpcode == null) {
-            throw new CompilerException(neoMethod, "Jump opcode of jump instruction was null.");
-        }
+        assert jvmOpcode != null : "Opcode of of jump instruction was not set.";
         switch (jvmOpcode) {
             case IFEQ:
                 addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPEQ_L);
@@ -158,8 +156,8 @@ public class JumpsConverter implements Converter {
                 addJumpInstruction(neoMethod, jumpInsn, OpCode.JMPGE_L);
                 break;
             default:
-                throw new CompilerException("Unexpected opcode " + jvmOpcode.name()
-                        + " following long comparison.");
+                throw new CompilerException(neoMethod, format("Unexpected JVM opcode %s following "
+                                + "long comparison (%s)", jvmOpcode.name(), JVMOpcode.LCMP.name()));
         }
         return jumpInsn;
     }

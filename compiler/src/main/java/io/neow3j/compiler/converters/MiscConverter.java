@@ -86,7 +86,7 @@ public class MiscConverter implements Converter {
             case DLOAD_3:
             case FLOAD:
             case DLOAD:
-                throw new CompilerException("Floating point numbers are not supported.");
+                throw new CompilerException(neoMethod, "Floating point numbers are not supported.");
                 // endregion ### FLOATING POINT (unsupported) ###
 
                 // region ### MISCELLANEOUS ###
@@ -94,8 +94,8 @@ public class MiscConverter implements Converter {
             case MONITORENTER:
             case MONITOREXIT:
             case WIDE:
-                throw new CompilerException(format("Instruction %s in %s is not supported.",
-                        opcode.name(), neoMethod.getSourceMethodName()));
+                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
+                        opcode.name()));
                 // endregion ### MISCELLANEOUS ###
         }
         return insn;

@@ -62,9 +62,9 @@ public class ManifestBuilder {
                     ManifestExtras.class, SupportedStandards.class)) {
                 if (annotatedClass.isPresent()) {
                     throw new CompilerException(format("Make sure that the annotations %s, %s and "
-                                    + "%s are only used on one class of a multi-file contract.",
-                            Features.class.getName(), ManifestExtra.class.getName(),
-                            SupportedStandards.class.getName()));
+                                    + "%s are all used on one and the same contract class.",
+                            Features.class.getSimpleName(), ManifestExtra.class.getSimpleName(),
+                            SupportedStandards.class.getSimpleName()));
                 }
                 annotatedClass = Optional.of(asmClass);
             }
