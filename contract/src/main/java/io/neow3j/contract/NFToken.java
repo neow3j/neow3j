@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NFTokenProperties;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.wallet.Wallet;
@@ -25,6 +26,7 @@ public class NFToken extends Token {
     private static final String OWNER_OF = "ownerOf";
     private static final String BALANCE_OF = "balanceOf";
     private static final String TOKENS_OF = "tokensOf";
+    private static final String PROPERTIES = "properties";
 
     /**
      * Constructs a new <tt>Nep5Token</tt> representing the token contract with the given script
@@ -139,6 +141,9 @@ public class NFToken extends Token {
     }
 
     private ScriptHash extractScriptHash(StackItem item) {
+        if (item == null) {
+            throw new IllegalArgumentException("Provided stack item was null.");
+        }
         if (!item.getType().equals(StackItemType.BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(item.getType(),
                     StackItemType.BYTE_STRING);
@@ -214,48 +219,12 @@ public class NFToken extends Token {
      * @param tokenId the token script hash.
      * @return the properties of the token.
      */
-    // the response must conform to the `NEO NFT Metadata JSON Schema`.
-    public String getProperties(ScriptHash tokenId) {
-        return "";
+    public NFTokenProperties properties(byte[] tokenId) throws IOException {
+        StackItem item = callInvokeFunction(PROPERTIES, Arrays.asList(ContractParameter.byteArray(tokenId)))
+                .getInvocationResult().getStack().get(0);
+        if (item.getType().equals(StackItemType.BYTE_STRING)) {
+            return item.asByteString().getAsJson(NFTokenProperties.class);
+        }
+        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BYTE_STRING);
     }
 }
-
-
-
-// Properties structure:
-//  {
-//      "title": "Asset Metadata",
-//      "type": "object",
-//      "properties": {
-//          "name": {
-//              "type": "string",
-//              "description": "Identifies the asset to which this NFT represents."
-//          },
-//          "description": {
-//              "type": "string",
-//              "description": "Describes the asset to which this NFT represents."
-//          },
-//          "image": {
-//              "type": "string",
-//              "description": "Optional. A URI pointing to a resource with mime type image/* representing the asset to which this NFT represents. Consider making any images at a width between 320 and 1080 pixels and aspect ratio between 1.91:1 and 4:5 inclusive."
-//          },
-//          "tokenURI": {
-//              "type": "string",
-//              "description": "Optional. A distinct URI for a given asset that adheres to RFC 3986"
-//          }
-//      }
-//  }
-
-// Most simple properties object:
-//  {
-//      "name": "Slime 1",
-//      "description": "A slime"
-//  }
-
-// If all parts are included:
-//  {
-//      "name": "Slime 2",
-//      "description": "A slime",
-//      "image": "{some image URI}",
-//      "tokenURI": "{some URI}"
-//  }

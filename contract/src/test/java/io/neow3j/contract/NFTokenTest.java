@@ -3,8 +3,8 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NFTokenProperties;
 import io.neow3j.wallet.Wallet;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
@@ -41,8 +41,6 @@ public class NFTokenTest {
     private Account account1;
     private Account account2;
     private Account account3;
-//    private static final ScriptHash RECIPIENT_SCRIPT_HASH =
-//            new ScriptHash("969a77db482f74ce27105f760efa139223431394");
     public static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromScript(
             new ScriptBuilder().pushData("NFTestToken").sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
     private static final ScriptHash TOKEN_ID = new ScriptHash("0368df7d189952e05e4045f53856bcfa595070f3");
@@ -194,7 +192,13 @@ public class NFTokenTest {
 
     @Test
     public void testGetProperties() throws IOException {
-//        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-//        setUpWireMockForInvokeFunction("properties", "nft_properties.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForInvokeFunction("properties", "nft_properties.json");
+        NFTokenProperties properties = nfTestToken.properties(new byte[]{1});
+
+        assertThat(properties.getName(), is("A name"));
+        assertThat(properties.getDescription(), is("A description"));
+        assertThat(properties.getImage(), is("Some image URI"));
+        assertThat(properties.getTokenURI(), is("Some URI"));
     }
 }

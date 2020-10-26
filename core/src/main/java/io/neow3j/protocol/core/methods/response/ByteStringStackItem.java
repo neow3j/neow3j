@@ -2,11 +2,14 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
@@ -68,6 +71,17 @@ public class ByteStringStackItem extends StackItem {
             return BigInteger.ZERO;
         }
         return BigIntegers.fromLittleEndianByteArray(getValue());
+    }
+
+    /**
+     * Deserializes this byte array's value into a {@code clazz} object.
+     *
+     * @return the deserialized JSON content of the byte array's value.
+     */
+    public <T> T getAsJson(Class<T> clazz) throws IOException {
+        String json = new String(getValue(), UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(json, clazz);
     }
 
     @Override
