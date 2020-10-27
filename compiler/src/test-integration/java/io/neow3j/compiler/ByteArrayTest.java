@@ -51,6 +51,22 @@ public class ByteArrayTest extends ContractTest {
         assertThat(result.asBuffer().getValue(), is(new byte[]{0x00, 0x00, 0x01, 0x00, 0x00}));
     }
 
+    @Test
+    public void dynamicallyInitializeArray1() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction(ContractParameter.integer(5));
+        StackItem result = response.getInvocationResult().getStack().get(0);
+        assertThat(result.getType(), is(StackItemType.BUFFER));
+        assertThat(result.asBuffer().getValue(), is(new byte[]{0x01, 0x00, 0x00, 0x00, 0x00}));
+    }
+
+    @Test
+    public void dynamicallyInitializeArray2() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction(ContractParameter.string("hello"));
+        StackItem result = response.getInvocationResult().getStack().get(0);
+        assertThat(result.getType(), is(StackItemType.BUFFER));
+        assertThat(result.asBuffer().getValue(), is(new byte[]{0x01, 0x00, 0x00, 0x00, 0x00}));
+    }
+
     static class ByteArrays {
 
         public static byte[] constructEmptyArray() {
@@ -70,6 +86,18 @@ public class ByteArrayTest extends ContractTest {
             byte[] bytes2 = new byte[5];
             bytes2[2] = b;
             return bytes2;
+        }
+
+        public static byte[] dynamicallyInitializeArray1(int i) {
+            byte[] b = new byte[i];
+            b[0] = 1;
+            return b;
+        }
+
+        public static byte[] dynamicallyInitializeArray2(String s) {
+            byte[] b = new byte[s.length()];
+            b[0] = 1;
+            return b;
         }
     }
 }
