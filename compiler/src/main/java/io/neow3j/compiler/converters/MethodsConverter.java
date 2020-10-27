@@ -92,8 +92,9 @@ public class MethodsConverter implements Converter {
     private static final String ADDRESS_TO_SCRIPTHASH_METHOD_NAME = "addressToScriptHash";
     private static final String HEX_TO_BYTES_METHOD_NAME = "hexToBytes";
     private static final String STRING_TO_INT_METHOD_NAME = "stringToInt";
-    private static final String INITSSLOT_METHOD_NAME = "_initialize";
     private static final String EQUALS_METHOD_NAME = "hashCode";
+    private static final String LENGTH_METHOD_NAME = "length";
+
 
     /**
      * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor
@@ -160,10 +161,12 @@ public class MethodsConverter implements Converter {
             // Nothing to do if Java casts between primitive type and wrapper classes.
             return methodInsn;
         }
-        if (calledAsmMethod.name.equals(HASH_CODE_METHOD_NAME)
-                && owner.name.equals(getInternalName(String.class))
-                && methodInsn.getNext() instanceof LookupSwitchInsnNode) {
+        if (isStringSwitch(owner, calledAsmMethod, methodInsn)) {
             return handleStringSwitch(callingNeoMethod, methodInsn);
+        }
+        if (isStringLengthCall(methodInsn)) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SIZE));
+            return methodInsn;
         }
         NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
         compUnit.getNeoModule().addMethod(calledNeoMethod);
@@ -174,6 +177,18 @@ public class MethodsConverter implements Converter {
         callingNeoMethod.addInstruction(
                 new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
         return methodInsn;
+    }
+
+    private static boolean isStringLengthCall(MethodInsnNode methodInsn)  {
+        return  methodInsn.owner.equals(Type.getInternalName(String.class))
+            && methodInsn.name.equals(LENGTH_METHOD_NAME);
+    }
+
+    private static boolean isStringSwitch(ClassNode owner, MethodNode calledAsmMethod,
+            MethodInsnNode methodInsn) {
+        return calledAsmMethod.name.equals(HASH_CODE_METHOD_NAME)
+                && owner.name.equals(getInternalName(String.class))
+                && methodInsn.getNext() instanceof LookupSwitchInsnNode;
     }
 
     private static boolean isPrimitiveTypeCast(MethodNode calledAsmMethod, ClassNode owner) {

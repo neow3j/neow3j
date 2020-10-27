@@ -20,6 +20,7 @@ import io.neow3j.constants.OpCode;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
 import java.io.IOException;
+import java.math.BigInteger;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -89,8 +90,15 @@ public class ArraysConverter implements Converter {
 
     private AbstractInsnNode handleNewByteArray(AbstractInsnNode insn, NeoMethod neoMethod) {
         // The last added instruction contains the size of the array.
-        int arraySize = extractPushedNumber(neoMethod.getLastInstruction(), neoMethod);
-        byte[] bytes = new byte[arraySize];
+        BigInteger arraySize = extractPushedNumber(neoMethod.getLastInstruction());
+        if (arraySize == null) {
+            // The byte array is initialized with a dynamic size.
+            neoMethod.addInstruction(new NeoInstruction(OpCode.NEWBUFFER));
+            return insn;
+        }
+        // We take the intValue of the BigInteger because it is unreasonable to create an array
+        // larger than max int size.
+        byte[] bytes = new byte[arraySize.intValueExact()];
         while (settingOfArrayElementFollows(insn)) {
             // If there is an instruction sequence for setting an array element, we retrieve that
             // element and skip the instruction sequence.
@@ -157,16 +165,16 @@ public class ArraysConverter implements Converter {
         return intInsn.operand == BYTE_ARRAY_TYPE_CODE;
     }
 
-    private int extractPushedNumber(NeoInstruction insn, NeoMethod neoMethod) {
+    // Returns -2 if the given instruction is not a PUSH instruction.
+    private BigInteger extractPushedNumber(NeoInstruction insn) {
         if (insn.getOpcode().getCode() <= OpCode.PUSHINT256.getCode()) {
-            return BigIntegers.fromLittleEndianByteArray(insn.getOperand()).intValue();
+            return BigIntegers.fromLittleEndianByteArray(insn.getOperand());
         }
         if (insn.getOpcode().getCode() >= OpCode.PUSHM1.getCode()
                 && insn.getOpcode().getCode() <= OpCode.PUSH16.getCode()) {
-            return insn.getOpcode().getCode() - OpCode.PUSHM1.getCode() - 1;
+            return BigInteger.valueOf(insn.getOpcode().getCode() - OpCode.PUSHM1.getCode() - 1);
         }
-        throw new CompilerException(neoMethod, "Couldn't parse get number from instruction "
-                + insn.toString());
+        return null; // If the instruction is not a PUSH opcode.
     }
 
     private static void addSetItem(AbstractInsnNode insn, NeoMethod neoMethod) {
