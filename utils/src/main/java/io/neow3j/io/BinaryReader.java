@@ -295,6 +295,7 @@ public class BinaryReader implements AutoCloseable {
     /**
      * Tries to read a PUSHDATA OpCode and the following data from the underlying byte stream.
      *
+     * @throws DeserializationException if the sequence of data cannot be deserialized
      * @return The data read
      */
     public byte[] readPushData() throws DeserializationException {

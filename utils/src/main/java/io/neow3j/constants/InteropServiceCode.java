@@ -146,6 +146,7 @@ public enum InteropServiceCode {
      * If the interop service has a fixed price, the parameter is simply ignored and the fixed price
      * is returned.
      *
+     * @param param The parameter representing the interop service code
      * @return the price
      */
     public long getPrice(int param) {
