@@ -18,10 +18,6 @@ public class Neow3jPluginOptions {
     public Neow3jPluginOptions() {
     }
 
-    public Neow3jPluginOptions(Set<String> classNames) {
-        this.classNames = classNames;
-    }
-
     public Set<String> getClassNames() {
         return classNames;
     }
@@ -30,12 +26,24 @@ public class Neow3jPluginOptions {
         this.classNames = new HashSet<>(asList(classNames));
     }
 
+    public void classNames(String... classNames) {
+        setClassNames(classNames);
+    }
+
+    public void setClassName(String className) {
+        setClassNames(className);
+    }
+
     public Boolean getDebug() {
         return debug;
     }
 
     public void setDebug(Boolean debug) {
         this.debug = debug;
+    }
+
+    public void debug(Boolean debug) {
+        setDebug(debug);
     }
 
 }

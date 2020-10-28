@@ -88,15 +88,18 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
                     compilationUnit.getManifest(),
                     outDirPath.toFile());
 
-            // Pack the debug info into a ZIP archive.
-            String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
-                    outDirString, ClassUtils.getClassName(firstCanonicalClassName));
-
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
             System.out.println("NEF file: " + outputFile.toAbsolutePath());
             System.out.println("Manifest file: " + manifestOutFileName);
-            System.out.println("Debug info zip file: " + debugInfoZipFileName);
+
+            if (debugSymbols) {
+                // Pack the debug info into a ZIP archive.
+                String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
+                        outDirString, ClassUtils.getClassName(firstCanonicalClassName));
+                System.out.println("Debug info zip file: " + debugInfoZipFileName);
+            }
+
         } catch (Exception e) {
             System.out.println("Compilation failed. Reason: " + e.getMessage());
             e.printStackTrace();
