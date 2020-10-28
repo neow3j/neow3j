@@ -1,23 +1,41 @@
 package io.neow3j.devpack.gradle;
 
+import static java.util.Arrays.asList;
+
+import java.util.HashSet;
+import java.util.Set;
+
 public class Neow3jPluginOptions {
 
-    public static final String CLASSNAME_NAME = "className";
+    public static final String CLASSNAMES_NAME = "classNames";
+    public static final String DEBUG_NAME = "debug";
 
-    private String className;
+    private Set<String> classNames;
+
+    // Default behavior: generate debug symbols
+    private Boolean debug = true;
 
     public Neow3jPluginOptions() {
     }
 
-    public Neow3jPluginOptions(String path) {
-        this.className = path;
+    public Neow3jPluginOptions(Set<String> classNames) {
+        this.classNames = classNames;
     }
 
-    public String getClassName() {
-        return className;
+    public Set<String> getClassNames() {
+        return classNames;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public void setClassNames(String... classNames) {
+        this.classNames = new HashSet<>(asList(classNames));
     }
+
+    public Boolean getDebug() {
+        return debug;
+    }
+
+    public void setDebug(Boolean debug) {
+        this.debug = debug;
+    }
+
 }

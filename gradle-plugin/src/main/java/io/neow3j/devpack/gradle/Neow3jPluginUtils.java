@@ -42,6 +42,23 @@ public class Neow3jPluginUtils {
         return null;
     }
 
+    static List<URL> getSourceSetsFilesURL(Project project) {
+        final JavaPluginConvention pluginConv = project.getConvention()
+                .getPlugin(JavaPluginConvention.class);
+        List<URL> urls = new ArrayList<>();
+        pluginConv.getSourceSets().forEach(ss -> {
+            ss.getAllSource().forEach(f -> {
+                try {
+                    urls.add(f.toURI().toURL());
+                } catch (Exception e) {
+                    System.out.println("Error on converting ("
+                            + f.getAbsolutePath() + ") to URL: " + e);
+                }
+            });
+        });
+        return urls;
+    }
+
     static List<URL> getSourceSetsDirsURL(Project project) {
         final JavaPluginConvention pluginConv = project.getConvention()
                 .getPlugin(JavaPluginConvention.class);

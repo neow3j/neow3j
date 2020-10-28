@@ -2,11 +2,12 @@ package io.neow3j.devpack.gradle;
 
 import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
-import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAMES_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.generateDebugInfoZip;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getCompileOutputFileName;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsFilesURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.writeToFile;
 import static java.nio.file.Files.createDirectories;
 import static java.util.Optional.ofNullable;
@@ -20,17 +21,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.gradle.api.Action;
 
 public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
     @Override
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
-        String canonicalClassName = neow3jPluginCompile.getOptions().getClassName();
+        Set<String> canonicalClassNames = neow3jPluginCompile.getOptions().getClassNames();
+        Boolean debugSymbols = neow3jPluginCompile.getOptions().getDebug();
 
-        ofNullable(canonicalClassName).orElseThrow(() ->
+        ofNullable(canonicalClassNames).orElseThrow(() ->
                 new IllegalArgumentException("The parameter "
-                        + "'" + CLASSNAME_NAME + "' needs to be set in the "
+                        + "'" + CLASSNAMES_NAME + "' needs to be set in the "
                         + "'" + NEOW3J_COMPILER_OPTIONS_NAME + "' "
                         + "declaration in your build.gradle file."));
 
@@ -48,11 +52,22 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         URLClassLoader compilerClassLoader = new URLClassLoader(clDirsArray,
                 this.getClass().getClassLoader());
 
+        // get the source files set URL
+        Set<String> setOfSourceSetFilesPath = getSourceSetsFilesURL(neow3jPluginCompile.getProject())
+                .stream()
+                .map(URL::getPath)
+                .collect(Collectors.toSet());
+
         Compiler n = new Compiler(compilerClassLoader);
 
         try {
             // compile
-            CompilationUnit compilationUnit = n.compileClass(canonicalClassName);
+            CompilationUnit compilationUnit;
+            if (debugSymbols) {
+                compilationUnit = n.compileClasses(canonicalClassNames, setOfSourceSetFilesPath);
+            } else {
+                compilationUnit = n.compileClasses(canonicalClassNames);
+            }
             byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
             // get the output directory
@@ -61,7 +76,10 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             Path outDirPath = Paths.get(outDirString);
 
             // output the result to the output file
-            String nefOutFileName = getCompileOutputFileName(canonicalClassName);
+            // TODO: when there's multiple class names, which one to use for the final NEF?
+            String firstCanonicalClassName = canonicalClassNames
+                    .stream().findFirst().orElse(null);
+            String nefOutFileName = getCompileOutputFileName(firstCanonicalClassName);
             Path outputFile = Paths.get(outDirString, nefOutFileName);
             writeToFile(outputFile.toFile(), nefBytes);
 
@@ -72,7 +90,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
             // Pack the debug info into a ZIP archive.
             String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
-                    outDirString, ClassUtils.getClassName(canonicalClassName));
+                    outDirString, ClassUtils.getClassName(firstCanonicalClassName));
 
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
