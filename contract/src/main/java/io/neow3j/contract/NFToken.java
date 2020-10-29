@@ -133,7 +133,7 @@ public class NFToken extends Token {
      * Gets the owner(s) of the token with {@code tokenID}.
      *
      * @param tokenID the token ID.
-     * @return a transaction builder
+     * @return a list of owners of the token.
      */
     // According to the not yet final NEP-11 proposal, this method returns an enumerator that contains all
     //  the co-owners that own the specified token. Hence, this method expects an array stack item

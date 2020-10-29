@@ -1,7 +1,6 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NFTokenProperties;
 import io.neow3j.wallet.Wallet;
@@ -42,8 +41,6 @@ public class NFTokenTest {
     private Account account2;
     private Account account3;
     public static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromAddress("ATv43G3Lv8uGPW7nVhXTUuL1T75qSajKSe");
-//            ScriptHash.fromScript(
-//            new ScriptBuilder().pushData("NFTestToken").sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
     private static final byte[] TOKEN_ID = new byte[]{1, 2, 3};
     private static final String TRANSFER = "transfer";
     NFToken nfTestToken;
