@@ -1,5 +1,6 @@
 package io.neow3j.wallet;
 
+import io.neow3j.crypto.ECKeyPair;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +11,7 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import java.io.File;
@@ -369,5 +371,27 @@ public class Wallet {
             throw new IllegalArgumentException("Account not found in the wallet.");
         }
         return this.accounts.get(scriptHash);
+    }
+
+    /**
+     * Checks whether the wallet holds all the required private keys for a multi-sig account.
+     *
+     * @param multiSigVerificationScript the verification script of the multi-sig account.
+     * @return whether the wallet holds all the required private keys for the multi-sig account.
+     */
+    public boolean privateKeysArePresentForMultiSig(VerificationScript multiSigVerificationScript) {
+        int signers = 0;
+        Account account;
+        for (ECKeyPair.ECPublicKey pubKey : multiSigVerificationScript.getPublicKeys()) {
+            ScriptHash scriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
+            if (holdsAccount(scriptHash)) {
+                account = getAccount(scriptHash);
+                if (account != null && account.getECKeyPair() != null) {
+                    signers += 1;
+                }
+            }
+        }
+        int signingThreshold = multiSigVerificationScript.getSigningThreshold();
+        return signers >= signingThreshold;
     }
 }

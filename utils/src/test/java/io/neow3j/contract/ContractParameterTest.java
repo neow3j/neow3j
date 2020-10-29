@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
-import java.math.BigDecimal;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +37,14 @@ public class ContractParameterTest {
     @Test
     public void testByteArrayParamCreation() {
         byte[] bytes = new byte[]{0x01, 0x01};
-        ContractParameter p = ContractParameter.byteArray(bytes);
+        ContractParameter p = ContractParameter.byteArrayAsBase64(bytes);
         assertThat((String) p.getValue(), is(Base64.encode(bytes)));
         assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
     }
 
     @Test
     public void testByteArrayParamCreationFromHexString() {
-        ContractParameter p = ContractParameter.byteArray("0xa602");
+        ContractParameter p = ContractParameter.byteArrayAsBase64("0xa602");
         assertThat(Base64.decode((String) p.getValue()), is(new byte[]{(byte) 0xa6, 0x02}));
         assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
     }
@@ -60,14 +60,14 @@ public class ContractParameterTest {
     @Test(expected = IllegalArgumentException.class)
     public void testByteArrayParamCreationFromInvalidHexString() {
         String value = "value";
-        ContractParameter.byteArray(value);
+        ContractParameter.byteArrayAsBase64(value);
     }
 
     @Test
     public void testArrayParamCreationFromList() {
         List<ContractParameter> params = new ArrayList<>();
         ContractParameter p1 = ContractParameter.string("value");
-        ContractParameter p2 = ContractParameter.byteArray("0x0101");
+        ContractParameter p2 = ContractParameter.byteArrayAsBase64("0x0101");
         params.add(p1);
         params.add(p2);
         ContractParameter p = ContractParameter.array(params);
@@ -81,7 +81,7 @@ public class ContractParameterTest {
     @Test
     public void testArrayParamCreationFromArray() {
         ContractParameter p1 = ContractParameter.string("value");
-        ContractParameter p2 = ContractParameter.byteArray("0x0101");
+        ContractParameter p2 = ContractParameter.byteArrayAsBase64("0x0101");
         ContractParameter p = ContractParameter.array(p1, p2);
 
         assertEquals(ContractParameterType.ARRAY, p.getParamType());

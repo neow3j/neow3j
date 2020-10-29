@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
@@ -33,7 +34,7 @@ import org.junit.Test;
 public class NeoTokenTest {
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     private Account account1;
     private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
@@ -44,9 +45,10 @@ public class NeoTokenTest {
 
     @Before
     public void setUp() {
-        // Configure WireMock to use default host and port "localhost:8080".
-        WireMock.configure();
-        neow = Neow3j.build(new HttpService("http://localhost:8080"));
+        // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
+        int port = this.wireMockRule.port();
+        WireMock.configureFor(port);
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
         account1 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));

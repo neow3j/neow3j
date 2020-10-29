@@ -45,7 +45,7 @@ public class ByteArrayTest extends ContractTest {
 
     @Test
     public void getAndSetSingleByte() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(ContractParameter.byteArray("01020304"));
+        NeoInvokeFunction response = callInvokeFunction(ContractParameter.byteArrayAsBase64("01020304"));
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
         assertThat(result.asBuffer().getValue(), is(new byte[]{0x00, 0x00, 0x01, 0x00, 0x00}));
