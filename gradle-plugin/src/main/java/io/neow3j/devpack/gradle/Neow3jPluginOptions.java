@@ -2,7 +2,7 @@ package io.neow3j.devpack.gradle;
 
 import static java.util.Arrays.asList;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Neow3jPluginOptions {
@@ -10,7 +10,7 @@ public class Neow3jPluginOptions {
     public static final String CLASSNAMES_NAME = "classNames";
     public static final String DEBUG_NAME = "debug";
 
-    private Set<String> classNames;
+    private LinkedHashSet<String> classNames;
 
     // Default behavior: generate debug symbols
     private Boolean debug = true;
@@ -23,7 +23,7 @@ public class Neow3jPluginOptions {
     }
 
     public void setClassNames(String... classNames) {
-        this.classNames = new HashSet<>(asList(classNames));
+        this.classNames = new LinkedHashSet<>(asList(classNames));
     }
 
     public void classNames(String... classNames) {
