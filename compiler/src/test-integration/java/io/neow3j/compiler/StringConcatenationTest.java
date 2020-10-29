@@ -34,7 +34,7 @@ public class StringConcatenationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.string("one"),
                 ContractParameter.string("two"),
-                ContractParameter.byteArray("4e656f")); // byte array representation of "Neo".
+                ContractParameter.byteArrayAsBase64("4e656f")); // byte array representation of "Neo".
 
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("onetwothreeNeoNEO"));
