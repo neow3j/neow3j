@@ -73,15 +73,30 @@ public class ContractParameter {
     }
 
     /**
-     * <p>Creates a byte array parameter from the given value.</p>
-     * <br>
-     * <p>Make sure that the array is already in the right order. E.g. Fixed8 numbers need to be in
-     * little-endian order. It will be sent in the order provided.</p>
+     * Creates a byte array parameter from the given value.
+     * <p>
+     * Make sure that the array is already in the right order. E.g. Fixed8 numbers need to be in
+     * little-endian order. It will be sent in the order provided.
      *
      * @param byteArray The parameter value.
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(byte[] byteArray) {
+        return new ContractParameter(ContractParameterType.BYTE_ARRAY, byteArray);
+    }
+
+    /**
+     * Creates a byte array parameter from the given value. Base64 encodes the given byte array.
+     * <p>
+     * Use this for RPC calls to neo-nodes.
+     * <p>
+     * Make sure that the array is already in the right order. E.g. Fixed8 numbers need to be in
+     * little-endian order. It will be sent in the order provided.
+     *
+     * @param byteArray The parameter value.
+     * @return the contract parameter.
+     */
+    public static ContractParameter byteArrayAsBase64(byte[] byteArray) {
         return new ContractParameter(ContractParameterType.BYTE_ARRAY, Base64.encode(byteArray));
     }
 
@@ -91,11 +106,11 @@ public class ContractParameter {
      * @param hexString The hexadecimal string.
      * @return the contract parameter.
      */
-    public static ContractParameter byteArray(String hexString) {
+    public static ContractParameter byteArrayAsBase64(String hexString) {
         if (!Numeric.isValidHexString(hexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number");
         }
-        return byteArray(Numeric.hexStringToByteArray(hexString));
+        return byteArrayAsBase64(Numeric.hexStringToByteArray(hexString));
     }
 
     /**
@@ -106,7 +121,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArrayFromString(String value) {
-        return byteArray(value.getBytes(UTF_8));
+        return byteArrayAsBase64(value.getBytes(UTF_8));
     }
 
     /**
