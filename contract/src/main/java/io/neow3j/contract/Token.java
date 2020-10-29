@@ -101,8 +101,28 @@ public class Token extends SmartContract {
         return decimals;
     }
 
+    /**
+     * Gets the {@code amount} in fractions of the token.
+     *
+     * @param amount the amount.
+     * @return the amount in fractions.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
     protected BigInteger getAmountAsBigInteger(BigDecimal amount) throws IOException {
         BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
         return amount.multiply(factor).toBigInteger();
+    }
+
+    /**
+     * Gets the {@code amount} of the token as a decimal number (not token fractions).
+     *
+     * @param amount the amount.
+     * @return the amount as a decimal number (not token fractions).
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    protected BigDecimal getAmountAsBigDecimal(BigInteger amount) throws IOException {
+        BigDecimal a = new BigDecimal(amount);
+        BigDecimal divisor = BigDecimal.TEN.pow(getDecimals());
+        return a.divide(divisor);
     }
 }

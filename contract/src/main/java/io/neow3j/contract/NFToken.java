@@ -6,7 +6,9 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NFTokenProperties;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
+import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
+import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -19,8 +21,6 @@ import java.util.List;
  * Represents a NEP-11 Non-Fungible Token contract and provides methods to invoke it.
  */
 public class NFToken extends Token {
-//    Example implementation for Neo2:
-//    https://gist.github.com/hal0x2328/3237fd9f61132cea6b6dd43899947753
 
     private static final String TRANSFER = "transfer";
     private static final String OWNER_OF = "ownerOf";
@@ -29,7 +29,7 @@ public class NFToken extends Token {
     private static final String PROPERTIES = "properties";
 
     /**
-     * Constructs a new <tt>Nep5Token</tt> representing the token contract with the given script
+     * Constructs a new {@code NFT} representing the contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash the token contract's script hash.
@@ -40,58 +40,77 @@ public class NFToken extends Token {
     }
 
     /**
-     * Transfers the tokenId with {@code tokenId} to the account {@code to}.
+     * Transfers the token with {@code tokenID} to the account {@code to}.
      *
-     * @param to the receiver of the tokenId.
-     * @param tokenId the script hash of the tokenId.
+     * @param wallet the wallet that holds the account of the token owner.
+     * @param to the receiver of the token.
+     * @param tokenID the token ID.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, ScriptHash tokenId) throws IOException {
+    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, byte[] tokenID) throws IOException {
         int decimals = getDecimals();
         if (decimals != 0) {
             throw new IllegalStateException("This method is only implemented on NF tokens that are " +
-                    "divisible. This tokenId has " + decimals + " decimals.");
+                    "indivisible. This token has " + decimals + " decimals.");
         }
 
-        List<ScriptHash> owners = ownerOf(tokenId);
+        List<ScriptHash> owners = ownerOf(tokenID);
         if (owners.size() != 1) {
-            throw new IllegalStateException("The tokenId with id " + tokenId.toString() + " has " +
+            throw new IllegalStateException("The token with ID " + Numeric.toHexString(tokenID) + " has " +
                     owners.size() + " owners. To transfer fractions use the method transferFractions.");
         }
 
         ScriptHash tokenOwner = owners.get(0);
         if (!wallet.holdsAccount(tokenOwner)) {
             throw new IllegalArgumentException("The provided wallet does not contain the account that " +
-                    "owns the tokenId " + tokenId.toString() + ". The address of the owner of this tokenId " +
-                    "is " + tokenOwner.toAddress() + ".");
+                    "owns the token with ID " + Numeric.toHexString(tokenID) + ". The address of the " +
+                    "owner of this token is " + tokenOwner.toAddress() + ".");
         }
 
         return invokeFunction(TRANSFER,
                 ContractParameter.hash160(to),
-                ContractParameter.hash160(tokenId))
+                ContractParameter.byteArray(tokenID))
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(tokenOwner));
     }
 
     /**
-     * Transfers the tokenId with {@code tokenId} to the account {@code to}.
+     * Transfers the {@code amount} of the token with {@code tokenID} to the account {@code to}.
+     * The {@code wallet} has to contain the {@code from} account and that account has to be in possession of
+     * {@code amount} fractions of the token with the given {@code tokenID}.
      *
      * @param wallet the wallet that holds the {@code from} account.
-     * @param from the account to send the tokenId fractions from.
-     * @param to the receiver of the tokenId fraction.
-     * @param amount the fraction to be transferred.
-     * @param tokenId the script hash of the tokenId.
+     * @param from the account to send the token fractions from.
+     * @param to the receiver of the token fraction.
+     * @param amount the amount of the token to transfer as a decimal number (not token fractions).
+     * @param tokenID the token ID.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFraction(Wallet wallet, ScriptHash from, ScriptHash to,
-            BigDecimal amount, ScriptHash tokenId) throws IOException {
-        List<ScriptHash> owners = ownerOf(tokenId);
+            BigDecimal amount, byte[] tokenID) throws IOException {
+        List<ScriptHash> owners = ownerOf(tokenID);
+        if (amount.compareTo(BigDecimal.ZERO) < 0 || amount.compareTo(BigDecimal.ONE) > 0) {
+            throw new IllegalArgumentException("The amount to transfer must be in the range of 0 to 1.");
+        }
+
+        if (amount.scale() > getDecimals()) {
+            throw new IllegalArgumentException("The scale of the provided amount is higher than the " +
+                    "decimals of this token contract.");
+        }
 
         if (owners.stream().noneMatch(from::equals)) {
             throw new IllegalStateException("The account " + from.toAddress() + " is not an owner " +
-                    "of the token with script hash " + tokenId.toString() + ".");
+                    "of the token with ID " + Numeric.toHexString(tokenID) + ".");
+        }
+
+        BigInteger balanceInFractions = balanceOf(from, tokenID);
+        BigDecimal balance = getAmountAsBigDecimal(balanceInFractions);
+        if (balance.compareTo(amount) < 0) {
+            throw new InsufficientFundsException("The provided account can not cover the given amount. " +
+                    "The amount to transfer was " + amount + " but only " + balance + " is held by the " +
+                    "given account.");
         }
 
         if (!wallet.holdsAccount(from)) {
@@ -100,30 +119,29 @@ public class NFToken extends Token {
         }
 
         BigInteger fractions = getAmountAsBigInteger(amount);
-        System.out.println(fractions);
 
         return invokeFunction(TRANSFER,
                 ContractParameter.hash160(from),
                 ContractParameter.hash160(to),
                 ContractParameter.integer(fractions),
-                ContractParameter.hash160(tokenId))
+                ContractParameter.byteArray(tokenID))
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(from));
     }
 
     /**
-     * Gets the owner(s) of the token with script hash {@code tokenId}.
+     * Gets the owner(s) of the token with {@code tokenID}.
      *
-     * @param tokenId the script hash of the tokenId.
+     * @param tokenID the token ID.
      * @return a transaction builder
      */
     // According to the not yet final NEP-11 proposal, this method returns an enumerator that contains all
     //  the co-owners that own the specified token. Hence, this method expects an array stack item
     //  containing the co-owners.
     // TODO: 15.10.20 Michael: Adapt this method as soon as an implementation of the NEP-11 proposal exists.
-    public List<ScriptHash> ownerOf(ScriptHash tokenId) throws IOException {
+    public List<ScriptHash> ownerOf(byte[] tokenID) throws IOException {
         return callFunctionReturningListOfScriptHashes(OWNER_OF,
-                Arrays.asList(ContractParameter.hash160(tokenId)));
+                Arrays.asList(ContractParameter.byteArrayAsBase64(tokenID)));
     }
 
     private List<ScriptHash> callFunctionReturningListOfScriptHashes(String function,
@@ -154,7 +172,7 @@ public class NFToken extends Token {
     }
 
     /**
-     * Gets the balance of the given token for the given account script hash.
+     * Gets the balance of the token with {@code tokenID} for the given account.
      * <p>
      * The balance is returned in token fractions. E.g., a balance of 0.5 of a token with 2 decimals
      * is returned as 50 (= 0.5 * 10^2) token fractions.
@@ -163,24 +181,24 @@ public class NFToken extends Token {
      * neo-node.
      *
      * @param owner the script hash of the account to fetch the balance for.
-     * @param tokenId the token id.
+     * @param tokenID the token ID.
      * @return the token balance of the given account.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something
      *                                       interpretable as a number.
      */
-    public BigInteger balanceOf(ScriptHash owner, ScriptHash tokenId) throws IOException {
+    public BigInteger balanceOf(ScriptHash owner, byte[] tokenID) throws IOException {
         return callFuncReturningInt(BALANCE_OF,
                 ContractParameter.hash160(owner),
-                ContractParameter.hash160(tokenId));
+                ContractParameter.byteArrayAsBase64(tokenID));
     }
 
     /**
-     * Gets all the token script hashes owned by the given account.
+     * Gets all the token IDs owned by the given account.
      *
      * @param owner the account.
-     * @return a list of all tokens that are owned by the given account.
+     * @return a list of all token IDs that are owned by the given account.
      */
     public List<ScriptHash> tokensOf(ScriptHash owner) throws IOException {
         return callFunctionReturningListOfScriptHashes(TOKENS_OF,
@@ -188,13 +206,14 @@ public class NFToken extends Token {
     }
 
     /**
-     * Gets the properties of the given token.
+     * Gets the properties of the token with {@code tokenID}.
      *
-     * @param tokenId the token script hash.
+     * @param tokenID the token ID.
      * @return the properties of the token.
      */
-    public NFTokenProperties properties(byte[] tokenId) throws IOException {
-        StackItem item = callInvokeFunction(PROPERTIES, Arrays.asList(ContractParameter.byteArray(tokenId)))
+    public NFTokenProperties properties(byte[] tokenID) throws IOException {
+        StackItem item = callInvokeFunction(PROPERTIES,
+                Arrays.asList(ContractParameter.byteArrayAsBase64(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.BYTE_STRING)) {
             return item.asByteString().getAsJson(NFTokenProperties.class);
