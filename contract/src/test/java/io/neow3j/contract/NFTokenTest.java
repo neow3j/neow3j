@@ -119,7 +119,7 @@ public class NFTokenTest {
     public void testTransferFraction() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceOf.json");
+        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
                 Arrays.asList(
@@ -140,7 +140,7 @@ public class NFTokenTest {
     public void testTransferFractions_InsufficientFunds() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceOf.json");
+        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
 
         Wallet wallet = Wallet.withAccounts(account1);
 
@@ -200,7 +200,7 @@ public class NFTokenTest {
     public void testTransferFraction_WalletDoesNotContainFromAccount() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceOf.json");
+        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
 
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("The provided wallet does not contain the provided from account");
