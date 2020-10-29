@@ -248,7 +248,7 @@ public class Compiler {
         Optional<MethodNode> instanceCtor = asmClass.methods.stream()
                 .filter(m -> m.name.equals(INSTANCE_CTOR)).findFirst();
         if (instanceCtor.isPresent()) {
-            AbstractInsnNode insn = findSuperCallToObjectCtor(instanceCtor.get());
+            AbstractInsnNode insn = findSuperCallToObjectCtor(instanceCtor.get(), asmClass);
             insn = insn.getNext();
             while (insn != null) {
                 if (insn.getType() != AbstractInsnNode.LINE &&
@@ -397,8 +397,8 @@ public class Compiler {
 
     // Goes through the instructions of the given method and looks for the call to the `Object`
     // constructor. I.e., the given method should be a constructor. Super calls to other classes
-    // are not allowed.
-    public static MethodInsnNode findSuperCallToObjectCtor(MethodNode constructor) {
+    // are not allowed and lead to an exception.
+    public static MethodInsnNode findSuperCallToObjectCtor(MethodNode constructor, ClassNode owner) {
         Iterator<AbstractInsnNode> it = constructor.instructions.iterator();
         AbstractInsnNode insn = null;
         while (it.hasNext()) {
@@ -411,12 +411,12 @@ public class Compiler {
                     throw new CompilerException(format("Found call to super constructor of %s "
                                     + "but inheritance is not supported, i.e., only super calls "
                                     + "to the Object constructor are allowed.",
-                            getFullyQualifiedNameForInternalName(((MethodInsnNode) insn).owner)));
+                            getFullyQualifiedNameForInternalName(owner.name)));
                 }
             }
         }
-        assert insn != null && insn instanceof MethodInsnNode : "Expected call to Object super "
-                + "constructor but couldn't find it.";
+        assert insn instanceof MethodInsnNode : "Expected call to Object super constructor but "
+                + "couldn't find it.";
         return (MethodInsnNode) insn;
     }
 
