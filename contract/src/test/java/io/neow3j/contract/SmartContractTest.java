@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static org.hamcrest.core.Is.is;
@@ -63,14 +64,17 @@ public class SmartContractTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     private Neow3j neow;
 
     @Before
     public void setUp() throws URISyntaxException {
-        WireMock.configure();
-        neow = Neow3j.build(new HttpService("http://localhost:8080"));
+        // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
+        int port = this.wireMockRule.port();
+        WireMock.configureFor(port);
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+
         nefFile = new File(this.getClass().getClassLoader()
                 .getResource(TEST_CONTRACT_1_NEF).toURI());
         manifestFile = new File(this.getClass().getClassLoader()
