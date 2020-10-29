@@ -11,13 +11,16 @@ import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+import io.reactivex.Observable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -52,6 +55,7 @@ public class Transaction extends NeoSerializable {
     private List<TransactionAttribute> attributes;
     private byte[] script;
     private List<Witness> witnesses;
+    private BigInteger blockIndexWhenSent;
 
     public Transaction() {
         signers = new ArrayList<>();
@@ -169,8 +173,26 @@ public class Transaction extends NeoSerializable {
                         + "signature for each of its signers.");
             }
         }
-        String hex = Numeric.toHexStringNoPrefix(this.toArray());
+        String hex = Numeric.toHexStringNoPrefix(toArray());
+        blockIndexWhenSent = neow.getBlockCount().send().getBlockIndex();
         return neow.sendRawTransaction(hex).send();
+    }
+
+    /**
+     * Creates an {@link Observable} that emits the block index that contains this transaction.
+     *
+     * @return an observable to emit the block index of the block that contains this transaction.
+     */
+    public Observable<Long> getTransactionObservable() {
+        if (blockIndexWhenSent == null) {
+            throw new IllegalStateException("Can't subscribe before transaction has been sent.");
+        }
+
+        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(
+                new BlockParameterIndex(blockIndexWhenSent), true)
+                .filter(neoGetBlock -> neoGetBlock.getBlock().getTransactions().stream()
+                        .anyMatch(transaction -> Numeric.cleanHexPrefix(transaction.getHash()).equals(getTxId())))
+                .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
     }
 
     @Override
