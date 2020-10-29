@@ -79,6 +79,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             // TODO: when there's multiple class names, which one to use for the final NEF?
             String firstCanonicalClassName = canonicalClassNames
                     .stream().findFirst().orElse(null);
+
             String nefOutFileName = getCompileOutputFileName(firstCanonicalClassName);
             Path outputFile = Paths.get(outDirString, nefOutFileName);
             writeToFile(outputFile.toFile(), nefBytes);
