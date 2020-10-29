@@ -96,7 +96,7 @@ public class Sign {
 
         // 1.0 For j from 0 to h   (h == recId here and the loop is outside this function)
         //   1.1 Let x = r + jn
-        BigInteger n = NeoConstants.CURVE.getN();  // Curve order.
+        BigInteger n = NeoConstants.curve().getN();  // Curve order.
         BigInteger i = BigInteger.valueOf((long) recId / 2);
         BigInteger x = sig.r.add(i.multiply(n));
         //   1.2. Convert the integer x to an octet string X of length mlen using the conversion
@@ -139,7 +139,7 @@ public class Sign {
         BigInteger rInv = sig.r.modInverse(n);
         BigInteger srInv = rInv.multiply(sig.s).mod(n);
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
-        ECPoint q = ECAlgorithms.sumOfTwoMultiplies(NeoConstants.CURVE.getG(), eInvrInv, R, srInv);
+        ECPoint q = ECAlgorithms.sumOfTwoMultiplies(NeoConstants.curve().getG(), eInvrInv, R, srInv);
 
         return new ECPublicKey(q);
     }
@@ -152,9 +152,9 @@ public class Sign {
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
         X9IntegerConverter x9 = new X9IntegerConverter();
         byte[] compEnc = x9.integerToBytes(xBN,
-                1 + x9.getByteLength(NeoConstants.CURVE.getCurve()));
+                1 + x9.getByteLength(NeoConstants.curve().getCurve()));
         compEnc[0] = (byte) (yBit ? 0x03 : 0x02);
-        return NeoConstants.CURVE.getCurve().decodePoint(compEnc);
+        return NeoConstants.curve().getCurve().decodePoint(compEnc);
     }
 
     /**
@@ -219,10 +219,10 @@ public class Sign {
          * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
          * order, but that could change in future versions.
          */
-        if (key.bitLength() > NeoConstants.CURVE.getN().bitLength()) {
-            key = key.mod(NeoConstants.CURVE.getN());
+        if (key.bitLength() > NeoConstants.curve().getN().bitLength()) {
+            key = key.mod(NeoConstants.curve().getN());
         }
-        return new FixedPointCombMultiplier().multiply(NeoConstants.CURVE.getG(), key)
+        return new FixedPointCombMultiplier().multiply(NeoConstants.curve().getG(), key)
                                              .normalize();
     }
 

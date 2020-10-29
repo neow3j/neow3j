@@ -273,7 +273,7 @@ public class JsonRpc2_0RxTest {
 
         transactionLatch.await(15250, TimeUnit.MILLISECONDS);
         assertThat(results.size(), equalTo(expected.size()));
-        assertThat(results, new ReflectionEquals(expected));
+        assertThat(results, equalTo(expected));
 
         disposable.dispose();
 

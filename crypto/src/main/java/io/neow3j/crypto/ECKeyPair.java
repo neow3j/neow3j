@@ -92,7 +92,7 @@ public class ECKeyPair {
     public BigInteger[] sign(byte[] transactionHash) {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey.getInt(),
-                NeoConstants.CURVE);
+                NeoConstants.curve());
         signer.init(true, privKey);
         return signer.generateSignature(transactionHash);
     }
@@ -343,7 +343,7 @@ public class ECKeyPair {
          * @param ecPoint The EC point (x,y) to construct the public key.
          */
         public ECPublicKey(ECPoint ecPoint) {
-            if (!ecPoint.getCurve().equals(NeoConstants.CURVE_PARAMS.getCurve())) {
+            if (!ecPoint.getCurve().equals(NeoConstants.curveParams().getCurve())) {
                 throw new IllegalArgumentException("Given EC point is not of the required curve.");
             }
             this.ecPoint = ecPoint;
@@ -415,7 +415,7 @@ public class ECKeyPair {
         }
 
         private ECPoint decodePoint(byte[] encodedPoint) {
-            return NeoConstants.CURVE.getCurve().decodePoint(encodedPoint);
+            return NeoConstants.curve().getCurve().decodePoint(encodedPoint);
         }
 
         @Override
