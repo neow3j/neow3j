@@ -182,7 +182,7 @@ public class Compiler {
      *
      * @param className      The fully qualified name of the class to compile.
      * @param sourceFilePath The absolute path of the class' source file.
-     * @return THe compilation unit holding the NEF, contract manifest and {@code DebugInfo}.
+     * @return The compilation unit holding the NEF, contract manifest, and {@code DebugInfo}.
      * @throws IOException If an error occurs when reading the class and source files.
      */
     public CompilationUnit compileClass(String className, String sourceFilePath)
