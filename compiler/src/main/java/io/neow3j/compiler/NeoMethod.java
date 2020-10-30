@@ -87,7 +87,7 @@ public class NeoMethod {
     // Tells if the current line number should be added to an instruction that is added to this
     // method. If it is the first instruction corresponding to the current line, then the line
     // number is added to the instruction.
-    private boolean isFreshNewLine = true;
+    private boolean isFreshNewLine = false;
 
     /**
      * Constructs a new Neo method.
