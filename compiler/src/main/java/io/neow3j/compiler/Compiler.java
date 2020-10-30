@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -122,54 +121,82 @@ public class Compiler {
                 "No mapping from Java type '%s' to any neo-vm type found.", typeName));
     }
 
+//    /**
+//     * Converts the given classes to neo-vm code and generates debug information with the help of
+//     * the given source file paths.
+//     * <p>
+//     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
+//     the
+//     * paths to the given class files.
+//     *
+//     * @param classNames      The fully qualified names of the classes
+//     * @param sourceFilePaths The absolute paths to the source files of the given classes.
+//     * @return the compilation results.
+//     * @throws IOException if something goes wrong when reading Java and class files from disk.
+//     */
+//    public CompilationUnit compileClasses(Set<String> classNames, Set<String> sourceFilePaths)
+//            throws IOException {
+//
+//        List<ClassNode> classes = new ArrayList<>();
+//        for (String className : classNames) {
+//            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+//            classes.add(asmClass);
+//            String relativePath = className.replace(".", "/");
+//            String sourceFilePath = sourceFilePaths.stream()
+//                    .filter(path -> path.contains(relativePath))
+//                    .findFirst().orElseThrow(() -> new CompilerException(
+//                            "Could not find source file for class " + className));
+//            compUnit.addClassToSourceMapping(className, sourceFilePath);
+//        }
+//        for (ClassNode asmClass : classes) {
+//            compileClass(asmClass);
+//        }
+//        finalizeCompilation();
+//        return compUnit;
+//    }
+
+//    /**
+//     * Converts the given JVM class files a neo-vm script. No debugging information is created
+//     * because the source files are unknown.
+//     * <p>
+//     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
+//     the
+//     * paths to the given class files.
+//     *
+//     * @param classNames The fully qualified names of the classes to convert to neo-vm code.
+//     * @return The compilation result.
+//     * @throws IOException if something goes wrong when reading Java and class files from disk.
+//     */
+//    public CompilationUnit compileClasses(Set<String> classNames) throws IOException {
+//        for (String className : classNames) {
+//            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+//            compileClass(asmClass);
+//        }
+//        finalizeCompilation();
+//        return compUnit;
+//    }
+
     /**
-     * Converts the given classes to neo-vm code and generates debug information with the help of
-     * the given source file paths.
-     * <p>
-     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
-     * paths to the given class files.
+     * Compiles the given class to the corresponding neo-vm script and produces debugging
+     * information to be used with the Neo Debugger.
      *
-     * @param classNames      The fully qualified names of the classes
-     * @param sourceFilePaths The absolute paths to the source files of the given classes.
-     * @return the compilation results.
-     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     * @param className      The fully qualified name of the class to compile.
+     * @param sourceFilePath The absolute path of the class' source file.
+     * @return THe compilation unit holding the NEF, contract manifest and {@code DebugInfo}.
+     * @throws IOException If an error occurs when reading the class and source files.
      */
-    public CompilationUnit compileClasses(Set<String> classNames, Set<String> sourceFilePaths)
+    public CompilationUnit compileClass(String className, String sourceFilePath)
             throws IOException {
 
-        List<ClassNode> classes = new ArrayList<>();
-        for (String className : classNames) {
-            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
-            classes.add(asmClass);
-            String relativePath = className.replace(".", "/");
-            String sourceFilePath = sourceFilePaths.stream()
-                    .filter(path -> path.contains(relativePath))
-                    .findFirst().orElseThrow(() -> new CompilerException(
-                            "Could not find source file for class " + className));
-            compUnit.addClassToSourceMapping(className, sourceFilePath);
+        ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
+        String relativePath = className.replace(".", "/");
+        if (!sourceFilePath.contains(relativePath)) {
+            throw new IllegalArgumentException("Source file path does not correspond to the fully "
+                    + "qualified name of the given class.");
         }
-        for (ClassNode asmClass : classes) {
-            compileClass(asmClass);
-        }
-        return compUnit;
-    }
-
-    /**
-     * Converts the given JVM class files a neo-vm script. No debugging information is created
-     * because the source files are unknown.
-     * <p>
-     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the
-     * paths to the given class files.
-     *
-     * @param classNames The fully qualified names of the classes to convert to neo-vm code.
-     * @return The compilation result.
-     * @throws IOException if something goes wrong when reading Java and class files from disk.
-     */
-    public CompilationUnit compileClasses(Set<String> classNames) throws IOException {
-        for (String className : classNames) {
-            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
-            compileClass(asmClass);
-        }
+        compUnit.addClassToSourceMapping(className, sourceFilePath);
+        compileClass(asmClass);
+        finalizeCompilation();
         return compUnit;
     }
 
@@ -209,6 +236,10 @@ public class Compiler {
         for (NeoMethod neoMethod : new ArrayList<>(compUnit.getNeoModule().getSortedMethods())) {
             compileMethod(neoMethod, compUnit);
         }
+        return compUnit;
+    }
+
+    private void finalizeCompilation() {
         compUnit.getNeoModule().finalizeModule();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
                 compUnit.getNeoModule().toByteArray());
@@ -217,7 +248,6 @@ public class Compiler {
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
-        return compUnit;
     }
 
     private void collectAndInitializeStaticFields(ClassNode asmClass) {
@@ -226,12 +256,12 @@ public class Compiler {
         }
         if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
             throw new CompilerException(format("The class %s has more than the max supported "
-                    + "number of static field variables (%d).",
+                            + "number of static field variables (%d).",
                     getFullyQualifiedNameForInternalName(asmClass.name), MAX_STATIC_FIELDS));
         }
         if (asmClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
             throw new CompilerException(format("Class %s has non-static fields but only"
-                    + " static fields are supported in smart contract classes.",
+                            + " static fields are supported in smart contract classes.",
                     getFullyQualifiedNameForInternalName(asmClass.name)));
         }
         checkForUsageOfInstanceConstructor(asmClass);
@@ -487,8 +517,9 @@ public class Compiler {
             byte[] operand = getOperand(insnAnnotation);
             if (operand.length != getOperandSize(opcode).size()) {
                 throw new CompilerException(neoMethod, format("Operand extracted from annotation"
-                        + "%s did not have correct size for corresponding neo-vm opcode %s. Byte "
-                        + "size was %d but neo-vm opcode needs an operand of %d bytes.",
+                                + "%s did not have correct size for corresponding neo-vm opcode "
+                                + "%s. Byte size was %d but neo-vm opcode needs an operand of %d "
+                                + "bytes.",
                         insnAnnotation.desc, opcode.name(), operand.length,
                         getOperandSize(opcode).size()));
             }
