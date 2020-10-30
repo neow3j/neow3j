@@ -1,4 +1,4 @@
-name: neow3j CI
+name: neow3j-ci-cd
 
 on: [push]
 
