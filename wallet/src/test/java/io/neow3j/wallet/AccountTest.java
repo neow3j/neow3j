@@ -1,6 +1,8 @@
 package io.neow3j.wallet;
 
 import io.neow3j.transaction.VerificationScript;
+
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -335,12 +337,14 @@ public class AccountTest {
     }
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Test
     public void getNep5Balances() throws IOException {
-        WireMock.configure();
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:8080"));
+        int port = this.wireMockRule.port();
+        WireMock.configureFor(port);
+
+        Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         Account a = Account.fromAddress(ADDRESS);
         WalletTestHelper.setUpWireMockForCall("getnep5balances",
                 "getnep5balances_AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS.json",

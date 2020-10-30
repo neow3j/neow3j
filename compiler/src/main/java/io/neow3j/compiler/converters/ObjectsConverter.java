@@ -219,7 +219,7 @@ public class ObjectsConverter implements Converter {
             calledNeoMethod = new NeoMethod(ctorMethod, owner);
             compUnit.getNeoModule().addMethod(calledNeoMethod);
             calledNeoMethod.initializeMethod(compUnit);
-            AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod);
+            AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod, owner);
             insn = insn.getNext();
             while (insn != null) {
                 insn = handleInsn(insn, calledNeoMethod, compUnit);
