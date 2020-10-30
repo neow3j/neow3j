@@ -19,15 +19,15 @@ import org.gradle.api.plugins.JavaPluginConvention;
 
 public class Neow3jPluginUtils {
 
-    protected static final String SUFFIX_FILENAME = ".nef";
-    protected static final String DEFAULT_FILENAME = "output" + SUFFIX_FILENAME;
+    protected static final String NEF_SUFFIX = ".nef";
+    protected static final String DEFAULT_FILENAME = "output" + NEF_SUFFIX;
     protected static final String NEFDBGNFO_SUFFIX = ".nefdbgnfo";
     protected static final String DEBUG_JSON_SUFFIX = ".debug.json";
 
     static String getCompileOutputFileName(String fqClassName) {
         String className = getClassName(fqClassName);
         if (className != null && className.length() > 0) {
-            return className + SUFFIX_FILENAME;
+            return className + NEF_SUFFIX;
         }
         return DEFAULT_FILENAME;
     }

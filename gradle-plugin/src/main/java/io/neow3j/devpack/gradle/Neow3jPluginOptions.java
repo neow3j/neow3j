@@ -7,10 +7,9 @@ import java.util.Set;
 
 public class Neow3jPluginOptions {
 
-    public static final String CLASSNAMES_NAME = "classNames";
-    public static final String DEBUG_NAME = "debug";
+    public static final String CLASSNAME_NAME = "className";
 
-    private LinkedHashSet<String> classNames;
+    private String className;
 
     // Default behavior: generate debug symbols
     private Boolean debug = true;
@@ -18,20 +17,16 @@ public class Neow3jPluginOptions {
     public Neow3jPluginOptions() {
     }
 
-    public Set<String> getClassNames() {
-        return classNames;
-    }
-
-    public void setClassNames(String... classNames) {
-        this.classNames = new LinkedHashSet<>(asList(classNames));
-    }
-
-    public void classNames(String... classNames) {
-        setClassNames(classNames);
+    public String getClassName() {
+        return className;
     }
 
     public void setClassName(String className) {
-        setClassNames(className);
+        this.className = className;
+    }
+
+    public void className(String className) {
+        this.className = className;
     }
 
     public Boolean getDebug() {

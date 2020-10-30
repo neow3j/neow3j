@@ -2,7 +2,7 @@ package io.neow3j.devpack.gradle;
 
 import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
-import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAMES_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.generateDebugInfoZip;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getCompileOutputFileName;
@@ -21,20 +21,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.gradle.api.Action;
 
 public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
     @Override
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
-        Set<String> canonicalClassNames = neow3jPluginCompile.getOptions().getClassNames();
+        String canonicalClassName = neow3jPluginCompile.getOptions().getClassName();
         Boolean debugSymbols = neow3jPluginCompile.getOptions().getDebug();
 
-        ofNullable(canonicalClassNames).orElseThrow(() ->
+        ofNullable(canonicalClassName).orElseThrow(() ->
                 new IllegalArgumentException("The parameter "
-                        + "'" + CLASSNAMES_NAME + "' needs to be set in the "
+                        + "'" + CLASSNAME_NAME + "' needs to be set in the "
                         + "'" + NEOW3J_COMPILER_OPTIONS_NAME + "' "
                         + "declaration in your build.gradle file."));
 
@@ -52,11 +50,14 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         URLClassLoader compilerClassLoader = new URLClassLoader(clDirsArray,
                 this.getClass().getClassLoader());
 
-        // get the source files set URL
-        Set<String> setOfSourceSetFilesPath = getSourceSetsFilesURL(neow3jPluginCompile.getProject())
-                .stream()
+        // Get the absolute path of the source file
+        String setOfSourceSetFilesPath = getSourceSetsFilesURL(
+                neow3jPluginCompile.getProject()).stream()
                 .map(URL::getPath)
-                .collect(Collectors.toSet());
+                .filter(s -> s.contains(canonicalClassName.replace(".", "/")))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Couldn't find the source file "
+                        + "belonging to " + canonicalClassName));
 
         Compiler n = new Compiler(compilerClassLoader);
 
@@ -64,9 +65,9 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             // compile
             CompilationUnit compilationUnit;
             if (debugSymbols) {
-                compilationUnit = n.compileClasses(canonicalClassNames, setOfSourceSetFilesPath);
+                compilationUnit = n.compileClass(canonicalClassName, setOfSourceSetFilesPath);
             } else {
-                compilationUnit = n.compileClasses(canonicalClassNames);
+                compilationUnit = n.compileClass(canonicalClassName);
             }
             byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
@@ -76,11 +77,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             Path outDirPath = Paths.get(outDirString);
 
             // output the result to the output file
-            // TODO: when there's multiple class names, which one to use for the final NEF?
-            String firstCanonicalClassName = canonicalClassNames
-                    .stream().findFirst().orElse(null);
-
-            String nefOutFileName = getCompileOutputFileName(firstCanonicalClassName);
+            String nefOutFileName = getCompileOutputFileName(canonicalClassName);
             Path outputFile = Paths.get(outDirString, nefOutFileName);
             writeToFile(outputFile.toFile(), nefBytes);
 
@@ -97,7 +94,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             if (debugSymbols) {
                 // Pack the debug info into a ZIP archive.
                 String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
-                        outDirString, ClassUtils.getClassName(firstCanonicalClassName));
+                        outDirString, ClassUtils.getClassName(canonicalClassName));
                 System.out.println("Debug info zip file: " + debugInfoZipFileName);
             }
 
@@ -106,6 +103,5 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             e.printStackTrace();
         }
     }
-
 
 }
