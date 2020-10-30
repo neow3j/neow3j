@@ -91,7 +91,7 @@ public class CompilationUnit {
 
     /**
      * Adds the given {@code ClassNode} to the list of classes that form the smart contract. I.e.,
-     * only classes that are added here will can contribute to a contract's public interface.
+     * only classes that are added here can contribute to a contract's public interface.
      *
      * @param classNode The class to add.
      */
