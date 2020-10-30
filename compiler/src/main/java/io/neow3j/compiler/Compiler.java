@@ -236,6 +236,7 @@ public class Compiler {
         for (NeoMethod neoMethod : new ArrayList<>(compUnit.getNeoModule().getSortedMethods())) {
             compileMethod(neoMethod, compUnit);
         }
+        finalizeCompilation();
         return compUnit;
     }
 
