@@ -153,10 +153,12 @@ subprojects {
 
     artifacts { archives sourcesJar, javadocsJar, testsJar }
 
-    // Avoid to publish gradle-plugin module.
-    // See "gradle-plugin/README.md" for Gradle Plugin release procedures
-    if (!project.name.startsWith('gradle-plugin') &&
-            !project.name.startsWith(rootProject.name)) {
+    // We just avoid to publish the root project.
+    // The gradle-plugin module is fine and desirable to publish to JFrog/SonaType.
+    // In addition the gradle-plugin module should be published to the Gradle Plugin
+    // global repository. See "gradle-plugin/README.md" for Gradle Plugin
+    // release procedures.
+    if (!project.name.startsWith(rootProject.name)) {
 
         apply plugin: 'com.jfrog.bintray'
         apply plugin: 'maven-publish'

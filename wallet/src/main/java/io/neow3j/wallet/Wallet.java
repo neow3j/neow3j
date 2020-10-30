@@ -75,6 +75,7 @@ public class Wallet {
      *
      * @param accountScriptHash The new default account.
      * @throws IllegalArgumentException if the given account is not in this wallet.
+     * @return the Wallet
      */
     public Wallet defaultAccount(ScriptHash accountScriptHash) {
         if (accountScriptHash == null) throw new IllegalArgumentException("No account provided to set default.");
