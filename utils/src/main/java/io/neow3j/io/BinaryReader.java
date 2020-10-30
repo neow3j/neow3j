@@ -175,7 +175,7 @@ public class BinaryReader implements AutoCloseable {
             default:
                 throw new IOException();
         }
-        return NeoConstants.CURVE.getCurve().decodePoint(encoded);
+        return NeoConstants.curve().getCurve().decodePoint(encoded);
     }
 
     public float readFloat() throws IOException {

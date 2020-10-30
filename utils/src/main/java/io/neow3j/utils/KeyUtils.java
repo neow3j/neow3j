@@ -27,7 +27,7 @@ public class KeyUtils {
      * @return the public key encoded in compressed format.
      */
     public static byte[] compressPublicKey(byte[] notCompressedPubKey) {
-        ECPoint point = NeoConstants.CURVE.getCurve().decodePoint(notCompressedPubKey);
+        ECPoint point = NeoConstants.curve().getCurve().decodePoint(notCompressedPubKey);
         return point.getEncoded(true);
     }
 
@@ -42,7 +42,7 @@ public class KeyUtils {
      */
     public static boolean isPublicKeyCompressed(byte[] publicKey) {
         // Check if the key can successfully be decoded.
-        NeoConstants.CURVE.getCurve().decodePoint(publicKey);
+        NeoConstants.curve().getCurve().decodePoint(publicKey);
         return publicKey[0] == 0x02 || publicKey[0] == 0x03;
     }
 }

@@ -11,10 +11,19 @@ public class NeoConstants {
 
     //region Cryptography
 
-    public static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256r1");
-    public static final ECDomainParameters CURVE = new ECDomainParameters(
-            CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
-    public static final BigInteger HALF_CURVE_ORDER = CURVE_PARAMS.getN().shiftRight(1);
+    public static ECDomainParameters curve() {
+        return new ECDomainParameters(
+                curveParams().getCurve(), curveParams().getG(),
+                curveParams().getN(), curveParams().getH());
+    }
+
+    public static X9ECParameters curveParams() {
+        return CustomNamedCurves.getByName("secp256r1");
+    }
+
+    public static BigInteger halfCurveOrder() {
+        return curveParams().getN().shiftRight(1);
+    }
 
     //endregion
 
