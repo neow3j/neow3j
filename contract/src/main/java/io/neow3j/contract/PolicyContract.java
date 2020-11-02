@@ -146,6 +146,18 @@ public class PolicyContract extends SmartContract {
      * Creates a transaction script to block an account in the neo-network and initializes
      * a {@link TransactionBuilder} based on this script.
      *
+     * @param addressToBlock The address of the account to block.
+     * @return A {@link TransactionBuilder}.
+     */
+    public TransactionBuilder blockAccount(String addressToBlock) {
+        return invokeFunction(BLOCK_ACCOUNT,
+                ContractParameter.hash160(ScriptHash.fromAddress(addressToBlock)));
+    }
+
+    /**
+     * Creates a transaction script to block an account in the neo-network and initializes
+     * a {@link TransactionBuilder} based on this script.
+     *
      * @param accountToBlock The account to block.
      * @return A {@link TransactionBuilder}.
      */
@@ -157,7 +169,19 @@ public class PolicyContract extends SmartContract {
      * Creates a transaction script to unblock an account in the neo-network and initializes
      * a {@link TransactionBuilder} based on this script.
      *
-     * @param accountToUnblock The account to unblocked.
+     * @param addressToBlock The address of the account to unblock.
+     * @return A {@link TransactionBuilder}.
+     */
+    public TransactionBuilder unblockAccount(String addressToBlock) {
+        return invokeFunction(UNBLOCK_ACCOUNT,
+                ContractParameter.hash160(ScriptHash.fromAddress(addressToBlock)));
+    }
+
+    /**
+     * Creates a transaction script to unblock an account in the neo-network and initializes
+     * a {@link TransactionBuilder} based on this script.
+     *
+     * @param accountToUnblock The account to unblock.
      * @return A {@link TransactionBuilder}.
      */
     public TransactionBuilder unblockAccount(ScriptHash accountToUnblock) {

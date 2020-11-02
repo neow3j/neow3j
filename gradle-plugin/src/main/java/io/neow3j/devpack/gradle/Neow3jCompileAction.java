@@ -3,15 +3,18 @@ package io.neow3j.devpack.gradle;
 import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.generateDebugInfoZip;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getCompileOutputFileName;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsFilesURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.writeToFile;
 import static java.nio.file.Files.createDirectories;
 import static java.util.Optional.ofNullable;
 
+import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
-import io.neow3j.compiler.Compiler.CompilationResult;
+import io.neow3j.utils.ClassUtils;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -25,6 +28,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
     @Override
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
         String canonicalClassName = neow3jPluginCompile.getOptions().getClassName();
+        Boolean debugSymbols = neow3jPluginCompile.getOptions().getDebug();
 
         ofNullable(canonicalClassName).orElseThrow(() ->
                 new IllegalArgumentException("The parameter "
@@ -46,12 +50,26 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         URLClassLoader compilerClassLoader = new URLClassLoader(clDirsArray,
                 this.getClass().getClassLoader());
 
+        // Get the absolute path of the source file
+        String setOfSourceSetFilesPath = getSourceSetsFilesURL(
+                neow3jPluginCompile.getProject()).stream()
+                .map(URL::getPath)
+                .filter(s -> s.contains(canonicalClassName.replace(".", "/")))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Couldn't find the source file "
+                        + "belonging to " + canonicalClassName));
+
         Compiler n = new Compiler(compilerClassLoader);
 
         try {
             // compile
-            CompilationResult compilationResult = n.compileClass(canonicalClassName);
-            byte[] nefBytes = compilationResult.getNef().toArray();
+            CompilationUnit compilationUnit;
+            if (debugSymbols) {
+                compilationUnit = n.compileClass(canonicalClassName, setOfSourceSetFilesPath);
+            } else {
+                compilationUnit = n.compileClass(canonicalClassName);
+            }
+            byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
             // get the output directory
             String outDirString = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
@@ -65,17 +83,24 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
             // generate the manifest to the output dir
             String manifestOutFileName = generateContractManifestFile(
-                    compilationResult.getManifest(),
+                    compilationUnit.getManifest(),
                     outDirPath.toFile());
 
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
             System.out.println("NEF file: " + outputFile.toAbsolutePath());
             System.out.println("Manifest file: " + manifestOutFileName);
+
+            if (debugSymbols) {
+                // Pack the debug info into a ZIP archive.
+                String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
+                        outDirString, ClassUtils.getClassName(canonicalClassName));
+                System.out.println("Debug info zip file: " + debugInfoZipFileName);
+            }
+
         } catch (Exception e) {
             System.out.println("Compilation failed. Reason: " + e.getMessage());
             e.printStackTrace();
-            return;
         }
     }
 

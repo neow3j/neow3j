@@ -35,7 +35,10 @@ public class Helper {
     public static native byte[] toByteArray(byte source);
 
     /**
-     * Converts the given string to a byte array.
+     * Converts the given string to a byte array using UTF-8 encoding.
+     * <p>
+     * This method cannot be used to convert a Neo address to a valid script hash byte array, or
+     * a script hash in hexadecimal format into its corresponding byte array.
      * <p>
      * Examples
      * <ul>
@@ -123,9 +126,10 @@ public class Helper {
     public static native int toInt(byte[] source);
 
     /**
-     * Casts the given byte array to a string.
+     * Casts the given byte array to a string. Assumes that the byte array is a UTF-8 encoded
+     * string.
      * <p>
-     * In the NeoVM strings are represented as byte strings. Hence the method name.
+     * In the NeoVM strings are represented as {@code ByteStrings}. Hence the method name.
      * <p>
      * Examples:
      * <ul>
@@ -203,37 +207,5 @@ public class Helper {
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.REVERSEITEMS)
     public static native byte[] reverse(byte[] source);
-
-    /**
-     * Converts the given Neo address to its script hash (little-endian byte array).
-     * <p>
-     * This method can only be applied to constant string literals in static variable
-     * initializations.
-     * <p>
-     * Example: addressToScriptHash("AFsCjUGzicZmXQtWpwVt6hNeJTBwSipJMS") generates
-     * 0102030405060708090a0b0c0d0e0faabbccddee
-     */
-    public static native byte[] addressToScriptHash(String address);
-
-    /**
-     * Converts the given hex string to a byte array.
-     * <p>
-     * This method can only be applied to constant string literals in static variable
-     * initializations.
-     * <p>
-     * Example: hexToBytes("0102030405060708090a0b0c0d0e0faabbccddee") generates the corresponding
-     * byte array.
-     */
-    public static native byte[] hexToBytes(String hex);
-
-    /**
-     * Converts the given number string to an integer.
-     * <p>
-     * This method can only be applied to constant string literals in static variable
-     * initializations.
-     * <p>
-     * Example: stringToInt("10000") generates the int with the value 10000.
-     */
-    public static native int stringToInt(String text);
 
 }

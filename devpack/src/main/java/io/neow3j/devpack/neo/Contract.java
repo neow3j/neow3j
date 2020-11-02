@@ -102,7 +102,7 @@ public class Contract {
      * A deployed smart contract cannot be destroyed from the outside. Thus, if the contract should
      * be destroyable, the logic has to be written into the contract during development.
      * <p>
-     * When the contract is destroyed, the its storage area is destroyed as well. If the contract is
+     * When the contract is destroyed, its storage area is destroyed as well. If the contract is
      * moved, the contents in the old storage area are copied to the new contract storage area.
      */
     // TODO: Clarify what 'moving' a smart contract means and document it here.

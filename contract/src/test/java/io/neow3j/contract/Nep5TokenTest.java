@@ -50,8 +50,8 @@ public class Nep5TokenTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
-
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+
         neoToken = new Nep5Token(NEO_TOKEN_SCRIPT_HASH, neow);
         gasToken = new Nep5Token(GAS_TOKEN_SCRIPT_HASH, neow);
 
@@ -108,34 +108,26 @@ public class Nep5TokenTest {
     }
 
     @Test
-    public void testGetName() throws IOException {
-        setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
-        assertThat(neoToken.getName(), is("NEO"));
-    }
-
-    @Test
-    public void testGetSymbol() throws IOException {
-        setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
-        assertThat(neoToken.getSymbol(), is("neo"));
-    }
-
-    @Test
-    public void testGetDecimals() throws Exception {
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
-        assertThat(gasToken.getDecimals(), is(8));
-    }
-
-    @Test
-    public void testGetTotalSupply() throws Exception {
-        setUpWireMockForInvokeFunction("totalSupply", "invokefunction_totalSupply.json");
-        assertThat(gasToken.getTotalSupply(), is(new BigInteger("3000000000000000")));
-    }
-
-    @Test
     public void testGetBalanceOfAccount() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
         assertThat(gasToken.getBalanceOf(account1.getScriptHash()),
+                is(new BigInteger("300000000")));
+    }
+
+    @Test
+    public void testGetBalanceOfAccount_address() throws Exception {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_300000000.json");
+        assertThat(gasToken.getBalanceOf(account1.getAddress()),
+                is(new BigInteger("300000000")));
+    }
+
+    @Test
+    public void testGetBalanceOfAccount_account() throws Exception {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_300000000.json");
+        assertThat(gasToken.getBalanceOf(account1),
                 is(new BigInteger("300000000")));
     }
 
@@ -370,7 +362,7 @@ public class Nep5TokenTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransfer_InvalidAmount() throws IOException {
-        neoToken.transfer(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH, new BigDecimal(-1));
+        neoToken.transfer(Wallet.create(), RECIPIENT_SCRIPT_HASH, new BigDecimal(-1));
     }
 
     @Test(expected = InsufficientFundsException.class)
@@ -525,13 +517,13 @@ public class Nep5TokenTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransferFromSpecificAccounts_noAccountProvided() throws IOException {
-        neoToken.transferFromSpecificAccounts(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH,
+        neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("1"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTransferFromSpecificAccounts_illegalAmountProvided() throws IOException {
-        neoToken.transferFromSpecificAccounts(Wallet.createWallet(), RECIPIENT_SCRIPT_HASH,
+        neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("-2"), account1.getScriptHash());
     }
 }

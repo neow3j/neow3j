@@ -1,5 +1,7 @@
 package io.neow3j.compiler;
 
+import static java.lang.String.format;
+
 import io.neow3j.constants.OpCode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -8,33 +10,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.objectweb.asm.tree.ClassNode;
 
 public class NeoModule {
 
-    /**
-     * Holds this module's methods, mapping from method ID to {@link NeoMethod};
-     * Used by the compiler to quickly search for a method.
-     */
-    Map<String, NeoMethod> methods = new HashMap<>();
+    // Holds this module's methods, mapping from method ID to {@link NeoMethod}; Used by the
+    // compiler to quickly search for a method.
+    private final static Map<String, NeoMethod> methods = new HashMap<>();
+
+    // Holds the same references to the methods as {@link NeoModule#methods} but in the order they
+    // have been added to this module.
+    private final List<NeoMethod> sortedMethods = new ArrayList<>();
 
     /**
-     * Holds the same references to the methods as {@link NeoModule#methods} but in the order they
-     * have been added to this module.
+     * Gets this module's methods in the order they were added.
+     *
+     * @return the methods.
      */
-    List<NeoMethod> sortedMethods = new ArrayList<>();
-
-    /**
-     * The smart contract class that this module is compiled from.
-     */
-    ClassNode asmSmartContractClass;
-
-    public NeoModule(ClassNode asmSmartContractClass) {
-        this.asmSmartContractClass = asmSmartContractClass;
+    public List<NeoMethod> getSortedMethods() {
+        return sortedMethods;
     }
 
-    void addMethod(NeoMethod method) {
-        methods.put(method.id, method);
+    public void addMethod(NeoMethod method) {
+        methods.put(method.getId(), method);
         sortedMethods.add(method);
     }
 
@@ -42,35 +39,36 @@ public class NeoModule {
         int startAddress = 0;
         for (NeoMethod method : this.sortedMethods) {
             method.finalizeMethod();
-            method.startAddress = startAddress;
+            method.setStartAddress(startAddress);
             // At this point, the `nextAddress` should be set to one byte after the last
             // instruction byte of a method. So we can simply add this number to the current
             // start address and get the start address of the next method.
-            startAddress += method.nextAddress;
+            startAddress += method.getLastAddress();
         }
         for (NeoMethod method : sortedMethods) {
-            for (Entry<Integer, NeoInstruction> entry : method.instructions.entrySet()) {
+            for (Entry<Integer, NeoInstruction> entry : method.getInstructions().entrySet()) {
                 NeoInstruction insn = entry.getValue();
                 // Currently we're only using OpCode.CALL_L. Using CALL instead of CALL_L might
                 // lead to some savings in script size but will also require shifting
                 // addresses of all following instructions.
-                if (insn.opcode.equals(OpCode.CALL_L)) {
-                    if (!(insn.extra instanceof NeoMethod)) {
-                        throw new CompilerException(
-                                "Missing reference to method in CALL opcode.");
+                if (insn.getOpcode().equals(OpCode.CALL_L)) {
+                    if (!(insn.getExtra() instanceof NeoMethod)) {
+                        throw new CompilerException(format("Instruction with %s opcode is "
+                                + "missing the reference to the called method. The jump address "
+                                + "cannot be resolved.", OpCode.CALL_L.name()));
                     }
-                    NeoMethod calledMethod = (NeoMethod) insn.extra;
-                    int offset =
-                            calledMethod.startAddress - (method.startAddress + entry.getKey());
-                    insn.operand = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
-                            .putInt(offset).array();
+                    NeoMethod calledMethod = (NeoMethod) insn.getExtra();
+                    int offset = calledMethod.getStartAddress()
+                            - (method.getStartAddress() + entry.getKey());
+                    insn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+                            .putInt(offset).array());
                 }
             }
         }
     }
 
     int byteSize() {
-        return methods.values().stream().map(NeoMethod::byteSize).reduce(Integer::sum).get();
+        return sortedMethods.stream().map(NeoMethod::byteSize).reduce(Integer::sum).get();
     }
 
     /**
@@ -84,4 +82,11 @@ public class NeoModule {
         return b.array();
     }
 
+    public boolean hasMethod(String calledMethodId) {
+        return methods.containsKey(calledMethodId);
+    }
+
+    public NeoMethod getMethod(String calledMethodId) {
+        return methods.get(calledMethodId);
+    }
 }

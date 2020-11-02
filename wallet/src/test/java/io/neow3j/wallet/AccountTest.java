@@ -1,5 +1,8 @@
 package io.neow3j.wallet;
 
+import io.neow3j.transaction.VerificationScript;
+
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,11 +61,11 @@ public class AccountTest {
             "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testCreateGenericAccount() {
-        Account a = Account.createAccount();
+        Account a = Account.create();
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
         assertThat(a.getVerificationScript(), notNullValue());
@@ -72,6 +75,18 @@ public class AccountTest {
         assertThat(a.getECKeyPair(), notNullValue());
         assertThat(a.isDefault(), is(false));
         assertThat(a.isLocked(), is(false));
+    }
+
+    @Test
+    public void testThrowIfNoECKeyPair() {
+        Account account = Account.fromVerificationScript(new VerificationScript(
+                Numeric.hexStringToByteArray(
+                        "027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2")));
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("account does not hold an EC key pair");
+
+        account.getECKeyPair();
     }
 
     @Test
@@ -110,6 +125,28 @@ public class AccountTest {
     }
 
     @Test
+    public void testFromVerificationScript() {
+        Account account = Account.fromVerificationScript(
+                new VerificationScript(
+                        Numeric.hexStringToByteArray("0x0c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d0b4195440d78")));
+
+        assertThat(account.getAddress(), is("AJunErzotcQTNWP2qktA7LgkXZVdHea97H"));
+        assertThat(account.getVerificationScript().getScript(),
+                is(Numeric.hexStringToByteArray("0x0c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d0b4195440d78")));
+    }
+
+    @Test
+    public void testFromPublicKey() {
+        ECPublicKey publicKey = new ECPublicKey(
+                "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d");
+        Account account = Account.fromPublicKey(publicKey);
+
+        assertThat(account.getAddress(), is("AJunErzotcQTNWP2qktA7LgkXZVdHea97H"));
+        assertThat(account.getVerificationScript().getScript(),
+                is(Numeric.hexStringToByteArray("0x0c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d0b4195440d78")));
+    }
+
+    @Test
     public void testFromMultiSigKeys() {
         // Used neo-core with address version 0x17 to generate test data.
         String adr = "AFvT3wZSFywrag5K1Nw3es2UieuRc9s3dj";
@@ -126,7 +163,6 @@ public class AccountTest {
                 2);
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(adr));
-        assertThat(a.getECKeyPair(), is(nullValue()));
         assertThat(a.getLabel(), is(adr));
         assertThat(a.getVerificationScript().getScript(), is(verScript));
     }
@@ -146,7 +182,7 @@ public class AccountTest {
     @Test
     public void failEncryptAccountWithoutPrivateKey() throws CipherException {
         Account a = Account.fromAddress(ACCOUNT_JSON_ADDRESS);
-        expectedException.expect(AccountStateException.class);
+        exceptionRule.expect(AccountStateException.class);
         a.encryptPrivateKey("pwd");
     }
 
@@ -173,7 +209,7 @@ public class AccountTest {
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
         Account a = Account.fromAddress(ADDRESS);
-        expectedException.expect(AccountStateException.class);
+        exceptionRule.expect(AccountStateException.class);
         a.decryptPrivateKey("neo");
     }
 
@@ -213,8 +249,8 @@ public class AccountTest {
     @Test
     public void toNep6AccountWithUnencryptedPrivateKey() {
         Account a = Account.fromWIF(WIF);
-        expectedException.expect(AccountStateException.class);
-        expectedException.expectMessage(new StringContains("private key"));
+        exceptionRule.expect(AccountStateException.class);
+        exceptionRule.expectMessage(new StringContains("private key"));
         a.toNEP6Account();
     }
 
@@ -292,10 +328,8 @@ public class AccountTest {
     @Test
     public void createAccountFromAddress() {
         Account a = Account.fromAddress(ACCOUNT_JSON_ADDRESS);
-        assertThat(a.getECKeyPair(), is(nullValue()));
         assertThat(a.getAddress(), is(ACCOUNT_JSON_ADDRESS));
         assertThat(a.getLabel(), is(ACCOUNT_JSON_ADDRESS));
-        assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
         assertThat(a.getScriptHash().toString(), is("cc45cc8987b0e35371f5685431e3c8eeea306722"));
         assertThat(a.isDefault(), is(false));
         assertThat(a.isLocked(), is(false));
@@ -303,12 +337,14 @@ public class AccountTest {
     }
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Test
     public void getNep5Balances() throws IOException {
-        WireMock.configure();
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:8080"));
+        int port = this.wireMockRule.port();
+        WireMock.configureFor(port);
+
+        Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         Account a = Account.fromAddress(ADDRESS);
         WalletTestHelper.setUpWireMockForCall("getnep5balances",
                 "getnep5balances_AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS.json",
@@ -323,8 +359,8 @@ public class AccountTest {
     @Test
     public void isMultiSig() {
         Account a = Account.fromAddress(ADDRESS);
-        expectedException.expect(AccountStateException.class);
-        expectedException.expectMessage("verification script");
+        exceptionRule.expect(AccountStateException.class);
+        exceptionRule.expectMessage("verification script");
         a.isMultiSig();
     }
 
@@ -340,7 +376,7 @@ public class AccountTest {
     @Test
     public void testIsDefault() {
         Account a = Account.fromAddress(ADDRESS);
-        Wallet wallet = Wallet.createWallet().addAccounts(a);
+        Wallet wallet = Wallet.create().addAccounts(a);
 
         assertFalse(a.isDefault());
 
@@ -351,7 +387,7 @@ public class AccountTest {
     @Test
     public void testWalletLink() {
         Account a = Account.fromAddress(ADDRESS);
-        Wallet wallet = Wallet.createWallet();
+        Wallet wallet = Wallet.create();
 
         assertNull(a.getWallet());
 

@@ -1,11 +1,13 @@
 package io.neow3j.crypto;
 
 import io.neow3j.utils.Numeric;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.crypto.macs.HMac;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
 
 /**
  * Cryptographic hash functions.
@@ -105,6 +107,22 @@ public class Hash {
     }
 
     /**
+     * Generates HMAC SHA-512 digest for the given {@code input} with the given {@code key}.
+     *
+     * @param key   The key parameter
+     * @param input The input to digest
+     * @return The hash value for the given input
+     */
+    public static byte[] hmacSha512(byte[] key, byte[] input) {
+        HMac hMac = new HMac(new SHA512Digest());
+        hMac.init(new KeyParameter(key));
+        hMac.update(input, 0, input.length);
+        byte[] out = new byte[64];
+        hMac.doFinal(out, 0);
+        return out;
+    }
+
+    /**
      * Generates SHA-256 digest for the given {@code input}.
      *
      * @param input The input to digest
@@ -120,6 +138,15 @@ public class Hash {
         }
     }
 
+    /**
+     * Generates SHA-256 digest for the given {@code input}.
+     *
+     * @param input  binary encoded input data
+     * @param offset of start of data
+     * @param length of data
+     * @return The hash value for the given input
+     * @throws RuntimeException If we couldn't find any SHA-256 provider
+     */
     public static byte[] sha256(byte[] input, int offset, int length) {
         if (offset != 0 || length != input.length) {
             byte[] array = new byte[length];

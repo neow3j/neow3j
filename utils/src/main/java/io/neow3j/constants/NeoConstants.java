@@ -11,10 +11,19 @@ public class NeoConstants {
 
     //region Cryptography
 
-    public static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256r1");
-    public static final ECDomainParameters CURVE = new ECDomainParameters(
-            CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
-    public static final BigInteger HALF_CURVE_ORDER = CURVE_PARAMS.getN().shiftRight(1);
+    public static ECDomainParameters curve() {
+        return new ECDomainParameters(
+                curveParams().getCurve(), curveParams().getG(),
+                curveParams().getN(), curveParams().getH());
+    }
+
+    public static X9ECParameters curveParams() {
+        return CustomNamedCurves.getByName("secp256r1");
+    }
+
+    public static BigInteger halfCurveOrder() {
+        return curveParams().getN().shiftRight(1);
+    }
 
     //endregion
 
@@ -92,24 +101,10 @@ public class NeoConstants {
     //region Fees
 
     /**
-     * The basic GAS fee to be paid when deploying or migrating a contract.
-     */
-    public static final int CONTRACT_DEPLOY_BASIC_FEE = 100;
-
-    /**
-     * The additional GAS fee to be paid when deploying a contract that needs storage.
-     */
-    public static final int CONTRACT_DEPLOY_STORAGE_FEE = 400;
-
-    /**
-     * The additional GAS fee to be paid when deploying a contract that needs dynamic invokes.
-     */
-    public static final int CONTRACT_DEPLOY_DYNAMIC_INVOKE_FEE = 500;
-
-    /**
-     * The network fee per byte of a transaction. Amount is in GAS.
+     * The network fee per byte of a transaction. The amount is given in fractions of GAS.
      */
     public static final long GAS_PER_BYTE = 1000;
+
 
     //endregion
 

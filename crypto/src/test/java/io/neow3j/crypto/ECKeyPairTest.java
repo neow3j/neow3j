@@ -57,7 +57,7 @@ public class ECKeyPairTest {
         ECKeyPair.ECPublicKey pubKey = NeoSerializableInterface.from(
                 data, ECKeyPair.ECPublicKey.class);
 
-        ECPoint g = NeoConstants.CURVE_PARAMS.getG().normalize();
+        ECPoint g = NeoConstants.curveParams().getG().normalize();
         java.security.spec.ECPoint g_ = new java.security.spec.ECPoint(
                 g.getAffineXCoord().toBigInteger(),
                 g.getAffineYCoord().toBigInteger());

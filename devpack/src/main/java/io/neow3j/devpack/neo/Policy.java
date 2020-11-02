@@ -41,9 +41,10 @@ public class Policy {
     public static native int getFeePerByte();
 
     /**
-     * Gets the script hashes of the accounts that are currently blacklisted, i.e. blocked.
+     * Gets the script hashes of the accounts that are currently blacklisted/blocked.
      *
-     * @return the blocked accounts' script hashes (in little-endian order).
+     * @return the blocked accounts' script hashes as hexadecimal strings and in little-endian
+     * order.
      */
     public static native String[] getBlockedAccounts();
 

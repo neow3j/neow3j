@@ -5,12 +5,13 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_CREATE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_NEXT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ENUMERATOR_VALUE;
 
+import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * A NeoVM-specific enumerator used to iterate over a set of values.
  */
-public class Enumerator<V> {
+public class Enumerator<V> implements ApiInterface {
 
     /**
      * Creates an {@code Enumerator} over the given entries.

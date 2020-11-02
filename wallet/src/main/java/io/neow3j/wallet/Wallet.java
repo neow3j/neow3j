@@ -1,5 +1,6 @@
 package io.neow3j.wallet;
 
+import io.neow3j.crypto.ECKeyPair;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +11,7 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.transaction.VerificationScript;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import java.io.File;
@@ -73,6 +75,7 @@ public class Wallet {
      *
      * @param accountScriptHash The new default account.
      * @throws IllegalArgumentException if the given account is not in this wallet.
+     * @return the Wallet
      */
     public Wallet defaultAccount(ScriptHash accountScriptHash) {
         if (accountScriptHash == null) throw new IllegalArgumentException("No account provided to set default.");
@@ -96,6 +99,16 @@ public class Wallet {
      */
     public Account getDefaultAccount() {
         return this.accounts.get(this.defaultAccount);
+    }
+
+    /**
+     * Checks whether an account is the default account in the wallet.
+     *
+     * @param account the account to be checked.
+     * @return Whether the given account is the default account in this wallet.
+     */
+    public Boolean isDefault(Account account) {
+        return isDefault(account.getScriptHash());
     }
 
     /**
@@ -144,6 +157,17 @@ public class Wallet {
             acct.setWallet(this);
         }
         return this;
+    }
+
+    /**
+     * Removes the account from this wallet.
+     * If there is only one account in the wallet left, this account can not be removed.
+     *
+     * @param account the account to be removed.
+     * @return true if an account was removed, false if no account with the given address was found.
+     */
+    public boolean removeAccount(Account account) {
+        return removeAccount(account.getScriptHash());
     }
 
     /**
@@ -286,7 +310,7 @@ public class Wallet {
      *
      * @return the new wallet.
      */
-    public static Wallet createWallet() {
+    public static Wallet create() {
         Account a = Account.fromNewECKeyPair();
         return new Wallet().addAccounts(a).defaultAccount(a.getScriptHash());
     }
@@ -299,9 +323,9 @@ public class Wallet {
      * @return the new wallet.
      * @throws CipherException throws if failed encrypt the created wallet.
      */
-    public static Wallet createWallet(final String password)
+    public static Wallet create(final String password)
             throws CipherException {
-        Wallet w = createWallet();
+        Wallet w = create();
         w.encryptAllAccounts(password);
         return w;
     }
@@ -316,9 +340,9 @@ public class Wallet {
      * @throws IOException     throws if failed to create the wallet on disk.
      * @throws CipherException throws if failed encrypt the created wallet.
      */
-    public static Wallet createWallet(String password, File destination)
+    public static Wallet create(String password, File destination)
             throws CipherException, IOException {
-        Wallet wallet = createWallet(password);
+        Wallet wallet = create(password);
         wallet.saveNEP6Wallet(destination);
         return wallet;
     }
@@ -348,5 +372,27 @@ public class Wallet {
             throw new IllegalArgumentException("Account not found in the wallet.");
         }
         return this.accounts.get(scriptHash);
+    }
+
+    /**
+     * Checks whether the wallet holds all the required private keys for a multi-sig account.
+     *
+     * @param multiSigVerificationScript the verification script of the multi-sig account.
+     * @return whether the wallet holds all the required private keys for the multi-sig account.
+     */
+    public boolean privateKeysArePresentForMultiSig(VerificationScript multiSigVerificationScript) {
+        int signers = 0;
+        Account account;
+        for (ECKeyPair.ECPublicKey pubKey : multiSigVerificationScript.getPublicKeys()) {
+            ScriptHash scriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
+            if (holdsAccount(scriptHash)) {
+                account = getAccount(scriptHash);
+                if (account != null && account.getECKeyPair() != null) {
+                    signers += 1;
+                }
+            }
+        }
+        int signingThreshold = multiSigVerificationScript.getSigningThreshold();
+        return signers >= signingThreshold;
     }
 }

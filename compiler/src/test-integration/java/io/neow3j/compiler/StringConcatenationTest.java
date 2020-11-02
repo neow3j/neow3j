@@ -12,17 +12,16 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class StringConcatenationTest extends CompilerTest {
+public class StringConcatenationTest extends ContractTest {
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() throws Throwable {
         setUp(StringConcatenation.class.getName());
     }
 
     @Test
     public void concatTwoStrings() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.string("one"),
                 ContractParameter.string("two"));
 
@@ -32,11 +31,10 @@ public class StringConcatenationTest extends CompilerTest {
 
     @Test
     public void concatStringsFromMixedSources() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(
-                getTestName(),
+        NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.string("one"),
                 ContractParameter.string("two"),
-                ContractParameter.byteArray("4e656f")); // byte array representation of "Neo".
+                ContractParameter.byteArrayAsBase64("4e656f")); // byte array representation of "Neo".
 
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("onetwothreeNeoNEO"));
@@ -44,27 +42,28 @@ public class StringConcatenationTest extends CompilerTest {
 
     @Test
     public void concatInStaticVariable() throws IOException {
-        NeoInvokeFunction response = contract.invokeFunction(getTestName());
+        NeoInvokeFunction response = callInvokeFunction();
 
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("onetwoNEO"));
     }
+
+    static class StringConcatenation {
+
+        private static final String staticString = "one" + "two" + Runtime.getPlatform();
+
+        public static String concatTwoStrings(String s1, String s2) {
+            return s1 + s2;
+        }
+
+        public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
+            return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.name();
+        }
+
+        public static String concatInStaticVariable() {
+            return staticString;
+        }
+
+    }
 }
 
-class StringConcatenation {
-
-    private static final String staticString = "one" + "two" + Runtime.getPlatform();
-
-    public static String concatTwoStrings(String s1, String s2) {
-        return s1 + s2;
-    }
-
-    public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
-        return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.name();
-    }
-
-    public static String concatInStaticVariable() {
-        return staticString;
-    }
-
-}

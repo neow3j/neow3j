@@ -16,7 +16,7 @@ public class Bip39AccountTest {
 
         final String pw = "Insecure Pa55w0rd";
 
-        Bip39Account a1 = Bip39Account.createAccount(pw);
+        Bip39Account a1 = Bip39Account.create(pw);
 
         Bip39Account a2 = fromBip39Mnemonic(pw, a1.getMnemonic());
 

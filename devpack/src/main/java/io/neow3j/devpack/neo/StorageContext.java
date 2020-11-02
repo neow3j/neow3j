@@ -3,6 +3,7 @@ package io.neow3j.devpack.neo;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_ASREADONLY;
 import static io.neow3j.devpack.Helper.toByteArray;
 
+import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -10,7 +11,7 @@ import io.neow3j.devpack.annotations.Syscall;
  * contracts as an argument, allowing them to perform read/write operations on the persistent store
  * of the current contract. It is required in all {@link Storage} methods.
  */
-public class StorageContext {
+public class StorageContext implements ApiInterface {
 
     /**
      * Gets this <tt>StorageContext</tt> in read-only mode, meaning that after calling this method,

@@ -25,7 +25,7 @@ Content-Type: application/javascript'
  "method": "sendtoaddress",
  "params": [
   "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-  "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+  "AJunErzotcQTNWP2qktA7LgkXZVdHea97H",
   100
  ],
  "id": 1
@@ -55,8 +55,8 @@ Content-Type: application/javascript'
  "method": "sendfrom",
  "params": [
   "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-  "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y",
-  "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+  "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN",
+  "AJunErzotcQTNWP2qktA7LgkXZVdHea97H",
   "100.0"
  ],
  "id": 1
@@ -93,9 +93,9 @@ Content-Type: application/javascript'
 
 {
  "jsonrpc": "2.0",
- "method": "getbalance",
+ "method": "getnep5balances",
  "params": [
-  "0xde5f57d430d3dece511cf975a8d37848cb9e0525"
+  "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN", 0
  ],
  "id": 1
 }

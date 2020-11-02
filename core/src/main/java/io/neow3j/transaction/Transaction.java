@@ -11,13 +11,18 @@ import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.BlockParameterIndex;
+import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-
+import io.reactivex.Observable;
+import io.reactivex.functions.Predicate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -52,6 +57,7 @@ public class Transaction extends NeoSerializable {
     private List<TransactionAttribute> attributes;
     private byte[] script;
     private List<Witness> witnesses;
+    private BigInteger blockIndexWhenSent;
 
     public Transaction() {
         signers = new ArrayList<>();
@@ -59,7 +65,8 @@ public class Transaction extends NeoSerializable {
         witnesses = new ArrayList<>();
     }
 
-    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock, List<Signer> signers,
+    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock,
+            List<Signer> signers,
             long systemFee, long networkFee, List<TransactionAttribute> attributes, byte[] script,
             List<Witness> witnesses) {
         this.neow = neow;
@@ -156,8 +163,8 @@ public class Transaction extends NeoSerializable {
      * @return the Neo node's response.
      * @throws IOException                       if a problem in communicating with the Neo node
      *                                           occurs.
-     * @throws TransactionConfigurationException if signatures are missing for one or more signers of
-     *                                           the transaction.
+     * @throws TransactionConfigurationException if signatures are missing for one or more signers
+     *                                           of the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
         List<ScriptHash> witnesses = this.getWitnesses().stream()
@@ -169,8 +176,61 @@ public class Transaction extends NeoSerializable {
                         + "signature for each of its signers.");
             }
         }
-        String hex = Numeric.toHexStringNoPrefix(this.toArray());
+        String hex = Numeric.toHexStringNoPrefix(toArray());
+        blockIndexWhenSent = neow.getBlockCount().send().getBlockIndex();
         return neow.sendRawTransaction(hex).send();
+    }
+
+    /**
+     * Creates an {@code Observable} that emits the block number containing this transaction as soon
+     * as it has been integrated in one. The observable completes right after emitting the block
+     * number.
+     * <p>
+     * The observable starts tracking the blocks from the point at which the transaction has been
+     * sent.
+     *
+     * @return The observable.
+     * @throws IllegalStateException if this transaction has not yet been sent.
+     */
+    public Observable<Long> track() {
+        if (blockIndexWhenSent == null) {
+            throw new IllegalStateException("Can't subscribe before transaction has been sent.");
+        }
+
+        Predicate<NeoGetBlock> pred = neoGetBlock ->
+                neoGetBlock.getBlock().getTransactions() != null &&
+                        neoGetBlock.getBlock().getTransactions().stream().anyMatch(transaction ->
+                                Numeric.cleanHexPrefix(transaction.getHash()).equals(getTxId()));
+
+        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(
+                new BlockParameterIndex(blockIndexWhenSent), true)
+                .takeUntil(pred)
+                .filter(pred)
+                .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
+    }
+
+    /**
+     * Gets the application log of this transaction.
+     * <p>
+     * The application log is not cached locally. Every time this method is called, requests are send to the
+     * neo-node.
+     * <p>
+     * If the application log could not be fetched, {@code null} is returned.
+     *
+     * @return the application log.
+     */
+    public NeoApplicationLog getApplicationLog() {
+        if (blockIndexWhenSent == null) {
+            throw new IllegalStateException("Can't get the application log before transaction " +
+                    "has been sent.");
+        }
+        NeoApplicationLog applicationLog = null;
+        try {
+            applicationLog = neow.getApplicationLog(getTxId()).send().getApplicationLog();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return applicationLog;
     }
 
     @Override

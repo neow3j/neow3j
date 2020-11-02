@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Helper;
+import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.neo.Runtime;
 import java.io.IOException;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class StaticFieldConvertersTest {
+public class StringLiteralHelperTest {
 
     @Rule
     public ExpectedException expected = ExpectedException.none();
@@ -46,61 +46,43 @@ public class StaticFieldConvertersTest {
         new Compiler().compileClass(IllegalInputConverterMethod.class.getName());
     }
 
-    @Test
-    public void illegalUseOfConverterMethodLeadsToCompilerException() throws IOException {
-        expected.expect(CompilerException.class);
-        expected.expectMessage(new StringContains("static variable initialization scope"));
-        new Compiler().compileClass(IllegalUseOfConverterMethod.class.getName());
+    static class InvalidAddressVariable {
+
+        private static final byte[] scriptHash = StringLiteralHelper.addressToScriptHash(
+                "A0unErzotcQTNWP2qktA7LgkXZVdHea97H");
+
+        public static byte[] main() {
+            return scriptHash;
+        }
     }
-}
 
-class InvalidAddressVariable {
+    static class InvalidHexStringVariable {
 
-    private static final byte[] scriptHash = Helper.addressToScriptHash(
-            "A0unErzotcQTNWP2qktA7LgkXZVdHea97H");
+        private static final byte[] bytes = StringLiteralHelper.hexToBytes("0x0h02");
 
-    public static byte[] main() {
-        return scriptHash;
+        public static byte[] main() {
+            return bytes;
+        }
     }
-}
 
-class InvalidHexStringVariable {
+    static class InvalidIntStringVariable {
 
-    private static final byte[] bytes = Helper.hexToBytes("0x0h02");
+        private static final int integer = StringLiteralHelper.stringToInt("100e0000000000000000000000000000");
 
-    public static byte[] main() {
-        return bytes;
+        public static int main() {
+            return integer;
+        }
     }
-}
 
-class InvalidIntStringVariable {
+    static class IllegalInputConverterMethod {
 
-    private static final int integer = Helper.stringToInt("100e0000000000000000000000000000");
+        private static final byte[] bytes = StringLiteralHelper.hexToBytes(Runtime.getPlatform());
 
-    public static int main() {
-        return integer;
-    }
-}
+        public static byte[] main() {
+            return bytes;
+        }
 
-class IllegalInputConverterMethod {
-
-    private static final byte[] bytes = Helper.hexToBytes(Runtime.getPlatform());
-
-    public static byte[] main() {
-        return bytes;
     }
 
 }
 
-class IllegalUseOfConverterMethod {
-
-    private static final byte[] scriptHash = getScriptHash();
-
-    public static byte[] main() {
-        return scriptHash;
-    }
-
-    public static byte[] getScriptHash() {
-        return Helper.addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
-    }
-}

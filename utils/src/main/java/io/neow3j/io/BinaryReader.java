@@ -175,7 +175,7 @@ public class BinaryReader implements AutoCloseable {
             default:
                 throw new IOException();
         }
-        return NeoConstants.CURVE.getCurve().decodePoint(encoded);
+        return NeoConstants.curve().getCurve().decodePoint(encoded);
     }
 
     public float readFloat() throws IOException {
@@ -295,6 +295,7 @@ public class BinaryReader implements AutoCloseable {
     /**
      * Tries to read a PUSHDATA OpCode and the following data from the underlying byte stream.
      *
+     * @throws DeserializationException if the sequence of data cannot be deserialized
      * @return The data read
      */
     public byte[] readPushData() throws DeserializationException {

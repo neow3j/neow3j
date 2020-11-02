@@ -139,7 +139,7 @@ public class SmartContract {
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting an integer
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an Integer
      * as return type.
      *
      * @param function The function to call.
@@ -197,9 +197,6 @@ public class SmartContract {
         if (Strings.isEmpty(function)) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
-        }
-        if (params == null || params.isEmpty()) {
-            return neow.invokeFunction(scriptHash.toString(), function, null, signers).send();
         }
         return neow.invokeFunction(scriptHash.toString(), function, params, signers).send();
     }
