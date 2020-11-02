@@ -12,12 +12,13 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.BlockParameterIndex;
+import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
-
+import io.reactivex.functions.Predicate;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -63,7 +64,8 @@ public class Transaction extends NeoSerializable {
         witnesses = new ArrayList<>();
     }
 
-    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock, List<Signer> signers,
+    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock,
+            List<Signer> signers,
             long systemFee, long networkFee, List<TransactionAttribute> attributes, byte[] script,
             List<Witness> witnesses) {
         this.neow = neow;
@@ -160,8 +162,8 @@ public class Transaction extends NeoSerializable {
      * @return the Neo node's response.
      * @throws IOException                       if a problem in communicating with the Neo node
      *                                           occurs.
-     * @throws TransactionConfigurationException if signatures are missing for one or more signers of
-     *                                           the transaction.
+     * @throws TransactionConfigurationException if signatures are missing for one or more signers
+     *                                           of the transaction.
      */
     public NeoSendRawTransaction send() throws IOException {
         List<ScriptHash> witnesses = this.getWitnesses().stream()
@@ -179,19 +181,31 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Creates an {@link Observable} that emits the block index that contains this transaction.
+     * Creates an {@code Observable} that emits the block number containing this transaction as soon
+     * as it has been integrated in one. The observable completes right after emitting the block
+     * number.
+     * <p>
+     * The observable starts tracking the blocks from the point at which the transaction has been
+     * sent.
      *
-     * @return an observable to emit the block index of the block that contains this transaction.
+     * @return The observable.
+     * @throws IllegalStateException if this transaction has not yet been sent.
+     * @throws IOException           if an error occurs when communicating with the neo-node.
      */
-    public Observable<Long> getTransactionObservable() {
+    public Observable<Long> track() throws IOException {
         if (blockIndexWhenSent == null) {
             throw new IllegalStateException("Can't subscribe before transaction has been sent.");
         }
 
+        Predicate<NeoGetBlock> pred = neoGetBlock ->
+                neoGetBlock.getBlock().getTransactions() != null &&
+                        neoGetBlock.getBlock().getTransactions().stream().anyMatch(transaction ->
+                                Numeric.cleanHexPrefix(transaction.getHash()).equals(getTxId()));
+
         return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 new BlockParameterIndex(blockIndexWhenSent), true)
-                .filter(neoGetBlock -> neoGetBlock.getBlock().getTransactions().stream()
-                        .anyMatch(transaction -> Numeric.cleanHexPrefix(transaction.getHash()).equals(getTxId())))
+                .takeUntil(pred)
+                .filter(pred)
                 .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
     }
 

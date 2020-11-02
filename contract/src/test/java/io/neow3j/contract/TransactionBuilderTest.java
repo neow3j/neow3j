@@ -21,6 +21,9 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.WIF;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.BlockParameterIndex;
+import io.neow3j.protocol.core.methods.response.NeoBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -33,13 +36,17 @@ import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import io.reactivex.Observable;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
@@ -48,6 +55,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 public class TransactionBuilderTest {
 
@@ -836,5 +844,63 @@ public class TransactionBuilderTest {
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Could not find a signer with script hash");
         b.firstSigner(account2.getScriptHash());
+    }
+
+    @Test
+    public void trackingTransactionShouldReturnCorrectBlock() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        Wallet w = Wallet.withAccounts(account1);
+        Neow3j neowSpy = Mockito.spy(neow);
+        String txHash = "81e430df9bc736d9ddb45e449ff781fda4cdd2b03368515021833d8fd5b0681c";
+        neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
+                Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
+                .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
+                        createBlock(1002, createTx(txHash)))).getMock();
+        Transaction tx = new NeoToken(neowSpy)
+                .invokeFunction(NEP5_TRANSFER,
+                        ContractParameter.hash160(account1.getScriptHash()),
+                        ContractParameter.hash160(recipient),
+                        ContractParameter.integer(5))
+                .nonce(0L)
+                .wallet(w)
+                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
+                .sign();
+
+        tx.send();
+        CountDownLatch completedLatch = new CountDownLatch(1);
+        AtomicLong receivedBlockNr = new AtomicLong();
+        tx.track().subscribe(
+                receivedBlockNr::set,
+                throwable -> fail(throwable.getMessage()),
+                completedLatch::countDown);
+
+        completedLatch.await(1000, TimeUnit.MILLISECONDS);
+        assertThat(receivedBlockNr.get(), is(1002L));
+    }
+
+    private NeoGetBlock createBlock(int number) {
+        NeoGetBlock neoGetBlock = new NeoGetBlock();
+        NeoBlock block = new NeoBlock("", 0L, 0, "", "", 123456789, number, "nonce", null, null,
+                new ArrayList<>(), 1, "next");
+        neoGetBlock.setResult(block);
+        return neoGetBlock;
+    }
+
+    private NeoGetBlock createBlock(int number,
+            io.neow3j.protocol.core.methods.response.Transaction tx) {
+
+        NeoGetBlock neoGetBlock = new NeoGetBlock();
+        NeoBlock block = new NeoBlock("", 0L, 0, "", "", 123456789, number, "nonce", null, null,
+                Arrays.asList(tx), 1, "next");
+        neoGetBlock.setResult(block);
+        return neoGetBlock;
+    }
+
+    private io.neow3j.protocol.core.methods.response.Transaction createTx(String txHash) {
+        return new io.neow3j.protocol.core.methods.response.Transaction(txHash, 0, 0, 0L, "", "",
+                "", 0L, null, null, null, null);
     }
 }
