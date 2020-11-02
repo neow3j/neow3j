@@ -12,6 +12,7 @@ import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.neo.NEO;
 import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.junit.BeforeClass;
@@ -38,7 +39,7 @@ public class ObjectLengthTest extends ContractTest {
     @Test
     public void lengthOfTwoArrays() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.byteArray("01020304"),
+                ContractParameter.byteArray(Numeric.hexStringToByteArray("01020304")),
                 ContractParameter.byteArray(new byte[100000]));
 
         assertThat(
