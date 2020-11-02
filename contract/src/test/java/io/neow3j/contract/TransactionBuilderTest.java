@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -10,6 +11,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -38,6 +40,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.reactivex.Observable;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -881,6 +884,27 @@ public class TransactionBuilderTest {
         assertThat(receivedBlockNr.get(), is(1002L));
     }
 
+    @Test
+    public void trackingTransaction_txNotSent() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new NeoToken(neow)
+                .invokeFunction(NEP5_TRANSFER,
+                        ContractParameter.hash160(account1.getScriptHash()),
+                        ContractParameter.hash160(recipient),
+                        ContractParameter.integer(5))
+                .nonce(0L)
+                .wallet(w)
+                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
+                .sign();
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("subscribe before transaction has been sent");
+        tx.track();
+    }
+
     private NeoGetBlock createBlock(int number) {
         NeoGetBlock neoGetBlock = new NeoGetBlock();
         NeoBlock block = new NeoBlock("", 0L, 0, "", "", 123456789, number, "nonce", null, null,
@@ -902,5 +926,62 @@ public class TransactionBuilderTest {
     private io.neow3j.protocol.core.methods.response.Transaction createTx(String txHash) {
         return new io.neow3j.protocol.core.methods.response.Transaction(txHash, 0, 0, 0L, "", "",
                 "", 0L, null, null, null, null);
+    }
+
+    @Test
+    public void getApplicationLog() throws Throwable {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getapplicationlog", "getapplicationlog.json");
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new NeoToken(neow)
+                .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .wallet(w)
+                .sign();
+        tx.send();
+        NeoApplicationLog applicationLog = tx.getApplicationLog();
+        assertThat(applicationLog.getTransactionId(),
+                is("0x80e287cac40de2368383dc485ac883fb691419f1b1a2ca9f64321305a76c60e4"));
+    }
+
+    @Test
+    public void getApplicationLog_txNotSent() throws Throwable {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new NeoToken(neow)
+                .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .wallet(w)
+                .sign();
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("application log before transaction has been sent");
+        tx.getApplicationLog();
+    }
+
+    @Test
+    public void getApplicationLog_notExisting() throws Throwable {
+        setUpWireMockForBalanceOf(account1.getScriptHash(),
+                "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getapplicationlog", "getapplicationlog_unknowntx.json");
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new NeoToken(neow)
+                .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .wallet(w)
+                .sign();
+        tx.send();
+
+        assertNull(tx.getApplicationLog());
     }
 }

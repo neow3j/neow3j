@@ -13,6 +13,7 @@ import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
@@ -190,9 +191,8 @@ public class Transaction extends NeoSerializable {
      *
      * @return The observable.
      * @throws IllegalStateException if this transaction has not yet been sent.
-     * @throws IOException           if an error occurs when communicating with the neo-node.
      */
-    public Observable<Long> track() throws IOException {
+    public Observable<Long> track() {
         if (blockIndexWhenSent == null) {
             throw new IllegalStateException("Can't subscribe before transaction has been sent.");
         }
@@ -207,6 +207,30 @@ public class Transaction extends NeoSerializable {
                 .takeUntil(pred)
                 .filter(pred)
                 .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
+    }
+
+    /**
+     * Gets the application log of this transaction.
+     * <p>
+     * The application log is not cached locally. Every time this method is called, requests are send to the
+     * neo-node.
+     * <p>
+     * If the application log could not be fetched, {@code null} is returned.
+     *
+     * @return the application log.
+     */
+    public NeoApplicationLog getApplicationLog() {
+        if (blockIndexWhenSent == null) {
+            throw new IllegalStateException("Can't get the application log before transaction " +
+                    "has been sent.");
+        }
+        NeoApplicationLog applicationLog = null;
+        try {
+            applicationLog = neow.getApplicationLog(getTxId()).send().getApplicationLog();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return applicationLog;
     }
 
     @Override
