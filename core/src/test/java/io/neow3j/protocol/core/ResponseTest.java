@@ -6,6 +6,7 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.core.methods.response.AnyStackItem;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.ConsensusData;
@@ -2203,7 +2204,7 @@ public class ResponseTest extends ResponseTester {
         ArrayStackItem notification0Array = notification0.getState().asArray();
 
         String eventName0 = notification0Array.get(0).asByteString().getAsString();
-        Object from0 = notification0Array.get(1).asAny();
+        AnyStackItem from0 = notification0Array.get(1).asAny();
         String to0 = notification0Array.get(2).asByteString().getAsAddress();
         BigInteger amount0 = notification0Array.get(3).asInteger().getValue();
 
@@ -2222,7 +2223,7 @@ public class ResponseTest extends ResponseTester {
         ArrayStackItem notification1Array = notification1.getState().asArray();
 
         String eventName1 = notification1Array.get(0).asByteString().getAsString();
-        Object from1 = notification1Array.get(1).asByteString().getAsAddress();
+        String from1 = notification1Array.get(1).asByteString().getAsAddress();
         String to1 = notification1Array.get(2).asByteString().getAsAddress();
         BigInteger amount1 = notification1Array.get(3).asInteger().getValue();
 
