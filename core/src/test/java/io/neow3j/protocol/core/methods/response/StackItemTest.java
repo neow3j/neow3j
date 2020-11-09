@@ -70,6 +70,23 @@ public class StackItemTest extends ResponseTester {
     }
 
     @Test
+    public void testDeserializeAnyStackItem() throws IOException {
+        String json = ""
+                + " {"
+                + "   \"type\": \"Any\",\n"
+                + "   \"value\": \"dGVzdGluZw==\"\n"
+                + " }";
+        StackItem rawItem = OBJECT_MAPPER.readValue(json, StackItem.class);
+        assertThat(rawItem.getType(), is(StackItemType.ANY));
+        AnyStackItem item = rawItem.asAny();
+        assertThat(item.getValue(), is("dGVzdGluZw=="));
+
+        AnyStackItem other = new AnyStackItem("dGVzdGluZw==");
+        assertEquals(other, item);
+        assertEquals(other.hashCode(), item.hashCode());
+    }
+
+    @Test
     public void testDeserializeByteStringStackItem() throws IOException {
         StackItem rawItem = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
         assertEquals(StackItemType.BYTE_STRING, rawItem.getType());
@@ -322,6 +339,23 @@ public class StackItemTest extends ResponseTester {
         assertTrue(item.isEmpty());
 
         other = new MapStackItem(new HashMap<>());
+        assertEquals(other, item);
+        assertEquals(other.hashCode(), item.hashCode());
+    }
+
+    @Test
+    public void testDeserializeInteropInterfaceStackItem() throws IOException {
+        String json = ""
+                + " {"
+                + "   \"type\": \"InteropInterface\",\n"
+                + "   \"value\": \"dGVzdGluZw==\"\n"
+                + " }";
+        StackItem rawItem = OBJECT_MAPPER.readValue(json, StackItem.class);
+        assertThat(rawItem.getType(), is(StackItemType.INTEROP_INTERFACE));
+        InteropInterfaceStackItem item = rawItem.asInteropInterface();
+        assertThat(item.getValue(), is("dGVzdGluZw=="));
+
+        InteropInterfaceStackItem other = new InteropInterfaceStackItem("dGVzdGluZw==");
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
     }

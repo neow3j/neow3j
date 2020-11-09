@@ -39,7 +39,7 @@ public class AnyStackItem extends StackItem {
         if (!(o instanceof AnyStackItem)) return false;
         AnyStackItem other = (AnyStackItem) o;
         return getType() == other.getType() &&
-                getValue() == other.getValue();
+                getValue().equals(other.getValue());
     }
 
     @Override

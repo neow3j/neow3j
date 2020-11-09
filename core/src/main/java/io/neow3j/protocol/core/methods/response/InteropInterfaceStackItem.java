@@ -35,8 +35,8 @@ public class InteropInterfaceStackItem extends StackItem {
         if (this == o) return true;
         if (!(o instanceof InteropInterfaceStackItem)) return false;
         InteropInterfaceStackItem other = (InteropInterfaceStackItem) o;
-        return getType() == other.getType()
-                && getValue().equals(other.getValue());
+        return getType() == other.getType() &&
+                getValue().equals(other.getValue());
     }
 
     @Override
