@@ -10,13 +10,13 @@ import java.util.Objects;
 public class InteropInterfaceStackItem extends StackItem {
 
     @JsonProperty("value")
-    private String value;
+    private Object value;
 
     public InteropInterfaceStackItem() {
         super(StackItemType.INTEROP_INTERFACE);
     }
 
-    public InteropInterfaceStackItem(String value) {
+    public InteropInterfaceStackItem(Object value) {
         super(StackItemType.INTEROP_INTERFACE);
         this.value = value;
     }
@@ -26,7 +26,7 @@ public class InteropInterfaceStackItem extends StackItem {
      *
      * @return the value of this stack item.
      */
-    public String getValue() {
+    public Object getValue() {
         return this.value;
     }
 

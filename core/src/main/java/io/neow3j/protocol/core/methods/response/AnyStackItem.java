@@ -17,6 +17,7 @@ public class AnyStackItem extends StackItem {
     }
 
     public AnyStackItem(Object value) {
+        super(StackItemType.ANY);
         this.value = value;
     }
 
