@@ -1,12 +1,13 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.contract.ContractParameter.bool;
-import static io.neow3j.contract.ContractParameter.byteArrayAsBase64;
+import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.neo.Binary;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -56,7 +57,7 @@ public class BinaryTest extends ContractTest {
     public void base64Encode() throws IOException {
         String bytes =
                 "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
-        NeoInvokeFunction response = callInvokeFunction(byteArrayAsBase64(bytes));
+        NeoInvokeFunction response = callInvokeFunction(ContractParameter.byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).asByteString()
                 .getAsString();
         String expected = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIDEzIGxhenkgZG9ncy4=";
