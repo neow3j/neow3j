@@ -12,6 +12,7 @@ import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
@@ -97,10 +98,7 @@ public class Compiler {
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
         }
-        if (typeName.equals(Object.class.getTypeName())) {
-            return ContractParameterType.ANY;
-        }
-        try {
+       try {
             typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
             Class<?> clazz = Class.forName(typeName);
             if (Arrays.asList(clazz.getInterfaces()).contains(ApiInterface.class)) {
@@ -116,9 +114,8 @@ public class Compiler {
             }
         } catch (ClassNotFoundException ignore) {
         }
-        typeName = ClassUtils.getFullyQualifiedNameForInternalName(type.getInternalName());
-        throw new CompilerException(format(
-                "No mapping from Java type '%s' to any neo-vm type found.", typeName));
+        // If the type is Object or any other class.
+        return ContractParameterType.ANY;
     }
 
 //    /**

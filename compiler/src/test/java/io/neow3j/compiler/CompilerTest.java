@@ -65,27 +65,12 @@ public class CompilerTest {
         // Others
         assertClassIsMappedToType(Transaction.class, INTEROP_INTERFACE);
         assertClassIsMappedToType(Object.class, ANY);
+        assertClassIsMappedToType(CompilerTest.class, ANY);
     }
 
     private void assertClassIsMappedToType(Class<?> clazz, ContractParameterType type) {
         Type t = Type.getType(clazz);
         assertThat(Compiler.mapTypeToParameterType(t), is(type));
-    }
-
-    @Test
-    public void mapTypeToParameterShouldThrowAnExceptionOnUnsupportedTypes() {
-        Type t = Type.getType(io.neow3j.devpack.neo.Map.class);
-        expectedException.expect(CompilerException.class);
-        expectedException.expectMessage(new StringContainsInOrder(
-                Arrays.asList("No mapping from Java type", Map.class.getCanonicalName())));
-        Compiler.mapTypeToParameterType(t);
-
-        t = Type.getType(java.util.List.class);
-        expectedException.expect(CompilerException.class);
-        expectedException.expectMessage(new StringContainsInOrder(
-                Arrays.asList("No mapping from Java type",
-                        java.util.List.class.getCanonicalName())));
-        Compiler.mapTypeToParameterType(t);
     }
 
 }
