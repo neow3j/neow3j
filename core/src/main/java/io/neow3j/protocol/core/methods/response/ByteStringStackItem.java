@@ -100,12 +100,8 @@ public class ByteStringStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ByteStringStackItem)) {
-            return false;
-        }
+        if (this == o) return true;
+        if (!(o instanceof ByteStringStackItem)) return false;
         ByteStringStackItem other = (ByteStringStackItem) o;
         return getType() == other.getType() && Arrays.equals(this.getValue(), other.getValue());
     }

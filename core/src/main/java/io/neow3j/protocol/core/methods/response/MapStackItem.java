@@ -161,5 +161,4 @@ public class MapStackItem extends StackItem {
             return new MapStackItem(map);
         }
     }
-
 }

@@ -32,8 +32,8 @@ public enum StackItemType {
     public static final byte BYTE_STRING_CODE = 0x28;
     public static final byte BUFFER_CODE = 0x30;
 
-    private String jsonValue;
-    private byte byteValue;
+    private final String jsonValue;
+    private final byte byteValue;
 
     StackItemType(String jsonValue, int v) {
         this.jsonValue = jsonValue;
@@ -59,7 +59,8 @@ public enum StackItemType {
                 return e;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("There exists no stack item with the provided byte value." +
+                " The provided byte value was " + byteValue + ".");
     }
 
     public static StackItemType fromJsonValue(String jsonValue) {
@@ -68,6 +69,7 @@ public enum StackItemType {
                 return e;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("There exists no stack item with the provided json value." +
+                " The provided json value was " + jsonValue + ".");
     }
 }
