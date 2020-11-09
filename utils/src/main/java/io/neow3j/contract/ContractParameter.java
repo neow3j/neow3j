@@ -310,7 +310,6 @@ public class ContractParameter {
                             Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
                     break;
                 case BYTE_ARRAY:
-                    // The value is expected to be a Base64 encoded byte array.
                     gen.writeStringField("value", Base64.encode((byte[]) p.getValue()));
                     break;
                 case BOOLEAN:
