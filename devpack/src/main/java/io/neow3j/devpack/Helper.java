@@ -3,6 +3,7 @@ package io.neow3j.devpack;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.core.methods.response.StackItem;
 
 /**
  * Provides helper methods to be used in a smart contract.
@@ -102,15 +103,20 @@ public class Helper {
     }
 
     /**
-     * Converts the given byte array to an integer. No checks are made regarding the value range of
-     * integers.
+     * Converts the given byte array to an integer. The byte array is assumed to be a two's
+     * complement in little-endian format.
+     * <p>
+     * The value of the converted integer can be outside of {@link Integer#MAX_VALUE} because the
+     * neo-vm doesn't have that limit for {@code int} as the JVM has.
      * <p>
      * Examples
      * <ul>
      *  <li>[0x0a]: 10</li>
      *  <li>[0x80]: -128</li>
+     *  <li>[0xff80]: -32513</li>
      *  <li>[]: 0</li>
      *  <li>[0xff00]: 255</li>
+     *  <li>[0xfba600]: 42747</li>
      * </ul>
      *
      * @param source The byte array to convert.
@@ -168,6 +174,29 @@ public class Helper {
     public static native byte[] concat(byte[] first, byte[] second);
 
     /**
+     * Concatenates the two given strings.
+     *
+     * @param first  The first string.
+     * @param second The second string.
+     * @return the concatenation.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public static native String concat(String first, String second);
+
+    /**
+     * Returns n consecutive characters from the given string starting at the given index.
+     *
+     * @param source The string to take the bytes from.
+     * @param index  The start index of the range (inclusive).
+     * @param n      The size of the range, i.e. number of characters to take.
+     * @return the defined range of the given string.
+     */
+    @Instruction(opcode = OpCode.SUBSTR)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public static native String range(String source, int index, int n);
+
+    /**
      * Returns n consecutive bytes from the given source starting at the given index.
      *
      * @param source The array to take the bytes from.
@@ -189,7 +218,18 @@ public class Helper {
     public static native byte[] take(byte[] source, int n);
 
     /**
-     * Returns the last n elements from the given byte array. Faults if {@code n} &lt; 0.
+     * Returns the first n characters from the given string. Faults if {@code n} &lt; 0.
+     *
+     * @param source The string to take the characters from.
+     * @param n      The number of characters to return.
+     * @return the first n characters.
+     */
+    @Instruction(opcode = OpCode.LEFT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public static native String take(String source, int n);
+
+    /**
+     * Returns the last n elements of the given byte array. Faults if {@code n} &lt; 0.
      *
      * @param source The array to take the bytes from.
      * @param n      The number of bytes to return.
@@ -197,6 +237,17 @@ public class Helper {
      */
     @Instruction(opcode = OpCode.RIGHT)
     public static native byte[] last(byte[] source, int n);
+
+    /**
+     * Returns the last n characters of the given String. Faults if {@code n} &lt; 0.
+     *
+     * @param source The string.
+     * @param n      The number characters to return.
+     * @return the last n characters.
+     */
+    @Instruction(opcode = OpCode.RIGHT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public static native String last(String source, int n);
 
     /**
      * Returns a reversed copy of the given bytes. Example: [0a,0b,0c,0d,0e]: [0e,0d,0c,0b,0a]
@@ -207,5 +258,17 @@ public class Helper {
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.REVERSEITEMS)
     public static native byte[] reverse(byte[] source);
+
+    /**
+     * Returns a reversed copy of the given string.
+     *
+     * @param source The string to reverse.
+     * @return The reversed string.
+     */
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.REVERSEITEMS)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public static native String reverse(String source);
 
 }
