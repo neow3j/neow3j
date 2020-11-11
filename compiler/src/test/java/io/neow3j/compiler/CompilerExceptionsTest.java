@@ -87,7 +87,7 @@ public class CompilerExceptionsTest {
     static class UnsupportedNumberOfExceptionArguments {
 
         public static boolean method() throws Exception {
-            throw new Exception("Not allowed.", new Throwable());
+            throw new Exception("Not allowed.", new Exception());
         }
     }
 
