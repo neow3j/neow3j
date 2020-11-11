@@ -33,7 +33,32 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Found call to super constructor of", ArrayList.class.getCanonicalName())));
         CompilationUnit res = new Compiler().compileClass(
-                        UnsupportedInheritanceInConstructor.class.getName());
+                UnsupportedInheritanceInConstructor.class.getName());
+    }
+
+    @Test
+    public void throwExceptionIfNonDefaultExceptionInstanceIsUsed() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                IllegalArgumentException.class.getCanonicalName(),
+                Exception.class.getCanonicalName())));
+        CompilationUnit res = new Compiler().compileClass(UnsupportedException.class.getName());
+    }
+
+    @Test
+    public void throwExceptionIfExceptionWithMoreThanOneArgumentIsUsed() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContains("You provided 2 arguments."));
+        CompilationUnit res = new Compiler().compileClass(
+                UnsupportedNumberOfExceptionArguments.class.getName());
+    }
+
+    @Test
+    public void throwExceptionIfExceptionWithANonStringArgumentIsUsed() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContains("You provided a non-string argument."));
+        CompilationUnit res = new Compiler().compileClass(
+                UnsupportedExceptionArgument.class.getName());
     }
 
     static class ObjectComparison {
@@ -49,6 +74,27 @@ public class CompilerExceptionsTest {
 
         public static void method() {
             List<String> l = new ArrayList<>();
+        }
+    }
+
+    static class UnsupportedException {
+
+        public static boolean method() {
+            throw new IllegalArgumentException("Not allowed.");
+        }
+    }
+
+    static class UnsupportedNumberOfExceptionArguments {
+
+        public static boolean method() throws Exception {
+            throw new Exception("Not allowed.", new Exception());
+        }
+    }
+
+    static class UnsupportedExceptionArgument {
+
+        public static boolean method() throws Exception {
+            throw new Exception(new Exception());
         }
     }
 
