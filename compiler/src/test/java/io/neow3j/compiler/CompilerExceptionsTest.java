@@ -19,14 +19,6 @@ public class CompilerExceptionsTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-    @Ignore("This behavior is not yet implemented.")
-    @Test
-    public void failOnObjectComparison() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContains("compare object"));
-        CompilationUnit res = new Compiler().compileClass(ObjectComparison.class.getName());
-    }
-
     @Test
     public void failOnInstantiatingInheritingClass() throws IOException {
         exceptionRule.expect(CompilerException.class);
@@ -59,15 +51,6 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContains("You provided a non-string argument."));
         CompilationUnit res = new Compiler().compileClass(
                 UnsupportedExceptionArgument.class.getName());
-    }
-
-    static class ObjectComparison {
-
-        public static boolean method() {
-            Iterator<String, byte[]> it1 = Storage.find("prefix");
-            Iterator<String, byte[]> it2 = Storage.find("otherPrefix");
-            return it1 == it2;
-        }
     }
 
     static class UnsupportedInheritanceInConstructor {
