@@ -162,6 +162,11 @@ public class Nep5Token extends Token {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
+        if (!amountDecimalsIsValid(amount)) {
+            throw new IllegalArgumentException("The amount contains more decimal places than this token " +
+                    "can handle. This token has " + getDecimals() + " decimals. The amount provided " +
+                    "had " + amount.stripTrailingZeros().scale() + " decimal places.");
+        }
 
         List<Account> accountsOrdered = new ArrayList<>(wallet.getAccounts());
         accountsOrdered.remove(wallet.getDefaultAccount());
@@ -216,6 +221,11 @@ public class Nep5Token extends Token {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
+        }
+        if (!amountDecimalsIsValid(amount)) {
+            throw new IllegalArgumentException("The amount contains more decimal places than this token " +
+                    "can handle. This token has " + getDecimals() + " decimals. The amount provided " +
+                    "had " + amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         List<Account> accounts = new ArrayList<>();
@@ -329,8 +339,12 @@ public class Nep5Token extends Token {
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, ScriptHash to,
             BigDecimal amount) throws IOException {
         if (amount.signum() < 0) {
-            throw new IllegalArgumentException(
-                    "The parameter amount must be greater than or equal to 0");
+            throw new IllegalArgumentException("The amount must be greater than or equal to 0.");
+        }
+        if (!amountDecimalsIsValid(amount)) {
+            throw new IllegalArgumentException("The amount contains more decimal places than this token " +
+                    "can handle. This token has " + getDecimals() + " decimals. The amount provided " +
+                    "had " + amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         Account acc = wallet.getDefaultAccount();
@@ -348,5 +362,9 @@ public class Nep5Token extends Token {
                 ContractParameter.integer(fractions))
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(acc.getScriptHash()));
+    }
+
+    private boolean amountDecimalsIsValid(BigDecimal amount) throws IOException {
+        return amount.stripTrailingZeros().scale() <= getDecimals();
     }
 }
