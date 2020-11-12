@@ -39,6 +39,8 @@ import org.junit.rules.ExpectedException;
 public class SmartContractTest {
 
     private static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
+    private static final ScriptHash SOME_SCRIPT_HASH =
+            new ScriptHash("969a77db482f74ce27105f760efa139223431394");
     private static final String NEP5_TRANSFER = "transfer";
     private static final String NEP5_BALANCEOF = "balanceOf";
     private static final String NEP5_NAME = "name";
@@ -195,10 +197,10 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_name.json",
-                NEO_SCRIPT_HASH.toString(), NEP5_NAME);
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
-        String name = sc.callFuncReturningString(NEP5_NAME);
-        assertThat(name, is("NEO"));
+                SOME_SCRIPT_HASH.toString(), "name");
+        SmartContract sc = new SmartContract(SOME_SCRIPT_HASH, this.neow);
+        String name = sc.callFuncReturningString("name");
+        assertThat(name, is("ANT"));
     }
 
     @Test
@@ -245,16 +247,15 @@ public class SmartContractTest {
     public void invokingFunctionPerformsCorrectCall_WithoutParameters() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_name.json",
-                NeoToken.SCRIPT_HASH.toString(),
+                SOME_SCRIPT_HASH.toString(),
                 "name",
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"
         );
-        Wallet w = Wallet.withAccounts(account1);
 
-        NeoInvokeFunction i = new NeoToken(neow)
+        NeoInvokeFunction i = new SmartContract(SOME_SCRIPT_HASH, neow)
                 .callInvokeFunction("name");
 
-        assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), Matchers.is("NEO"));
+        assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), Matchers.is("ANT"));
         assertThat(i.getResult().getScript(), Matchers.is(SCRIPT_NEO_INVOKEFUNCTION_NAME));
     }
 
