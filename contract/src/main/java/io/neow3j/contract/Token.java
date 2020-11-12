@@ -40,14 +40,6 @@ public class Token extends SmartContract {
      *                                       interpretable as a string.
      */
     public String getName() throws IOException, UnexpectedReturnTypeException {
-        if (isNeoToken()) {
-            name = NeoToken.NAME;
-            return name;
-        }
-        if (isGasToken()) {
-            name = GasToken.NAME;
-            return name;
-        }
         if (name == null) {
             name = callFuncReturningString(NAME);
         }
@@ -66,14 +58,6 @@ public class Token extends SmartContract {
      *                                       interpretable as a string.
      */
     public String getSymbol() throws IOException, UnexpectedReturnTypeException {
-        if (isNeoToken()) {
-            symbol = NeoToken.SYMBOL;
-            return symbol;
-        }
-        if (isGasToken()) {
-            symbol = GasToken.SYMBOL;
-            return symbol;
-        }
         if (symbol == null) {
             symbol = callFuncReturningString(SYMBOL);
         }
@@ -92,10 +76,6 @@ public class Token extends SmartContract {
      *                                       interpretable as a number.
      */
     public BigInteger getTotalSupply() throws IOException, UnexpectedReturnTypeException {
-        if (isNeoToken()) {
-            totalSupply = NeoToken.TOTAL_SUPPLY;
-            return totalSupply;
-        }
         if (totalSupply == null) {
             totalSupply = callFuncReturningInt(TOTAL_SUPPLY);
         }
@@ -114,14 +94,6 @@ public class Token extends SmartContract {
      *                                       interpretable as a number.
      */
     public int getDecimals() throws IOException, UnexpectedReturnTypeException {
-        if (isNeoToken()) {
-            decimals = NeoToken.DECIMALS;
-            return decimals;
-        }
-        if (isGasToken()) {
-            decimals = GasToken.DECIMALS;
-            return decimals;
-        }
         if (decimals == null) {
             decimals = callFuncReturningInt(DECIMALS).intValue();
         }
@@ -151,13 +123,5 @@ public class Token extends SmartContract {
         BigDecimal a = new BigDecimal(amount);
         BigDecimal divisor = BigDecimal.TEN.pow(getDecimals());
         return a.divide(divisor);
-    }
-
-    private boolean isNeoToken() {
-        return scriptHash.equals(NeoToken.SCRIPT_HASH);
-    }
-
-    private boolean isGasToken() {
-        return scriptHash.equals(GasToken.SCRIPT_HASH);
     }
 }

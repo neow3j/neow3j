@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,6 +85,8 @@ public class Nep5TokenTest {
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals_gas.json");
 
         Transaction tx = gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
                 RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
@@ -97,6 +101,8 @@ public class Nep5TokenTest {
     public void transferFromDefaultAccountShouldAddAccountAsSigner_RecipientAsAddress() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals_gas.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
 
@@ -113,6 +119,8 @@ public class Nep5TokenTest {
     public void transferFromDefaultAccountShouldCreateTheCorrectScript() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals_gas.json");
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf_300000000.json");
 
@@ -133,6 +141,8 @@ public class Nep5TokenTest {
     public void transferFromSpecificAccount_RecipientAsAddress() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals_gas.json");
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf_300000000.json");
 
@@ -188,6 +198,8 @@ public class Nep5TokenTest {
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals_gas.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
 
         exceptionRule.expect(InsufficientFundsException.class);
@@ -206,6 +218,8 @@ public class Nep5TokenTest {
 
     @Test
     public void testTransferInvalidDecimalsInAmount() throws Throwable {
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
         neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
@@ -216,14 +230,22 @@ public class Nep5TokenTest {
     public void testTransferInvalidDecimalsInAmount_trailingZeros() throws IOException {
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
 
-        // Trailing zeros should be ignored - this should not throw an exception.
-        neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("1.0"));
+        try {
+            // Trailing zeros should be ignored - this code should not produce any exception.
+            neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
+                    RECIPIENT_SCRIPT_HASH, new BigDecimal("1.0"));
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
     public void testInvalidDecimals_TransferFromDefaultAccount() throws IOException {
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
         neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
@@ -232,6 +254,8 @@ public class Nep5TokenTest {
 
     @Test
     public void testInvalidDecimals_TransferFromSpecificAccounts() throws IOException {
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals_gas.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
         gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
@@ -240,6 +264,8 @@ public class Nep5TokenTest {
 
     @Test
     public void testInvalidDecimals_Transfer() throws IOException {
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
         neoToken.transfer(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
@@ -262,6 +288,8 @@ public class Nep5TokenTest {
     public void testTransferWithTheFirstTwoAccountsNeededToCoverAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
 
@@ -287,6 +315,8 @@ public class Nep5TokenTest {
             throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
 
@@ -316,6 +346,8 @@ public class Nep5TokenTest {
     public void testTransfer_allAccountsNeededToCoverAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
@@ -349,6 +381,8 @@ public class Nep5TokenTest {
     public void testTransfer_defaultAccountCoversAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
@@ -372,6 +406,8 @@ public class Nep5TokenTest {
     public void testTransfer_defaultAccountHasNoBalance() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
@@ -400,6 +436,8 @@ public class Nep5TokenTest {
     public void testTransfer_MultiSig() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_4.json");
@@ -434,6 +472,8 @@ public class Nep5TokenTest {
     @Test
     public void testTransfer_MultiSig_NotEnoughSignersPresent() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
@@ -459,6 +499,10 @@ public class Nep5TokenTest {
             throws IOException {
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("symbol",
+                "invokefunction_symbol_neo.json");
         Wallet wallet = Wallet.withAccounts(multiSigAccount);
 
         exceptionRule.expect(InsufficientFundsException.class);
@@ -478,6 +522,10 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("symbol",
+                "invokefunction_symbol_neo.json");
 
         exceptionRule.expect(InsufficientFundsException.class);
         exceptionRule.expectMessage("wallet does not hold enough tokens");
@@ -493,6 +541,8 @@ public class Nep5TokenTest {
     public void testTransferFromSpecificAccounts() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
@@ -523,6 +573,8 @@ public class Nep5TokenTest {
     public void testTransferFromSpecificAccounts_firstAccountCoversAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
@@ -548,6 +600,8 @@ public class Nep5TokenTest {
             throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
@@ -568,6 +622,8 @@ public class Nep5TokenTest {
     public void testTransferFromSpecificAccounts_firstAccountHasNoBalance() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
@@ -592,6 +648,8 @@ public class Nep5TokenTest {
             throws IOException {
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         Wallet wallet = Wallet.withAccounts(multiSigAccount);
 
         exceptionRule.expect(IllegalArgumentException.class);
@@ -608,10 +666,14 @@ public class Nep5TokenTest {
     public void testTransferFromSpecificAccounts_insufficientBalance() throws IOException {
         // Required for fetching the block height used for setting the validUntilBlock.
         setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals",
+                "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
+        setUpWireMockForInvokeFunction("symbol",
+                "invokefunction_symbol_neo.json");
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
 
