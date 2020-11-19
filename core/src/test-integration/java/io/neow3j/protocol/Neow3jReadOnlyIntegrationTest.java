@@ -139,8 +139,6 @@ public class Neow3jReadOnlyIntegrationTest {
         neow3jWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
         // make a transaction that can be used for the tests
         txHash = neow3jWrapper.performNeoTransfer(TX_RECIPIENT_1, TX_AMOUNT);
-        System.out.println(txHash);
-        System.out.println(getNeow3j().getTransaction(txHash).send().getTransaction().getScript());
     }
 
     private static Neow3j getNeow3j() {

@@ -2,7 +2,6 @@
   "ProtocolConfiguration": {
     "Magic": 769,
     "AddressVersion": 53,
-
     "MillisecondsPerBlock": 15000,
     "ValidatorsCount": 1,
     "StandbyCommittee": [
