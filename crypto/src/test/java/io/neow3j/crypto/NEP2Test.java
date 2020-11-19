@@ -19,10 +19,10 @@ public class NEP2Test {
     public void decryptWithDefaultScryptParams() throws NEP2InvalidFormat, CipherException,
             NEP2InvalidPassphrase {
 
-        String nep2Encrypted = "6PYSAe53CzgXq9yg7hmHQogZHxasVY2gYGB9rLXNbdggFyy2HBDdJhXZSp";
+        String nep2Encrypted = "6PYPzBQFFFdUVyMQahpcL7V139kd4TR8Y11gSF5dCYrxZ3oZhiEBoo3oay";
         String password = "neo";
         ECKeyPair pair = NEP2.decrypt(password, nep2Encrypted);
-        String expected = "a7038726c5a127989d78593c423e3dad93b2d74db90a16c0a58468c9e6617a87";
+        String expected = "2b6be36d19b6b69915b4eae3e9a9ee3a06e30bdafc15042cd946f21400f50222";
         assertThat(pair.getPrivateKey().getBytes(), is(Numeric.hexStringToByteArray(expected)));
     }
 
@@ -31,10 +31,10 @@ public class NEP2Test {
             NEP2InvalidPassphrase {
 
         ScryptParams nonDefaultScryptParams = new ScryptParams(256, 1, 1);
-        String nep2Encrypted = "6PYSAe53E2MXoxZpr3Fmqtjf7FT3BBQU1pS55iYW1hrjU6xhXXHhYnTjkn";
+        String nep2Encrypted = "6PYPzBQFEPbQzsHw3GNK58FoxicDRb5XJ2NmMwjZDSgjXmihfsP3Ne9JBy";
         String password = "neo";
         ECKeyPair pair = NEP2.decrypt(password, nep2Encrypted, nonDefaultScryptParams);
-        String expected = "a7038726c5a127989d78593c423e3dad93b2d74db90a16c0a58468c9e6617a87";
+        String expected = "2b6be36d19b6b69915b4eae3e9a9ee3a06e30bdafc15042cd946f21400f50222";
         assertThat(pair.getPrivateKey().getBytes(), is(Numeric.hexStringToByteArray(expected)));
     }
 
