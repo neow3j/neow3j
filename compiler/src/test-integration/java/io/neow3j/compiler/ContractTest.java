@@ -98,13 +98,6 @@ public class ContractTest {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         contractName = name;
         contract = deployContract(contractName);
-        System.out.println();
-        System.out.println("#################");
-        System.out.println("#################");
-        System.out.println("#################");
-        System.out.println("#################");
-        System.out.println("#################");
-        System.out.println(contract.getScriptHash());
         waitUntilContractIsDeployed(contract.getScriptHash());
     }
 
