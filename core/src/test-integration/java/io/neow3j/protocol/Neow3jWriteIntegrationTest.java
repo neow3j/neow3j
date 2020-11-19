@@ -7,6 +7,8 @@ import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.utils.Numeric;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -15,13 +17,11 @@ import static org.junit.Assert.assertTrue;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoSendFrom;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction.RawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.Transaction;
@@ -30,6 +30,7 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Before;
@@ -45,15 +46,17 @@ public class Neow3jWriteIntegrationTest {
     // Invoke function variables
     protected static final String INVOKE_TRANSFER = "transfer";
     protected static final String INVOKE_SCRIPT =
-            "150c140898ea2197378f623a7670974454448576d0aeaf0c140898ea2197378f623a7670974454448576d0aeaf13c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238";
+            "110c14ef3d59f7401c01d86b3a8d07f6f9140b25a155b50c147afd203255cb2972bd0a6a827e74e387ed322bec13c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52";
 
     // Before the tests 5 NEO is sent to the RECIPIENT_1 address.
-    private static final String RECIPIENT_1 = "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2";
-    protected static final String RECIPIENT_2 = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
+    // wif KxwrYazXiCdK33JEddpwHbXTpAYyhXC1YyC4SXTVF6GLRPBuVBFb
+    private static final String RECIPIENT_1 = "NhixBNjEBvgyk18RzuXJt1T3BpqgAwANSA";
+    // wif KzreXMT3AtLEYpqpZB9VPiw7RB75T3jGZ6cY6pv9QY2Sjqihv7M8
+    protected static final String RECIPIENT_2 = "NdUQqdbzHTxyGMUDRhKBbPUbSu2HMLKBfN";
 
     // The witness for the invokeFunction transfer
     protected static final Signer SIGNER = Signer.calledByEntry(
-            new ScriptHash("afaed076854454449770763a628f379721ea9808"));
+            new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a"));
 
     protected static final int INVALID_PARAMS_CODE = -32602;
     protected static final String INVALID_PARAMS_MESSAGE = "Invalid params";
@@ -73,18 +76,19 @@ public class Neow3jWriteIntegrationTest {
         neow3jWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
     }
 
+    private Neow3j getNeow3j() {
+        return neow3jWrapper;
+    }
+
     @Test
     public void testSendRawTransaction() throws IOException {
         NeoSendRawTransaction sendRawTransaction = getNeow3j().sendRawTransaction(
-                "005368de7758738900000000000a0113000000000064000000010898ea2197378f623a7670974454448576d0aeaf000054110c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f70c14226730eaeec8e3315468f57153e3b08789cc45cc13c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5201420c40b31404344e976287d79641e9b06adc516bbd895386bf3decff4546545f2b8895a1cef9a25b761f8354bd529778a7e4cc445804aa1b36b620c8bfba8b3429e6e92b110c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d110b41138defaf")
+                "003b1b6c437673890000000000322413000000000081142000017afd203255cb2972bd0a6a827e74e387ed322bec01005d0300c50ef9e64501000c14c09cdcf9140b28b3eebd8f1332e51786431860220c147afd203255cb2972bd0a6a827e74e387ed322bec13c00c087472616e736665720c14bcaf41d684c7d4ad6ee0d99da9707b9d1f0c8e6641627d5b523801420c40dd7e57ba41e734d123f9b4aa20e6254132ceb0a19035d7cee703d5c73b66203319f48e5f5d59d9ed46e4250df7a93623e76358cfa0d071630d35172c8d9945af2b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf")
                 .send();
 
-        String hash = sendRawTransaction.getSendRawTransaction().getHash();
+        RawTransaction rawTx = sendRawTransaction.getSendRawTransaction();
+        String hash = rawTx.getHash();
         assertNotNull(hash);
-    }
-
-    private Neow3j getNeow3j() {
-        return neow3jWrapper;
     }
 
     @Ignore("Future work, act as a consensus to submit blocks.")
@@ -111,10 +115,10 @@ public class Neow3jWriteIntegrationTest {
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .allowedContracts(new ScriptHash(NEO_HASH))
                 .build();
-        Request<?, NeoInvokeFunction> invokeFunction = getNeow3j()
-                .invokeFunction(NEO_HASH, INVOKE_TRANSFER, params, signer);
-        NeoInvokeFunction send = invokeFunction.send();
-        InvocationResult invoc = send.getInvocationResult();
+        InvocationResult invoc = getNeow3j()
+                .invokeFunction(NEO_HASH, INVOKE_TRANSFER, params, signer)
+                .send()
+                .getInvocationResult();
 
         assertNotNull(invoc);
         assertNotNull(invoc.getScript());
@@ -191,10 +195,7 @@ public class Neow3jWriteIntegrationTest {
         assertNotNull(response.getSendMany());
         Transaction tx = response.getSendMany();
 
-        assertThat(tx.getScript(), is("AGQMFNeF3EW4ED9G/7kw7n/+Tv9dhrv3DBQImOohlzePYjp2cJdEVESFdtCu"
-                + "rxPADAh0cmFuc2ZlcgwUJQWey0h406h1+RxRzt7TMNRXX95BYn1bUjgaDBQjuicDxTJj6NblItwyIDM5"
-                + "3Nju6QwUCJjqIZc3j2I6dnCXRFREhXbQrq8TwAwIdHJhbnNmZXIMFCUFnstIeNOodfkcUc7e0zDUV1/e"
-                + "QWJ9W1I4"));
+        assertThat(tx.getScript(), is("AGQMFO89WfdAHAHYazqNB/b5FAsloVW1DBR6/SAyVcspcr0KaoJ+dOOH7TIr7BPADAh0cmFuc2ZlcgwUJQWey0h406h1+RxRzt7TMNRXX95BYn1bUjgaDBTAnNz5FAsos+69jxMy5ReGQxhgIgwUev0gMlXLKXK9CmqCfnTjh+0yK+wTwAwIdHJhbnNmZXIMFCUFnstIeNOodfkcUc7e0zDUV1/eQWJ9W1I4"));
         assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
     }
 
