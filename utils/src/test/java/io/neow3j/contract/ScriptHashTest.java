@@ -93,9 +93,9 @@ public class ScriptHashTest {
 
     @Test
     public void fromValidAddress() {
+        ScriptHash hash = ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
         byte[] expectedHash = Numeric.hexStringToByteArray(
-                "23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        ScriptHash hash = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
+                "75715e89bbba44a25dc9ca8d4951f104c25c253d");
         assertThat(hash.toArray(), is(expectedHash));
     }
 
@@ -143,9 +143,9 @@ public class ScriptHashTest {
 
     @Test
     public void toAddress() {
-        final String key = "02b0aa85eaf261b000947dd6a9753b91bfc7ab058951e2d838cf3ecdab81cc291d";
-        // Address generated from the above key, with address version 0x17.
-        final String expectedAddress = "ARhJPYxmizqheBQA2dSQAHWfQQsbTSba2S";
+        final String key = "031ccaaa46df7c494f442698c8c17c09311e3615c2dc042cbd3afeaba60fa40740";
+        // Address generated from the above key, with address version 0x35.
+        final String expectedAddress = "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy";
         ScriptHash sh = ScriptHash.fromPublicKey(Numeric.hexStringToByteArray(key));
         assertThat(sh.toAddress(), is(expectedAddress));
     }
