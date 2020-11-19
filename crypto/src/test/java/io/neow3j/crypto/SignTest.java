@@ -37,7 +37,6 @@ public class SignTest {
     @Test
     public void testSignedMessageToKey() throws SignatureException {
         Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, KEY_PAIR);
-        System.out.println(Numeric.toHexStringNoPrefix(signatureData.getConcatenated()));
         ECPublicKey key = Sign.signedMessageToKey(TEST_MESSAGE, signatureData);
         assertThat(key, equalTo(PUBLIC_KEY));
     }

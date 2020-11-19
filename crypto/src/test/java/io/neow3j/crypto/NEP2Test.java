@@ -43,7 +43,7 @@ public class NEP2Test {
         byte[] privKey = Numeric.hexStringToByteArray(
                 "7fe9d4b69f85c1fe15387a76e79d2b95c4c9e3fe756de3435afbc077d99d5346");
         String pw = "neo";
-        String expectedNep2Encrypted = "6PYLykbKcbwnCuTJiQQ5PYu5uH9NgwGYLoMyTUabRxRJUsiA9GP8NgorUV";
+        String expectedNep2Encrypted = "6PYS1FNdTfvfPH5aMSewcxqixy6hikrwk7P1cEpwu7V6eS4ormwgyhcwZh";
         ECKeyPair keyPair = ECKeyPair.create(privKey);
         assertThat(NEP2.encrypt(pw, keyPair), is(expectedNep2Encrypted));
     }
@@ -54,7 +54,7 @@ public class NEP2Test {
         byte[] privKey = Numeric.hexStringToByteArray(
                 "7fe9d4b69f85c1fe15387a76e79d2b95c4c9e3fe756de3435afbc077d99d5346");
         String pw = "neo";
-        String expected = "6PYLykbKbcpcZTuaSyTqBmauUkwVN4cQHjQAufT8y5YE6vCP44nxtf9r3P";
+        String expected = "6PYS1FNdRvKpy6Gvtg5Z8NMpcSgYi4sk1rWzPybgXj3Lg4uRxdP52QFz6T";
         ECKeyPair keyPair = ECKeyPair.create(privKey);
         assertThat(NEP2.encrypt(pw, keyPair, nonDefaultScryptParams), is(expected));
     }
