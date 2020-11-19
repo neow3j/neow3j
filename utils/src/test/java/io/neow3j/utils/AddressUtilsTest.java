@@ -1,6 +1,5 @@
 package io.neow3j.utils;
 
-import io.neow3j.contract.ScriptHash;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
@@ -16,18 +15,18 @@ public class AddressUtilsTest {
 
     @Test
     public void scriptHashToAddress() {
-        NeoConfig.setAddressVersion((byte) 0x17);
         String script =
-            "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
+            "0c2102249425a06b5a1f8e6133fc79afa2c2b8430bf9327297f176761df79e8d8929c50b4195440d78";
         byte[] scriptHash = Hash.sha256AndThenRipemd160(Numeric.hexStringToByteArray(script));
         String address = AddressUtils.scriptHashToAddress(scriptHash);
-        // Used neo-core with address version 0x17 to generate this address.
-        String expectedAddress = "Aa63RMYRWHPRcrZNzUnq5SNrPqoV866Spu";
+        // Used neo-core with address version 0x35 to generate this address.
+        String expectedAddress = "NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke";
         assertThat(address, is(expectedAddress));
     }
 
     @Test
     public void scriptHashToAddressWithAddressVersion() {
+        NeoConfig.setAddressVersion((byte) 0x37);
         String script =
             "21030529d1296dc2af1f77d8344138a77748599b69599af7ae6be57812a4ec3fa33968747476aa";
         byte[] scriptHash = Hash.sha256AndThenRipemd160(Numeric.hexStringToByteArray(script));
@@ -35,6 +34,7 @@ public class AddressUtilsTest {
             AddressUtils.scriptHashToAddress(scriptHash);
         String expectedAddress = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
         assertThat(address, is(expectedAddress));
+        NeoConfig.setAddressVersion((byte) 0x35);
     }
 
     @Test
@@ -69,6 +69,7 @@ public class AddressUtilsTest {
         byte[] scriptHash = Numeric.hexStringToByteArray("bbf14c0d508108e56402116aede9942a064f7dc6");
         String address = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
         assertThat(AddressUtils.scriptHashToAddress(scriptHash), is(address));
+        NeoConfig.setAddressVersion((byte) 0x35);
     }
 
     @Test
