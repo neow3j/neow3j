@@ -94,10 +94,11 @@ public class Neow3jReadOnlyIntegrationTest {
     private static final long TX_BLOCK_IDX = 2L;
     private static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     private static final int TX_VERSION = 0;
-    private static final String TX_SCRIPT = "AcQJDBTXhdxFuBA/Rv+5MO5//k7/XYa79wwUCJjqIZc3j2I6dnCXR"
-            + "FREhXbQrq8TwAwIdHJhbnNmZXIMFCUFnstIeNOodfkcUc7e0zDUV1/eQWJ9W1I4";
+    private static final String TX_SCRIPT =
+            "AcQJDBRtrMh3e1+2ypmwgsJreGzrd95F8AwUev0gMlXLKXK9CmqCfnTjh+0yK+wTwAwIdHJhbnNmZXIMFCUFnstIeNOodfkcUc7e0zDUV1/eQWJ9W1I4";
     private static final String TX_AMOUNT = "2500";
-    private static final String TX_RECIPIENT_1 = "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2";
+    // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
+    private static final String TX_RECIPIENT_1 = "NVuspqtyaV92cDo7SQdiYDCMvPUEZ3Ys3f";
     private static final int TX_LENGTH = 496;
 
     protected static final String APPLICATION_LOG_TRIGGER = "Application";
@@ -110,16 +111,17 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String UNCLAIMED_GAS = "599985000";
 
     // The address that is imported to the wallet.
-    protected static final String IMPORT_ADDRESS = "AaN1ksPFARY9dH73brS8AGoUBt86zqRDcQ";
+    protected static final String IMPORT_ADDRESS_WIF = "L3ijcgFEaNvR5nYYHuMNLtCc8e5Qwerj9qe6VUHNkF74GkUZtiD8";
+    protected static final String IMPORT_ADDRESS = "NcVYTbDRzThKUFxEvjA4nPDn1nVpBK5CVH";
     // The address from which account 2 receives GAS when sending NEO to the recipient address.
-    protected static final String TX_GAS_ADDRESS = "AFmseVrdL9f9oyCzZefL9tG6UbvhPbdYzM";
+    protected static final String TX_GAS_ADDRESS = "NKuyBkoGdZZSLyPbJEetheRhMjeznFZszf";
     protected static final String TX_GAS_AMOUNT = "1200000000";
 
     protected static long BLOCK_0_IDX = 0;
     protected static String BLOCK_0_HASH =
-            "0x78acf25f201970d882ed8e29480a8879b4379ea6b4ffc0c9797f971352377891";
+            "0x8af604166e33ec77d67b03d4e3c4a9c199ba064f07df3e4eb44e58a5771495ed";
     protected static String BLOCK_0_HEADER_RAW_STRING =
-            "0000000000000000000000000000000000000000000000000000000000000000000000002e0b8a0698b8fc0740928ba5b8bf7cd5a504b8ed7dcc21a4bcedac6ba19ba1e588ea19ef55010000000000000898ea2197378f623a7670974454448576d0aeaf0100011100";
+            "0000000000000000000000000000000000000000000000000000000000000000000000002e0b8a0698b8fc0740928ba5b8bf7cd5a504b8ed7dcc21a4bcedac6ba19ba1e588ea19ef55010000000000007afd203255cb2972bd0a6a827e74e387ed322bec0100011100";
 
     protected static Neow3jTestWrapper neow3jWrapper;
 
@@ -137,6 +139,8 @@ public class Neow3jReadOnlyIntegrationTest {
         neow3jWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
         // make a transaction that can be used for the tests
         txHash = neow3jWrapper.performNeoTransfer(TX_RECIPIENT_1, TX_AMOUNT);
+        System.out.println(txHash);
+        System.out.println(getNeow3j().getTransaction(txHash).send().getTransaction().getScript());
     }
 
     private static Neow3j getNeow3j() {
@@ -562,7 +566,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testImportPrivKey() throws IOException {
         NeoImportPrivKey importPrivKey = getNeow3j()
-                .importPrivKey("KwYRSjqmEhK4nPuUZZz1LEUSxvSzSRCv3SVePoe67hjcdPGLRJY5").send();
+                .importPrivKey(IMPORT_ADDRESS_WIF).send();
         NeoAddress privKey = importPrivKey.getAddresses();
 
         assertThat(privKey.getAddress(), is(IMPORT_ADDRESS));
