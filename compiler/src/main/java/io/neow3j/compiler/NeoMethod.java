@@ -313,6 +313,19 @@ public class NeoMethod {
     }
 
     /**
+     * Converts the JVM instructions of this method to neo-vm instructions.
+     *
+     * @param compUnit The compilation unit.
+     * @throws IOException If an error occurs when reading class files.
+     */
+    public void convert(CompilationUnit compUnit) throws IOException {
+        AbstractInsnNode insn = asmMethod.instructions.get(0);
+        while (insn != null) {
+            insn = Compiler.handleInsn(insn, this, compUnit);
+            insn = insn.getNext();
+        }
+    }
+    /**
      * Adds the given instruction to this method. The corresponding source code line number and the
      * instruction's address (relative to this method) is added to the instruction object.
      *
