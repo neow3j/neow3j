@@ -92,11 +92,11 @@ public class NeoTokenTest {
                         .withBody(responseBody)));
 
         BigInteger result = new NeoToken(neow)
-                .unclaimedGas(ScriptHash.fromAddress("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"), 100);
+                .unclaimedGas(ScriptHash.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9"), 100);
         assertThat(result, is(new BigInteger("60000000000")));
 
         result = new NeoToken(neow)
-                .unclaimedGas(Account.fromAddress("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"), 100);
+                .unclaimedGas(Account.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9"), 100);
         assertThat(result, is(new BigInteger("60000000000")));
     }
 
@@ -182,7 +182,6 @@ public class NeoTokenTest {
 
         List<ECPublicKey> result = new NeoToken(neow).getValidators();
         String expKeyHex = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
-        System.out.println(Numeric.toBigInt(Numeric.hexStringToByteArray(expKeyHex)));
         ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
         assertThat(result, contains(expKey));
     }

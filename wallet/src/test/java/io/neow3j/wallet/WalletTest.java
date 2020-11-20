@@ -108,26 +108,26 @@ public class WalletTest {
         assertEquals(2, w.getAccounts().size());
         assertEquals(NEP2.DEFAULT_SCRYPT_PARAMS, w.getScryptParams());
 
-        Account a = w.getAccount(ScriptHash.fromAddress("AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN"));
-        assertEquals("AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN", a.getAddress());
+        Account a = w.getAccount(ScriptHash.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
+        assertEquals("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke", a.getAddress());
         assertEquals("Account1", a.getLabel());
         assertFalse(a.isLocked());
-        assertEquals("6PYVmzptUSqkpw1YRPrNwuhCVGF5BvUNWCRB9XwrQuJJmcE4soABybYWxq",
+        assertEquals("6PYVEi6ZGdsLoCYbbGWqoYef7VWMbKwcew86m5fpxnZRUD8tEjainBgQW1",
                 a.getEncryptedPrivateKey());
         assertEquals(
-                "DCEDGY4G2y1nT0NiREFiPxAlSv38eRgqmNCp2HocRQVX7OgLQQqQatQ=",
+                "DCECJJQloGtaH45hM/x5r6LCuEML+TJyl/F2dh33no2JKcULQZVEDXg=",
                 nep6Wallet.getAccounts().get(0).getContract().getScript()
         );
 
-        a = w.getAccount(ScriptHash.fromAddress("AaSsb7k1mFPKqhJynyr4qQybtQrRBub21Q"));
-        assertEquals("AaSsb7k1mFPKqhJynyr4qQybtQrRBub21Q", a.getAddress());
+        a = w.getAccount(ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy"));
+        assertEquals("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy", a.getAddress());
         assertEquals("Account2", a.getLabel());
         assertFalse(a.isDefault());
         assertFalse(a.isLocked());
-        assertEquals("6PYSMtdYvx6vXK21AAc2NBvbYuBusCxre59uy1EhnbRysSmhgMkTk37Qez",
+        assertEquals("6PYSQWBqZE5oEFdMGCJ3xR7bz6ezz814oKE7GqwB9i5uhtUzkshe9B6YGB",
                 a.getEncryptedPrivateKey());
         assertEquals(
-                "DCEDmd53lLYbIBx/SYdaYgQ13PvUFcEsgudizzN2B2kpAEkLQQqQatQ=",
+                "DCEDHMqqRt98SU9EJpjIwXwJMR42FcLcBCy9Ov6rpg+kB0ALQZVEDXg=",
                 nep6Wallet.getAccounts().get(1).getContract().getScript()
         );
     }
@@ -175,7 +175,7 @@ public class WalletTest {
     public void testRemoveAccounts() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        final String address = "AUcY65mkxygUB5bXZqYhNKsrq1khuncqr3";
+        final String address = "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy";
         Wallet w = Wallet.create();
         assertFalse(w.removeAccount(ScriptHash.fromAddress(address)));
         Account acct1 = new Account(ECKeyPair.createEcKeyPair());
@@ -444,14 +444,14 @@ public class WalletTest {
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
-        Account a1 = Account.fromAddress("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm");
-        Account a2 = Account.fromAddress("AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS");
+        Account a1 = Account.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
+        Account a2 = Account.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
         WalletTestHelper.setUpWireMockForCall("getnep5balances",
-                "getnep5balances_AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm.json",
-                "AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm");
+                "getnep5balances_NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy.json",
+                "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
         WalletTestHelper.setUpWireMockForCall("getnep5balances",
-                "getnep5balances_AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS.json",
-                "AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS");
+                "getnep5balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
+                "NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
         Wallet w = Wallet.withAccounts(a1, a2);
         Map<ScriptHash, BigInteger> balances = w.getNep5TokenBalances(neow);
         assertThat(balances.keySet(), containsInAnyOrder(GAS_SCRIPT_HASH, NEO_SCRIPT_HASH));

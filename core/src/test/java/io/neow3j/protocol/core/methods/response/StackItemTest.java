@@ -190,7 +190,7 @@ public class StackItemTest extends ResponseTester {
                 Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a"),
                 item.getValue()
         );
-        assertThat(item.getAsAddress(), is("Ab7kmZJw2yJDNREnyBByt1QEZGbzj9uBf1"));
+        assertThat(item.getAsAddress(), is("NfFrJpFaLPCVuRRPhmBYRmZqSQLJ5fPuhz"));
         assertThat(item.getAsHexString(), is("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
 
         ByteStringStackItem other = new ByteStringStackItem(
@@ -287,7 +287,7 @@ public class StackItemTest extends ResponseTester {
                 + "   \"value\": \"1Cz3qTHOPEZVD9kN5IJYP8XqcBo=\"\n"
                 + " }";
         item = OBJECT_MAPPER.readValue(json, StackItem.class).asBuffer();
-        assertThat(item.getAsAddress(), is("Ab7kmZJw2yJDNREnyBByt1QEZGbzj9uBf1"));
+        assertThat(item.getAsAddress(), is("NfFrJpFaLPCVuRRPhmBYRmZqSQLJ5fPuhz"));
 
         json = ""
                 + " {"

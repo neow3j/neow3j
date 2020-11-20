@@ -41,7 +41,7 @@ public class WalletUtilsTest {
     @Test
     public void testGenerateWalletFile() throws Exception {
         // Used neo-core with address version 0x17 to generate test data.
-        String expectedAdr = "AXJxLU79D795wMRMmGq9SWaqCqnmpGw9uq";
+        String expectedAdr = "NbT3sj3nWX3NUMbxVrphzGkS5yX5BHgRAb";
         byte[] sk = Numeric.hexStringToByteArray(
                 "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
         // Get a copy of the private key for the assertion below, because it will be erased when
