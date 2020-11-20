@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.ClassUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -117,8 +118,12 @@ public class DebugInfo {
     private static List<String> collectVars(Collection<NeoVariable> vars) {
         List<String> varStrings = new ArrayList<>();
         for (NeoVariable var : vars) {
+            String name = var.getName();
+            if (name == null) {
+                continue;
+            }
             String type = mapTypeToParameterType(Type.getType(var.getDescriptor())).jsonValue();
-            varStrings.add(var.getName() + "," + type);
+            varStrings.add(name + "," + type);
         }
         return varStrings;
     }
