@@ -1277,7 +1277,7 @@ public class ResponseTest extends ResponseTester {
 
         StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
         assertThat(stackItem1.getType(), is(StackItemType.BUFFER));
-        assertThat(stackItem1.asBuffer().getAsAddress(), is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(stackItem1.asBuffer().getAsAddress(), is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
 
         StackItem stackItem2 = invokeFunction.getInvocationResult().getStack().get(2);
         assertThat(stackItem2.getType(), is(StackItemType.BUFFER));
@@ -2210,7 +2210,7 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(eventName0, is("Transfer"));
         assertNotNull(from0);
-        assertThat(to0, is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
+        assertThat(to0, is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
         assertThat(amount0, is(BigInteger.valueOf(600000000)));
 
         // Notification 1
@@ -2228,8 +2228,8 @@ public class ResponseTest extends ResponseTester {
         BigInteger amount1 = notification1Array.get(3).asInteger().getValue();
 
         assertThat(eventName1, is("Transfer"));
-        assertThat(from1, is("AVGpjFiocR1BdYhbYWqB6Ls6kcmzx4FWhm"));
-        assertThat(to1, is("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"));
+        assertThat(from1, is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
+        assertThat(to1, is("Ngx5p5euXEiS2tL26ZoK499VzqRLQui41V"));
         assertThat(amount1, is(BigInteger.valueOf(100)));
     }
 }

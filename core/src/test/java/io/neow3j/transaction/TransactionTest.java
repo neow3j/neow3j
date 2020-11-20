@@ -33,9 +33,9 @@ public class TransactionTest {
 
     @Before
     public void setUp() {
-        account1 = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
-        account2 = ScriptHash.fromAddress("APLJBPhtRg2XLhtpxEHd6aRNL7YSLGH2ZL");
-        account3 = ScriptHash.fromAddress("AZt9DgwW8PKSEQsa9QLX86SyE1DSNjSbsS");
+        account1 = ScriptHash.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+        account2 = ScriptHash.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
+        account3 = ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
     }
 
     @Test
@@ -64,7 +64,7 @@ public class TransactionTest {
                 + "00e1f50500000000"  // system fee (1 GAS)
                 + "0100000000000000"  // network fee (1 GAS fraction)
                 + "04030201"  // valid until block
-                + "01" + "23ba2703c53263e8d6e522dc32203339dcd8eee9" + "01"
+                + "01" + "93ad1572a4b35c4b925483ce1701b78742dc460f" + "01"
                 // one calledByEntry signer with scope
                 + "00"
                 + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
@@ -101,8 +101,8 @@ public class TransactionTest {
                 + "0100000000000000"  // network fee (1 GAS fraction)
                 + "04030201"  // valid until block
                 + "02"  // 2 signers
-                + "23ba2703c53263e8d6e522dc32203339dcd8eee9" + "80" // global signer
-                + "52eaab8b2aab608902c651912db34de36e7a2b0f" + "01" // calledByEntry signer
+                + "93ad1572a4b35c4b925483ce1701b78742dc460f" + "80" // global signer
+                + "09a55874c2da4b86e5d49ff530a1b153eb12c7d6" + "01" // calledByEntry signer
                 + "00"
                 + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
                 + "01" // 1 witness
@@ -229,7 +229,7 @@ public class TransactionTest {
                 new ArrayList<>());
 
         assertThat(tx.getTxId(),
-                is("066c44b4540ee7b5a3a57fcfcc272353560af792acc3c95da3e18efc962556a2"));
+                is("5624d97a8f1c9d580399c5682d512641171b5d50d199922f6a5f033a0fac15b5"));
     }
 
     @Test
@@ -249,7 +249,7 @@ public class TransactionTest {
                 new ArrayList<>());
 
         byte[] expectedUnsignedBytes = Numeric.hexStringToByteArray(
-                "00a2f17c0d7673890000000000e6fc1200000000006618200001c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f7010055110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238");
+                "00a2f17c0d7673890000000000e6fc120000000000661820000175715e89bbba44a25dc9ca8d4951f104c25c253d010055110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238");
         assertThat(tx.toArrayWithoutWitnesses(), is(expectedUnsignedBytes));
     }
 
@@ -271,7 +271,7 @@ public class TransactionTest {
                 new ArrayList<>());
 
         byte[] txHexWithoutWitness = Numeric.hexStringToByteArray(
-                "000000000000000000000000000000000000000000000000000123ba2703c53263e8d6e522dc32203339dcd8eee9000003010203");
+                "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
         byte[] expectedData = ArrayUtils.concatenate(magicNumber, txHexWithoutWitness);
         assertThat(tx.getHashData(), is(expectedData));
     }

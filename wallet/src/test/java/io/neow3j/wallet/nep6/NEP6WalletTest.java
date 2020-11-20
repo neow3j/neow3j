@@ -29,14 +29,14 @@ public class NEP6WalletTest {
 
         // Account 1
         NEP6Account a1 = w.getAccounts().get(0);
-        assertEquals(a1.getAddress(), "AHCkToUT1eFMdf2fnXpRXygk8nhyhrRdZN");
+        assertEquals(a1.getAddress(), "NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
         assertEquals(a1.getLabel(), "Account1");
         assertTrue(a1.getDefault());
         assertFalse(a1.getLock());
-        assertEquals(a1.getKey(), "6PYVmzptUSqkpw1YRPrNwuhCVGF5BvUNWCRB9XwrQuJJmcE4soABybYWxq");
+        assertEquals(a1.getKey(), "6PYVEi6ZGdsLoCYbbGWqoYef7VWMbKwcew86m5fpxnZRUD8tEjainBgQW1");
         assertNull(a1.getExtra());
         NEP6Contract c1 = a1.getContract();
-        assertEquals(c1.getScript(), "DCEDGY4G2y1nT0NiREFiPxAlSv38eRgqmNCp2HocRQVX7OgLQQqQatQ=");
+        assertEquals(c1.getScript(), "DCECJJQloGtaH45hM/x5r6LCuEML+TJyl/F2dh33no2JKcULQZVEDXg=");
         assertFalse(c1.getDeployed());
         NEP6Parameter p1 = c1.getParameters().get(0);
         assertEquals(p1.getParamName(), "signature");
@@ -44,14 +44,14 @@ public class NEP6WalletTest {
 
         // Account 2
         NEP6Account a2 = w.getAccounts().get(1);
-        assertEquals(a2.getAddress(), "AaSsb7k1mFPKqhJynyr4qQybtQrRBub21Q");
+        assertEquals(a2.getAddress(), "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
         assertEquals(a2.getLabel(), "Account2");
         assertFalse(a2.getDefault());
         assertFalse(a2.getLock());
-        assertEquals(a2.getKey(), "6PYSMtdYvx6vXK21AAc2NBvbYuBusCxre59uy1EhnbRysSmhgMkTk37Qez");
+        assertEquals(a2.getKey(), "6PYSQWBqZE5oEFdMGCJ3xR7bz6ezz814oKE7GqwB9i5uhtUzkshe9B6YGB");
         assertNull(a1.getExtra());
         NEP6Contract c2 = a2.getContract();
-        assertEquals(c2.getScript(), "DCEDmd53lLYbIBx/SYdaYgQ13PvUFcEsgudizzN2B2kpAEkLQQqQatQ=");
+        assertEquals(c2.getScript(), "DCEDHMqqRt98SU9EJpjIwXwJMR42FcLcBCy9Ov6rpg+kB0ALQZVEDXg=");
         assertFalse(c2.getDeployed());
         NEP6Parameter p2 = c2.getParameters().get(0);
         assertEquals(p2.getParamName(), "signature");

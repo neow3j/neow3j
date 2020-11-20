@@ -31,16 +31,16 @@ public class NeoURITest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
-    private static final String BEGIN_TX = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
-    private static final String BEGIN_TX_ASSET_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1";
-    private static final String BEGIN_TX_ASSET_NON_NATIVE = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
+    private static final String BEGIN_TX = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
+    private static final String BEGIN_TX_ASSET_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1";
+    private static final String BEGIN_TX_ASSET_NON_NATIVE = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
     private static final String BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS =
-            "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo&amount=1&asset=gas&amount=80";
+            "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1&asset=gas&amount=80";
 
     private static Neow3j neow3j;
     private static final Wallet WALLET = Wallet.create();
 
-    private static final String ADDRESS = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y";
+    private static final String ADDRESS = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
     private static final ScriptHash ADDRESS_SCRIPT_HASH = ScriptHash.fromAddress(ADDRESS);
     private static final BigDecimal AMOUNT = new BigDecimal(1);
     private static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
@@ -86,14 +86,14 @@ public class NeoURITest {
     public void fromURI_invalidScheme() {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("does not conform to the NEP-9 standard");
-        NeoURI.fromURI("nao:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
+        NeoURI.fromURI("nao:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
     }
 
     @Test
     public void fromURI_invalidSeparator() {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("does not conform to the NEP-9 standard");
-        NeoURI.fromURI("neo-AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
+        NeoURI.fromURI("neo-NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
     }
 
     @Test
@@ -130,7 +130,7 @@ public class NeoURITest {
 
     @Test
     public void fromURI_Getter_GAS() {
-        String BEGIN_TX_ASSET_GAS = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=gas";
+        String BEGIN_TX_ASSET_GAS = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas";
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_GAS).buildURI();
 
         assertThat("getAsset()", neoURI.getAssetAsString(), isOneOf(GAS, "gas"));
@@ -179,7 +179,7 @@ public class NeoURITest {
                 .asset("neo")
                 .buildURI();
 
-        String BEGIN_TX_ASSET = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=neo";
+        String BEGIN_TX_ASSET = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_ASSET)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_ASSET));
     }
@@ -192,7 +192,7 @@ public class NeoURITest {
                         Numeric.hexStringToByteArray("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"))
                 .buildURI();
 
-        String BEGIN_TX_ASSET = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?asset=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
+        String BEGIN_TX_ASSET = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_ASSET)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_ASSET));
     }
@@ -204,7 +204,7 @@ public class NeoURITest {
                 .amount(AMOUNT)
                 .buildURI();
 
-        String BEGIN_TX_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?amount=1";
+        String BEGIN_TX_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=1";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_AMOUNT)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_AMOUNT));
     }
@@ -216,7 +216,7 @@ public class NeoURITest {
                 .amount("1.0")
                 .buildURI();
 
-        String BEGIN_TX_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?amount=1.0";
+        String BEGIN_TX_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=1.0";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_AMOUNT)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_AMOUNT));
     }
@@ -228,7 +228,7 @@ public class NeoURITest {
                 .amount(15)
                 .buildURI();
 
-        String BEGIN_TX_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?amount=15";
+        String BEGIN_TX_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=15";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_AMOUNT)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_AMOUNT));
     }
@@ -240,7 +240,7 @@ public class NeoURITest {
                 .amount(new BigInteger("12"))
                 .buildURI();
 
-        String BEGIN_TX_AMOUNT = "neo:AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y?amount=12";
+        String BEGIN_TX_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=12";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_AMOUNT)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_AMOUNT));
     }
@@ -379,8 +379,8 @@ public class NeoURITest {
     @Test
     public void getAssetAsAddress() {
         assertThat(new NeoURI(neow3j)
-                        .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                        .asset("d6c712eb53b1a130f59fd4e5864bdac27458a509")
                         .getAssetAsAddress(),
-                is("ARhJPYxmizqheBQA2dSQAHWfQQsbTSba2S"));
+                is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
     }
 }
