@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -101,7 +100,7 @@ public class NeoMethod {
     // number is added to the instruction.
     private boolean isFreshNewLine = false;
 
-    private List<TryCatchBlock> tryCatchBlocks = new ArrayList<>();
+    private List<TryCatchFinallyBlock> tryCatchFinallyBlocks = new ArrayList<>();
 
     /**
      * Constructs a new Neo method.
@@ -116,7 +115,7 @@ public class NeoMethod {
         collectTryCatchBlocks(asmMethod.tryCatchBlocks);
     }
 
-    static class TryCatchBlock {
+    static class TryCatchFinallyBlock {
 
         LabelNode tryLabelNode;
         LabelNode endTryLabelNode;
@@ -124,7 +123,7 @@ public class NeoMethod {
         LabelNode endCatchLabelNode;
         LabelNode finallyLabelNode;
 
-        public TryCatchBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
+        public TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
                 LabelNode catchLabelNode, LabelNode endCatchLabelNode,
                 LabelNode finallyLabelNode) {
             this.tryLabelNode = tryLabelNode;
@@ -135,10 +134,21 @@ public class NeoMethod {
         }
     }
 
+    // Sifts through the exception table of this method and constructs try-catch-finally blocks
+    // that are later used to insert the corresponding instructions into the VM script.
     private void collectTryCatchBlocks(List<TryCatchBlockNode> blockNodes) {
         if (blockNodes == null || blockNodes.isEmpty()) {
             return;
         }
+        Set<TryCatchBlockNode> parsedNodes = collectBlocksWithCatchAndOptionallyFinally(blockNodes);
+        collectBlocksWithNoCatchButFinally(blockNodes, parsedNodes);
+    }
+
+    // Go through blocks that have a try, catch, and optionally a finally block. Blocks that
+    // have a try and finally only are processed later.
+    private Set<TryCatchBlockNode> collectBlocksWithCatchAndOptionallyFinally(
+            List<TryCatchBlockNode> blockNodes) {
+
         Set<TryCatchBlockNode> parsedNodes = new HashSet<>();
         for (TryCatchBlockNode block : blockNodes) {
             if (block.type != null) {
@@ -164,19 +174,22 @@ public class NeoMethod {
                     finallyLabelNode = finallyBlockNode.get().handler;
                 }
 
-                tryCatchBlocks.add(new TryCatchBlock(block.start, block.end,
+                tryCatchFinallyBlocks.add(new TryCatchFinallyBlock(block.start, block.end,
                         block.handler, endCatchLabelNode, finallyLabelNode));
             }
         }
+        return parsedNodes;
+    }
 
-        // Remaining block nodes that have not been parsed yet. Those are probably try blocks
-        // without a catch but only a finally block.
-        // TODO: Handle these.
-        List<TryCatchBlockNode> tryBlockNodes = blockNodes.stream()
-                .filter(blockNode -> !parsedNodes.contains(blockNode))
-                .collect(Collectors.toList());
+    // Filter for blocks that only have a try and finally part. Those blocks have not been
+    // processed above, don't have a exception type set, and the start is not equal the handler.
+    private void collectBlocksWithNoCatchButFinally(List<TryCatchBlockNode> blockNodes,
+            Set<TryCatchBlockNode> parsedNodes) {
 
-
+        blockNodes.stream().filter(blockNode -> !parsedNodes.contains(blockNode)
+                && blockNode.type == null && blockNode.start != blockNode.handler)
+                .forEach(block -> tryCatchFinallyBlocks.add(
+                        new TryCatchFinallyBlock(block.start, block.end, null, null, block.handler)));
     }
 
     /**
@@ -406,12 +419,12 @@ public class NeoMethod {
     }
 
     private void insertTryCatchBlocks() {
-        for (TryCatchBlock block : tryCatchBlocks) {
+        for (TryCatchFinallyBlock block : tryCatchFinallyBlocks) {
             insertTryInstruction(block);
         }
     }
 
-    private void insertTryInstruction(TryCatchBlock block) {
+    private void insertTryInstruction(TryCatchFinallyBlock block) {
         NeoInstruction insn = jumpTargets.get(block.tryLabelNode.getLabel());
         if (insn == null) {
             throw new CompilerException(sourceClass, "Could not find the beginning instruction of "
@@ -443,8 +456,8 @@ public class NeoMethod {
         newMap.put(newInsn.getAddress(), newInsn);
         int shift = newInsn.byteSize();
         tail.forEach((i, insn) -> {
-            insn.setAddress(i+shift);
-            newMap.put(i+shift, insn);
+            insn.setAddress(i + shift);
+            newMap.put(i + shift, insn);
         });
         instructions = newMap;
         increaseLastAddress(newInsn);
