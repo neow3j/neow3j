@@ -130,7 +130,8 @@ public class NeoMethod {
     private void checkForUnsupportedExceptionTypes(List<TryCatchBlockNode> blockNodes) {
         Optional<String> unsupportedException = blockNodes.stream()
                 .map(node -> node.type)
-                .filter(type -> !type.equals(Type.getType(Exception.class).getInternalName()))
+                .filter(type -> type != null &&
+                        !type.equals(Type.getType(Exception.class).getInternalName()))
                 .findFirst();
 
         if (unsupportedException.isPresent()) {
