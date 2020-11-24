@@ -2,14 +2,11 @@ package io.neow3j.compiler;
 
 import static java.util.Arrays.asList;
 
-import io.neow3j.devpack.neo.Iterator;
-import io.neow3j.devpack.neo.Storage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,8 +21,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Found call to super constructor of", ArrayList.class.getCanonicalName())));
-        CompilationUnit res = new Compiler().compileClass(
-                UnsupportedInheritanceInConstructor.class.getName());
+        new Compiler().compileClass(UnsupportedInheritanceInConstructor.class.getName());
     }
 
     @Test
@@ -34,23 +30,30 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 IllegalArgumentException.class.getCanonicalName(),
                 Exception.class.getCanonicalName())));
-        CompilationUnit res = new Compiler().compileClass(UnsupportedException.class.getName());
+        new Compiler().compileClass(UnsupportedException.class.getName());
+    }
+
+    @Test
+    public void throwExceptionIfNonDefaultExceptionIsUsedInCatchClause() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("catch",
+                RuntimeException.class.getCanonicalName(),
+                Exception.class.getCanonicalName())));
+        new Compiler().compileClass(UnsupportedExceptionInCatchClause.class.getName());
     }
 
     @Test
     public void throwExceptionIfExceptionWithMoreThanOneArgumentIsUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContains("You provided 2 arguments."));
-        CompilationUnit res = new Compiler().compileClass(
-                UnsupportedNumberOfExceptionArguments.class.getName());
+        new Compiler().compileClass(UnsupportedNumberOfExceptionArguments.class.getName());
     }
 
     @Test
     public void throwExceptionIfExceptionWithANonStringArgumentIsUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContains("You provided a non-string argument."));
-        CompilationUnit res = new Compiler().compileClass(
-                UnsupportedExceptionArgument.class.getName());
+        new Compiler().compileClass(UnsupportedExceptionArgument.class.getName());
     }
 
     static class UnsupportedInheritanceInConstructor {
@@ -64,6 +67,22 @@ public class CompilerExceptionsTest {
 
         public static boolean method() {
             throw new IllegalArgumentException("Not allowed.");
+        }
+    }
+
+    static class UnsupportedExceptionInCatchClause {
+
+        public static boolean method(int i) {
+            try {
+                if (i == 0) {
+                    throw new Exception("hello");
+                }
+            } catch (RuntimeException e) {
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+            return true;
         }
     }
 

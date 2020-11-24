@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
 import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
@@ -115,33 +116,29 @@ public class NeoMethod {
         collectTryCatchBlocks(asmMethod.tryCatchBlocks);
     }
 
-    static class TryCatchFinallyBlock {
-
-        LabelNode tryLabelNode;
-        LabelNode endTryLabelNode;
-        LabelNode catchLabelNode;
-        LabelNode endCatchLabelNode;
-        LabelNode finallyLabelNode;
-
-        public TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
-                LabelNode catchLabelNode, LabelNode endCatchLabelNode,
-                LabelNode finallyLabelNode) {
-            this.tryLabelNode = tryLabelNode;
-            this.endTryLabelNode = endTryLabelNode;
-            this.catchLabelNode = catchLabelNode;
-            this.endCatchLabelNode = endCatchLabelNode;
-            this.finallyLabelNode = finallyLabelNode;
-        }
-    }
-
     // Sifts through the exception table of this method and constructs try-catch-finally blocks
     // that are later used to insert the corresponding instructions into the VM script.
     private void collectTryCatchBlocks(List<TryCatchBlockNode> blockNodes) {
         if (blockNodes == null || blockNodes.isEmpty()) {
             return;
         }
+        checkForUnsupportedExceptionTypes(blockNodes);
         Set<TryCatchBlockNode> parsedNodes = collectBlocksWithCatchAndOptionallyFinally(blockNodes);
         collectBlocksWithNoCatchButFinally(blockNodes, parsedNodes);
+    }
+
+    private void checkForUnsupportedExceptionTypes(List<TryCatchBlockNode> blockNodes) {
+        Optional<String> unsupportedException = blockNodes.stream()
+                .map(node -> node.type)
+                .filter(type -> !type.equals(Type.getType(Exception.class).getInternalName()))
+                .findFirst();
+
+        if (unsupportedException.isPresent()) {
+            throw new CompilerException(sourceClass, format("Contract tries to catch an exception "
+                            + "of type %s but only %s is supported.",
+                    getFullyQualifiedNameForInternalName(unsupportedException.get()),
+                    Exception.class.getCanonicalName()));
+        }
     }
 
     // Go through blocks that have a try, catch, and optionally a finally block. Blocks that
@@ -751,5 +748,23 @@ public class NeoMethod {
         return jvmIdx;
     }
 
+    static class TryCatchFinallyBlock {
+
+        LabelNode tryLabelNode;
+        LabelNode endTryLabelNode;
+        LabelNode catchLabelNode;
+        LabelNode endCatchLabelNode;
+        LabelNode finallyLabelNode;
+
+        public TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
+                LabelNode catchLabelNode, LabelNode endCatchLabelNode,
+                LabelNode finallyLabelNode) {
+            this.tryLabelNode = tryLabelNode;
+            this.endTryLabelNode = endTryLabelNode;
+            this.catchLabelNode = catchLabelNode;
+            this.endCatchLabelNode = endCatchLabelNode;
+            this.finallyLabelNode = finallyLabelNode;
+        }
+    }
 
 }
