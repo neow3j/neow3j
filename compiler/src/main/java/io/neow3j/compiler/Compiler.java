@@ -12,7 +12,6 @@ import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
@@ -23,7 +22,6 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -231,7 +229,7 @@ public class Compiler {
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
         for (NeoMethod neoMethod : new ArrayList<>(compUnit.getNeoModule().getSortedMethods())) {
-            compileMethod(neoMethod, compUnit);
+            neoMethod.convert(compUnit);
         }
         finalizeCompilation();
         return compUnit;
@@ -339,15 +337,6 @@ public class Compiler {
                 neoMethod.initializeMethod(compUnit);
                 compUnit.getNeoModule().addMethod(neoMethod);
             }
-        }
-    }
-
-    public static void compileMethod(NeoMethod neoMethod, CompilationUnit compUnit)
-            throws IOException {
-        AbstractInsnNode insn = neoMethod.getAsmMethod().instructions.get(0);
-        while (insn != null) {
-            insn = handleInsn(insn, neoMethod, compUnit);
-            insn = insn.getNext();
         }
     }
 
