@@ -21,6 +21,15 @@ public class NeoModule {
     // have been added to this module.
     private final List<NeoMethod> sortedMethods = new ArrayList<>();
 
+    // Holds this module's events. The keys are the variable names used when defining the events
+    // in the smart contract class.
+    private final List<NeoEvent> events = new ArrayList<>();
+
+
+    public List<NeoEvent> getEvents() {
+        return events;
+    }
+
     /**
      * Gets this module's methods in the order they were added.
      *
@@ -89,4 +98,5 @@ public class NeoModule {
     public NeoMethod getMethod(String calledMethodId) {
         return methods.get(calledMethodId);
     }
+
 }
