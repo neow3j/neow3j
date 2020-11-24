@@ -749,7 +749,7 @@ public class NeoMethod {
         return jvmIdx;
     }
 
-    static class TryCatchFinallyBlock {
+    private static class TryCatchFinallyBlock {
 
         LabelNode tryLabelNode;
         LabelNode endTryLabelNode;
@@ -757,7 +757,7 @@ public class NeoMethod {
         LabelNode endCatchLabelNode;
         LabelNode finallyLabelNode;
 
-        public TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
+        TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
                 LabelNode catchLabelNode, LabelNode endCatchLabelNode,
                 LabelNode finallyLabelNode) {
             this.tryLabelNode = tryLabelNode;
