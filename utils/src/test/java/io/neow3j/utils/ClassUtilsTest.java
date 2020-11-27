@@ -1,12 +1,17 @@
 package io.neow3j.utils;
 
+import static io.neow3j.utils.ClassUtils.getClassInputStreamForClassName;
 import static io.neow3j.utils.ClassUtils.getClassName;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class ClassUtilsTest {
@@ -60,4 +65,11 @@ public class ClassUtilsTest {
         assertThat(result, is(""));
     }
 
+    @Test
+    public void testGetClassInputStreamForClassName() throws IOException {
+        InputStream result = getClassInputStreamForClassName("io.neow3j.utils.ClassUtilsTest",
+                this.getClass().getClassLoader());
+        assertThat(result, notNullValue());
+        assertThat(result.available(), Matchers.greaterThan(0));
+    }
 }

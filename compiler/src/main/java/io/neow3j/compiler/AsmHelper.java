@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.utils.ClassUtils.getClassInputStreamForClassName;
 import static java.lang.String.format;
 
 import java.io.BufferedInputStream;
@@ -7,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,6 +59,21 @@ public class AsmHelper {
     }
 
     /**
+     * Gets the {@code ClassNode} for the given class descriptor using the given classloader.
+     *
+     * @param descriptor The class' descriptor as provided by ASM, e.g., in {@link
+     *                     Type#getDescriptor()}.
+     * @param classLoader  The classloader to use.
+     * @return The class node.
+     * @throws IOException If an error occurs when reading class files.
+     */
+    public static ClassNode getAsmClassForDescriptor(String descriptor,
+            ClassLoader classLoader) throws IOException {
+
+        return getAsmClass(Type.getType(descriptor).getClassName(), classLoader);
+    }
+
+    /**
      * Gets the {@code ClassNode} for the given fully qualified class name.
      *
      * @param fullyQualifiedClassName The name of the class to fetch.
@@ -67,11 +85,11 @@ public class AsmHelper {
             throws IOException {
 
         if (classLoader != null) {
-            return getAsmClass(classLoader.getResourceAsStream(
-                    fullyQualifiedClassName.replace('.', '/') + ".class"));
+            return getAsmClass(getClassInputStreamForClassName(
+                    fullyQualifiedClassName, classLoader));
         }
-        return getAsmClass(AsmHelper.class.getClassLoader().getResourceAsStream(
-                fullyQualifiedClassName.replace('.', '/') + ".class"));
+        return getAsmClass(getClassInputStreamForClassName(
+                fullyQualifiedClassName, AsmHelper.class.getClassLoader()));
     }
 
     /**
@@ -125,6 +143,15 @@ public class AsmHelper {
                         .anyMatch(desc -> annotation.desc.equals(desc)));
     }
 
+
+    public static Optional<AnnotationNode> getAnnotationNode(FieldNode fieldNode, Class<?> annotation) {
+        if (fieldNode.invisibleAnnotations == null) {
+            return Optional.empty();
+        }
+        return fieldNode.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(annotation)))
+                .findFirst();
+    }
 
     /**
      * Prints the JVM instructions for the given class.
@@ -190,5 +217,36 @@ public class AsmHelper {
             idx++;
         }
         return idx;
+    }
+
+    /**
+     * Extracts generic type parameters from the given field, if it has any.
+     * <p>
+     * E.g., {@code Event<Integer, String>} will return the list containing {@code
+     * Ljava/lang/Integer;} and {@code Ljava/lang/String;}. The returned strings are ASM internal
+     * names.
+     *
+     * @param fieldNode The field.
+     * @return the list of type paramters.
+     */
+    public static List<String> extractTypeParametersFromSignature(FieldNode fieldNode) {
+        String sig = fieldNode.signature;
+        if (!sig.contains("<")) {
+            return new ArrayList<>();
+        }
+        int startIdx = sig.indexOf("<") + 1;
+        int endIdx = sig.indexOf(">");
+        String typesString = sig.substring(startIdx, endIdx);
+        return Arrays.stream(typesString.split(";")).map(t -> t + ";").collect(Collectors.toList());
+    }
+
+    /**
+     * Gets the internal name for the given descriptor.
+     *
+     * @param descriptor The descriptor to convert.
+     * @return return the internal name.
+     */
+    public static String getInternalNameForDescriptor(String descriptor) {
+        return Type.getType(descriptor).getInternalName();
     }
 }
