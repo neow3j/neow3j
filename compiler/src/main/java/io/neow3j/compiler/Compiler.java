@@ -472,7 +472,14 @@ public class Compiler {
         neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
     }
 
-    public static void addInstruction(MethodNode asmMethod, NeoMethod neoMethod) {
+    /**
+     * Assumes that the given ASM method has one or more {@link Instruction} annotations and adds
+     * those instructions to the given {@code NeoMethod}.
+     *
+     * @param asmMethod The ASM method with the annotation(s).
+     * @param neoMethod The {@code NeoMethod} that the instructions will be added to.
+     */
+    public static void addInstructionsFromAnnotation(MethodNode asmMethod, NeoMethod neoMethod) {
         AnnotationNode insnAnnotation = asmMethod.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Instructions.class))
                         || a.desc.equals(Type.getDescriptor(Instruction.class)))

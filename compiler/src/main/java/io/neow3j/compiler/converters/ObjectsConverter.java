@@ -128,7 +128,7 @@ public class ObjectsConverter implements Converter {
             if (hasAnnotations(ctorMethod, Syscall.class, Syscalls.class)) {
                 addSyscall(ctorMethod, callingNeoMethod);
             } else if (hasAnnotations(ctorMethod, Instruction.class, Instructions.class)) {
-                addInstruction(ctorMethod, callingNeoMethod);
+                addInstructionsFromAnnotation(ctorMethod, callingNeoMethod);
             }
             return insn;
         }
