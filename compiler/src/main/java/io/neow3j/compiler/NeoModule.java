@@ -6,6 +6,7 @@ import io.neow3j.constants.OpCode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,11 @@ public class NeoModule {
 
     // Holds this module's events. The keys are the variable names used when defining the events
     // in the smart contract class.
-    private final List<NeoEvent> events = new ArrayList<>();
+    private final Map<String, NeoEvent> events = new HashMap<>();
 
 
     public List<NeoEvent> getEvents() {
-        return events;
+        return new ArrayList<>(events.values());
     }
 
     /**
@@ -42,6 +43,14 @@ public class NeoModule {
     public void addMethod(NeoMethod method) {
         methods.put(method.getId(), method);
         sortedMethods.add(method);
+    }
+
+    public void addEvent(NeoEvent event) {
+        if (events.containsKey(event.getDisplayName())) {
+            throw new CompilerException(format("Two events with the name '%s' are defined. Make sure "
+                            + "that every event has a different name.", event.getDisplayName()));
+        }
+        events.put(event.getDisplayName(), event);
     }
 
     void finalizeModule() {

@@ -61,7 +61,7 @@ public class CompilerExceptionsTest {
     @Test
     public void throwExceptionIfTwoEventsAreGivenTheSameName() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList("event name", "transfer")));
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Two events", "transfer")));
         new Compiler().compileClass(DuplicateUseOfEventDisplayName.class.getName());
     }
 
@@ -112,10 +112,10 @@ public class CompilerExceptionsTest {
     static class DuplicateUseOfEventDisplayName {
 
         @DisplayName("transfer")
-        Event1Arg<String> event1;
+        static Event1Arg<String> event1;
 
         @DisplayName("transfer")
-        Event1Arg<String> event2;
+        static Event1Arg<String> event2;
 
         public static boolean method() throws Exception {
             return true;

@@ -1,31 +1,60 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
+
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.utils.ClassUtils;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
 public class NeoEvent {
 
-    private String displayName;
-    private List<Param> params = new ArrayList<>();
-    private String namespace;
-    private FieldNode asmVariable;
+    private final static String PARAM_NAME_PREFIX = "arg";
+
+    private final String displayName;
+    private final List<Param> params;
+    private final String namespace;
+    private final FieldNode asmVariable;
 
     public NeoEvent(FieldNode asmVariable, ClassNode owner) {
-        // TODO: Extract the display name.
-        // TODO: Extract the parameter types.
+        Optional<AnnotationNode> annOpt = AsmHelper.getAnnotationNode(asmVariable, DisplayName.class);
+        if (annOpt.isPresent()) {
+            displayName = (String) annOpt.get().values.get(1);
+        } else {
+            displayName = asmVariable.name;
+        }
+
+        AtomicInteger argNr = new AtomicInteger(1);
+        params = extractTypeParametersFromSignature(asmVariable).stream()
+                .map(t -> new Param(PARAM_NAME_PREFIX + argNr.getAndIncrement(), Type.getType(t)))
+                .collect(Collectors.toList());
+
         namespace = ClassUtils.getFullyQualifiedNameForInternalName(owner.name);
         this.asmVariable = asmVariable;
     }
 
+    public FieldNode getAsmVariable() {
+        return asmVariable;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
     public String getId() {
         return namespace + "#" + asmVariable.name;
+    }
+
+    public int getNumberOfParams() {
+        return params.size();
     }
 
     public ContractEvent getAsContractManifestEvent() {
@@ -39,7 +68,8 @@ public class NeoEvent {
         List<String> contractParameters = params.stream()
                 .map(Param::getAsStringForDebugInfo)
                 .collect(Collectors.toList());
-        return new DebugInfo.Event(getId(), displayName, contractParameters);
+        String name = namespace.substring(namespace.lastIndexOf(".") + 1) + "," + displayName;
+        return new DebugInfo.Event(getId(), name, contractParameters);
     }
 
     private static class Param {
