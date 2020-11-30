@@ -1,8 +1,8 @@
-name: neow3j-pull-request
+name: neow3j-integration
 
 on:
   pull_request:
-    types: [review_requested, ready_for_review]
+    types: [assigned, review_requested, ready_for_review]
 
 jobs:
   build:
