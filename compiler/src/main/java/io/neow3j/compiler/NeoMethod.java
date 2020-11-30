@@ -8,7 +8,6 @@ import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.ClassUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -214,7 +213,7 @@ public class NeoMethod {
      * @return the fully qualified name of the corresponding class.
      */
     public String getOwnerClassName() {
-        return ClassUtils.getFullyQualifiedNameForInternalName(sourceClass.name);
+        return getFullyQualifiedNameForInternalName(sourceClass.name);
     }
 
     /**
@@ -378,7 +377,7 @@ public class NeoMethod {
     /**
      * Adds a local variable to this method.
      */
-    void addVariable(NeoVariable var) {
+    public void addVariable(NeoVariable var) {
         this.variablesByNeoIndex.put(var.getNeoIndex(), var);
         this.variablesByJVMIndex.put(var.getJvmIndex(), var);
     }
@@ -388,7 +387,7 @@ public class NeoMethod {
      *
      * @return the variable.
      */
-    NeoVariable getVariableByJVMIndex(int index) {
+    public NeoVariable getVariableByJVMIndex(int index) {
         return this.variablesByJVMIndex.get(index);
     }
 
@@ -397,7 +396,7 @@ public class NeoMethod {
      *
      * @return the parameter.
      */
-    NeoVariable getParameterByJVMIndex(int index) {
+    public NeoVariable getParameterByJVMIndex(int index) {
         return this.parametersByJVMIndex.get(index);
     }
 
@@ -558,7 +557,7 @@ public class NeoMethod {
      *
      * @return the byte array.
      */
-    byte[] toByteArray() {
+    public byte[] toByteArray() {
         byte[] bytes = new byte[byteSize()];
         int i = 0;
         for (NeoInstruction insn : this.instructions.values()) {
@@ -751,11 +750,11 @@ public class NeoMethod {
 
     private static class TryCatchFinallyBlock {
 
-        LabelNode tryLabelNode;
-        LabelNode endTryLabelNode;
-        LabelNode catchLabelNode;
-        LabelNode endCatchLabelNode;
-        LabelNode finallyLabelNode;
+        protected LabelNode tryLabelNode;
+        protected LabelNode endTryLabelNode;
+        protected LabelNode catchLabelNode;
+        protected LabelNode endCatchLabelNode;
+        protected LabelNode finallyLabelNode;
 
         TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
                 LabelNode catchLabelNode, LabelNode endCatchLabelNode,

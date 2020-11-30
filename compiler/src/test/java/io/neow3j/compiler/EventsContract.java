@@ -6,10 +6,10 @@ import io.neow3j.devpack.events.Event5Args;
 
 public class EventsContract {
 
-    static Event2Args<String, Integer> event1;
+    private static Event2Args<String, Integer> event1;
 
     @DisplayName("displayName")
-    static Event5Args<String, Integer, Boolean, String, Object> event2;
+    private static Event5Args<String, Integer, Boolean, String, Object> event2;
 
     public static boolean main() {
         return true;

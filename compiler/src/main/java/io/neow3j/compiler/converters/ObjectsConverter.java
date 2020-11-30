@@ -342,7 +342,7 @@ public class ObjectsConverter implements Converter {
                         + "triggered event in list of events."));
 
         AbstractInsnNode insn = eventFieldInsn.getNext();
-        while (!isMethodCallToEventSend(insn, compUnit)) {
+        while (!isMethodCallToEventSend(insn)) {
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
             assert insn != null : "Expected to find call to send() method of an event but reached"
@@ -361,7 +361,7 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
-    private static boolean isMethodCallToEventSend(AbstractInsnNode insn, CompilationUnit compUnit)
+    private static boolean isMethodCallToEventSend(AbstractInsnNode insn)
             throws IOException {
 
         if (!(insn instanceof MethodInsnNode)) {

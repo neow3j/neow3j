@@ -2,8 +2,13 @@ package io.neow3j.compiler;
 
 import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
+import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getAsmClassForDescriptor;
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
+import static io.neow3j.compiler.AsmHelper.getMethodNode;
+import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.JVMOpcode.PUTSTATIC;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -45,7 +50,7 @@ public class AsmHelperTest {
         ClassReader r = new ClassReader(Storage.class.getCanonicalName());
         r.accept(owner, 0);
 
-        Optional<MethodNode> method = AsmHelper.getMethodNode(insn, owner);
+        Optional<MethodNode> method = getMethodNode(insn, owner);
         if (!method.isPresent()) {
             fail();
         }
@@ -57,7 +62,7 @@ public class AsmHelperTest {
     @Test
     public void gettingClassForInternalNameShouldReturnTheCorrectClassNode() throws IOException {
         Type t = Type.getType(Storage.class);
-        ClassNode c = AsmHelper.getAsmClassForInternalName(t.getInternalName(),
+        ClassNode c = getAsmClassForInternalName(t.getInternalName(),
                 this.getClass().getClassLoader());
         assertThat(c.name, is(Storage.class.getCanonicalName().replace(".", "/")));
         assertThat(c.sourceFile, is("Storage.java"));
@@ -66,7 +71,7 @@ public class AsmHelperTest {
 
     @Test
     public void gettingClassForFqnShouldReturnTheCorrectClassNode() throws IOException {
-        ClassNode c = AsmHelper.getAsmClass(Storage.class.getCanonicalName(),
+        ClassNode c = getAsmClass(Storage.class.getCanonicalName(),
                 this.getClass().getClassLoader());
         assertThat(c.name, is(Storage.class.getCanonicalName().replace(".", "/")));
         assertThat(c.sourceFile, is("Storage.java"));
@@ -77,7 +82,7 @@ public class AsmHelperTest {
     public void gettingClassFromInputStreamShouldReturnTheCorrectClassNode() throws IOException {
         InputStream stream = this.getClass().getClassLoader().getResourceAsStream(
                 Storage.class.getCanonicalName().replace('.', '/') + ".class");
-        ClassNode c = AsmHelper.getAsmClass(stream);
+        ClassNode c = getAsmClass(stream);
         assertThat(c.name, is(Storage.class.getCanonicalName().replace(".", "/")));
         assertThat(c.sourceFile, is("Storage.java"));
         assertThat(c.methods, not(hasSize(0)));
@@ -85,14 +90,14 @@ public class AsmHelperTest {
 
     @Test
     public void hasAnnotationsShouldReturnTrueForAMethodWithGivenAnnotations() throws IOException {
-        ClassNode asmClass = AsmHelper.getAsmClass(this.getClass().getCanonicalName(),
+        ClassNode asmClass = getAsmClass(this.getClass().getCanonicalName(),
                 this.getClass().getClassLoader());
         MethodNode method = asmClass.methods.stream()
                 .filter(m -> m.name.contains("annotatedMethod"))
                 .findFirst().get();
-        assertTrue(AsmHelper.hasAnnotations(method, Syscall.class));
-        assertTrue(AsmHelper.hasAnnotations(method, Instruction.class));
-        assertTrue(AsmHelper.hasAnnotations(method, Syscall.class, Instruction.class));
+        assertTrue(hasAnnotations(method, Syscall.class));
+        assertTrue(hasAnnotations(method, Instruction.class));
+        assertTrue(hasAnnotations(method, Syscall.class, Instruction.class));
     }
 
     // This method is used to test annotations.
@@ -103,12 +108,12 @@ public class AsmHelperTest {
     }
 
     @Test
-    public void getFieldIndex() throws IOException {
-        ClassNode owner = AsmHelper.getAsmClass(StorageMap.class.getCanonicalName(),
+    public void gettingFieldIndexShouldReturnCorrectIndex() throws IOException {
+        ClassNode owner = getAsmClass(StorageMap.class.getCanonicalName(),
                 this.getClass().getClassLoader());
         String ownerName = StorageMap.class.getCanonicalName().replace(".", "/");
         FieldInsnNode insn = new FieldInsnNode(PUTSTATIC.getOpcode(), ownerName, "prefix", "[B");
-        assertThat(AsmHelper.getFieldIndex(insn, owner), is(1));
+        assertThat(getFieldIndex(insn, owner), is(1));
     }
 
     @Test
@@ -129,8 +134,7 @@ public class AsmHelperTest {
     @Test
     public void gettingClassForDescriptorShouldReturnTheCorrectClassNode() throws IOException {
         Type t = Type.getType(Storage.class);
-        ClassNode c = AsmHelper.getAsmClassForDescriptor(t.getDescriptor(),
-                this.getClass().getClassLoader());
+        ClassNode c = getAsmClassForDescriptor(t.getDescriptor(), this.getClass().getClassLoader());
         assertThat(c.name, is(Storage.class.getCanonicalName().replace(".", "/")));
         assertThat(c.sourceFile, is("Storage.java"));
         assertThat(c.methods, not(hasSize(0)));

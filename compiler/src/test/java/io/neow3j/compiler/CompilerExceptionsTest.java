@@ -112,10 +112,10 @@ public class CompilerExceptionsTest {
     static class DuplicateUseOfEventDisplayName {
 
         @DisplayName("transfer")
-        static Event1Arg<String> event1;
+        private static Event1Arg<String> event1;
 
         @DisplayName("transfer")
-        static Event1Arg<String> event2;
+        private static Event1Arg<String> event2;
 
         public static boolean method() throws Exception {
             return true;

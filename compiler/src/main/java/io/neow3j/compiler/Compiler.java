@@ -24,7 +24,6 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
