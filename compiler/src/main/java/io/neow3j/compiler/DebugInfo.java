@@ -13,6 +13,7 @@ import io.neow3j.utils.ClassUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Type;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -90,8 +91,9 @@ public class DebugInfo {
                     sequencePoints));
         }
 
-        // TODO: Build event information.
-        List<Event> events = new ArrayList<>();
+        List<Event> events = compUnit.getNeoModule().getEvents().stream()
+                .map(NeoEvent::getAsDebugInfoEvent)
+                .collect(Collectors.toList());
 
         return new DebugInfo(compUnit.getNefFile().getScriptHash(), documents, methods, events);
     }
@@ -106,7 +108,6 @@ public class DebugInfo {
                     .append(neoMethod.getStartAddress() + insn.getAddress())
                     .append("[").append(documentIndex).append("]")
                     .append(insn.getLineNr())
-                    // TODO: Change once it is possible to know the instruction's column number.
                     .append(":0-")
                     .append(insn.getLineNr())
                     .append(":0")

@@ -2,6 +2,8 @@ package io.neow3j.compiler;
 
 import static java.util.Arrays.asList;
 
+import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.events.Event1Arg;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +58,13 @@ public class CompilerExceptionsTest {
         new Compiler().compileClass(UnsupportedExceptionArgument.class.getName());
     }
 
+    @Test
+    public void throwExceptionIfTwoEventsAreGivenTheSameName() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Two events", "transfer")));
+        new Compiler().compileClass(DuplicateUseOfEventDisplayName.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -100,5 +109,19 @@ public class CompilerExceptionsTest {
         }
     }
 
+    static class DuplicateUseOfEventDisplayName {
+
+        @DisplayName("transfer")
+        private static Event1Arg<String> event1;
+
+        @DisplayName("transfer")
+        private static Event1Arg<String> event2;
+
+        public static boolean method() throws Exception {
+            event1.notify("notification");
+            event2.notify("notification");
+            return true;
+        }
+    }
 }
 

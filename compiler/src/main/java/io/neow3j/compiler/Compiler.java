@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
+import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
 import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
@@ -20,6 +21,7 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
+import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.utils.Numeric;
@@ -31,11 +33,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -96,7 +100,7 @@ public class Compiler {
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
         }
-       try {
+        try {
             typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
             Class<?> clazz = Class.forName(typeName);
             if (Arrays.asList(clazz.getInterfaces()).contains(ApiInterface.class)) {
@@ -246,7 +250,7 @@ public class Compiler {
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
 
-    private void collectAndInitializeStaticFields(ClassNode asmClass) {
+    private void collectAndInitializeStaticFields(ClassNode asmClass) throws IOException {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
             return;
         }
@@ -256,13 +260,35 @@ public class Compiler {
                     getFullyQualifiedNameForInternalName(asmClass.name), MAX_STATIC_FIELDS));
         }
         if (asmClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
-            throw new CompilerException(format("Class %s has non-static fields but only"
-                            + " static fields are supported in smart contract classes.",
+            throw new CompilerException(format("Class %s has non-static fields but only static "
+                            + "fields are supported in smart contract classes.",
                     getFullyQualifiedNameForInternalName(asmClass.name)));
         }
         checkForUsageOfInstanceConstructor(asmClass);
+        collectSmartContractEvents(asmClass);
         NeoMethod neoMethod = createInitsslotMethod(asmClass);
         compUnit.getNeoModule().addMethod(neoMethod);
+    }
+
+    private void collectSmartContractEvents(ClassNode asmClass) throws IOException {
+        if (asmClass.fields == null || asmClass.fields.size() == 0) {
+            return;
+        }
+        List<FieldNode> eventFields = asmClass.fields.stream().filter(field -> {
+            try {
+                return isEvent(getInternalNameForDescriptor(field.desc));
+            } catch (IOException e) {
+                throw new CompilerException(e);
+            }
+        }).collect(Collectors.toList());
+
+        if (eventFields.size() == 0) {
+            return;
+        }
+
+        eventFields.forEach(field -> {
+            compUnit.getNeoModule().addEvent(new NeoEvent(field, asmClass));
+        });
     }
 
     // Checks if there are any instructions in the given classes <init> method (the instance
@@ -415,7 +441,8 @@ public class Compiler {
     // Goes through the instructions of the given method and looks for the call to the `Object`
     // constructor. I.e., the given method should be a constructor. Super calls to other classes
     // are not allowed and lead to an exception.
-    public static MethodInsnNode findSuperCallToObjectCtor(MethodNode constructor, ClassNode owner) {
+    public static MethodInsnNode findSuperCallToObjectCtor(MethodNode constructor,
+            ClassNode owner) {
         Iterator<AbstractInsnNode> it = constructor.instructions.iterator();
         AbstractInsnNode insn = null;
         while (it.hasNext()) {
@@ -472,7 +499,14 @@ public class Compiler {
         neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
     }
 
-    public static void addInstruction(MethodNode asmMethod, NeoMethod neoMethod) {
+    /**
+     * Assumes that the given ASM method has one or more {@link Instruction} annotations and adds
+     * those instructions to the given {@code NeoMethod}.
+     *
+     * @param asmMethod The ASM method with the annotation(s).
+     * @param neoMethod The {@code NeoMethod} that the instructions will be added to.
+     */
+    public static void addInstructionsFromAnnotation(MethodNode asmMethod, NeoMethod neoMethod) {
         AnnotationNode insnAnnotation = asmMethod.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Instructions.class))
                         || a.desc.equals(Type.getDescriptor(Instruction.class)))
@@ -536,6 +570,26 @@ public class Compiler {
                 .toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
+    }
+
+    /**
+     * Checks if the given class is an event.
+     *
+     * @param classInternalName instructions under inspection.
+     * @return true, if the given class is an event. False, otherwise.
+     * @throws IOException if an error occurs when loading classes.
+     */
+    public static boolean isEvent(String classInternalName)
+            throws IOException {
+
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(getFullyQualifiedNameForInternalName(classInternalName));
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+        return clazz.getInterfaces() != null && clazz.getInterfaces().length == 1
+                && clazz.getInterfaces()[0].equals(Event.class);
     }
 
 }

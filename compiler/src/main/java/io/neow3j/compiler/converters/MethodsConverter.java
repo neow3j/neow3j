@@ -3,7 +3,7 @@ package io.neow3j.compiler.converters;
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
-import static io.neow3j.compiler.Compiler.addInstruction;
+import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addLoadConstant;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
@@ -119,7 +119,7 @@ public class MethodsConverter implements Converter {
         if (hasSyscallAnnotation(calledAsmMethod.get())) {
             addSyscall(calledAsmMethod.get(), callingNeoMethod);
         } else if (hasInstructionAnnotation(calledAsmMethod.get())) {
-            addInstruction(calledAsmMethod.get(), callingNeoMethod);
+            addInstructionsFromAnnotation(calledAsmMethod.get(), callingNeoMethod);
         } else if (isContractCall(owner)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, owner);
         } else if (isSrtingLiteralConverter(calledAsmMethod.get(), owner)) {
