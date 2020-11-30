@@ -11,7 +11,8 @@ public class EventsContract {
     @DisplayName("displayName")
     private static Event5Args<String, Integer, Boolean, String, Object> event2;
 
-    public static boolean main() {
-        return true;
+    public static void main() {
+        event1.send("notification", 0);
+        event2.send("notification", 0, false, "notification", "notification");
     }
 }

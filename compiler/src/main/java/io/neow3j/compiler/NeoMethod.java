@@ -750,13 +750,13 @@ public class NeoMethod {
 
     private static class TryCatchFinallyBlock {
 
-        protected LabelNode tryLabelNode;
-        protected LabelNode endTryLabelNode;
-        protected LabelNode catchLabelNode;
-        protected LabelNode endCatchLabelNode;
-        protected LabelNode finallyLabelNode;
+        private final LabelNode tryLabelNode;
+        private final LabelNode endTryLabelNode;
+        private final LabelNode catchLabelNode;
+        private final LabelNode endCatchLabelNode;
+        private final LabelNode finallyLabelNode;
 
-        TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
+        private TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
                 LabelNode catchLabelNode, LabelNode endCatchLabelNode,
                 LabelNode finallyLabelNode) {
             this.tryLabelNode = tryLabelNode;

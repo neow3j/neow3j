@@ -77,16 +77,16 @@ public class NeoEvent {
         private final String name;
         private final Type type;
 
-        Param(String name, Type type) {
+        private Param(String name, Type type) {
             this.name = name;
             this.type = type;
         }
 
-        String getAsStringForDebugInfo() {
+        private String getAsStringForDebugInfo() {
             return name + "," + Compiler.mapTypeToParameterType(type).jsonValue();
         }
 
-        ContractParameter getAsContractParameter() {
+        private ContractParameter getAsContractParameter() {
             return new ContractParameter(name, Compiler.mapTypeToParameterType(type), null);
         }
 
