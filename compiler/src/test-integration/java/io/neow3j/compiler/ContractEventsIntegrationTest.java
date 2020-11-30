@@ -66,13 +66,14 @@ public class ContractEventsIntegrationTest extends ContractTest {
         private static Event5Args<String, Integer, Boolean, String, Object> event2;
 
         public static boolean fireTwoEvents() {
-            event1.send("event text", 10);
-            event2.send("event text", 10, true, "more text", "an object");
+            Runtime.notify("hello");
+            event1.notify("event text", 10);
+            event2.notify("event text", 10, true, "more text", "an object");
             return true;
         }
 
         public static void fireEventWithMethodReturnValueAsArgument() {
-            event1.send(Runtime.getPlatform(), (int)Blockchain.getHeight());
+            event1.notify(Runtime.getPlatform(), (int)Blockchain.getHeight());
         }
     }
 
