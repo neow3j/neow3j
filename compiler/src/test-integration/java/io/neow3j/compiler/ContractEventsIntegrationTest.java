@@ -1,12 +1,16 @@
 package io.neow3j.compiler;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event5Args;
+import io.neow3j.devpack.neo.Blockchain;
+import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import java.util.List;
@@ -14,7 +18,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ContractEventsIntegrationTest extends ContractTest {
-
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -42,17 +45,34 @@ public class ContractEventsIntegrationTest extends ContractTest {
         assertThat(state.get(4).asByteString().getAsString(), is("an object"));
     }
 
+    @Test
+    public void fireEventWithMethodReturnValueAsArgument() throws Throwable {
+        String txHash = invokeFunctionAndAwaitExecution();
+        NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
+        List<NeoApplicationLog.Notification> notifications = log.getNotifications();
+        assertThat(notifications, hasSize(1));
+
+        assertThat(notifications.get(0).getEventName(), is("event1"));
+        ArrayStackItem state = notifications.get(0).getState().asArray();
+        assertThat(state.get(0).asByteString().getAsString(), is("NEO"));
+        assertThat(state.get(1).asInteger().getValue().intValue(), greaterThanOrEqualTo(1));
+    }
+
     static class ContractEvents {
 
-        static Event2Args<String, Integer> event1;
+        private static Event2Args<String, Integer> event1;
 
         @DisplayName("displayName")
-        static Event5Args<String, Integer, Boolean, String, Object> event2;
+        private static Event5Args<String, Integer, Boolean, String, Object> event2;
 
         public static boolean fireTwoEvents() {
             event1.send("event text", 10);
             event2.send("event text", 10, true, "more text", "an object");
             return true;
+        }
+
+        public static void fireEventWithMethodReturnValueAsArgument() {
+            event1.send(Runtime.getPlatform(), (int)Blockchain.getHeight());
         }
     }
 
