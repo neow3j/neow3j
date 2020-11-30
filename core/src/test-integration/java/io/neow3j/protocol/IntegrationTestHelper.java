@@ -10,7 +10,7 @@ import org.testcontainers.utility.MountableFile;
 
 public class IntegrationTestHelper {
 
-    static final String NEO3_PRIVATENET_CONTAINER_IMG = "docker.pkg.github.com" +
+    static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
             "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
