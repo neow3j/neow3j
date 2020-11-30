@@ -108,7 +108,6 @@ public class DebugInfo {
                     .append(neoMethod.getStartAddress() + insn.getAddress())
                     .append("[").append(documentIndex).append("]")
                     .append(insn.getLineNr())
-                    // TODO: Change once it is possible to know the instruction's column number.
                     .append(":0-")
                     .append(insn.getLineNr())
                     .append(":0")
