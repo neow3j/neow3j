@@ -50,7 +50,7 @@ public class ContractTest {
     // Exposed port of the neo node running in the docker container.
     protected static int EXPOSED_JSONRPC_PORT = 40332;
     protected static final String NEO3_PRIVATENET_CONTAINER_IMG =
-            "docker.pkg.github.com/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
+            "ghcr.io/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
 
     protected static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
@@ -91,7 +91,7 @@ public class ContractTest {
 
     protected static void setUp(String name) throws Throwable {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        defaultAccount = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
+        defaultAccount = Account.fromWIF("L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda");
         committeeMember = Account.createMultiSigAccount(
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committeeMember);

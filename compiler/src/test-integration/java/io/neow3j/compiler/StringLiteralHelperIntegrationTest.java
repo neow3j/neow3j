@@ -24,7 +24,7 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
     public void addressToScriptHashInMethod() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         String littleEndianScriptHash = Numeric.reverseHexString(
-                "cc45cc8987b0e35371f5685431e3c8eeea306722");
+                "0f46dc4287b70117ce8354924b5cb3a47215ad93");
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
                 is(littleEndianScriptHash));
     }
@@ -33,7 +33,7 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
     public void addressToScriptHashInStaticVariableInitialization() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         String littleEndianScriptHash = Numeric.reverseHexString(
-                "cc45cc8987b0e35371f5685431e3c8eeea306722");
+                "0f46dc4287b70117ce8354924b5cb3a47215ad93");
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
                 is(littleEndianScriptHash));
     }
@@ -42,7 +42,7 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
     public void addressToScriptHashInLocalVariable() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         String littleEndianScriptHash = Numeric.reverseHexString(
-                "cc45cc8987b0e35371f5685431e3c8eeea306722");
+                "0f46dc4287b70117ce8354924b5cb3a47215ad93");
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
                 is(littleEndianScriptHash));
     }
@@ -98,14 +98,14 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
     static class StringLiterals {
 
         private static final byte[] scriptHash =
-                addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
+                addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
 
         private static final byte[] bytes = hexToBytes("0x010203");
 
         private static final int integer = stringToInt("1000000000000000000000000000000");
 
         public static byte[] addressToScriptHashInMethod() {
-            return addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
+            return addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
         }
 
         public static byte[] addressToScriptHashInStaticVariableInitialization() {
@@ -113,7 +113,7 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
         }
 
         public static byte[] addressToScriptHashInLocalVariable() {
-            byte[] bytes = addressToScriptHash("AJunErzotcQTNWP2qktA7LgkXZVdHea97H");
+            byte[] bytes = addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
             return bytes;
         }
 

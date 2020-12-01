@@ -75,7 +75,7 @@ public class ECKeyPairTest {
     @Test
     public void getAddress() {
         final String privKey = "a7038726c5a127989d78593c423e3dad93b2d74db90a16c0a58468c9e6617a87";
-        final String expectedAddress = "ARhJPYxmizqheBQA2dSQAHWfQQsbTSba2S";
+        final String expectedAddress = "NVqPvouR2QjzBBakmDRxi3gGHYbtnhRvfn";
         ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(privKey));
         assertThat(pair.getAddress(), is(expectedAddress));
     }

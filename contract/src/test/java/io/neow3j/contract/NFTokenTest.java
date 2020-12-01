@@ -40,7 +40,7 @@ public class NFTokenTest {
     private Account account1;
     private Account account2;
     private Account account3;
-    public static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromAddress("ATv43G3Lv8uGPW7nVhXTUuL1T75qSajKSe");
+    public static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
     private static final byte[] TOKEN_ID = new byte[]{1, 2, 3};
     private static final String TRANSFER = "transfer";
     NFToken nfTestToken;
@@ -229,8 +229,8 @@ public class NFTokenTest {
 
         assertThat(ownedTokens, hasSize(2));
         assertThat(ownedTokens, contains(
-                ScriptHash.fromAddress("AQVFzBueoJ4qFcYtZmFLfoCoSs4HMHZ3jj"),
-                ScriptHash.fromAddress("ALBWw6P15gWiCTDNKg8LxFdHDAYxYnt7dN")));
+                ScriptHash.fromAddress("NUdMXSrJ6hy7ncjVJMEuDZNQKznafQrPgP"),
+                ScriptHash.fromAddress("NQKcUMKeP6QzjTPy4G7uW1nt6JHFw9ojB7")));
     }
 
     @Test

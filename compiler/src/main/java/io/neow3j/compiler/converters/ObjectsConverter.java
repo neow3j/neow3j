@@ -2,34 +2,41 @@ package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getFieldIndex;
+import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.INSTANCE_CTOR;
-import static io.neow3j.compiler.Compiler.addInstruction;
+import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
+import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
 import static io.neow3j.compiler.Compiler.handleInsn;
+import static io.neow3j.compiler.Compiler.isEvent;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static org.objectweb.asm.Type.getInternalName;
 
+import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
-import io.neow3j.compiler.LocalVariableHelper;
+import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.utils.Numeric;
 import java.io.IOException;
+import java.util.List;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -53,7 +60,12 @@ public class ObjectsConverter implements Converter {
                 addStoreStaticField(insn, neoMethod);
                 break;
             case GETSTATIC:
-                addLoadStaticField(insn, neoMethod);
+                FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+                if (isEvent(getInternalNameForDescriptor(fieldInsn.desc))) {
+                    insn = convertEvent(fieldInsn, neoMethod, compUnit);
+                } else {
+                    addLoadStaticField(fieldInsn, neoMethod);
+                }
                 break;
             case CHECKCAST:
                 // Check if the object on the operand stack can be cast to a given type.
@@ -72,8 +84,7 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
-    public static void addLoadStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
-        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+    public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod) {
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
     }
@@ -91,10 +102,14 @@ public class ObjectsConverter implements Converter {
         assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode()
                 : "Expected DUP after NEW but got other instructions";
 
-        if (typeInsn.desc.equals(getInternalName(StringBuilder.class))) {
+        if (isNewStringBuilder(typeInsn)) {
             // Java, in the background, performs String concatenation, like `s1 + s2`, with the
             // instantiation of a StringBuilder. This is handled here.
             return handleStringConcatenation(typeInsn, callingNeoMethod, compUnit);
+        }
+
+        if (isNewThrowable(typeInsn, compUnit)) {
+            return handleNewThrowable(typeInsn, callingNeoMethod, compUnit);
         }
 
         ClassNode owner = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
@@ -115,7 +130,7 @@ public class ObjectsConverter implements Converter {
             // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can
             // follow. Those are handled in the following while.
             insn = insn.getNext().getNext();
-            while (!isCallToCtor(insn, owner)) {
+            while (!isCallToCtor(insn, owner.name)) {
                 insn = handleInsn(insn, callingNeoMethod, compUnit);
                 insn = insn.getNext();
             }
@@ -123,10 +138,73 @@ public class ObjectsConverter implements Converter {
             if (hasAnnotations(ctorMethod, Syscall.class, Syscalls.class)) {
                 addSyscall(ctorMethod, callingNeoMethod);
             } else if (hasAnnotations(ctorMethod, Instruction.class, Instructions.class)) {
-                addInstruction(ctorMethod, callingNeoMethod);
+                addInstructionsFromAnnotation(ctorMethod, callingNeoMethod);
             }
             return insn;
         }
+    }
+
+    private static boolean isNewStringBuilder(TypeInsnNode typeInsn) {
+        return typeInsn.desc.equals(getInternalName(StringBuilder.class));
+    }
+
+    private static boolean isNewThrowable(TypeInsnNode typeInsn,
+            CompilationUnit compUnit) throws IOException {
+
+        ClassNode type = AsmHelper.getAsmClassForInternalName(typeInsn.desc,
+                compUnit.getClassLoader());
+
+        if (getFullyQualifiedNameForInternalName(type.name).equals(
+                Throwable.class.getCanonicalName())) {
+            return true;
+        }
+        while (type.superName != null) {
+            type = getAsmClassForInternalName(type.superName, compUnit.getClassLoader());
+            if (getFullyQualifiedNameForInternalName(type.name).equals(
+                    Throwable.class.getCanonicalName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static AbstractInsnNode handleNewThrowable(TypeInsnNode typeInsn,
+            NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
+
+        if (!Exception.class.getCanonicalName()
+                .equals(getFullyQualifiedNameForInternalName(typeInsn.desc))) {
+            throw new CompilerException(callingNeoMethod, format("Contract uses exception of type "
+                            + "%s but only %s is allowed.",
+                    getFullyQualifiedNameForInternalName(typeInsn.desc),
+                    Exception.class.getCanonicalName()));
+        }
+        // Skip to the next instruction after DUP.
+        AbstractInsnNode insn = typeInsn.getNext().getNext();
+        // Process any instructions that come before the INVOKESPECIAL, e.g., a PUSHDATA insn.
+        while (!isCallToCtor(insn, Type.getType(Exception.class).getInternalName())) {
+            insn = handleInsn(insn, callingNeoMethod, compUnit);
+            insn = insn.getNext();
+        }
+
+        Type[] argTypes = Type.getType(((MethodInsnNode) insn).desc).getArgumentTypes();
+        if (argTypes.length > 1) {
+            throw new CompilerException(callingNeoMethod, format("An exception thrown in a contract"
+                    + " can either take no arguments or a String argument. You provided %d "
+                    + "arguments.", argTypes.length));
+        }
+        if (argTypes.length == 1 &&
+                !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
+                        .equals(String.class.getCanonicalName())) {
+            throw new CompilerException(callingNeoMethod, "An exception thrown in a contract can "
+                    + "either take no arguments or a String argument. You provided a non-string "
+                    + "argument.");
+
+        }
+        if (argTypes.length == 0) {
+            // No exception message is given, thus we add a dummy message.
+            callingNeoMethod.addInstruction(buildPushDataInsn("error"));
+        }
+        return insn;
     }
 
     /**
@@ -194,7 +272,7 @@ public class ObjectsConverter implements Converter {
 
         while (insn.getNext() != null) {
             insn = insn.getNext();
-            if (isCallToCtor(insn, owner)) {
+            if (isCallToCtor(insn, owner.name)) {
                 return (MethodInsnNode) insn;
             }
         }
@@ -234,7 +312,7 @@ public class ObjectsConverter implements Converter {
         // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can
         // follow. Those are handled in the following while.
         AbstractInsnNode insn = typeInsn.getNext().getNext();
-        while (!isCallToCtor(insn, owner)) {
+        while (!isCallToCtor(insn, owner.name)) {
             insn = handleInsn(insn, callingNeoMethod, compUnit);
             insn = insn.getNext();
         }
@@ -247,10 +325,50 @@ public class ObjectsConverter implements Converter {
     }
 
     // Checks if the given instruction is a call to the given classes constructor (i.e., <init>).
-    private static boolean isCallToCtor(AbstractInsnNode insn, ClassNode owner) {
+    private static boolean isCallToCtor(AbstractInsnNode insn, String ownerInternalName) {
         return insn.getType() == AbstractInsnNode.METHOD_INSN
-                && ((MethodInsnNode) insn).owner.equals(owner.name)
+                && ((MethodInsnNode) insn).owner.equals(ownerInternalName)
                 && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
+    }
+
+    private static AbstractInsnNode convertEvent(FieldInsnNode eventFieldInsn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+
+        String eventVariableName = eventFieldInsn.name;
+        List<NeoEvent> events = compUnit.getNeoModule().getEvents();
+        NeoEvent event = events.stream()
+                .filter(e -> eventVariableName.equals(e.getAsmVariable().name))
+                .findFirst().orElseThrow(() -> new CompilerException(neoMethod, "Couldn't find "
+                        + "triggered event in list of events."));
+
+        AbstractInsnNode insn = eventFieldInsn.getNext();
+        while (!isMethodCallToEventSend(insn)) {
+            insn = handleInsn(insn, neoMethod, compUnit);
+            insn = insn.getNext();
+            assert insn != null : "Expected to find call to send() method of an event but reached"
+                    + " the end of the instructions.";
+        }
+
+        // The current instruction is the method call to Event.send(...). We can pack the arguments
+        // and do the syscall instead of actually calling the send(...) method.
+        addReverseArguments(neoMethod, event.getNumberOfParams());
+        addPushNumber(event.getNumberOfParams(), neoMethod);
+        neoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
+        neoMethod.addInstruction(buildPushDataInsn(event.getDisplayName()));
+        byte[] syscallHash = Numeric.hexStringToByteArray(
+                InteropServiceCode.SYSTEM_RUNTIME_NOTIFY.getHash());
+        neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, syscallHash));
+        return insn;
+    }
+
+    private static boolean isMethodCallToEventSend(AbstractInsnNode insn)
+            throws IOException {
+
+        if (!(insn instanceof MethodInsnNode)) {
+            return false;
+        }
+        MethodInsnNode methodInsn = (MethodInsnNode) insn;
+        return isEvent(methodInsn.owner);
     }
 
 }

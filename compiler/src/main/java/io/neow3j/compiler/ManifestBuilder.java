@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -73,9 +74,11 @@ public class ManifestBuilder {
     }
 
     private static ContractABI buildABI(NeoModule neoModule, ScriptHash scriptHash) {
+        List<ContractEvent> events = neoModule.getEvents().stream()
+                .map(NeoEvent::getAsContractManifestEvent)
+                .collect(Collectors.toList());
+
         List<ContractMethod> methods = new ArrayList<>();
-        // TODO: Fill events list.
-        List<ContractEvent> events = new ArrayList<>();
         for (NeoMethod neoMethod : neoModule.getSortedMethods()) {
             if (!neoMethod.isAbiMethod()) {
                 // TODO: This needs to change when enabling inheritance.

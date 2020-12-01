@@ -88,8 +88,6 @@ public class Runtime {
      *
      * @param state The state to send with the notification.
      */
-    // TODO: For documentation, figure out if each state object leads a separate notification
-    //  object.
     @Syscall(SYSTEM_RUNTIME_NOTIFY)
     public static native void notify(Object... state);
 

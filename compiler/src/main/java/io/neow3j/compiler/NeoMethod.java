@@ -3,26 +3,33 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
 import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.utils.ClassUtils;
+import io.neow3j.utils.ArrayUtils;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
 
 /**
  * Represents a method in a NeoVM script.
@@ -51,6 +58,10 @@ public class NeoMethod {
     // track of possible jump targets. This is needed when resolving jump addresses for
     // opcodes like JMPIF.
     private Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
+
+    // This list contains those instructions that represent the beginning of a try block.
+    // All instructions in this list are also present in the `instructions` map.
+    private List<NeoTryInstruction> tryInstructions = new ArrayList<>();
 
     // This method's local variables (excl. method parametrs).
     private SortedMap<Integer, NeoVariable> variablesByNeoIndex = new TreeMap<>();
@@ -89,6 +100,8 @@ public class NeoMethod {
     // number is added to the instruction.
     private boolean isFreshNewLine = false;
 
+    private List<TryCatchFinallyBlock> tryCatchFinallyBlocks = new ArrayList<>();
+
     /**
      * Constructs a new Neo method.
      *
@@ -99,6 +112,81 @@ public class NeoMethod {
         this.asmMethod = asmMethod;
         this.name = asmMethod.name;
         this.sourceClass = sourceClass;
+        collectTryCatchBlocks(asmMethod.tryCatchBlocks);
+    }
+
+    // Sifts through the exception table of this method and constructs try-catch-finally blocks
+    // that are later used to insert the corresponding instructions into the VM script.
+    private void collectTryCatchBlocks(List<TryCatchBlockNode> blockNodes) {
+        if (blockNodes == null || blockNodes.isEmpty()) {
+            return;
+        }
+        checkForUnsupportedExceptionTypes(blockNodes);
+        Set<TryCatchBlockNode> parsedNodes = collectBlocksWithCatchAndOptionallyFinally(blockNodes);
+        collectBlocksWithNoCatchButFinally(blockNodes, parsedNodes);
+    }
+
+    private void checkForUnsupportedExceptionTypes(List<TryCatchBlockNode> blockNodes) {
+        Optional<String> unsupportedException = blockNodes.stream()
+                .map(node -> node.type)
+                .filter(type -> type != null &&
+                        !type.equals(Type.getType(Exception.class).getInternalName()))
+                .findFirst();
+
+        if (unsupportedException.isPresent()) {
+            throw new CompilerException(sourceClass, format("Contract tries to catch an exception "
+                            + "of type %s but only %s is supported.",
+                    getFullyQualifiedNameForInternalName(unsupportedException.get()),
+                    Exception.class.getCanonicalName()));
+        }
+    }
+
+    // Go through blocks that have a try, catch, and optionally a finally block. Blocks that
+    // have a try and finally only are processed later.
+    private Set<TryCatchBlockNode> collectBlocksWithCatchAndOptionallyFinally(
+            List<TryCatchBlockNode> blockNodes) {
+
+        Set<TryCatchBlockNode> parsedNodes = new HashSet<>();
+        for (TryCatchBlockNode block : blockNodes) {
+            if (block.type != null) {
+                parsedNodes.add(block);
+
+                // Get the catch block for this try block.
+                Optional<TryCatchBlockNode> catchBlockNode = blockNodes.stream()
+                        .filter(b -> b.type == null && b.start == block.handler)
+                        .findFirst();
+                LabelNode endCatchLabelNode = null;
+                if (catchBlockNode.isPresent()) {
+                    parsedNodes.add(catchBlockNode.get());
+                    endCatchLabelNode = catchBlockNode.get().end;
+                }
+
+                // Check if there is a finally block for this try block.
+                Optional<TryCatchBlockNode> finallyBlockNode = blockNodes.stream()
+                        .filter(b -> b.type == null && b.start == block.start && b.end == block.end)
+                        .findFirst();
+                LabelNode finallyLabelNode = null;
+                if (finallyBlockNode.isPresent()) {
+                    parsedNodes.add(finallyBlockNode.get());
+                    finallyLabelNode = finallyBlockNode.get().handler;
+                }
+
+                tryCatchFinallyBlocks.add(new TryCatchFinallyBlock(block.start, block.end,
+                        block.handler, endCatchLabelNode, finallyLabelNode));
+            }
+        }
+        return parsedNodes;
+    }
+
+    // Filter for blocks that only have a try and finally part. Those blocks have not been
+    // processed above, don't have a exception type set, and the start is not equal the handler.
+    private void collectBlocksWithNoCatchButFinally(List<TryCatchBlockNode> blockNodes,
+            Set<TryCatchBlockNode> parsedNodes) {
+
+        blockNodes.stream().filter(blockNode -> !parsedNodes.contains(blockNode)
+                && blockNode.type == null && blockNode.start != blockNode.handler)
+                .forEach(block -> tryCatchFinallyBlocks.add(
+                        new TryCatchFinallyBlock(block.start, block.end, null, null, block.handler)));
     }
 
     /**
@@ -125,7 +213,7 @@ public class NeoMethod {
      * @return the fully qualified name of the corresponding class.
      */
     public String getOwnerClassName() {
-        return ClassUtils.getFullyQualifiedNameForInternalName(sourceClass.name);
+        return getFullyQualifiedNameForInternalName(sourceClass.name);
     }
 
     /**
@@ -289,7 +377,7 @@ public class NeoMethod {
     /**
      * Adds a local variable to this method.
      */
-    void addVariable(NeoVariable var) {
+    public void addVariable(NeoVariable var) {
         this.variablesByNeoIndex.put(var.getNeoIndex(), var);
         this.variablesByJVMIndex.put(var.getJvmIndex(), var);
     }
@@ -299,7 +387,7 @@ public class NeoMethod {
      *
      * @return the variable.
      */
-    NeoVariable getVariableByJVMIndex(int index) {
+    public NeoVariable getVariableByJVMIndex(int index) {
         return this.variablesByJVMIndex.get(index);
     }
 
@@ -308,8 +396,68 @@ public class NeoMethod {
      *
      * @return the parameter.
      */
-    NeoVariable getParameterByJVMIndex(int index) {
+    public NeoVariable getParameterByJVMIndex(int index) {
         return this.parametersByJVMIndex.get(index);
+    }
+
+    /**
+     * Converts the JVM instructions of this method to neo-vm instructions.
+     *
+     * @param compUnit The compilation unit.
+     * @throws IOException If an error occurs when reading class files.
+     */
+    public void convert(CompilationUnit compUnit) throws IOException {
+        AbstractInsnNode insn = asmMethod.instructions.get(0);
+        while (insn != null) {
+            insn = Compiler.handleInsn(insn, this, compUnit);
+            insn = insn.getNext();
+        }
+        insertTryCatchBlocks();
+    }
+
+    private void insertTryCatchBlocks() {
+        for (TryCatchFinallyBlock block : tryCatchFinallyBlocks) {
+            insertTryInstruction(block);
+        }
+    }
+
+    private void insertTryInstruction(TryCatchFinallyBlock block) {
+        NeoInstruction insn = jumpTargets.get(block.tryLabelNode.getLabel());
+        if (insn == null) {
+            throw new CompilerException(sourceClass, "Could not find the beginning instruction of "
+                    + "a try block.");
+        }
+        int addr = insn.getAddress();
+        Label catchLabel = null;
+        if (block.catchLabelNode != null) {
+            catchLabel = block.catchLabelNode.getLabel();
+        }
+        Label finallyLabel = null;
+        if (block.finallyLabelNode != null) {
+            finallyLabel = block.finallyLabelNode.getLabel();
+        }
+        NeoTryInstruction tryInsn = new NeoTryInstruction(catchLabel, finallyLabel);
+        insertInstruction(addr, tryInsn);
+        tryInstructions.add(tryInsn);
+    }
+
+    // Adds the given instruction at the given address into the sorted instructions map of this
+    // method. The address is set on the instruction as well. Shifts all instructions
+    // with an address equal or bigger than the given address by the size of the new instructions.
+    private void insertInstruction(int atAddr, NeoInstruction newInsn) {
+        SortedMap<Integer, NeoInstruction> head = instructions.headMap(atAddr);
+        SortedMap<Integer, NeoInstruction> tail = instructions.tailMap(atAddr);
+        SortedMap<Integer, NeoInstruction> newMap = new TreeMap<>();
+        newMap.putAll(head);
+        newInsn.setAddress(atAddr);
+        newMap.put(newInsn.getAddress(), newInsn);
+        int shift = newInsn.byteSize();
+        tail.forEach((i, insn) -> {
+            insn.setAddress(i + shift);
+            newMap.put(i + shift, insn);
+        });
+        instructions = newMap;
+        increaseLastAddress(newInsn);
     }
 
     /**
@@ -345,6 +493,10 @@ public class NeoMethod {
         if (neoInsn instanceof NeoJumpInstruction) {
             this.jumpInstructions.add((NeoJumpInstruction) neoInsn);
         }
+        increaseLastAddress(neoInsn);
+    }
+
+    private void increaseLastAddress(NeoInstruction neoInsn) {
         this.lastAddress += 1 + neoInsn.getOperand().length;
     }
 
@@ -405,7 +557,7 @@ public class NeoMethod {
      *
      * @return the byte array.
      */
-    byte[] toByteArray() {
+    public byte[] toByteArray() {
         byte[] bytes = new byte[byteSize()];
         int i = 0;
         for (NeoInstruction insn : this.instructions.values()) {
@@ -428,8 +580,17 @@ public class NeoMethod {
     }
 
     protected void finalizeMethod() {
-        // Update the jump instructions with the correct target address offset.
+        setJumpInstructionOffsets();
+        setTryInstructionOffsets();
+    }
+
+    // Updates the jump instructions with the correct target address offset.
+    private void setJumpInstructionOffsets() {
         for (NeoJumpInstruction jumpInsn : this.jumpInstructions) {
+            if (jumpInsn.getLabel() == null) {
+                // If no label is set, we assume that the correct offset is already set.
+                continue;
+            }
             if (!this.jumpTargets.containsKey(jumpInsn.getLabel())) {
                 throw new CompilerException(format("Missing jump target for opcode %s, at source "
                                 + "code line number %d.", jumpInsn.getOpcode().name(),
@@ -441,6 +602,38 @@ public class NeoMethod {
             // can therefore always use 4-byte operand.
             jumpInsn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
                     .putInt(offset).array());
+        }
+    }
+
+    // Updates the try instructions (TRY_L) with the correct address offsets for the catch and
+    // finally blocks.
+    private void setTryInstructionOffsets() {
+        for (NeoTryInstruction tryInsn : this.tryInstructions) {
+            byte[] catchOffset = new byte[4];
+            if (tryInsn.getCatchOffsetLabel() != null) {
+                if (!this.jumpTargets.containsKey(tryInsn.getCatchOffsetLabel())) {
+                    throw new CompilerException("Missing target instruction for catch block of a "
+                            + "try block");
+                }
+                NeoInstruction destInsn = this.jumpTargets.get(tryInsn.getCatchOffsetLabel());
+                int offset = destInsn.getAddress() - tryInsn.getAddress();
+                catchOffset = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset)
+                        .array();
+            }
+
+            byte[] finallyOffset = new byte[4];
+            if (tryInsn.getFinallyOffsetLabel() != null) {
+                if (!this.jumpTargets.containsKey(tryInsn.getFinallyOffsetLabel())) {
+                    throw new CompilerException("Missing target instruction for finally block of a "
+                            + "try block");
+                }
+                NeoInstruction destInsn = this.jumpTargets.get(tryInsn.getFinallyOffsetLabel());
+                int offset = destInsn.getAddress() - tryInsn.getAddress();
+                finallyOffset = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset)
+                        .array();
+            }
+
+            tryInsn.setOperand(ArrayUtils.concatenate(catchOffset, finallyOffset));
         }
     }
 
@@ -553,6 +746,25 @@ public class NeoMethod {
             }
         }
         return jvmIdx;
+    }
+
+    private static class TryCatchFinallyBlock {
+
+        private final LabelNode tryLabelNode;
+        private final LabelNode endTryLabelNode;
+        private final LabelNode catchLabelNode;
+        private final LabelNode endCatchLabelNode;
+        private final LabelNode finallyLabelNode;
+
+        private TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
+                LabelNode catchLabelNode, LabelNode endCatchLabelNode,
+                LabelNode finallyLabelNode) {
+            this.tryLabelNode = tryLabelNode;
+            this.endTryLabelNode = endTryLabelNode;
+            this.catchLabelNode = catchLabelNode;
+            this.endCatchLabelNode = endCatchLabelNode;
+            this.finallyLabelNode = finallyLabelNode;
+        }
     }
 
 }

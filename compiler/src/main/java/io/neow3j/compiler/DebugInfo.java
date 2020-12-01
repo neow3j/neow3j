@@ -8,10 +8,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.ClassUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Type;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -89,8 +91,9 @@ public class DebugInfo {
                     sequencePoints));
         }
 
-        // TODO: Build event information.
-        List<Event> events = new ArrayList<>();
+        List<Event> events = compUnit.getNeoModule().getEvents().stream()
+                .map(NeoEvent::getAsDebugInfoEvent)
+                .collect(Collectors.toList());
 
         return new DebugInfo(compUnit.getNefFile().getScriptHash(), documents, methods, events);
     }
@@ -105,7 +108,6 @@ public class DebugInfo {
                     .append(neoMethod.getStartAddress() + insn.getAddress())
                     .append("[").append(documentIndex).append("]")
                     .append(insn.getLineNr())
-                    // TODO: Change once it is possible to know the instruction's column number.
                     .append(":0-")
                     .append(insn.getLineNr())
                     .append(":0")
@@ -117,8 +119,12 @@ public class DebugInfo {
     private static List<String> collectVars(Collection<NeoVariable> vars) {
         List<String> varStrings = new ArrayList<>();
         for (NeoVariable var : vars) {
+            String name = var.getName();
+            if (name == null) {
+                continue;
+            }
             String type = mapTypeToParameterType(Type.getType(var.getDescriptor())).jsonValue();
-            varStrings.add(var.getName() + "," + type);
+            varStrings.add(name + "," + type);
         }
         return varStrings;
     }

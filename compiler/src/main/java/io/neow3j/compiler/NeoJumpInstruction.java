@@ -9,9 +9,8 @@ public class NeoJumpInstruction extends NeoInstruction {
     // that is labeled identically and that is this instruction's target.
     private Label label;
 
-    public NeoJumpInstruction(OpCode opcode, byte[] operand, Label label) {
+    public NeoJumpInstruction(OpCode opcode, byte[] operand) {
         super(opcode, operand);
-        this.label = label;
     }
 
     // Constructs a new jump instruction with a 4-byte, zero-valued operand. The operand is the

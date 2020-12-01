@@ -21,10 +21,9 @@ public class TokenTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
-    private Token neoToken;
-    private Token gasToken;
-    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
+    private Token someToken;
+    private static final ScriptHash SOME_TOKEN_SCRIPT_HASH =
+            new ScriptHash("f7014e6d52fe8f94f7c57acd8cfb875b4ac2a1c6");
 
     @Before
     public void setUp() {
@@ -33,33 +32,32 @@ public class TokenTest {
         WireMock.configureFor(port);
 
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        neoToken = new Token(NEO_TOKEN_SCRIPT_HASH, neow);
-        gasToken = new Token(GAS_TOKEN_SCRIPT_HASH, neow);
+        someToken = new Token(SOME_TOKEN_SCRIPT_HASH, neow);
     }
 
     @Test
     public void testGetName() throws IOException {
         setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
-        assertThat(neoToken.getName(), is("NEO"));
+        assertThat(someToken.getName(), is("ANT"));
     }
 
     @Test
     public void testGetSymbol() throws IOException {
         setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
-        assertThat(neoToken.getSymbol(), is("neo"));
+        assertThat(someToken.getSymbol(), is("ant"));
     }
 
     @Test
     public void testGetDecimals() throws Exception {
         setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
-        assertThat(gasToken.getDecimals(), is(8));
+                "invokefunction_decimals_nep5.json");
+        assertThat(someToken.getDecimals(), is(2));
     }
 
     @Test
     public void testGetTotalSupply() throws Exception {
         setUpWireMockForInvokeFunction("totalSupply",
                 "invokefunction_totalSupply.json");
-        assertThat(gasToken.getTotalSupply(), is(new BigInteger("3000000000000000")));
+        assertThat(someToken.getTotalSupply(), is(new BigInteger("3000000000000000")));
     }
 }

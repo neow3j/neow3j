@@ -17,7 +17,7 @@ public class CompilerException extends RuntimeException {
         super(owner.sourceFile + ": error:\n" + s);
     }
 
-    public CompilerException(ClassNotFoundException e) {
+    public CompilerException(Exception e) {
         super(e);
     }
 
