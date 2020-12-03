@@ -45,6 +45,8 @@ public enum InteropServiceCode {
     SYSTEM_BINARY_DESERIALIZE("System.Binary.Deserialize", 500_000),
     SYSTEM_BINARY_BASE64ENCODE("System.Binary.Base64Encode", 100_000),
     SYSTEM_BINARY_BASE64DECODE("System.Binary.Base64Decode", 100_000),
+    SYSTEM_BINARY_ITOA("System.Binary.Itoa", 100_000),
+    SYSTEM_BINARY_ATOI("System.Binary.Atoi", 100_000),
 
     SYSTEM_BLOCKCHAIN_GETHEIGHT("System.Blockchain.GetHeight", 400),
     SYSTEM_BLOCKCHAIN_GETBLOCK("System.Blockchain.GetBlock", 2_500_000),

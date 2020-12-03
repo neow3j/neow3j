@@ -1,7 +1,9 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.StackItem;
 
@@ -270,5 +272,16 @@ public class Helper {
     @Instruction(opcode = OpCode.REVERSEITEMS)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public static native String reverse(String source);
+
+
+    /**
+     * Converts the given number to its decimal string representation.
+     *
+     * @param i The number
+     * @return the string representation.
+     */
+    @Instruction(opcode = OpCode.PUSH10)
+    @Syscall(InteropServiceCode.SYSTEM_BINARY_ATOI)
+    public static native String toString(int i);
 
 }

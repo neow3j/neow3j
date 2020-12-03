@@ -5,6 +5,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_BASE64ENCODE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_DESERIALIZE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_SERIALIZE;
 
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.devpack.annotations.Syscall;
 
 public class Binary {
@@ -45,5 +46,28 @@ public class Binary {
      */
     @Syscall(SYSTEM_BINARY_BASE64DECODE)
     public static native byte[] base64Decode(String input);
+
+    /**
+     * Converts the given number to its string representation.
+     *
+     * @param i The number
+     * @param base The base to use for the string representation. Can be decimal (10) or
+     *             hexadecimal (16).
+     * @return the number as a string.
+     */
+    @Syscall(InteropServiceCode.SYSTEM_BINARY_ITOA)
+    public static native String itoa(int i, int base);
+
+    /**
+     * Converts the given number string into an integer.
+     *
+     * @param s The number string.
+     * @param base The base to use for interpreting the string. Can be decimal (10) or
+     *             hexadecimal (16).
+     * @return the number.
+     */
+    @Syscall(InteropServiceCode.SYSTEM_BINARY_ATOI)
+    public static native int atoi(String s, int base);
+
 
 }

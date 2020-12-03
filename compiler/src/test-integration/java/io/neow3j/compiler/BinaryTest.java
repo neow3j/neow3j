@@ -77,6 +77,55 @@ public class BinaryTest extends ContractTest {
         assertThat(decoded, is(expected));
     }
 
+    @Test
+    public void itoa() throws IOException {
+        // TODO: Retest when the docker image is up to date with preview4
+        // With base 10
+        NeoInvokeFunction response = callInvokeFunction(integer(100), integer(10));
+        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+                is("100"));
+
+        NeoInvokeFunction response = callInvokeFunction(integer(-1), integer(10));
+        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+                is("-1"));
+
+        // With base 16
+        response = callInvokeFunction(integer(105), integer(16));
+        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+                is("69"));
+
+        // With base 16
+        response = callInvokeFunction(integer(-1), integer(16));
+        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+                is("ff"));
+    }
+
+    @Test
+    public void atoi() throws IOException {
+        // TODO: Retest when the docker image is up to date with preview4
+        // With base 10
+        NeoInvokeFunction response = callInvokeFunction(string("100"), integer(10));
+        assertThat(
+                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                is(100));
+
+        response = callInvokeFunction(string("-1"), integer(10));
+        assertThat(
+                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                is(-1));
+
+        // With base 16
+        response = callInvokeFunction(string("69"), integer(16));
+        assertThat(
+                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                is(105));
+
+        response = callInvokeFunction(string("ff"), integer(16));
+        assertThat(
+                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                is(-1));
+    }
+
     static class BinaryContract {
 
         public static Object serializeAndDeserialize(boolean b, int i) {
@@ -94,6 +143,14 @@ public class BinaryTest extends ContractTest {
 
         public static byte[] base64Decode(String encoded) {
             return Binary.base64Decode(encoded);
+        }
+
+        public static String itoa(int i, int base) {
+            return Binary.itoa(i, base);
+        }
+
+        public static int atoi(String s, int base) {
+            return Binary.atoi(s, base);
         }
 
         static class SimpleClass {
