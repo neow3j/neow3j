@@ -13,6 +13,13 @@ public class Designation {
     public static native String name();
 
     /**
+     * Gets the script hash of the Designation contract.
+     *
+     * @return the script hash.
+     */
+    public static native byte[] hash();
+
+    /**
      * Gets the designates with the given {@link DesignateRole}.
      *
      * @param role The designate role.
