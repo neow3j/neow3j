@@ -11,11 +11,8 @@ import static io.neow3j.model.types.ContractParameterType.VOID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.devpack.neo.Map;
 import io.neow3j.devpack.neo.Transaction;
 import io.neow3j.model.types.ContractParameterType;
-import java.util.Arrays;
-import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
