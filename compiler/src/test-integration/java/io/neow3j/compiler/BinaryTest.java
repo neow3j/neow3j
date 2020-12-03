@@ -85,7 +85,7 @@ public class BinaryTest extends ContractTest {
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("100"));
 
-        NeoInvokeFunction response = callInvokeFunction(integer(-1), integer(10));
+        response = callInvokeFunction(integer(-1), integer(10));
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                 is("-1"));
 
