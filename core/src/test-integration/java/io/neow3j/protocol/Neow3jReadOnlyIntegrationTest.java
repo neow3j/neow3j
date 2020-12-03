@@ -281,9 +281,6 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(manifest);
         assertNotNull(manifest.getGroups());
         assertThat(manifest.getGroups(), hasSize(0));
-        assertNotNull(manifest.getFeatures());
-        assertTrue(manifest.getFeatures().getStorage());
-        assertFalse(manifest.getFeatures().getPayable());
 
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertNotNull(abi);

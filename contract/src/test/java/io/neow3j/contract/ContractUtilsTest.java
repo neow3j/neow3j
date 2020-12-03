@@ -15,7 +15,6 @@ import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractFeatures;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
 import java.io.File;
@@ -58,7 +57,7 @@ public class ContractUtilsTest {
     public void testGetContractManifestFilenameHappyPath() {
         HashMap<String, String> extras = new HashMap<>();
         extras.put("name", "blah");
-        ContractManifest m = new ContractManifest(null, null, null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest(null, null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is("blah" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -66,7 +65,7 @@ public class ContractUtilsTest {
     @Test
     public void testGetContractManifestFilenameNoManifestName() {
         HashMap<String, String> extras = new HashMap<>();
-        ContractManifest m = new ContractManifest(null, null, null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest(null, null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is(ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -75,7 +74,6 @@ public class ContractUtilsTest {
         ContractGroup cg1 = new ContractGroup("pubKey1", "sign1");
         ContractGroup cg2 = new ContractGroup("pubKey2", "sign2");
         List<ContractGroup> cgs = Arrays.asList(cg1, cg2);
-        ContractFeatures cfs = new ContractFeatures(true, false);
         List<String> supportedStandards = Arrays.asList("nothing", "blah");
 
         HashMap<String, Object> extras = new HashMap<>();
@@ -134,9 +132,8 @@ public class ContractUtilsTest {
         List<String> trusts = Arrays.asList("trust1", "trust2");
         List<String> safeMethods = Arrays.asList("safeMethods1", "safeMethods2");
 
-        ContractManifest cm = new ContractManifest(
+        return new ContractManifest(
                 cgs,
-                cfs,
                 supportedStandards,
                 abi,
                 contractPermissions,
@@ -144,7 +141,5 @@ public class ContractUtilsTest {
                 safeMethods,
                 extras
         );
-
-        return cm;
     }
 }

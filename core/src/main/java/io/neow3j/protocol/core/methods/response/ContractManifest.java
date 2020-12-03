@@ -17,9 +17,6 @@ public class ContractManifest {
     @JsonProperty("groups")
     private List<ContractGroup> groups;
 
-    @JsonProperty("features")
-    private ContractFeatures features;
-
     @JsonProperty("supportedstandards")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -52,7 +49,6 @@ public class ContractManifest {
     }
 
     public ContractManifest(List<ContractGroup> groups,
-            ContractFeatures features,
             List<String> supportedStandards,
             ContractABI abi,
             List<ContractPermission> permissions,
@@ -60,7 +56,6 @@ public class ContractManifest {
             List<String> safeMethods,
             Object extra) {
         this.groups = groups;
-        this.features = features;
         this.supportedStandards = supportedStandards;
         this.abi = abi;
         this.permissions = permissions;
@@ -71,10 +66,6 @@ public class ContractManifest {
 
     public List<ContractGroup> getGroups() {
         return groups;
-    }
-
-    public ContractFeatures getFeatures() {
-        return features;
     }
 
     public List<String> getSupportedStandards() {
@@ -115,7 +106,6 @@ public class ContractManifest {
         if (!(o instanceof ContractManifest)) return false;
         ContractManifest that = (ContractManifest) o;
         return Objects.equals(getGroups(), that.getGroups()) &&
-                Objects.equals(getFeatures(), that.getFeatures()) &&
                 Objects.equals(getAbi(), that.getAbi()) &&
                 Objects.equals(getPermissions(), that.getPermissions()) &&
                 Objects.equals(getTrusts(), that.getTrusts()) &&
@@ -127,7 +117,6 @@ public class ContractManifest {
     @Override
     public int hashCode() {
         return Objects.hash(getGroups(),
-                getFeatures(),
                 getAbi(),
                 getPermissions(),
                 getTrusts(),
@@ -140,8 +129,6 @@ public class ContractManifest {
     public String toString() {
         return "ContractManifest{" +
                 "groups=" + groups +
-                ", features=" + features +
-                ", features=" + features +
                 ", abi=" + abi +
                 ", permissions=" + permissions +
                 ", trusts=" + trusts +
@@ -196,58 +183,6 @@ public class ContractManifest {
             return "ContractGroup{" +
                     "pubKey=" + pubKey +
                     ", signature=" + signature +
-                    '}';
-        }
-    }
-
-    // Features available for the contract
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ContractFeatures {
-
-        // Note: 13.05.20 Michael: Neo documentation contains a third entry 'NoProperty', which is not
-        //  available in the current responses. If it will be, just add the additional JsonProperty here.
-
-        @JsonProperty("storage")
-        private Boolean storage;
-
-        @JsonProperty("payable")
-        private Boolean payable;
-
-        public ContractFeatures() {
-        }
-
-        public ContractFeatures(Boolean storage, Boolean payable) {
-            this.storage = storage;
-            this.payable = payable;
-        }
-
-        public Boolean getStorage() {
-            return storage;
-        }
-
-        public Boolean getPayable() {
-            return payable;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContractFeatures)) return false;
-            ContractFeatures that = (ContractFeatures) o;
-            return Objects.equals(getStorage(), that.getStorage()) &&
-                    Objects.equals(getPayable(), that.getPayable());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getStorage(), getPayable());
-        }
-
-        @Override
-        public String toString() {
-            return "ContractFeatures{" +
-                    "storage=" + storage +
-                    ", payable=" + payable +
                     '}';
         }
     }
