@@ -11,6 +11,7 @@ import io.neow3j.devpack.neo.Oracle;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,8 +35,8 @@ public class OracleTest extends ContractTest {
     public void getScriptHash() throws IOException {
         // TODO: Test when issue #292 was implemented.
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("Oracle"));
+        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
+                is(Numeric.hexStringToByteArray("3c05b488bf4cf699d0631bf80190896ebbf38c3b")));
     }
 
     @Test
@@ -74,7 +75,7 @@ public class OracleTest extends ContractTest {
             return Oracle.name();
         }
 
-        public static byte[] getHash() {
+        public static byte[] getScriptHash() {
             return Oracle.hash();
         }
 
