@@ -11,6 +11,7 @@ import static io.neow3j.model.types.ContractParameterType.VOID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.List;
 import io.neow3j.devpack.neo.Transaction;
 import io.neow3j.model.types.ContractParameterType;
 import org.junit.Rule;
@@ -58,6 +59,7 @@ public class CompilerTest {
         assertClassIsMappedToType(Integer[].class, ARRAY);
         assertClassIsMappedToType(boolean[].class, ARRAY);
         assertClassIsMappedToType(byte[][].class, ARRAY);
+        assertClassIsMappedToType(List.class, ARRAY);
 
         // Others
         assertClassIsMappedToType(Transaction.class, INTEROP_INTERFACE);
