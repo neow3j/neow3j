@@ -235,8 +235,9 @@ public class AsmHelper {
             return new ArrayList<>();
         }
         int startIdx = sig.indexOf("<") + 1;
-        int endIdx = sig.indexOf(">");
+        int endIdx = sig.lastIndexOf(">");
         String typesString = sig.substring(startIdx, endIdx);
+        typesString = typesString.replaceAll("<[^<>]*>", "");
         return Arrays.stream(typesString.split(";")).map(t -> t + ";").collect(Collectors.toList());
     }
 
