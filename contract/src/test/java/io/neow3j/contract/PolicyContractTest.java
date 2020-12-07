@@ -95,8 +95,8 @@ public class PolicyContractTest {
         assertNotNull(blockedAccounts);
         assertThat(blockedAccounts.size(), is(2));
         assertThat(blockedAccounts, contains(
-                ScriptHash.fromAddress("Aa1rZbE1k8fXTwzaxxsPRtJYPwhDQjWRFZ"),
-                ScriptHash.fromAddress("ATpVyfpFwE2SzNGSvXDNrtRyfVLajhn7yN")));
+                ScriptHash.fromAddress("Ne9x6rAf3YZozxBBhYrwyeU9H5RWmM3Gjm"),
+                ScriptHash.fromAddress("NXxbWvkuEdvjXNT3f7CwQebaYd4t2VmS2C")));
     }
 
     @Test

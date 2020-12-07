@@ -16,7 +16,6 @@ public class Token extends SmartContract {
     private static final String TOTAL_SUPPLY = "totalSupply";
     private static final String SYMBOL = "symbol";
     private static final String DECIMALS = "decimals";
-    private static final String TRANSFER = "transfer";
 
     private String name;
     // It is expected that token contracts return the total supply in fractions of their token.

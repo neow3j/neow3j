@@ -17,6 +17,7 @@ public class AnyStackItem extends StackItem {
     }
 
     public AnyStackItem(Object value) {
+        super(StackItemType.ANY);
         this.value = value;
     }
 
@@ -38,7 +39,7 @@ public class AnyStackItem extends StackItem {
         if (!(o instanceof AnyStackItem)) return false;
         AnyStackItem other = (AnyStackItem) o;
         return getType() == other.getType() &&
-                getValue() == other.getValue();
+                getValue().equals(other.getValue());
     }
 
     @Override

@@ -9,6 +9,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_KEYS;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_VALUES;
 
 import io.neow3j.devpack.ApiInterface;
+import io.neow3j.devpack.Map;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**

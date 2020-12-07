@@ -33,7 +33,7 @@ public class SignerTest {
 
     @Before
     public void setUp() {
-        acctScriptHash = ScriptHash.fromAddress("AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y");
+        acctScriptHash = ScriptHash.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
         contract1 = ScriptHash.fromScript(Numeric.hexStringToByteArray("d802a401"));
         contract2 = ScriptHash.fromScript(Numeric.hexStringToByteArray("c503b112"));
         String encPubKey1 = "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7";

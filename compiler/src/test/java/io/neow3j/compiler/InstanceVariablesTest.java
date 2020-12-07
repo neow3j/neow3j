@@ -35,7 +35,7 @@ public class InstanceVariablesTest {
         private static String address;
 
         {
-            address = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
+            address = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
         }
 
         public static String main() {

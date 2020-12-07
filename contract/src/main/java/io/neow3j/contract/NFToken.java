@@ -141,7 +141,7 @@ public class NFToken extends Token {
     // TODO: 15.10.20 Michael: Adapt this method as soon as an implementation of the NEP-11 proposal exists.
     public List<ScriptHash> ownerOf(byte[] tokenID) throws IOException {
         return callFunctionReturningListOfScriptHashes(OWNER_OF,
-                Arrays.asList(ContractParameter.byteArrayAsBase64(tokenID)));
+                Arrays.asList(ContractParameter.byteArray(tokenID)));
     }
 
     private List<ScriptHash> callFunctionReturningListOfScriptHashes(String function,
@@ -191,7 +191,7 @@ public class NFToken extends Token {
     public BigInteger balanceOf(ScriptHash owner, byte[] tokenID) throws IOException {
         return callFuncReturningInt(BALANCE_OF,
                 ContractParameter.hash160(owner),
-                ContractParameter.byteArrayAsBase64(tokenID));
+                ContractParameter.byteArray(tokenID));
     }
 
     /**
@@ -213,7 +213,7 @@ public class NFToken extends Token {
      */
     public NFTokenProperties properties(byte[] tokenID) throws IOException {
         StackItem item = callInvokeFunction(PROPERTIES,
-                Arrays.asList(ContractParameter.byteArrayAsBase64(tokenID)))
+                Arrays.asList(ContractParameter.byteArray(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(StackItemType.BYTE_STRING)) {
             return item.asByteString().getAsJson(NFTokenProperties.class);

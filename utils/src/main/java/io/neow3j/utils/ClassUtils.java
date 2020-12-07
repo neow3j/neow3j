@@ -1,5 +1,7 @@
 package io.neow3j.utils;
 
+import java.io.InputStream;
+
 public class ClassUtils {
 
     public static String getFullyQualifiedNameForInternalName(String internalName) {
@@ -32,6 +34,21 @@ public class ClassUtils {
      */
     public static String getClassNameForInternalName(String internalName) {
         return getClassName(getFullyQualifiedNameForInternalName(internalName));
+    }
+
+    /**
+     * Gets the input stream of the class with the given name. Uses the given classLoader when
+     * looking for the class file.
+     *
+     * @param fullyQualifiedClassName The fully qualified name of the class to load.
+     * @param classLoader The class loader to use.
+     * @return the input stream of the found class file.
+     */
+    public static InputStream getClassInputStreamForClassName(String fullyQualifiedClassName,
+            ClassLoader classLoader) {
+
+        return classLoader.getResourceAsStream(
+                fullyQualifiedClassName.replace('.', '/') + ".class");
     }
 
 }

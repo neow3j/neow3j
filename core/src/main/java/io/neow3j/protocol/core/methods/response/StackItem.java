@@ -173,18 +173,18 @@ public abstract class StackItem {
     }
 
     @JsonIgnore
-    public Object asAny() {
+    public AnyStackItem asAny() {
         if (this instanceof AnyStackItem) {
-            return this;
+            return (AnyStackItem) this;
         }
         throw new IllegalStateException("This stack item is not of type " +
                 StackItemType.ANY.jsonValue() + " but of " + this.type.jsonValue());
     }
 
     @JsonIgnore
-    public Object asInteropInterface() {
+    public InteropInterfaceStackItem asInteropInterface() {
         if (this instanceof InteropInterfaceStackItem) {
-            return this;
+            return (InteropInterfaceStackItem) this;
         }
         throw new IllegalStateException("This stack item is not of type " +
                 StackItemType.INTEROP_INTERFACE.jsonValue() + " but of " + this.type.jsonValue());

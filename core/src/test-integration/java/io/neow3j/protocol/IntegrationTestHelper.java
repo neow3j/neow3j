@@ -5,11 +5,12 @@ import io.neow3j.utils.Numeric;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 public class IntegrationTestHelper {
 
-    static final String NEO3_PRIVATENET_CONTAINER_IMG = "docker.pkg.github.com" +
+    static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
             "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
@@ -33,14 +34,14 @@ public class IntegrationTestHelper {
     // Total supply of NEO tokens.
     static final int NEO_TOTAL_SUPPLY = 100000000;
     // First account (multi-sig) in the node's wallet
-    static final String ACCOUNT_1_ADDRESS = "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN";
+    static final String ACCOUNT_1_ADDRESS = "NX8GreRFGFK5wpGMWetpX93HmtrezGogzk";
     static final String ACCOUNT_1_WIF =
-            "L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR";
+            "L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda";
     // Second account (single-sig) in the node's wallet
-    static final String ACCOUNT_2_ADDRESS = "AJunErzotcQTNWP2qktA7LgkXZVdHea97H";
+    static final String ACCOUNT_2_ADDRESS = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
     static final ECPublicKey ACCOUNT_2_PUBKEY = new ECPublicKey(
             Numeric.hexStringToByteArray(
-                    "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d"));
+                    "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"));
 
     static final String VM_STATE_HALT = "HALT";
 
@@ -52,7 +53,7 @@ public class IntegrationTestHelper {
 
     static GenericContainer setupPrivateNetContainer() {
         return new GenericContainer(
-                NEO3_PRIVATENET_CONTAINER_IMG)
+                DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
                 .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
                         BindMode.READ_ONLY)
                 .withClasspathResourceMapping(PROTOCOL_FILE_SOURCE, PROTOCOL_FILE_DESTINATION,

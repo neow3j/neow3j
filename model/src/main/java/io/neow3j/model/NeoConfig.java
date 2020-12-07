@@ -8,7 +8,7 @@ public class NeoConfig {
 
     static {
         magic = new byte[]{0x4e, 0x45, 0x4F, 0x00};
-        addressVersion = 0x17;
+        addressVersion = 0x35;
         milliSecondsPerBlock = 15 * 1000;
     }
 

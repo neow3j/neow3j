@@ -75,8 +75,7 @@ public class ContractParameter {
     /**
      * Creates a byte array parameter from the given value.
      * <p>
-     * Make sure that the array is already in the right order. E.g. Fixed8 numbers need to be in
-     * little-endian order. It will be sent in the order provided.
+     * Make sure that the array is in the right byte order, i.e., endianness.
      *
      * @param byteArray The parameter value.
      * @return the contract parameter.
@@ -86,31 +85,16 @@ public class ContractParameter {
     }
 
     /**
-     * Creates a byte array parameter from the given value. Base64 encodes the given byte array.
-     * <p>
-     * Use this for RPC calls to neo-nodes.
-     * <p>
-     * Make sure that the array is already in the right order. E.g. Fixed8 numbers need to be in
-     * little-endian order. It will be sent in the order provided.
-     *
-     * @param byteArray The parameter value.
-     * @return the contract parameter.
-     */
-    public static ContractParameter byteArrayAsBase64(byte[] byteArray) {
-        return new ContractParameter(ContractParameterType.BYTE_ARRAY, Base64.encode(byteArray));
-    }
-
-    /**
      * Creates a byte array parameter from the given hex string.
      *
      * @param hexString The hexadecimal string.
      * @return the contract parameter.
      */
-    public static ContractParameter byteArrayAsBase64(String hexString) {
+    public static ContractParameter byteArray(String hexString) {
         if (!Numeric.isValidHexString(hexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number");
         }
-        return byteArrayAsBase64(Numeric.hexStringToByteArray(hexString));
+        return byteArray(Numeric.hexStringToByteArray(hexString));
     }
 
     /**
@@ -121,7 +105,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArrayFromString(String value) {
-        return byteArrayAsBase64(value.getBytes(UTF_8));
+        return byteArray(value.getBytes(UTF_8));
     }
 
     /**
@@ -326,8 +310,7 @@ public class ContractParameter {
                             Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
                     break;
                 case BYTE_ARRAY:
-                    // The value is expected to be a Base64 encoded byte array.
-                    gen.writeStringField("value", ((String) p.getValue()));
+                    gen.writeStringField("value", Base64.encode((byte[]) p.getValue()));
                     break;
                 case BOOLEAN:
                     // Convert to true or false without quotes

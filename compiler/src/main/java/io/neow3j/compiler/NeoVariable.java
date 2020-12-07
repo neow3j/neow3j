@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.LocalVariableNode;
 
 /**
@@ -46,10 +47,16 @@ public class NeoVariable {
      * @return the name.
      */
     public String getName() {
+        if (asmVariable == null) {
+            return null;
+        }
         return asmVariable.name;
     }
 
     public String getDescriptor() {
+        if (asmVariable == null) {
+            return Type.getDescriptor(Object.class);
+        }
         return asmVariable.desc;
     }
 }

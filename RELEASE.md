@@ -63,16 +63,25 @@ sure that the synchronization with Maven Central worked
 
 ## neow3j-examples and Smoke Tests
 
-- Update the neow3j-examples repository to use the new neow3j version. 
-- Run some of the examples as smoke tests. 
-- Add and run examples that cover new or changed functionality.
-- Compile example smart contracts with the Gradle plugin and programmatically with the `Compiler`.
+1. Update the neow3j-examples repository to use the new neow3j version. 
+2. Run some of the examples as smoke tests.
+    - Compile example smart contracts with the Gradle plugin and programmatically.
+3. Correct broken examples according to the changes in neow3j.
+4. Add examples that cover new features.
+
+## neow3j-docs
+
+1. Update the version number in the documentation where necessary.
+2. Update the documentation to reflect the changes and features of the release.
+3. Merge the changes into the master branch of the neow3j-docs repository. That will automatically 
+   update the neow3j.io website.
 
 ## Github release
 
-1. Create a release draft on Github
+1. Update the README.md in all neow3j repositories if necessary.
+2. Create a release draft on Github
     - Title format: "neow3j: 3.x.x"
     - The body should contain the sections "Changes", "New Features", and "Fixes" in that order. 
     If one section doesn't have content it can be omitted.
-2. Let the team review the draft.
-3. Publish the release.
+3. Let the team review the draft.
+4. Publish the release.
