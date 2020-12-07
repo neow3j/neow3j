@@ -12,12 +12,10 @@ import java.math.BigInteger;
  */
 public class Token extends SmartContract {
 
-    private static final String NAME = "name";
     private static final String TOTAL_SUPPLY = "totalSupply";
     private static final String SYMBOL = "symbol";
     private static final String DECIMALS = "decimals";
 
-    private String name;
     // It is expected that token contracts return the total supply in fractions of their token.
     // Therefore an integer is used here instead of a decimal number.
     private BigInteger totalSupply;
@@ -26,24 +24,6 @@ public class Token extends SmartContract {
 
     public Token(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
-    }
-
-    /**
-     * Gets the name of this token.
-     * <p>
-     * The return value is retrieved form the neo-node only once and then cached.
-     *
-     * @return the name.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a string.
-     */
-    public String getName() throws IOException, UnexpectedReturnTypeException {
-        if (name == null) {
-            name = callFuncReturningString(NAME);
-        }
-        return name;
     }
 
     /**

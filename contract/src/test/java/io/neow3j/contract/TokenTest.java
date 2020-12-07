@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import java.io.IOException;
@@ -33,12 +32,6 @@ public class TokenTest {
 
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         someToken = new Token(SOME_TOKEN_SCRIPT_HASH, neow);
-    }
-
-    @Test
-    public void testGetName() throws IOException {
-        setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
-        assertThat(someToken.getName(), is("ANT"));
     }
 
     @Test
