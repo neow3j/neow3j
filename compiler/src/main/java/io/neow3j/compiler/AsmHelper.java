@@ -238,7 +238,7 @@ public class AsmHelper {
             return new ArrayList<>();
         }
         int startIdx = sig.indexOf("<") + 1;
-        int endIdx = sig.indexOf(">");
+        int endIdx = sig.lastIndexOf(">");
         String typesString = sig.substring(startIdx, endIdx);
         return extractTypeParamsFromString(typesString);
     }
@@ -246,7 +246,6 @@ public class AsmHelper {
     private static List<String> extractTypeParamsFromString(String types) {
         // Remove any generic type parameters.
         types = types.replaceAll("<[^<>]*>", "");
-
         List<String> separatedTypes = new ArrayList<>();
         int i = 0;
         while (i < types.length()) {
