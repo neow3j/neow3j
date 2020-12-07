@@ -14,6 +14,9 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractManifest {
 
+    @JsonProperty("name")
+    private String name;
+
     @JsonProperty("groups")
     private List<ContractGroup> groups;
 
@@ -48,13 +51,15 @@ public class ContractManifest {
     public ContractManifest() {
     }
 
-    public ContractManifest(List<ContractGroup> groups,
+    public ContractManifest(String name,
+            List<ContractGroup> groups,
             List<String> supportedStandards,
             ContractABI abi,
             List<ContractPermission> permissions,
             List<String> trusts,
             List<String> safeMethods,
             Object extra) {
+        this.name = name;
         this.groups = groups;
         this.supportedStandards = supportedStandards;
         this.abi = abi;
@@ -62,6 +67,10 @@ public class ContractManifest {
         this.trusts = trusts;
         this.safeMethods = safeMethods;
         this.extra = extra;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public List<ContractGroup> getGroups() {
@@ -105,7 +114,8 @@ public class ContractManifest {
         if (this == o) return true;
         if (!(o instanceof ContractManifest)) return false;
         ContractManifest that = (ContractManifest) o;
-        return Objects.equals(getGroups(), that.getGroups()) &&
+        return Objects.equals(getName(), that.getName()) &&
+                Objects.equals(getGroups(), that.getGroups()) &&
                 Objects.equals(getAbi(), that.getAbi()) &&
                 Objects.equals(getPermissions(), that.getPermissions()) &&
                 Objects.equals(getTrusts(), that.getTrusts()) &&
@@ -116,7 +126,8 @@ public class ContractManifest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getGroups(),
+        return Objects.hash(getName(),
+                getGroups(),
                 getAbi(),
                 getPermissions(),
                 getTrusts(),
@@ -128,7 +139,8 @@ public class ContractManifest {
     @Override
     public String toString() {
         return "ContractManifest{" +
-                "groups=" + groups +
+                "name=" + name +
+                ", groups=" + groups +
                 ", abi=" + abi +
                 ", permissions=" + permissions +
                 ", trusts=" + trusts +

@@ -8,7 +8,6 @@ import io.neow3j.protocol.core.methods.response.ContractManifest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 
 @SuppressWarnings("unchecked")
 public class ContractUtils {
@@ -46,12 +45,8 @@ public class ContractUtils {
     }
 
     public static String getContractManifestFilename(ContractManifest manifest) {
-        Object extra = manifest.getExtra();
-        if (extra instanceof HashMap) {
-            HashMap<String, String> eHashMap = (HashMap<String, String>) extra;
-            if (eHashMap.containsKey("name")) {
-                return eHashMap.get("name") + "." + MANIFEST_FILENAME_SUFFIX;
-            }
+        if (manifest.getName() != null && !manifest.getName().equals("")) {
+            return manifest.getName() + "." + MANIFEST_FILENAME_SUFFIX;
         }
         return MANIFEST_FILENAME_SUFFIX;
     }
