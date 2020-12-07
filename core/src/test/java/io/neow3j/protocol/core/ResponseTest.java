@@ -34,7 +34,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -914,7 +914,7 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetValidators() {
+    public void testGetNextBlockValidators() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -935,28 +935,28 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetValidators getValidators = deserialiseResponse(NeoGetValidators.class);
-        assertThat(getValidators.getValidators(), hasSize(2));
-        assertThat(getValidators.getValidators(),
+        NeoGetNextBlockValidators neoGetNextBlockValidators = deserialiseResponse(NeoGetNextBlockValidators.class);
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(), hasSize(2));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(),
                 containsInAnyOrder(
-                        new NeoGetValidators.Validator(
+                        new NeoGetNextBlockValidators.Validator(
                                 "03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2",
                                 "0", false),
-                        new NeoGetValidators.Validator(
+                        new NeoGetNextBlockValidators.Validator(
                                 "02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6",
                                 "91600000", true)
                 )
         );
-        assertThat(getValidators.getValidators().get(0).getPublicKey(),
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getPublicKey(),
                 is("03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2"));
-        assertThat(getValidators.getValidators().get(0).getVotes(), is("0"));
-        assertThat(getValidators.getValidators().get(0).getVotesAsBigInteger(), is(BigInteger.valueOf(0)));
-        assertThat(getValidators.getValidators().get(0).getActive(), is(false));
-        assertThat(getValidators.getValidators().get(1).getActive(), is(true));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getVotes(), is("0"));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getVotesAsBigInteger(), is(BigInteger.valueOf(0)));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getActive(), is(false));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(1).getActive(), is(true));
     }
 
     @Test
-    public void testGetValidators_Empty() {
+    public void testGetNextBlockValidators_Empty() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -965,9 +965,9 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetValidators getValidators = deserialiseResponse(NeoGetValidators.class);
-        assertThat(getValidators.getValidators(), is(notNullValue()));
-        assertThat(getValidators.getValidators(), hasSize(0));
+        NeoGetNextBlockValidators neoGetNextBlockValidators = deserialiseResponse(NeoGetNextBlockValidators.class);
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(), is(notNullValue()));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(), hasSize(0));
     }
 
     // Node Methods

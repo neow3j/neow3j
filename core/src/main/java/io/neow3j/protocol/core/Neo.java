@@ -23,7 +23,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -89,7 +89,7 @@ public interface Neo {
 
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 
-    Request<?, NeoGetValidators> getValidators();
+    Request<?, NeoGetNextBlockValidators> getNextBlockValidators();
 
     // Node Methods
 

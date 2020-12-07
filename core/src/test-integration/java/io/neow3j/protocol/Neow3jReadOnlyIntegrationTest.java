@@ -60,7 +60,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
@@ -401,9 +401,9 @@ public class Neow3jReadOnlyIntegrationTest {
     }
 
     @Test
-    public void testGetValidators() throws IOException {
-        NeoGetValidators getValidators = getNeow3j().getValidators().send();
-        List<NeoGetValidators.Validator> validators = getValidators.getValidators();
+    public void testGetNextBlockValidators() throws IOException {
+        NeoGetNextBlockValidators getNextBlockValidators = getNeow3j().getNextBlockValidators().send();
+        List<NeoGetNextBlockValidators.Validator> validators = getNextBlockValidators.getNextBlockValidators();
 
         assertNotNull(validators);
         assertThat(validators, hasSize(greaterThanOrEqualTo(0)));

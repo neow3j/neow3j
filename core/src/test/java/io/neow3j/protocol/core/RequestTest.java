@@ -197,11 +197,11 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetValidators() throws Exception {
-        neow3j.getValidators().send();
+    public void testGetNextBlockValidators() throws Exception {
+        neow3j.getNextBlockValidators().send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getvalidators\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnextblockvalidators\","
                         + "\"params\":[],\"id\":1}");
     }
 

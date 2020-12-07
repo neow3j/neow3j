@@ -28,7 +28,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
@@ -264,12 +264,12 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoGetValidators> getValidators() {
+    public Request<?, NeoGetNextBlockValidators> getNextBlockValidators() {
         return new Request<>(
-                "getvalidators",
+                "getnextblockvalidators",
                 emptyList(),
                 neow3jService,
-                NeoGetValidators.class);
+                NeoGetNextBlockValidators.class);
     }
 
     // Node Methods
