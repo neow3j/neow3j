@@ -30,8 +30,10 @@ import org.objectweb.asm.util.TraceMethodVisitor;
 
 public class AsmHelper {
 
-    /**
-     * Gets the {@code MethodNode} corresponding to the method called in the given instruction.
+    private static final List<Character> PRIMITIVE_TYPE_NAMES = new ArrayList<>(
+            Arrays.asList('V', 'Z', 'C', 'B', 'S', 'I', 'F', 'J', 'D'));
+
+    /** Gets the {@code MethodNode} corresponding to the method called in the given instruction.
      *
      * @param methodInsn The method instruction.
      * @param owner      The class that contains the method to be searched.
@@ -61,9 +63,9 @@ public class AsmHelper {
     /**
      * Gets the {@code ClassNode} for the given class descriptor using the given classloader.
      *
-     * @param descriptor The class' descriptor as provided by ASM, e.g., in {@link
-     *                     Type#getDescriptor()}.
-     * @param classLoader  The classloader to use.
+     * @param descriptor  The class' descriptor as provided by ASM, e.g., in {@link
+     *                    Type#getDescriptor()}.
+     * @param classLoader The classloader to use.
      * @return The class node.
      * @throws IOException If an error occurs when reading class files.
      */
@@ -144,7 +146,8 @@ public class AsmHelper {
     }
 
 
-    public static Optional<AnnotationNode> getAnnotationNode(FieldNode fieldNode, Class<?> annotation) {
+    public static Optional<AnnotationNode> getAnnotationNode(FieldNode fieldNode,
+            Class<?> annotation) {
         if (fieldNode.invisibleAnnotations == null) {
             return Optional.empty();
         }
@@ -237,8 +240,24 @@ public class AsmHelper {
         int startIdx = sig.indexOf("<") + 1;
         int endIdx = sig.lastIndexOf(">");
         String typesString = sig.substring(startIdx, endIdx);
-        typesString = typesString.replaceAll("<[^<>]*>", "");
-        return Arrays.stream(typesString.split(";")).map(t -> t + ";").collect(Collectors.toList());
+        return extractTypeParamsFromString(typesString);
+    }
+
+    private static List<String> extractTypeParamsFromString(String types) {
+        // Remove any generic type parameters.
+        types = types.replaceAll("<[^<>]*>", "");
+        List<String> separatedTypes = new ArrayList<>();
+        int i = 0;
+        while (i < types.length()) {
+            if (types.charAt(i) == '[' && PRIMITIVE_TYPE_NAMES.contains(types.charAt(i + 1))) {
+                separatedTypes.add(Character.toString(types.charAt(i++)) + types.charAt(i++));
+            } else {
+                String t = types.substring(i, types.indexOf(";", i) + 1);
+                separatedTypes.add(t);
+                i += t.length();
+            }
+        }
+        return separatedTypes;
     }
 
     /**

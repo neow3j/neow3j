@@ -117,18 +117,21 @@ public class AsmHelperTest {
     }
 
     @Test
-    public void extractingTypeParametersShouldReturnTheCorrectTypeStrings() {
+    public void extractTypeParamFromSignatureWithOneParam() {
         // One non-generic event parameter
         FieldNode field = new FieldNode(0, null, null,
                 "Lio/neow3j/devpack/events/Event1Arg<Ljava/lang/Integer;>;", null);
         List<String> types = extractTypeParametersFromSignature(field);
         assertThat(types.get(0), is("Ljava/lang/Integer;"));
+    }
 
+    @Test
+    public void extractTypeParamFromSignatureWithTwoParams() {
         // Two non-generic event parameters
-        field = new FieldNode(0, null, null,
+        FieldNode field = new FieldNode(0, null, null,
                 "Lio/neow3j/devpack/events/Event2Args<Ljava/lang/Integer;Ljava/lang/String;>;",
                 null);
-        types = extractTypeParametersFromSignature(field);
+        List<String> types = extractTypeParametersFromSignature(field);
         assertThat(types.get(0), is("Ljava/lang/Integer;"));
         assertThat(types.get(1), is("Ljava/lang/String;"));
 
@@ -148,6 +151,52 @@ public class AsmHelperTest {
     }
 
     @Test
+    public void extractTypeParamFromSignatureWithOneParamThatAlsoHasATypeParam() {
+        // One event parameter with a generic type parameter, i.e., List<Integer>.
+        FieldNode field = new FieldNode(0, null, null, "Lio/neow3j/devpack/events/Event1Arg<"
+                + "Lio/neow3j/devpack/List<Ljava/lang/Integer;>;>;", null);
+        List<String> types = extractTypeParametersFromSignature(field);
+        assertThat(types.get(0), is("Lio/neow3j/devpack/List;"));
+    }
+
+    @Test
+    public void extractTypeParamFromSignatureWithParamThatHasTwoTypeParamsItself() {
+        // One event parameter with two generic type parameters.
+        FieldNode field = new FieldNode(0, null, null, "Lio/neow3j/devpack/events/Event2Args<"
+                + "Lio/neow3j/devpack/List<Ljava/lang/Integer;>;"
+                + "Lio/neow3j/devpack/List<Ljava/lang/String;>;>;", null);
+        List<String> types = extractTypeParametersFromSignature(field);
+        assertThat(types.get(0), is("Lio/neow3j/devpack/List;"));
+        assertThat(types.get(1), is("Lio/neow3j/devpack/List;"));
+    }
+
+    @Test
+    public void extractTypeParamFromSignatureWithPrimitiveArrayParamAndOtherParams() {
+        // One event parameter with two generic type parameters.
+        FieldNode field = new FieldNode(0, null, null, "Lio/neow3j/devpack/events/Event2Args<"
+                + "[B" + "Lio/neow3j/devpack/List<Ljava/lang/Integer;>;>;",
+                null);
+        List<String> types = extractTypeParametersFromSignature(field);
+        assertThat(types.get(0), is("[B"));
+        assertThat(types.get(1), is("Lio/neow3j/devpack/List;"));
+    }
+
+    @Test
+    public void extractTypeParamFromSignatureWithMultiplePrimitiveArrayParamAndOtherParams() {
+        // One event parameter with two generic type parameters.
+        FieldNode field = new FieldNode(0, null, null, "Lio/neow3j/devpack/events/Event5Args<"
+                + "[B" + "[C" + "[Lio/neow3j/devpack/List<Ljava/lang/Integer;>;" + "[I" +
+                "[Ljava/lang/Integer;>;",
+                null);
+        List<String> types = extractTypeParametersFromSignature(field);
+        assertThat(types.get(0), is("[B"));
+        assertThat(types.get(1), is("[C"));
+        assertThat(types.get(2), is("[Lio/neow3j/devpack/List;"));
+        assertThat(types.get(3), is("[I"));
+        assertThat(types.get(4), is("[Ljava/lang/Integer;"));
+    }
+
+    @Test
     public void gettingClassForDescriptorShouldReturnTheCorrectClassNode() throws IOException {
         Type t = Type.getType(Storage.class);
         ClassNode c = getAsmClassForDescriptor(t.getDescriptor(), this.getClass().getClassLoader());
@@ -155,7 +204,6 @@ public class AsmHelperTest {
         assertThat(c.sourceFile, is("Storage.java"));
         assertThat(c.methods, not(hasSize(0)));
     }
-
 
     @Test
     public void gettingAnnotationFromAFieldNodeShouldReturnTheCorrectAnnotationNode() {
