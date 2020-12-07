@@ -553,10 +553,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getGroups().get(0).getSignature(),
                 is("41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141"));
 
-        assertThat(manifest.getFeatures(), is(notNullValue()));
-        assertThat(manifest.getFeatures().getStorage(), is(true));
-        assertThat(manifest.getFeatures().getPayable(), is(false));
-
         assertThat(manifest.getSupportedStandards(), hasSize(1));
         assertThat(manifest.getSupportedStandards().get(0), is("NEP-17"));
 
