@@ -24,8 +24,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -450,7 +450,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"payable\": false\n" +
                         "            },\n" +
                         "            \"supportedstandards\": [" +
-                        "                \"NEP-5\"" +
+                        "                \"NEP-17\"" +
                         "            ],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
@@ -558,7 +558,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getFeatures().getPayable(), is(false));
 
         assertThat(manifest.getSupportedStandards(), hasSize(1));
-        assertThat(manifest.getSupportedStandards().get(0), is("NEP-5"));
+        assertThat(manifest.getSupportedStandards().get(0), is("NEP-17"));
 
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
@@ -633,7 +633,7 @@ public class ResponseTest extends ResponseTester {
                         "                \"payable\": false\n" +
                         "            },\n" +
                         "            \"supportedstandards\": [" +
-                        "                \"NEP-5\"" +
+                        "                \"NEP-17\"" +
                         "            ],\n" +
                         "            \"abi\": {\n" +
                         "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
@@ -1410,7 +1410,7 @@ public class ResponseTest extends ResponseTester {
                         "            \"interfaces\": []\n" +
                         "        },\n" +
                         "        {\n" +
-                        "            \"name\": \"RpcNep5Tracker\",\n" +
+                        "            \"name\": \"RpcNep17Tracker\",\n" +
                         "            \"version\": \"3.0.0.0\",\n" +
                         "            \"interfaces\": [\n" +
                         "                \"IPersistencePlugin\"\n" +
@@ -1467,7 +1467,7 @@ public class ResponseTest extends ResponseTester {
 
         plugin = listPlugins.getPlugins().get(3);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.RPC_NEP5_TRACKER));
+                is(NodePluginType.RPC_NEP17_TRACKER));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
@@ -1947,10 +1947,10 @@ public class ResponseTest extends ResponseTester {
                 ));
     }
 
-    // RpcNep5Tracker
+    // RpcNep17Tracker
 
     @Test
-    public void testGetNep5Transfers() {
+    public void testGetNep17Transfers() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -1992,12 +1992,12 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetNep5Transfers getNep5Transfers = deserialiseResponse(NeoGetNep5Transfers.class);
-        assertThat(getNep5Transfers.getNep5Transfer().getSent(), is(notNullValue()));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent(), hasSize(2));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent(),
+        NeoGetNep17Transfers getNep17Transfers = deserialiseResponse(NeoGetNep17Transfers.class);
+        assertThat(getNep17Transfers.getNep17Transfer().getSent(), is(notNullValue()));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent(), hasSize(2));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent(),
                 containsInAnyOrder(
-                        new NeoGetNep5Transfers.Nep5Transfer(
+                        new NeoGetNep17Transfers.Nep17Transfer(
                                 1554283931L,
                                 "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
@@ -2006,7 +2006,7 @@ public class ResponseTest extends ResponseTester {
                                 0L,
                                 "240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564"
                         ),
-                        new NeoGetNep5Transfers.Nep5Transfer(
+                        new NeoGetNep17Transfers.Nep17Transfer(
                                 1554880287L,
                                 "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
@@ -2017,11 +2017,11 @@ public class ResponseTest extends ResponseTester {
                         )
                 ));
 
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived(), is(notNullValue()));
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived(), hasSize(1));
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived(),
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived(), is(notNullValue()));
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived(), hasSize(1));
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived(),
                 hasItem(
-                        new NeoGetNep5Transfers.Nep5Transfer(
+                        new NeoGetNep17Transfers.Nep17Transfer(
                                 1555651816L,
                                 "600c4f5200db36177e3e8a09e9f18e2fc7d12a0f",
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
@@ -2033,24 +2033,24 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         // First Sent Entry
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(0).getTimestamp(), is(1554283931L));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(0).getAssetHash(),
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTimestamp(), is(1554283931L));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getAssetHash(),
                 is("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(0).getTransferAddress(),
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTransferAddress(),
                 is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
 
         // Second Sent Entry
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(1).getAmount(), is("100000000000"));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(1).getBlockIndex(), is(397769L));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(1).getAmount(), is("100000000000"));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(1).getBlockIndex(), is(397769L));
 
         // Received Entry
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived().get(0).getTransferNotifyIndex(), is(0L));
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived().get(0).getTxHash(),
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTransferNotifyIndex(), is(0L));
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTxHash(),
                 is("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"));
     }
 
     @Test
-    public void testGetNep5Balances() {
+    public void testGetNep17Balances() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -2073,17 +2073,17 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetNep5Balances getNep5Balances = deserialiseResponse(NeoGetNep5Balances.class);
-        assertThat(getNep5Balances.getBalances().getBalances(), is(notNullValue()));
-        assertThat(getNep5Balances.getBalances().getBalances(), hasSize(2));
-        assertThat(getNep5Balances.getBalances().getBalances(),
+        NeoGetNep17Balances getNep17Balances = deserialiseResponse(NeoGetNep17Balances.class);
+        assertThat(getNep17Balances.getBalances().getBalances(), is(notNullValue()));
+        assertThat(getNep17Balances.getBalances().getBalances(), hasSize(2));
+        assertThat(getNep17Balances.getBalances().getBalances(),
                 containsInAnyOrder(
-                        new NeoGetNep5Balances.Nep5Balance(
+                        new NeoGetNep17Balances.Nep17Balance(
                                 "a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8",
                                 "50000000000",
                                 BigInteger.valueOf(251604L)
                         ),
-                        new NeoGetNep5Balances.Nep5Balance(
+                        new NeoGetNep17Balances.Nep17Balance(
                                 "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
                                 "50000000000",
                                 BigInteger.valueOf(251600L)
@@ -2091,16 +2091,16 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         // First Entry
-        assertThat(getNep5Balances.getBalances().getBalances().get(0).getAssetHash(),
+        assertThat(getNep17Balances.getBalances().getBalances().get(0).getAssetHash(),
                 is("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"));
-        assertThat(getNep5Balances.getBalances().getBalances().get(0).getAmount(), is("50000000000"));
+        assertThat(getNep17Balances.getBalances().getBalances().get(0).getAmount(), is("50000000000"));
 
         // Second Entry
-        assertThat(getNep5Balances.getBalances().getBalances().get(1).getLastUpdatedBlock(),
+        assertThat(getNep17Balances.getBalances().getBalances().get(1).getLastUpdatedBlock(),
                 is(BigInteger.valueOf(251600L)));
 
-        assertThat(getNep5Balances.getBalances().getAddress(), is(notNullValue()));
-        assertThat(getNep5Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
+        assertThat(getNep17Balances.getBalances().getAddress(), is(notNullValue()));
+        assertThat(getNep17Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
     }
 
     // ApplicationLogs

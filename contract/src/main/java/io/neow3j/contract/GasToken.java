@@ -6,7 +6,7 @@ import io.neow3j.protocol.Neow3j;
 /**
  * Represents the GasToken native contract and provides methods to invoke all its functions.
  */
-public class GasToken extends Nep5Token {
+public class GasToken extends Nep17Token {
 
     public final static int DECIMALS = 8;
     public final static String NAME = "GAS";

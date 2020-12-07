@@ -50,7 +50,7 @@ public class TokenTest {
     @Test
     public void testGetDecimals() throws Exception {
         setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_nep5.json");
+                "invokefunction_decimals_nep17.json");
         assertThat(someToken.getDecimals(), is(2));
     }
 

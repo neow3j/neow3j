@@ -29,7 +29,7 @@ public class DebugInfoTest {
 
         assertThat(dbgnfo.getDocuments(), hasSize(7));
         assertThat(dbgnfo.getDocuments().get(0),
-                is("/templates/Template.NEP5.CSharp/NEP5.Helpers.cs"));
+                is("/templates/Template.NEP17.CSharp/NEP17.Helpers.cs"));
         assertThat(dbgnfo.getHash(), is("0xf798b2b69bfb380573787c6e177e4571643993c4"));
         assertThat(dbgnfo.getEvents(), hasSize(1));
 
@@ -37,8 +37,8 @@ public class DebugInfoTest {
         assertThat(methods, hasSize(10));
         Method method = methods.get(0);
         assertThat(method.getId(),
-                is("System.Boolean Template.NEP5.CSharp.NEP5::ValidateAddress(System.Byte[])"));
-        assertThat(method.getName(), is("Template.NEP5.CSharp.NEP5,validateAddress"));
+                is("System.Boolean Template.NEP17.CSharp.NEP17::ValidateAddress(System.Byte[])"));
+        assertThat(method.getName(), is("Template.NEP17.CSharp.NEP17,validateAddress"));
         assertThat(method.getRange(), is("0-35"));
         assertThat(method.getParams(), hasSize(1));
         assertThat(method.getParams().get(0), is("address,ByteArray"));
@@ -54,8 +54,8 @@ public class DebugInfoTest {
         List<Event> events = dbgnfo.getEvents();
         assertThat(events, hasSize(1));
         Event event = events.get(0);
-        assertThat(event.getId(), is("Template.NEP5.CSharp.NEP5::OnTransfer"));
-        assertThat(event.getName(), is("Template.NEP5.CSharp.NEP5,Transfer"));
+        assertThat(event.getId(), is("Template.NEP17.CSharp.NEP17::OnTransfer"));
+        assertThat(event.getName(), is("Template.NEP17.CSharp.NEP17,Transfer"));
         assertThat(event.getParams(), hasSize(3));
         assertThat(event.getParams().get(0), is("arg1,ByteArray"));
 

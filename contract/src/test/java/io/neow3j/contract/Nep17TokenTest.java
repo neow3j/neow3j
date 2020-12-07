@@ -21,7 +21,6 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
-import java.awt.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -33,7 +32,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class Nep5TokenTest {
+public class Nep17TokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -41,8 +40,8 @@ public class Nep5TokenTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-    private Nep5Token neoToken;
-    private Nep5Token gasToken;
+    private Nep17Token neoToken;
+    private Nep17Token gasToken;
     private Account account1;
     private Account account2;
     private Account account3;
@@ -52,7 +51,7 @@ public class Nep5TokenTest {
 
     private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
-    private static final String NEP5_TRANSFER = "transfer";
+    private static final String NEP17_TRANSFER = "transfer";
 
     @Before
     public void setUp() {
@@ -61,8 +60,8 @@ public class Nep5TokenTest {
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
-        neoToken = new Nep5Token(NEO_TOKEN_SCRIPT_HASH, neow);
-        gasToken = new Nep5Token(GAS_TOKEN_SCRIPT_HASH, neow);
+        neoToken = new Nep17Token(NEO_TOKEN_SCRIPT_HASH, neow);
+        gasToken = new Nep17Token(GAS_TOKEN_SCRIPT_HASH, neow);
 
         account1 = new Account(ECKeyPair.create(
                 Numeric.hexStringToByteArray(
@@ -125,7 +124,7 @@ public class Nep5TokenTest {
                 "invokefunction_balanceOf_300000000.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(GAS_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(100000000))).toArray(); // 1 GAS
@@ -147,7 +146,7 @@ public class Nep5TokenTest {
                 "invokefunction_balanceOf_300000000.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(GAS_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(100000000))).toArray(); // 1 GAS
@@ -295,11 +294,11 @@ public class Nep5TokenTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
-                        NEP5_TRANSFER, Arrays.asList(
+                        NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(account1.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(5)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP5_TRANSFER, Arrays.asList(
+                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2))).toArray();
@@ -322,11 +321,11 @@ public class Nep5TokenTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
-                        NEP5_TRANSFER, Arrays.asList(
+                        NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(account1.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(5)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP5_TRANSFER, Arrays.asList(
+                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2))).toArray();
@@ -353,15 +352,15 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP5_TRANSFER, Arrays.asList(
+                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(5)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP5_TRANSFER, Arrays.asList(
+                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP5_TRANSFER, Arrays.asList(
+                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(3)))
@@ -386,7 +385,7 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4))).toArray();
@@ -413,7 +412,7 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1))).toArray();
@@ -444,12 +443,12 @@ public class Nep5TokenTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
-                        NEP5_TRANSFER, Arrays.asList(
+                        NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(multiSigAccount.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(3)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
-                        NEP5_TRANSFER, Arrays.asList(
+                        NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(account1.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(2))).toArray();
@@ -480,7 +479,7 @@ public class Nep5TokenTest {
                 "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2))).toArray();
@@ -548,12 +547,12 @@ public class Nep5TokenTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
-                        NEP5_TRANSFER, Arrays.asList(
+                        NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(account3.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(3)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
-                        NEP5_TRANSFER, Arrays.asList(
+                        NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(account2.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(2))).toArray();
@@ -578,7 +577,7 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4))).toArray();
@@ -606,7 +605,7 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP5_TRANSFER, Arrays.asList(
+                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1))).toArray();
@@ -628,7 +627,7 @@ public class Nep5TokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1))).toArray();

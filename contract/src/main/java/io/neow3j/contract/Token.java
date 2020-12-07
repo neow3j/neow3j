@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * Represents a token wrapper class that contains shared methods for the Nep5 and Nep11 token standards.
+ * Represents a token wrapper class that contains shared methods for the Nep17 and Nep11 token standards.
  */
 public class Token extends SmartContract {
 

@@ -17,8 +17,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -535,42 +535,42 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 NeoGetApplicationLog.class);
     }
 
-    // RpcNep5Tracker
+    // RpcNep17Tracker
 
     @Override
-    public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
+    public Request<?, NeoGetNep17Balances> getNep17Balances(String address) {
         return new Request<>(
-                "getnep5balances",
+                "getnep17balances",
                 asList(address),
                 neow3jService,
-                NeoGetNep5Balances.class);
+                NeoGetNep17Balances.class);
     }
 
     @Override
-    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address) {
         return new Request<>(
-                "getnep5transfers",
+                "getnep17transfers",
                 asList(address),
                 neow3jService,
-                NeoGetNep5Transfers.class);
+                NeoGetNep17Transfers.class);
     }
 
     @Override
-    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date until) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date until) {
         return new Request<>(
-                "getnep5transfers",
+                "getnep17transfers",
                 asList(address, until.getTime()),
                 neow3jService,
-                NeoGetNep5Transfers.class);
+                NeoGetNep17Transfers.class);
     }
 
     @Override
-    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date from, Date to) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from, Date to) {
         return new Request<>(
-                "getnep5transfers",
+                "getnep17transfers",
                 asList(address, from.getTime(), to.getTime()),
                 neow3jService,
-                NeoGetNep5Transfers.class);
+                NeoGetNep17Transfers.class);
     }
 
     // Neow3j Rx Convenience methods:
