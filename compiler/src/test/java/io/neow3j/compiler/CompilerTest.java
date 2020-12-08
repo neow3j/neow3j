@@ -11,6 +11,8 @@ import static io.neow3j.model.types.ContractParameterType.VOID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.neo.Enumerator;
+import io.neow3j.devpack.neo.Iterator;
 import io.neow3j.devpack.neo.Transaction;
 import io.neow3j.model.types.ContractParameterType;
 import org.junit.Rule;
@@ -61,6 +63,8 @@ public class CompilerTest {
 
         // Others
         assertClassIsMappedToType(Transaction.class, INTEROP_INTERFACE);
+        assertClassIsMappedToType(Iterator.class, INTEROP_INTERFACE);
+        assertClassIsMappedToType(Enumerator.class, INTEROP_INTERFACE);
         assertClassIsMappedToType(Object.class, ANY);
         assertClassIsMappedToType(CompilerTest.class, ANY);
     }

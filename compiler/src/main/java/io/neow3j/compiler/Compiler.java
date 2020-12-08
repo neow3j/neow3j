@@ -396,6 +396,10 @@ public class Compiler {
     public static void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Before doing the syscall the arguments have to be reversed.
         addReverseArguments(calledAsmMethod, callingNeoMethod);
+        addSyscallInternal(calledAsmMethod, callingNeoMethod);
+    }
+
+    private static void addSyscallInternal(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Annotation has to be either Syscalls or Syscall.
         AnnotationNode syscallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
@@ -408,6 +412,11 @@ public class Compiler {
         } else {
             addSingleSyscall(syscallAnnotation, callingNeoMethod);
         }
+    }
+
+    public static void addConstructorSyscall(MethodNode calledAsmMethod,
+            NeoMethod callingNeoMethod) {
+        addSyscallInternal(calledAsmMethod, callingNeoMethod);
     }
 
     public static void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {

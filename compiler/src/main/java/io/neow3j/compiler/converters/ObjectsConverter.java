@@ -6,6 +6,7 @@ import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.INSTANCE_CTOR;
+import static io.neow3j.compiler.Compiler.addConstructorSyscall;
 import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
@@ -136,7 +137,7 @@ public class ObjectsConverter implements Converter {
             }
             // Now we're at the INVOKESPECIAL call and can convert the ctor method.
             if (hasAnnotations(ctorMethod, Syscall.class, Syscalls.class)) {
-                addSyscall(ctorMethod, callingNeoMethod);
+                addConstructorSyscall(ctorMethod, callingNeoMethod);
             } else if (hasAnnotations(ctorMethod, Instruction.class, Instructions.class)) {
                 addInstructionsFromAnnotation(ctorMethod, callingNeoMethod);
             }
