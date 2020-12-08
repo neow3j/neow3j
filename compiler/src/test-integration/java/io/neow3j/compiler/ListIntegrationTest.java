@@ -92,7 +92,8 @@ public class ListIntegrationTest extends ContractTest {
     @Test
     public void overwriteItemInIntegerList() throws IOException {
         ContractParameter param = integer(1);
-        NeoInvokeFunction response = callInvokeFunction(array(param, param, param), integer(0));
+        NeoInvokeFunction response = callInvokeFunction(array(param, param, param), integer(1),
+                integer(0));
         ArrayStackItem list = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(list.size(), is(3));
         assertThat(list.get(0).asInteger().getValue().intValue(), is(1));
