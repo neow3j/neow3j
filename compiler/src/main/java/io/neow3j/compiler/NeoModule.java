@@ -15,7 +15,7 @@ public class NeoModule {
 
     // Holds this module's methods, mapping from method ID to {@link NeoMethod}; Used by the
     // compiler to quickly search for a method.
-    private final static Map<String, NeoMethod> methods = new HashMap<>();
+    private final Map<String, NeoMethod> methods = new HashMap<>();
 
     // Holds the same references to the methods as {@link NeoModule#methods} but in the order they
     // have been added to this module.

@@ -100,6 +100,10 @@ public class Compiler {
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
         }
+        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return ContractParameterType.ARRAY;
+        }
         try {
             typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
             Class<?> clazz = Class.forName(typeName);
