@@ -70,7 +70,7 @@ public class ListIntegrationTest extends ContractTest {
     @Test
     public void createListFromIntegerArray() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.array(integer(1), integer(2), integer(3), integer(4)));
+                array(integer(1), integer(2), integer(3), integer(4)));
         ArrayStackItem list = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(list.size(), is(4));
         assertThat(list.get(0).asInteger().getValue().intValue(), is(1));

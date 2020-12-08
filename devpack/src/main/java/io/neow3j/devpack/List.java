@@ -2,7 +2,6 @@ package io.neow3j.devpack;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.model.types.StackItemType;
 
 /**
  * An ordered list of elements with the same type.
@@ -14,10 +13,12 @@ import io.neow3j.model.types.StackItemType;
 public class List<T> {
 
     @Instruction(opcode = OpCode.NEWARRAY0)
-    public List() { }
+    public List() {
+    }
 
     @Instruction(opcode = OpCode.NOP)
-    public List(T[] array) { }
+    public List(T[] array) {
+    }
 
     @Instruction(opcode = OpCode.SIZE)
     public native int size();
