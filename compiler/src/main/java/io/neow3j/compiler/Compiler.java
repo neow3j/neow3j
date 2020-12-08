@@ -478,9 +478,7 @@ public class Compiler {
     // according to the number of arguments the called method takes.
     public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
-        if (calledAsmMethod.localVariables != null
-                && calledAsmMethod.localVariables.size() > 0
-                && calledAsmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+        if ((calledAsmMethod.access & Opcodes.ACC_STATIC) == 0) {
             // The called method is an instance method, i.e., the instance itself ("this") is
             // also an argument.
             paramsCount++;

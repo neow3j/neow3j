@@ -61,15 +61,11 @@ public class EnumeratorTest extends ContractTest {
         }
 
         public static int[] createEnumeratorsAndConcat(Integer[] ints1, Integer[] ints2) {
-            Enumerator<Integer> e1 = new Enumerator<>(ints1);
-            Enumerator<Integer> e2 = new Enumerator<>(ints2);
+            Enumerator<Integer> e = new Enumerator<>(ints1).concat(new Enumerator<>(ints2));
             int[] res = new int[ints1.length + ints2.length];
             int i = 0;
-            while (e1.next()) {
-                res[i++] = e1.getValue();
-            }
-            while (e2.next()) {
-                res[i++] = e2.getValue();
+            while (e.next()) {
+                res[i++] = e.getValue();
             }
             return res;
         }
