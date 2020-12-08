@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -26,15 +27,7 @@ public class PolicyContractTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(PolicyContractUser.class.getName());
-    }
-
-    @Test
-    public void getName() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
-
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("Policy"));
+        setUp(PolicyContractTestContract.class.getName());
     }
 
     @Test
@@ -95,29 +88,35 @@ public class PolicyContractTest extends ContractTest {
     }
 
     @Test
-    public void setAndGetBlockedAccounts() throws IOException {
+    public void blockAndUnblockAccountAndIsBlocked() throws Throwable {
+        // TODO: Retest when preview4 privatenet is available.
         signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
+        NeoInvokeFunction response = callInvokeFunction("isBlocked",
+                hash160(defaultAccount.getScriptHash()));
+        assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
 
-        StackItem arrayItem = response.getInvocationResult().getStack().get(0);
-        assertThat(arrayItem.getType(), is(StackItemType.ARRAY));
-        String blockedAccScriptHash = arrayItem.asArray().get(0).asByteString().getAsHexString();
-        assertThat(blockedAccScriptHash,
-                is(Numeric.toHexStringNoPrefix(defaultAccount.getScriptHash().toArray())));
-    }
+        // Block the account
+        String txHash = invokeFunctionAndAwaitExecution("blockAccount",
+                hash160(defaultAccount.getScriptHash()));
+        assertThat(neow3j.getApplicationLog(txHash).send().getApplicationLog().getStack().get(0).asInteger(), is(1));
 
-    @Test
-    public void unblockAccount() throws IOException {
-        signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
+        // Check if it was blocked.
+        response = callInvokeFunction("isBlocked",
+                hash160(defaultAccount.getScriptHash()));
         assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+
+        // Unblock the account
+        txHash = invokeFunctionAndAwaitExecution("unblockAccount",
+                hash160(defaultAccount.getScriptHash()));
+        assertThat(neow3j.getApplicationLog(txHash).send().getApplicationLog().getStack().get(0).asInteger(), is(1));
+
+        // Check if it was unblocked.
+        response = callInvokeFunction("isBlocked",
+                hash160(defaultAccount.getScriptHash()));
+        assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
     }
 
-    static class PolicyContractUser {
-
-        public static String getName() {
-            return Policy.name();
-        }
+    static class PolicyContractTestContract {
 
         public static int[] setAndGetFeePerByte(int newFee) {
             int[] sizes = new int[2];
@@ -155,15 +154,18 @@ public class PolicyContractTest extends ContractTest {
             return sizes;
         }
 
-        public static String[] setAndGetBlockedAccounts(byte[] scriptHash) {
-            Policy.blockAccount(scriptHash);
-            return Policy.getBlockedAccounts();
+        public static boolean blockAccount(byte[] scriptHash) {
+            return Policy.blockAccount(scriptHash);
+        }
+
+        public static boolean isBlocked(byte[] scriptHash) {
+            return Policy.isBlocked(scriptHash);
         }
 
         public static boolean unblockAccount(byte[] scriptHash) {
-            Policy.blockAccount(scriptHash);
             return Policy.unblockAccount(scriptHash);
         }
+
     }
 
 }

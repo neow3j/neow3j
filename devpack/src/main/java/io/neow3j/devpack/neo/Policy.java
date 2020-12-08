@@ -6,13 +6,6 @@ import io.neow3j.devpack.annotations.Contract;
 public class Policy {
 
     /**
-     * Gets the name of the Policy contract.
-     *
-     * @return the name.
-     */
-    public static native String name();
-
-    /**
      * Gets the maximum allowed number of transactions per block.
      *
      * @return the maximum allowed number of transactions per block.
@@ -41,12 +34,13 @@ public class Policy {
     public static native int getFeePerByte();
 
     /**
-     * Gets the script hashes of the accounts that are currently blacklisted/blocked.
+     * Checks if the account with the given script hash is blacklisted.
      *
-     * @return the blocked accounts' script hashes as hexadecimal strings and in little-endian
-     * order.
+     * @param scriptHash the script hash of the account.
+     * @return True, if the account is blocked. False, otherwise.
      */
-    public static native String[] getBlockedAccounts();
+    public static native boolean isBlocked(byte[] scriptHash);
+
 
     /**
      * Sets the maximum block size to the given value.
@@ -95,5 +89,4 @@ public class Policy {
      * @return true, if successful. False, otherwise.
      */
     public static native boolean unblockAccount(byte[] scriptHash);
-
 }
