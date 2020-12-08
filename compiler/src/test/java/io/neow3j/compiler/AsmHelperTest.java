@@ -134,6 +134,20 @@ public class AsmHelperTest {
         List<String> types = extractTypeParametersFromSignature(field);
         assertThat(types.get(0), is("Ljava/lang/Integer;"));
         assertThat(types.get(1), is("Ljava/lang/String;"));
+
+        // One event parameter with a generic type parameter, i.e., List<Integer>.
+        field = new FieldNode(0, null, null, "Lio/neow3j/devpack/events/Event1Arg<"
+                        + "Lio/neow3j/devpack/List<Ljava/lang/Integer;>;>;", null);
+        types = extractTypeParametersFromSignature(field);
+        assertThat(types.get(0), is("Lio/neow3j/devpack/List;"));
+
+        // Two event parameters with a generic type parameters.
+        field = new FieldNode(0, null, null, "Lio/neow3j/devpack/events/Event1Arg<"
+                + "Lio/neow3j/devpack/List<Ljava/lang/Integer;>;"
+                + "Lio/neow3j/devpack/List<Ljava/lang/String;>;>;", null);
+        types = extractTypeParametersFromSignature(field);
+        assertThat(types.get(0), is("Lio/neow3j/devpack/List;"));
+        assertThat(types.get(1), is("Lio/neow3j/devpack/List;"));
     }
 
     @Test
