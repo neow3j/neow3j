@@ -103,29 +103,32 @@ public class MethodsConverter implements Converter {
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        ClassNode owner = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
-        Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, owner);
-        // If the called method cannot be found on the owner type, we look through the super
-        // types until we find the method.
+        ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner,
+                compUnit.getClassLoader());
+        Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, ownerClass);
+        // If the called method cannot be found on the owner type, we look through the super types
+        // until we find the method.
+        ClassNode topLevelOwnerClass = ownerClass;
         while (!calledAsmMethod.isPresent()) {
-            if (owner.superName == null) {
+            if (ownerClass.superName == null) {
                 throw new CompilerException(callingNeoMethod, format("Couldn't find method '%s' "
                                 + "on its owner class %s and its super classes.", methodInsn.name,
-                        getFullyQualifiedNameForInternalName(owner.name)));
+                        getFullyQualifiedNameForInternalName(ownerClass.name)));
             }
-            owner = getAsmClassForInternalName(owner.superName, compUnit.getClassLoader());
-            calledAsmMethod = getMethodNode(methodInsn, owner);
+            ownerClass = getAsmClassForInternalName(ownerClass.superName,
+                    compUnit.getClassLoader());
+            calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         }
         if (hasSyscallAnnotation(calledAsmMethod.get())) {
             addSyscall(calledAsmMethod.get(), callingNeoMethod);
         } else if (hasInstructionAnnotation(calledAsmMethod.get())) {
             addInstructionsFromAnnotation(calledAsmMethod.get(), callingNeoMethod);
-        } else if (isContractCall(owner)) {
-            addContractCall(calledAsmMethod.get(), callingNeoMethod, owner);
-        } else if (isSrtingLiteralConverter(calledAsmMethod.get(), owner)) {
+        } else if (isContractCall(topLevelOwnerClass)) {
+            addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass);
+        } else if (isSrtingLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
         } else {
-            return handleMethodCall(callingNeoMethod, owner, calledAsmMethod.get(), methodInsn,
+            return handleMethodCall(callingNeoMethod, ownerClass, calledAsmMethod.get(), methodInsn,
                     compUnit);
         }
         return insn;
@@ -178,9 +181,9 @@ public class MethodsConverter implements Converter {
         return methodInsn;
     }
 
-    private static boolean isStringLengthCall(MethodInsnNode methodInsn)  {
-        return  methodInsn.owner.equals(Type.getInternalName(String.class))
-            && methodInsn.name.equals(LENGTH_METHOD_NAME);
+    private static boolean isStringLengthCall(MethodInsnNode methodInsn) {
+        return methodInsn.owner.equals(Type.getInternalName(String.class))
+                && methodInsn.name.equals(LENGTH_METHOD_NAME);
     }
 
     private static boolean isStringSwitch(ClassNode owner, MethodNode calledAsmMethod,
@@ -340,7 +343,7 @@ public class MethodsConverter implements Converter {
         byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
         if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
             throw new CompilerException(owner, format("Script hash '%s' of the @%s annotation on "
-                    + "class %s does not have the length of a correct script hash.",
+                            + "class %s does not have the length of a correct script hash.",
                     Numeric.toHexStringNoPrefix(scriptHash),
                     Contract.class.getSimpleName(), getClassNameForInternalName(owner.name)));
         }

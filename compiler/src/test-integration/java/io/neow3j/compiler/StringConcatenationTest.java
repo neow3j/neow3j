@@ -37,7 +37,7 @@ public class StringConcatenationTest extends ContractTest {
                 ContractParameter.byteArray("4e656f")); // byte array representation of "Neo".
 
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("onetwothreeNeoNEO"));
+                is("onetwothreeNeoneo"));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class StringConcatenationTest extends ContractTest {
         }
 
         public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
-            return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.name();
+            return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.symbol();
         }
 
         public static String concatInStaticVariable() {

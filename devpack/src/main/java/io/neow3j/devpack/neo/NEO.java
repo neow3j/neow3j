@@ -3,43 +3,7 @@ package io.neow3j.devpack.neo;
 import io.neow3j.devpack.annotations.Contract;
 
 @Contract(scriptHash = "0xde5f57d430d3dece511cf975a8d37848cb9e0525")
-public class NEO {
-
-    /**
-     * Gets the name of the NEO token contract.
-     *
-     * @return the name.
-     */
-    public static native String name();
-
-    /**
-     * Gets the symbol of the NEO token.
-     *
-     * @return the symbol.
-     */
-    public static native String symbol();
-
-    /**
-     * Gets the number of decimals of the NEO token, which is zero.
-     *
-     * @return the number of decimals.
-     */
-    public static native int decimals();
-
-    /**
-     * Gets the total supply of the NEO token.
-     *
-     * @return the total supply.
-     */
-    public static native int totalSupply();
-
-    /**
-     * Gets the NEO balance of the given account.
-     *
-     * @param scriptHash The script hash of the account to get the balance for.
-     * @return the account's balance.
-     */
-    public static native int balanceOf(byte[] scriptHash);
+public class NEO extends Nep17Token {
 
     /**
      * Gets the amount of unclaimed GAS for the given account up the the given block number.
