@@ -27,9 +27,8 @@ import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.devpack.annotations.ContractScriptHash;
+import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
@@ -263,11 +262,11 @@ public class MethodsConverter implements Converter {
     }
 
     /**
-     * Checks if the given class node carries the {@link ContractScriptHash} annotation.
+     * Checks if the given class node carries the {@link ContractHash} annotation.
      */
     private static boolean isContractCall(ClassNode owner) {
         return owner.invisibleAnnotations != null && owner.invisibleAnnotations.stream().
-                anyMatch(a -> a.desc.equals(Type.getDescriptor(ContractScriptHash.class)));
+                anyMatch(a -> a.desc.equals(Type.getDescriptor(ContractHash.class)));
     }
 
     private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
@@ -341,13 +340,13 @@ public class MethodsConverter implements Converter {
             ClassNode owner) {
 
         AnnotationNode annotation = owner.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(ContractScriptHash.class))).findFirst().get();
+                .filter(a -> a.desc.equals(Type.getDescriptor(ContractHash.class))).findFirst().get();
         byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
         if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
             throw new CompilerException(owner, format("Script hash '%s' of the @%s annotation on "
                             + "class %s does not have the length of a correct script hash.",
                     Numeric.toHexStringNoPrefix(scriptHash),
-                    ContractScriptHash.class.getSimpleName(), getClassNameForInternalName(owner.name)));
+                    ContractHash.class.getSimpleName(), getClassNameForInternalName(owner.name)));
         }
 
         // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.

@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * Examples of how to use this annotation can be found in {@link NEO}, {@link GAS}, {@link Policy}.
  */
 @Target(ElementType.TYPE)
-public @interface ContractScriptHash {
+public @interface ContractHash {
 
     /**
      * @return the script hash of the contract to call.

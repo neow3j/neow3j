@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
-import io.neow3j.devpack.annotations.ContractScriptHash;
+import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractScriptHash("0xce06595079cd69583126dbfd1d2e25cca74cffe9")
+@ContractHash("0xce06595079cd69583126dbfd1d2e25cca74cffe9")
 public class Policy extends ContractInterface {
 
     /**
