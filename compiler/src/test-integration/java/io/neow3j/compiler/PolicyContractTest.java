@@ -7,7 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.devpack.neo.Policy;
+import io.neow3j.devpack.Policy;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -116,6 +116,13 @@ public class PolicyContractTest extends ContractTest {
         assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
     }
 
+    @Test
+    public void getHash() throws Throwable {
+        NeoInvokeFunction response = callInvokeFunction();
+        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
+                is(Numeric.hexStringToByteArray("ce06595079cd69583126dbfd1d2e25cca74cffe9")));
+    }
+
     static class PolicyContractTestContract {
 
         public static int[] setAndGetFeePerByte(int newFee) {
@@ -164,6 +171,10 @@ public class PolicyContractTest extends ContractTest {
 
         public static boolean unblockAccount(byte[] scriptHash) {
             return Policy.unblockAccount(scriptHash);
+        }
+
+        public static byte[] getHash() {
+            return Policy.getHash();
         }
 
     }

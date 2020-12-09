@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Helper;
-import io.neow3j.devpack.neo.NEO;
+import io.neow3j.devpack.NEO;
 import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;

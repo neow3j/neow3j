@@ -1,9 +1,9 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
-import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.annotations.ContractScriptHash;
 
-@Contract(scriptHash = "0xce06595079cd69583126dbfd1d2e25cca74cffe9")
-public class Policy {
+@ContractScriptHash("0xce06595079cd69583126dbfd1d2e25cca74cffe9")
+public class Policy extends ContractInterface {
 
     /**
      * Gets the maximum allowed number of transactions per block.

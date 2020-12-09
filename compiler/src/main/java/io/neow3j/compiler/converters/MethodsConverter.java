@@ -28,7 +28,7 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.annotations.ContractScriptHash;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
@@ -261,11 +261,11 @@ public class MethodsConverter implements Converter {
     }
 
     /**
-     * Checks if the given class node carries the {@link Contract} annotation.
+     * Checks if the given class node carries the {@link ContractScriptHash} annotation.
      */
     private static boolean isContractCall(ClassNode owner) {
         return owner.invisibleAnnotations != null && owner.invisibleAnnotations.stream().
-                anyMatch(a -> a.desc.equals(Type.getDescriptor(Contract.class)));
+                anyMatch(a -> a.desc.equals(Type.getDescriptor(ContractScriptHash.class)));
     }
 
     private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
@@ -339,13 +339,13 @@ public class MethodsConverter implements Converter {
             ClassNode owner) {
 
         AnnotationNode annotation = owner.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Contract.class))).findFirst().get();
+                .filter(a -> a.desc.equals(Type.getDescriptor(ContractScriptHash.class))).findFirst().get();
         byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
         if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
             throw new CompilerException(owner, format("Script hash '%s' of the @%s annotation on "
                             + "class %s does not have the length of a correct script hash.",
                     Numeric.toHexStringNoPrefix(scriptHash),
-                    Contract.class.getSimpleName(), getClassNameForInternalName(owner.name)));
+                    ContractScriptHash.class.getSimpleName(), getClassNameForInternalName(owner.name)));
         }
 
         int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;

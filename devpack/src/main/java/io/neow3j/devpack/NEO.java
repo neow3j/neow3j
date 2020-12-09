@@ -1,8 +1,8 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
-import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.annotations.ContractScriptHash;
 
-@Contract(scriptHash = "0xde5f57d430d3dece511cf975a8d37848cb9e0525")
+@ContractScriptHash("0xde5f57d430d3dece511cf975a8d37848cb9e0525")
 public class NEO extends Nep17Token {
 
     /**
