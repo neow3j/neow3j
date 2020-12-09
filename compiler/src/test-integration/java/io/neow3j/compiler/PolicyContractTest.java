@@ -119,8 +119,8 @@ public class PolicyContractTest extends ContractTest {
     @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
-                is(Numeric.hexStringToByteArray("ce06595079cd69583126dbfd1d2e25cca74cffe9")));
+        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+                is("ce06595079cd69583126dbfd1d2e25cca74cffe9"));
     }
 
     static class PolicyContractTestContract {

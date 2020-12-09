@@ -27,6 +27,7 @@ import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.ContractScriptHash;
 import io.neow3j.devpack.annotations.Instruction;
@@ -93,6 +94,7 @@ public class MethodsConverter implements Converter {
     private static final String STRING_TO_INT_METHOD_NAME = "stringToInt";
     private static final String EQUALS_METHOD_NAME = "hashCode";
     private static final String LENGTH_METHOD_NAME = "length";
+    private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
 
 
     /**
@@ -346,6 +348,12 @@ public class MethodsConverter implements Converter {
                             + "class %s does not have the length of a correct script hash.",
                     Numeric.toHexStringNoPrefix(scriptHash),
                     ContractScriptHash.class.getSimpleName(), getClassNameForInternalName(owner.name)));
+        }
+
+        // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
+        if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
+            callingNeoMethod.addInstruction(buildPushDataInsn(scriptHash));
+            return;
         }
 
         int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;

@@ -477,7 +477,6 @@ public class Compiler {
         return (MethodInsnNode) insn;
     }
 
-
     // Adds an opcode that reverses the ordering of the arguments on the evaluation stack
     // according to the number of arguments the called method takes.
     public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
