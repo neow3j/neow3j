@@ -29,6 +29,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -56,6 +57,9 @@ public class ContractTest {
     protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String VM_STATE_FAULT = "FAULT";
+    protected static final String DEFAULT_ACCOUNT_ADDRES = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
+    protected static final String DEFAULT_ACCOUNT_WIF =
+            "L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda";
 
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
@@ -82,20 +86,22 @@ public class ContractTest {
     @Rule
     public TestName testName = new TestName();
 
-    private boolean signWithCommitteeMember = false;
-    private boolean signWithDefaultAccount = false;
-
     protected String getTestName() {
         return testName.getMethodName();
     }
 
     protected static void setUp(String name) throws Throwable {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        defaultAccount = Account.fromWIF("L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda");
+        defaultAccount = Account.fromWIF(DEFAULT_ACCOUNT_WIF);
         committeeMember = Account.createMultiSigAccount(
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committeeMember);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
+
+        new GasToken(neow3j).transfer(wallet, defaultAccount.getAddress(),
+                BigDecimal.valueOf(1000)).sign().send();
+        waitUntilBalancesIsGreaterThanZero(defaultAccount.getAddress(), GasToken.SCRIPT_HASH);
+
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(contract.getScriptHash());
@@ -124,10 +130,9 @@ public class ContractTest {
     }
 
     /**
-     * Does a {@code invokefunction} JSON-RPC to the setup contract, the function with the current
-     * test's name, and the given parameters.
-     * <p>
-     * Doesn't add a signer to the invocation.
+     * Does an {@code invokefunction} JSON-RPC to the function with the current test's name on the
+     * contract under test. Passes {@code params} as the arguments. The default account is used as
+     * the signer of the invocation.
      *
      * @param params The parameters to provide to the function call.
      * @return The result of the call.
@@ -138,8 +143,23 @@ public class ContractTest {
     }
 
     /**
-     * Does a {@code invokefunction} JSON-RPC to the contract under test, the given function, with
-     * the given parameters and signer.
+     * Does an {@code invokefunction} JSON-RPC to the function with the current test's name on the
+     * contract under test. Passes {@code params} as the arguments. The {@code signerAccounts}
+     * are used as the signers of the invocation.
+     *
+     * @param signerAccounts The accounts to use as signers on the invocation.
+     * @param params The parameters to provide to the function call.
+     * @return The result of the call.
+     * @throws IOException if something goes wrong in the communication with the neo-node.
+     */
+    protected NeoInvokeFunction callInvokeFunction(List<ScriptHash> signerAccounts,
+            ContractParameter... params) throws IOException {
+        return callInvokeFunction(getTestName(), signerAccounts, params);
+    }
+
+    /**
+     * Does an {@code invokefunction} JSON-RPC to the {@code function} of the contract under test,
+     * passing the {@code params}. The default account is used as the signer of the invocation.
      *
      * @param function The function to call.
      * @param params   The parameters to provide to the function call.
@@ -149,15 +169,27 @@ public class ContractTest {
     protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
             throws IOException {
 
-        if (signWithCommitteeMember) {
-            return contract.callInvokeFunction(function, Arrays.asList(params),
-                    Signer.calledByEntry(committeeMember.getScriptHash()));
-        }
-        if (signWithDefaultAccount) {
-            return contract.callInvokeFunction(function, Arrays.asList(params),
-                    Signer.calledByEntry(defaultAccount.getScriptHash()));
-        }
-        return contract.callInvokeFunction(function, Arrays.asList(params));
+        return contract.callInvokeFunction(function, Arrays.asList(params),
+                Signer.calledByEntry(defaultAccount.getScriptHash()));
+    }
+
+    /**
+     * Does an {@code invokefunction} JSON-RPC to the {@code function} of the contract under test,
+     * passing the {@code params} and using {@code signerAccounts} as the signers of the
+     * invocation.
+     *
+     * @param function       The function to call.
+     * @param signerAccounts The accounts to use as signers on the invocation.
+     * @param params         The parameters to provide to the function call.
+     * @return The result of the call.
+     * @throws IOException if something goes wrong in the communication with the neo-node.
+     */
+    protected NeoInvokeFunction callInvokeFunction(String function, List<ScriptHash> signerAccounts,
+            ContractParameter... params) throws IOException {
+
+        Signer[] signers = signerAccounts.stream().map(Signer::calledByEntry)
+                .toArray(Signer[]::new);
+        return contract.callInvokeFunction(function, Arrays.asList(params), signers);
     }
 
     /**
@@ -179,40 +211,51 @@ public class ContractTest {
     }
 
     /**
-     * Builds and sends a transaction that invokes the contract under test, the function with the
-     * name of the current test method, with the given parameters.
+     * Builds and sends a transaction that invokes the function with the name of the current test
+     * method on the contract under test, passing {@code params} as the method arguments.
      * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
+     * The default account ({@link ContractTest#defaultAccount}) is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
     protected String invokeFunction(ContractParameter... params) throws Throwable {
-        return contract.invokeFunction(getTestName(), params)
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        return invokeFunction(getTestName(), params);
     }
 
     /**
-     * Builds and sends a transaction that invokes the contract under test, the given function,
-     * with the given parameters.
+     * Builds and sends a transaction that invokes the {@code function} on the contract under test,
+     * passing {@code params} as the method arguments.
      * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
+     * The default account ({@link ContractTest#defaultAccount}) is used to sign the transaction.
      *
      * @param function The function to call.
-     * @param params The parameters to pass with the function call.
+     * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
     protected String invokeFunction(String function, ContractParameter... params) throws Throwable {
+        return invokeFunction(function, Arrays.asList(defaultAccount.getScriptHash()), params);
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the {@code function} on the contract under test,
+     * passing {@code params} as the method arguments.
+     * <p>
+     * The default account ({@link ContractTest#defaultAccount}) is used to sign the transaction.
+     *
+     * @param function       The function to call.
+     * @param signerAccounts The accounts to use for signing the transaction.
+     * @param params         The parameters to pass with the function call.
+     * @return the hash of the sent transaction.
+     */
+    protected String invokeFunction(String function, List<ScriptHash> signerAccounts,
+            ContractParameter... params) throws Throwable {
+
+        Signer[] signers = signerAccounts.stream().map(Signer::calledByEntry)
+                .toArray(Signer[]::new);
         return contract.invokeFunction(function, params)
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+                .signers(signers)
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -315,10 +358,26 @@ public class ContractTest {
         waitUntil(callableGetBalance(address, tokenScriptHash), Matchers.greaterThan(0L));
     }
 
+    /**
+     * Pauses the current thread until the contract with the given script hash is seen on the
+     * blockchain.
+     * <p>
+     * Waits maximally 30 seconds.
+     *
+     * @param contractScripHash The contract script hash.
+     */
     public static void waitUntilContractIsDeployed(ScriptHash contractScripHash) {
         waitUntil(callableGetContractState(contractScripHash), Matchers.is(true));
     }
 
+    /**
+     * Pauses the current thread until the transaction with the given hash is seen on the
+     * blockchain.
+     * <p>
+     * Waits maximally 30 seconds.
+     *
+     * @param txHash The transaction hash.
+     */
     public static void waitUntilTransactionIsExecuted(String txHash) {
         waitUntil(callableGetTxHash(txHash), notNullValue());
     }
@@ -330,14 +389,6 @@ public class ContractTest {
         InputStream s = this.getClass().getClassLoader().getResourceAsStream(
                 getResultFilePath(splitName[splitName.length - 1], getTestName()));
         return getObjectMapper().readValue(s, stackItemType);
-    }
-
-    protected void signWithCommitteeMember() {
-        signWithCommitteeMember = true;
-    }
-
-    protected void signWithDefaultAccount() {
-        signWithDefaultAccount = true;
     }
 
 }

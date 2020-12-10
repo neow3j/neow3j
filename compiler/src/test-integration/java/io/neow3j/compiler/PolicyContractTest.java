@@ -13,6 +13,7 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,8 +41,8 @@ public class PolicyContractTest extends ContractTest {
     @Test
     public void setAndGetFeePerByte() throws IOException {
         int newFee = 1;
-        signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(integer(newFee));
+        NeoInvokeFunction response = callInvokeFunction(
+                Arrays.asList(committeeMember.getScriptHash()), integer(newFee));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
         assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(FEE_PER_BYTE)));
@@ -51,8 +52,8 @@ public class PolicyContractTest extends ContractTest {
     @Test
     public void setAndGetMaxBlockSystemFee() throws IOException {
         int fee = 4007601;
-        signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(integer(fee));
+        NeoInvokeFunction response = callInvokeFunction(
+                Arrays.asList(committeeMember.getScriptHash()), integer(fee));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
         assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(MAX_BLOCK_SYSTEM_FEE)));
@@ -61,8 +62,8 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void setAndGetMaxBlockSize() throws IOException {
-        signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(integer(1024));
+        NeoInvokeFunction response = callInvokeFunction(
+                Arrays.asList(committeeMember.getScriptHash()), integer(1024));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
         assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(MAX_BLOCK_SIZE)));
@@ -80,8 +81,8 @@ public class PolicyContractTest extends ContractTest {
     @Test
     public void setAndGetMaxTransactionsPerBlock() throws IOException {
         BigInteger newTxPerBlock = BigInteger.ONE;
-        signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(integer(newTxPerBlock));
+        NeoInvokeFunction response = callInvokeFunction(
+                Arrays.asList(committeeMember.getScriptHash()), integer(newTxPerBlock));
 
         StackItem array = response.getInvocationResult().getStack().get(0);
         assertThat(array.getType(), is(StackItemType.ARRAY));
@@ -96,8 +97,9 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void setAndGetBlockedAccounts() throws IOException {
-        signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
+        NeoInvokeFunction response = callInvokeFunction(
+                Arrays.asList(committeeMember.getScriptHash()),
+                hash160(defaultAccount.getScriptHash()));
 
         StackItem arrayItem = response.getInvocationResult().getStack().get(0);
         assertThat(arrayItem.getType(), is(StackItemType.ARRAY));
@@ -108,8 +110,9 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void unblockAccount() throws IOException {
-        signWithCommitteeMember();
-        NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
+        NeoInvokeFunction response = callInvokeFunction(
+                Arrays.asList(committeeMember.getScriptHash()),
+                hash160(defaultAccount.getScriptHash()));
         assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
     }
 
