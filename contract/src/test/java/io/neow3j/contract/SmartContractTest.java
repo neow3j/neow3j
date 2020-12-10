@@ -12,6 +12,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.http.HttpService;
@@ -91,7 +92,7 @@ public class SmartContractTest {
     public void constructSmartContractWithoutScriptHash() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("script hash"));
-        new SmartContract(null, this.neow);
+        new SmartContract(null, neow);
     }
 
     @Test
@@ -103,7 +104,7 @@ public class SmartContractTest {
 
     @Test
     public void constructSmartContract() {
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         assertThat(sc.getScriptHash(), is(NEO_SCRIPT_HASH));
     }
 
@@ -120,12 +121,30 @@ public class SmartContractTest {
     public void constructSmartContractForDeployment() throws IOException,
             DeserializationException {
 
-        SmartContract c = new SmartContract(nefFile, manifestFile, this.neow);
+        SmartContract c = new SmartContract(nefFile, manifestFile, neow);
         assertThat(c.getScriptHash().toString(),
                 is(Numeric.cleanHexPrefix(TEST_CONTRACT_1_SCRIPT_HASH)));
         assertThat(c.getManifest().getAbi().getHash(), is(TEST_CONTRACT_1_SCRIPT_HASH));
+        assertThat(c.getManifest().getName(), is("neowww"));
+        assertThat(c.getName(), is("neowww"));
         assertThat(c.getNefFile().getScriptHash().toString(),
                 is(Numeric.cleanHexPrefix(TEST_CONTRACT_1_SCRIPT_HASH)));
+    }
+
+    @Test
+    public void testGetManifest() throws IOException {
+        setUpWireMockForCall("getcontractstate", "contractstate.json");
+        SmartContract c = new SmartContract(SOME_SCRIPT_HASH, neow);
+        ContractManifest manifest = c.getManifest();
+        assertThat(manifest.getName(), is("neow3j"));
+    }
+
+    @Test
+    public void testGetName() throws IOException {
+        setUpWireMockForCall("getcontractstate", "contractstate.json");
+        SmartContract c = new SmartContract(SOME_SCRIPT_HASH, neow);
+        String name = c.getName();
+        assertThat(name, is("neow3j"));
     }
 
     @Test
@@ -137,7 +156,7 @@ public class SmartContractTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(
                 new StringContainsInOrder(Arrays.asList("NEF", "script hash", "manifest")));
-        new SmartContract(nefFile, manifest, this.neow);
+        new SmartContract(nefFile, manifest, neow);
     }
 
     @Test
@@ -148,12 +167,12 @@ public class SmartContractTest {
                 .getResource("contracts/too_large.manifest.json").toURI());
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("manifest is too long");
-        new SmartContract(nefFile, manifest, this.neow);
+        new SmartContract(nefFile, manifest, neow);
     }
 
     @Test
     public void tryDeployAfterUsingWrongConstructor() throws IOException {
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         expectedException.expect(IllegalStateException.class);
         sc.deploy();
     }
@@ -162,14 +181,14 @@ public class SmartContractTest {
     public void invokeWithNullString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("null"));
-        new SmartContract(NEO_SCRIPT_HASH, this.neow).invokeFunction(null);
+        new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction(null);
     }
 
     @Test
     public void invokeWithEmptyString() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("empty"));
-        new SmartContract(NEO_SCRIPT_HASH, this.neow).invokeFunction("");
+        new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction("");
     }
 
     @Test
@@ -183,7 +202,7 @@ public class SmartContractTest {
                         ContractParameter.integer(5))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         Transaction tx = sc.invokeFunction(NEP17_TRANSFER,
                 ContractParameter.hash160(account1.getScriptHash()),
                 ContractParameter.hash160(recipient),
@@ -199,7 +218,7 @@ public class SmartContractTest {
     public void callFunctionReturningString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_name.json",
                 SOME_SCRIPT_HASH.toString(), "name");
-        SmartContract sc = new SmartContract(SOME_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(SOME_SCRIPT_HASH, neow);
         String name = sc.callFuncReturningString("name");
         assertThat(name, is("ANT"));
     }
@@ -208,7 +227,7 @@ public class SmartContractTest {
     public void callFunctionReturningNonString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_NAME);
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         expectedException.expect(UnexpectedReturnTypeException.class);
         expectedException.expectMessage(new StringContains(StackItemType.INTEGER.jsonValue()));
         sc.callFuncReturningString(NEP17_NAME);
@@ -218,16 +237,26 @@ public class SmartContractTest {
     public void callFunctionReturningInt() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_TOTALSUPPLY);
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         BigInteger supply = sc.callFuncReturningInt(NEP17_TOTALSUPPLY);
         assertThat(supply, is(BigInteger.valueOf(3000000000000000L)));
+    }
+
+    @Test
+    public void callFunctionReturningInt_withParameter() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json",
+                NEO_SCRIPT_HASH.toString(), NEP17_BALANCEOF);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        BigInteger balance = sc.callFuncReturningInt(NEP17_BALANCEOF,
+                ContractParameter.hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
+        assertThat(balance, is(BigInteger.valueOf(3)));
     }
 
     @Test
     public void callFunctionReturningNonInt() throws IOException {
         setUpWireMockForCall("invokefunction", "invokescript_registercandidate.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_TOTALSUPPLY);
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         expectedException.expect(UnexpectedReturnTypeException.class);
         expectedException.expectMessage(new StringContains(StackItemType.BOOLEAN.jsonValue()));
         sc.callFuncReturningInt(NEP17_TOTALSUPPLY);
@@ -238,7 +267,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_BALANCEOF, account1.getScriptHash().toString());
 
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, this.neow);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         NeoInvokeFunction response = sc.callInvokeFunction(NEP17_BALANCEOF,
                 Arrays.asList(ContractParameter.hash160(account1.getScriptHash())));
         assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
