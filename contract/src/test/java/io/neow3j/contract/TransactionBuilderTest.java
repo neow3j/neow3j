@@ -389,7 +389,7 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(wallet.getDefaultAccount().getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(),
-                contains(WitnessScope.FEE_ONLY));
+                contains(WitnessScope.NONE));
     }
 
     @Test
@@ -435,7 +435,7 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(senderAcc.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(),
-                contains(WitnessScope.FEE_ONLY));
+                contains(WitnessScope.NONE));
     }
 
     @Test
@@ -464,7 +464,7 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(senderAcc.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(),
-                contains(WitnessScope.FEE_ONLY));
+                contains(WitnessScope.NONE));
         assertThat(tx.getSigners().get(1).getScriptHash(),
                 is(signer.getScriptHash()));
         assertThat(tx.getSigners().get(1).getScopes(), is(signer.getScopes()));

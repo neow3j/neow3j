@@ -137,7 +137,7 @@ public class TransactionBuilder {
     /**
      * Sets the signer belonging to the given {@code sender} account to the first index of the list
      * of signers for this transaction. The first signer covers the fees for the transaction if
-     * there is no signer present with fee-only witness scope (see {@link WitnessScope#FEE_ONLY}).
+     * there is no signer present with fee-only witness scope (see {@link WitnessScope#NONE}).
      *
      * @param sender the account of the signer to be set to the first index.
      * @return this transaction builder.
@@ -149,7 +149,7 @@ public class TransactionBuilder {
     /**
      * Sets the signer with script hash {@code sender} to the first index of the list of signers
      * for this transaction. The first signer covers the fees for the transaction if there is
-     * no signer present with fee-only witness scope (see {@link WitnessScope#FEE_ONLY}).
+     * no signer present with fee-only witness scope (see {@link WitnessScope#NONE}).
      *
      * @param sender the script hash of the signer to be set to the first index.
      * @return this transaction builder.
@@ -157,7 +157,7 @@ public class TransactionBuilder {
     public TransactionBuilder firstSigner(ScriptHash sender) {
         if (signers.stream()
                 .map(Signer::getScopes)
-                .anyMatch(scopes -> scopes.contains(WitnessScope.FEE_ONLY))) {
+                .anyMatch(scopes -> scopes.contains(WitnessScope.NONE))) {
             throw new IllegalStateException("This transaction contains a signer with " +
                     "fee-only witness scope that will cover the fees. Hence, the order " +
                     "of the signers does not affect the payment of the fees.");
@@ -178,7 +178,7 @@ public class TransactionBuilder {
      * Sets the signers of this transaction. If the list of signers already contains signers, they
      * are replaced.
      * <p>
-     * If one of the signers has the fee-only witness scope (see {@link WitnessScope#FEE_ONLY}),
+     * If one of the signers has the fee-only witness scope (see {@link WitnessScope#NONE}),
      * this account is used to cover the transaction fees. Otherwise, the first signer is used as
      * the sender of this transaction, meaning that it is used to cover the transaction fees.
      *
@@ -259,7 +259,7 @@ public class TransactionBuilder {
 
     private boolean containsMultipleFeeOnlySigners(Signer... signers) {
         return Stream.of(signers)
-                .filter(s -> s.getScopes().contains(WitnessScope.FEE_ONLY))
+                .filter(s -> s.getScopes().contains(WitnessScope.NONE))
                 .count() > 1;
     }
 
@@ -557,7 +557,7 @@ public class TransactionBuilder {
         // the sender of the transaction. If there is no such signer then the order of the
         // signers defines the sender, i.e., the first signer is the sender of the transaction.
         return signers.stream()
-                .filter(signer -> signer.getScopes().contains(WitnessScope.FEE_ONLY))
+                .filter(signer -> signer.getScopes().contains(WitnessScope.NONE))
                 .findFirst()
                 .orElse(signers.get(0))
                 .getScriptHash();
