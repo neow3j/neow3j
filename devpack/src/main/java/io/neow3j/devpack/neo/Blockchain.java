@@ -65,14 +65,14 @@ public class Blockchain {
     public static native Transaction getTransactionFromBlock(long blockHeight, int txIndex);
 
     /**
-     * Gets the transaction height of the block with the given block hash. The transaction height is
-     * equal to the number of transactions in the block minus one.
+     * Gets the transaction height of the transaction with the given hash. The transaction
+     * height is the number of the block in which a transaction is contained.
      *
-     * @param blockHash The block hash to get the transaction height for.
-     * @return the transaction height.
+     * @param transactionHash The hash of the transaction.
+     * @return the transaction's height.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT)
-    public static native long getTransactionHeight(byte[] blockHash);
+    public static native int getTransactionHeight(byte[] transactionHash);
 
     /**
      * Gets the contract with the given script hash.

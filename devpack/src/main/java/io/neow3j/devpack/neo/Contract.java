@@ -67,7 +67,7 @@ public class Contract {
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALLEX)
-    public static native Object callEx(byte[] scriptHash, String method, byte callFlag,
+    public static native Object call(byte[] scriptHash, String method, byte callFlag,
             Object... arguments);
 
     /**
