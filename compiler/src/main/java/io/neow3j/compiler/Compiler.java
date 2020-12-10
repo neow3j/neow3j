@@ -61,6 +61,9 @@ public class Compiler {
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
     public static final String THIS_KEYWORD = "this";
 
+    public static final String VERIFY_METHOD_NAME = "verify";
+    public static final String DEPLOY_METHOD_NAME = "_deploy";
+
     private CompilationUnit compUnit;
 
     public Compiler() {
