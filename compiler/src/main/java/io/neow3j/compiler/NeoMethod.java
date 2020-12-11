@@ -637,7 +637,7 @@ public class NeoMethod {
         }
     }
 
-    public void initializeMethod(CompilationUnit compUnit) {
+    public void initializeLocalVariablesAndParameters(CompilationUnit compUnit) {
         checkForUnsupportedLocalVariableTypes();
         if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0
                 && (asmMethod.access & Opcodes.ACC_STATIC) > 0
