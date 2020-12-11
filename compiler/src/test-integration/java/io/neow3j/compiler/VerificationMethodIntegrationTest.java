@@ -27,18 +27,17 @@ public class VerificationMethodIntegrationTest extends ContractTest {
 
     @Test
     public void callVerifyWithContractOwner() throws Throwable {
-        String contractAddress = "";
-        String contractScriptHash = "";
-
         // Send NEO to the contract.
-        String txHash = new NeoToken(neow3j).transfer(wallet, contractAddress, BigDecimal.TEN)
+        String txHash = new NeoToken(neow3j)
+                .transfer(wallet, contract.getScriptHash(), BigDecimal.TEN)
                 .sign().send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash);
 
         // Withdraw NEO from the contract. This should call the contract's verify method.
-        Transaction tx = new NeoToken(neow3j).transfer(wallet, contractAddress, BigDecimal.TEN)
+        Transaction tx = new NeoToken(neow3j)
+                .transfer(wallet, contract.getScriptHash(), BigDecimal.TEN)
                 .signers(Signer.calledByEntry(defaultAccount.getScriptHash()),
-                        Signer.calledByEntry(contractScriptHash))
+                        Signer.calledByEntry(contract.getScriptHash()))
                 .getUnsignedTransaction();
         tx.addWitness(Witness.create(tx.getHashData(), defaultAccount.getECKeyPair()));
         txHash = tx.send().getSendRawTransaction().getHash();
@@ -49,21 +48,19 @@ public class VerificationMethodIntegrationTest extends ContractTest {
         fail();
     }
 
-
     @Test
     public void callVerifyWithOtherSigner() throws Throwable {
-        String contractAddress = "";
-        String contractScriptHash = "";
-
         // Send NEO to the contract.
-        String txHash = new NeoToken(neow3j).transfer(wallet, contractAddress, BigDecimal.TEN)
+        String txHash = new NeoToken(neow3j)
+                .transfer(wallet, contract.getScriptHash(), BigDecimal.TEN)
                 .sign().send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash);
 
         // Withdraw NEO from the contract. This should call the contract's verify method.
-        Transaction tx = new NeoToken(neow3j).transfer(wallet, contractAddress, BigDecimal.TEN)
+        Transaction tx = new NeoToken(neow3j)
+                .transfer(wallet, contract.getScriptHash(), BigDecimal.TEN)
                 .signers(Signer.calledByEntry(defaultAccount.getScriptHash()),
-                        Signer.calledByEntry(contractScriptHash))
+                        Signer.calledByEntry(contract.getScriptHash()))
                 .getUnsignedTransaction();
         tx.addWitness(Witness.create(tx.getHashData(), defaultAccount.getECKeyPair()));
         txHash = tx.send().getSendRawTransaction().getHash();
