@@ -8,6 +8,7 @@ import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.utils.ArrayUtils;
 import java.io.IOException;
@@ -116,6 +117,7 @@ public class NeoMethod {
         this.name = asmMethod.name;
         this.sourceClass = sourceClass;
         handleVerifyMethod();
+        handleDeployMethod();
         collectTryCatchBlocks(asmMethod.tryCatchBlocks);
     }
 
@@ -144,6 +146,29 @@ public class NeoMethod {
     private boolean hasBooleanReturnType() {
         return asmMethod.desc.lastIndexOf('Z') == asmMethod.desc.length() - 1  &&
                 asmMethod.desc.lastIndexOf(')') == asmMethod.desc.length() - 2;
+    }
+
+    private void handleDeployMethod() {
+        Optional<AnnotationNode> deployAnnotation = AsmHelper.getAnnotationNode(asmMethod,
+                OnDeployment.class);
+        if (!deployAnnotation.isPresent()) {
+            // Check if method has _deploy signature but isn't annotated.
+            if (asmMethod.name.equals(Compiler.DEPLOY_METHOD_NAME) &&
+                    asmMethod.desc.equals("(Z)V")) {
+                throw new CompilerException(sourceClass, format("Contract has a '%s' method which "
+                                + "is not annotated with the '%s' annotation. Either change its "
+                                + "name or add the annotation.", Compiler.DEPLOY_METHOD_NAME,
+                        OnDeployment.class.getSimpleName()));
+            }
+            return;
+        }
+
+        if (!asmMethod.desc.equals("(Z)V")) {
+            throw new CompilerException(sourceClass, format("The method annotated with %s is "
+                            + "required to have a boolean parameter and a void return type.",
+                    OnDeployment.class.getSimpleName()));
+        }
+        name = Compiler.DEPLOY_METHOD_NAME;
     }
 
     // Sifts through the exception table of this method and constructs try-catch-finally blocks

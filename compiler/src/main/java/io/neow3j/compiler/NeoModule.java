@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -30,6 +31,10 @@ public class NeoModule {
     // {@link OnVerification} annotation, then this field is set to true.
     private boolean hasVerifyMethod = false;
 
+    // Determines if this module has a _deploy method or not. If a method is added that bears the
+    // {@link OnDeployment} annotation, then this field is set to true.
+    private boolean hasDeployMethod = false;
+
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
     }
@@ -47,6 +52,7 @@ public class NeoModule {
         if (method != null) {
             methods.put(method.getId(), method);
             sortedMethods.add(method);
+
             if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnVerification.class)) {
                 if (hasVerifyMethod) {
                     throw new CompilerException(method.getOwnerClass(), format("More than one "
@@ -55,6 +61,16 @@ public class NeoModule {
                             Compiler.VERIFY_METHOD_NAME));
                 }
                 hasVerifyMethod = true;
+            }
+
+            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnDeployment.class)) {
+                if (hasDeployMethod) {
+                    throw new CompilerException(method.getOwnerClass(), format("More than one "
+                                    + "method is marked with the '%s' annotation. There can only be "
+                                    + "one '%s' method", OnDeployment.class.getSimpleName(),
+                            Compiler.DEPLOY_METHOD_NAME));
+                }
+                hasDeployMethod = true;
             }
         }
     }
