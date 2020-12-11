@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -40,7 +41,7 @@ public class VerificationMethodTest {
     public void throwExceptionWhenVerifyMethodHasIllegalSignature() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Signature", Compiler.VERIFY_METHOD_NAME)));
+                OnVerification.class.getSimpleName(), "required to have a boolean return type")));
         new Compiler().compileClass(VerificationMethodIllegalSignatureTestContract.class.getName());
     }
 
@@ -48,8 +49,18 @@ public class VerificationMethodTest {
     public void throwExceptionWhenMultipleVerifyMethodsAreUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Multiple", Compiler.VERIFY_METHOD_NAME)));
-        new Compiler().compileClass(VerificationMethodIllegalSignatureTestContract.class.getName());
+                "More than one method is marked", OnVerification.class.getSimpleName(),
+                Compiler.VERIFY_METHOD_NAME)));
+        new Compiler().compileClass(MultipleVerificationMethodsTestContract.class.getName());
+    }
+
+    @Test
+    public void throwExceptionWhenVerifyMethodIsUsedWithoutAnnotation() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(Compiler.VERIFY_METHOD_NAME,
+                "method which is not annotated", OnVerification.class.getSimpleName())));
+        new Compiler().compileClass(VerificationMethodWithoutAnnotationContract.class.getName());
+
     }
 
     static class VerificationMethodTestContract {
@@ -81,6 +92,14 @@ public class VerificationMethodTest {
 
         @OnVerification
         public static boolean doVerify2() {
+            return true;
+        }
+
+    }
+
+    static class VerificationMethodWithoutAnnotationContract {
+
+        public static boolean verify(int i) {
             return true;
         }
 

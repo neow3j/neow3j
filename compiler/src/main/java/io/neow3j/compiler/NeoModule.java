@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.OnVerification;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ public class NeoModule {
     // in the smart contract class.
     private final Map<String, NeoEvent> events = new HashMap<>();
 
+    // Determines if this module has a verify method or not. If a method is added that bears the
+    // {@link OnVerification} annotation, then this field is set to true.
+    private boolean hasVerifyMethod = false;
 
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
@@ -40,8 +44,25 @@ public class NeoModule {
     }
 
     public void addMethod(NeoMethod method) {
-        methods.put(method.getId(), method);
-        sortedMethods.add(method);
+        if (method != null) {
+            methods.put(method.getId(), method);
+            sortedMethods.add(method);
+            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnVerification.class)) {
+                if (hasVerifyMethod) {
+                    throw new CompilerException(method.getOwnerClass(), format("More than one "
+                            + "method is marked with the '%s' annotation. There can only be "
+                            + "one '%s' method", OnVerification.class.getSimpleName(),
+                            Compiler.VERIFY_METHOD_NAME));
+                }
+                hasVerifyMethod = true;
+            }
+        }
+    }
+
+    public void addMethods(List<NeoMethod> newMethods) {
+        if (newMethods != null) {
+            newMethods.forEach(this::addMethod);
+        }
     }
 
     public void addEvent(NeoEvent event) {
