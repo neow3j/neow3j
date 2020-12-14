@@ -2,7 +2,6 @@ package io.neow3j.contract;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.io.exceptions.DeserializationException;
@@ -276,9 +275,10 @@ public class SmartContract {
     }
 
     /**
-     * Initializes a {@link TransactionBuilder} for deploying this contract.
+     * Creates a transaction script to deploy this contract and initializes
+     * a {@link TransactionBuilder} based on this script.
      *
-     * @return A {@link TransactionBuilder}.
+     * @return A transaction builder.
      * @throws JsonProcessingException If something goes wrong when processing the manifest.
      */
     public TransactionBuilder deploy() throws JsonProcessingException {
@@ -286,13 +286,11 @@ public class SmartContract {
             throw new IllegalStateException("This smart contract instance was not constructed for"
                     + " deployment. It is missing its NEF file.");
         }
-        byte[] script = new ScriptBuilder()
-                .pushData(objectMapper.writeValueAsBytes(manifest))
-                .pushData(nefFile.getScript())
-                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CREATE)
-                .toArray();
-
-        return new TransactionBuilder(neow)
-                .script(script);
+        if (manifest == null) {
+            throw new IllegalStateException("This smart contract instance was not constructed for"
+                    + " deployment. It is missing its manifest.");
+        }
+        ManagementContract managementContract = new ManagementContract(neow);
+        return managementContract.deploy(nefFile, manifest);
     }
 }
