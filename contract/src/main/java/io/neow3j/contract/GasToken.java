@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.OpCode;
 import io.neow3j.protocol.Neow3j;
 
 /**
@@ -8,11 +9,21 @@ import io.neow3j.protocol.Neow3j;
  */
 public class GasToken extends Nep5Token {
 
-    public final static int DECIMALS = 8;
     public final static String NAME = "GAS";
+    public final static int DECIMALS = 8;
     public final static String SYMBOL = "gas";
+
+    private static final byte[] SCRIPT = new ScriptBuilder()
+            .pushData(NAME)
+            .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
+            .toArray();
+
     public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
+            new ScriptBuilder()
+                    .opCode(OpCode.ABORT)
+                    .pushData(ScriptHash.ZERO.toArray())
+                    .pushData(SCRIPT)
+                    .toArray());
 
     /**
      * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for
