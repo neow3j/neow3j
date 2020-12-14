@@ -7,81 +7,80 @@ import java.nio.charset.StandardCharsets;
 
 public enum InteropServiceCode {
 
-    SYSTEM_ENUMERATOR_CREATE("System.Enumerator.Create", 400),
-    SYSTEM_ENUMERATOR_NEXT("System.Enumerator.Next", 1_000_000),
-    SYSTEM_ENUMERATOR_VALUE("System.Enumerator.Value", 400),
-    SYSTEM_ENUMERATOR_CONCAT("System.Enumerator.Concat", 400),
+    SYSTEM_BINARY_SERIALIZE("System.Binary.Serialize", 1 << 12),
+    SYSTEM_BINARY_DESERIALIZE("System.Binary.Deserialize", 1 << 14),
+    SYSTEM_BINARY_BASE64ENCODE("System.Binary.Base64Encode", 1 << 12),
+    SYSTEM_BINARY_BASE64DECODE("System.Binary.Base64Decode", 1 << 12),
+    SYSTEM_BINARY_BASE58ENCODE("System.Binary.Base58Encode", 1 << 12),
+    SYSTEM_BINARY_BASE58DECODE("System.Binary.Base58Decode", 1 << 12),
+    SYSTEM_BINARY_ITOA("System.Binary.Itoa", 1 << 12),
+    SYSTEM_BINARY_ATOI("System.Binary.Atoi", 1 << 12),
 
-    SYSTEM_ITERATOR_CREATE("System.Iterator.Create", 400),
-    SYSTEM_ITERATOR_KEY("System.Iterator.Key", 400),
-    SYSTEM_ITERATOR_KEYS("System.Iterator.Keys", 400),
-    SYSTEM_ITERATOR_VALUES("System.Iterator.Values", 400),
-    SYSTEM_ITERATOR_CONCAT("System.Iterator.Concat", 400),
+    SYSTEM_BLOCKCHAIN_GETHEIGHT("System.Blockchain.GetHeight", 1 << 4),
+    SYSTEM_BLOCKCHAIN_GETBLOCK("System.Blockchain.GetBlock", 1 << 16),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTION("System.Blockchain.GetTransaction", 1 << 15),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1 << 15),
+    SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1 << 15),
 
-    SYSTEM_RUNTIME_PLATFORM("System.Runtime.Platform", 250),
-    SYSTEM_RUNTIME_GETTRIGGER("System.Runtime.GetTrigger", 250),
-    SYSTEM_RUNTIME_GETTIME("System.Runtime.GetTime", 250),
-    SYSTEM_RUNTIME_GETSCRIPTCONTAINER("System.Runtime.GetScriptContainer", 250),
-    SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH("System.Runtime.GetExecutingScriptHash", 400),
-    SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH("System.Runtime.GetCallingScriptHash", 400),
-    SYSTEM_RUNTIME_GETENTRYSCRIPTHASH("System.Runtime.GetEntryScriptHash", 400),
-    SYSTEM_RUNTIME_CHECKWITNESS("System.Runtime.CheckWitness", 30_000),
-    SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 400),
-    SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1_000_000),
-    SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1_000_000),
-    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 10_000),
-    SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 400),
+    SYSTEM_CALLBACK_CREATE("System.Callback.Create", 1 << 4),
+    SYSTEM_CALLBACK_CREATEFROMMETHOD("System.Callback.CreateFromMethod", 1 << 15),
+    SYSTEM_CALLBACK_CREATEFROMSYSCALL("System.Callback.CreateFromSyscall", 1 << 4),
+    SYSTEM_CALLBACK_INVOKE("System.Callback.Invoke", 1 << 15),
 
-    SYSTEM_STORAGE_GETCONTEXT("System.Storage.GetContext", 400),
-    SYSTEM_STORAGE_GETREADONLYCONTEXT("System.Storage.GetReadOnlyContext", 400),
-    SYSTEM_STORAGE_ASREADONLY("System.Storage.AsReadOnly", 400),
-    SYSTEM_STORAGE_GET("System.Storage.Get", 1_000_000),
-    SYSTEM_STORAGE_FIND("System.Storage.Find", 1_000_000),
-    SYSTEM_STORAGE_PUT("System.Storage.Put", null), // dynamic calculation
-    SYSTEM_STORAGE_PUTEX("System.Storage.PutEx", null), // dynamic calculation
-    SYSTEM_STORAGE_DELETE("System.Storage.Delete", 100_000),
+    SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
+    SYSTEM_CONTRACT_CALLEX("System.Contract.CallEx", 1 << 15),
+    SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
+    SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 1 << 10),
+    SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 1 << 10),
+    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 1 << 8),
+    SYSTEM_CONTRACT_NATIVEONPERSIST("System.Contract.NativeOnPersist", 0),
+    SYSTEM_CONTRACT_NATIVEPOSTPERSIST("System.Contract.NativePostPersist", 0),
 
-    SYSTEM_BINARY_SERIALIZE("System.Binary.Serialize", 100_000),
-    SYSTEM_BINARY_DESERIALIZE("System.Binary.Deserialize", 500_000),
-    SYSTEM_BINARY_BASE64ENCODE("System.Binary.Base64Encode", 100_000),
-    SYSTEM_BINARY_BASE64DECODE("System.Binary.Base64Decode", 100_000),
-
-    SYSTEM_BLOCKCHAIN_GETHEIGHT("System.Blockchain.GetHeight", 400),
-    SYSTEM_BLOCKCHAIN_GETBLOCK("System.Blockchain.GetBlock", 2_500_000),
-    SYSTEM_BLOCKCHAIN_GETTRANSACTION("System.Blockchain.GetTransaction", 1_000_000),
-    SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1_000_000),
-    SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock",
-            1_000_000),
-    SYSTEM_BLOCKCHAIN_GETCONTRACT("System.Blockchain.GetContract", 1_000_000),
-
-    SYSTEM_CALLBACK_CREATE("System.Callback.Create", 400), // DONE
-    SYSTEM_CALLBACK_CREATEFROMMETHOD("System.Callback.CreateFromMethod", 1_000_000),
-    SYSTEM_CALLBACK_CREATEFROMSYSCALL("System.Callback.CreateFromSyscall", 400),
-    SYSTEM_CALLBACK_INVOKE("System.Callback.Invoke", 1_000_000),
-
-    SYSTEM_CONTRACT_CREATE("System.Contract.Create", null), // dynamic calculation
-    SYSTEM_CONTRACT_UPDATE("System.Contract.Update", null), // dynamic calculation
-    SYSTEM_CONTRACT_DESTROY("System.Contract.Destroy", 1_000_000),
-    SYSTEM_CONTRACT_CALL("System.Contract.Call", 1_000_000),
-    SYSTEM_CONTRACT_CALLEX("System.Contract.CallEx", 1_000_000),
-    SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 30_000),
-    SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 30_000),
-    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 10_000),
-
-    SYSTEM_JSON_SERIALIZE("System.Json.Serialize", 100_000),
-    SYSTEM_JSON_DESERIALIZE("System.Json.Deserialize", 500_000),
-
-    NEO_CRYPTO_SHA256("Neo.Crypto.SHA256", 1_000_000),
-    NEO_CRYPTO_RIPEMD160("Neo.Crypto.RIPEMD160", 1_000_000),
-    NEO_CRYPTO_VERIFYWITHECDSASECP256R1("Neo.Crypto.VerifyWithECDsaSecp256r1", 1_000_000),
-    NEO_CRYPTO_VERIFYWITHECDSASECP256K1("Neo.Crypto.VerifyWithECDsaSecp256k1", 1_000_000),
+    NEO_CRYPTO_RIPEMD160("Neo.Crypto.RIPEMD160", 1 << 15),
+    NEO_CRYPTO_SHA256("Neo.Crypto.SHA256", 1 << 15),
+    NEO_CRYPTO_VERIFYWITHECDSASECP256R1("Neo.Crypto.VerifyWithECDsaSecp256r1", 1 << 15),
+    NEO_CRYPTO_VERIFYWITHECDSASECP256K1("Neo.Crypto.VerifyWithECDsaSecp256k1", 1 << 15),
     // The price for check multisig is the price for Secp256r1.Verify times the number of signatures
-    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1("Neo.Crypto.CheckMultisigWithECDsaSecp256r1", null),
+    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1("Neo.Crypto.CheckMultisigWithECDsaSecp256r1", 0),
     // The price for check multisig is the price for Secp256k1.Verify times the number of signatures
-    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1("Neo.Crypto.CheckMultisigWithECDsaSecp256k1", null),
+    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1("Neo.Crypto.CheckMultisigWithECDsaSecp256k1", 0),
 
-    NEO_NATIVE_DEPLOY("Neo.Native.Deploy", null),
-    NEO_NATIVE_CALL("Neo.Native.Call", null);
+    SYSTEM_ENUMERATOR_CREATE("System.Enumerator.Create", 1 << 4),
+    SYSTEM_ENUMERATOR_NEXT("System.Enumerator.Next", 1 << 15),
+    SYSTEM_ENUMERATOR_VALUE("System.Enumerator.Value", 1 << 4),
+    SYSTEM_ENUMERATOR_CONCAT("System.Enumerator.Concat", 1 << 4),
+
+    SYSTEM_ITERATOR_CREATE("System.Iterator.Create", 1 << 4),
+    SYSTEM_ITERATOR_KEY("System.Iterator.Key", 1 << 4),
+    SYSTEM_ITERATOR_KEYS("System.Iterator.Keys", 1 << 4),
+    SYSTEM_ITERATOR_VALUES("System.Iterator.Values", 1 << 4),
+    SYSTEM_ITERATOR_CONCAT("System.Iterator.Concat", 1 << 4),
+
+    SYSTEM_JSON_SERIALIZE("System.Json.Serialize", 1 << 12),
+    SYSTEM_JSON_DESERIALIZE("System.Json.Deserialize", 1 << 14),
+
+    SYSTEM_RUNTIME_PLATFORM("System.Runtime.Platform", 1 << 3),
+    SYSTEM_RUNTIME_GETTRIGGER("System.Runtime.GetTrigger", 1 << 3),
+    SYSTEM_RUNTIME_GETTIME("System.Runtime.GetTime", 1 << 3),
+    SYSTEM_RUNTIME_GETSCRIPTCONTAINER("System.Runtime.GetScriptContainer", 1 << 3),
+    SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH("System.Runtime.GetExecutingScriptHash", 1 << 4),
+    SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH("System.Runtime.GetCallingScriptHash", 1 << 4),
+    SYSTEM_RUNTIME_GETENTRYSCRIPTHASH("System.Runtime.GetEntryScriptHash", 1 << 4),
+    SYSTEM_RUNTIME_CHECKWITNESS("System.Runtime.CheckWitness", 1 << 10),
+    SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 1 << 4),
+    SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1 << 15),
+    SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1 << 15),
+    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 8),
+    SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
+
+    SYSTEM_STORAGE_GETCONTEXT("System.Storage.GetContext", 1 << 4),
+    SYSTEM_STORAGE_GETREADONLYCONTEXT("System.Storage.GetReadOnlyContext", 1 << 4),
+    SYSTEM_STORAGE_ASREADONLY("System.Storage.AsReadOnly", 1 << 4),
+    SYSTEM_STORAGE_GET("System.Storage.Get", 1 << 15),
+    SYSTEM_STORAGE_FIND("System.Storage.Find", 1 << 15),
+    SYSTEM_STORAGE_PUT("System.Storage.Put", 0),
+    SYSTEM_STORAGE_PUTEX("System.Storage.PutEx", 0),
+    SYSTEM_STORAGE_DELETE("System.Storage.Delete", 0);
 
     /* The service's name */
     private String name;
@@ -126,10 +125,6 @@ public enum InteropServiceCode {
      */
     public long getPrice() {
         switch (this) {
-            case SYSTEM_CONTRACT_CREATE:
-                throw new UnsupportedOperationException("The price of the interop service "
-                        + "System.Contract.Create is not fixed but depends on the contract's "
-                        + "script and manifest size.");
             case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1:
             case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1:
                 throw new UnsupportedOperationException("The price of the interop service "
@@ -154,8 +149,6 @@ public enum InteropServiceCode {
             return this.price;
         }
         switch (this) {
-            case SYSTEM_CONTRACT_CREATE:
-                return param * NeoConstants.GAS_PER_BYTE;
             case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1:
                 return param * NEO_CRYPTO_VERIFYWITHECDSASECP256R1.price;
             case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1:
@@ -170,5 +163,4 @@ public enum InteropServiceCode {
     public String toString() {
         return getName();
     }
-
 }

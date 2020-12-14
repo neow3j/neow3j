@@ -168,6 +168,34 @@ public class SmartContract {
     }
 
     /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a Boolean
+     * as return type.
+     *
+     * @param function The function to call.
+     * @param params   The contract parameters to include in the call.
+     * @return The boolean returned by the contract.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as an
+     *                                       boolean.
+     */
+    public Boolean callFuncReturningBool(String function, ContractParameter... params)
+            throws IOException, UnexpectedReturnTypeException {
+
+        StackItem item;
+        if (params.length == 0) {
+            item = callInvokeFunction(function).getInvocationResult().getStack().get(0);
+        } else {
+            item = callInvokeFunction(function, Arrays.asList(params))
+                    .getInvocationResult().getStack().get(0);
+        }
+        if (item.getType().equals(StackItemType.BOOLEAN)) {
+            return item.asBoolean().getValue();
+        }
+        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BOOLEAN);
+    }
+
+    /**
      * Sends an {@code invokefunction} RPC call to the given contract function.
      *
      * @param function The function to call.
