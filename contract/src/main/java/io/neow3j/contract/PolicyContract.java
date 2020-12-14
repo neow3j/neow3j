@@ -1,15 +1,10 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.StackItem;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a Policy contract and provides methods to invoke it.
@@ -28,11 +23,15 @@ public class PolicyContract extends SmartContract {
     private static final String GET_MAX_BLOCK_SIZE = "getMaxBlockSize";
     private static final String GET_MAX_BLOCK_SYSTEM_FEE = "getMaxBlockSystemFee";
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
-    private static final String GET_BLOCKED_ACCOUNTS = "getBlockedAccounts";
+    private static final String GET_EXEC_FEE_FACTOR = "getExecFeeFactor";
+    private static final String GET_STORAGE_PRICE = "getStoragePrice";
+    private static final String IS_BLOCKED = "isBlocked";
     private static final String SET_MAX_BLOCK_SIZE = "setMaxBlockSize";
     private static final String SET_MAX_TX_PER_BLOCK = "setMaxTransactionsPerBlock";
     private static final String SET_MAX_BLOCK_SYSTEM_FEE = "setMaxBlockSystemFee";
     private static final String SET_FEE_PER_BYTE = "setFeePerByte";
+    private static final String SET_EXEC_FEE_FACTOR = "setExecFeeFactor";
+    private static final String SET_STORAGE_PRICE = "setStoragePrice";
     private static final String BLOCK_ACCOUNT = "blockAccount";
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
 
@@ -87,22 +86,34 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Gets the list of Accounts that are blocked.
+     * Gets the execution fee factor.
      *
-     * @return list of blocked Accounts.
+     * @return the execution fee factor.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<ScriptHash> getBlockedAccounts() throws IOException {
-        StackItem arrayItem = callInvokeFunction(GET_BLOCKED_ACCOUNTS)
-                .getInvocationResult().getStack().get(0);
+    public Integer getExecFeeFactor() throws IOException {
+        return callFuncReturningInt(GET_EXEC_FEE_FACTOR).intValue();
+    }
 
-        if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
-            throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
-        }
+    /**
+     * Gets the storage price.
+     *
+     * @return the storage price.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public Integer getStoragePrice() throws IOException {
+        return callFuncReturningInt(GET_STORAGE_PRICE).intValue();
+    }
 
-        return arrayItem.asArray().getValue()
-                .stream().map(ac -> ScriptHash.fromAddress(ac.asByteString().getAsAddress()))
-                .collect(Collectors.toList());
+    /**
+     * Checks whether an account is blocked in the Neo network.
+     *
+     * @param scriptHash the script hash of the account.
+     * @return whether the account is blocked or not.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public Boolean isBlocked(ScriptHash scriptHash) throws IOException {
+        return callFuncReturningBool(IS_BLOCKED, ContractParameter.hash160(scriptHash));
     }
 
     /**
@@ -127,6 +138,13 @@ public class PolicyContract extends SmartContract {
         return invokeFunction(SET_MAX_TX_PER_BLOCK, ContractParameter.integer(maxTxPerBlock));
     }
 
+    /**
+     * Creates a transaction script to set the maximal system fee per block and initializes a
+     * {@link TransactionBuilder} based on this script.
+     *
+     * @param maxBlockSystemFee The maximal system fee per block.
+     * @return A {@link TransactionBuilder}.
+     */
     public TransactionBuilder setMaxBlockSystemFee(BigInteger maxBlockSystemFee){
         return invokeFunction(SET_MAX_BLOCK_SYSTEM_FEE, ContractParameter.integer(maxBlockSystemFee));
     }
@@ -135,11 +153,33 @@ public class PolicyContract extends SmartContract {
      * Creates a transaction script to set the fee per byte and initializes a
      * {@link TransactionBuilder} based on this script.
      *
-     * @param fee    The fee per byte.
+     * @param fee The fee per byte.
      * @return A {@link TransactionBuilder}.
      */
     public TransactionBuilder setFeePerByte(Integer fee) {
         return invokeFunction(SET_FEE_PER_BYTE, ContractParameter.integer(fee));
+    }
+
+    /**
+     * Creates a transaction script to set the execution fee factor and initializes a
+     * {@link TransactionBuilder} based on this script.
+     *
+     * @param fee The execution fee factor.
+     * @return A {@link TransactionBuilder}.
+     */
+    public TransactionBuilder setExecFeeFactor(Integer fee) {
+        return invokeFunction(SET_EXEC_FEE_FACTOR, ContractParameter.integer(fee));
+    }
+
+    /**
+     * Creates a transaction script to set the storage price and initializes a
+     * {@link TransactionBuilder} based on this script.
+     *
+     * @param price The storage price.
+     * @return A {@link TransactionBuilder}.
+     */
+    public TransactionBuilder setStoragePrice(Integer price) {
+        return invokeFunction(SET_STORAGE_PRICE, ContractParameter.integer(price));
     }
 
     /**
