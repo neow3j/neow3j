@@ -2,13 +2,7 @@ package io.neow3j.contract;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.OracleRequest;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 
 /**
  * Represents an Oracle contract and provides methods to invoke it.
@@ -23,9 +17,9 @@ public class OracleContract extends SmartContract {
                     .sysCall(InteropServiceCode.NEO_NATIVE_CALL)
                     .toArray());
 
-    private static final String GET_REQUEST = "getRequest";
-    private static final String GET_REQUESTS = "getRequests";
-    private static final String GET_REQUESTS_BY_URL = "getRequestsByUrl";
+    private static final String FINISH = "finish";
+    private static final String REQUEST = "request";
+    private static final String VERIFY = "verify";
 
     /**
      * Constructs a new <tt>Oracle</tt> that uses the given {@link Neow3j} instance for
@@ -37,27 +31,41 @@ public class OracleContract extends SmartContract {
         super(SCRIPT_HASH, neow);
     }
 
-    public OracleRequest getRequest(int id) throws IOException {
-        NeoInvokeFunction invokeFunction = neow.invokeFunction(SCRIPT_HASH.toString(), GET_REQUEST,
-                Arrays.asList(ContractParameter.integer(id)))
-                .send();
-        // TODO: 10.12.20 Michael: deserialize oracle request into OracleRequest dto
-        return new OracleRequest();
+    /**
+     * Creates a transaction script for invoking the method {@code finish} of the Oracle contract
+     * and initializes a {@link TransactionBuilder} based on this script.
+     *
+     * @return A transaction builder.
+     */
+    public TransactionBuilder finish() {
+        return invokeFunction(FINISH);
     }
 
-    public List<OracleRequest> getRequests() throws IOException {
-        List<OracleRequest> requests = new ArrayList<>();
-        NeoInvokeFunction invokeFunction = neow.invokeFunction(SCRIPT_HASH.toString(), GET_REQUESTS).send();
-        // TODO: 10.12.20 Michael: deserialize oracle request into OracleRequest dto and collect in list.
-        return requests;
+    /**
+     * Creates a transaction script for invoking the method {@code request} of the Oracle contract
+     * and initializes a {@link TransactionBuilder} based on this script.
+     *
+     * @param url The URL.
+     * @param filter The filter.
+     * @param callback The callback.
+     * @param userData The user data.
+     * @param gasForResponse The amount of gas used for the response.
+     * @return A transaction builder.
+     */
+    public TransactionBuilder request(String url, String filter, String callback, ByteStringStackItem userData,
+                                      int gasForResponse) {
+        // TODO: 14.12.20 Michael: check correct handling of needed parameters for this invocation.
+        return invokeFunction(REQUEST, ContractParameter.string(url), ContractParameter.string(filter),
+                ContractParameter.byteArray(userData.getValue()), ContractParameter.integer(gasForResponse));
     }
 
-    public List<OracleRequest> getRequestsByUrl(String url) throws IOException {
-        List<OracleRequest> requests = new ArrayList<>();
-        NeoInvokeFunction invokeFunction = neow.invokeFunction(SCRIPT_HASH.toString(), GET_REQUESTS_BY_URL,
-                Arrays.asList(ContractParameter.string(url)))
-                .send();
-        // TODO: 10.12.20 Michael: deserialize oracle request into OracleRequest dto and collect in list.
-        return requests;
+    /**
+     * Creates a transaction script for invoking the method {@code verify} of the Oracle contract
+     * and intitializes a {@link TransactionBuilder} based on this script.
+     *
+     * @return A transaction builder.
+     */
+    public TransactionBuilder verify() {
+        return invokeFunction(VERIFY);
     }
 }
