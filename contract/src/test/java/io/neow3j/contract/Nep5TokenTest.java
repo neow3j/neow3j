@@ -6,7 +6,6 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -21,7 +20,6 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
-import java.awt.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;

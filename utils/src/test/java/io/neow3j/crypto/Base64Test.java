@@ -1,7 +1,7 @@
 package io.neow3j.crypto;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
