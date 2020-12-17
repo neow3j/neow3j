@@ -85,7 +85,11 @@ public class NeoModule {
     }
 
     int byteSize() {
-        return sortedMethods.stream().map(NeoMethod::byteSize).reduce(Integer::sum).get();
+        int sum = 0;
+        for (NeoMethod method : sortedMethods) {
+            sum += method.byteSize();
+        }
+        return sum;
     }
 
     /**
