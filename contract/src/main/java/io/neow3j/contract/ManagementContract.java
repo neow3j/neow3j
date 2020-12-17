@@ -22,19 +22,7 @@ public class ManagementContract extends SmartContract {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String NAME = "Neo Contract Management";
-
-    private static final byte[] SCRIPT = new ScriptBuilder()
-            .pushData(NAME)
-            .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
-            .toArray();
-
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder()
-                    .opCode(OpCode.ABORT)
-                    .pushData(ScriptHash.ZERO.toArray())
-                    .pushData(SCRIPT)
-                    .toArray());
-
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
     private static final String GET_CONTRACT = "getContract";
     private static final String DEPLOY = "deploy";
     private static final String UPDATE = "update";

@@ -2,7 +2,9 @@ package io.neow3j.contract;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
@@ -293,4 +295,19 @@ public class SmartContract {
         ManagementContract managementContract = new ManagementContract(neow);
         return managementContract.deploy(nefFile, manifest);
     }
+
+    protected static ScriptHash getScriptHashOfNativeContract(String contractName) {
+
+        byte[] script = new ScriptBuilder()
+                .pushData(contractName)
+                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
+                .toArray();
+
+        return ScriptHash.fromScript(
+                new ScriptBuilder()
+                        .opCode(OpCode.ABORT)
+                        .pushData(ScriptHash.ZERO.toArray())
+                        .pushData(script)
+                        .toArray());
+        }
 }

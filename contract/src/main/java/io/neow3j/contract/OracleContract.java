@@ -16,13 +16,7 @@ import java.util.List;
 public class OracleContract extends SmartContract {
 
     private static final String NAME = "Oracle";
-
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder()
-                    .pushData(NAME)
-                    .sysCall(InteropServiceCode.NEO_NATIVE_CALL)
-                    .toArray());
-
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
     private static final String GET_REQUEST = "getRequest";
     private static final String GET_REQUESTS = "getRequests";
     private static final String GET_REQUESTS_BY_URL = "getRequestsByUrl";
