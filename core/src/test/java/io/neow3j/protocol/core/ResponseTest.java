@@ -1,8 +1,5 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
@@ -79,9 +76,6 @@ import org.junit.Test;
  * Core Protocol Response tests.
  */
 public class ResponseTest extends ResponseTester {
-
-    public static final ScriptHash NEO_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().pushData("NEO").sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     @Test
     public void testErrorResponse() {
