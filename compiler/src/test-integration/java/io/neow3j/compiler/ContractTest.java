@@ -199,14 +199,14 @@ public class ContractTest {
     }
 
     /**
-     * Builds and sends a transaction that invokes the contract under test, the given function,
-     * with the given parameters.
+     * Builds and sends a transaction that invokes the contract under test, the given function, with
+     * the given parameters.
      * <p>
      * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
      * transaction.
      *
      * @param function The function to call.
-     * @param params The parameters to pass with the function call.
+     * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
     protected String invokeFunction(String function, ContractParameter... params) throws Throwable {

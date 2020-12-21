@@ -100,6 +100,10 @@ public class Compiler {
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
         }
+        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return ContractParameterType.ARRAY;
+        }
         try {
             typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
             Class<?> clazz = Class.forName(typeName);
@@ -195,7 +199,6 @@ public class Compiler {
         }
         compUnit.addClassToSourceMapping(className, sourceFilePath);
         compileClass(asmClass);
-        finalizeCompilation();
         return compUnit;
     }
 
@@ -396,6 +399,10 @@ public class Compiler {
     public static void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Before doing the syscall the arguments have to be reversed.
         addReverseArguments(calledAsmMethod, callingNeoMethod);
+        addSyscallInternal(calledAsmMethod, callingNeoMethod);
+    }
+
+    private static void addSyscallInternal(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Annotation has to be either Syscalls or Syscall.
         AnnotationNode syscallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
@@ -408,6 +415,11 @@ public class Compiler {
         } else {
             addSingleSyscall(syscallAnnotation, callingNeoMethod);
         }
+    }
+
+    public static void addConstructorSyscall(MethodNode calledAsmMethod,
+            NeoMethod callingNeoMethod) {
+        addSyscallInternal(calledAsmMethod, callingNeoMethod);
     }
 
     public static void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
@@ -469,9 +481,7 @@ public class Compiler {
     // according to the number of arguments the called method takes.
     public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
-        if (calledAsmMethod.localVariables != null
-                && calledAsmMethod.localVariables.size() > 0
-                && calledAsmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+        if ((calledAsmMethod.access & Opcodes.ACC_STATIC) == 0) {
             // The called method is an instance method, i.e., the instance itself ("this") is
             // also an argument.
             paramsCount++;

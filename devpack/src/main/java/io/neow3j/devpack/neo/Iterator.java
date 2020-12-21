@@ -18,77 +18,29 @@ import io.neow3j.devpack.annotations.Syscall;
 public class Iterator<K, V> implements ApiInterface {
 
     /**
-     * Creates an {@code Iterator} over the entries of the given {@link Map}. The keys and values
-     * of the {@code Map} become the keys and values of the {@code Iterator}.
-     *
-     * @param entries The map to iterator over.
-     * @param <K> The type of the keys in the iterator.
-     * @param <V> The type of the values in the iterator.
-     * @return the {@code Iterator}.
-     */
-    @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native <K, V> Iterator<K, V> create(Map<K, V> entries);
-
-    /**
-     * Creates an {@code Iterator} over the given entries. The keys of the iterator are the
-     * entries' indices.
+     * Creates an {@code Iterator} over the entries of the given {@code Enumerator}. The keys of the
+     * iterator are consecutive integers from 0 up to the size of the {@code Enumerator}, i.e., the
+     * indices of the entries. Thus, the {@code Iterator}'s first type parameter should be treated
+     * as an Integer.
+     * <p>
+     * I.e., {@code Iterator<Integer, String> it = new Iterator(new Enumerator(new String[]{1, 2,
+     * 3})}
      *
      * @param entries The elements to iterator over.
-     * @param <V> The type of the values in the iterator.
-     * @return the {@code Iterator}.
      */
     @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native <V> Iterator<Integer, V> create(V[] entries);
+    public Iterator(V[] entries) {
+    }
 
     /**
-     * Creates an {@code Iterator} over the given bytes. The keys of the iterator are the entries'
-     * indices.
+     * Creates an {@code Iterator} over the entries of the given {@link Map}. The keys and values of
+     * the {@code Map} become the keys and values of the {@code Iterator}.
      *
-     * @param entries The bytes to iterator over.
-     * @return the {@code Iterator}.
+     * @param entries The map to iterator over.
      */
     @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native Iterator<Integer, Byte> create(byte[] entries);
-
-    /**
-     * Creates an {@code Iterator} over the given integers. The keys of the iterator are the
-     * entries' indices.
-     *
-     * @param entries The integers to iterator over.
-     * @return the {@code Iterator}.
-     */
-    @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native Iterator<Integer, Integer> create(int[] entries);
-
-    /**
-     * Creates an {@code Iterator} over the given characters. The keys of the iterator are the
-     * entries' indices.
-     *
-     * @param entries The characters to iterator over.
-     * @return the {@code Iterator}.
-     */
-    @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native Iterator<Integer, Character> create(char[] entries);
-
-    /**
-     * Creates an {@code Iterator} over the given boolean values. The keys of the iterator are the
-     * entries' indices.
-     *
-     * @param entries The boolean values to iterator over.
-     * @return the {@code Iterator}.
-     */
-    @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native Iterator<Integer, Boolean> create(boolean[] entries);
-
-    /**
-     * Creates an {@code Iterator} over the characters in the given string. The keys of the
-     * iterator are the indices of the string's characters.
-     *
-     * @param characters The string to iterator over.
-     * @return the {@code Iterator}.
-     */
-    @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native Iterator<Integer, Character> create(String characters);
+    public Iterator(Map<K, V> entries) {
+    }
 
     /**
      * Concatenates the given {@code Iterator} to this one.
