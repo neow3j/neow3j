@@ -13,18 +13,7 @@ import java.math.BigInteger;
 public class PolicyContract extends SmartContract {
 
     private static final String NAME = "Policy";
-
-    private static final byte[] SCRIPT = new ScriptBuilder()
-            .pushData(NAME)
-            .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
-            .toArray();
-
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder()
-                    .opCode(OpCode.ABORT)
-                    .pushData(ScriptHash.ZERO.toArray())
-                    .pushData(SCRIPT)
-                    .toArray());
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
     private static final String GET_MAX_BLOCK_SIZE = "getMaxBlockSize";

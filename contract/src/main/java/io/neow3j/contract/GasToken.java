@@ -12,18 +12,8 @@ public class GasToken extends Nep17Token {
     public final static String NAME = "GAS";
     public final static int DECIMALS = 8;
     public final static String SYMBOL = "gas";
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
-    private static final byte[] SCRIPT = new ScriptBuilder()
-            .pushData(NAME)
-            .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
-            .toArray();
-
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder()
-                    .opCode(OpCode.ABORT)
-                    .pushData(ScriptHash.ZERO.toArray())
-                    .pushData(SCRIPT)
-                    .toArray());
 
     /**
      * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for

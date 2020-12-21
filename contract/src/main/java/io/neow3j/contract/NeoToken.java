@@ -27,18 +27,7 @@ public class NeoToken extends Nep17Token {
     public final static int DECIMALS = 0;
     public final static String SYMBOL = "neo";
     public final static BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
-
-    private static final byte[] SCRIPT = new ScriptBuilder()
-            .pushData(NAME)
-            .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
-            .toArray();
-
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder()
-                    .opCode(OpCode.ABORT)
-                    .pushData(ScriptHash.ZERO.toArray())
-                    .pushData(SCRIPT)
-                    .toArray());
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
     public static final String REGISTER_CANDIDATE = "registerCandidate";

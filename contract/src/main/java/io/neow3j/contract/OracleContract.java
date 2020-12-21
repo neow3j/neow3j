@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 
@@ -11,15 +10,11 @@ public class OracleContract extends SmartContract {
 
     private static final String NAME = "Oracle";
 
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder()
-                    .pushData(NAME)
-                    .sysCall(InteropServiceCode.NEO_NATIVE_CALL)
-                    .toArray());
-
     private static final String FINISH = "finish";
     private static final String REQUEST = "request";
     private static final String VERIFY = "verify";
+
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     /**
      * Constructs a new <tt>Oracle</tt> that uses the given {@link Neow3j} instance for
