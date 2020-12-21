@@ -15,7 +15,7 @@ import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances.Nep5Balance;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
@@ -199,14 +199,14 @@ public class ContractTest {
     }
 
     /**
-     * Builds and sends a transaction that invokes the contract under test, the given function,
-     * with the given parameters.
+     * Builds and sends a transaction that invokes the contract under test, the given function, with
+     * the given parameters.
      * <p>
      * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
      * transaction.
      *
      * @param function The function to call.
-     * @param params The parameters to pass with the function call.
+     * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
     protected String invokeFunction(String function, ContractParameter... params) throws Throwable {
@@ -267,7 +267,7 @@ public class ContractTest {
     private static Callable<Long> callableGetBalance(String address, ScriptHash tokenScriptHash) {
         return () -> {
             try {
-                List<Nep5Balance> balances = neow3j.getNep5Balances(address).send()
+                List<Nep17Balance> balances = neow3j.getNep17Balances(address).send()
                         .getBalances().getBalances();
                 return balances.stream()
                         .filter(b -> b.getAssetHash().equals("0x" + tokenScriptHash.toString()))

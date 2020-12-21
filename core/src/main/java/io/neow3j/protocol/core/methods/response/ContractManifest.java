@@ -14,11 +14,11 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractManifest {
 
+    @JsonProperty("name")
+    private String name;
+
     @JsonProperty("groups")
     private List<ContractGroup> groups;
-
-    @JsonProperty("features")
-    private ContractFeatures features;
 
     @JsonProperty("supportedstandards")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -51,16 +51,16 @@ public class ContractManifest {
     public ContractManifest() {
     }
 
-    public ContractManifest(List<ContractGroup> groups,
-            ContractFeatures features,
+    public ContractManifest(String name,
+            List<ContractGroup> groups,
             List<String> supportedStandards,
             ContractABI abi,
             List<ContractPermission> permissions,
             List<String> trusts,
             List<String> safeMethods,
             Object extra) {
+        this.name = name;
         this.groups = groups;
-        this.features = features;
         this.supportedStandards = supportedStandards;
         this.abi = abi;
         this.permissions = permissions;
@@ -69,12 +69,12 @@ public class ContractManifest {
         this.extra = extra;
     }
 
-    public List<ContractGroup> getGroups() {
-        return groups;
+    public String getName() {
+        return name;
     }
 
-    public ContractFeatures getFeatures() {
-        return features;
+    public List<ContractGroup> getGroups() {
+        return groups;
     }
 
     public List<String> getSupportedStandards() {
@@ -114,8 +114,8 @@ public class ContractManifest {
         if (this == o) return true;
         if (!(o instanceof ContractManifest)) return false;
         ContractManifest that = (ContractManifest) o;
-        return Objects.equals(getGroups(), that.getGroups()) &&
-                Objects.equals(getFeatures(), that.getFeatures()) &&
+        return Objects.equals(getName(), that.getName()) &&
+                Objects.equals(getGroups(), that.getGroups()) &&
                 Objects.equals(getAbi(), that.getAbi()) &&
                 Objects.equals(getPermissions(), that.getPermissions()) &&
                 Objects.equals(getTrusts(), that.getTrusts()) &&
@@ -126,8 +126,8 @@ public class ContractManifest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getGroups(),
-                getFeatures(),
+        return Objects.hash(getName(),
+                getGroups(),
                 getAbi(),
                 getPermissions(),
                 getTrusts(),
@@ -139,9 +139,8 @@ public class ContractManifest {
     @Override
     public String toString() {
         return "ContractManifest{" +
-                "groups=" + groups +
-                ", features=" + features +
-                ", features=" + features +
+                "name=" + name +
+                ", groups=" + groups +
                 ", abi=" + abi +
                 ", permissions=" + permissions +
                 ", trusts=" + trusts +
@@ -196,58 +195,6 @@ public class ContractManifest {
             return "ContractGroup{" +
                     "pubKey=" + pubKey +
                     ", signature=" + signature +
-                    '}';
-        }
-    }
-
-    // Features available for the contract
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ContractFeatures {
-
-        // Note: 13.05.20 Michael: Neo documentation contains a third entry 'NoProperty', which is not
-        //  available in the current responses. If it will be, just add the additional JsonProperty here.
-
-        @JsonProperty("storage")
-        private Boolean storage;
-
-        @JsonProperty("payable")
-        private Boolean payable;
-
-        public ContractFeatures() {
-        }
-
-        public ContractFeatures(Boolean storage, Boolean payable) {
-            this.storage = storage;
-            this.payable = payable;
-        }
-
-        public Boolean getStorage() {
-            return storage;
-        }
-
-        public Boolean getPayable() {
-            return payable;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContractFeatures)) return false;
-            ContractFeatures that = (ContractFeatures) o;
-            return Objects.equals(getStorage(), that.getStorage()) &&
-                    Objects.equals(getPayable(), that.getPayable());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getStorage(), getPayable());
-        }
-
-        @Override
-        public String toString() {
-            return "ContractFeatures{" +
-                    "storage=" + storage +
-                    ", payable=" + payable +
                     '}';
         }
     }

@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 /**
  * Represents the NeoToken native contract and provides methods to invoke all its functions.
  */
-public class NeoToken extends Nep5Token {
+public class NeoToken extends Nep17Token {
 
     public final static String NAME = "NEO";
     public final static int DECIMALS = 0;

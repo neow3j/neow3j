@@ -17,8 +17,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -28,7 +28,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
@@ -264,12 +264,12 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoGetValidators> getValidators() {
+    public Request<?, NeoGetNextBlockValidators> getNextBlockValidators() {
         return new Request<>(
-                "getvalidators",
+                "getnextblockvalidators",
                 emptyList(),
                 neow3jService,
-                NeoGetValidators.class);
+                NeoGetNextBlockValidators.class);
     }
 
     // Node Methods
@@ -535,42 +535,42 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 NeoGetApplicationLog.class);
     }
 
-    // RpcNep5Tracker
+    // RpcNep17Tracker
 
     @Override
-    public Request<?, NeoGetNep5Balances> getNep5Balances(String address) {
+    public Request<?, NeoGetNep17Balances> getNep17Balances(String address) {
         return new Request<>(
-                "getnep5balances",
+                "getnep17balances",
                 asList(address),
                 neow3jService,
-                NeoGetNep5Balances.class);
+                NeoGetNep17Balances.class);
     }
 
     @Override
-    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address) {
         return new Request<>(
-                "getnep5transfers",
+                "getnep17transfers",
                 asList(address),
                 neow3jService,
-                NeoGetNep5Transfers.class);
+                NeoGetNep17Transfers.class);
     }
 
     @Override
-    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date until) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date until) {
         return new Request<>(
-                "getnep5transfers",
+                "getnep17transfers",
                 asList(address, until.getTime()),
                 neow3jService,
-                NeoGetNep5Transfers.class);
+                NeoGetNep17Transfers.class);
     }
 
     @Override
-    public Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date from, Date to) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from, Date to) {
         return new Request<>(
-                "getnep5transfers",
+                "getnep17transfers",
                 asList(address, from.getTime(), to.getTime()),
                 neow3jService,
-                NeoGetNep5Transfers.class);
+                NeoGetNep17Transfers.class);
     }
 
     // Neow3j Rx Convenience methods:

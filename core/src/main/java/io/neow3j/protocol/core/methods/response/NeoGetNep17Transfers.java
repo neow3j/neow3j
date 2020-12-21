@@ -9,40 +9,40 @@ import io.neow3j.protocol.core.Response;
 import java.util.List;
 import java.util.Objects;
 
-public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5TransferWrapper> {
+public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17TransferWrapper> {
 
-    public NeoGetNep5Transfers.Nep5TransferWrapper getNep5Transfer() {
+    public Nep17TransferWrapper getNep17Transfer() {
         return getResult();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Nep5TransferWrapper {
+    public static class Nep17TransferWrapper {
 
         @JsonProperty("sent")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Nep5Transfer> sent;
+        private List<Nep17Transfer> sent;
 
         @JsonProperty("received")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Nep5Transfer> received;
+        private List<Nep17Transfer> received;
 
         @JsonProperty("address")
         private String transferAddress;
 
-        public Nep5TransferWrapper() {
+        public Nep17TransferWrapper() {
         }
 
-        public Nep5TransferWrapper(List<Nep5Transfer> sent, List<Nep5Transfer> received, String transferAddress) {
+        public Nep17TransferWrapper(List<Nep17Transfer> sent, List<Nep17Transfer> received, String transferAddress) {
             this.sent = sent;
             this.received = received;
             this.transferAddress = transferAddress;
         }
 
-        public List<Nep5Transfer> getSent() {
+        public List<Nep17Transfer> getSent() {
             return sent;
         }
 
-        public List<Nep5Transfer> getReceived() {
+        public List<Nep17Transfer> getReceived() {
             return received;
         }
 
@@ -53,8 +53,8 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Nep5TransferWrapper)) return false;
-            Nep5TransferWrapper that = (Nep5TransferWrapper) o;
+            if (!(o instanceof Nep17TransferWrapper)) return false;
+            Nep17TransferWrapper that = (Nep17TransferWrapper) o;
             return Objects.equals(getSent(), that.getSent()) && Objects.equals(getReceived(), that.getReceived()) && Objects
                     .equals(getTransferAddress(), that.getTransferAddress());
         }
@@ -66,12 +66,12 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
 
         @Override
         public String toString() {
-            return "Nep5TransferWrapper{" + "sent=" + sent + ", received=" + received + ", transferAddress='" + transferAddress + '\'' + '}';
+            return "Nep17TransferWrapper{" + "sent=" + sent + ", received=" + received + ", transferAddress='" + transferAddress + '\'' + '}';
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Nep5Transfer {
+    public static class Nep17Transfer {
 
         @JsonProperty("timestamp")
         private long timestamp;
@@ -94,10 +94,10 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
         @JsonProperty("txhash")
         private String txHash;
 
-        public Nep5Transfer() {
+        public Nep17Transfer() {
         }
 
-        public Nep5Transfer(long timestamp, String assetHash, String transferAddress, String amount, long blockIndex, long transferNotifyIndex, String txHash) {
+        public Nep17Transfer(long timestamp, String assetHash, String transferAddress, String amount, long blockIndex, long transferNotifyIndex, String txHash) {
             this.timestamp = timestamp;
             this.assetHash = assetHash;
             this.transferAddress = transferAddress;
@@ -138,8 +138,8 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Nep5Transfer)) return false;
-            Nep5Transfer that = (Nep5Transfer) o;
+            if (!(o instanceof Nep17Transfer)) return false;
+            Nep17Transfer that = (Nep17Transfer) o;
             return getTimestamp() == that.getTimestamp() && getBlockIndex() == that.getBlockIndex() && getTransferNotifyIndex() == that
                     .getTransferNotifyIndex() && Objects.equals(getAssetHash(), that.getAssetHash()) && Objects.equals(getTransferAddress(), that
                     .getTransferAddress()) && Objects.equals(getAmount(), that.getAmount()) && Objects.equals(getTxHash(), that
@@ -153,7 +153,7 @@ public class NeoGetNep5Transfers extends Response<NeoGetNep5Transfers.Nep5Transf
 
         @Override
         public String toString() {
-            return "Nep5Transfer{" + "timestamp=" + timestamp + ", assetHash='" + assetHash + '\'' + ", transferAddress='" + transferAddress + '\'' + ", amount='" + amount + '\'' + ", blockIndex=" + blockIndex + ", transferNotifyIndex=" + transferNotifyIndex + ", txHash='" + txHash + '\'' + '}';
+            return "Nep17Transfer{" + "timestamp=" + timestamp + ", assetHash='" + assetHash + '\'' + ", transferAddress='" + transferAddress + '\'' + ", amount='" + amount + '\'' + ", blockIndex=" + blockIndex + ", transferNotifyIndex=" + transferNotifyIndex + ", txHash='" + txHash + '\'' + '}';
         }
     }
 

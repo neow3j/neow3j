@@ -63,7 +63,7 @@ import org.mockito.Mockito;
 public class TransactionBuilderTest {
 
     private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    private static final String NEP5_TRANSFER = "transfer";
+    private static final String NEP17_TRANSFER = "transfer";
 
     private static final String SCRIPT_NEO_INVOKEFUNCTION_NAME = Numeric.toHexStringNoPrefix(
             new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, "name", new ArrayList<>())
@@ -389,7 +389,7 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(wallet.getDefaultAccount().getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(),
-                contains(WitnessScope.FEE_ONLY));
+                contains(WitnessScope.NONE));
     }
 
     @Test
@@ -435,7 +435,7 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(senderAcc.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(),
-                contains(WitnessScope.FEE_ONLY));
+                contains(WitnessScope.NONE));
     }
 
     @Test
@@ -464,7 +464,7 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(senderAcc.getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(),
-                contains(WitnessScope.FEE_ONLY));
+                contains(WitnessScope.NONE));
         assertThat(tx.getSigners().get(1).getScriptHash(),
                 is(signer.getScriptHash()));
         assertThat(tx.getSigners().get(1).getScopes(), is(signer.getScopes()));
@@ -542,7 +542,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
-                .invokeFunction(NEP5_TRANSFER,
+                .invokeFunction(NEP17_TRANSFER,
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
@@ -563,7 +563,7 @@ public class TransactionBuilderTest {
     public void transferNeoFromNormalAccount() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5)))
@@ -572,7 +572,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
-                .invokeFunction(NEP5_TRANSFER,
+                .invokeFunction(NEP17_TRANSFER,
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
@@ -595,7 +595,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP5_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(multiSigAcc.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(1))) // 1 NEO
@@ -604,7 +604,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(multiSigAcc, account1, account2);
         Transaction tx = new NeoToken(neow)
-                .invokeFunction(NEP5_TRANSFER,
+                .invokeFunction(NEP17_TRANSFER,
                         ContractParameter.hash160(multiSigAcc.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(1))
@@ -624,11 +624,11 @@ public class TransactionBuilderTest {
     @Test
     public void invokingWithParamsShouldProduceTheCorrectRequest() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_transfer_neo.json",
-                NEO_TOKEN_SCRIPT_HASH.toString(), NEP5_TRANSFER,
+                NEO_TOKEN_SCRIPT_HASH.toString(), NEP17_TRANSFER,
                 account1.getScriptHash().toString(), recipient.toString(), "5"); // the params
 
         NeoInvokeFunction i = new NeoToken(neow)
-                .callInvokeFunction(NEP5_TRANSFER,
+                .callInvokeFunction(NEP17_TRANSFER,
                         Arrays.asList(
                                 ContractParameter.hash160(account1.getScriptHash()),
                                 ContractParameter.hash160(recipient),
@@ -657,7 +657,7 @@ public class TransactionBuilderTest {
         AtomicBoolean tested = new AtomicBoolean(false);
 
         new GasToken(neow)
-                .invokeFunction(NEP5_TRANSFER,
+                .invokeFunction(NEP17_TRANSFER,
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(2_000_000))
@@ -694,7 +694,7 @@ public class TransactionBuilderTest {
         Wallet w = Wallet.withAccounts(account1);
 
         TransactionBuilder b = new NeoToken(neow)
-                .invokeFunction(NEP5_TRANSFER,
+                .invokeFunction(NEP17_TRANSFER,
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
@@ -863,7 +863,7 @@ public class TransactionBuilderTest {
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
                         createBlock(1002, createTx(txHash)))).getMock();
         Transaction tx = new NeoToken(neowSpy)
-                .invokeFunction(NEP5_TRANSFER,
+                .invokeFunction(NEP17_TRANSFER,
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))
@@ -891,7 +891,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
-                .invokeFunction(NEP5_TRANSFER,
+                .invokeFunction(NEP17_TRANSFER,
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(recipient),
                         ContractParameter.integer(5))

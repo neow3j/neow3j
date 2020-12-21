@@ -12,8 +12,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -23,7 +23,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -89,7 +89,7 @@ public interface Neo {
 
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 
-    Request<?, NeoGetValidators> getValidators();
+    Request<?, NeoGetNextBlockValidators> getNextBlockValidators();
 
     // Node Methods
 
@@ -152,15 +152,15 @@ public interface Neo {
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
 
-    // RpcNep5Tracker
+    // RpcNep17Tracker
 
-    Request<?, NeoGetNep5Transfers> getNep5Transfers(String address);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address);
 
-    Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date until);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date until);
 
-    Request<?, NeoGetNep5Transfers> getNep5Transfers(String address, Date from, Date to);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from, Date to);
 
-    Request<?, NeoGetNep5Balances> getNep5Balances(String address);
+    Request<?, NeoGetNep17Balances> getNep17Balances(String address);
 
     // ApplicationLogs
 

@@ -9,6 +9,7 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
@@ -251,9 +252,27 @@ public class SmartContract {
      * Gets the manifest of this smart contract.
      *
      * @return The manifest of this smart contract.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public ContractManifest getManifest() {
+    public ContractManifest getManifest() throws IOException {
+        if (manifest == null) {
+            ContractState contractState = neow.getContractState(scriptHash.toString()).send().getContractState();
+            manifest = contractState.getManifest();
+        }
         return manifest;
+    }
+
+    /**
+     * Gets the name of this smart contract.
+     *
+     * @return The name of this smart contract.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
+     */
+    public String getName() throws IOException {
+        if (manifest == null) {
+            getManifest();
+        }
+        return manifest.getName();
     }
 
     /**

@@ -1,9 +1,5 @@
 {
   "groups": [],
-  "features": {
-    "storage": true,
-    "payable": false
-  },
   "abi": {
     "hash": "0x0000000000000000000000000000000000000000",
     "methods": [

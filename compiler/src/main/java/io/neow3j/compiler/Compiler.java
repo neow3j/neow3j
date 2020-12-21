@@ -199,7 +199,6 @@ public class Compiler {
         }
         compUnit.addClassToSourceMapping(className, sourceFilePath);
         compileClass(asmClass);
-        finalizeCompilation();
         return compUnit;
     }
 

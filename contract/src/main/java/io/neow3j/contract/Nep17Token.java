@@ -16,21 +16,21 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Represents a NEP-5 token contract and provides methods to invoke it.
+ * Represents a NEP-17 token contract and provides methods to invoke it.
  */
-public class Nep5Token extends Token {
+public class Nep17Token extends Token {
 
     private static final String BALANCE_OF = "balanceOf";
     private static final String TRANSFER = "transfer";
 
     /**
-     * Constructs a new {@code Nep5Token} representing the token contract with the given script
+     * Constructs a new {@code Nep17Token} representing the token contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash the token contract's script hash
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public Nep5Token(ScriptHash scriptHash, Neow3j neow) {
+    public Nep17Token(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 

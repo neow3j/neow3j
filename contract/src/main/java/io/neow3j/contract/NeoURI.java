@@ -15,7 +15,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /**
- * Wrapper class to generate NEP-9 compatible URI schemes for NEP-5 Token transfers.
+ * Wrapper class to generate NEP-9 compatible URI schemes for NEP-17 Token transfers.
  */
 public class NeoURI {
 
@@ -135,7 +135,7 @@ public class NeoURI {
     }
 
     private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset) throws IOException {
-        int decimals = new Nep5Token(asset, neow3j).getDecimals();
+        int decimals = new Nep17Token(asset, neow3j).getDecimals();
         BigDecimal factor = BigDecimal.TEN.pow(decimals);
         return amount.multiply(factor).toBigInteger();
     }
