@@ -289,7 +289,8 @@ public class Nep17Token extends Token {
         List<ContractParameter> params = Arrays.asList(
                 ContractParameter.hash160(acc.getScriptHash()),
                 ContractParameter.hash160(to),
-                ContractParameter.integer(amount));
+                ContractParameter.integer(amount),
+                ContractParameter.string("")); // TODO: 21.12.20 Michael: integrate data into transfers
 
         return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
     }
