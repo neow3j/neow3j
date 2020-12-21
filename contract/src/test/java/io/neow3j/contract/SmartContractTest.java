@@ -124,7 +124,6 @@ public class SmartContractTest {
         SmartContract c = new SmartContract(nefFile, manifestFile, neow);
         assertThat(c.getScriptHash().toString(),
                 is(Numeric.cleanHexPrefix(TEST_CONTRACT_1_SCRIPT_HASH)));
-        assertThat(c.getManifest().getAbi().getHash(), is(TEST_CONTRACT_1_SCRIPT_HASH));
         assertThat(c.getManifest().getName(), is("neowww"));
         assertThat(c.getName(), is("neowww"));
         assertThat(c.getNefFile().getScriptHash().toString(),
@@ -145,18 +144,6 @@ public class SmartContractTest {
         SmartContract c = new SmartContract(SOME_SCRIPT_HASH, neow);
         String name = c.getName();
         assertThat(name, is("neow3j"));
-    }
-
-    @Test
-    public void constructSmartContractForDeploymentWithUnequalScriptHashInNefAndManifest()
-            throws IOException, DeserializationException, URISyntaxException {
-
-        File manifest = new File(this.getClass().getClassLoader()
-                .getResource("contracts/hello_world_different_scripthash.manifest.json").toURI());
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                new StringContainsInOrder(Arrays.asList("NEF", "script hash", "manifest")));
-        new SmartContract(nefFile, manifest, neow);
     }
 
     @Test
