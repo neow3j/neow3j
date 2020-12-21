@@ -36,6 +36,9 @@ import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
@@ -285,49 +288,37 @@ public class Neow3jReadOnlyIntegrationTest {
 
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertNotNull(abi);
-        assertThat(abi.getHash(), is("0x" + NEO_HASH));
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(15));
-        assertThat(abi.getMethods().get(3).getName(), is("registerCandidate"));
-        assertThat(abi.getMethods().get(3).getParameters().get(0).getParamName(), is("pubkey"));
-        assertThat(abi.getMethods().get(3).getParameters().get(0).getParamType(),
+        assertThat(abi.getMethods(), hasSize(14));
+        ContractMethod method = abi.getMethods().get(4);
+        assertThat(method.getName(), is("registerCandidate"));
+        assertThat(method.getParameters().get(0).getParamName(), is("pubkey"));
+        assertThat(method.getParameters().get(0).getParamType(),
                 is(ContractParameterType.BYTE_ARRAY));
-        assertThat(abi.getMethods().get(3).getOffset(), is(0));
-        assertThat(abi.getMethods().get(3).getReturnType(), is(ContractParameterType.BOOLEAN));
+        assertThat(method.getOffset(), is(0));
+        assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
+        assertFalse(method.isSafe());
 
         assertNotNull(abi.getEvents());
         assertThat(abi.getEvents(), hasSize(1));
-        assertThat(abi.getEvents().get(0).getName(), is("Transfer"));
-        assertThat(abi.getEvents().get(0).getParameters(), hasSize(3));
-        assertThat(abi.getEvents().get(0).getParameters().get(0).getParamName(), is("from"));
-        assertThat(abi.getEvents().get(0).getParameters().get(0).getParamType(),
+        ContractEvent event = abi.getEvents().get(0);
+        assertThat(event.getName(), is("Transfer"));
+        assertThat(event.getParameters(), hasSize(3));
+        assertThat(event.getParameters().get(0).getParamName(), is("from"));
+        assertThat(event.getParameters().get(0).getParamType(),
                 is(ContractParameterType.HASH160));
 
         assertNotNull(manifest.getPermissions());
         assertThat(manifest.getPermissions(), hasSize(1));
-        assertThat(manifest.getPermissions().get(0).getContract(), is("*"));
-        assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(1));
-        assertThat(manifest.getPermissions().get(0).getMethods().get(0), is("*"));
+        ContractPermission permission = manifest.getPermissions().get(0);
+        assertThat(permission.getContract(), is("*"));
+        assertThat(permission.getMethods(), hasSize(1));
+        assertThat(permission.getMethods().get(0), is("*"));
 
         assertNotNull(manifest.getTrusts());
         assertThat(manifest.getTrusts(), hasSize(0));
 
-        assertNotNull(manifest.getSafeMethods());
-        assertThat(manifest.getSafeMethods(), hasSize(10));
-        assertThat(manifest.getSafeMethods(),
-                containsInAnyOrder(
-                        "unclaimedGas",
-                        "getCandidates",
-                        "getValidators",
-                        "getCommittee",
-                        "getNextBlockValidators",
-                        "name",
-                        "symbol",
-                        "decimals",
-                        "totalSupply",
-                        "balanceOf"
-                ));
         assertNull(manifest.getExtra());
     }
 
