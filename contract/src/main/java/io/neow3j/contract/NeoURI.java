@@ -31,6 +31,9 @@ public class NeoURI {
     private static final String TRANSFER_FUNCTION = "transfer";
     private static final int MIN_NEP9_URI_LENGTH = 38;
 
+    private static final String NEO_ASSET = "neo";
+    private static final String GAS_ASSET = "gas";
+
     public NeoURI() {
     }
 
@@ -70,9 +73,9 @@ public class NeoURI {
                 if (singleQueryParts.length != 2) throw new IllegalArgumentException("This uri contains invalid queries.");
                 if (singleQueryParts[0].equals("asset") && neoURI.asset == null) {
                     String assetID = singleQueryParts[1];
-                    if (assetID.equals(NeoToken.SYMBOL)) {
+                    if (assetID.equals(NEO_ASSET)) {
                         neoURI.asset = NeoToken.SCRIPT_HASH;
-                    } else if (assetID.equals(GasToken.SYMBOL)) {
+                    } else if (assetID.equals(GAS_ASSET)) {
                         neoURI.asset = GasToken.SCRIPT_HASH;
                     } else {
                         neoURI.asset = new ScriptHash(assetID);
@@ -363,9 +366,9 @@ public class NeoURI {
      */
     public String getAssetAsString() {
         if (asset.equals(NeoToken.SCRIPT_HASH)) {
-            return NeoToken.SYMBOL;
+            return "neo";
         } else if (asset.equals(GasToken.SCRIPT_HASH)) {
-            return GasToken.SYMBOL;
+            return "gas";
         }
         return asset.toString();
     }
