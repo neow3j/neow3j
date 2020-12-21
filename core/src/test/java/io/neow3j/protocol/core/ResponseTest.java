@@ -433,45 +433,45 @@ public class ResponseTest extends ResponseTester {
                         "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "        \"script\": \"QetD9PQ=\",\n" +
                         "        \"manifest\": {\n" +
+                        "            \"name\": \"GasToken\"," +
                         "            \"groups\": [\n" +
                         "                {\n" +
                         "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
                         "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
                         "                }\n" +
                         "            ],\n" +
-                        "            \"features\": {\n" +
-                        "                \"storage\": true,\n" +
-                        "                \"payable\": false\n" +
-                        "            },\n" +
                         "            \"supportedstandards\": [" +
                         "                \"NEP-17\"" +
                         "            ],\n" +
                         "            \"abi\": {\n" +
-                        "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"methods\": [\n" +
                         "                    {\n" +
                         "                        \"name\": \"name\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"String\"\n" +
+                        "                        \"returntype\": \"String\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"symbol\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"String\"\n" +
+                        "                        \"returntype\": \"String\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"decimals\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"totalSupply\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"balanceOf\",\n" +
@@ -482,7 +482,20 @@ public class ResponseTest extends ResponseTester {
                         "                            }\n" +
                         "                        ],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\",\n" +
+                        "                        \"safe\": true\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"name\": \"setGasPerBlock\",\n" +
+                        "                        \"parameters\": [\n" +
+                        "                            {\n" +
+                        "                                \"name\": \"gasPerBlock\",\n" +
+                        "                                \"type\": \"Integer\"\n" +
+                        "                            }\n" +
+                        "                        ],\n" +
+                        "                        \"offset\": 0,\n" +
+                        "                        \"returntype\": \"Boolean\",\n" +
+                        "                        \"safe\": false\n" +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"events\": [\n" +
@@ -517,14 +530,6 @@ public class ResponseTest extends ResponseTester {
                         "            \"trusts\": [" +
                         "                \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"\n" +
                         "            ],\n" +
-                        "            \"safemethods\": [\n" +
-                        "                \"name\",\n" +
-                        "                \"symbol\",\n" +
-                        "                \"decimals\",\n" +
-                        "                \"totalSupply\",\n" +
-                        "                \"balanceOf\",\n" +
-                        "                \"supportedStandards\"\n" +
-                        "            ],\n" +
                         "            \"extra\": null\n" +
                         "        }\n" +
                         "    }\n" +
@@ -540,6 +545,7 @@ public class ResponseTest extends ResponseTester {
 
         ContractManifest manifest = getContractState.getContractState().getManifest();
         assertThat(manifest, is(notNullValue()));
+        assertThat(manifest.getName(), is("GasToken"));
         assertThat(manifest.getGroups(), is(notNullValue()));
         assertThat(manifest.getGroups(), hasSize(1));
         assertThat(manifest.getGroups().get(0).getPubKey(),
@@ -552,10 +558,9 @@ public class ResponseTest extends ResponseTester {
 
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
-        assertThat(abi.getHash(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
 
         assertThat(abi.getMethods(), is(notNullValue()));
-        assertThat(abi.getMethods(), hasSize(5));
+        assertThat(abi.getMethods(), hasSize(6));
         assertThat(abi.getMethods().get(1).getName(), is("symbol"));
         assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(0));
@@ -582,92 +587,9 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(manifest.getTrusts(), is(notNullValue()));
         assertThat(manifest.getTrusts(), hasSize(1));
-        assertFalse(manifest.trusts_isWildCard());
         assertThat(manifest.getTrusts().get(0), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
 
-        assertThat(manifest.getSafeMethods(), is(notNullValue()));
-        assertThat(manifest.getSafeMethods(), hasSize(6));
-        assertFalse(manifest.safeMethods_isWildCard());
-        assertThat(manifest.getSafeMethods(),
-                containsInAnyOrder(
-                        "name",
-                        "symbol",
-                        "decimals",
-                        "totalSupply",
-                        "balanceOf",
-                        "supportedStandards"
-                ));
-
         assertThat(manifest.getExtra(), is(nullValue()));
-    }
-
-    @Test
-    public void testGetContractState_wildCards() {
-        buildResponse(
-                "{\n" +
-                        "    \"jsonrpc\": \"2.0\",\n" +
-                        "    \"id\": 1,\n" +
-                        "    \"result\": {\n" +
-                        "        \"id\": -2,\n" +
-                        "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "        \"script\": \"QetD9PQ=\",\n" +
-                        "        \"manifest\": {\n" +
-                        "            \"groups\": [\n" +
-                        "                {\n" +
-                        "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
-                        "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
-                        "                }\n" +
-                        "            ],\n" +
-                        "            \"features\": {\n" +
-                        "                \"storage\": true,\n" +
-                        "                \"payable\": false\n" +
-                        "            },\n" +
-                        "            \"supportedstandards\": [" +
-                        "                \"NEP-17\"" +
-                        "            ],\n" +
-                        "            \"abi\": {\n" +
-                        "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "                \"methods\": [\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"name\",\n" +
-                        "                        \"parameters\": [],\n" +
-                        "                        \"returntype\": \"String\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"events\": [\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"Transfer\",\n" +
-                        "                        \"parameters\": [\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"from\",\n" +
-                        "                                \"type\": \"Hash160\"\n" +
-                        "                            },\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"to\",\n" +
-                        "                                \"type\": \"Hash160\"\n" +
-                        "                            },\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"amount\",\n" +
-                        "                                \"type\": \"Integer\"\n" +
-                        "                            }\n" +
-                        "                        ]\n" +
-                        "                    }\n" +
-                        "                ]\n" +
-                        "            },\n" +
-                        "            \"permissions\": [],\n" +
-                        "            \"trusts\": \"*\",\n" +
-                        "            \"safemethods\": \"*\",\n" +
-                        "            \"extra\": \"individual info\"\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}"
-        );
-
-        NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
-        ContractManifest manifest = getContractState.getContractState().getManifest();
-        assertTrue(manifest.trusts_isWildCard());
-        assertTrue(manifest.safeMethods_isWildCard());
-        assertThat(manifest.getExtra(), is("individual info"));
     }
 
     @Test
