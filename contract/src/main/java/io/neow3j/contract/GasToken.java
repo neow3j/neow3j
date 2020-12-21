@@ -11,7 +11,7 @@ public class GasToken extends Nep17Token {
     public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     public final static int DECIMALS = 8;
-    public final static String SYMBOL = "gas";
+    public final static String SYMBOL = "GAS";
 
     /**
      * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for

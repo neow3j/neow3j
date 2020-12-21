@@ -56,12 +56,12 @@ public class NeoTokenTest {
 
     @Test
     public void getName() {
-        assertThat(new NeoToken(neow).getName(), is("NEO"));
+        assertThat(new NeoToken(neow).getName(), is("NeoToken"));
     }
 
     @Test
     public void getSymbol() {
-        assertThat(new NeoToken(neow).getSymbol(), is("neo"));
+        assertThat(new NeoToken(neow).getSymbol(), is("NEO"));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"unclaimedGas\"" // function
                         + ".*\"f68f181731a47036a99f04dad90043a744edec0f\"" // script hash
                         + ".*100.*" // block height
@@ -148,7 +148,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"getCandidates\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -173,7 +173,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"getValidators\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -194,7 +194,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"getCommittee\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -215,7 +215,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"getNextBlockValidators\".*" // function
                 ))
                 .willReturn(aResponse()

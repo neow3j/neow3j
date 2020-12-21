@@ -25,7 +25,7 @@ public class NeoToken extends Nep17Token {
     public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     public final static int DECIMALS = 0;
-    public final static String SYMBOL = "neo";
+    public final static String SYMBOL = "NEO";
     public final static BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
