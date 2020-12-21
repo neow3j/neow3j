@@ -8,13 +8,12 @@ import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
  */
 public class OracleContract extends SmartContract {
 
-    private static final String NAME = "Oracle";
+    private static final String NAME = "OracleContract";
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String FINISH = "finish";
     private static final String REQUEST = "request";
     private static final String VERIFY = "verify";
-
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     /**
      * Constructs a new <tt>Oracle</tt> that uses the given {@link Neow3j} instance for

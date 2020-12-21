@@ -2,8 +2,6 @@ package io.neow3j.contract;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
@@ -19,14 +17,15 @@ import java.util.Arrays;
  */
 public class ManagementContract extends SmartContract {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    private static final String NAME = "Neo Contract Management";
+    private static final String NAME = "ManagementContract";
     public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+
     private static final String GET_CONTRACT = "getContract";
     private static final String DEPLOY = "deploy";
     private static final String UPDATE = "update";
     private static final String DESTROY = "destroy";
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Constructs a new <tt>ManagementContract</tt> that uses the given {@link Neow3j} instance for

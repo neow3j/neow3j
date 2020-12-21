@@ -1,7 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.OpCode;
 import io.neow3j.protocol.Neow3j;
 
 import java.io.IOException;
@@ -12,7 +10,7 @@ import java.math.BigInteger;
  */
 public class PolicyContract extends SmartContract {
 
-    private static final String NAME = "Policy";
+    private static final String NAME = "PolicyContract";
     public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
