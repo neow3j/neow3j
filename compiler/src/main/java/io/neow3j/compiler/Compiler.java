@@ -17,6 +17,8 @@ import io.neow3j.contract.NefFile;
 import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
+import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.Map;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
@@ -99,6 +101,12 @@ public class Compiler {
         if (typeName.equals(Void.class.getTypeName())
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
+        }
+        if (typeName.equals(ECPoint.class.getTypeName())) {
+            return ContractParameterType.PUBLIC_KEY;
+        }
+        if (typeName.equals(Map.class.getTypeName())) {
+            return ContractParameterType.MAP;
         }
         if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
             // The io.neow3j.devpack.List type is simply an array-abstraction.

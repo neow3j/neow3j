@@ -6,11 +6,15 @@ import static io.neow3j.model.types.ContractParameterType.BOOLEAN;
 import static io.neow3j.model.types.ContractParameterType.BYTE_ARRAY;
 import static io.neow3j.model.types.ContractParameterType.INTEGER;
 import static io.neow3j.model.types.ContractParameterType.INTEROP_INTERFACE;
+import static io.neow3j.model.types.ContractParameterType.MAP;
+import static io.neow3j.model.types.ContractParameterType.PUBLIC_KEY;
 import static io.neow3j.model.types.ContractParameterType.STRING;
 import static io.neow3j.model.types.ContractParameterType.VOID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.Map;
 import io.neow3j.devpack.neo.Enumerator;
 import io.neow3j.devpack.neo.Iterator;
 import io.neow3j.devpack.List;
@@ -62,6 +66,12 @@ public class CompilerTest {
         assertClassIsMappedToType(boolean[].class, ARRAY);
         assertClassIsMappedToType(byte[][].class, ARRAY);
         assertClassIsMappedToType(List.class, ARRAY);
+
+        // Public Key
+        assertClassIsMappedToType(ECPoint.class, PUBLIC_KEY);
+
+        // Map
+        assertClassIsMappedToType(Map.class, MAP);
 
         // Others
         assertClassIsMappedToType(Transaction.class, INTEROP_INTERFACE);

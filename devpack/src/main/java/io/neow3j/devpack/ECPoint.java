@@ -26,10 +26,10 @@ public class ECPoint {
     }
 
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    public native byte[] toByteArray(ECPoint value);
+    public native byte[] toByteArray();
 
     @Instruction
-    public native String toString(ECPoint value);
+    public native String toString();
 
 }
 
