@@ -84,11 +84,6 @@ public class SmartContract {
         this.scriptHash = this.nefFile.getScriptHash();
         this.manifest = manifest;
 
-        if (!this.nefFile.getScriptHash().toString().equals(
-                Numeric.cleanHexPrefix(this.manifest.getAbi().getHash()))) {
-            throw new IllegalArgumentException("Script hash of given NEF file does not equal the "
-                    + "script hash from the given manifest file.");
-        }
         byte[] manifestBytes = objectMapper.writeValueAsBytes(this.manifest);
         if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
             throw new IllegalArgumentException("The given contract manifest is too long. Manifest "

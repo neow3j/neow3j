@@ -56,7 +56,7 @@ public class ContractUtilsTest {
     @Test
     public void testGetContractManifestFilenameHappyPath() {
         HashMap<String, String> extras = new HashMap<>();
-        ContractManifest m = new ContractManifest("neowww", null, null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest("neowww", null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is("neowww" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -64,7 +64,7 @@ public class ContractUtilsTest {
     @Test
     public void testGetContractManifestFilenameNoManifestName() {
         HashMap<String, String> extras = new HashMap<>();
-        ContractManifest m = new ContractManifest(null, null, null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest(null, null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is(ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -72,7 +72,7 @@ public class ContractUtilsTest {
     @Test
     public void testGetContractManifestFilenameEmptyManifestName() {
         HashMap<String, String> extras = new HashMap<>();
-        ContractManifest m = new ContractManifest("", null, null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest("", null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is(ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -97,14 +97,16 @@ public class ContractUtilsTest {
                                 new ContractParameter("param2", ContractParameterType.BYTE_ARRAY,
                                         null)
                         ),
+                        0,
                         ContractParameterType.STRING,
-                        0
+                        false
                 ),
                 new ContractMethod(
                         "deploy",
                         Arrays.asList(),
+                        100,
                         ContractParameterType.BOOLEAN,
-                        100
+                        false
                 )
         );
         List<ContractEvent> contractEvents = Arrays.asList(
@@ -125,7 +127,6 @@ public class ContractUtilsTest {
                 )
         );
         ContractABI abi = new ContractABI(
-                "",
                 contractMethods,
                 contractEvents
         );
@@ -137,7 +138,6 @@ public class ContractUtilsTest {
         );
 
         List<String> trusts = Arrays.asList("trust1", "trust2");
-        List<String> safeMethods = Arrays.asList("safeMethods1", "safeMethods2");
 
         return new ContractManifest(
                 name,
@@ -146,7 +146,6 @@ public class ContractUtilsTest {
                 abi,
                 contractPermissions,
                 trusts,
-                safeMethods,
                 extras
         );
     }

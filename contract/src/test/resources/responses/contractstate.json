@@ -8,10 +8,6 @@
     "manifest": {
       "name": "neow3j",
       "groups": [],
-      "features": {
-        "storage": true,
-        "payable": false
-      },
       "supportedstandards": [],
       "abi": {
         "hash": "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
@@ -24,7 +20,6 @@
         }
       ],
       "trusts": [],
-      "safemethods": [],
       "extra": null
     }
   }

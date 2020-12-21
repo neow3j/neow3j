@@ -38,12 +38,6 @@ public class ContractManifest {
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> trusts;
 
-    // TODO: If the wildcard character "*" is read the list should be empty or null.
-    @JsonProperty("safemethods")
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<String> safeMethods;
-
     // Custom user data
     @JsonProperty("extra")
     private Object extra;
@@ -57,7 +51,6 @@ public class ContractManifest {
             ContractABI abi,
             List<ContractPermission> permissions,
             List<String> trusts,
-            List<String> safeMethods,
             Object extra) {
         this.name = name;
         this.groups = groups;
@@ -65,7 +58,6 @@ public class ContractManifest {
         this.abi = abi;
         this.permissions = permissions;
         this.trusts = trusts;
-        this.safeMethods = safeMethods;
         this.extra = extra;
     }
 
@@ -93,18 +85,6 @@ public class ContractManifest {
         return trusts;
     }
 
-    public List<String> getSafeMethods() {
-        return safeMethods;
-    }
-
-    public boolean safeMethods_isWildCard() {
-        return (safeMethods.get(0).equals("*"));
-    }
-
-    public boolean trusts_isWildCard() {
-        return (trusts.get(0).equals("*"));
-    }
-
     public Object getExtra() {
         return extra;
     }
@@ -119,7 +99,6 @@ public class ContractManifest {
                 Objects.equals(getAbi(), that.getAbi()) &&
                 Objects.equals(getPermissions(), that.getPermissions()) &&
                 Objects.equals(getTrusts(), that.getTrusts()) &&
-                Objects.equals(getSafeMethods(), that.getSafeMethods()) &&
                 Objects.equals(getSupportedStandards(), that.getSupportedStandards()) &&
                 Objects.equals(getExtra(), that.getExtra());
     }
@@ -131,7 +110,6 @@ public class ContractManifest {
                 getAbi(),
                 getPermissions(),
                 getTrusts(),
-                getSafeMethods(),
                 getSupportedStandards(),
                 getExtra());
     }
@@ -144,7 +122,6 @@ public class ContractManifest {
                 ", abi=" + abi +
                 ", permissions=" + permissions +
                 ", trusts=" + trusts +
-                ", safeMethods=" + safeMethods +
                 ", supportedStandards=" + supportedStandards +
                 ", extra=" + extra +
                 '}';
@@ -202,9 +179,6 @@ public class ContractManifest {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContractABI {
 
-        @JsonProperty("hash")
-        private String hash;
-
         @JsonProperty("methods")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<ContractMethod> methods;
@@ -216,14 +190,9 @@ public class ContractManifest {
         public ContractABI() {
         }
 
-        public ContractABI(String hash, List<ContractMethod> methods, List<ContractEvent> events) {
-            this.hash = hash;
+        public ContractABI(List<ContractMethod> methods, List<ContractEvent> events) {
             this.methods = methods != null ? methods : new ArrayList<>();
             this.events = events != null ? events : new ArrayList<>();
-        }
-
-        public String getHash() {
-            return hash;
         }
 
         public List<ContractMethod> getMethods() {
@@ -239,21 +208,19 @@ public class ContractManifest {
             if (this == o) return true;
             if (!(o instanceof ContractABI)) return false;
             ContractABI that = (ContractABI) o;
-            return Objects.equals(getHash(), that.getHash()) &&
-                    Objects.equals(getMethods(), that.getMethods()) &&
+            return Objects.equals(getMethods(), that.getMethods()) &&
                     Objects.equals(getEvents(), that.getEvents());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getHash(), getMethods(), getEvents());
+            return Objects.hash(getMethods(), getEvents());
         }
 
         @Override
         public String toString() {
             return "NeoContractInterface{" +
-                    "hash='" + hash + '\'' +
-                    ", methods=" + methods +
+                    "methods=" + methods +
                     ", events=" + events +
                     '}';
         }
@@ -274,15 +241,19 @@ public class ContractManifest {
             @JsonProperty("returntype")
             private ContractParameterType returnType;
 
+            @JsonProperty("safe")
+            private boolean safe;
+
             public ContractMethod() {
             }
 
-            public ContractMethod(String name, List<ContractParameter> parameters,
-                    ContractParameterType returnType, int offset) {
+            public ContractMethod(String name, List<ContractParameter> parameters, int offset,
+                    ContractParameterType returnType, boolean safe) {
                 this.name = name;
                 this.parameters = parameters != null ? parameters : new ArrayList<>();
-                this.returnType = returnType;
                 this.offset = offset;
+                this.returnType = returnType;
+                this.safe = safe;
             }
 
             public String getName() {
@@ -293,12 +264,16 @@ public class ContractManifest {
                 return parameters;
             }
 
+            public int getOffset() {
+                return offset;
+            }
+
             public ContractParameterType getReturnType() {
                 return returnType;
             }
 
-            public int getOffset() {
-                return this.offset;
+            public boolean isSafe() {
+                return safe;
             }
 
             @Override
@@ -308,13 +283,14 @@ public class ContractManifest {
                 ContractMethod that = (ContractMethod) o;
                 return Objects.equals(getName(), that.getName()) &&
                         Objects.equals(getParameters(), that.getParameters()) &&
+                        getOffset() == that.getOffset() &&
                         getReturnType() == that.getReturnType() &&
-                        getOffset() == that.getOffset();
+                        isSafe() == that.isSafe();
             }
 
             @Override
             public int hashCode() {
-                return Objects.hash(getName(), getParameters(), getReturnType(), getOffset());
+                return Objects.hash(getName(), getParameters(), getOffset(), getReturnType(), isSafe());
             }
 
             @Override
@@ -322,8 +298,9 @@ public class ContractManifest {
                 return "NeoContractFunction{" +
                         "name='" + name + '\'' +
                         ", parameters=" + parameters +
-                        ", returnType=" + returnType +
                         ", offset=" + offset +
+                        ", returnType=" + returnType +
+                        ", safe=" + safe +
                         '}';
             }
         }

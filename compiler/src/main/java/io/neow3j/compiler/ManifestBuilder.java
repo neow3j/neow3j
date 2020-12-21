@@ -14,7 +14,6 @@ import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.Con
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
-import io.neow3j.utils.Numeric;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,6 +32,7 @@ import org.objectweb.asm.tree.ClassNode;
 public class ManifestBuilder {
 
     public static ContractManifest buildManifest(CompilationUnit compUnit, ScriptHash scriptHash) {
+        String name = "";
         List<ContractGroup> groups = new ArrayList<>();
         Map<String, String> extras = new HashMap<>();
         List<String> supportedStandards = new ArrayList<>();
@@ -46,9 +46,8 @@ public class ManifestBuilder {
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));
         List<String> trusts = new ArrayList<>();
-        List<String> safeMethods = new ArrayList<>();
-        return new ContractManifest(groups, supportedStandards, abi, permissions, trusts,
-                safeMethods, extras);
+        return new ContractManifest(name, groups, supportedStandards, abi, permissions, trusts,
+                extras);
     }
 
     // Throws an exception if multiple classes have the contract annotations.
@@ -87,10 +86,10 @@ public class ManifestBuilder {
             }
             ContractParameterType paramType = Compiler.mapTypeToParameterType(
                     Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType());
-            methods.add(new ContractMethod(neoMethod.getName(), contractParams, paramType,
-                    neoMethod.getStartAddress()));
+            methods.add(new ContractMethod(neoMethod.getName(), contractParams,
+                    neoMethod.getStartAddress(), paramType, false));
         }
-        return new ContractABI(Numeric.prependHexPrefix(scriptHash.toString()), methods, events);
+        return new ContractABI(methods, events);
     }
 
     @SuppressWarnings("unchecked")
