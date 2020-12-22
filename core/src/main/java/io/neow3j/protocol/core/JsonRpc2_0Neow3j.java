@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
@@ -49,6 +50,7 @@ import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Async;
+import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -305,7 +307,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex) {
         return new Request<>(
                 "sendrawtransaction",
-                asList(rawTransactionHex),
+                asList(Base64.encode(Numeric.hexStringToByteArray(rawTransactionHex))),
                 neow3jService,
                 NeoSendRawTransaction.class);
     }
