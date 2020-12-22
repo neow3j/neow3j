@@ -205,6 +205,15 @@ public class RequestTest extends RequestTester {
                         + "\"params\":[],\"id\":1}");
     }
 
+    @Test
+    public void testGetCommittee() throws Exception {
+        neow3j.getCommittee().send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getcommittee\","
+                        + "\"params\":[],\"id\":1}");
+    }
+
     // Node Methods
 
     @Test
@@ -430,6 +439,15 @@ public class RequestTest extends RequestTester {
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"importprivkey\","
                         + "\"params\":[\"L5c6jz6Rh8arFJW3A5vg7Suaggo28ApXVF2EPzkAXbm94ThqaA6r\"],\"id\":1}");
+    }
+
+    @Test
+    public void testCalculateNetworkFee() throws Exception {
+        neow3j.calculateNetworkFee("6e656f77336a").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"calculatenetworkfee\","
+                        + "\"params\":[\"bmVvdzNq\"],\"id\":1}");
     }
 
     @Test

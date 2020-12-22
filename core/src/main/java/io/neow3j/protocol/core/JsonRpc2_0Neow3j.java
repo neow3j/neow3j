@@ -11,11 +11,13 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
@@ -274,6 +276,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 NeoGetNextBlockValidators.class);
     }
 
+    @Override
+    public Request<?, NeoGetCommittee> getCommittee() {
+        return new Request<>(
+                "getcommittee",
+                emptyList(),
+                neow3jService,
+                NeoGetCommittee.class);
+    }
+
     // Node Methods
 
     @Override
@@ -322,6 +333,8 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     // SmartContract Methods
+
+    // TODO: 22.12.20 Michael: invokecontractverify
 
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
@@ -451,6 +464,15 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 asList(privateKeyInWIF),
                 neow3jService,
                 NeoImportPrivKey.class);
+    }
+
+    @Override
+    public Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String tx) {
+        return new Request<>(
+                "calculatenetworkfee",
+                asList(Base64.encode(Numeric.hexStringToByteArray(tx))),
+                neow3jService,
+                NeoCalculateNetworkFee.class);
     }
 
     @Override

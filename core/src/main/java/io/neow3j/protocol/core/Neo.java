@@ -3,10 +3,12 @@ package io.neow3j.protocol.core;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -91,6 +93,8 @@ public interface Neo {
 
     Request<?, NeoGetNextBlockValidators> getNextBlockValidators();
 
+    Request<?, NeoGetCommittee> getCommittee();
+
     // Node Methods
 
     Request<?, NeoConnectionCount> getConnectionCount();
@@ -136,6 +140,8 @@ public interface Neo {
     Request<?, NeoGetWalletUnclaimedGas> getWalletUnclaimedGas();
 
     Request<?, NeoImportPrivKey> importPrivKey(String privateKeyInWIF);
+
+    Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String transactionHex);
 
     Request<?, NeoListAddress> listAddress();
 

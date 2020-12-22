@@ -10,7 +10,6 @@ import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.getNodeUrl;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -45,11 +44,13 @@ import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
@@ -71,6 +72,7 @@ import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoListPlugins;
+import io.neow3j.protocol.core.methods.response.NeoNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoOpenWallet;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -102,6 +104,9 @@ public class Neow3jReadOnlyIntegrationTest {
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
     private static final String TX_RECIPIENT_1 = "NVuspqtyaV92cDo7SQdiYDCMvPUEZ3Ys3f";
     private static final int TX_LENGTH = 508;
+
+    private static final String CALC_NETWORK_FEE_TX =
+            "005815ca1700c0030000000000ebc403000000000037170000017afd203255cb2972bd0a6a827e74e387ed322bec0100560c00120c14dc84704b8283397326095c0b4e9662282c3a73190c147afd203255cb2972bd0a6a827e74e387ed322bec14c00c087472616e736665720c14b6720fef7e7eb73f25afb470f587997ce3e2460a41627d5b5201420c40a969322ebce6b9a5746005453e4c657c175403399a8ce23a1e550c64997ca23b65297ea68242e3675dc7aceec135e9f0d0e80b3d2d40e1db6b7946c1f7c86c602b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf";
 
     protected static final String APPLICATION_LOG_TRIGGER = "Application";
 
@@ -402,6 +407,15 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(validators, hasSize(greaterThanOrEqualTo(0)));
     }
 
+    @Test
+    public void testGetCommittee() throws IOException {
+        NeoGetCommittee getCommittee = getNeow3j().getCommittee().send();
+        List<String> committee = getCommittee.getCommittee();
+
+        assertThat(committee, hasSize(1));
+        assertThat(committee.get(0), is("02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"));
+    }
+
     // Node Methods
 
     @Test
@@ -562,6 +576,14 @@ public class Neow3jReadOnlyIntegrationTest {
         assertTrue(privKey.getHasKey());
         assertNull(privKey.getLabel());
         assertFalse(privKey.getWatchOnly());
+    }
+
+    @Test
+    public void testCalculateNetworkFee() throws IOException {
+        NeoCalculateNetworkFee calcNetworkFee = getNeow3j().calculateNetworkFee(CALC_NETWORK_FEE_TX).send();
+        NeoNetworkFee networkFee = calcNetworkFee.getNetworkFee();
+
+        assertThat(networkFee.getNetworkFee(), is(new BigInteger("1230610")));
     }
 
     @Test
