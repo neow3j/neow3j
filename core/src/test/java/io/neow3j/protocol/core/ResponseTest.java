@@ -2025,64 +2025,61 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"txid\": \"0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109\",\n" +
-                        "        \"trigger\": \"Application\",\n" +
-                        "        \"vmstate\": \"HALT\",\n" +
-                        "        \"gasconsumed\": \"9007810\",\n" +
-                        "        \"stack\": [\n" +
+                        "        \"executions\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"Integer\",\n" +
-                        "                \"value\": \"1\"\n" +
-                        "            }\n" +
-                        "        ],\n" +
-                        "        \"notifications\": [\n" +
-                        "            {\n" +
-                        "                \"contract\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "                \"eventname\": \"Transfer\",\n" +
-                        "                \"state\": {\n" +
-                        "                    \"type\": \"Array\",\n" +
-                        "                    \"value\": [\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"VHJhbnNmZXI=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"Any\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"Integer\",\n" +
-                        "                            \"value\": \"600000000\"\n" +
+                        "                \"trigger\": \"Application\",\n" +
+                        "                \"vmstate\": \"HALT\",\n" +
+                        "                \"exception\": \"asdf\",\n" +
+                        "                \"gasconsumed\": \"9007810\",\n" +
+                        "                \"stack\": [\n" +
+                        "                    {\n" +
+                        "                        \"type\": \"Integer\",\n" +
+                        "                        \"value\": \"1\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"notifications\": [\n" +
+                        "                    {\n" +
+                        "                        \"contract\": \"0xa6a6c15dcdc9b997dac448b6926522d22efeedfb\",\n" +
+                        "                        \"eventname\": \"Transfer\",\n" +
+                        "                        \"state\": {\n" +
+                        "                            \"type\": \"Array\",\n" +
+                        "                            \"value\": [\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"Any\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"ByteString\",\n" +
+                        "                                    \"value\": \"ev0gMlXLKXK9CmqCfnTjh+0yK+w=\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"Integer\",\n" +
+                        "                                    \"value\": \"600000000\"\n" +
+                        "                                }\n" +
+                        "                            ]\n" +
                         "                        }\n" +
-                        "                    ]\n" +
-                        "                }\n" +
-                        "            },\n" +
-                        "            {\n" +
-                        "                \"contract\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\n" +
-                        "                \"eventname\": \"Transfer\",\n" +
-                        "                \"state\": {\n" +
-                        "                    \"type\": \"Array\",\n" +
-                        "                    \"value\": [\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"VHJhbnNmZXI=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"5sEBNlSvET2KlovcpSyZSKgrlT0=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"Integer\",\n" +
-                        "                            \"value\": \"100\"\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"contract\": \"0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6\",\n" +
+                        "                        \"eventname\": \"Transfer\",\n" +
+                        "                        \"state\": {\n" +
+                        "                            \"type\": \"Array\",\n" +
+                        "                            \"value\": [\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"ByteString\",\n" +
+                        "                                    \"value\": \"VHJhbnNmZXI=\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"ByteString\",\n" +
+                        "                                    \"value\": \"CaVYdMLaS4bl1J/1MKGxU+sSx9Y=\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"Integer\",\n" +
+                        "                                    \"value\": \"100\"\n" +
+                        "                                }\n" +
+                        "                            ]\n" +
                         "                        }\n" +
-                        "                    ]\n" +
-                        "                }\n" +
+                        "                    }\n" +
+                        "                ]\n" +
                         "            }\n" +
                         "        ]\n" +
                         "    }\n" +
@@ -2092,43 +2089,47 @@ public class ResponseTest extends ResponseTester {
         NeoGetApplicationLog getApplicationLog = deserialiseResponse(NeoGetApplicationLog.class);
         NeoApplicationLog neoAppLog = getApplicationLog.getApplicationLog();
         assertThat(neoAppLog, is(notNullValue()));
-        assertThat(neoAppLog.getTrigger(), is("Application"));
-        assertThat(neoAppLog.getState(), is("HALT"));
-        assertThat(neoAppLog.getGasConsumed(), is("9007810"));
 
-        assertThat(neoAppLog.getStack(), is(notNullValue()));
-        assertThat(neoAppLog.getStack(), hasSize(1));
-        assertThat(neoAppLog.getStack().get(0).getType(),
+        assertThat(neoAppLog.getTransactionId(),
+                is("0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109"));
+
+        assertThat(neoAppLog.getExecutions(), hasSize(1));
+        NeoApplicationLog.Execution execution = neoAppLog.getExecutions().get(0);
+        assertThat(execution.getTrigger(), is("Application"));
+        assertThat(execution.getState(), is("HALT"));
+        assertThat(execution.getGasConsumed(), is("9007810"));
+
+        assertThat(execution.getStack(), is(notNullValue()));
+        assertThat(execution.getStack(), hasSize(1));
+        assertThat(execution.getStack().get(0).getType(),
                 is(StackItemType.INTEGER));
-        assertThat(neoAppLog.getStack().get(0).asInteger().getValue(),
+        assertThat(execution.getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(1)));
 
-        assertThat(neoAppLog.getNotifications(), is(notNullValue()));
-        assertThat(neoAppLog.getNotifications(), hasSize(2));
+        assertThat(execution.getNotifications(), is(notNullValue()));
+        assertThat(execution.getNotifications(), hasSize(2));
 
         // Notification 0
-        NeoApplicationLog.Notification notification0 = neoAppLog.getNotifications().get(0);
+        NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
 
-        assertThat(notification0.getContract(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
+        assertThat(notification0.getContract(), is("0xa6a6c15dcdc9b997dac448b6926522d22efeedfb"));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
         ArrayStackItem notification0Array = notification0.getState().asArray();
 
-        String eventName0 = notification0Array.get(0).asByteString().getAsString();
-        AnyStackItem from0 = notification0Array.get(1).asAny();
-        String to0 = notification0Array.get(2).asByteString().getAsAddress();
-        BigInteger amount0 = notification0Array.get(3).asInteger().getValue();
+        AnyStackItem from0 = notification0Array.get(0).asAny();
+        String to0 = notification0Array.get(1).asByteString().getAsAddress();
+        BigInteger amount0 = notification0Array.get(2).asInteger().getValue();
 
-        assertThat(eventName0, is("Transfer"));
         assertNotNull(from0);
-        assertThat(to0, is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
+        assertThat(to0, is("NX8GreRFGFK5wpGMWetpX93HmtrezGogzk"));
         assertThat(amount0, is(BigInteger.valueOf(600000000)));
 
         // Notification 1
-        NeoApplicationLog.Notification notification1 = neoAppLog.getNotifications().get(1);
+        NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
 
-        assertThat(notification1.getContract(), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
+        assertThat(notification1.getContract(), is("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6"));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 
@@ -2136,12 +2137,10 @@ public class ResponseTest extends ResponseTester {
 
         String eventName1 = notification1Array.get(0).asByteString().getAsString();
         String from1 = notification1Array.get(1).asByteString().getAsAddress();
-        String to1 = notification1Array.get(2).asByteString().getAsAddress();
-        BigInteger amount1 = notification1Array.get(3).asInteger().getValue();
+        BigInteger amount1 = notification1Array.get(2).asInteger().getValue();
 
         assertThat(eventName1, is("Transfer"));
-        assertThat(from1, is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
-        assertThat(to1, is("Ngx5p5euXEiS2tL26ZoK499VzqRLQui41V"));
+        assertThat(from1, is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
         assertThat(amount1, is(BigInteger.valueOf(100)));
     }
 }

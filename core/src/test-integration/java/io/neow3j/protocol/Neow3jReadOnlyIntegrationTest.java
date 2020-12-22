@@ -92,7 +92,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     // Information about the transaction that is sent after starting the node.
     private static String txHash;
-    private static final String TX_GAS_CONSUMED = "9007990";
+    private static final String TX_GAS_CONSUMED = "0.0999972";
     private static final long TX_BLOCK_IDX = 2L;
     private static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     private static final int TX_VERSION = 0;
@@ -664,19 +664,23 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(applicationLog);
         assertThat(applicationLog.getTransactionId(), is(txHash));
-        assertThat(applicationLog.getTrigger(), is(APPLICATION_LOG_TRIGGER));
-        assertThat(applicationLog.getState(), is(VM_STATE_HALT));
-        assertThat(applicationLog.getGasConsumed(), is(TX_GAS_CONSUMED));
-        assertNotNull(applicationLog.getStack());
-        assertThat(applicationLog.getStack(), hasSize(0));
+        assertThat(applicationLog.getExecutions(), hasSize(1));
 
-        assertNotNull(applicationLog.getNotifications());
-        assertThat(applicationLog.getNotifications(), hasSize(greaterThanOrEqualTo(1)));
-        assertThat(applicationLog.getNotifications().get(0).getContract(),
+        NeoApplicationLog.Execution execution = applicationLog.getExecutions().get(0);
+        assertThat(execution.getTrigger(), is(APPLICATION_LOG_TRIGGER));
+        assertThat(execution.getState(), is(VM_STATE_HALT));
+        assertNull(execution.getException());
+        assertThat(execution.getGasConsumed(), is(TX_GAS_CONSUMED));
+        assertNotNull(execution.getStack());
+        assertThat(execution.getStack(), hasSize(0));
+
+        assertNotNull(execution.getNotifications());
+        assertThat(execution.getNotifications(), hasSize(greaterThanOrEqualTo(1)));
+        assertThat(execution.getNotifications().get(0).getContract(),
                 isOneOf("0x" + NEO_HASH, "0x" + GAS_HASH));
-        assertThat(applicationLog.getNotifications().get(0).getEventName(), is("Transfer"));
+        assertThat(execution.getNotifications().get(0).getEventName(), is("Transfer"));
 
-        StackItem state = applicationLog.getNotifications().get(0).getState();
+        StackItem state = execution.getNotifications().get(0).getState();
         assertThat(state, is(notNullValue()));
         assertThat(state.getType(), is(StackItemType.ARRAY));
         assertThat(state.asArray().getValue(), hasSize(3));
@@ -686,7 +690,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 ACCOUNT_1_ADDRESS));
         assertThat(state.asArray().getValue().get(2).getType(), is(StackItemType.INTEGER));
         assertThat(state.asArray().getValue().get(2).asInteger().getValue(),
-                is(new BigInteger("1200000000")));
+                is(new BigInteger("100000000")));
     }
 
 }
