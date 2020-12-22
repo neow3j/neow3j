@@ -14,7 +14,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractStat
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
-import io.neow3j.utils.Numeric;
 import io.neow3j.utils.Strings;
 
 import java.io.File;
