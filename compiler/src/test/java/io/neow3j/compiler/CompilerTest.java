@@ -4,6 +4,8 @@ import static io.neow3j.model.types.ContractParameterType.ANY;
 import static io.neow3j.model.types.ContractParameterType.ARRAY;
 import static io.neow3j.model.types.ContractParameterType.BOOLEAN;
 import static io.neow3j.model.types.ContractParameterType.BYTE_ARRAY;
+import static io.neow3j.model.types.ContractParameterType.HASH160;
+import static io.neow3j.model.types.ContractParameterType.HASH256;
 import static io.neow3j.model.types.ContractParameterType.INTEGER;
 import static io.neow3j.model.types.ContractParameterType.INTEROP_INTERFACE;
 import static io.neow3j.model.types.ContractParameterType.STRING;
@@ -11,6 +13,8 @@ import static io.neow3j.model.types.ContractParameterType.VOID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.neo.Enumerator;
 import io.neow3j.devpack.neo.Iterator;
 import io.neow3j.devpack.List;
@@ -62,6 +66,10 @@ public class CompilerTest {
         assertClassIsMappedToType(boolean[].class, ARRAY);
         assertClassIsMappedToType(byte[][].class, ARRAY);
         assertClassIsMappedToType(List.class, ARRAY);
+
+        // Hash
+        assertClassIsMappedToType(Hash160.class, HASH160);
+        assertClassIsMappedToType(Hash256.class, HASH256);
 
         // Others
         assertClassIsMappedToType(Transaction.class, INTEROP_INTERFACE);

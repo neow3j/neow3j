@@ -18,8 +18,7 @@ public class Hash256 {
      * @return the zero-valued {@code Hash256}.
      */
     @Instruction(opcode = OpCode.PUSHDATA1, operand = {LENGTH, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
     public static native Hash256 zero();
 
     /**
