@@ -149,7 +149,7 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(100000000), // 1 GAS
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         Transaction tx = gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1, account2),
                 RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE, account1.getScriptHash())
@@ -298,12 +298,12 @@ public class Nep17TokenTest {
                                 ContractParameter.hash160(account1.getScriptHash()), // from
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH), // to
                                 ContractParameter.integer(5), // amount
-                                ContractParameter.string(""))) // data
+                                ContractParameter.any(null))) // data
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("7"));
@@ -327,12 +327,12 @@ public class Nep17TokenTest {
                                 ContractParameter.hash160(account1.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(5),
-                                ContractParameter.string("")))
+                                ContractParameter.any(null)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH.toAddress(), new BigDecimal("7"));
@@ -360,17 +360,17 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(5),
-                        ContractParameter.string("")))
+                        ContractParameter.any(null)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4),
-                        ContractParameter.string("")))
+                        ContractParameter.any(null)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(3),
-                        ContractParameter.string("")))
+                        ContractParameter.any(null)))
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
@@ -396,7 +396,7 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
                 account2), RECIPIENT_SCRIPT_HASH, new BigDecimal("4"));
@@ -424,7 +424,7 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("1"));
@@ -456,13 +456,13 @@ public class Nep17TokenTest {
                                 ContractParameter.hash160(multiSigAccount.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(3),
-                                ContractParameter.string("")))
+                                ContractParameter.any(null)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
                         NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(account1.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(2),
-                                ContractParameter.string(""))).toArray();
+                                ContractParameter.any(null))).toArray();
 
         Wallet w = Wallet.withAccounts(multiSigAccount, account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -493,7 +493,7 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(2),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(multiSigAccount,
                 account1), RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
@@ -564,13 +564,13 @@ public class Nep17TokenTest {
                                 ContractParameter.hash160(account3.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(3),
-                                ContractParameter.string("")))
+                                ContractParameter.any(null)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
                         NEP17_TRANSFER, Arrays.asList(
                                 ContractParameter.hash160(account2.getScriptHash()),
                                 ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                                 ContractParameter.integer(2),
-                                ContractParameter.string(""))).toArray();
+                                ContractParameter.any(null))).toArray();
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -596,7 +596,7 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account2.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(4),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -625,7 +625,7 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -648,7 +648,7 @@ public class Nep17TokenTest {
                         ContractParameter.hash160(account3.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
                         ContractParameter.integer(1),
-                        ContractParameter.string(""))).toArray();
+                        ContractParameter.any(null))).toArray();
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
