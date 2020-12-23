@@ -75,8 +75,8 @@ public class PolicyContract extends SmartContract {
      * @return the system fee per byte.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Integer getFeePerByte() throws IOException {
-        return callFuncReturningInt(GET_FEE_PER_BYTE).intValue();
+    public BigInteger getFeePerByte() throws IOException {
+        return callFuncReturningInt(GET_FEE_PER_BYTE);
     }
 
     /**
@@ -85,8 +85,8 @@ public class PolicyContract extends SmartContract {
      * @return the execution fee factor.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Integer getExecFeeFactor() throws IOException {
-        return callFuncReturningInt(GET_EXEC_FEE_FACTOR).intValue();
+    public BigInteger getExecFeeFactor() throws IOException {
+        return callFuncReturningInt(GET_EXEC_FEE_FACTOR);
     }
 
     /**
@@ -95,8 +95,8 @@ public class PolicyContract extends SmartContract {
      * @return the storage price.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Integer getStoragePrice() throws IOException {
-        return callFuncReturningInt(GET_STORAGE_PRICE).intValue();
+    public BigInteger getStoragePrice() throws IOException {
+        return callFuncReturningInt(GET_STORAGE_PRICE);
     }
 
     /**
