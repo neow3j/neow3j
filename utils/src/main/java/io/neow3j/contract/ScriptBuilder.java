@@ -132,6 +132,12 @@ public class ScriptBuilder {
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
+            case ANY:
+                if (value == null) {
+                    opCode(OpCode.PUSHNULL);
+                }
+                // TODO: 23.12.20 Michael: Serialize ContractParameter Any
+                break;
             default:
                 throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
                         "' not supported.");
