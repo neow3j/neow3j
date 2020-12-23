@@ -81,7 +81,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendRawTransaction() throws IOException {
         NeoSendRawTransaction sendRawTransaction = getNeow3j().sendRawTransaction(
-                "003b1b6c437673890000000000322413000000000081142000017afd203255cb2972bd0a6a827e74e387ed322bec01005d0300c50ef9e64501000c14c09cdcf9140b28b3eebd8f1332e51786431860220c147afd203255cb2972bd0a6a827e74e387ed322bec13c00c087472616e736665720c14bcaf41d684c7d4ad6ee0d99da9707b9d1f0c8e6641627d5b523801420c40dd7e57ba41e734d123f9b4aa20e6254132ceb0a19035d7cee703d5c73b66203319f48e5f5d59d9ed46e4250df7a93623e76358cfa0d071630d35172c8d9945af2b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf")
+                "000b0a96844a959800000000002ac312000000000081160000017afd203255cb2972bd0a6a827e74e387ed322bec0100550b120c14dc84704b8283397326095c0b4e9662282c3a73190c147afd203255cb2972bd0a6a827e74e387ed322bec14c00c087472616e736665720c14b6720fef7e7eb73f25afb470f587997ce3e2460a41627d5b5201420c40a4ccb42bb7ed4a7217a204b836f372aa33c33e93b123e061805c064b23269bd5acadde1d10c60d83e74605def6a3f3d9a53d94e63b299ebb2388e1bbb779a1e52b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf")
                 .send();
 
         RawTransaction rawTx = sendRawTransaction.getSendRawTransaction();
@@ -108,7 +108,7 @@ public class Neow3jWriteIntegrationTest {
                 ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS)),
                 ContractParameter.hash160(ScriptHash.fromAddress(RECIPIENT_1)),
                 ContractParameter.integer(1),
-                ContractParameter.string(""));
+                ContractParameter.any(null));
         Signer signer = new Signer.Builder()
                 .account(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS))
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
