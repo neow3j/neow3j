@@ -129,7 +129,8 @@ public class Nep17TokenTest {
                 NEP17_TRANSFER, Arrays.asList(
                         ContractParameter.hash160(account1.getScriptHash()),
                         ContractParameter.hash160(RECIPIENT_SCRIPT_HASH),
-                        ContractParameter.integer(100000000))).toArray(); // 1 GAS
+                        ContractParameter.integer(100000000),
+                        ContractParameter.any(null))).toArray(); // 1 GAS
 
         Transaction tx = gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1, account2),
                 RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
