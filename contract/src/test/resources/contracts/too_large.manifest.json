@@ -1,7 +1,6 @@
 {
   "groups": [],
   "abi": {
-    "hash": "0xc570e5cd068dd9f8dcdee0e4b201d70aaff61ff9",
     "methods": [
       {
         "name": "main",
@@ -16,7 +15,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -31,7 +31,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -46,7 +47,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -61,7 +63,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -76,7 +79,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -91,7 +95,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -106,7 +111,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -121,7 +127,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -136,7 +143,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -151,7 +159,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -166,7 +175,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -181,7 +191,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -196,7 +207,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -211,7 +223,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -226,7 +239,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -241,7 +255,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -256,7 +271,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -271,7 +287,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -286,7 +303,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -301,7 +319,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -316,7 +335,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -331,7 +351,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -346,7 +367,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -361,7 +383,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -376,7 +399,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -391,7 +415,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -406,7 +431,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -421,7 +447,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -436,7 +463,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       },
       {
         "name": "main",
@@ -451,7 +479,8 @@
             "type": "Array"
           }
         ],
-        "returnType": "Boolean"
+        "returnType": "Boolean",
+        "safe": false
       }
     ],
     "events": [
@@ -464,7 +493,6 @@
     }
   ],
   "trusts": [],
-  "safeMethods": [],
   "extra": {
     "Author": "Neo",
     "Email": "dev@neo.org",

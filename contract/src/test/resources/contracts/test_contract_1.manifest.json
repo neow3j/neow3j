@@ -1,13 +1,8 @@
 {
   "name": "neowww",
   "groups": [],
-  "features": {
-    "storage": true,
-    "payable": false
-  },
   "supportedstandards": [],
   "abi": {
-    "hash": "0xc570e5cd068dd9f8dcdee0e4b201d70aaff61ff9",
     "methods": [
       {
         "name": "entry",
@@ -18,7 +13,8 @@
           }
         ],
         "offset": 0,
-        "returntype": "ByteArray"
+        "returntype": "ByteArray",
+        "safe": true
       }
     ],
     "events": []
@@ -30,6 +26,5 @@
     }
   ],
   "trusts": [],
-  "safemethods": [],
   "extra": null
 }
