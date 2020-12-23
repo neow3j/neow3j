@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
@@ -48,7 +49,6 @@ public class TransactionBuilder {
     private long additionalNetworkFee;
     private List<TransactionAttribute> attributes;
     private byte[] script;
-    private List<Witness> witnesses;
 
     private BiConsumer<BigInteger, BigInteger> consumer;
     private Supplier<? extends Throwable> supplier;
@@ -62,7 +62,6 @@ public class TransactionBuilder {
         this.script = new byte[]{};
         this.additionalNetworkFee = 0L;
         this.signers = new ArrayList<>();
-        this.witnesses = new ArrayList<>();
         this.attributes = new ArrayList<>();
     }
 
@@ -289,12 +288,17 @@ public class TransactionBuilder {
 
         long systemFee = getSystemFeeForScript();
 
-        Transaction transaction = new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
-                0, attributes, script, witnesses);
+        Transaction tx = new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
+                0, attributes, script, new ArrayList<>());
 
-        long networkFee = calcNetworkFee(transaction.toArray())
+        byte[] txBytes = tx.getHashData();
+        getSignerAccounts().forEach(signerAcc -> {
+            byte[] verifScript = signerAcc.getVerificationScript().getScript();
+            tx.addWitness(new Witness(txBytes, verifScript));
+        });
+
+        long networkFee = calcNetworkFee(tx.toArray())
                 + additionalNetworkFee;
-        transaction.setNetworkFee(networkFee);
         BigInteger fees = BigInteger.valueOf(systemFee + networkFee);
 
         if (supplier != null && !canSenderCoverFees(fees)) {
@@ -305,7 +309,8 @@ public class TransactionBuilder {
                 consumer.accept(fees, senderGasBalance);
             }
         }
-        return transaction;
+        return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
+                networkFee, attributes, script, new ArrayList<>());
     }
 
     private long fetchCurrentBlockNr() throws IOException {
@@ -321,12 +326,10 @@ public class TransactionBuilder {
         // check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = Numeric.toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow.invokeScript(script, signers).send();
-        BigInteger systemFee = getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed());
-        BigInteger executionFeeFactor = getExecutionFeeFactor();
+        NeoInvokeScript response = neow.invokeScript(Base64.encode(Numeric.hexStringToByteArray(script)), signers).send();
         // TODO: 23.12.20 Michael: check whether the returned system fee already includes
         //  the multiplication by the execution fee factor.
-        return executionFeeFactor.multiply(systemFee).longValue();
+        return getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed()).longValue();
     }
 
     /*
@@ -337,11 +340,6 @@ public class TransactionBuilder {
                 .multiply(new BigDecimal(10).pow(GasToken.DECIMALS))
                 .stripTrailingZeros()
                 .toBigInteger();
-    }
-
-    private BigInteger getExecutionFeeFactor() throws IOException {
-        PolicyContract policyContract = new PolicyContract(neow);
-        return policyContract.getExecFeeFactor();
     }
 
     /*
@@ -355,6 +353,25 @@ public class TransactionBuilder {
         return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(transactionArray)).send()
                 .getNetworkFee().getNetworkFee()
                 .longValue();
+    }
+
+    /**
+     * Gets the signer accounts held in the wallet.
+     *
+     * @return a list containing the signer accounts
+     */
+    private List<Account> getSignerAccounts() {
+        List<Account> sigAccounts = new ArrayList<>();
+        signers.forEach(signer -> {
+            if (wallet.holdsAccount(signer.getScriptHash())) {
+                sigAccounts.add(wallet.getAccount(signer.getScriptHash()));
+            } else {
+                throw new TransactionConfigurationException("Cannot find account with script hash '"
+                        + signer.getScriptHash().toString() + "' in wallet set on this transaction "
+                        + "builder.");
+            }
+        });
+        return sigAccounts;
     }
 
     /**

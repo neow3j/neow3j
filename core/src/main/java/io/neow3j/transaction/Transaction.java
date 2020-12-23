@@ -330,13 +330,4 @@ public class Transaction extends NeoSerializable {
     public byte[] toArray() {
         return super.toArray();
     }
-
-    /**
-     * Sets the network fee for this transaction.
-     *
-     * @param networkFee the network fee.
-     */
-    public void setNetworkFee(long networkFee) {
-        this.networkFee = networkFee;
-    }
 }
