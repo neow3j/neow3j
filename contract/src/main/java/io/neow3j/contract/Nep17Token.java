@@ -290,7 +290,7 @@ public class Nep17Token extends Token {
                 ContractParameter.hash160(acc.getScriptHash()),
                 ContractParameter.hash160(to),
                 ContractParameter.integer(amount),
-                ContractParameter.string("")); // TODO: 21.12.20 Michael: integrate data into transfers
+                ContractParameter.any(null));
 
         return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
     }
@@ -360,7 +360,8 @@ public class Nep17Token extends Token {
         return invokeFunction(TRANSFER,
                 ContractParameter.hash160(acc.getScriptHash()),
                 ContractParameter.hash160(to),
-                ContractParameter.integer(fractions))
+                ContractParameter.integer(fractions),
+                ContractParameter.any(null))
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(acc.getScriptHash()));
     }
