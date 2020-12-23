@@ -1,13 +1,10 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
-import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.transaction.Signer;
@@ -21,6 +18,7 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -290,7 +288,13 @@ public class TransactionBuilder {
         }
 
         long systemFee = getSystemFeeForScript();
-        long networkFee = calcNetworkFee() + additionalNetworkFee;
+
+        Transaction transaction = new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
+                0, attributes, script, witnesses);
+
+        long networkFee = calcNetworkFee(transaction.toArray())
+                + additionalNetworkFee;
+        transaction.setNetworkFee(networkFee);
         BigInteger fees = BigInteger.valueOf(systemFee + networkFee);
 
         if (supplier != null && !canSenderCoverFees(fees)) {
@@ -301,8 +305,7 @@ public class TransactionBuilder {
                 consumer.accept(fees, senderGasBalance);
             }
         }
-        return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
-                networkFee, attributes, script, witnesses);
+        return transaction;
     }
 
     private long fetchCurrentBlockNr() throws IOException {
@@ -319,8 +322,26 @@ public class TransactionBuilder {
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = Numeric.toHexStringNoPrefix(this.script);
         NeoInvokeScript response = neow.invokeScript(script, signers).send();
-        // The GAS amount is returned in fractions (10^8)
-        return Long.parseLong(response.getInvocationResult().getGasConsumed());
+        BigInteger systemFee = getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed());
+        BigInteger executionFeeFactor = getExecutionFeeFactor();
+        // TODO: 23.12.20 Michael: check whether the returned system fee already includes
+        //  the multiplication by the execution fee factor.
+        return executionFeeFactor.multiply(systemFee).longValue();
+    }
+
+    /*
+     * Multiplies the GAS amount given in decimals to fractions.
+     */
+    private BigInteger getSystemFeeFromDecimalString(String systemFee) {
+        return new BigDecimal(systemFee)
+                .multiply(new BigDecimal(10).pow(GasToken.DECIMALS))
+                .stripTrailingZeros()
+                .toBigInteger();
+    }
+
+    private BigInteger getExecutionFeeFactor() throws IOException {
+        PolicyContract policyContract = new PolicyContract(neow);
+        return policyContract.getExecFeeFactor();
     }
 
     /*
@@ -330,80 +351,10 @@ public class TransactionBuilder {
      * expected signatures. This information is derived from the verification scripts of all
      * signers added to the transaction.
      */
-    private long calcNetworkFee() {
-        List<Account> sigAccounts = getSignerAccounts();
-
-        // Base transaction size
-        int size = Transaction.HEADER_SIZE // constant header size
-                + IOUtils.getVarSize(signers)
-                + IOUtils.getVarSize(attributes) // attributes
-                + IOUtils.getVarSize(script) // script
-                + IOUtils.getVarSize(sigAccounts.size()); // varInt for all necessary witnesses
-
-        // Calculate fee for witness verification and collect size of witnesses.
-        int execFee = 0;
-        for (Account acc : sigAccounts) {
-            if (acc.isMultiSig()) {
-                size += calcSizeForMultiSigWitness(acc.getVerificationScript());
-                execFee += calcExecutionFeeForMultiSigWitness(acc.getVerificationScript());
-            } else {
-                size += calcSizeForSingleSigWitness(acc.getVerificationScript());
-                execFee += calcExecutionFeeForSingleSigWitness();
-            }
-        }
-        return execFee + size * NeoConstants.GAS_PER_BYTE;
-    }
-
-    /**
-     * Gets the signer accounts held in the wallet.
-     *
-     * @return a list containing the signer accounts
-     */
-    private List<Account> getSignerAccounts() {
-        List<Account> sigAccounts = new ArrayList<>();
-        signers.forEach(signer -> {
-            if (wallet.holdsAccount(signer.getScriptHash())) {
-                sigAccounts.add(wallet.getAccount(signer.getScriptHash()));
-            } else {
-                throw new TransactionConfigurationException("Cannot find account with script hash '"
-                        + signer.getScriptHash().toString() + "' in wallet set on this transaction "
-                        + "builder.");
-            }
-        });
-        return sigAccounts;
-    }
-
-    private long calcSizeForSingleSigWitness(VerificationScript verifScript) {
-        return NeoConstants.SERIALIZED_INVOCATION_SCRIPT_SIZE + verifScript.getSize();
-    }
-
-    private long calcExecutionFeeForSingleSigWitness() {
-        return OpCode.PUSHDATA1.getPrice() // Push invocation script
-                + OpCode.PUSHDATA1.getPrice() // Push verification script
-                // Push null because we don't want to verify a particular message but the
-                // transaction itself.
-                + OpCode.PUSHNULL.getPrice()
-                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getPrice();
-    }
-
-    private long calcSizeForMultiSigWitness(VerificationScript verifScript) {
-        int m = verifScript.getSigningThreshold();
-        int sizeInvocScript = NeoConstants.INVOCATION_SCRIPT_SIZE * m;
-        return IOUtils.getVarSize(sizeInvocScript) + sizeInvocScript + verifScript.getSize();
-    }
-
-    private long calcExecutionFeeForMultiSigWitness(VerificationScript verifScript) {
-        int m = verifScript.getSigningThreshold();
-        int n = verifScript.getNrOfAccounts();
-
-        return OpCode.PUSHDATA1.getPrice() * m
-                + OpCode.get(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
-                + OpCode.PUSHDATA1.getPrice() * n
-                + OpCode.get(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
-                // Push null because we don't want to verify a particular message but the
-                // transaction itself.
-                + OpCode.PUSHNULL.getPrice()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getPrice(n);
+    private long calcNetworkFee(byte[] transactionArray) throws Throwable {
+        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(transactionArray)).send()
+                .getNetworkFee().getNetworkFee()
+                .longValue();
     }
 
     /**
