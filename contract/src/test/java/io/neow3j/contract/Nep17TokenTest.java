@@ -80,6 +80,7 @@ public class Nep17TokenTest {
     @Test
     public void transferFromDefaultAccountShouldAddAccountAsSigner() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
@@ -98,6 +99,7 @@ public class Nep17TokenTest {
     @Test
     public void transferFromDefaultAccountShouldAddAccountAsSigner_RecipientAsAddress() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals_gas.json");
@@ -116,6 +118,7 @@ public class Nep17TokenTest {
     @Test
     public void transferFromDefaultAccountShouldCreateTheCorrectScript() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals_gas.json");
@@ -138,6 +141,7 @@ public class Nep17TokenTest {
     @Test
     public void transferFromSpecificAccount_RecipientAsAddress() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals_gas.json");
