@@ -176,6 +176,7 @@ public class SmartContractTest {
     @Test
     public void invokeShouldProduceCorrectScript() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
