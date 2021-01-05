@@ -366,9 +366,9 @@ public class NeoURI {
      */
     public String getAssetAsString() {
         if (asset.equals(NeoToken.SCRIPT_HASH)) {
-            return "neo";
+            return NEO_ASSET;
         } else if (asset.equals(GasToken.SCRIPT_HASH)) {
-            return "gas";
+            return GAS_ASSET;
         }
         return asset.toString();
     }
