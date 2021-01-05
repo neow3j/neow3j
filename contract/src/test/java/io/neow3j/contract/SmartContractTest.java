@@ -104,28 +104,6 @@ public class SmartContractTest {
     }
 
     @Test
-    public void constructSmartContractForDeploymentWithoutNeow3j() throws IOException,
-            DeserializationException {
-
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("Neow3j"));
-        new SmartContract(nefFile, manifestFile, null);
-    }
-
-    @Test
-    public void constructSmartContractForDeployment() throws IOException,
-            DeserializationException {
-
-        SmartContract c = new SmartContract(nefFile, manifestFile, neow);
-        assertThat(c.getScriptHash().toString(),
-                is(Numeric.cleanHexPrefix(TEST_CONTRACT_1_SCRIPT_HASH)));
-        assertThat(c.getManifest().getName(), is("neowww"));
-        assertThat(c.getName(), is("neowww"));
-        assertThat(c.getNefFile().getScriptHash().toString(),
-                is(Numeric.cleanHexPrefix(TEST_CONTRACT_1_SCRIPT_HASH)));
-    }
-
-    @Test
     public void testGetManifest() throws IOException {
         setUpWireMockForCall("getcontractstate", "contractstate.json");
         SmartContract c = new SmartContract(SOME_SCRIPT_HASH, neow);
@@ -139,24 +117,6 @@ public class SmartContractTest {
         SmartContract c = new SmartContract(SOME_SCRIPT_HASH, neow);
         String name = c.getName();
         assertThat(name, is("neow3j"));
-    }
-
-    @Test
-    public void constructSmartContractForDeploymentWithTooLongManifest()
-            throws IOException, DeserializationException, URISyntaxException {
-
-        File manifest = new File(this.getClass().getClassLoader()
-                .getResource("contracts/too_large.manifest.json").toURI());
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("manifest is too long");
-        new SmartContract(nefFile, manifest, neow);
-    }
-
-    @Test
-    public void tryDeployAfterUsingWrongConstructor() throws IOException {
-        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
-        expectedException.expect(IllegalStateException.class);
-        sc.deploy();
     }
 
     @Test
