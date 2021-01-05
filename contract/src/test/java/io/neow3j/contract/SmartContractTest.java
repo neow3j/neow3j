@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
@@ -21,7 +20,6 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
@@ -45,17 +43,10 @@ public class SmartContractTest {
     private static final String NEP17_NAME = "name";
     private static final String NEP17_TOTALSUPPLY = "totalSupply";
 
-    private static final String TEST_CONTRACT_1_NEF = "contracts/test_contract_1.nef";
-    private static final String TEST_CONTRACT_1_MANIFEST =
-            "contracts/test_contract_1.manifest.json";
-    private static final String TEST_CONTRACT_1_SCRIPT_HASH =
-            "0xc570e5cd068dd9f8dcdee0e4b201d70aaff61ff9";
     private static final String SCRIPT_NEO_INVOKEFUNCTION_SYMBOL = Numeric.toHexStringNoPrefix(
             new ScriptBuilder().contractCall(NEO_SCRIPT_HASH, "symbol", new ArrayList<>())
                     .toArray());
 
-    private File nefFile;
-    private File manifestFile;
     private Account account1;
     private ScriptHash recipient;
 
@@ -73,11 +64,6 @@ public class SmartContractTest {
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
         neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-
-        nefFile = new File(this.getClass().getClassLoader()
-                .getResource(TEST_CONTRACT_1_NEF).toURI());
-        manifestFile = new File(this.getClass().getClassLoader()
-                .getResource(TEST_CONTRACT_1_MANIFEST).toURI());
 
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new ScriptHash("969a77db482f74ce27105f760efa139223431394");
