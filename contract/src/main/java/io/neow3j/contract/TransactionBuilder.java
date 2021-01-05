@@ -291,13 +291,7 @@ public class TransactionBuilder {
         Transaction tx = new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
                 0, attributes, script, new ArrayList<>());
 
-        byte[] txBytes = tx.getHashData();
-        getSignerAccounts().forEach(signerAcc -> {
-            byte[] verifScript = signerAcc.getVerificationScript().getScript();
-            tx.addWitness(new Witness(txBytes, verifScript));
-        });
-
-        long networkFee = calcNetworkFee(tx.toArray())
+        long networkFee = calcNetworkFee(tx)
                 + additionalNetworkFee;
         BigInteger fees = BigInteger.valueOf(systemFee + networkFee);
 
@@ -348,8 +342,16 @@ public class TransactionBuilder {
      * expected signatures. This information is derived from the verification scripts of all
      * signers added to the transaction.
      */
-    private long calcNetworkFee(byte[] transactionArray) throws Throwable {
-        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(transactionArray)).send()
+    private long calcNetworkFee(Transaction tx) throws IOException {
+        byte[] txBytes = tx.getHashData();
+        getSignerAccounts().forEach(signerAcc -> {
+            byte[] verifScript = signerAcc.getVerificationScript().getScript();
+            tx.addWitness(new Witness(txBytes, verifScript));
+        });
+
+        byte[] txBytesWithWitnesses = tx.toArray();
+
+        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(txBytesWithWitnesses)).send()
                 .getNetworkFee().getNetworkFee()
                 .longValue();
     }
@@ -384,7 +386,7 @@ public class TransactionBuilder {
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public NeoInvokeScript callInvokeScript() throws IOException {
-        if (this.signers == null || this.script.length == 0) {
+        if (signers == null || script.length == 0) {
             throw new TransactionConfigurationException("Cannot make an 'invokescript' call "
                     + "without the script being configured.");
         }
@@ -420,7 +422,7 @@ public class TransactionBuilder {
                 signWithNormalAccount(txBytes, signerAcc);
             }
         });
-        return this.transaction;
+        return transaction;
     }
 
     /**
@@ -441,7 +443,7 @@ public class TransactionBuilder {
                     "because account with script " + acc.getScriptHash() + " doesn't hold a " +
                     "private key.", e);
         }
-        this.transaction.addWitness(Witness.create(txBytes, keyPair));
+        transaction.addWitness(Witness.create(txBytes, keyPair));
     }
 
     private void signWithMultiSigAccount(byte[] txBytes, Account signerAcc) {
@@ -449,7 +451,7 @@ public class TransactionBuilder {
         VerificationScript multiSigVerifScript = signerAcc.getVerificationScript();
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
             ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
-            Account a = this.wallet.getAccount(accScriptHash);
+            Account a = wallet.getAccount(accScriptHash);
             if (a == null) {
                 continue;
             }
@@ -468,7 +470,7 @@ public class TransactionBuilder {
                     + "are part of the multi-sig account with script hash "
                     + signerAcc.getScriptHash() + ".");
         }
-        this.transaction.addWitness(Witness.createMultiSigWitness(sigs,
+        transaction.addWitness(Witness.createMultiSigWitness(sigs,
                 multiSigVerifScript));
     }
 
@@ -538,6 +540,7 @@ public class TransactionBuilder {
     protected byte getVersion() {
         return version;
     }
+
     // For testability only
     protected byte[] getScript() {
         return script;
