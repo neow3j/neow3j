@@ -4,7 +4,9 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -183,12 +185,43 @@ public class SmartContractTest {
 
     @Test
     public void callFunctionReturningNonInt() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokescript_registercandidate.json",
+        setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
+                NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        expectedException.expect(UnexpectedReturnTypeException.class);
+        expectedException.expectMessage(
+                new StringContains("but expected " + StackItemType.INTEGER.jsonValue()));
+        sc.callFuncReturningInt(NEP17_TRANSFER);
+    }
+
+    @Test
+    public void callFunctionReturningBool() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnFalse.json",
+                NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        boolean transferSuccessful = sc.callFuncReturningBool(NEP17_TRANSFER);
+        assertFalse(transferSuccessful);
+    }
+
+    @Test
+    public void callFunctionReturningBool_withParameter() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
+                NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        boolean transferSuccessful = sc.callFuncReturningBool(NEP17_TRANSFER,
+                ContractParameter.hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
+        assertTrue(transferSuccessful);
+    }
+
+    @Test
+    public void callFunctionReturningNonBool() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnInt.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_TOTALSUPPLY);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         expectedException.expect(UnexpectedReturnTypeException.class);
-        expectedException.expectMessage(new StringContains(StackItemType.BOOLEAN.jsonValue()));
-        sc.callFuncReturningInt(NEP17_TOTALSUPPLY);
+        expectedException.expectMessage(
+                new StringContains("but expected " + StackItemType.BOOLEAN.jsonValue()));
+        sc.callFuncReturningBool(NEP17_TOTALSUPPLY);
     }
 
     @Test
