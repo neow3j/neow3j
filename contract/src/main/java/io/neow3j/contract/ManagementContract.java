@@ -1,7 +1,5 @@
 package io.neow3j.contract;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
@@ -26,10 +24,6 @@ public class ManagementContract extends SmartContract {
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
     private static final String GET_CONTRACT = "getContract";
     private static final String DEPLOY = "deploy";
-    private static final String UPDATE = "update";
-    private static final String DESTROY = "destroy";
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Constructs a new <tt>ManagementContract</tt> that uses the given {@link Neow3j} instance for
@@ -84,5 +78,5 @@ public class ManagementContract extends SmartContract {
         return new ContractState(id, updateCounter, hash, script, manifest);
     }
 
-    // TODO: 23.12.20 Michael: add deploy, update and destroy methods
+    // TODO: 23.12.20 Michael: add deploy method.
 }

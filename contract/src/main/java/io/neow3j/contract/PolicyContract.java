@@ -103,10 +103,10 @@ public class PolicyContract extends SmartContract {
      * Checks whether an account is blocked in the Neo network.
      *
      * @param scriptHash the script hash of the account.
-     * @return whether the account is blocked or not.
+     * @return true if the account is blocked. False, otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Boolean isBlocked(ScriptHash scriptHash) throws IOException {
+    public boolean isBlocked(ScriptHash scriptHash) throws IOException {
         return callFuncReturningBool(IS_BLOCKED, ContractParameter.hash160(scriptHash));
     }
 

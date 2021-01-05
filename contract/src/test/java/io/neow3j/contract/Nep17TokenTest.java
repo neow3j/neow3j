@@ -503,8 +503,6 @@ public class Nep17TokenTest {
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(multiSigAccount,
                 account1), RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
 
-        System.out.println(Numeric.toHexStringNoPrefix(b.getScript()));
-        System.out.println(Numeric.toHexStringNoPrefix(expectedScript));
         assertThat(b.getScript(), is(expectedScript));
     }
 

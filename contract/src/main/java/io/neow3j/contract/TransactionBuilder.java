@@ -326,9 +326,8 @@ public class TransactionBuilder {
         // check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = Numeric.toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow.invokeScript(Base64.encode(Numeric.hexStringToByteArray(script)), signers).send();
-        // TODO: 23.12.20 Michael: check whether the returned system fee already includes
-        //  the multiplication by the execution fee factor.
+        NeoInvokeScript response = neow.invokeScript(Base64.encode(Numeric.hexStringToByteArray(script)), signers)
+                .send();
         return getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed()).longValue();
     }
 

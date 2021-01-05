@@ -467,10 +467,10 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     }
 
     @Override
-    public Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String tx) {
+    public Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String txHex) {
         return new Request<>(
                 "calculatenetworkfee",
-                asList(Base64.encode(Numeric.hexStringToByteArray(tx))),
+                asList(Base64.encode(Numeric.hexStringToByteArray(txHex))),
                 neow3jService,
                 NeoCalculateNetworkFee.class);
     }

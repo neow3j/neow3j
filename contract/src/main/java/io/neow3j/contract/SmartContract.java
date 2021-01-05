@@ -127,7 +127,7 @@ public class SmartContract {
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as an
      *                                       boolean.
      */
-    public Boolean callFuncReturningBool(String function, ContractParameter... params)
+    public boolean callFuncReturningBool(String function, ContractParameter... params)
             throws IOException, UnexpectedReturnTypeException {
 
         StackItem item;

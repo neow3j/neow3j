@@ -136,7 +136,6 @@ public class ScriptBuilder {
                 if (value == null) {
                     opCode(OpCode.PUSHNULL);
                 }
-                // TODO: 23.12.20 Michael: Serialize ContractParameter Any
                 break;
             default:
                 throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
