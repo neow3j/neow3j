@@ -31,7 +31,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public class ManifestBuilder {
 
-    public static ContractManifest buildManifest(CompilationUnit compUnit, ScriptHash scriptHash) {
+    public static ContractManifest buildManifest(CompilationUnit compUnit) {
         String name = "";
         List<ContractGroup> groups = new ArrayList<>();
         Map<String, String> extras = new HashMap<>();
@@ -41,7 +41,7 @@ public class ManifestBuilder {
             extras = buildManifestExtra(annotatedClass.get());
             supportedStandards = buildSupportedStandards(annotatedClass.get());
         }
-        ContractABI abi = buildABI(compUnit.getNeoModule(), scriptHash);
+        ContractABI abi = buildABI(compUnit.getNeoModule());
         // TODO: Fill the remaining manifest fields below.
         List<ContractPermission> permissions = Arrays.asList(
                 new ContractPermission("*", Arrays.asList("*")));
@@ -68,7 +68,7 @@ public class ManifestBuilder {
         return annotatedClass;
     }
 
-    private static ContractABI buildABI(NeoModule neoModule, ScriptHash scriptHash) {
+    private static ContractABI buildABI(NeoModule neoModule) {
         List<ContractEvent> events = neoModule.getEvents().stream()
                 .map(NeoEvent::getAsContractManifestEvent)
                 .collect(Collectors.toList());

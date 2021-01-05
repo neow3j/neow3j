@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -8,13 +7,13 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * +------------+-----------+------------------------------------------------------------+
@@ -22,79 +21,76 @@ import java.util.Objects;
  * +------------+-----------+------------------------------------------------------------+
  * | Magic      | 4 bytes   | Magic header                                               |
  * | Compiler   | 32 bytes  | Compiler used                                              |
- * | Version    | 16 bytes  | Compiler version (Mayor, Minor, Build, Version)            |
- * | ScriptHash | 20 bytes  | ScriptHash for the script                                  |
- * +------------+-----------+------------------------------------------------------------+
- * | Checksum   | 4 bytes   | Sha256 of the header (CRC)                                 |
+ * | Version    | 32 bytes  | Compiler version                                           |
  * +------------+-----------+------------------------------------------------------------+
  * | Script     | Var bytes | Var bytes for the payload                                  |
+ * +------------+-----------+------------------------------------------------------------+
+ * | Checksum   | 4 bytes   | First four bytes of double SHA256 hash                     |
  * +------------+-----------+------------------------------------------------------------+
  */
 public class NefFile extends NeoSerializable {
 
     // NEO Executable Format 3 (NEF3)
     private static final int MAGIC = 0x3346454E; // 860243278 in decimal
+    private static final int MAGIC_SIZE = 4;
+    private static final int COMPILER_SIZE = 32;
+    private static final int VERSION_SIZE = 32;
+    private static final int MAX_SCRIPT_LENGTH = 512 * 1024;
+    private static final int CHECKSUM_SIZE = 4;
 
-    private static final int HEADER_SIZE = 4    // Magic (uint32)
-            + 32                                // Compiler (32 bytes String)
-            + (4 * 4)                           // Version (4 * int32)
-            + NeoConstants.SCRIPTHASH_SIZE      // Script hash
-            + 4;                                // Checksum
+    private static final int HEADER_SIZE = MAGIC_SIZE   // Magic (uint32)
+            + COMPILER_SIZE                             // Compiler (32 bytes)
+            + VERSION_SIZE;                             // Version (32 bytes)
 
     private String compiler;
-    private Version version;
-    public ScriptHash scriptHash;
+    private String version;
     public byte[] checkSum; // 4 bytes. A uint in neo-core
     public byte[] script;
 
     public NefFile() {
-        this.checkSum = new byte[]{};
-        this.script = new byte[]{};
+        checkSum = new byte[]{};
+        script = new byte[]{};
     }
 
-    public NefFile(String compiler, Version version, byte[] script) {
+    public NefFile(String compiler, String version, byte[] script) {
         this.compiler = compiler;
         this.version = version;
         this.script = script;
-        this.scriptHash = ScriptHash.fromScript(script);
         // Need to initialize the check sum because it is required for calculating the check sum.
-        this.checkSum = new byte[]{};
-        this.checkSum = computeChecksum(this);
+        checkSum = new byte[CHECKSUM_SIZE];
+        checkSum = computeChecksum(this);
     }
 
     public String getCompiler() {
         return compiler;
     }
 
-    public Version getVersion() {
+    public String getVersion() {
         return version;
-    }
-
-    public ScriptHash getScriptHash() {
-        return scriptHash;
-    }
-
-    public byte[] getCheckSum() {
-        return checkSum;
     }
 
     public byte[] getScript() {
         return script;
     }
 
+    public byte[] getCheckSum() {
+        return checkSum;
+    }
+
     @Override
     public int getSize() {
-        return HEADER_SIZE + IOUtils.getVarSize(this.script);
+        return HEADER_SIZE
+                + IOUtils.getVarSize(script)
+                + CHECKSUM_SIZE;
     }
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeUInt32(MAGIC);
-        writer.writeFixedString(this.compiler, 32);
-        writer.writeSerializableFixed(this.version);
-        writer.writeSerializableFixed(this.scriptHash);
-        writer.write(this.checkSum);
-        writer.writeVarBytes(this.script);
+        writer.writeFixedString(compiler, COMPILER_SIZE);
+        writer.writeFixedString(version, VERSION_SIZE);
+        writer.writeVarBytes(script);
+        writer.write(checkSum);
     }
 
     @Override
@@ -104,15 +100,18 @@ public class NefFile extends NeoSerializable {
             if (l != MAGIC) {
                 throw new DeserializationException("Wrong magic number in NEF file.");
             }
-            byte[] compilerBytes = ArrayUtils.trimTrailingBytes(reader.readBytes(32), (byte)0);
-            this.compiler = new String(compilerBytes, StandardCharsets.UTF_8);
-            this.version = reader.readSerializable(Version.class);
-            this.scriptHash = reader.readSerializable(ScriptHash.class);
-            this.checkSum = reader.readBytes(4);
-            if (!Arrays.equals(this.checkSum, computeChecksum(this))) {
+            byte[] compilerBytes = ArrayUtils.trimTrailingBytes(reader.readBytes(COMPILER_SIZE), (byte) 0);
+            compiler = new String(compilerBytes, StandardCharsets.UTF_8);
+            byte[] versionBytes = ArrayUtils.trimTrailingBytes(reader.readBytes(VERSION_SIZE), (byte) 0);
+            version = new String(versionBytes, StandardCharsets.UTF_8);
+            script = reader.readVarBytes(MAX_SCRIPT_LENGTH);
+            if (script.length == 0) {
+                throw new DeserializationException("Script can't be empty in NEF file.");
+            }
+            checkSum = reader.readBytes(CHECKSUM_SIZE);
+            if (!Arrays.equals(checkSum, computeChecksum(this))) {
                 throw new DeserializationException("The checksums did not match");
             }
-            this.script = reader.readVarBytes(1024 * 1024);
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
@@ -127,9 +126,11 @@ public class NefFile extends NeoSerializable {
         } catch (IOException e) {
             // Doesn't happen because we're not writing to anywhere.
         }
-        // Get header without the checksum.
-        byte[] header = ArrayUtils.getFirstNBytes(serialized, HEADER_SIZE - 4);
-        return ArrayUtils.getFirstNBytes(Hash.hash256(header), 4);
+        // Get nef file bytes without the checksum.
+        int fileSizeWithoutCheckSum = serialized.length - CHECKSUM_SIZE;
+        byte[] nefFileBytes = ArrayUtils.getFirstNBytes(serialized, fileSizeWithoutCheckSum);
+        // Hash the nef file bytes and from that the first bytes as the checksum.
+        return ArrayUtils.getFirstNBytes(Hash.hash256(nefFileBytes), CHECKSUM_SIZE);
     }
 
     public static NefFile readFromFile(File nefFile) throws DeserializationException, IOException {
@@ -142,86 +143,6 @@ public class NefFile extends NeoSerializable {
         try (FileInputStream nefStream = new FileInputStream(nefFile)) {
             BinaryReader reader = new BinaryReader(nefStream);
             return reader.readSerializable(NefFile.class);
-        }
-    }
-
-    public static class Version extends NeoSerializable {
-
-        private int major;
-        private int minor;
-        private int build;
-        private int revision;
-
-        public Version() {
-
-        }
-
-        public Version(int major, int minor, int build, int revision) {
-            this.major = major;
-            this.minor = minor;
-            this.build = build;
-            this.revision = revision;
-        }
-
-        public int getMajor() {
-            return major;
-        }
-
-        public int getMinor() {
-            return minor;
-        }
-
-        public int getBuild() {
-            return build;
-        }
-
-        public int getRevision() {
-            return revision;
-        }
-
-        @Override
-        public void deserialize(BinaryReader reader) throws DeserializationException {
-            try {
-                this.major = reader.readInt();
-                this.minor = reader.readInt();
-                this.build = reader.readInt();
-                this.revision = reader.readInt();
-            } catch (IOException e) {
-                throw new DeserializationException(e);
-            }
-        }
-
-        @Override
-        public void serialize(BinaryWriter writer) throws IOException {
-            writer.writeInt32(this.major);
-            writer.writeInt32(this.minor);
-            writer.writeInt32(this.build);
-            writer.writeInt32(this.revision);
-        }
-
-        @Override
-        public int getSize() {
-            return 32 * 4;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (!(o instanceof Version)) {
-                return false;
-            }
-            Version version = (Version) o;
-            return major == version.major
-                    && minor == version.minor
-                    && build == version.build
-                    && revision == version.revision;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(major, minor, build, revision);
         }
     }
 }

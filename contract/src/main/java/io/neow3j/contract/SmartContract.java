@@ -1,12 +1,8 @@
 package io.neow3j.contract;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
@@ -16,8 +12,6 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,12 +23,8 @@ import java.util.List;
  */
 public class SmartContract {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     protected ScriptHash scriptHash;
     protected Neow3j neow;
-    protected NefFile nefFile;
-    protected ContractManifest manifest;
 
     /**
      * Constructs a {@code SmartContract} representing the smart contract with the given script
@@ -52,43 +42,6 @@ public class SmartContract {
         }
         this.scriptHash = scriptHash;
         this.neow = neow;
-    }
-
-    /**
-     * Constructs a {@code SmartContract} with a NEF file and a manifest file for deployment with
-     * {@link SmartContract#deploy()}.
-     *
-     * @param neow         The {@link Neow3j} instance to use for deploying and invoking the
-     *                     contract.
-     * @param nef          The file containing the contract's code in NEF.
-     * @param manifestFile The file containing the contract's manifest.
-     * @throws IOException              If there is a problem reading the provided files.
-     * @throws DeserializationException If the NEF file cannot be deserialized properly.
-     */
-    public SmartContract(File nef, File manifestFile, Neow3j neow)
-            throws IOException, DeserializationException {
-
-        this(NefFile.readFromFile(nef), objectMapper.readValue(new FileInputStream(manifestFile),
-                ContractManifest.class), neow);
-    }
-
-    public SmartContract(NefFile nefFile, ContractManifest manifest, Neow3j neow)
-            throws JsonProcessingException {
-
-        if (neow == null) {
-            throw new IllegalArgumentException("The Neow3j object must not be null.");
-        }
-        this.neow = neow;
-        this.nefFile = nefFile;
-        this.scriptHash = this.nefFile.getScriptHash();
-        this.manifest = manifest;
-
-        byte[] manifestBytes = objectMapper.writeValueAsBytes(this.manifest);
-        if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
-            throw new IllegalArgumentException("The given contract manifest is too long. Manifest "
-                    + "was " + manifestBytes.length + " bytes big, but a max of "
-                    + NeoConstants.MAX_MANIFEST_SIZE + " is allowed.");
-        }
     }
 
     /**
@@ -235,26 +188,14 @@ public class SmartContract {
     }
 
     /**
-     * Gets the {@link NefFile} of this smart contract.
-     *
-     * @return The {@link NefFile} of this smart contract.
-     */
-    public NefFile getNefFile() {
-        return nefFile;
-    }
-
-    /**
      * Gets the manifest of this smart contract.
      *
      * @return The manifest of this smart contract.
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public ContractManifest getManifest() throws IOException {
-        if (manifest == null) {
-            ContractState contractState = neow.getContractState(scriptHash.toString()).send().getContractState();
-            manifest = contractState.getManifest();
-        }
-        return manifest;
+        ContractState contractState = neow.getContractState(scriptHash.toString()).send().getContractState();
+        return contractState.getManifest();
     }
 
     /**
@@ -264,30 +205,7 @@ public class SmartContract {
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public String getName() throws IOException {
-        if (manifest == null) {
-            getManifest();
-        }
-        return manifest.getName();
-    }
-
-    /**
-     * Creates a transaction script to deploy this contract and initializes
-     * a {@link TransactionBuilder} based on this script.
-     *
-     * @return A transaction builder.
-     * @throws JsonProcessingException If something goes wrong when processing the manifest.
-     */
-    public TransactionBuilder deploy() throws JsonProcessingException {
-        if (nefFile == null) {
-            throw new IllegalStateException("This smart contract instance was not constructed for"
-                    + " deployment. It is missing its NEF file.");
-        }
-        if (manifest == null) {
-            throw new IllegalStateException("This smart contract instance was not constructed for"
-                    + " deployment. It is missing its manifest.");
-        }
-        ManagementContract managementContract = new ManagementContract(neow);
-        return managementContract.deploy(nefFile, manifest);
+        return getManifest().getName();
     }
 
     protected static ScriptHash getScriptHashOfNativeContract(String contractName) {
