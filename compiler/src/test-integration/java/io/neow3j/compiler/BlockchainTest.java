@@ -164,16 +164,6 @@ public class BlockchainTest extends ContractTest {
 
     static class BlockchainTestContract {
 
-        public static Object getNeoContractManifest(byte[] hash) {
-            Contract c = Blockchain.getContract(hash);
-            return Json.deserialize(c.manifest);
-        }
-
-        public static byte[] getNeoContractScript(byte[] hash) {
-            Contract c = Blockchain.getContract(hash);
-            return c.script;
-        }
-
         public static int getTransactionHeight(byte[] blockHash) {
             return Blockchain.getTransactionHeight(blockHash);
         }
