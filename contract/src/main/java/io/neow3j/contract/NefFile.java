@@ -21,7 +21,7 @@ import java.util.Arrays;
  * +------------+-----------+------------------------------------------------------------+
  * | Magic      | 4 bytes   | Magic header                                               |
  * | Compiler   | 32 bytes  | Compiler used                                              |
- * | Version    | 16 bytes  | Compiler version                                           |
+ * | Version    | 32 bytes  | Compiler version                                           |
  * +------------+-----------+------------------------------------------------------------+
  * | Script     | Var bytes | Var bytes for the payload                                  |
  * +------------+-----------+------------------------------------------------------------+

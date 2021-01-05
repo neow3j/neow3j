@@ -14,7 +14,6 @@ import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
-import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Instruction;
@@ -25,6 +24,7 @@ import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.utils.Numeric;
+import io.neow3j.utils.Version;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -50,7 +50,8 @@ import org.objectweb.asm.tree.MethodNode;
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j";
-    public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
+    public static final String COMPILER_VERSION =
+            "302e312e302e3000000000000000000000000000000000000000000000000000";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -246,8 +247,7 @@ public class Compiler {
         compUnit.getNeoModule().finalizeModule();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
                 compUnit.getNeoModule().toByteArray());
-        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit,
-                nef.getScriptHash());
+        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
