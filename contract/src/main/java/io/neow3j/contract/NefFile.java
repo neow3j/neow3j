@@ -1,5 +1,7 @@
 package io.neow3j.contract;
 
+import static java.lang.String.format;
+
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -53,8 +55,20 @@ public class NefFile extends NeoSerializable {
     }
 
     public NefFile(String compiler, String version, byte[] script) {
+        int compilerNameSize = compiler.getBytes(StandardCharsets.UTF_8).length;
+        if (compilerNameSize > COMPILER_SIZE) {
+            throw new IllegalArgumentException(format("The compiler name can be max %d bytes long, "
+                    + "but was %d bytes long.", COMPILER_SIZE, compilerNameSize));
+        }
         this.compiler = compiler;
+
+        int versionSize = version.getBytes(StandardCharsets.UTF_8).length;
+        if (versionSize > VERSION_SIZE) {
+            throw new IllegalArgumentException(format("The version string can be max %d bytes "
+                    + "long, but was %d bytes long.", VERSION_SIZE, versionSize));
+        }
         this.version = version;
+
         this.script = script;
         // Need to initialize the check sum because it is required for calculating the check sum.
         checkSum = new byte[CHECKSUM_SIZE];

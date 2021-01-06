@@ -47,6 +47,20 @@ public class NefFileTest {
     }
 
     @Test
+    public void failConstructorWithToLongCompilerName() {
+        expectedException.expect(IllegalArgumentException.class);
+        NefFile nef = new NefFile("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 33 bytes
+                "3.0.0.0", Numeric.hexStringToByteArray(REFERENCE_SCRIPT));
+    }
+
+    @Test
+    public void failConstructorWithToLongVersionString() {
+        expectedException.expect(IllegalArgumentException.class);
+        NefFile nef = new NefFile("neow3j", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 33 bytes
+                Numeric.hexStringToByteArray(REFERENCE_SCRIPT));
+    }
+
+    @Test
     public void readFromFileThatIsTooLarge() throws URISyntaxException, DeserializationException,
             IOException {
         File file = new File(Objects.requireNonNull(NefFileTest.class.getClassLoader()
@@ -63,6 +77,12 @@ public class NefFileTest {
                 .getResource("contracts/DotnetContract.nef")).toURI());
         NefFile nef = NefFile.readFromFile(file);
         assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is(REFERENCE_CHECKSUM));
+    }
+
+    @Test
+    public void serializeNewNefFile() {
+        NefFile nef = new NefFile("neon", "3.0.0.0", Numeric.hexStringToByteArray(REFERENCE_SCRIPT));
+        assertThat(nef.toArray(), is(Numeric.hexStringToByteArray(REFERENCE_NEF)));
     }
 
     @Test
