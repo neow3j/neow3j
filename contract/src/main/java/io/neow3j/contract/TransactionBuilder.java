@@ -287,12 +287,7 @@ public class TransactionBuilder {
         }
 
         long systemFee = getSystemFeeForScript();
-
-        Transaction tx = new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
-                0, attributes, script, new ArrayList<>());
-
-        long networkFee = calcNetworkFee(tx)
-                + additionalNetworkFee;
+        long networkFee = calcNetworkFee() + additionalNetworkFee;
         BigInteger fees = BigInteger.valueOf(systemFee + networkFee);
 
         if (supplier != null && !canSenderCoverFees(fees)) {
@@ -342,7 +337,9 @@ public class TransactionBuilder {
      * expected signatures. This information is derived from the verification scripts of all
      * signers added to the transaction.
      */
-    private long calcNetworkFee(Transaction tx) throws IOException {
+    private long calcNetworkFee() throws IOException {
+        Transaction tx = new Transaction(neow, version, nonce, validUntilBlock, signers, 0,
+                0, attributes, script, new ArrayList<>());
         byte[] txBytes = tx.getHashData();
         getSignerAccounts().forEach(signerAcc -> {
             byte[] verifScript = signerAcc.getVerificationScript().getScript();
