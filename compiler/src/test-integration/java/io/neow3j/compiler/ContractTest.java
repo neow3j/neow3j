@@ -1,19 +1,28 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
+import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
+import io.neow3j.contract.ManagementContract;
 import io.neow3j.contract.NeoToken;
+import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.HexParameter;
+import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
@@ -112,15 +121,29 @@ public class ContractTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        SmartContract sc = new SmartContract(res.getNefFile(), res.getManifest(), neow3j);
-        NeoSendRawTransaction response = sc.deploy()
+        NeoSendRawTransaction response = new ManagementContract(neow3j)
+                .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
                 .sign().send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
         }
-        return sc;
+
+        waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash());
+
+        // Get the contract address from the application logs.
+        NeoApplicationLog appLog = neow3j.getApplicationLog(
+                response.getSendRawTransaction().getHash()).send().getApplicationLog();
+        Execution execution = appLog.getExecutions().get(0);
+        if (execution.getState().equals(VM_STATE_FAULT)) {
+           throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
+                           + "message was: '%s'", fullyQualifiedName, execution.getException()));
+        }
+        ArrayStackItem arrayItem = execution.getStack().get(0).asArray();
+        ScriptHash scriptHash = new ScriptHash(Numeric.hexStringToByteArray(
+                arrayItem.get(2).asByteString().getAsHexString()));
+        return new SmartContract(scriptHash, neow3j);
     }
 
     /**
