@@ -1,13 +1,18 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static java.lang.String.format;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -46,8 +51,8 @@ public class ManagementContract extends SmartContract {
     }
 
     /**
-     * Creates a transaction script to set the minimum deployment fee and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to set the minimum deployment fee and initializes a {@link
+     * TransactionBuilder} based on this script.
      *
      * @param minimumFee the minimum deployment fee.
      * @return A transaction builder.
@@ -72,11 +77,31 @@ public class ManagementContract extends SmartContract {
         }
         int id = stackItem.asArray().get(0).asInteger().getValue().intValue();
         int updateCounter = stackItem.asArray().get(1).asInteger().getValue().intValue();
-        String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString().getAsHexString());
-        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString().getValue());
-        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(ContractManifest.class);
+        String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString()
+                .getAsHexString());
+        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString()
+                .getValue());
+        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
+                ContractManifest.class);
         return new ContractState(id, updateCounter, hash, script, manifest);
     }
 
-    // TODO: 23.12.20 Michael: add deploy method.
+    public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)
+            throws JsonProcessingException {
+
+        if (nef == null) {
+            throw new IllegalArgumentException("The NEF file cannot be null.");
+        }
+        if (manifest == null) {
+            throw new IllegalArgumentException("The manifest cannot be null.");
+        }
+        byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
+        if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
+            throw new IllegalArgumentException(format("The given contract manifest is too long. "
+                            + "Manifest was %d bytes big, but a max of %d bytes is allowed.",
+                    manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
+        }
+        return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));
+    }
+
 }
