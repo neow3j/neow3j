@@ -90,9 +90,9 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Gets the storage price.
+     * Gets the GAS price for one byte of smart contract storage.
      *
-     * @return the storage price.
+     * @return the storage price per byte.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getStoragePrice() throws IOException {
