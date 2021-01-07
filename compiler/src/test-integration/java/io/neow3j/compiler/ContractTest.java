@@ -78,7 +78,7 @@ public class ContractTest {
             .waitingFor(Wait.forListeningPort());
 
     protected static Account defaultAccount;
-    protected static Account committeeMember;
+    protected static Account committee;
     protected static Wallet wallet;
     protected static Neow3j neow3j;
     protected static SmartContract contract;
@@ -89,7 +89,7 @@ public class ContractTest {
     @Rule
     public TestName testName = new TestName();
 
-    private boolean signWithCommitteeMember = false;
+    private boolean signAsCommittee = false;
     private boolean signWithDefaultAccount = false;
 
     protected String getTestName() {
@@ -99,9 +99,9 @@ public class ContractTest {
     protected static void setUp(String name) throws Throwable {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
         defaultAccount = Account.fromWIF("L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda");
-        committeeMember = Account.createMultiSigAccount(
+        committee = Account.createMultiSigAccount(
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
-        wallet = Wallet.withAccounts(defaultAccount, committeeMember);
+        wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         contractName = name;
         contract = deployContract(contractName);
@@ -123,7 +123,7 @@ public class ContractTest {
         NeoSendRawTransaction response = new ManagementContract(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+                .signers(Signer.calledByEntry(committee.getScriptHash()))
                 .sign().send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
@@ -174,9 +174,9 @@ public class ContractTest {
     protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
             throws IOException {
 
-        if (signWithCommitteeMember) {
+        if (signAsCommittee) {
             return contract.callInvokeFunction(function, Arrays.asList(params),
-                    Signer.calledByEntry(committeeMember.getScriptHash()));
+                    Signer.global(committee.getScriptHash()));
         }
         if (signWithDefaultAccount) {
             return contract.callInvokeFunction(function, Arrays.asList(params),
@@ -206,39 +206,34 @@ public class ContractTest {
     /**
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters.
-     * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
     protected String invokeFunction(ContractParameter... params) throws Throwable {
-        return contract.invokeFunction(getTestName(), params)
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        return invokeFunction(getTestName(), params);
     }
 
     /**
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters.
-     * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    protected static String invokeFunction(String function, ContractParameter... params)
+    protected String invokeFunction(String function, ContractParameter... params)
             throws Throwable {
+
+        Signer signer;
+        if (signAsCommittee) {
+            signer = Signer.global(committee.getScriptHash());
+        } else {
+            signer = Signer.calledByEntry(defaultAccount.getScriptHash());
+        }
         return contract.invokeFunction(function, params)
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+                .signers(signer)
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -250,7 +245,7 @@ public class ContractTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the
      * transaction.
      *
      * @param params The parameters to pass with the function call.
@@ -266,14 +261,14 @@ public class ContractTest {
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the
      * transaction.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected static String invokeFunctionAndAwaitExecution(String function,
+    protected String invokeFunctionAndAwaitExecution(String function,
             ContractParameter... params)
             throws Throwable {
 
@@ -359,8 +354,8 @@ public class ContractTest {
         return getObjectMapper().readValue(s, stackItemType);
     }
 
-    protected void signWithCommitteeMember() {
-        signWithCommitteeMember = true;
+    protected void signAsCommittee() {
+        signAsCommittee = true;
     }
 
     protected void signWithDefaultAccount() {

@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.contract.NeoToken;
+import io.neow3j.contract.PolicyContract;
 import io.neow3j.devpack.neo.Policy;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -30,17 +32,9 @@ public class PolicyContractTest extends ContractTest {
     }
 
     @Test
-    public void getName() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
-
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("Policy"));
-    }
-
-    @Test
     public void setAndGetFeePerByte() throws IOException {
         int newFee = 1;
-        signWithCommitteeMember();
+        signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(newFee));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
@@ -49,11 +43,10 @@ public class PolicyContractTest extends ContractTest {
     }
 
     @Test
-    public void setAndGetMaxBlockSystemFee() throws IOException {
+    public void setAndGetMaxBlockSystemFee() throws Throwable {
         int fee = 4007601;
-        signWithCommitteeMember();
+        signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(fee));
-
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
         assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(MAX_BLOCK_SYSTEM_FEE)));
         assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(fee)));
@@ -61,7 +54,7 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void setAndGetMaxBlockSize() throws IOException {
-        signWithCommitteeMember();
+        signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(1024));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
@@ -80,7 +73,7 @@ public class PolicyContractTest extends ContractTest {
     @Test
     public void setAndGetMaxTransactionsPerBlock() throws IOException {
         BigInteger newTxPerBlock = BigInteger.ONE;
-        signWithCommitteeMember();
+        signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(newTxPerBlock));
 
         StackItem array = response.getInvocationResult().getStack().get(0);
@@ -95,20 +88,17 @@ public class PolicyContractTest extends ContractTest {
     }
 
     @Test
-    public void setAndGetBlockedAccounts() throws IOException {
-        signWithCommitteeMember();
+    public void setAndGetBlockedAccount() throws IOException {
+        signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
 
         StackItem arrayItem = response.getInvocationResult().getStack().get(0);
-        assertThat(arrayItem.getType(), is(StackItemType.ARRAY));
-        String blockedAccScriptHash = arrayItem.asArray().get(0).asByteString().getAsHexString();
-        assertThat(blockedAccScriptHash,
-                is(Numeric.toHexStringNoPrefix(defaultAccount.getScriptHash().toArray())));
+        assertTrue(arrayItem.asBoolean().getValue());
     }
 
     @Test
     public void unblockAccount() throws IOException {
-        signWithCommitteeMember();
+        signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
         assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
     }
@@ -130,8 +120,9 @@ public class PolicyContractTest extends ContractTest {
         public static int[] setAndGetMaxBlockSystemFee(int newFee) {
             int[] sizes = new int[2];
             sizes[0] = Policy.getMaxBlockSystemFee();
-            Policy.setMaxBlockSystemFee(newFee);
-            sizes[1] = Policy.getMaxBlockSystemFee();
+            if (Policy.setMaxBlockSystemFee(newFee)) {
+                sizes[1] = Policy.getMaxBlockSystemFee();
+            }
             return sizes;
         }
 
@@ -155,9 +146,9 @@ public class PolicyContractTest extends ContractTest {
             return sizes;
         }
 
-        public static String[] setAndGetBlockedAccounts(byte[] scriptHash) {
+        public static boolean setAndGetBlockedAccount(byte[] scriptHash) {
             Policy.blockAccount(scriptHash);
-            return Policy.getBlockedAccounts();
+            return Policy.isBlocked(scriptHash);
         }
 
         public static boolean unblockAccount(byte[] scriptHash) {

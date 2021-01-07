@@ -9,14 +9,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.neo.Blockchain;
-import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.IntegerStackItem;
-import io.neow3j.protocol.core.methods.response.MapStackItem;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
@@ -53,7 +48,7 @@ public class BlockchainTest extends ContractTest {
         assertThat(tx.get(1).asInteger().getValue().intValue(), is(0)); // version
         assertThat(tx.get(2).asInteger().getValue().longValue(), greaterThanOrEqualTo(1L)); // nonce
         assertThat(tx.get(3).asByteString().getAsAddress(),
-                is(committeeMember.getAddress())); // sender
+                is(committee.getAddress())); // sender
         assertThat(tx.get(4).asInteger().getValue().intValue(),
                 greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).asInteger().getValue().intValue(),
@@ -73,7 +68,7 @@ public class BlockchainTest extends ContractTest {
         assertThat(tx.get(1).asInteger().getValue().intValue(), is(0)); // version
         assertThat(tx.get(2).asInteger().getValue().longValue(), greaterThanOrEqualTo(1L)); // nonce
         assertThat(tx.get(3).asByteString().getAsAddress(),
-                is(committeeMember.getAddress())); // sender
+                is(committee.getAddress())); // sender
         assertThat(tx.get(4).asInteger().getValue().intValue(),
                 greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).asInteger().getValue().intValue(),
@@ -93,7 +88,7 @@ public class BlockchainTest extends ContractTest {
         assertThat(tx.get(1).asInteger().getValue().intValue(), is(0)); // version
         assertThat(tx.get(2).asInteger().getValue().longValue(), greaterThanOrEqualTo(1L)); // nonce
         assertThat(tx.get(3).asByteString().getAsAddress(),
-                is(committeeMember.getAddress())); // sender
+                is(committee.getAddress())); // sender
         assertThat(tx.get(4).asInteger().getValue().intValue(),
                 greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).asInteger().getValue().intValue(),
