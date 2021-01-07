@@ -340,17 +340,11 @@ public class TransactionBuilder {
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow, version, nonce, validUntilBlock, signers, 0,
                 0, attributes, script, new ArrayList<>());
-        byte[] txBytes = tx.getHashData();
-        getSignerAccounts().forEach(signerAcc -> {
-            byte[] verifScript = signerAcc.getVerificationScript().getScript();
-            tx.addWitness(new Witness(txBytes, verifScript));
+        getSignerAccounts().forEach(s -> {
+            tx.addWitness(new Witness(new byte[]{}, s.getVerificationScript().getScript()));
         });
-
-        byte[] txBytesWithWitnesses = tx.toArray();
-
-        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(txBytesWithWitnesses)).send()
-                .getNetworkFee().getNetworkFee()
-                .longValue();
+        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(tx.toArray()))
+                .send().getNetworkFee().getNetworkFee().longValue();
     }
 
     /**
