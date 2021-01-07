@@ -2,7 +2,7 @@ package io.neow3j.devpack.neo;
 
 import io.neow3j.devpack.annotations.Contract;
 
-@Contract(scriptHash = "0xde5f57d430d3dece511cf975a8d37848cb9e0525")
+@Contract(scriptHash = "0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6")
 public class NEO {
 
     /**

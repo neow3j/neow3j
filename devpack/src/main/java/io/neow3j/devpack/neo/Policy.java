@@ -2,7 +2,7 @@ package io.neow3j.devpack.neo;
 
 import io.neow3j.devpack.annotations.Contract;
 
-@Contract(scriptHash = "0xce06595079cd69583126dbfd1d2e25cca74cffe9")
+@Contract(scriptHash = "0xdde31084c0fdbebc7f5ed5f53a38905305ccee14")
 public class Policy {
 
     /**
