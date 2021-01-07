@@ -50,14 +50,14 @@ public class StringConcatenationTest extends ContractTest {
 
     static class StringConcatenation {
 
-        private static final String staticString = "one" + "two" + Runtime.getPlatform();
+        private static final String staticString = "one" + "two" + NEO.symbol();
 
         public static String concatTwoStrings(String s1, String s2) {
             return s1 + s2;
         }
 
         public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
-            return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.name();
+            return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.symbol();
         }
 
         public static String concatInStaticVariable() {

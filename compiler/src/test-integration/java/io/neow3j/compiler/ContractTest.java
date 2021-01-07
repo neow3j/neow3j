@@ -5,15 +5,12 @@ import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
 import io.neow3j.contract.ManagementContract;
 import io.neow3j.contract.NeoToken;
-import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.model.NeoConfig;
@@ -22,7 +19,6 @@ import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
-import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
@@ -87,6 +83,8 @@ public class ContractTest {
     protected static Neow3j neow3j;
     protected static SmartContract contract;
     protected static String contractName;
+    protected static String deployTxHash;
+    protected static String blockHashOfDeployTx;
 
     @Rule
     public TestName testName = new TestName();
@@ -108,6 +106,7 @@ public class ContractTest {
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(contract.getScriptHash());
+
     }
 
     protected static String getResultFilePath(String testClassName, String methodName) {
@@ -130,8 +129,11 @@ public class ContractTest {
             throw new RuntimeException(response.getError().getMessage());
         }
 
-        waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash());
-
+        // Remember the transaction and its block.
+        deployTxHash = response.getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(deployTxHash);
+        blockHashOfDeployTx = neow3j.getTransaction(deployTxHash).send()
+                .getTransaction().getBlockHash();
         // Get the contract address from the application logs.
         NeoApplicationLog appLog = neow3j.getApplicationLog(
                 response.getSendRawTransaction().getHash()).send().getApplicationLog();
@@ -232,7 +234,8 @@ public class ContractTest {
      * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    protected String invokeFunction(String function, ContractParameter... params) throws Throwable {
+    protected static String invokeFunction(String function, ContractParameter... params)
+            throws Throwable {
         return contract.invokeFunction(function, params)
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
@@ -270,7 +273,8 @@ public class ContractTest {
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected String invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
+    protected static String invokeFunctionAndAwaitExecution(String function,
+            ContractParameter... params)
             throws Throwable {
 
         String txHash = invokeFunction(function, params);
