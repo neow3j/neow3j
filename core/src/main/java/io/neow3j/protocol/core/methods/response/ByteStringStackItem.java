@@ -5,12 +5,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -88,9 +86,11 @@ public class ByteStringStackItem extends StackItem {
     }
 
     /**
-     * Deserializes this byte array's value into a {@code clazz} object.
+     * Deserializes this byte array into the given class.
      *
+     * @param clazz The class to deserialize to.
      * @return the deserialized JSON content of the byte array's value.
+     * @throws IOException if an error occurs when trying to deserialize to the given class.
      */
     public <T> T getAsJson(Class<T> clazz) throws IOException {
         String json = new String(getValue(), UTF_8);
@@ -100,8 +100,12 @@ public class ByteStringStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ByteStringStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ByteStringStackItem)) {
+            return false;
+        }
         ByteStringStackItem other = (ByteStringStackItem) o;
         return getType() == other.getType() && Arrays.equals(this.getValue(), other.getValue());
     }

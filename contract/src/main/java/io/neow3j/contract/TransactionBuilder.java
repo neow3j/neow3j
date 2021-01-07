@@ -144,9 +144,9 @@ public class TransactionBuilder {
     }
 
     /**
-     * Sets the signer with script hash {@code sender} to the first index of the list of signers
-     * for this transaction. The first signer covers the fees for the transaction if there is
-     * no signer present with fee-only witness scope (see {@link WitnessScope#NONE}).
+     * Sets the signer with script hash {@code sender} to the first index of the list of signers for
+     * this transaction. The first signer covers the fees for the transaction if there is no signer
+     * present with fee-only witness scope (see {@link WitnessScope#NONE}).
      *
      * @param sender the script hash of the signer to be set to the first index.
      * @return this transaction builder.
@@ -167,7 +167,7 @@ public class TransactionBuilder {
                             "signer before calling this method."));
             signers.remove(s);
             signers.add(0, s);
-            }
+        }
         return this;
     }
 
@@ -175,9 +175,9 @@ public class TransactionBuilder {
      * Sets the signers of this transaction. If the list of signers already contains signers, they
      * are replaced.
      * <p>
-     * If one of the signers has the fee-only witness scope (see {@link WitnessScope#NONE}),
-     * this account is used to cover the transaction fees. Otherwise, the first signer is used as
-     * the sender of this transaction, meaning that it is used to cover the transaction fees.
+     * If one of the signers has the fee-only witness scope (see {@link WitnessScope#NONE}), this
+     * account is used to cover the transaction fees. Otherwise, the first signer is used as the
+     * sender of this transaction, meaning that it is used to cover the transaction fees.
      *
      * @param signers Signers for this transaction.
      * @return this transaction builder.
@@ -315,9 +315,11 @@ public class TransactionBuilder {
         // check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = Numeric.toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow.invokeScript(Base64.encode(Numeric.hexStringToByteArray(script)), signers)
+        NeoInvokeScript response = neow.invokeScript(
+                Base64.encode(Numeric.hexStringToByteArray(script)), signers)
                 .send();
-        return getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed()).longValue();
+        return getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed())
+                .longValue();
     }
 
     /*
@@ -398,6 +400,12 @@ public class TransactionBuilder {
      * the wallet set on this transaction builder.
      *
      * @return the signed transaction.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the
+     *                                           neo-node.
+     * @throws Throwable                         a custom exception if one was set to be thrown in
+     *                                           the case the sender cannot cover the transaction
+     *                                           fees.
      */
     public Transaction sign() throws Throwable {
         transaction = buildTransaction();
@@ -420,6 +428,12 @@ public class TransactionBuilder {
      * Builds the transaction without signing it.
      *
      * @return the unsigned transaction.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the
+     *                                           neo-node.
+     * @throws Throwable                         a custom exception if one was set to be thrown in
+     *                                           the case the sender cannot cover the transaction
+     *                                           fees.
      */
     public Transaction getUnsignedTransaction() throws Throwable {
         return buildTransaction();
@@ -474,6 +488,7 @@ public class TransactionBuilder {
      * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
      * TransactionBuilder#getUnsignedTransaction()}.
      *
+     * @param consumer The consumer.
      * @return this transaction builder.
      */
     public TransactionBuilder doIfSenderCannotCoverFees(
@@ -495,6 +510,7 @@ public class TransactionBuilder {
      * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
      * TransactionBuilder#getUnsignedTransaction()}.
      *
+     * @param exceptionSupplier The exception supplier.
      * @return this transaction builder.
      */
     public TransactionBuilder throwIfSenderCannotCoverFees(

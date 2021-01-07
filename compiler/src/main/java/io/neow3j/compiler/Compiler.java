@@ -206,6 +206,7 @@ public class Compiler {
      *
      * @param fullyQualifiedClassName the fully qualified name of the class.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(String fullyQualifiedClassName) throws IOException {
         return compileClass(getAsmClass(fullyQualifiedClassName, compUnit.getClassLoader()));
@@ -216,6 +217,7 @@ public class Compiler {
      *
      * @param classStream the {@link InputStream} pointing to a class file.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(InputStream classStream) throws IOException {
         return compileClass(getAsmClass(classStream));

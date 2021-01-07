@@ -94,6 +94,7 @@ public class NeoURI {
      * Needs all necessary parameters to create a transfer invocation.
      *
      * @return a TransactionBuilder object.
+     * @throws IOException if an error occurs when interacting with the neo-node
      */
     public TransactionBuilder buildTransfer() throws IOException {
         if (neow3j == null) {
