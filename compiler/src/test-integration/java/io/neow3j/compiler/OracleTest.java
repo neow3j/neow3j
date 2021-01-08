@@ -4,15 +4,19 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.devpack.neo.Oracle;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
+import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -46,10 +50,11 @@ public class OracleTest extends ContractTest {
 
         NeoApplicationLog applicationLog = neow3j.getApplicationLog(txHash).send()
                 .getApplicationLog();
-        assertThat(applicationLog.getNotifications(), hasSize(1));
-        assertThat(applicationLog.getNotifications().get(0).getEventName(), is("callbackEvent"));
+        List<Notification> notifications = applicationLog.getExecutions().get(0).getNotifications();
+        assertThat(notifications, hasSize(1));
+        assertThat(notifications.get(0).getEventName(), is("callbackEvent"));
 
-        ArrayStackItem states = applicationLog.getNotifications().get(0).getState().asArray();
+        ArrayStackItem states = notifications.get(0).getState().asArray();
         assertThat(states.getValue(), hasSize(4));
         assertThat(states.get(0).asByteString().getAsString(), is(url));
         assertThat(states.get(1).asByteString().getAsString(), is(userdata));
