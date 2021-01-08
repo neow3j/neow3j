@@ -24,14 +24,6 @@ public class OracleTest extends ContractTest {
     }
 
     @Test
-    public void getName() throws IOException {
-        // TODO: Test when preview4 privatenet docker image is ready.
-        NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("Oracle"));
-    }
-
-    @Test
     public void getScriptHash() throws IOException {
         // TODO: Test when issue #292 was implemented.
         NeoInvokeFunction response = callInvokeFunction();
@@ -71,16 +63,12 @@ public class OracleTest extends ContractTest {
 
         private static Event4Args<String, String, Integer, String> callbackEvent;
 
-        public static String getName() {
-            return Oracle.name();
-        }
-
         public static byte[] getScriptHash() {
             return Oracle.hash();
         }
 
         public static void performRequest(String url, String filter, String userdata,
-                long gasForResponse) {
+                int gasForResponse) {
 
             Oracle.request(url, filter, "callback", userdata, gasForResponse);
         }
