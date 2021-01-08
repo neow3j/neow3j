@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -21,30 +22,31 @@ public class ContractInterfacesTest extends ContractTest {
     public void callSymbolMethodOfCustomNeoContractInterface() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("neo"));
+                is("NEO"));
     }
 
     @Test
     public void getScriptHashOfCustomNeoContractInterface() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is("de5f57d430d3dece511cf975a8d37848cb9e0525"));
+                is(NeoToken.SCRIPT_HASH.toString()));
     }
 
     static class ContractInterfacesTestContract {
 
         public static String callSymbolMethodOfCustomNeoContractInterface() {
-            return TheNeoToken.symbol();
+            return CustomNeoToken.symbol();
         }
 
         public static byte[] getScriptHashOfCustomNeoContractInterface() {
-            return TheNeoToken.getHash();
+            return CustomNeoToken.getHash();
         }
 
-        @ContractHash("0xde5f57d430d3dece511cf975a8d37848cb9e0525") // NEO script hash
-        static class TheNeoToken extends ContractInterface {
+    }
 
-            public static native String symbol();
-        }
+    @ContractHash("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6") // NEO script hash
+    static class CustomNeoToken extends ContractInterface {
+
+        public static native String symbol();
     }
 }

@@ -22,6 +22,8 @@ public class PolicyContractTest extends ContractTest {
     public static final long MAX_BLOCK_SIZE = 1024 * 256;
     public static final long MAX_TRANSACTIONS_PER_BLOCK = 512;
     public static final long FEE_PER_BYTE = 1000L; // GAS fractions
+    public static final int DEFAULT_EXEC_FEE_FACTOR = 30;
+    public static final int DEFAULT_STORAGE_PRICE = 100000;
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -103,6 +105,29 @@ public class PolicyContractTest extends ContractTest {
     }
 
     @Test
+    public void setAndGetExecFeeFactor() throws IOException {
+        signAsCommittee();
+        NeoInvokeFunction response = callInvokeFunction(integer(300));
+
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
+        assertThat(res.get(0).asInteger().getValue(),
+                is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
+        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(300)));
+    }
+
+    @Test
+    public void setAndGetStoragePrice() throws IOException {
+        signAsCommittee();
+        NeoInvokeFunction response = callInvokeFunction(integer(1000000));
+
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
+        assertThat(res.get(0).asInteger().getValue(),
+                is(BigInteger.valueOf(DEFAULT_STORAGE_PRICE)));
+        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(1000000)));
+
+    }
+
+    @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
@@ -160,6 +185,21 @@ public class PolicyContractTest extends ContractTest {
             return PolicyContract.getHash();
         }
 
+        public static int[] setAndGetExecFeeFactor(int newFactor) {
+            int[] factors = new int[2];
+            factors[0] = PolicyContract.getExecFeeFactor();
+            PolicyContract.setExecFeeFactor(newFactor);
+            factors[1] = PolicyContract.getExecFeeFactor();
+            return factors;
+        }
+
+        public static int[] setAndGetStoragePrice(int newPrice) {
+            int[] prices = new int[2];
+            prices[0] = PolicyContract.getStoragePrice();
+            PolicyContract.setStoragePrice(newPrice);
+            prices[1] = PolicyContract.getStoragePrice();
+            return prices;
+        }
     }
 
 }
