@@ -12,10 +12,10 @@ public class Oracle {
      */
     public static native byte[] hash();
 
-     // TODO: Adapt documentation as soon as Neo core developers have created documentation.
+
     /**
-     * Does a request to the oracle service with the given request data. The given callback
-     * function will be called with the response of the oracle as input.
+     * Does a request to the oracle service with the given request data. The given callback function
+     * will be called with the response of the oracle as input.
      *
      * @param url            The URL to query.
      * @param filter         The filter to filter return data.
@@ -23,6 +23,7 @@ public class Oracle {
      * @param userData       Additional data.
      * @param gasForResponse The cost of getting a response.
      */
+    // TODO: Adapt documentation as soon as Neo core developers have created documentation.
     public static native void request(String url, String filter, String callback, Object userData,
             int gasForResponse);
 }
