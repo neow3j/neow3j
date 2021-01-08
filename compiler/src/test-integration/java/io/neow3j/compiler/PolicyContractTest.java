@@ -84,9 +84,8 @@ public class PolicyContractTest extends ContractTest {
         // Block the account
         String txHash = invokeFunctionAndAwaitExecution("blockAccount",
                 hash160(defaultAccount.getScriptHash()));
-        assertThat(neow3j.getApplicationLog(txHash).send().getApplicationLog()
-                .getExecutions().get(0).getStack().get(0).asInteger(),
-                is(1));
+        assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getStack().get(0).asBoolean().getValue());
 
         // Check if it was blocked.
         response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
@@ -95,9 +94,8 @@ public class PolicyContractTest extends ContractTest {
         // Unblock the account
         txHash = invokeFunctionAndAwaitExecution("unblockAccount",
                 hash160(defaultAccount.getScriptHash()));
-        assertThat(neow3j.getApplicationLog(txHash).send().getApplicationLog()
-                .getExecutions().get(0).getStack().get(0).asInteger(),
-                is(1));
+        assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getStack().get(0).asBoolean().getValue());
 
         // Check if it was unblocked.
         response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
@@ -108,7 +106,7 @@ public class PolicyContractTest extends ContractTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is("ce06595079cd69583126dbfd1d2e25cca74cffe9"));
+                is(io.neow3j.contract.PolicyContract.SCRIPT_HASH.toString()));
     }
 
     static class PolicyContractTestContract {
