@@ -1,11 +1,12 @@
-package io.neow3j.devpack;
+package io.neow3j.devpack.contracts;
 
+import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.annotations.ContractHash;
 
 /**
  * Base class for NEP-17 contracts. Extend this class in combination with the {@link
  * ContractHash} annotation to create an "interface" to a NEP-17 token contract on the Neo
- * blockchain. Examples are the {@link NEO} and {@link GAS} contracts.
+ * blockchain. Examples are the {@link NeoToken} and {@link GasToken} contracts.
  */
 public abstract class Nep17Token extends ContractInterface {
 

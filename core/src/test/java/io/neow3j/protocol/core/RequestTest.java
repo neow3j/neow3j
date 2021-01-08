@@ -197,11 +197,20 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetValidators() throws Exception {
-        neow3j.getValidators().send();
+    public void testGetNextBlockValidators() throws Exception {
+        neow3j.getNextBlockValidators().send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getvalidators\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnextblockvalidators\","
+                        + "\"params\":[],\"id\":1}");
+    }
+
+    @Test
+    public void testGetCommittee() throws Exception {
+        neow3j.getCommittee().send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getcommittee\","
                         + "\"params\":[],\"id\":1}");
     }
 
@@ -239,7 +248,7 @@ public class RequestTest extends RequestTester {
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"sendrawtransaction\","
-                        + "\"params\":[\"80000001d405ab03e736a01ca277d94b1377113c7e961bb4550511fe1d408f30c77a82650000029b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc500ca9a3b0000000023ba2703c53263e8d6e522dc32203339dcd8eee99b7cffdaa674beae0f930ebe6085af9093e5fe56b34a5c220ccdcf6efc336fc5001a711802000000295f83f83fc439f56e6e1fb062d89c6f538263d70141403711e366fc99e77a110b6c96b5f8828ef956a6d5cfa5cb63273419149011b0f30dc5458faa59e4867d0ac7537e324c98124bb691feca5c5ddf6ed20f4adb778223210265bf906bf385fbf3f777832e55a87991bcfbe19b097fb7c5ca2e4025a4d5e5d6ac\"],\"id\":1}");
+                        + "\"params\":[\"gAAAAdQFqwPnNqAconfZSxN3ETx+lhu0VQUR/h1AjzDHeoJlAAACm3z/2qZ0vq4Pkw6+YIWvkJPl/lazSlwiDM3Pbvwzb8UAypo7AAAAACO6JwPFMmPo1uUi3DIgMznc2O7pm3z/2qZ0vq4Pkw6+YIWvkJPl/lazSlwiDM3Pbvwzb8UAGnEYAgAAAClfg/g/xDn1bm4fsGLYnG9TgmPXAUFANxHjZvyZ53oRC2yWtfiCjvlWptXPpctjJzQZFJARsPMNxUWPqlnkhn0Kx1N+MkyYEku2kf7KXF3fbtIPStt3giMhAmW/kGvzhfvz93eDLlWoeZG8++GbCX+3xcouQCWk1eXWrA==\"],\"id\":1}");
     }
 
     @Test
@@ -433,6 +442,15 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testCalculateNetworkFee() throws Exception {
+        neow3j.calculateNetworkFee("6e656f77336a").send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"calculatenetworkfee\","
+                        + "\"params\":[\"bmVvdzNq\"],\"id\":1}");
+    }
+
+    @Test
     public void testListAddress() throws Exception {
         neow3j.listAddress().send();
 
@@ -562,47 +580,47 @@ public class RequestTest extends RequestTester {
                         + "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",\"10.0\"],\"id\":1}");
     }
 
-    // RpcNep5Tracker
+    // RpcNep17Tracker
 
     @Test
-    public void testGetNep5Transfers() throws Exception {
-        neow3j.getNep5Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
+    public void testGetNep17Transfers() throws Exception {
+        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5transfers\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep17transfers\","
                         + "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"],\"id\":1}"
         );
     }
 
     @Test
-    public void testGetNep5Transfers_Date() throws Exception {
-        neow3j.getNep5Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb", new Date(1553105830L)).send();
+    public void testGetNep17Transfers_Date() throws Exception {
+        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb", new Date(1553105830L)).send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5transfers\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep17transfers\","
                         + "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830],\"id\":1}"
         );
     }
 
     @Test
-    public void testGetNep5Transfers_DateFromTo() throws Exception {
-        neow3j.getNep5Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+    public void testGetNep17Transfers_DateFromTo() throws Exception {
+        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
                 new Date(1553105830),
                 new Date(1557305830)
         ).send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5transfers\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep17transfers\","
                         + "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830,1557305830],\"id\":1}"
         );
     }
 
     @Test
-    public void testGetNep5Balances() throws Exception {
-        neow3j.getNep5Balances("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
+    public void testGetNep17Balances() throws Exception {
+        neow3j.getNep17Balances("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
 
         verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep5balances\","
+                "{\"jsonrpc\":\"2.0\",\"method\":\"getnep17balances\","
                         + "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"],\"id\":1}"
         );
     }

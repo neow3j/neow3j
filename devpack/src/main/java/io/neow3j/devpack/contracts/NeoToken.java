@@ -1,9 +1,9 @@
-package io.neow3j.devpack;
+package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0xde5f57d430d3dece511cf975a8d37848cb9e0525")
-public class NEO extends Nep17Token {
+@ContractHash("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6")
+public class NeoToken extends Nep17Token {
 
     /**
      * Gets the amount of unclaimed GAS for the given account up the the given block number.
@@ -68,6 +68,21 @@ public class NEO extends Nep17Token {
     public static native String[] getNextBlockValidators();
 
     /**
+     * Gets the amount of GAS that is minted per newly generated block.
+     *
+     * @return the amount of minted GAS per block.
+     */
+    public static native int getGasPerBlock();
+
+    /**
+     * Sets the amount of GAS that should be minted per newly generated block.
+     *
+     * @param gasPerBlock The desired amount of GAS per block.
+     * @return true, if setting the amount was successful. False, otherwise.
+     */
+    public static native boolean setGasPerBlock(int gasPerBlock);
+
+    /**
      * Represents a validator candidate.
      */
     public static class Candidate {
@@ -78,13 +93,13 @@ public class NEO extends Nep17Token {
         public final String publicKey;
 
         /**
-         * This candidates NEO balance.
+         * This candidates votes.
          */
-        public final int neoBalance;
+        public final int votes;
 
         private Candidate() {
             publicKey = "";
-            neoBalance = 0;
+            votes = 0;
         }
     }
 }

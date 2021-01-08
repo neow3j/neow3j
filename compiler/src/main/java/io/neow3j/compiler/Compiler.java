@@ -14,7 +14,6 @@ import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
-import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Instruction;
@@ -50,7 +49,7 @@ import org.objectweb.asm.tree.MethodNode;
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j";
-    public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
+    public static final String COMPILER_VERSION = "3.5.0";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -199,7 +198,6 @@ public class Compiler {
         }
         compUnit.addClassToSourceMapping(className, sourceFilePath);
         compileClass(asmClass);
-        finalizeCompilation();
         return compUnit;
     }
 
@@ -208,6 +206,7 @@ public class Compiler {
      *
      * @param fullyQualifiedClassName the fully qualified name of the class.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(String fullyQualifiedClassName) throws IOException {
         return compileClass(getAsmClass(fullyQualifiedClassName, compUnit.getClassLoader()));
@@ -218,6 +217,7 @@ public class Compiler {
      *
      * @param classStream the {@link InputStream} pointing to a class file.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(InputStream classStream) throws IOException {
         return compileClass(getAsmClass(classStream));
@@ -247,8 +247,7 @@ public class Compiler {
         compUnit.getNeoModule().finalizeModule();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
                 compUnit.getNeoModule().toByteArray());
-        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit,
-                nef.getScriptHash());
+        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
         compUnit.setDebugInfo(buildDebugInfo(compUnit));

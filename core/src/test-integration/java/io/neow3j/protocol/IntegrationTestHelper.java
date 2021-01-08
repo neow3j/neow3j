@@ -28,9 +28,9 @@ public class IntegrationTestHelper {
     // The path to the wallet from the directory of the node process.
     static final String NODE_WALLET_PATH = "wallet.json";
 
-    // Hash of the NEO token.
-    static final String NEO_HASH = "de5f57d430d3dece511cf975a8d37848cb9e0525";
-    static final String GAS_HASH = "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc";
+    // Native token hashes.
+    static final String NEO_HASH = "0a46e2e37c9987f570b4af253fb77e7eef0f72b6";
+    static final String GAS_HASH = "a6a6c15dcdc9b997dac448b6926522d22efeedfb";
     // Total supply of NEO tokens.
     static final int NEO_TOTAL_SUPPLY = 100000000;
     // First account (multi-sig) in the node's wallet

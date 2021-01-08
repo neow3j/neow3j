@@ -99,6 +99,12 @@ public class MethodsConverter implements Converter {
     /**
      * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor
      * calls (INVOKESPECIAL) are handled in the {@link ObjectsConverter}
+     *
+     * @param insn             The instruction to handle.
+     * @param callingNeoMethod The method in which the invoke happens.
+     * @param compUnit         The {@code CompilationUnit}.
+     * @return the instruction that should be processed next.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public static AbstractInsnNode handleInvoke(AbstractInsnNode insn,
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {

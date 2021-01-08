@@ -1,12 +1,14 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.contracts.NeoToken;
+import io.neow3j.devpack.contracts.PolicyContract;
 
 /**
  * Base class for contract interfaces that give convenient access to a deployed contract's methods.
  * Extend this class in combination with the {@link ContractHash} annotation to create an
- * "interface" to smart contract on the Neo blockchain. Examples are the {@link Policy} and {@link
- * NEO} contracts.
+ * "interface" to smart contract on the Neo blockchain. Examples are the {@link PolicyContract} and {@link
+ * NeoToken} contracts.
  */
 public abstract class ContractInterface {
 

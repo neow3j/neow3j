@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
@@ -20,14 +19,14 @@ import java.util.stream.Stream;
 /**
  * Represents the NeoToken native contract and provides methods to invoke all its functions.
  */
-public class NeoToken extends Nep5Token {
+public class NeoToken extends Nep17Token {
+
+    public final static String NAME = "NeoToken";
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     public final static int DECIMALS = 0;
-    public final static String NAME = "NEO";
-    public final static String SYMBOL = "neo";
+    public final static String SYMBOL = "NEO";
     public final static BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
     public static final String REGISTER_CANDIDATE = "registerCandidate";
