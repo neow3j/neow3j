@@ -362,6 +362,7 @@ public class MethodsConverter implements Converter {
         }
 
         int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;
+        addReverseArguments(callingNeoMethod, nrOfParams);
         addPushNumber(nrOfParams, callingNeoMethod);
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
         callingNeoMethod.addInstruction(buildPushDataInsn(calledAsmMethod.name));
