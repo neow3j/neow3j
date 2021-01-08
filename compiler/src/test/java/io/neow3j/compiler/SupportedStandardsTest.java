@@ -16,7 +16,7 @@ public class SupportedStandardsTest {
     public void multiStandardContract() throws IOException {
         CompilationUnit res = new Compiler().compileClass(
                 MultiStandardContract.class.getName());
-        assertThat(res.getManifest().getSupportedStandards(), containsInAnyOrder("NEP5", "NEP10"));
+        assertThat(res.getManifest().getSupportedStandards(), containsInAnyOrder("NEP17", "NEP10"));
     }
 
     @Test
@@ -24,10 +24,10 @@ public class SupportedStandardsTest {
         CompilationUnit res = new Compiler().compileClass(
                 SingleStandardContract.class.getName());
         assertThat(res.getManifest().getSupportedStandards(), hasSize(1));
-        assertThat(res.getManifest().getSupportedStandards(), contains("NEP5"));
+        assertThat(res.getManifest().getSupportedStandards(), contains("NEP17"));
     }
 
-    @SupportedStandards({"NEP5", "NEP10"})
+    @SupportedStandards({"NEP17", "NEP10"})
     static class MultiStandardContract {
 
         public static boolean main(byte[] scriptHash) {
@@ -35,7 +35,7 @@ public class SupportedStandardsTest {
         }
     }
 
-    @SupportedStandards("NEP5")
+    @SupportedStandards("NEP17")
     static class SingleStandardContract {
 
         public static boolean main(byte[] scriptHash) {

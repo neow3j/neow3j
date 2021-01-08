@@ -1,7 +1,6 @@
 package io.neow3j.devpack.neo;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETBLOCK;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETCONTRACT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETHEIGHT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTION;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK;
@@ -65,22 +64,13 @@ public class Blockchain {
     public static native Transaction getTransactionFromBlock(int blockHeight, int txIndex);
 
     /**
-     * Gets the transaction height of the transaction with the given hash. The transaction
-     * height is the number of the block in which a transaction is contained.
+     * Gets the transaction height of the transaction with the given hash. The transaction height is
+     * the number of the block in which a transaction is contained.
      *
      * @param transactionHash The hash of the transaction.
      * @return the transaction's height.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT)
     public static native int getTransactionHeight(byte[] transactionHash);
-
-    /**
-     * Gets the contract with the given script hash.
-     *
-     * @param scriptHash The contract's script hash.
-     * @return the contract.
-     */
-    @Syscall(SYSTEM_BLOCKCHAIN_GETCONTRACT)
-    public static native Contract getContract(byte[] scriptHash);
 
 }

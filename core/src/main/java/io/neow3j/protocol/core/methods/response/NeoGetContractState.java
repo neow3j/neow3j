@@ -17,6 +17,9 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         @JsonProperty("id")
         private int id;
 
+        @JsonProperty("updatecounter")
+        private int updateCounter;
+
         @JsonProperty("hash")
         private String hash;
 
@@ -29,8 +32,10 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         public ContractState() {
         }
 
-        public ContractState(int id, String hash, String script, ContractManifest manifest) {
+        public ContractState(int id, int updateCounter, String hash, String script,
+                             ContractManifest manifest) {
             this.id = id;
+            this.updateCounter = updateCounter;
             this.hash = hash;
             this.script = script;
             this.manifest = manifest;
@@ -38,6 +43,10 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
 
         public int getId() {
             return id;
+        }
+
+        public int getUpdateCounter() {
+            return updateCounter;
         }
 
         public String getHash() {
@@ -58,6 +67,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             if (!(o instanceof ContractState)) return false;
             ContractState that = (ContractState) o;
             return Objects.equals(getId(), that.getId()) &&
+                    Objects.equals(getUpdateCounter(), that.getUpdateCounter()) &&
                     Objects.equals(getHash(), that.getHash()) &&
                     Objects.equals(getScript(), that.getScript()) &&
                     Objects.equals(getManifest(), that.getManifest());
@@ -65,13 +75,14 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
 
         @Override
         public int hashCode() {
-            return Objects.hash(getId(), getHash(), getScript(), getManifest());
+            return Objects.hash(getId(), getUpdateCounter(), getHash(), getScript(), getManifest());
         }
 
         @Override
         public String toString() {
             return "ContractState{" +
                     "id=" + id +
+                    ", updatecounter=" + updateCounter +
                     ", hash=" + hash +
                     ", script=" + script +
                     ", manifest=" + manifest +

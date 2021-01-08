@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.core.Response;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances.Nep5Balance;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 

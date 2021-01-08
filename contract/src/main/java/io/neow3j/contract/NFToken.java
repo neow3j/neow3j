@@ -134,6 +134,7 @@ public class NFToken extends Token {
      *
      * @param tokenID the token ID.
      * @return a list of owners of the token.
+     * @throws IOException if an error occurs when interacting with the neo-node
      */
     // According to the not yet final NEP-11 proposal, this method returns an enumerator that contains all
     //  the co-owners that own the specified token. Hence, this method expects an array stack item
@@ -199,6 +200,7 @@ public class NFToken extends Token {
      *
      * @param owner the account.
      * @return a list of all token IDs that are owned by the given account.
+     * @throws IOException if an error occurs when interacting with the neo-node
      */
     public List<ScriptHash> tokensOf(ScriptHash owner) throws IOException {
         return callFunctionReturningListOfScriptHashes(TOKENS_OF,
@@ -210,6 +212,7 @@ public class NFToken extends Token {
      *
      * @param tokenID the token ID.
      * @return the properties of the token.
+     * @throws IOException if an error occurs when interacting with the neo-node
      */
     public NFTokenProperties properties(byte[] tokenID) throws IOException {
         StackItem item = callInvokeFunction(PROPERTIES,

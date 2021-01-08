@@ -98,6 +98,12 @@ public class MethodsConverter implements Converter {
     /**
      * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor
      * calls (INVOKESPECIAL) are handled in the {@link ObjectsConverter}
+     *
+     * @param insn             The instruction to handle.
+     * @param callingNeoMethod The method in which the invoke happens.
+     * @param compUnit         The {@code CompilationUnit}.
+     * @return the instruction that should be processed next.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public static AbstractInsnNode handleInvoke(AbstractInsnNode insn,
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
@@ -178,9 +184,9 @@ public class MethodsConverter implements Converter {
         return methodInsn;
     }
 
-    private static boolean isStringLengthCall(MethodInsnNode methodInsn)  {
-        return  methodInsn.owner.equals(Type.getInternalName(String.class))
-            && methodInsn.name.equals(LENGTH_METHOD_NAME);
+    private static boolean isStringLengthCall(MethodInsnNode methodInsn) {
+        return methodInsn.owner.equals(Type.getInternalName(String.class))
+                && methodInsn.name.equals(LENGTH_METHOD_NAME);
     }
 
     private static boolean isStringSwitch(ClassNode owner, MethodNode calledAsmMethod,
@@ -340,7 +346,7 @@ public class MethodsConverter implements Converter {
         byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
         if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
             throw new CompilerException(owner, format("Script hash '%s' of the @%s annotation on "
-                    + "class %s does not have the length of a correct script hash.",
+                            + "class %s does not have the length of a correct script hash.",
                     Numeric.toHexStringNoPrefix(scriptHash),
                     Contract.class.getSimpleName(), getClassNameForInternalName(owner.name)));
         }

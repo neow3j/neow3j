@@ -3,7 +3,6 @@ package io.neow3j.compiler;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.annotations.Features;
 import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.devpack.neo.Storage;
 import io.neow3j.devpack.neo.StorageMap;
@@ -40,7 +39,6 @@ public class StaticVariablesTest extends ContractTest {
                 StringEndsWith.endsWith("NEO"));
     }
 
-    @Features(hasStorage = true)
     static class StaticVariables {
 
         private static final StorageMap map = Storage.getStorageContext().createMap("data");

@@ -2,15 +2,15 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "script": "02400d030011c00c0f7365744d6178426c6f636b53697a650c14e9ff4ca7cc252e1dfddb26315869cd79505906ce41627d5b52",
+    "script": "GhHADA9zZXRNYXhCbG9ja1NpemUMFBTuzAVTkDg69dVef7y+/cCEEOPdQWJ9W1I=",
     "state": "HALT",
-    "gasconsumed": "4007600",
+    "gasconsumed": "0.0399918",
+    "exception": null,
     "stack": [
       {
         "type": "Boolean",
         "value": true
       }
-    ],
-    "tx": null
+    ]
   }
 }

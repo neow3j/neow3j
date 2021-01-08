@@ -1,8 +1,9 @@
 package io.neow3j.devpack.neo;
 
 import io.neow3j.devpack.annotations.Contract;
+import java.io.IOException;
 
-@Contract(scriptHash = "0xce06595079cd69583126dbfd1d2e25cca74cffe9")
+@Contract(scriptHash = "0xdde31084c0fdbebc7f5ed5f53a38905305ccee14")
 public class Policy {
 
     /**
@@ -39,14 +40,6 @@ public class Policy {
      * @return the fee per byte.
      */
     public static native int getFeePerByte();
-
-    /**
-     * Gets the script hashes of the accounts that are currently blacklisted/blocked.
-     *
-     * @return the blocked accounts' script hashes as hexadecimal strings and in little-endian
-     * order.
-     */
-    public static native String[] getBlockedAccounts();
 
     /**
      * Sets the maximum block size to the given value.
@@ -95,5 +88,14 @@ public class Policy {
      * @return true, if successful. False, otherwise.
      */
     public static native boolean unblockAccount(byte[] scriptHash);
+
+    /**
+     * Checks if the given account is blocked.
+     *
+     * @param scriptHash the script hash of the account.
+     * @return true if the account is blocked. False, otherwise.
+     */
+    public static native boolean isBlocked(byte[] scriptHash);
+
 
 }

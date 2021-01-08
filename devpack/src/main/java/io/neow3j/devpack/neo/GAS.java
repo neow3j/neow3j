@@ -2,7 +2,7 @@ package io.neow3j.devpack.neo;
 
 import io.neow3j.devpack.annotations.Contract;
 
-@Contract(scriptHash = "0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc")
+@Contract(scriptHash = "0xa6a6c15dcdc9b997dac448b6926522d22efeedfb")
 public class GAS {
 
     /**
