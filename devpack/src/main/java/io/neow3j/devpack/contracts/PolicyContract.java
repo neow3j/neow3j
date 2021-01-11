@@ -1,17 +1,10 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.annotations.Contract;
-import java.io.IOException;
+import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.annotations.ContractHash;
 
-@Contract(scriptHash = "0xdde31084c0fdbebc7f5ed5f53a38905305ccee14")
-public class Policy {
-
-    /**
-     * Gets the name of the Policy contract.
-     *
-     * @return the name.
-     */
-    public static native String name();
+@ContractHash("0xdde31084c0fdbebc7f5ed5f53a38905305ccee14")
+public class PolicyContract extends ContractInterface {
 
     /**
      * Gets the maximum allowed number of transactions per block.
@@ -35,7 +28,7 @@ public class Policy {
     public static native int getMaxBlockSystemFee();
 
     /**
-     * Gets the cost one has to pay per transaction byte, i.e. the fee per byte.
+     * Gets the GAS cost per transaction byte, i.e. the fee per byte.
      *
      * @return the fee per byte.
      */
@@ -97,5 +90,40 @@ public class Policy {
      */
     public static native boolean isBlocked(byte[] scriptHash);
 
+    /**
+     * Gets the fee factor used to calculate the GAS cost of contract executions.
+     * <p>
+     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result
+     * in the actual GAS cost.
+     *
+     * @return the execution fee factor.
+     */
+    public static native int getExecFeeFactor();
+
+    /**
+     * Sets the fee factor used to calculate the GAS cost of contract executions.
+     * <p>
+     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result
+     * in the actual GAS cost.
+     *
+     * @param factor The desired factor.
+     * @return true, if the factor was successfully set. False, otherwise.
+     */
+    public static native boolean setExecFeeFactor(int factor);
+
+    /**
+     * Gets the GAS price per byte of contract storage.
+     *
+     * @return the price for one byte of storage.
+     */
+    public static native int getStoragePrice();
+
+    /**
+     * Sets the GAS price per byte of contract storage.
+     *
+     * @param price The desired price for one byte of storage.
+     * @return true, if the price was successfully set. False, otherwise.
+     */
+    public static native boolean setStoragePrice(int price);
 
 }

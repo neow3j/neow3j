@@ -5,8 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Helper;
-import io.neow3j.devpack.neo.NEO;
-import io.neow3j.devpack.neo.Runtime;
+import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import org.junit.BeforeClass;
@@ -50,14 +49,14 @@ public class StringConcatenationTest extends ContractTest {
 
     static class StringConcatenation {
 
-        private static final String staticString = "one" + "two" + NEO.symbol();
+        private static final String staticString = "one" + "two" + NeoToken.symbol();
 
         public static String concatTwoStrings(String s1, String s2) {
             return s1 + s2;
         }
 
         public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
-            return s1 + s2 + "three" + Helper.toByteString(s3) + NEO.symbol();
+            return s1 + s2 + "three" + Helper.toByteString(s3) + NeoToken.symbol();
         }
 
         public static String concatInStaticVariable() {

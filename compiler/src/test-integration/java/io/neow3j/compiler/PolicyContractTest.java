@@ -3,16 +3,13 @@ package io.neow3j.compiler;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.contract.NeoToken;
-import io.neow3j.contract.PolicyContract;
-import io.neow3j.devpack.neo.Policy;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
@@ -25,10 +22,12 @@ public class PolicyContractTest extends ContractTest {
     public static final long MAX_BLOCK_SIZE = 1024 * 256;
     public static final long MAX_TRANSACTIONS_PER_BLOCK = 512;
     public static final long FEE_PER_BYTE = 1000L; // GAS fractions
+    public static final int DEFAULT_EXEC_FEE_FACTOR = 30;
+    public static final int DEFAULT_STORAGE_PRICE = 100000;
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(PolicyContractUser.class.getName());
+        setUp(PolicyContractTestContract.class.getName());
     }
 
     @Test
@@ -47,6 +46,7 @@ public class PolicyContractTest extends ContractTest {
         int fee = 4007601;
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(fee));
+
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
         assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(MAX_BLOCK_SYSTEM_FEE)));
         assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(fee)));
@@ -63,97 +63,142 @@ public class PolicyContractTest extends ContractTest {
     }
 
     @Test
-    public void getMaxTransactionsPerBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
-
-        assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
-                is(BigInteger.valueOf(MAX_TRANSACTIONS_PER_BLOCK)));
-    }
-
-    @Test
     public void setAndGetMaxTransactionsPerBlock() throws IOException {
         BigInteger newTxPerBlock = BigInteger.ONE;
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(newTxPerBlock));
 
         StackItem array = response.getInvocationResult().getStack().get(0);
-        assertThat(array.getType(), is(StackItemType.ARRAY));
         StackItem elem1 = array.asArray().get(0);
-        assertThat(elem1.getType(), is(StackItemType.INTEGER));
         assertThat(elem1.asInteger().getValue(),
                 is(BigInteger.valueOf(MAX_TRANSACTIONS_PER_BLOCK)));
         StackItem elem2 = array.asArray().get(1);
-        assertThat(elem2.getType(), is(StackItemType.INTEGER));
         assertThat(elem2.asInteger().getValue(), is(newTxPerBlock));
     }
 
     @Test
-    public void setAndGetBlockedAccount() throws IOException {
+    public void blockAndUnblockAccountAndIsBlocked() throws Throwable {
         signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
+        NeoInvokeFunction response = callInvokeFunction("isBlocked",
+                hash160(defaultAccount.getScriptHash()));
+        assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
 
-        StackItem arrayItem = response.getInvocationResult().getStack().get(0);
-        assertTrue(arrayItem.asBoolean().getValue());
+        // Block the account
+        String txHash = invokeFunctionAndAwaitExecution("blockAccount",
+                hash160(defaultAccount.getScriptHash()));
+        assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getStack().get(0).asBoolean().getValue());
+
+        // Check if it was blocked.
+        response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
+        assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+
+        // Unblock the account
+        txHash = invokeFunctionAndAwaitExecution("unblockAccount",
+                hash160(defaultAccount.getScriptHash()));
+        assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getStack().get(0).asBoolean().getValue());
+
+        // Check if it was unblocked.
+        response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
+        assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
     }
 
     @Test
-    public void unblockAccount() throws IOException {
+    public void setAndGetExecFeeFactor() throws IOException {
         signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()));
-        assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        NeoInvokeFunction response = callInvokeFunction(integer(300));
+
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
+        assertThat(res.get(0).asInteger().getValue(),
+                is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
+        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(300)));
     }
 
-    static class PolicyContractUser {
+    @Test
+    public void setAndGetStoragePrice() throws IOException {
+        signAsCommittee();
+        NeoInvokeFunction response = callInvokeFunction(integer(1000000));
 
-        public static String getName() {
-            return Policy.name();
-        }
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
+        assertThat(res.get(0).asInteger().getValue(),
+                is(BigInteger.valueOf(DEFAULT_STORAGE_PRICE)));
+        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(1000000)));
+
+    }
+
+    @Test
+    public void getHash() throws Throwable {
+        NeoInvokeFunction response = callInvokeFunction();
+        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+                is(io.neow3j.contract.PolicyContract.SCRIPT_HASH.toString()));
+    }
+
+    static class PolicyContractTestContract {
 
         public static int[] setAndGetFeePerByte(int newFee) {
             int[] sizes = new int[2];
-            sizes[0] = Policy.getFeePerByte();
-            Policy.setFeePerByte(newFee);
-            sizes[1] = Policy.getFeePerByte();
+            sizes[0] = PolicyContract.getFeePerByte();
+            PolicyContract.setFeePerByte(newFee);
+            sizes[1] = PolicyContract.getFeePerByte();
             return sizes;
         }
 
         public static int[] setAndGetMaxBlockSystemFee(int newFee) {
             int[] sizes = new int[2];
-            sizes[0] = Policy.getMaxBlockSystemFee();
-            if (Policy.setMaxBlockSystemFee(newFee)) {
-                sizes[1] = Policy.getMaxBlockSystemFee();
+            sizes[0] = PolicyContract.getMaxBlockSystemFee();
+            if (PolicyContract.setMaxBlockSystemFee(newFee)) {
+                sizes[1] = PolicyContract.getMaxBlockSystemFee();
             }
             return sizes;
         }
 
         public static int[] setAndGetMaxBlockSize(int newSize) {
             int[] sizes = new int[2];
-            sizes[0] = Policy.getMaxBlockSize();
-            Policy.setMaxBlockSize(newSize);
-            sizes[1] = Policy.getMaxBlockSize();
+            sizes[0] = PolicyContract.getMaxBlockSize();
+            PolicyContract.setMaxBlockSize(newSize);
+            sizes[1] = PolicyContract.getMaxBlockSize();
             return sizes;
-        }
-
-        public static int getMaxTransactionsPerBlock() {
-            return Policy.getMaxTransactionsPerBlock();
         }
 
         public static int[] setAndGetMaxTransactionsPerBlock(int size) {
             int[] sizes = new int[2];
-            sizes[0] = Policy.getMaxTransactionsPerBlock();
-            Policy.setMaxTransactionsPerBlock(size);
-            sizes[1] = Policy.getMaxTransactionsPerBlock();
+            sizes[0] = PolicyContract.getMaxTransactionsPerBlock();
+            PolicyContract.setMaxTransactionsPerBlock(size);
+            sizes[1] = PolicyContract.getMaxTransactionsPerBlock();
             return sizes;
         }
 
-        public static boolean setAndGetBlockedAccount(byte[] scriptHash) {
-            Policy.blockAccount(scriptHash);
-            return Policy.isBlocked(scriptHash);
+        public static boolean blockAccount(byte[] scriptHash) {
+            return PolicyContract.blockAccount(scriptHash);
+        }
+
+        public static boolean isBlocked(byte[] scriptHash) {
+            return PolicyContract.isBlocked(scriptHash);
         }
 
         public static boolean unblockAccount(byte[] scriptHash) {
-            Policy.blockAccount(scriptHash);
-            return Policy.unblockAccount(scriptHash);
+            return PolicyContract.unblockAccount(scriptHash);
+        }
+
+        public static byte[] getHash() {
+            return PolicyContract.getHash();
+        }
+
+        public static int[] setAndGetExecFeeFactor(int newFactor) {
+            int[] factors = new int[2];
+            factors[0] = PolicyContract.getExecFeeFactor();
+            PolicyContract.setExecFeeFactor(newFactor);
+            factors[1] = PolicyContract.getExecFeeFactor();
+            return factors;
+        }
+
+        public static int[] setAndGetStoragePrice(int newPrice) {
+            int[] prices = new int[2];
+            prices[0] = PolicyContract.getStoragePrice();
+            PolicyContract.setStoragePrice(newPrice);
+            prices[1] = PolicyContract.getStoragePrice();
+            return prices;
         }
     }
 
