@@ -28,10 +28,13 @@ public class NeoToken extends Nep17Token {
      * @param publicKey The public key of the candidate.
      * @return true, if deregistering was successful. False, otherwise.
      */
-    public static native boolean unRegisterCandidate(byte[] publicKey);
+    public static native boolean unregisterCandidate(byte[] publicKey);
 
     /**
      * Casts a vote for the candidate with the given public key.
+     * <p>
+     * Note, that a witness (signature) of the account corresponding to the public key has to be
+     * available for this to work.
      *
      * @param scriptHash      The script hash of the account that is used to cast the vote.
      * @param candidatePubKey The public key of the candidate to vote for.
@@ -45,13 +48,6 @@ public class NeoToken extends Nep17Token {
      * @return the list of registered candidates.
      */
     public static native Candidate[] getCandidates();
-
-    /**
-     * Gets the public keys of current validators.
-     *
-     * @return the validators' public keys as strings.
-     */
-    public static native String[] getValidators();
 
     /**
      * Gets the public keys of the current committee members.
