@@ -2,7 +2,7 @@ package io.neow3j.devpack.neo;
 
 /**
  * Represents a block and provides block-related information. It is returned for example when
- * calling {@link Blockchain#getBlock(long)}.
+ * calling {@link Blockchain#getBlock(int)}.
  */
 public class Block {
 

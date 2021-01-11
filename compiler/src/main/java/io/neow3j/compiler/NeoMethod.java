@@ -313,8 +313,11 @@ public class NeoMethod {
     }
 
     /**
-     * Creates a unique id for the given method used to identify this method in the {@link
+     * Creates a unique ID for the given method used to identify this method in the {@link
      * NeoModule}.
+     * @param asmMethod The method to create the ID for.
+     * @param owner The class owning the method.
+     * @return the ID.
      */
     public static String getMethodId(MethodNode asmMethod, ClassNode owner) {
         return owner.name + "." + asmMethod.name + asmMethod.desc;
@@ -433,6 +436,8 @@ public class NeoMethod {
 
     /**
      * Adds a local variable to this method.
+     *
+     * @param var the variable to add.
      */
     public void addVariable(NeoVariable var) {
         this.variablesByNeoIndex.put(var.getNeoIndex(), var);
@@ -442,6 +447,7 @@ public class NeoMethod {
     /**
      * Gets the variable at the given index from this method in its JVM bytecode representation
      *
+     * @param index The variable's index in this method.
      * @return the variable.
      */
     public NeoVariable getVariableByJVMIndex(int index) {
@@ -451,6 +457,7 @@ public class NeoMethod {
     /**
      * Gets the parameter at the given index from this method in its JVM bytecode representation
      *
+     * @param index The parameter's index in this method.
      * @return the parameter.
      */
     public NeoVariable getParameterByJVMIndex(int index) {

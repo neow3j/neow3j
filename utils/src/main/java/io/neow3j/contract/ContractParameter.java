@@ -60,6 +60,10 @@ public class ContractParameter {
         this(null, paramType, value);
     }
 
+    public static ContractParameter any(Object value) {
+        return new ContractParameter(ContractParameterType.ANY, value);
+    }
+
     public static ContractParameter string(String value) {
         return new ContractParameter(ContractParameterType.STRING, value);
     }

@@ -1,18 +1,17 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.protocol.Neow3j;
 
 /**
  * Represents the GasToken native contract and provides methods to invoke all its functions.
  */
-public class GasToken extends Nep5Token {
+public class GasToken extends Nep17Token {
+
+    public final static String NAME = "GasToken";
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     public final static int DECIMALS = 8;
-    public final static String NAME = "GAS";
-    public final static String SYMBOL = "gas";
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
+    public final static String SYMBOL = "GAS";
 
     /**
      * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for

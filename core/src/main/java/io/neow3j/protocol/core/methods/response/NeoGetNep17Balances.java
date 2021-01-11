@@ -10,7 +10,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
-public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
+public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Balances> {
 
     public Balances getBalances() {
         return getResult();
@@ -21,7 +21,7 @@ public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
 
         @JsonProperty("balance")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Nep5Balance> balances;
+        private List<Nep17Balance> balances;
 
         @JsonProperty("address")
         private String address;
@@ -29,12 +29,12 @@ public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
         public Balances() {
         }
 
-        public Balances(List<Nep5Balance> balances, String address) {
+        public Balances(List<Nep17Balance> balances, String address) {
             this.balances = balances;
             this.address = address;
         }
 
-        public List<Nep5Balance> getBalances() {
+        public List<Nep17Balance> getBalances() {
             return balances;
         }
 
@@ -66,7 +66,7 @@ public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Nep5Balance {
+    public static class Nep17Balance {
 
         @JsonProperty("assethash")
         private String assetHash;
@@ -77,10 +77,10 @@ public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
         @JsonProperty("lastupdatedblock")
         private BigInteger lastUpdatedBlock;
 
-        public Nep5Balance() {
+        public Nep17Balance() {
         }
 
-        public Nep5Balance(String assetHash, String amount, BigInteger lastUpdatedBlock) {
+        public Nep17Balance(String assetHash, String amount, BigInteger lastUpdatedBlock) {
             this.assetHash = assetHash;
             this.amount = amount;
             this.lastUpdatedBlock = lastUpdatedBlock;
@@ -101,8 +101,8 @@ public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof Nep5Balance)) return false;
-            Nep5Balance that = (Nep5Balance) o;
+            if (!(o instanceof Nep17Balance)) return false;
+            Nep17Balance that = (Nep17Balance) o;
             return Objects.equals(assetHash, that.assetHash) &&
                     Objects.equals(amount, that.amount) &&
                     Objects.equals(lastUpdatedBlock, that.lastUpdatedBlock);
@@ -115,7 +115,7 @@ public class NeoGetNep5Balances extends Response<NeoGetNep5Balances.Balances> {
 
         @Override
         public String toString() {
-            return "Nep5Balance{" +
+            return "Nep17Balance{" +
                     "assetHash='" + assetHash + '\'' +
                     ", amount='" + amount + '\'' +
                     ", lastUpdatedBlock=" + lastUpdatedBlock +

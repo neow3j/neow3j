@@ -1,16 +1,16 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
-public class NeoGetValidators extends Response<List<NeoGetValidators.Validator>> {
+public class NeoGetNextBlockValidators extends Response<List<NeoGetNextBlockValidators.Validator>> {
 
-    public List<Validator> getValidators() {
+    public List<Validator> getNextBlockValidators() {
         return getResult();
     }
 

@@ -1,8 +1,5 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
@@ -24,8 +21,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Transfers;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -35,7 +32,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetValidators;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -79,9 +76,6 @@ import org.junit.Test;
  * Core Protocol Response tests.
  */
 public class ResponseTest extends ResponseTester {
-
-    public static final ScriptHash NEO_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().pushData("NEO").sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     @Test
     public void testErrorResponse() {
@@ -439,45 +433,45 @@ public class ResponseTest extends ResponseTester {
                         "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "        \"script\": \"QetD9PQ=\",\n" +
                         "        \"manifest\": {\n" +
+                        "            \"name\": \"GasToken\"," +
                         "            \"groups\": [\n" +
                         "                {\n" +
                         "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
                         "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
                         "                }\n" +
                         "            ],\n" +
-                        "            \"features\": {\n" +
-                        "                \"storage\": true,\n" +
-                        "                \"payable\": false\n" +
-                        "            },\n" +
                         "            \"supportedstandards\": [" +
-                        "                \"NEP-5\"" +
+                        "                \"NEP-17\"" +
                         "            ],\n" +
                         "            \"abi\": {\n" +
-                        "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "                \"methods\": [\n" +
                         "                    {\n" +
                         "                        \"name\": \"name\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"String\"\n" +
+                        "                        \"returntype\": \"String\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"symbol\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"String\"\n" +
+                        "                        \"returntype\": \"String\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"decimals\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"totalSupply\",\n" +
                         "                        \"parameters\": [],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\",\n" +
+                        "                        \"safe\": true\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"name\": \"balanceOf\",\n" +
@@ -488,7 +482,20 @@ public class ResponseTest extends ResponseTester {
                         "                            }\n" +
                         "                        ],\n" +
                         "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\"\n" +
+                        "                        \"returntype\": \"Integer\",\n" +
+                        "                        \"safe\": true\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"name\": \"setGasPerBlock\",\n" +
+                        "                        \"parameters\": [\n" +
+                        "                            {\n" +
+                        "                                \"name\": \"gasPerBlock\",\n" +
+                        "                                \"type\": \"Integer\"\n" +
+                        "                            }\n" +
+                        "                        ],\n" +
+                        "                        \"offset\": 0,\n" +
+                        "                        \"returntype\": \"Boolean\",\n" +
+                        "                        \"safe\": false\n" +
                         "                    }\n" +
                         "                ],\n" +
                         "                \"events\": [\n" +
@@ -523,14 +530,6 @@ public class ResponseTest extends ResponseTester {
                         "            \"trusts\": [" +
                         "                \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"\n" +
                         "            ],\n" +
-                        "            \"safemethods\": [\n" +
-                        "                \"name\",\n" +
-                        "                \"symbol\",\n" +
-                        "                \"decimals\",\n" +
-                        "                \"totalSupply\",\n" +
-                        "                \"balanceOf\",\n" +
-                        "                \"supportedStandards\"\n" +
-                        "            ],\n" +
                         "            \"extra\": null\n" +
                         "        }\n" +
                         "    }\n" +
@@ -546,6 +545,7 @@ public class ResponseTest extends ResponseTester {
 
         ContractManifest manifest = getContractState.getContractState().getManifest();
         assertThat(manifest, is(notNullValue()));
+        assertThat(manifest.getName(), is("GasToken"));
         assertThat(manifest.getGroups(), is(notNullValue()));
         assertThat(manifest.getGroups(), hasSize(1));
         assertThat(manifest.getGroups().get(0).getPubKey(),
@@ -553,19 +553,14 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getGroups().get(0).getSignature(),
                 is("41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141"));
 
-        assertThat(manifest.getFeatures(), is(notNullValue()));
-        assertThat(manifest.getFeatures().getStorage(), is(true));
-        assertThat(manifest.getFeatures().getPayable(), is(false));
-
         assertThat(manifest.getSupportedStandards(), hasSize(1));
-        assertThat(manifest.getSupportedStandards().get(0), is("NEP-5"));
+        assertThat(manifest.getSupportedStandards().get(0), is("NEP-17"));
 
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
-        assertThat(abi.getHash(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
 
         assertThat(abi.getMethods(), is(notNullValue()));
-        assertThat(abi.getMethods(), hasSize(5));
+        assertThat(abi.getMethods(), hasSize(6));
         assertThat(abi.getMethods().get(1).getName(), is("symbol"));
         assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(0));
@@ -592,92 +587,9 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(manifest.getTrusts(), is(notNullValue()));
         assertThat(manifest.getTrusts(), hasSize(1));
-        assertFalse(manifest.trusts_isWildCard());
         assertThat(manifest.getTrusts().get(0), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
 
-        assertThat(manifest.getSafeMethods(), is(notNullValue()));
-        assertThat(manifest.getSafeMethods(), hasSize(6));
-        assertFalse(manifest.safeMethods_isWildCard());
-        assertThat(manifest.getSafeMethods(),
-                containsInAnyOrder(
-                        "name",
-                        "symbol",
-                        "decimals",
-                        "totalSupply",
-                        "balanceOf",
-                        "supportedStandards"
-                ));
-
         assertThat(manifest.getExtra(), is(nullValue()));
-    }
-
-    @Test
-    public void testGetContractState_wildCards() {
-        buildResponse(
-                "{\n" +
-                        "    \"jsonrpc\": \"2.0\",\n" +
-                        "    \"id\": 1,\n" +
-                        "    \"result\": {\n" +
-                        "        \"id\": -2,\n" +
-                        "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "        \"script\": \"QetD9PQ=\",\n" +
-                        "        \"manifest\": {\n" +
-                        "            \"groups\": [\n" +
-                        "                {\n" +
-                        "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
-                        "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
-                        "                }\n" +
-                        "            ],\n" +
-                        "            \"features\": {\n" +
-                        "                \"storage\": true,\n" +
-                        "                \"payable\": false\n" +
-                        "            },\n" +
-                        "            \"supportedstandards\": [" +
-                        "                \"NEP-5\"" +
-                        "            ],\n" +
-                        "            \"abi\": {\n" +
-                        "                \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "                \"methods\": [\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"name\",\n" +
-                        "                        \"parameters\": [],\n" +
-                        "                        \"returntype\": \"String\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"events\": [\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"Transfer\",\n" +
-                        "                        \"parameters\": [\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"from\",\n" +
-                        "                                \"type\": \"Hash160\"\n" +
-                        "                            },\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"to\",\n" +
-                        "                                \"type\": \"Hash160\"\n" +
-                        "                            },\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"amount\",\n" +
-                        "                                \"type\": \"Integer\"\n" +
-                        "                            }\n" +
-                        "                        ]\n" +
-                        "                    }\n" +
-                        "                ]\n" +
-                        "            },\n" +
-                        "            \"permissions\": [],\n" +
-                        "            \"trusts\": \"*\",\n" +
-                        "            \"safemethods\": \"*\",\n" +
-                        "            \"extra\": \"individual info\"\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}"
-        );
-
-        NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
-        ContractManifest manifest = getContractState.getContractState().getManifest();
-        assertTrue(manifest.trusts_isWildCard());
-        assertTrue(manifest.safeMethods_isWildCard());
-        assertThat(manifest.getExtra(), is("individual info"));
     }
 
     @Test
@@ -915,7 +827,7 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testGetValidators() {
+    public void testGetNextBlockValidators() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -936,28 +848,28 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetValidators getValidators = deserialiseResponse(NeoGetValidators.class);
-        assertThat(getValidators.getValidators(), hasSize(2));
-        assertThat(getValidators.getValidators(),
+        NeoGetNextBlockValidators neoGetNextBlockValidators = deserialiseResponse(NeoGetNextBlockValidators.class);
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(), hasSize(2));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(),
                 containsInAnyOrder(
-                        new NeoGetValidators.Validator(
+                        new NeoGetNextBlockValidators.Validator(
                                 "03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2",
                                 "0", false),
-                        new NeoGetValidators.Validator(
+                        new NeoGetNextBlockValidators.Validator(
                                 "02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6",
                                 "91600000", true)
                 )
         );
-        assertThat(getValidators.getValidators().get(0).getPublicKey(),
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getPublicKey(),
                 is("03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2"));
-        assertThat(getValidators.getValidators().get(0).getVotes(), is("0"));
-        assertThat(getValidators.getValidators().get(0).getVotesAsBigInteger(), is(BigInteger.valueOf(0)));
-        assertThat(getValidators.getValidators().get(0).getActive(), is(false));
-        assertThat(getValidators.getValidators().get(1).getActive(), is(true));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getVotes(), is("0"));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getVotesAsBigInteger(), is(BigInteger.valueOf(0)));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getActive(), is(false));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(1).getActive(), is(true));
     }
 
     @Test
-    public void testGetValidators_Empty() {
+    public void testGetNextBlockValidators_Empty() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -966,9 +878,9 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetValidators getValidators = deserialiseResponse(NeoGetValidators.class);
-        assertThat(getValidators.getValidators(), is(notNullValue()));
-        assertThat(getValidators.getValidators(), hasSize(0));
+        NeoGetNextBlockValidators neoGetNextBlockValidators = deserialiseResponse(NeoGetNextBlockValidators.class);
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(), is(notNullValue()));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators(), hasSize(0));
     }
 
     // Node Methods
@@ -1410,7 +1322,7 @@ public class ResponseTest extends ResponseTester {
                         "            \"interfaces\": []\n" +
                         "        },\n" +
                         "        {\n" +
-                        "            \"name\": \"RpcNep5Tracker\",\n" +
+                        "            \"name\": \"RpcNep17Tracker\",\n" +
                         "            \"version\": \"3.0.0.0\",\n" +
                         "            \"interfaces\": [\n" +
                         "                \"IPersistencePlugin\"\n" +
@@ -1467,7 +1379,7 @@ public class ResponseTest extends ResponseTester {
 
         plugin = listPlugins.getPlugins().get(3);
         assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.RPC_NEP5_TRACKER));
+                is(NodePluginType.RPC_NEP17_TRACKER));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
@@ -1947,10 +1859,10 @@ public class ResponseTest extends ResponseTester {
                 ));
     }
 
-    // RpcNep5Tracker
+    // RpcNep17Tracker
 
     @Test
-    public void testGetNep5Transfers() {
+    public void testGetNep17Transfers() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -1992,12 +1904,12 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetNep5Transfers getNep5Transfers = deserialiseResponse(NeoGetNep5Transfers.class);
-        assertThat(getNep5Transfers.getNep5Transfer().getSent(), is(notNullValue()));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent(), hasSize(2));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent(),
+        NeoGetNep17Transfers getNep17Transfers = deserialiseResponse(NeoGetNep17Transfers.class);
+        assertThat(getNep17Transfers.getNep17Transfer().getSent(), is(notNullValue()));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent(), hasSize(2));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent(),
                 containsInAnyOrder(
-                        new NeoGetNep5Transfers.Nep5Transfer(
+                        new NeoGetNep17Transfers.Nep17Transfer(
                                 1554283931L,
                                 "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
@@ -2006,7 +1918,7 @@ public class ResponseTest extends ResponseTester {
                                 0L,
                                 "240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564"
                         ),
-                        new NeoGetNep5Transfers.Nep5Transfer(
+                        new NeoGetNep17Transfers.Nep17Transfer(
                                 1554880287L,
                                 "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
@@ -2017,11 +1929,11 @@ public class ResponseTest extends ResponseTester {
                         )
                 ));
 
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived(), is(notNullValue()));
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived(), hasSize(1));
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived(),
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived(), is(notNullValue()));
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived(), hasSize(1));
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived(),
                 hasItem(
-                        new NeoGetNep5Transfers.Nep5Transfer(
+                        new NeoGetNep17Transfers.Nep17Transfer(
                                 1555651816L,
                                 "600c4f5200db36177e3e8a09e9f18e2fc7d12a0f",
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
@@ -2033,24 +1945,24 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         // First Sent Entry
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(0).getTimestamp(), is(1554283931L));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(0).getAssetHash(),
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTimestamp(), is(1554283931L));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getAssetHash(),
                 is("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(0).getTransferAddress(),
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTransferAddress(),
                 is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
 
         // Second Sent Entry
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(1).getAmount(), is("100000000000"));
-        assertThat(getNep5Transfers.getNep5Transfer().getSent().get(1).getBlockIndex(), is(397769L));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(1).getAmount(), is("100000000000"));
+        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(1).getBlockIndex(), is(397769L));
 
         // Received Entry
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived().get(0).getTransferNotifyIndex(), is(0L));
-        assertThat(getNep5Transfers.getNep5Transfer().getReceived().get(0).getTxHash(),
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTransferNotifyIndex(), is(0L));
+        assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTxHash(),
                 is("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"));
     }
 
     @Test
-    public void testGetNep5Balances() {
+    public void testGetNep17Balances() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -2073,17 +1985,17 @@ public class ResponseTest extends ResponseTester {
                         "}"
         );
 
-        NeoGetNep5Balances getNep5Balances = deserialiseResponse(NeoGetNep5Balances.class);
-        assertThat(getNep5Balances.getBalances().getBalances(), is(notNullValue()));
-        assertThat(getNep5Balances.getBalances().getBalances(), hasSize(2));
-        assertThat(getNep5Balances.getBalances().getBalances(),
+        NeoGetNep17Balances getNep17Balances = deserialiseResponse(NeoGetNep17Balances.class);
+        assertThat(getNep17Balances.getBalances().getBalances(), is(notNullValue()));
+        assertThat(getNep17Balances.getBalances().getBalances(), hasSize(2));
+        assertThat(getNep17Balances.getBalances().getBalances(),
                 containsInAnyOrder(
-                        new NeoGetNep5Balances.Nep5Balance(
+                        new NeoGetNep17Balances.Nep17Balance(
                                 "a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8",
                                 "50000000000",
                                 BigInteger.valueOf(251604L)
                         ),
-                        new NeoGetNep5Balances.Nep5Balance(
+                        new NeoGetNep17Balances.Nep17Balance(
                                 "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
                                 "50000000000",
                                 BigInteger.valueOf(251600L)
@@ -2091,16 +2003,16 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         // First Entry
-        assertThat(getNep5Balances.getBalances().getBalances().get(0).getAssetHash(),
+        assertThat(getNep17Balances.getBalances().getBalances().get(0).getAssetHash(),
                 is("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"));
-        assertThat(getNep5Balances.getBalances().getBalances().get(0).getAmount(), is("50000000000"));
+        assertThat(getNep17Balances.getBalances().getBalances().get(0).getAmount(), is("50000000000"));
 
         // Second Entry
-        assertThat(getNep5Balances.getBalances().getBalances().get(1).getLastUpdatedBlock(),
+        assertThat(getNep17Balances.getBalances().getBalances().get(1).getLastUpdatedBlock(),
                 is(BigInteger.valueOf(251600L)));
 
-        assertThat(getNep5Balances.getBalances().getAddress(), is(notNullValue()));
-        assertThat(getNep5Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
+        assertThat(getNep17Balances.getBalances().getAddress(), is(notNullValue()));
+        assertThat(getNep17Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
     }
 
     // ApplicationLogs
@@ -2113,64 +2025,61 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"txid\": \"0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109\",\n" +
-                        "        \"trigger\": \"Application\",\n" +
-                        "        \"vmstate\": \"HALT\",\n" +
-                        "        \"gasconsumed\": \"9007810\",\n" +
-                        "        \"stack\": [\n" +
+                        "        \"executions\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"Integer\",\n" +
-                        "                \"value\": \"1\"\n" +
-                        "            }\n" +
-                        "        ],\n" +
-                        "        \"notifications\": [\n" +
-                        "            {\n" +
-                        "                \"contract\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "                \"eventname\": \"Transfer\",\n" +
-                        "                \"state\": {\n" +
-                        "                    \"type\": \"Array\",\n" +
-                        "                    \"value\": [\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"VHJhbnNmZXI=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"Any\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"Integer\",\n" +
-                        "                            \"value\": \"600000000\"\n" +
+                        "                \"trigger\": \"Application\",\n" +
+                        "                \"vmstate\": \"HALT\",\n" +
+                        "                \"exception\": \"asdf\",\n" +
+                        "                \"gasconsumed\": \"9007810\",\n" +
+                        "                \"stack\": [\n" +
+                        "                    {\n" +
+                        "                        \"type\": \"Integer\",\n" +
+                        "                        \"value\": \"1\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"notifications\": [\n" +
+                        "                    {\n" +
+                        "                        \"contract\": \"0xa6a6c15dcdc9b997dac448b6926522d22efeedfb\",\n" +
+                        "                        \"eventname\": \"Transfer\",\n" +
+                        "                        \"state\": {\n" +
+                        "                            \"type\": \"Array\",\n" +
+                        "                            \"value\": [\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"Any\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"ByteString\",\n" +
+                        "                                    \"value\": \"ev0gMlXLKXK9CmqCfnTjh+0yK+w=\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"Integer\",\n" +
+                        "                                    \"value\": \"600000000\"\n" +
+                        "                                }\n" +
+                        "                            ]\n" +
                         "                        }\n" +
-                        "                    ]\n" +
-                        "                }\n" +
-                        "            },\n" +
-                        "            {\n" +
-                        "                \"contract\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\n" +
-                        "                \"eventname\": \"Transfer\",\n" +
-                        "                \"state\": {\n" +
-                        "                    \"type\": \"Array\",\n" +
-                        "                    \"value\": [\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"VHJhbnNmZXI=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"5sEBNlSvET2KlovcpSyZSKgrlT0=\"\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"type\": \"Integer\",\n" +
-                        "                            \"value\": \"100\"\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"contract\": \"0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6\",\n" +
+                        "                        \"eventname\": \"Transfer\",\n" +
+                        "                        \"state\": {\n" +
+                        "                            \"type\": \"Array\",\n" +
+                        "                            \"value\": [\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"ByteString\",\n" +
+                        "                                    \"value\": \"VHJhbnNmZXI=\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"ByteString\",\n" +
+                        "                                    \"value\": \"CaVYdMLaS4bl1J/1MKGxU+sSx9Y=\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"type\": \"Integer\",\n" +
+                        "                                    \"value\": \"100\"\n" +
+                        "                                }\n" +
+                        "                            ]\n" +
                         "                        }\n" +
-                        "                    ]\n" +
-                        "                }\n" +
+                        "                    }\n" +
+                        "                ]\n" +
                         "            }\n" +
                         "        ]\n" +
                         "    }\n" +
@@ -2180,43 +2089,47 @@ public class ResponseTest extends ResponseTester {
         NeoGetApplicationLog getApplicationLog = deserialiseResponse(NeoGetApplicationLog.class);
         NeoApplicationLog neoAppLog = getApplicationLog.getApplicationLog();
         assertThat(neoAppLog, is(notNullValue()));
-        assertThat(neoAppLog.getTrigger(), is("Application"));
-        assertThat(neoAppLog.getState(), is("HALT"));
-        assertThat(neoAppLog.getGasConsumed(), is("9007810"));
 
-        assertThat(neoAppLog.getStack(), is(notNullValue()));
-        assertThat(neoAppLog.getStack(), hasSize(1));
-        assertThat(neoAppLog.getStack().get(0).getType(),
+        assertThat(neoAppLog.getTransactionId(),
+                is("0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109"));
+
+        assertThat(neoAppLog.getExecutions(), hasSize(1));
+        NeoApplicationLog.Execution execution = neoAppLog.getExecutions().get(0);
+        assertThat(execution.getTrigger(), is("Application"));
+        assertThat(execution.getState(), is("HALT"));
+        assertThat(execution.getGasConsumed(), is("9007810"));
+
+        assertThat(execution.getStack(), is(notNullValue()));
+        assertThat(execution.getStack(), hasSize(1));
+        assertThat(execution.getStack().get(0).getType(),
                 is(StackItemType.INTEGER));
-        assertThat(neoAppLog.getStack().get(0).asInteger().getValue(),
+        assertThat(execution.getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(1)));
 
-        assertThat(neoAppLog.getNotifications(), is(notNullValue()));
-        assertThat(neoAppLog.getNotifications(), hasSize(2));
+        assertThat(execution.getNotifications(), is(notNullValue()));
+        assertThat(execution.getNotifications(), hasSize(2));
 
         // Notification 0
-        NeoApplicationLog.Notification notification0 = neoAppLog.getNotifications().get(0);
+        NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
 
-        assertThat(notification0.getContract(), is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
+        assertThat(notification0.getContract(), is("0xa6a6c15dcdc9b997dac448b6926522d22efeedfb"));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
         ArrayStackItem notification0Array = notification0.getState().asArray();
 
-        String eventName0 = notification0Array.get(0).asByteString().getAsString();
-        AnyStackItem from0 = notification0Array.get(1).asAny();
-        String to0 = notification0Array.get(2).asByteString().getAsAddress();
-        BigInteger amount0 = notification0Array.get(3).asInteger().getValue();
+        AnyStackItem from0 = notification0Array.get(0).asAny();
+        String to0 = notification0Array.get(1).asByteString().getAsAddress();
+        BigInteger amount0 = notification0Array.get(2).asInteger().getValue();
 
-        assertThat(eventName0, is("Transfer"));
         assertNotNull(from0);
-        assertThat(to0, is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
+        assertThat(to0, is("NX8GreRFGFK5wpGMWetpX93HmtrezGogzk"));
         assertThat(amount0, is(BigInteger.valueOf(600000000)));
 
         // Notification 1
-        NeoApplicationLog.Notification notification1 = neoAppLog.getNotifications().get(1);
+        NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
 
-        assertThat(notification1.getContract(), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
+        assertThat(notification1.getContract(), is("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6"));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 
@@ -2224,12 +2137,10 @@ public class ResponseTest extends ResponseTester {
 
         String eventName1 = notification1Array.get(0).asByteString().getAsString();
         String from1 = notification1Array.get(1).asByteString().getAsAddress();
-        String to1 = notification1Array.get(2).asByteString().getAsAddress();
-        BigInteger amount1 = notification1Array.get(3).asInteger().getValue();
+        BigInteger amount1 = notification1Array.get(2).asInteger().getValue();
 
         assertThat(eventName1, is("Transfer"));
-        assertThat(from1, is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
-        assertThat(to1, is("Ngx5p5euXEiS2tL26ZoK499VzqRLQui41V"));
+        assertThat(from1, is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
         assertThat(amount1, is(BigInteger.valueOf(100)));
     }
 }
