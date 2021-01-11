@@ -180,7 +180,7 @@ public class ContractTest {
         }
         if (signWithDefaultAccount) {
             return contract.callInvokeFunction(function, Arrays.asList(params),
-                    Signer.calledByEntry(defaultAccount.getScriptHash()));
+                    Signer.global(defaultAccount.getScriptHash()));
         }
         return contract.callInvokeFunction(function, Arrays.asList(params));
     }
@@ -229,7 +229,7 @@ public class ContractTest {
         if (signAsCommittee) {
             signer = Signer.global(committee.getScriptHash());
         } else {
-            signer = Signer.calledByEntry(defaultAccount.getScriptHash());
+            signer = Signer.global(defaultAccount.getScriptHash());
         }
         return contract.invokeFunction(function, params)
                 .wallet(wallet)
