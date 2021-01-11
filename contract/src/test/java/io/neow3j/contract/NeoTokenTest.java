@@ -10,6 +10,7 @@ import static io.neow3j.contract.ContractParameter.publicKey;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 
@@ -27,6 +28,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -149,27 +151,16 @@ public class NeoTokenTest {
 
     @Test
     public void getCandidates() throws IOException {
-        String responseBody = ContractTestHelper.loadFile(
-                "/responses/invokefunction_getcandidates.json");
-        WireMock.stubFor(post(urlEqualTo("/"))
-                .withRequestBody(new RegexPattern(""
-                        + ".*\"method\":\"invokefunction\""
-                        + ".*\"params\":"
-                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
-                        + ".*\"getCandidates\".*" // function
-                ))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(responseBody)));
+        setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
+                "0a46e2e37c9987f570b4af253fb77e7eef0f72b6",
+                "getCandidates");
 
         Map<ECPublicKey, Integer> result = new NeoToken(neow).getCandidates();
-        assertThat(result.keySet(), contains(
-                new ECPublicKey(Numeric.hexStringToByteArray(
-                        "02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c")),
-                new ECPublicKey(Numeric.hexStringToByteArray(
-                        "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"))
-        ));
-        assertThat(result.values(), contains(100, 49999900));
+        assertThat(result.size(), is (2));
+        result.forEach((key, value) -> {
+            assertThat(key, notNullValue());
+            assertThat(value, is(0));
+        });
     }
 
     @Test
