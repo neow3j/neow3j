@@ -93,8 +93,8 @@ public class PolicyContract extends ContractInterface {
     /**
      * Gets the fee factor used to calculate the GAS cost of contract executions.
      * <p>
-     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to arrive
-     * at the actual GAS cost.
+     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result
+     * in the actual GAS cost.
      *
      * @return the execution fee factor.
      */
@@ -103,8 +103,8 @@ public class PolicyContract extends ContractInterface {
     /**
      * Sets the fee factor used to calculate the GAS cost of contract executions.
      * <p>
-     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to arrive
-     * at the actual GAS cost.
+     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result
+     * in the actual GAS cost.
      *
      * @param factor The desired factor.
      * @return true, if the factor was successfully set. False, otherwise.
