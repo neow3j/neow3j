@@ -34,6 +34,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -139,8 +140,8 @@ public class ContractTest {
                 response.getSendRawTransaction().getHash()).send().getApplicationLog();
         Execution execution = appLog.getExecutions().get(0);
         if (execution.getState().equals(VM_STATE_FAULT)) {
-           throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
-                           + "message was: '%s'", fullyQualifiedName, execution.getException()));
+            throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
+                    + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
         ArrayStackItem arrayItem = execution.getStack().get(0).asArray();
         ScriptHash scriptHash = new ScriptHash(Numeric.hexStringToByteArray(
@@ -215,6 +216,44 @@ public class ContractTest {
     }
 
     /**
+     * Transfers the given amount of GAS to the {@code to} account. The amount is taken from the
+     * committee account.
+     *
+     * @param to The receiving account.
+     * @param amount The amount to transfer.
+     * @return the hash of the transfer transaction.
+     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     * constructing the transaction object.
+     */
+    protected String transferGas(ScriptHash to, BigDecimal amount) throws Throwable {
+        io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
+        return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
+                amount, committee.getScriptHash())
+                .sign()
+                .send()
+                .getSendRawTransaction().getHash();
+    }
+
+    /**
+     * Transfers the given amount of NEO to the {@code to} account. The amount is taken from the
+     * committee account.
+     *
+     * @param to The receiving account.
+     * @param amount The amount to transfer.
+     * @return the hash of the transfer transaction.
+     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     * constructing the transaction object.
+     */
+    protected String transferNeo(ScriptHash to, BigDecimal amount) throws Throwable {
+        io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
+        return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
+                amount, committee.getScriptHash())
+                .sign()
+                .send()
+                .getSendRawTransaction().getHash();
+    }
+
+    /**
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters.
      *
@@ -245,8 +284,7 @@ public class ContractTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committee} is used to sign the
-     * transaction.
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
@@ -261,8 +299,7 @@ public class ContractTest {
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committee} is used to sign the
-     * transaction.
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
