@@ -5,12 +5,8 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.Helper;
-import io.neow3j.devpack.neo.NEO;
-import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;

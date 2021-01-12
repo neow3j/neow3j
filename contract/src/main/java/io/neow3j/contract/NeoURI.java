@@ -15,7 +15,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 /**
- * Wrapper class to generate NEP-9 compatible URI schemes for NEP-5 Token transfers.
+ * Wrapper class to generate NEP-9 compatible URI schemes for NEP-17 Token transfers.
  */
 public class NeoURI {
 
@@ -30,6 +30,9 @@ public class NeoURI {
     private static final String NEO_SCHEME = "neo";
     private static final String TRANSFER_FUNCTION = "transfer";
     private static final int MIN_NEP9_URI_LENGTH = 38;
+
+    private static final String NEO_ASSET = "neo";
+    private static final String GAS_ASSET = "gas";
 
     public NeoURI() {
     }
@@ -70,9 +73,9 @@ public class NeoURI {
                 if (singleQueryParts.length != 2) throw new IllegalArgumentException("This uri contains invalid queries.");
                 if (singleQueryParts[0].equals("asset") && neoURI.asset == null) {
                     String assetID = singleQueryParts[1];
-                    if (assetID.equals(NeoToken.SYMBOL)) {
+                    if (assetID.equals(NEO_ASSET)) {
                         neoURI.asset = NeoToken.SCRIPT_HASH;
-                    } else if (assetID.equals(GasToken.SYMBOL)) {
+                    } else if (assetID.equals(GAS_ASSET)) {
                         neoURI.asset = GasToken.SCRIPT_HASH;
                     } else {
                         neoURI.asset = new ScriptHash(assetID);
@@ -91,6 +94,7 @@ public class NeoURI {
      * Needs all necessary parameters to create a transfer invocation.
      *
      * @return a TransactionBuilder object.
+     * @throws IOException if an error occurs when interacting with the neo-node
      */
     public TransactionBuilder buildTransfer() throws IOException {
         if (neow3j == null) {
@@ -135,7 +139,7 @@ public class NeoURI {
     }
 
     private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset) throws IOException {
-        int decimals = new Nep5Token(asset, neow3j).getDecimals();
+        int decimals = new Nep17Token(asset, neow3j).getDecimals();
         BigDecimal factor = BigDecimal.TEN.pow(decimals);
         return amount.multiply(factor).toBigInteger();
     }
@@ -363,9 +367,9 @@ public class NeoURI {
      */
     public String getAssetAsString() {
         if (asset.equals(NeoToken.SCRIPT_HASH)) {
-            return NeoToken.SYMBOL;
+            return NEO_ASSET;
         } else if (asset.equals(GasToken.SCRIPT_HASH)) {
-            return GasToken.SYMBOL;
+            return GAS_ASSET;
         }
         return asset.toString();
     }

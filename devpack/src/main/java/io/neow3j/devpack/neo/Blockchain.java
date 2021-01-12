@@ -1,7 +1,6 @@
 package io.neow3j.devpack.neo;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETBLOCK;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETCONTRACT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETHEIGHT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTION;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK;
@@ -15,7 +14,7 @@ import io.neow3j.devpack.annotations.Syscall;
 public class Blockchain {
 
     @Syscall(SYSTEM_BLOCKCHAIN_GETHEIGHT)
-    public static native long getHeight();
+    public static native int getHeight();
 
     /**
      * Gets the block at the given block height.
@@ -24,7 +23,7 @@ public class Blockchain {
      * @return the <tt>Block</tt>.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETBLOCK)
-    public static native Block getBlock(long height);
+    public static native Block getBlock(int height);
 
     /**
      * Gets the block with the given block hash.
@@ -62,25 +61,16 @@ public class Blockchain {
      * @return the <tt>Transaction</tt>.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK)
-    public static native Transaction getTransactionFromBlock(long blockHeight, int txIndex);
+    public static native Transaction getTransactionFromBlock(int blockHeight, int txIndex);
 
     /**
-     * Gets the transaction height of the block with the given block hash. The transaction height is
-     * equal to the number of transactions in the block minus one.
+     * Gets the transaction height of the transaction with the given hash. The transaction height is
+     * the number of the block in which a transaction is contained.
      *
-     * @param blockHash The block hash to get the transaction height for.
-     * @return the transaction height.
+     * @param transactionHash The hash of the transaction.
+     * @return the transaction's height.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT)
-    public static native long getTransactionHeight(byte[] blockHash);
-
-    /**
-     * Gets the contract with the given script hash.
-     *
-     * @param scriptHash The contract's script hash.
-     * @return the contract.
-     */
-    @Syscall(SYSTEM_BLOCKCHAIN_GETCONTRACT)
-    public static native Contract getContract(byte[] scriptHash);
+    public static native int getTransactionHeight(byte[] transactionHash);
 
 }

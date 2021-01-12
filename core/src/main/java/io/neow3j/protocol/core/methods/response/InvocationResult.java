@@ -18,6 +18,9 @@ public class InvocationResult {
     @JsonProperty("gasconsumed")
     private String gasConsumed;
 
+    @JsonProperty("exception")
+    private String exception;
+
     @JsonProperty("stack")
     private List<StackItem> stack;
 
@@ -27,10 +30,13 @@ public class InvocationResult {
     public InvocationResult() {
     }
 
-    public InvocationResult(String script, String state, String gasConsumed, List<StackItem> stack, String tx) {
+    public InvocationResult(String script, String state, String gasConsumed,
+                            String exception, List<StackItem> stack,
+                            String tx) {
         this.script = script;
         this.state = state;
         this.gasConsumed = gasConsumed;
+        this.exception = exception;
         this.stack = stack;
         this.tx = tx;
     }
@@ -45,6 +51,10 @@ public class InvocationResult {
 
     public String getGasConsumed() {
         return gasConsumed;
+    }
+
+    public String getException() {
+        return exception;
     }
 
     public List<StackItem> getStack() {
@@ -63,13 +73,15 @@ public class InvocationResult {
         return Objects.equals(getScript(), that.getScript()) &&
                 Objects.equals(getState(), that.getState()) &&
                 Objects.equals(getGasConsumed(), that.getGasConsumed()) &&
+                Objects.equals(getException(), that.getException()) &&
                 Objects.equals(getStack(), that.getStack()) &&
                 Objects.equals(getTx(), that.getTx());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getScript(), getState(), getGasConsumed(), getStack(), getTx());
+        return Objects.hash(getScript(), getState(), getGasConsumed(),
+                getException(), getStack(), getTx());
     }
 
     @Override
@@ -78,6 +90,7 @@ public class InvocationResult {
                 "script='" + script + '\'' +
                 ", state='" + state + '\'' +
                 ", gasconsumed='" + gasConsumed + '\'' +
+                ", exception='" + exception + '\'' +
                 ", stack=" + stack +
                 ", tx='" + tx + '\'' +
                 '}';

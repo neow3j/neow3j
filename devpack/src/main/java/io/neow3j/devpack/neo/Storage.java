@@ -89,13 +89,6 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, long value);
 
-    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
-//    /**
-//     * Stores the given key-value pair.
-//     */
-//    @Syscall(SYSTEM_STORAGE_PUT)
-//    public static native void put(StorageContext context, byte[] key, BigInteger value);
-
     /**
      * Stores the given key-value pair.
      *
@@ -135,14 +128,6 @@ public class Storage {
      */
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, long value);
-
-    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
-//    /**
-//     * Stores the given key-value pair.
-//     */
-//    @Syscall(SYSTEM_STORAGE_PUT)
-//    public static native void put(StorageContext context, String key, BigInteger value);
-
 
     /**
      * Stores the given key-value pair.
@@ -252,17 +237,8 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(byte[] key, long value);
 
-//    /**
-//     * Stores the given key-value pair.
-//     * <p>
-//     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-//     */
-//    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-//    @Syscall(SYSTEM_STORAGE_PUT)
-//    public static native void put(byte[] key, BigInteger value);
-
     /**
-     * Stores the given key-value pair using the the given {@link StorageFlag}s.
+     * Stores the given key-value pair using the given {@link StorageFlag}s.
      * <p>
      * Implicitly makes a Syscall to retrieve the current contract's storage context.
      *
@@ -299,16 +275,6 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_GETCONTEXT)
     @Syscall(SYSTEM_STORAGE_PUTEX)
     public static native void putEx(byte[] key, long value, byte storageFlag);
-
-    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
-//    /**
-//     * Stores the given key-value pair.
-//     * <p>
-//     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-//     */
-//    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-//    @Syscall(SYSTEM_STORAGE_PUTEX)
-//    public static native void putEx(byte[] key, BigInteger value, StorageFlags flags);
 
     /**
      * Stores the given key-value pair.
@@ -409,26 +375,6 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_GETCONTEXT)
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(String key, long value);
-
-    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
-//    /**
-//     * Stores the given key-value pair.
-//     * <p>
-//     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-//     */
-//    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-//    @Syscall(SYSTEM_STORAGE_PUT)
-//    public static native void put(String key, BigInteger value);
-
-    // TODO: Uncomment as soon as BigIntegers are supported by the compiler.
-//    /**
-//     * Stores the given key-value pair.
-//     * <p>
-//     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-//     */
-//    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-//    @Syscall(SYSTEM_STORAGE_PUTEX)
-//    public static native void putEx(String key, BigInteger value, byte storageFlag);
 
     /**
      * Stores the given key-value pair.

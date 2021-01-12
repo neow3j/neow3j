@@ -93,7 +93,7 @@ Content-Type: application/javascript'
 
 {
  "jsonrpc": "2.0",
- "method": "getnep5balances",
+ "method": "getnep17balances",
  "params": [
   "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN", 0
  ],

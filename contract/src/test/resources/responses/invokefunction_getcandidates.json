@@ -2,36 +2,37 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "script": "10c00c0d67657443616e646964617465730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52",
+    "script": "EMAMDWdldENhbmRpZGF0ZXMMFLZyD+9+frc/Ja+0cPWHmXzj4kYKQWJ9W1I=",
     "state": "HALT",
-    "gasconsumed": "101007390",
+    "gasconsumed": "1.0099915",
+    "exception": null,
     "stack": [
       {
         "type": "Array",
         "value": [
           {
-            "type": "Array",
+            "type": "Struct",
             "value": [
               {
                 "type": "ByteString",
-                "value": "AiAChFmMbBEX8WPdk4pMgBTPLPEWTEtxl/NHEJ21Dq58"
+                "value": "AhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/Stg"
               },
               {
                 "type": "Integer",
-                "value": "100"
+                "value": "0"
               }
             ]
           },
           {
-            "type": "Array",
+            "type": "Struct",
             "value": [
               {
                 "type": "ByteString",
-                "value": "AsC2DJlbwJLoZvFaN8F2u1m366zwabqUwOv1YcuPlWI4"
+                "value": "AiSUJaBrWh+OYTP8ea+iwrhDC/kycpfxdnYd956NiSnF"
               },
               {
                 "type": "Integer",
-                "value": "49999900"
+                "value": "0"
               }
             ]
           }

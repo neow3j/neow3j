@@ -26,6 +26,11 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     private byte[] scriptHash;
 
     /**
+     * A zero address script hash.
+     */
+    public static final ScriptHash ZERO = new ScriptHash("0000000000000000000000000000000000000000");
+
+    /**
      * Constructs a new script hash with 20 zero bytes.
      */
     public ScriptHash() {

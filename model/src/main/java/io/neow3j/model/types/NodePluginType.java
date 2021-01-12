@@ -7,7 +7,7 @@ public enum NodePluginType {
     IMPORT_BLOCKS("ImportBlocks"),
     LEVEL_DB_STORE("LevelDBStore"),
     ROCKS_DB_STORE("RocksDBStore"),
-    RPC_NEP5_TRACKER("RpcNep5Tracker"),
+    RPC_NEP17_TRACKER("RpcNep17Tracker"),
     RPC_SECURITY("RpcSecurity"),
     RPC_SERVER_PLUGIN("RpcServerPlugin"),
     RPC_SYSTEM_ASSET_TRACKER("RpcSystemAssetTrackerPlugin"),

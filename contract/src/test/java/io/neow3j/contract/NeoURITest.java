@@ -338,7 +338,7 @@ public class NeoURITest {
 
     @Test
     public void buildTransfer_nonNativeAsset() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep5.json");
+        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json");
         assertThat(new NeoURI(neow3j)
                 .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .wallet(WALLET)
@@ -349,7 +349,7 @@ public class NeoURITest {
 
     @Test
     public void buildTransfer_nonNativeAsset_badDecimalReturn() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep5_badFormat.json");
+        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17_badFormat.json");
         exceptionRule.expect(UnexpectedReturnTypeException.class);
         exceptionRule.expectMessage("Got stack item of type Boolean but expected Integer.");
         new NeoURI(neow3j)
