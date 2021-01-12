@@ -79,7 +79,6 @@ public class BinaryTest extends ContractTest {
 
     @Test
     public void itoa() throws IOException {
-        // TODO: Retest when the docker image is up to date with preview4
         // With base 10
         NeoInvokeFunction response = callInvokeFunction(integer(100), integer(10));
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
@@ -97,12 +96,11 @@ public class BinaryTest extends ContractTest {
         // With base 16
         response = callInvokeFunction(integer(-1), integer(16));
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("ff"));
+                is("f"));
     }
 
     @Test
     public void atoi() throws IOException {
-        // TODO: Retest when the docker image is up to date with preview4
         // With base 10
         NeoInvokeFunction response = callInvokeFunction(string("100"), integer(10));
         assertThat(
