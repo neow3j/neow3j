@@ -49,10 +49,15 @@ public class Binary {
 
     /**
      * Converts the given number to its string representation.
+     * <p>
+     * The hexadecimal representation uses the 2's complement to represent negative numbers. Always
+     * the smallest possible multiple of 4-bits is used to represent the number. E.g., for -1 the
+     * hex representation is 0xf (1111). For -8 it's 0x8 (1000). If we move out of the range [-8,
+     * 7], four more bits are added, such that -9 is 0xf7 (1111 0111).
      *
-     * @param i The number
-     * @param base The base to use for the string representation. Can be decimal (10) or
-     *             hexadecimal (16).
+     * @param i    The number
+     * @param base The base to use for the string representation. Can be decimal (10) or hexadecimal
+     *             (16).
      * @return the number as a string.
      */
     @Syscall(InteropServiceCode.SYSTEM_BINARY_ITOA)
@@ -61,9 +66,9 @@ public class Binary {
     /**
      * Converts the given number string into an integer.
      *
-     * @param s The number string.
-     * @param base The base to use for interpreting the string. Can be decimal (10) or
-     *             hexadecimal (16).
+     * @param s    The number string.
+     * @param base The base to use for interpreting the string. Can be decimal (10) or hexadecimal
+     *             (16).
      * @return the number.
      */
     @Syscall(InteropServiceCode.SYSTEM_BINARY_ATOI)
