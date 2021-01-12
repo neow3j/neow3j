@@ -29,6 +29,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -107,9 +108,6 @@ public class ContractTest {
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
-
-        waitUntilTransactionIsExecuted(transferGas(defaultAccount.getScriptHash(), new BigDecimal(
-                "1000")));
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(contract.getScriptHash());
@@ -228,10 +226,10 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected String transferGas(ScriptHash to, BigDecimal amount) throws Throwable {
+    protected static String transferGas(ScriptHash to, String amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
         return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
-                amount, committee.getScriptHash())
+                new BigDecimal(amount), committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -247,10 +245,10 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected String transferNeo(ScriptHash to, BigDecimal amount) throws Throwable {
+    protected static String transferNeo(ScriptHash to, String amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
         return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
-                amount, committee.getScriptHash())
+                new BigDecimal(amount), committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();

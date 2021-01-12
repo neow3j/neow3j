@@ -95,10 +95,10 @@ public class NeoTokenTest extends ContractTest {
     public void vote() throws Throwable {
         // Needs GAS for the transaction costs.
         waitUntilTransactionIsExecuted(transferGas(
-                defaultAccount.getScriptHash(), new BigDecimal("100")));
+                defaultAccount.getScriptHash(), "100"));
         // Needs NEo to be able to vote.
         waitUntilTransactionIsExecuted(transferNeo(
-                defaultAccount.getScriptHash(), new BigDecimal("100")));
+                defaultAccount.getScriptHash(), "100"));
 
         // Add the default account as a candidate
         String txHash = new io.neow3j.contract.NeoToken(neow3j)
