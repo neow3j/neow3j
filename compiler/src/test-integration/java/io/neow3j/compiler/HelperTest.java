@@ -266,14 +266,6 @@ public class HelperTest extends ContractTest {
                 is("!dlrow ,olleh"));
     }
 
-    @Test
-    public void integerToString() throws IOException {
-        // TODO: Retest when the docker image is up to date with preview4
-        NeoInvokeFunction response = callInvokeFunction(integer(100));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("100"));
-    }
-
     static class HelpersContract {
 
         public static void assertTrue(boolean bool) {
@@ -352,10 +344,6 @@ public class HelperTest extends ContractTest {
 
         public static String reverseByteString(String s) {
             return Helper.reverse(s);
-        }
-
-        public static String integerToString(int i) {
-            return Helper.toString(i);
         }
     }
 
