@@ -12,6 +12,7 @@ import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
+import io.neow3j.utils.Await;
 import java.io.IOException;
 import java.math.BigDecimal;
 import org.junit.BeforeClass;
@@ -27,7 +28,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
     @Test
     public void callVerifyWithContractOwner() throws Throwable {
         // Send NEO to the contract.
-        waitUntilTransactionIsExecuted(transferNeo(contract.getScriptHash(), "10"));
+        Await.waitUntilTransactionIsExecuted(transferNeo(contract.getScriptHash(), "10"), neow3j);
 
         // Withdraw NEO from the contract. This should call the contract's verify method.
         Transaction tx = new NeoToken(neow3j)
@@ -36,8 +37,8 @@ public class VerificationMethodIntegrationTest extends ContractTest {
                         Signer.calledByEntry(contract.getScriptHash()))
                 .getUnsignedTransaction();
         tx.addWitness(Witness.create(tx.getHashData(), defaultAccount.getECKeyPair()));
-        txHash = tx.send().getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(txHash);
+        String txHash = tx.send().getSendRawTransaction().getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         neow3j.getApplicationLog(txHash).send().getApplicationLog().getExecutions();
         // TODO: Check if the application log contains the `verify` event.
         // TODO: Check if the application log show that the transaction was successful.
@@ -50,7 +51,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
         String txHash = new NeoToken(neow3j)
                 .transfer(wallet, contract.getScriptHash(), BigDecimal.TEN)
                 .sign().send().getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // Withdraw NEO from the contract. This should call the contract's verify method.
         Transaction tx = new NeoToken(neow3j)
@@ -60,7 +61,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
                 .getUnsignedTransaction();
         tx.addWitness(Witness.create(tx.getHashData(), defaultAccount.getECKeyPair()));
         txHash = tx.send().getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         neow3j.getApplicationLog(txHash).send().getApplicationLog();
         // TODO: Check if the application log contains the `verify` event.
         // TODO: Check if the application log show that the transaction was not successful.

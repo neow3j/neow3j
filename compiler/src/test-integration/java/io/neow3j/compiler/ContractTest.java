@@ -30,6 +30,7 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -110,7 +111,7 @@ public class ContractTest {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         contractName = name;
         contract = deployContract(contractName);
-        waitUntilContractIsDeployed(contract.getScriptHash());
+        Await.waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
     }
 
     protected static String getResultFilePath(String testClassName, String methodName) {
@@ -135,7 +136,7 @@ public class ContractTest {
 
         // Remember the transaction and its block.
         deployTxHash = response.getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(deployTxHash);
+        Await.waitUntilTransactionIsExecuted(deployTxHash, neow3j);
         blockHashOfDeployTx = neow3j.getTransaction(deployTxHash).send()
                 .getTransaction().getBlockHash();
         // Get the contract address from the application logs.
@@ -292,7 +293,7 @@ public class ContractTest {
      */
     protected String invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
         String txHash = invokeFunction(params);
-        waitUntilTransactionIsExecuted(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 
@@ -310,92 +311,13 @@ public class ContractTest {
             throws Throwable {
 
         String txHash = invokeFunction(function, params);
-        waitUntilTransactionIsExecuted(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 
     protected void assertVMExitedWithHalt(String hash) throws IOException {
         NeoGetTransaction response = neow3j.getTransaction(hash).send();
         assertThat(response.getTransaction().getVMState(), is(VM_STATE_HALT));
-    }
-
-    private static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
-        await().timeout(30, TimeUnit.SECONDS).until(callable, matcher);
-    }
-
-    private static Callable<Long> callableGetBalance(String address, ScriptHash tokenScriptHash) {
-        return () -> {
-            try {
-                List<Nep17Balance> balances = neow3j.getNep17Balances(address).send()
-                        .getBalances().getBalances();
-                return balances.stream()
-                        .filter(b -> b.getAssetHash().equals("0x" + tokenScriptHash.toString()))
-                        .findFirst()
-                        .map(b -> Long.valueOf(b.getAmount()))
-                        .orElse(0L);
-            } catch (IOException e) {
-                return 0L;
-            }
-        };
-    }
-
-    private static Callable<Boolean> callableGetContractState(ScriptHash contractScriptHash) {
-        return () -> {
-            try {
-                NeoGetContractState response =
-                        neow3j.getContractState(contractScriptHash.toString()).send();
-                if (response.hasError()) {
-                    return false;
-                }
-                return response.getContractState().getHash().equals("0x" +
-                        contractScriptHash.toString());
-            } catch (IOException e) {
-                return false;
-            }
-        };
-    }
-
-    private static Callable<Long> callableGetTxHash(String txHash) {
-        return () -> {
-            try {
-                NeoGetTransactionHeight tx = neow3j.getTransactionHeight(txHash).send();
-                if (tx.hasError()) {
-                    return null;
-                }
-                return tx.getHeight().longValue();
-            } catch (IOException e) {
-                return null;
-            }
-        };
-    }
-
-    public static void waitUntilBalancesIsGreaterThanZero(String address,
-            ScriptHash tokenScriptHash) {
-        waitUntil(callableGetBalance(address, tokenScriptHash), Matchers.greaterThan(0L));
-    }
-
-    /**
-     * Pauses the current thread until the contract with the given script hash is seen on the
-     * blockchain.
-     * <p>
-     * Waits maximally 30 seconds.
-     *
-     * @param contractScripHash The contract script hash.
-     */
-    public static void waitUntilContractIsDeployed(ScriptHash contractScripHash) {
-        waitUntil(callableGetContractState(contractScripHash), Matchers.is(true));
-    }
-
-    /**
-     * Pauses the current thread until the transaction with the given hash is seen on the
-     * blockchain.
-     * <p>
-     * Waits maximally 30 seconds.
-     *
-     * @param txHash The transaction hash.
-     */
-    public static void waitUntilTransactionIsExecuted(String txHash) {
-        waitUntil(callableGetTxHash(txHash), notNullValue());
     }
 
     protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)
