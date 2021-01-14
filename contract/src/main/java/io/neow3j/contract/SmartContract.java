@@ -11,7 +11,6 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -65,8 +64,8 @@ public class SmartContract {
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting a String
-     * as return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a String as
+     * return type.
      *
      * @param function The function to call.
      * @param params   The contract parameters to include in the call.
@@ -194,7 +193,8 @@ public class SmartContract {
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public ContractManifest getManifest() throws IOException {
-        ContractState contractState = neow.getContractState(scriptHash.toString()).send().getContractState();
+        ContractState contractState = neow.getContractState(scriptHash.toString()).send()
+                .getContractState();
         return contractState.getManifest();
     }
 
@@ -221,5 +221,25 @@ public class SmartContract {
                         .pushData(ScriptHash.ZERO.toArray())
                         .pushData(script)
                         .toArray());
-        }
+    }
+
+    /**
+     * Calculates the hash of the contract with {@code script} deployed by {@code sender}.
+     * <p>
+     * A contract's hash doesn't change after deployment. Even if the contract's script is updated
+     * the hash stays the same. It depends on the initial script and the account that sent the
+     * deployment transaction.
+     *
+     * @param sender         The account that deployed the contract.
+     * @param contractScript The contract's script.
+     * @return the hash of the contract.
+     */
+    public static ScriptHash getContractHash(ScriptHash sender, byte[] contractScript) {
+        return ScriptHash.fromScript(
+                new ScriptBuilder()
+                        .opCode(OpCode.ABORT)
+                        .pushData(sender.toArray())
+                        .pushData(contractScript)
+                        .toArray());
+    }
 }
