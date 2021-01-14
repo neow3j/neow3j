@@ -1,13 +1,11 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.constants.OpCode;
+import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
-import io.neow3j.io.IOUtils;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.transaction.Signer;
@@ -21,6 +19,7 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +49,6 @@ public class TransactionBuilder {
     private long additionalNetworkFee;
     private List<TransactionAttribute> attributes;
     private byte[] script;
-    private List<Witness> witnesses;
 
     private BiConsumer<BigInteger, BigInteger> consumer;
     private Supplier<? extends Throwable> supplier;
@@ -64,7 +62,6 @@ public class TransactionBuilder {
         this.script = new byte[]{};
         this.additionalNetworkFee = 0L;
         this.signers = new ArrayList<>();
-        this.witnesses = new ArrayList<>();
         this.attributes = new ArrayList<>();
     }
 
@@ -137,7 +134,7 @@ public class TransactionBuilder {
     /**
      * Sets the signer belonging to the given {@code sender} account to the first index of the list
      * of signers for this transaction. The first signer covers the fees for the transaction if
-     * there is no signer present with fee-only witness scope (see {@link WitnessScope#FEE_ONLY}).
+     * there is no signer present with fee-only witness scope (see {@link WitnessScope#NONE}).
      *
      * @param sender the account of the signer to be set to the first index.
      * @return this transaction builder.
@@ -147,9 +144,9 @@ public class TransactionBuilder {
     }
 
     /**
-     * Sets the signer with script hash {@code sender} to the first index of the list of signers
-     * for this transaction. The first signer covers the fees for the transaction if there is
-     * no signer present with fee-only witness scope (see {@link WitnessScope#FEE_ONLY}).
+     * Sets the signer with script hash {@code sender} to the first index of the list of signers for
+     * this transaction. The first signer covers the fees for the transaction if there is no signer
+     * present with fee-only witness scope (see {@link WitnessScope#NONE}).
      *
      * @param sender the script hash of the signer to be set to the first index.
      * @return this transaction builder.
@@ -157,7 +154,7 @@ public class TransactionBuilder {
     public TransactionBuilder firstSigner(ScriptHash sender) {
         if (signers.stream()
                 .map(Signer::getScopes)
-                .anyMatch(scopes -> scopes.contains(WitnessScope.FEE_ONLY))) {
+                .anyMatch(scopes -> scopes.contains(WitnessScope.NONE))) {
             throw new IllegalStateException("This transaction contains a signer with " +
                     "fee-only witness scope that will cover the fees. Hence, the order " +
                     "of the signers does not affect the payment of the fees.");
@@ -170,7 +167,7 @@ public class TransactionBuilder {
                             "signer before calling this method."));
             signers.remove(s);
             signers.add(0, s);
-            }
+        }
         return this;
     }
 
@@ -178,9 +175,9 @@ public class TransactionBuilder {
      * Sets the signers of this transaction. If the list of signers already contains signers, they
      * are replaced.
      * <p>
-     * If one of the signers has the fee-only witness scope (see {@link WitnessScope#FEE_ONLY}),
-     * this account is used to cover the transaction fees. Otherwise, the first signer is used as
-     * the sender of this transaction, meaning that it is used to cover the transaction fees.
+     * If one of the signers has the fee-only witness scope (see {@link WitnessScope#NONE}), this
+     * account is used to cover the transaction fees. Otherwise, the first signer is used as the
+     * sender of this transaction, meaning that it is used to cover the transaction fees.
      *
      * @param signers Signers for this transaction.
      * @return this transaction builder.
@@ -259,7 +256,7 @@ public class TransactionBuilder {
 
     private boolean containsMultipleFeeOnlySigners(Signer... signers) {
         return Stream.of(signers)
-                .filter(s -> s.getScopes().contains(WitnessScope.FEE_ONLY))
+                .filter(s -> s.getScopes().contains(WitnessScope.NONE))
                 .count() > 1;
     }
 
@@ -302,7 +299,7 @@ public class TransactionBuilder {
             }
         }
         return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
-                networkFee, attributes, script, witnesses);
+                networkFee, attributes, script, new ArrayList<>());
     }
 
     private long fetchCurrentBlockNr() throws IOException {
@@ -318,9 +315,21 @@ public class TransactionBuilder {
         // check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = Numeric.toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow.invokeScript(script, signers).send();
-        // The GAS amount is returned in fractions (10^8)
-        return Long.parseLong(response.getInvocationResult().getGasConsumed());
+        NeoInvokeScript response = neow.invokeScript(
+                Base64.encode(Numeric.hexStringToByteArray(script)), signers)
+                .send();
+        return getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed())
+                .longValue();
+    }
+
+    /*
+     * Multiplies the GAS amount given in decimals to fractions.
+     */
+    private BigInteger getSystemFeeFromDecimalString(String systemFee) {
+        return new BigDecimal(systemFee)
+                .multiply(new BigDecimal(10).pow(GasToken.DECIMALS))
+                .stripTrailingZeros()
+                .toBigInteger();
     }
 
     /*
@@ -330,28 +339,14 @@ public class TransactionBuilder {
      * expected signatures. This information is derived from the verification scripts of all
      * signers added to the transaction.
      */
-    private long calcNetworkFee() {
-        List<Account> sigAccounts = getSignerAccounts();
-
-        // Base transaction size
-        int size = Transaction.HEADER_SIZE // constant header size
-                + IOUtils.getVarSize(signers)
-                + IOUtils.getVarSize(attributes) // attributes
-                + IOUtils.getVarSize(script) // script
-                + IOUtils.getVarSize(sigAccounts.size()); // varInt for all necessary witnesses
-
-        // Calculate fee for witness verification and collect size of witnesses.
-        int execFee = 0;
-        for (Account acc : sigAccounts) {
-            if (acc.isMultiSig()) {
-                size += calcSizeForMultiSigWitness(acc.getVerificationScript());
-                execFee += calcExecutionFeeForMultiSigWitness(acc.getVerificationScript());
-            } else {
-                size += calcSizeForSingleSigWitness(acc.getVerificationScript());
-                execFee += calcExecutionFeeForSingleSigWitness();
-            }
-        }
-        return execFee + size * NeoConstants.GAS_PER_BYTE;
+    private long calcNetworkFee() throws IOException {
+        Transaction tx = new Transaction(neow, version, nonce, validUntilBlock, signers, 0,
+                0, attributes, script, new ArrayList<>());
+        getSignerAccounts().forEach(s -> {
+            tx.addWitness(new Witness(new byte[]{}, s.getVerificationScript().getScript()));
+        });
+        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(tx.toArray()))
+                .send().getNetworkFee().getNetworkFee().longValue();
     }
 
     /**
@@ -373,39 +368,6 @@ public class TransactionBuilder {
         return sigAccounts;
     }
 
-    private long calcSizeForSingleSigWitness(VerificationScript verifScript) {
-        return NeoConstants.SERIALIZED_INVOCATION_SCRIPT_SIZE + verifScript.getSize();
-    }
-
-    private long calcExecutionFeeForSingleSigWitness() {
-        return OpCode.PUSHDATA1.getPrice() // Push invocation script
-                + OpCode.PUSHDATA1.getPrice() // Push verification script
-                // Push null because we don't want to verify a particular message but the
-                // transaction itself.
-                + OpCode.PUSHNULL.getPrice()
-                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getPrice();
-    }
-
-    private long calcSizeForMultiSigWitness(VerificationScript verifScript) {
-        int m = verifScript.getSigningThreshold();
-        int sizeInvocScript = NeoConstants.INVOCATION_SCRIPT_SIZE * m;
-        return IOUtils.getVarSize(sizeInvocScript) + sizeInvocScript + verifScript.getSize();
-    }
-
-    private long calcExecutionFeeForMultiSigWitness(VerificationScript verifScript) {
-        int m = verifScript.getSigningThreshold();
-        int n = verifScript.getNrOfAccounts();
-
-        return OpCode.PUSHDATA1.getPrice() * m
-                + OpCode.get(new ScriptBuilder().pushInteger(m).toArray()[0]).getPrice()
-                + OpCode.PUSHDATA1.getPrice() * n
-                + OpCode.get(new ScriptBuilder().pushInteger(n).toArray()[0]).getPrice()
-                // Push null because we don't want to verify a particular message but the
-                // transaction itself.
-                + OpCode.PUSHNULL.getPrice()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getPrice(n);
-    }
-
     /**
      * Makes an {@code invokescript} call to the neo-node with the transaction in its current
      * configuration. No changes are made to the blockchain state.
@@ -417,7 +379,7 @@ public class TransactionBuilder {
      * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public NeoInvokeScript callInvokeScript() throws IOException {
-        if (this.signers == null || this.script.length == 0) {
+        if (signers == null || script.length == 0) {
             throw new TransactionConfigurationException("Cannot make an 'invokescript' call "
                     + "without the script being configured.");
         }
@@ -438,6 +400,12 @@ public class TransactionBuilder {
      * the wallet set on this transaction builder.
      *
      * @return the signed transaction.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the
+     *                                           neo-node.
+     * @throws Throwable                         a custom exception if one was set to be thrown in
+     *                                           the case the sender cannot cover the transaction
+     *                                           fees.
      */
     public Transaction sign() throws Throwable {
         transaction = buildTransaction();
@@ -453,13 +421,19 @@ public class TransactionBuilder {
                 signWithNormalAccount(txBytes, signerAcc);
             }
         });
-        return this.transaction;
+        return transaction;
     }
 
     /**
      * Builds the transaction without signing it.
      *
      * @return the unsigned transaction.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the
+     *                                           neo-node.
+     * @throws Throwable                         a custom exception if one was set to be thrown in
+     *                                           the case the sender cannot cover the transaction
+     *                                           fees.
      */
     public Transaction getUnsignedTransaction() throws Throwable {
         return buildTransaction();
@@ -474,7 +448,7 @@ public class TransactionBuilder {
                     "because account with script " + acc.getScriptHash() + " doesn't hold a " +
                     "private key.", e);
         }
-        this.transaction.addWitness(Witness.create(txBytes, keyPair));
+        transaction.addWitness(Witness.create(txBytes, keyPair));
     }
 
     private void signWithMultiSigAccount(byte[] txBytes, Account signerAcc) {
@@ -482,7 +456,7 @@ public class TransactionBuilder {
         VerificationScript multiSigVerifScript = signerAcc.getVerificationScript();
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
             ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
-            Account a = this.wallet.getAccount(accScriptHash);
+            Account a = wallet.getAccount(accScriptHash);
             if (a == null) {
                 continue;
             }
@@ -501,7 +475,7 @@ public class TransactionBuilder {
                     + "are part of the multi-sig account with script hash "
                     + signerAcc.getScriptHash() + ".");
         }
-        this.transaction.addWitness(Witness.createMultiSigWitness(sigs,
+        transaction.addWitness(Witness.createMultiSigWitness(sigs,
                 multiSigVerifScript));
     }
 
@@ -514,6 +488,7 @@ public class TransactionBuilder {
      * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
      * TransactionBuilder#getUnsignedTransaction()}.
      *
+     * @param consumer The consumer.
      * @return this transaction builder.
      */
     public TransactionBuilder doIfSenderCannotCoverFees(
@@ -535,6 +510,7 @@ public class TransactionBuilder {
      * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
      * TransactionBuilder#getUnsignedTransaction()}.
      *
+     * @param exceptionSupplier The exception supplier.
      * @return this transaction builder.
      */
     public TransactionBuilder throwIfSenderCannotCoverFees(
@@ -557,7 +533,7 @@ public class TransactionBuilder {
         // the sender of the transaction. If there is no such signer then the order of the
         // signers defines the sender, i.e., the first signer is the sender of the transaction.
         return signers.stream()
-                .filter(signer -> signer.getScopes().contains(WitnessScope.FEE_ONLY))
+                .filter(signer -> signer.getScopes().contains(WitnessScope.NONE))
                 .findFirst()
                 .orElse(signers.get(0))
                 .getScriptHash();
@@ -571,6 +547,7 @@ public class TransactionBuilder {
     protected byte getVersion() {
         return version;
     }
+
     // For testability only
     protected byte[] getScript() {
         return script;

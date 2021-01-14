@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import java.io.IOException;
@@ -36,12 +35,6 @@ public class TokenTest {
     }
 
     @Test
-    public void testGetName() throws IOException {
-        setUpWireMockForInvokeFunction("name", "invokefunction_name.json");
-        assertThat(someToken.getName(), is("ANT"));
-    }
-
-    @Test
     public void testGetSymbol() throws IOException {
         setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
         assertThat(someToken.getSymbol(), is("ant"));
@@ -50,7 +43,7 @@ public class TokenTest {
     @Test
     public void testGetDecimals() throws Exception {
         setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_nep5.json");
+                "invokefunction_decimals_nep17.json");
         assertThat(someToken.getDecimals(), is(2));
     }
 

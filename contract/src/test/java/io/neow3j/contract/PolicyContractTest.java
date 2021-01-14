@@ -6,7 +6,7 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFuncti
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -21,7 +21,6 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +40,7 @@ public class PolicyContractTest {
     @Before
     public void setUp() {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
-        int port = this.wireMockRule.port();
+        int port = wireMockRule.port();
         WireMock.configureFor(port);
         neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
@@ -50,69 +49,73 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void getMaxTransactionsPerBlock() throws IOException {
+    public void testGetMaxTransactionsPerBlock() throws IOException {
         setUpWireMockForInvokeFunction("getMaxTransactionsPerBlock",
                 "policy_getMaxTxPerBlock.json");
 
-        PolicyContract policyContract = new PolicyContract(this.neow3j);
+        PolicyContract policyContract = new PolicyContract(neow3j);
         assertThat(policyContract.getMaxTransactionsPerBlock(), is(512));
     }
 
     @Test
-    public void getMaxBlockSize() throws IOException {
+    public void testGetMaxBlockSize() throws IOException {
         setUpWireMockForInvokeFunction("getMaxBlockSize",
                 "policy_getMaxBlockSize.json");
 
-        PolicyContract policyContract = new PolicyContract(this.neow3j);
+        PolicyContract policyContract = new PolicyContract(neow3j);
         assertThat(policyContract.getMaxBlockSize(), is(262144));
     }
 
     @Test
-    public void getMaxBlockSystemFee() throws IOException {
+    public void testGetMaxBlockSystemFee() throws IOException {
         setUpWireMockForInvokeFunction("getMaxBlockSystemFee",
                 "policy_getMaxBlockSystemFee.json");
 
-        PolicyContract policyContract = new PolicyContract(this.neow3j);
+        PolicyContract policyContract = new PolicyContract(neow3j);
         assertThat(policyContract.getMaxBlockSystemFee(), is(new BigInteger("900000000000")));
     }
 
     @Test
-    public void getFeePerByte() throws IOException {
-        setUpWireMockForInvokeFunction("getFeePerByte", "policy_getFeePerByte.json");
-
-        PolicyContract policyContract = new PolicyContract(this.neow3j);
-        assertThat(policyContract.getFeePerByte(), is(1000));
-    }
-
-    @Test
-    public void getBlockedAccounts() throws IOException {
-        setUpWireMockForInvokeFunction("getBlockedAccounts",
-                "policy_getBlockedAccounts.json");
-
-        PolicyContract policyContract = new PolicyContract(this.neow3j);
-        List<ScriptHash> blockedAccounts = policyContract.getBlockedAccounts();
-
-        assertNotNull(blockedAccounts);
-        assertThat(blockedAccounts.size(), is(2));
-        assertThat(blockedAccounts, contains(
-                ScriptHash.fromAddress("Ne9x6rAf3YZozxBBhYrwyeU9H5RWmM3Gjm"),
-                ScriptHash.fromAddress("NXxbWvkuEdvjXNT3f7CwQebaYd4t2VmS2C")));
-    }
-
-    @Test
-    public void getBlockedAccounts_emptyList() throws IOException {
-        setUpWireMockForInvokeFunction("getBlockedAccounts",
-                "policy_getBlockedAccounts_empty.json");
+    public void testGetFeePerByte() throws IOException {
+        setUpWireMockForInvokeFunction("getFeePerByte",
+                "policy_getFeePerByte.json");
 
         PolicyContract policyContract = new PolicyContract(neow3j);
-        assertNotNull(policyContract.getBlockedAccounts());
-        assertThat(policyContract.getBlockedAccounts().size(), is(0));
+        assertThat(policyContract.getFeePerByte(), is(new BigInteger("1000")));
     }
 
     @Test
-    public void setMaxBlockSize_producesCorrectTransaction() throws Throwable {
+    public void testGetExecFeeFactor() throws IOException {
+        setUpWireMockForInvokeFunction("getExecFeeFactor",
+                "policy_getExecFeeFactor.json");
+
+        PolicyContract policyContract = new PolicyContract(neow3j);
+        assertThat(policyContract.getExecFeeFactor(), is(new BigInteger("30")));
+    }
+
+    @Test
+    public void testGetStoragePrice() throws IOException {
+        setUpWireMockForInvokeFunction("getStoragePrice",
+                "policy_getStoragePrice.json");
+
+        PolicyContract policyContract = new PolicyContract(neow3j);
+        assertThat(policyContract.getStoragePrice(), is(new BigInteger("100000")));
+    }
+
+    @Test
+    public void testIsBlocked() throws IOException {
+        setUpWireMockForInvokeFunction("isBlocked",
+                "policy_isBlocked.json");
+
+        PolicyContract policyContract = new PolicyContract(neow3j);
+        assertFalse(policyContract.isBlocked(account1.getScriptHash()));
+    }
+
+    @Test
+    public void testSetMaxBlockSize_producesCorrectTransaction() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_setMaxBlockSize.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(POLICY_SCRIPT_HASH, "setMaxBlockSize",
@@ -136,9 +139,10 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void setMaxTxPerBlock_ProducesCorrectTransaction() throws Throwable {
+    public void testSetMaxTxPerBlock_ProducesCorrectTransaction() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_setMaxTransactionsPerBlock.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
                 "setMaxTransactionsPerBlock", Arrays.asList(ContractParameter.integer(500))).toArray();
@@ -159,9 +163,10 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void setMaxBlockSystemFee() throws Throwable {
+    public void testSetMaxBlockSystemFee() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_setMaxBlockSystemFee.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
                 "setMaxBlockSystemFee",
@@ -183,9 +188,10 @@ public class PolicyContractTest {
     }
 
     @Test
-    public void setFeePerByte_ProducesCorrectTransaction() throws Throwable {
+    public void testSetFeePerByte_ProducesCorrectTransaction() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_setFeePerByte.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
                 "setFeePerByte", Arrays.asList(ContractParameter.integer(20))).toArray();
@@ -206,9 +212,58 @@ public class PolicyContractTest {
     }
 
     @Test
+    public void testSetExecFeeFactor() throws Throwable {
+        setUpWireMockForCall("invokescript", "policy_setExecFeeFactor.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
+                "setExecFeeFactor", Arrays.asList(ContractParameter.integer(10))).toArray();
+
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new PolicyContract(neow3j)
+                .setExecFeeFactor(10)
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testSetStoragePrice() throws Throwable {
+        setUpWireMockForCall("invokescript", "policy_setStoragePrice.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
+                "setStoragePrice", Arrays.asList(ContractParameter.integer(8))).toArray();
+
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new PolicyContract(neow3j)
+                .setStoragePrice(8)
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
     public void testBlockAccount() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_blockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH, "blockAccount",
                 Arrays.asList(ContractParameter.hash160(recipient))).toArray();
@@ -232,6 +287,7 @@ public class PolicyContractTest {
     public void testBlockAccount_address() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_blockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH, "blockAccount",
                 Arrays.asList(ContractParameter.hash160(recipient))).toArray();
@@ -255,6 +311,7 @@ public class PolicyContractTest {
     public void testUnblockAccount() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_unblockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
                 "unblockAccount", Arrays.asList(ContractParameter.hash160(recipient))).toArray();
@@ -278,6 +335,7 @@ public class PolicyContractTest {
     public void testUnblockAccount_address() throws Throwable {
         setUpWireMockForCall("invokescript", "policy_unblockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(POLICY_SCRIPT_HASH,
                 "unblockAccount", Arrays.asList(ContractParameter.hash160(recipient))).toArray();

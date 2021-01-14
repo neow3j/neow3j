@@ -6,9 +6,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
-import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event3Args;
@@ -32,7 +30,9 @@ public class ContractEventsIntegrationTest extends ContractTest {
     public void fireTwoEvents() throws Throwable {
         String txHash = invokeFunctionAndAwaitExecution();
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
-        List<NeoApplicationLog.Notification> notifications = log.getNotifications();
+        List<NeoApplicationLog.Execution> executions = log.getExecutions();
+        assertThat(executions, hasSize(1));
+        List<NeoApplicationLog.Execution.Notification> notifications = executions.get(0).getNotifications();
         assertThat(notifications, hasSize(2));
 
         assertThat(notifications.get(0).getEventName(), is("event1"));
@@ -53,7 +53,9 @@ public class ContractEventsIntegrationTest extends ContractTest {
     public void fireEventWithMethodReturnValueAsArgument() throws Throwable {
         String txHash = invokeFunctionAndAwaitExecution();
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
-        List<NeoApplicationLog.Notification> notifications = log.getNotifications();
+        List<NeoApplicationLog.Execution> executions = log.getExecutions();
+        assertThat(executions, hasSize(1));
+        List<NeoApplicationLog.Execution.Notification> notifications = executions.get(0).getNotifications();
         assertThat(notifications, hasSize(1));
 
         assertThat(notifications.get(0).getEventName(), is("event1"));
@@ -69,8 +71,10 @@ public class ContractEventsIntegrationTest extends ContractTest {
                 byteArray("d6c712eb53b1a130f59fd4e5864bdac27458a509"),
                 integer(10));
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
-        List<NeoApplicationLog.Notification> notifications = log.getNotifications();
-        NeoApplicationLog.Notification event = notifications.get(0);
+        List<NeoApplicationLog.Execution> executions = log.getExecutions();
+        assertThat(executions, hasSize(1));
+        List<NeoApplicationLog.Execution.Notification> notifications = executions.get(0).getNotifications();
+        NeoApplicationLog.Execution.Notification event = notifications.get(0);
         ArrayStackItem state = event.getState().asArray();
         assertThat(state.get(0).asByteString().getAsHexString(),
                 is("0f46dc4287b70117ce8354924b5cb3a47215ad93"));

@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
+import static java.lang.String.format;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -8,14 +9,18 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
+import io.neow3j.contract.ManagementContract;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.HexParameter;
+import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances.Nep5Balance;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
@@ -29,6 +34,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -73,16 +79,18 @@ public class ContractTest {
             .waitingFor(Wait.forListeningPort());
 
     protected static Account defaultAccount;
-    protected static Account committeeMember;
+    protected static Account committee;
     protected static Wallet wallet;
     protected static Neow3j neow3j;
     protected static SmartContract contract;
     protected static String contractName;
+    protected static String deployTxHash;
+    protected static String blockHashOfDeployTx;
 
     @Rule
     public TestName testName = new TestName();
 
-    private boolean signWithCommitteeMember = false;
+    private boolean signAsCommittee = false;
     private boolean signWithDefaultAccount = false;
 
     protected String getTestName() {
@@ -92,13 +100,14 @@ public class ContractTest {
     protected static void setUp(String name) throws Throwable {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
         defaultAccount = Account.fromWIF("L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda");
-        committeeMember = Account.createMultiSigAccount(
+        committee = Account.createMultiSigAccount(
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
-        wallet = Wallet.withAccounts(defaultAccount, committeeMember);
+        wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(contract.getScriptHash());
+
     }
 
     protected static String getResultFilePath(String testClassName, String methodName) {
@@ -112,15 +121,32 @@ public class ContractTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        SmartContract sc = new SmartContract(res.getNefFile(), res.getManifest(), neow3j);
-        NeoSendRawTransaction response = sc.deploy()
+        NeoSendRawTransaction response = new ManagementContract(neow3j)
+                .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+                .signers(Signer.calledByEntry(committee.getScriptHash()))
                 .sign().send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
         }
-        return sc;
+
+        // Remember the transaction and its block.
+        deployTxHash = response.getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(deployTxHash);
+        blockHashOfDeployTx = neow3j.getTransaction(deployTxHash).send()
+                .getTransaction().getBlockHash();
+        // Get the contract address from the application logs.
+        NeoApplicationLog appLog = neow3j.getApplicationLog(
+                response.getSendRawTransaction().getHash()).send().getApplicationLog();
+        Execution execution = appLog.getExecutions().get(0);
+        if (execution.getState().equals(VM_STATE_FAULT)) {
+            throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
+                    + "message was: '%s'", fullyQualifiedName, execution.getException()));
+        }
+        ArrayStackItem arrayItem = execution.getStack().get(0).asArray();
+        ScriptHash scriptHash = new ScriptHash(Numeric.hexStringToByteArray(
+                arrayItem.get(2).asByteString().getAsHexString()));
+        return new SmartContract(scriptHash, neow3j);
     }
 
     /**
@@ -149,13 +175,13 @@ public class ContractTest {
     protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
             throws IOException {
 
-        if (signWithCommitteeMember) {
+        if (signAsCommittee) {
             return contract.callInvokeFunction(function, Arrays.asList(params),
-                    Signer.calledByEntry(committeeMember.getScriptHash()));
+                    Signer.global(committee.getScriptHash()));
         }
         if (signWithDefaultAccount) {
             return contract.callInvokeFunction(function, Arrays.asList(params),
-                    Signer.calledByEntry(defaultAccount.getScriptHash()));
+                    Signer.global(defaultAccount.getScriptHash()));
         }
         return contract.callInvokeFunction(function, Arrays.asList(params));
     }
@@ -181,38 +207,72 @@ public class ContractTest {
     /**
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters.
-     * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
     protected String invokeFunction(ContractParameter... params) throws Throwable {
-        return contract.invokeFunction(getTestName(), params)
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+        return invokeFunction(getTestName(), params);
+    }
+
+    /**
+     * Transfers the given amount of GAS to the {@code to} account. The amount is taken from the
+     * committee account.
+     *
+     * @param to The receiving account.
+     * @param amount The amount to transfer.
+     * @return the hash of the transfer transaction.
+     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     * constructing the transaction object.
+     */
+    protected String transferGas(ScriptHash to, BigDecimal amount) throws Throwable {
+        io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
+        return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
+                amount, committee.getScriptHash())
                 .sign()
                 .send()
-                .getSendRawTransaction()
-                .getHash();
+                .getSendRawTransaction().getHash();
+    }
+
+    /**
+     * Transfers the given amount of NEO to the {@code to} account. The amount is taken from the
+     * committee account.
+     *
+     * @param to The receiving account.
+     * @param amount The amount to transfer.
+     * @return the hash of the transfer transaction.
+     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     * constructing the transaction object.
+     */
+    protected String transferNeo(ScriptHash to, BigDecimal amount) throws Throwable {
+        io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
+        return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
+                amount, committee.getScriptHash())
+                .sign()
+                .send()
+                .getSendRawTransaction().getHash();
     }
 
     /**
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters.
-     * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    protected String invokeFunction(String function, ContractParameter... params) throws Throwable {
+    protected String invokeFunction(String function, ContractParameter... params)
+            throws Throwable {
+
+        Signer signer;
+        if (signAsCommittee) {
+            signer = Signer.global(committee.getScriptHash());
+        } else {
+            signer = Signer.global(defaultAccount.getScriptHash());
+        }
         return contract.invokeFunction(function, params)
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(committeeMember.getScriptHash()))
+                .signers(signer)
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -224,8 +284,7 @@ public class ContractTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
@@ -240,14 +299,14 @@ public class ContractTest {
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committeeMember} is used to sign the
-     * transaction.
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected String invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
+    protected String invokeFunctionAndAwaitExecution(String function,
+            ContractParameter... params)
             throws Throwable {
 
         String txHash = invokeFunction(function, params);
@@ -267,7 +326,7 @@ public class ContractTest {
     private static Callable<Long> callableGetBalance(String address, ScriptHash tokenScriptHash) {
         return () -> {
             try {
-                List<Nep5Balance> balances = neow3j.getNep5Balances(address).send()
+                List<Nep17Balance> balances = neow3j.getNep17Balances(address).send()
                         .getBalances().getBalances();
                 return balances.stream()
                         .filter(b -> b.getAssetHash().equals("0x" + tokenScriptHash.toString()))
@@ -332,8 +391,8 @@ public class ContractTest {
         return getObjectMapper().readValue(s, stackItemType);
     }
 
-    protected void signWithCommitteeMember() {
-        signWithCommitteeMember = true;
+    protected void signAsCommittee() {
+        signAsCommittee = true;
     }
 
     protected void signWithDefaultAccount() {

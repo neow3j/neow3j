@@ -4,8 +4,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.publicKey;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 
@@ -23,6 +28,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +47,9 @@ public class NeoTokenTest {
     private static final String VOTE = NeoToken.VOTE;
     private static final String REGISTER_CANDIDATE = NeoToken.REGISTER_CANDIDATE;
     private static final String UNREGISTER_CANDIDATE = NeoToken.UNREGISTER_CANDIDATE;
+    private static final String GET_GAS_PER_BLOCK = NeoToken.GET_GAS_PER_BLOCK;
+    private static final String SET_GAS_PER_BLOCK = NeoToken.SET_GAS_PER_BLOCK;
+
     private Neow3j neow;
 
     @Before
@@ -56,12 +65,12 @@ public class NeoTokenTest {
 
     @Test
     public void getName() {
-        assertThat(new NeoToken(neow).getName(), is("NEO"));
+        assertThat(new NeoToken(neow).getName(), is("NeoToken"));
     }
 
     @Test
     public void getSymbol() {
-        assertThat(new NeoToken(neow).getSymbol(), is("neo"));
+        assertThat(new NeoToken(neow).getSymbol(), is("NEO"));
     }
 
     @Test
@@ -82,7 +91,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"unclaimedGas\"" // function
                         + ".*\"f68f181731a47036a99f04dad90043a744edec0f\"" // script hash
                         + ".*100.*" // block height
@@ -107,7 +116,7 @@ public class NeoTokenTest {
 
         byte[] pubKeyBytes = account1.getECKeyPair().getPublicKey().getEncoded(true);
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                REGISTER_CANDIDATE, Arrays.asList(ContractParameter.publicKey(pubKeyBytes)))
+                REGISTER_CANDIDATE, Arrays.asList(publicKey(pubKeyBytes)))
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
@@ -127,7 +136,7 @@ public class NeoTokenTest {
 
         byte[] pubKeyBytes = account1.getECKeyPair().getPublicKey().getEncoded(true);
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                UNREGISTER_CANDIDATE, Arrays.asList(ContractParameter.publicKey(pubKeyBytes)))
+                UNREGISTER_CANDIDATE, Arrays.asList(publicKey(pubKeyBytes)))
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
@@ -142,48 +151,16 @@ public class NeoTokenTest {
 
     @Test
     public void getCandidates() throws IOException {
-        String responseBody = ContractTestHelper.loadFile(
-                "/responses/invokefunction_getcandidates.json");
-        WireMock.stubFor(post(urlEqualTo("/"))
-                .withRequestBody(new RegexPattern(""
-                        + ".*\"method\":\"invokefunction\""
-                        + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
-                        + ".*\"getCandidates\".*" // function
-                ))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(responseBody)));
+        setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
+                "0a46e2e37c9987f570b4af253fb77e7eef0f72b6",
+                "getCandidates");
 
         Map<ECPublicKey, Integer> result = new NeoToken(neow).getCandidates();
-        assertThat(result.keySet(), contains(
-                new ECPublicKey(Numeric.hexStringToByteArray(
-                        "02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c")),
-                new ECPublicKey(Numeric.hexStringToByteArray(
-                        "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238"))
-        ));
-        assertThat(result.values(), contains(100, 49999900));
-    }
-
-    @Test
-    public void getValidators() throws IOException {
-        String responseBody = ContractTestHelper.loadFile(
-                "/responses/invokefunction_getvalidators.json");
-        WireMock.stubFor(post(urlEqualTo("/"))
-                .withRequestBody(new RegexPattern(""
-                        + ".*\"method\":\"invokefunction\""
-                        + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
-                        + ".*\"getValidators\".*" // function
-                ))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(responseBody)));
-
-        List<ECPublicKey> result = new NeoToken(neow).getValidators();
-        String expKeyHex = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
-        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
-        assertThat(result, contains(expKey));
+        assertThat(result.size(), is (2));
+        result.forEach((key, value) -> {
+            assertThat(key, notNullValue());
+            assertThat(value, is(0));
+        });
     }
 
     @Test
@@ -194,7 +171,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"getCommittee\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -215,7 +192,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"de5f57d430d3dece511cf975a8d37848cb9e0525\"" // neo contract
+                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
                         + ".*\"getNextBlockValidators\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -229,35 +206,72 @@ public class NeoTokenTest {
     }
 
     @Test
-    public void voteProducesCorrectScriptAnsSigner() throws IOException {
+    public void voteWithAccountProducesCorrectScript() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_vote.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        byte[] pubKeyBytes1 = Numeric.hexStringToByteArray(
-                "02200284598c6c1117f163dd938a4c8014cf2cf1164c4b7197f347109db50eae7c");
-        byte[] pubKeyBytes2 = Numeric.hexStringToByteArray(
-                "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
+        byte[] pubKey = account1.getECKeyPair().getPublicKey().getEncoded(true);
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, VOTE,
                 Arrays.asList(
-                        ContractParameter.hash160(account1.getScriptHash()),
-                        ContractParameter.publicKey(pubKeyBytes1),
-                        ContractParameter.publicKey((pubKeyBytes2))))
+                        hash160(account1.getScriptHash()),
+                        publicKey(pubKey)))
+                .toArray();
+
+        TransactionBuilder b = new NeoToken(neow)
+                .vote(account1, new ECPublicKey(pubKey))
+                .wallet(Wallet.withAccounts(account1))
+                .signers(Signer.global(account1.getScriptHash()));
+
+        assertThat(b.getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void voteWitScriptHashProducesCorrectScript() throws IOException {
+        setUpWireMockForCall("invokescript", "invokescript_vote.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        byte[] pubKey = account1.getECKeyPair().getPublicKey().getEncoded(true);
+        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, VOTE,
+                Arrays.asList(
+                        hash160(account1.getScriptHash()),
+                        publicKey(pubKey)))
                 .toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder b = new NeoToken(neow).vote(account1.getScriptHash(),
-                new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2))
+        TransactionBuilder b = new NeoToken(neow)
+                .vote(account1.getScriptHash(), new ECPublicKey(pubKey))
+                .wallet(w)
                 .signers(Signer.global(account1.getScriptHash()));
 
-        assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
         assertThat(b.getScript(), is(expectedScript));
+    }
 
-        b = new NeoToken(neow).vote(account1, new ECPublicKey(pubKeyBytes1), new ECPublicKey(pubKeyBytes2))
-                .signers(Signer.global(account1.getScriptHash()));
+    @Test
+    public void getGasPerBlockInvokesCorrectFunctionAndHandlesReturnValueCorrectly()
+            throws IOException {
 
-        assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
-        assertThat(b.getScript(), is(expectedScript));
+        setUpWireMockForInvokeFunction(GET_GAS_PER_BLOCK, "invokefunction_getGasPerBlock.json");
+        int res = new NeoToken(neow).getGasPerBlock().intValue();
+        assertThat(res, is(500_000));
+    }
+
+    @Test
+    public void setGasPerBlockProducesCorrectScript()
+            throws IOException {
+
+        setUpWireMockForCall("invokescript", "invokescript_vote.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        int gasPerBlock = 10000;
+        Wallet w = Wallet.withAccounts(account1);
+        TransactionBuilder txBuilder = new NeoToken(neow).setGasPerBlock(gasPerBlock)
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()));
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+                SET_GAS_PER_BLOCK, Arrays.asList(integer(gasPerBlock)))
+                .toArray();
+
+        assertThat(txBuilder.getScript(), is(expectedScript));
     }
 }
