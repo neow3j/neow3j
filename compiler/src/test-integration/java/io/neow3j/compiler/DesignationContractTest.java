@@ -44,7 +44,7 @@ public class DesignationContractTest extends ContractTest {
         ArrayStackItem pubKeys = neow3j.invokeFunction(
                 "c0073f4c7069bf38995780c9da065f9b3949ea7a",
                 "getDesignatedByRole",
-                Arrays.asList(integer(4), integer(blockIndex+1)))
+                Arrays.asList(integer(4), integer(blockIndex + 1)))
                 .send().getInvocationResult().getStack().get(0).asArray();
         assertThat(pubKeys.get(0).asByteString().getValue(), is(pubKey));
 
