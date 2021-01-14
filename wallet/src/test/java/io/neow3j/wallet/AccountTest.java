@@ -340,16 +340,16 @@ public class AccountTest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Test
-    public void getNep5Balances() throws IOException {
+    public void getNep17Balances() throws IOException {
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
 
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         Account a = Account.fromAddress(ADDRESS);
-        WalletTestHelper.setUpWireMockForCall("getnep5balances",
-                "getnep5balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
+        WalletTestHelper.setUpWireMockForCall("getnep17balances",
+                "getnep17balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
                 ADDRESS);
-        Map<ScriptHash, BigInteger> balances = a.getNep5Balances(neow);
+        Map<ScriptHash, BigInteger> balances = a.getNep17Balances(neow);
         assertThat(balances.keySet(), contains(GAS_SCRIPT_HASH, NEO_SCRIPT_HASH));
         assertThat(balances.values(), contains(
                 new BigInteger("300000000"),

@@ -43,16 +43,6 @@ public class ContractTestHelper {
                         .withBody(responseBody)));
     }
 
-    public static void setUpWireMockForSendRawTransaction() throws IOException {
-        String responseBody = loadFile("/responses/sendrawtransaction.json");
-
-        WireMock.stubFor(post(urlEqualTo("/"))
-                .withRequestBody(new ContainsPattern("\"method\":\"sendrawtransaction\""))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(responseBody)));
-    }
-
     public static void setUpWireMockForInvokeFunction(String contractFunction, String responseFile)
             throws IOException {
 

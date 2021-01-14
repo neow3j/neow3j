@@ -1,9 +1,9 @@
 package io.neow3j.devpack;
 
 /**
- * Offers a few methods that take string literals and convert them to byte arrays, script hashes,
- * or integers. All of these methods can only be used on constant string literals, and do not
- * work on string variables or return values.
+ * Offers a few methods that take string literals and convert them to byte arrays, script hashes, or
+ * integers. All of these methods can only be used on constant string literals, and do not work on
+ * string variables or return values.
  * <p>
  * The conversion from string to the resulting type is made at compile time.
  */
@@ -17,6 +17,9 @@ public class StringLiteralHelper {
      * <p>
      * Example: addressToScriptHash("AFsCjUGzicZmXQtWpwVt6hNeJTBwSipJMS") generates
      * 0102030405060708090a0b0c0d0e0faabbccddee
+     *
+     * @param address The address to convert to script hash.
+     * @return the script hash.
      */
     public static native byte[] addressToScriptHash(String address);
 
@@ -27,6 +30,9 @@ public class StringLiteralHelper {
      * <p>
      * Example: hexToBytes("0102030405060708090a0b0c0d0e0faabbccddee") generates the corresponding
      * byte array.
+     *
+     * @param hex The hex string to convert to bytes.
+     * @return the byte array.
      */
     public static native byte[] hexToBytes(String hex);
 
@@ -36,6 +42,9 @@ public class StringLiteralHelper {
      * This method can only be applied to constant string literals.
      * <p>
      * Example: stringToInt("10000") generates the int with the value 10000.
+     *
+     * @param text The string representation of the integer.
+     * @return the integer.
      */
     public static native int stringToInt(String text);
 }

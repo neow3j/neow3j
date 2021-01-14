@@ -133,7 +133,7 @@ public class NeoConstants {
     /**
      * The maximum value for the 'validUntilBlock' transaction property.
      */
-    public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT = 2102400;
+    public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT = 5760;
 
     /**
      * Max byte length for a valid contract manifest.
