@@ -1,12 +1,17 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.array;
+import static io.neow3j.contract.ContractParameter.publicKey;
+
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.DesignationRole;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.wallet.Account;
+import java.util.stream.Collectors;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.io.IOException;
@@ -20,19 +25,7 @@ import java.util.List;
 public class DesignationContract extends SmartContract {
 
     private static final String NAME = "DesignationContract";
-
-    private static final byte[] SCRIPT = new ScriptBuilder()
-            .pushData(NAME)
-            .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
-            .toArray();
-
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder()
-                    .opCode(OpCode.ABORT)
-                    .pushData(ScriptHash.ZERO.toArray())
-                    .pushData(SCRIPT)
-                    .toArray());
-
+    public static final ScriptHash SCRIPT_HASH = SmartContract.getScriptHashOfNativeContract(NAME);
     private static final String GET_DESIGNATED_BY_ROLE = "getDesignatedByRole";
     private static final String DESIGNATE_AS_ROLE = "designateAsRole";
 
@@ -74,7 +67,7 @@ public class DesignationContract extends SmartContract {
      * @param role  The role.
      * @param nodes The nodes to be designated.
      */
-    public TransactionBuilder designateAsRole(DesignationRole role, List<Account> nodes) {
+    public TransactionBuilder designateAsRole(DesignationRole role, List<ECPublicKey> pubKeys) {
 //    params:
 //    - role: Integer
 //    - nodes: Array of ECPoints
@@ -82,16 +75,14 @@ public class DesignationContract extends SmartContract {
         if (role == null) {
             throw new IllegalArgumentException("Role cannot be null.");
         }
-        if (nodes.isEmpty()) {
+        if (pubKeys == null || pubKeys.isEmpty()) {
             throw new IllegalArgumentException("At least one node is required for designation.");
         }
         ContractParameter roleParam = ContractParameter.integer(role.byteValue());
-        List<ContractParameter> nodeParamList = new ArrayList<>();
-        nodes.forEach(account -> nodeParamList.add(
-                ContractParameter.publicKey(
-                        account.getECKeyPair().getPublicKey().getEncoded(true))));
+        List<ContractParameter> pubKeysParams = pubKeys.stream()
+                .map(k -> publicKey(k.getEncoded(true)))
+                .collect(Collectors.toList());
 
-        ContractParameter nodesParam = ContractParameter.array(nodeParamList);
-        return invokeFunction(DESIGNATE_AS_ROLE, roleParam, nodesParam);
+        return invokeFunction(DESIGNATE_AS_ROLE, roleParam, array(pubKeysParams));
     }
 }
