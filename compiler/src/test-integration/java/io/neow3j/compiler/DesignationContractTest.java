@@ -17,7 +17,7 @@ public class DesignationContractTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(DesignationTestContract.class.getName());
+        setUp(DesignationContractTestContract.class.getName());
     }
 
     @Test
@@ -29,7 +29,7 @@ public class DesignationContractTest extends ContractTest {
     }
 
     @Test
-    public void getDesingates() throws IOException {
+    public void getDesignates() throws IOException {
         // TODO: Test when preview4 privatenet docker image is ready.
         NeoInvokeFunction response = callInvokeFunction(integer(Role.STATE_VALIDATOR));
         ArrayStackItem designates = response.getInvocationResult().getStack().get(0).asArray();
@@ -37,7 +37,7 @@ public class DesignationContractTest extends ContractTest {
         assertThat(designates.get(0).asBuffer().getValue(), is(new byte[]{}));
     }
 
-    static class DesignationTestContract {
+    static class DesignationContractTestContract {
 
         public static byte[] getHash() {
             return DesignationContract.hash();

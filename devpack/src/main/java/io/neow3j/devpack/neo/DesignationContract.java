@@ -24,4 +24,13 @@ public class DesignationContract {
      * @return the public keys of the designates with the given role.
      */
     public static native byte[][] getDesignatedByRole(byte role);
+
+    /**
+     * Designates the nodes with the given public keys to the {@link Role};
+     *
+     * @param role       The role of the designated nodes.
+     * @param publicKeys The node's public keys.
+     */
+    public static native void designateAsRole(byte role, byte[][] publicKeys);
+
 }
