@@ -1,18 +1,12 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.neo.Contract;
 
-@Contract(scriptHash = "0xcd97b70d82d69adfcd9165374109419fade8d6ab")
+@ContractHash("0xcd97b70d82d69adfcd9165374109419fade8d6ab")
 public class ManagementContract {
 
     public static native byte[] getHash();
-
-    /**
-     * Gets the name of the management contract.
-     *
-     * @return the name.
-     */
-    public static native String name();
 
     /**
      * Gets the contract with the given script hash.
