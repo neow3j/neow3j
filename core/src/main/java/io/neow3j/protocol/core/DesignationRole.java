@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum DesignationRole {
 
-    STATE_VALIDATOR("StateValidator", 0x00),
+    STATE_VALIDATOR("StateValidator", 0x04),
     ORACLE("Oracle", 0x08);
 
     private String jsonValue;
