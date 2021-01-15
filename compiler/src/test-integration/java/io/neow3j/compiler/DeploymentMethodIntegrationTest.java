@@ -11,6 +11,7 @@ import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import java.util.List;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class DeploymentMethodIntegrationTest extends ContractTest {
@@ -21,6 +22,8 @@ public class DeploymentMethodIntegrationTest extends ContractTest {
     }
 
     @Test
+    @Ignore("Test fails because the neo-node has a bug. Try again as soon as test container is up to" +
+            "date with the fixed neo-node version.")
     public void callVerifyWithContractOwner() throws Throwable {
         List<Execution> executions = neow3j.getApplicationLog(deployTxHash).send()
                 .getApplicationLog().getExecutions();
