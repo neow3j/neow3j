@@ -338,6 +338,41 @@ public class RequestTest extends RequestTester {
         );
     }
 
+    @Test
+    public void testInvokeContractVerify() throws Exception {
+        neow3j.invokeContractVerify(
+                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
+                Arrays.asList(ContractParameter.string("a string"),
+                        ContractParameter.string("another string")),
+                Signer.calledByEntry(new ScriptHash("cadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+        ).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"invokecontractverify\","
+                        + "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\","
+                        + "["
+                        + "{\"type\":\"String\",\"value\":\"a string\"},"
+                        + "{\"type\":\"String\",\"value\":\"another string\"}"
+                        + "],"
+                        + "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\",\"scopes\":[\"CalledByEntry\"],"
+                        + "\"allowedcontracts\":[],\"allowedgroups\":[]}]"
+                        + "],\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testInvokeContractVerifyNoParamsNoSigners() throws Exception {
+        neow3j.invokeContractVerify("af7c7328eee5a275a3bcaee2bf0cf662b5e739be", null).send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\",\"method\":\"invokecontractverify\","
+                        + "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\","
+                        + "[],"
+                        + "[]"
+                        + "],\"id\":1}"
+        );
+    }
+
     // Utilities Methods
 
     @Test

@@ -11,9 +11,7 @@ public class TriggerType {
     /**
      * The verification trigger indicates that the contract is being invoked as a verification
      * function. The verification function can accept multiple parameters, and should return a
-     * boolean value that indicates the validity of the transaction or block. The entry point of the
-     * contract will be invoked if the contract is triggered with this trigger type. The entry point
-     * of the contract must be able to handle this trigger type.
+     * boolean value that indicates the validity of the transaction or block.
      */
     public static final byte VERIFICATION = 0x20;
 

@@ -179,7 +179,7 @@ public class MethodsConverter implements Converter {
         }
         NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
         compUnit.getNeoModule().addMethod(calledNeoMethod);
-        calledNeoMethod.initializeMethod(compUnit);
+        calledNeoMethod.initializeLocalVariablesAndParameters(compUnit);
         calledNeoMethod.convert(compUnit);
         addReverseArguments(calledAsmMethod, callingNeoMethod);
         // The actual address offset for the method call is set at a later point in compilation.
