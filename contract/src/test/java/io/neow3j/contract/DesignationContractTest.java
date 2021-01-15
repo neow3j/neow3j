@@ -56,6 +56,7 @@ public class DesignationContractTest {
 
     @Test
     public void testGetDesignateByRole() throws IOException {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokefunction", "designation_getByRole.json",
                 String.valueOf(DesignationRole.STATE_VALIDATOR.byteValue()), "10");
 
@@ -66,12 +67,31 @@ public class DesignationContractTest {
 
     @Test
     public void testGetDesignatedByRole_emptyResponse() throws IOException {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokefunction", "designation_getByRole_empty.json",
                 String.valueOf(DesignationRole.STATE_VALIDATOR.byteValue()), "12");
 
         DesignationContract designationContract = new DesignationContract(neow);
         List<ECPublicKey> list = designationContract.getDesignatedByRole(DesignationRole.ORACLE, 12);
         assertThat(list, hasSize(0));
+    }
+
+    @Test
+    public void testGetDesignatedByRole_negativeIndex() throws IOException {
+        DesignationContract designationContract = new DesignationContract(neow);
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(new StringContains("The block index has to be positive."));
+        designationContract.getDesignatedByRole(DesignationRole.ORACLE, -1);
+    }
+
+    @Test
+    public void testGetDesignatedByRole_indexTooHigh() throws IOException {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        DesignationContract designationContract = new DesignationContract(neow);
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(new StringContains("The provided block index (1001) is too high."));
+        designationContract.getDesignatedByRole(DesignationRole.ORACLE, 1001);
     }
 
     @Test

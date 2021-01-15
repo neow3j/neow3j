@@ -42,6 +42,7 @@ public class DesignationContract extends SmartContract {
      * @return the {@code ECPublicKeys} of the designated nodes.
      */
     public List<ECPublicKey> getDesignatedByRole(DesignationRole role, int blockIndex) throws IOException {
+        checkBlockIndexValidity(blockIndex);
         NeoInvokeFunction invocation = callInvokeFunction(GET_DESIGNATED_BY_ROLE,
                 Arrays.asList(
                         integer(role.byteValue()),
@@ -52,6 +53,18 @@ public class DesignationContract extends SmartContract {
         return arrayOfDesignates.stream()
                 .map(item -> new ECPublicKey(item.asByteString().getValue()))
                 .collect(Collectors.toList());
+    }
+
+    private void checkBlockIndexValidity(int blockIndex) throws IOException {
+        if (blockIndex < 0) {
+            throw new IllegalArgumentException("The block index has to be positive.");
+        }
+
+        int currentBlockIndex = neow.getBlockCount().send().getBlockIndex().intValue();
+        if (blockIndex > currentBlockIndex) {
+            throw new IllegalArgumentException("The provided block index (" + blockIndex + ") is too high." +
+                    " The current block count is " + currentBlockIndex + ".");
+        }
     }
 
     /**
