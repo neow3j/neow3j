@@ -145,13 +145,22 @@ public class AsmHelper {
                         .anyMatch(desc -> annotation.desc.equals(desc)));
     }
 
-
     public static Optional<AnnotationNode> getAnnotationNode(FieldNode fieldNode,
             Class<?> annotation) {
         if (fieldNode.invisibleAnnotations == null) {
             return Optional.empty();
         }
         return fieldNode.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(annotation)))
+                .findFirst();
+    }
+
+    public static Optional<AnnotationNode> getAnnotationNode(MethodNode methodNode,
+            Class<?> annotation) {
+        if (methodNode.invisibleAnnotations == null) {
+            return Optional.empty();
+        }
+        return methodNode.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(annotation)))
                 .findFirst();
     }

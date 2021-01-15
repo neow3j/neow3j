@@ -43,7 +43,6 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
@@ -66,6 +65,8 @@ public class Compiler {
 
     public static final String INSTRUCTION_ANNOTATION_OPERAND = "operand";
     public static final String INSTRUCTION_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
+    public static final String VERIFY_METHOD_NAME = "verify";
+    public static final String DEPLOY_METHOD_NAME = "_deploy";
 
     private CompilationUnit compUnit;
 
@@ -244,8 +245,8 @@ public class Compiler {
      */
     private CompilationUnit compileClass(ClassNode classNode) throws IOException {
         compUnit.addContractClass(classNode);
-        collectAndInitializeStaticFields(classNode);
-        collectAndInitializeMethods(classNode);
+        compUnit.getNeoModule().addMethod(initializeStaticConstructor(classNode));
+        compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -266,9 +267,9 @@ public class Compiler {
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
 
-    private void collectAndInitializeStaticFields(ClassNode asmClass) throws IOException {
+    private NeoMethod initializeStaticConstructor(ClassNode asmClass) throws IOException {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
-            return;
+            return null;
         }
         if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
             throw new CompilerException(format("The class %s has more than the max supported "
@@ -282,8 +283,7 @@ public class Compiler {
         }
         checkForUsageOfInstanceConstructor(asmClass);
         collectSmartContractEvents(asmClass);
-        NeoMethod neoMethod = createInitsslotMethod(asmClass);
-        compUnit.getNeoModule().addMethod(neoMethod);
+        return createInitsslotMethod(asmClass);
     }
 
     private void collectSmartContractEvents(ClassNode asmClass) throws IOException {
@@ -335,26 +335,15 @@ public class Compiler {
     // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
     // script. This only looks at the <clinit> method of the class. The <clinit> method
     // contains static variable initialization instructions that happen right at the definition
-    // of the variables and not in a static constructor. Static constructors are not supported at
-    // the moment.
+    // of the variables or in the static constructor.
     private NeoMethod createInitsslotMethod(ClassNode asmClass) {
-        MethodNode initsslotMethod = null;
         Optional<MethodNode> classCtorOpt = asmClass.methods.stream()
                 .filter(m -> m.name.equals(CLASS_CTOR))
                 .findFirst();
-        if (classCtorOpt.isPresent()) {
-            initsslotMethod = classCtorOpt.get();
-        } else {
-            // Static variables are not initialized but we still need to add the INITSSLOT method.
-            // Therefore, we create a "fake" ASM method for it here.
-            // TODO: Determine if this is even necessary.
-            initsslotMethod = new MethodNode();
-            initsslotMethod.instructions.add(new InsnNode(JVMOpcode.RETURN.getOpcode()));
-            initsslotMethod.name = CLASS_CTOR;
-            initsslotMethod.desc = "()V";
-            initsslotMethod.access = Opcodes.ACC_STATIC;
+        if (!classCtorOpt.isPresent()) {
+            return null;
         }
-        NeoMethod neoMethod = new NeoMethod(initsslotMethod, asmClass);
+        NeoMethod neoMethod = new NeoMethod(classCtorOpt.get(), asmClass);
         neoMethod.setName(INITSSLOT_METHOD_NAME);
         neoMethod.setIsAbiMethod(true);
         byte[] operand = new byte[]{(byte) asmClass.fields.size()};
@@ -364,7 +353,8 @@ public class Compiler {
 
     // Collects all static methods and initializes them, e.g., sets the parameters and local
     // variables.
-    private void collectAndInitializeMethods(ClassNode asmClass) {
+    private List<NeoMethod> initializeContractMethods(ClassNode asmClass) {
+        List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
                 continue; // Handled in method `collectAndInitializeStaticFields()`.
@@ -376,10 +366,11 @@ public class Compiler {
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
                 NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-                neoMethod.initializeMethod(compUnit);
-                compUnit.getNeoModule().addMethod(neoMethod);
+                neoMethod.initializeLocalVariablesAndParameters(compUnit);
+                methods.add(neoMethod);
             }
         }
+        return methods;
     }
 
     // Handles/converts the given instruction. The given NeoMethod is the method that the

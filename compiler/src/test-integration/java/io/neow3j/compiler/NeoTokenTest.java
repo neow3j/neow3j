@@ -13,6 +13,7 @@ import io.neow3j.devpack.contracts.NeoToken.Candidate;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
+import io.neow3j.utils.Await;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -94,11 +95,11 @@ public class NeoTokenTest extends ContractTest {
     @Test
     public void vote() throws Throwable {
         // Needs GAS for the transaction costs.
-        waitUntilTransactionIsExecuted(transferGas(
-                defaultAccount.getScriptHash(), new BigDecimal("100")));
+        Await.waitUntilTransactionIsExecuted(
+                transferGas(defaultAccount.getScriptHash(), "100"), neow3j);
         // Needs NEo to be able to vote.
-        waitUntilTransactionIsExecuted(transferNeo(
-                defaultAccount.getScriptHash(), new BigDecimal("100")));
+        Await.waitUntilTransactionIsExecuted(
+                transferNeo(defaultAccount.getScriptHash(), "100"), neow3j);
 
         // Add the default account as a candidate
         String txHash = new io.neow3j.contract.NeoToken(neow3j)
@@ -108,7 +109,7 @@ public class NeoTokenTest extends ContractTest {
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
         signWithDefaultAccount();
         NeoInvokeFunction res = callInvokeFunction(hash160(defaultAccount.getScriptHash()),

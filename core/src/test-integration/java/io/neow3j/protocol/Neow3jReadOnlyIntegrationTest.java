@@ -74,10 +74,12 @@ import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoOpenWallet;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.utils.Await;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Calendar;
@@ -91,6 +93,8 @@ import org.testcontainers.containers.GenericContainer;
 // This test class uses a static container which is started once for the whole class and reused in
 // every test. Therefore only tests that don't need a new and clean blockchain should be added here.
 public class Neow3jReadOnlyIntegrationTest {
+
+    private static final String NEO_TOKEN_HASH = "0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6";
 
     // Information about the transaction that is sent after starting the node.
     private static String txHash;
@@ -132,7 +136,7 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static String BLOCK_0_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVWHgUp8gG/opUbVeYsix9tm7/OLPI0Hiue25Q3blOFCI6hnvVQEAAAAAAAB6/SAyVcspcr0KaoJ+dOOH7TIr7AEAAREBAB2sK3wAAAAA";
 
-    protected static Neow3jTestWrapper neow3jWrapper;
+    protected static Neow3j neow3j;
 
     @ClassRule
     public static GenericContainer privateNetContainer = setupPrivateNetContainer();
@@ -141,17 +145,26 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        neow3jWrapper = new Neow3jTestWrapper(new HttpService(getNodeUrl(privateNetContainer)));
+        neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         // open the wallet for JSON-RPC calls
-        neow3jWrapper.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
+        neow3j.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
-        neow3jWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
+        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(
+                "1", new ScriptHash(NEO_TOKEN_HASH), neow3j);
         // make a transaction that can be used for the tests
-        txHash = neow3jWrapper.performNeoTransfer(TX_RECIPIENT_1, TX_AMOUNT);
+        txHash = transferNeo(TX_RECIPIENT_1, TX_AMOUNT);
+    }
+
+    private static String transferNeo(String toAddress, String amount) throws IOException {
+        NeoSendToAddress send = neow3j.sendToAddress(NEO_HASH, toAddress, amount).send();
+        String txHash = send.getSendToAddress().getHash();
+        // ensure that the transaction is sent
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        return txHash;
     }
 
     private static Neow3j getNeow3j() {
-        return neow3jWrapper;
+        return neow3j;
     }
 
     @Test
@@ -338,7 +351,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetTransaction() throws IOException {
-        neow3jWrapper.waitUntilTxHash(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
         NeoGetTransaction getTransaction = getNeow3j().getTransaction(txHash).send();
         Transaction transaction = getTransaction.getTransaction();
@@ -363,7 +376,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetRawTransaction() throws IOException {
-        neow3jWrapper.waitUntilTxHash(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         NeoGetRawTransaction getRawTransaction = getNeow3j().getRawTransaction(txHash).send();
         String rawTransaction = getRawTransaction.getRawTransaction();
         assertThat(rawTransaction.length(), is(TX_LENGTH));
@@ -389,7 +402,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetTransactionHeight() throws IOException {
-        neow3jWrapper.waitUntilTxHash(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
         NeoGetTransactionHeight getTransactionHeight = getNeow3j().getTransactionHeight(txHash)
                 .send();
@@ -679,7 +692,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetApplicationLog() throws IOException {
-        neow3jWrapper.waitUntilTxHash(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
         NeoGetApplicationLog getApplicationLog = getNeow3j().getApplicationLog(txHash).send();
         NeoApplicationLog applicationLog = getApplicationLog.getApplicationLog();

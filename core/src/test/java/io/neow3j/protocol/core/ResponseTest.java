@@ -35,6 +35,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
@@ -1295,7 +1296,41 @@ public class ResponseTest extends ResponseTester {
                 ));
     }
 
-    // Utilities Methods
+    @Test
+    public void testNeoInvokeContractVerify() {
+        buildResponse(
+                "{\n"
+                        + "  \"jsonrpc\": \"2.0\",\n"
+                        + "  \"id\": 1,\n"
+                        + "  \"result\": {\n"
+                        + "    \"script\": "
+                        + "\"VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA\",\n"
+                        + "    \"state\": \"FAULT\",\n"
+                        + "    \"gasconsumed\": \"0.0103542\",\n"
+                        + "    \"exception\": \"Specified argument was out of the range of valid "
+                        + "values. (Parameter 'index')\",\n"
+                        + "    \"stack\": [\n"
+                        + "            {\n"
+                        + "                \"type\": \"Buffer\",\n"
+                        + "                \"value\": \"dHJhbnNmZXI=\"\n"
+                        + "            }\n"
+                        + "  ]}\n"
+                        + "}"
+        );
+
+        NeoInvokeContractVerify invokeFunction = deserialiseResponse(NeoInvokeContractVerify.class);
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is("FAULT"));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("0.0103542"));
+        assertThat(invokeFunction.getInvocationResult().getException(), is(
+                "Specified argument was out of the range of valid values. (Parameter 'index')"));
+        StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
+        assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
+        assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
+    }
+
+        // Utilities Methods
 
     @Test
     public void testListPlugins() {

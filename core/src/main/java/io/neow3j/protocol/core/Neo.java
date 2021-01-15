@@ -28,6 +28,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
@@ -116,6 +117,9 @@ public interface Neo {
             List<ContractParameter> params, Signer... signers);
 
     Request<?, NeoInvokeScript> invokeScript(String script, Signer... signers);
+
+    Request<?, NeoInvokeContractVerify> invokeContractVerify(String contractScriptHash,
+            List<ContractParameter> methodParameters, Signer... signers);
 
     Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address);
 

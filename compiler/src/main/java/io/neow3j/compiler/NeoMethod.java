@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.compiler.Compiler.COMPILER_NAME;
 import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
 import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
@@ -7,6 +8,8 @@ import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.OnDeployment;
+import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.utils.ArrayUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,6 +28,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LocalVariableNode;
@@ -112,7 +116,59 @@ public class NeoMethod {
         this.asmMethod = asmMethod;
         this.name = asmMethod.name;
         this.sourceClass = sourceClass;
+        handleVerifyMethod();
+        handleDeployMethod();
         collectTryCatchBlocks(asmMethod.tryCatchBlocks);
+    }
+
+    private void handleVerifyMethod() {
+        Optional<AnnotationNode> verifyAnnotation = AsmHelper.getAnnotationNode(asmMethod,
+                OnVerification.class);
+        if (!verifyAnnotation.isPresent()) {
+            // Check if method has verify signature but isn't annotated.
+            if (asmMethod.name.equals(Compiler.VERIFY_METHOD_NAME) && hasBooleanReturnType()) {
+                throw new CompilerException(sourceClass, format("Contract has a '%s' method which "
+                        + "is not annotated with the '%s' annotation. Either change its name or "
+                                + "add the annotation.", Compiler.VERIFY_METHOD_NAME,
+                        OnVerification.class.getSimpleName()));
+            }
+            return;
+        }
+
+        if (!hasBooleanReturnType()) {
+            throw new CompilerException(sourceClass, format("The method annotated with %s is "
+                    + "required to have a boolean return type.",
+                    OnVerification.class.getSimpleName()));
+        }
+        name = Compiler.VERIFY_METHOD_NAME;
+    }
+
+    private boolean hasBooleanReturnType() {
+        return asmMethod.desc.lastIndexOf('Z') == asmMethod.desc.length() - 1  &&
+                asmMethod.desc.lastIndexOf(')') == asmMethod.desc.length() - 2;
+    }
+
+    private void handleDeployMethod() {
+        Optional<AnnotationNode> deployAnnotation = AsmHelper.getAnnotationNode(asmMethod,
+                OnDeployment.class);
+        if (!deployAnnotation.isPresent()) {
+            // Check if method has _deploy signature but isn't annotated.
+            if (asmMethod.name.equals(Compiler.DEPLOY_METHOD_NAME) &&
+                    asmMethod.desc.equals("(Z)V")) {
+                throw new CompilerException(sourceClass, format("Contract has a '%s' method which "
+                                + "is not annotated with the '%s' annotation. Either change its "
+                                + "name or add the annotation.", Compiler.DEPLOY_METHOD_NAME,
+                        OnDeployment.class.getSimpleName()));
+            }
+            return;
+        }
+
+        if (!asmMethod.desc.equals("(Z)V")) {
+            throw new CompilerException(sourceClass, format("The method annotated with %s is "
+                            + "required to have a boolean parameter and a void return type.",
+                    OnDeployment.class.getSimpleName()));
+        }
+        name = Compiler.DEPLOY_METHOD_NAME;
     }
 
     // Sifts through the exception table of this method and constructs try-catch-finally blocks
@@ -186,7 +242,8 @@ public class NeoMethod {
         blockNodes.stream().filter(blockNode -> !parsedNodes.contains(blockNode)
                 && blockNode.type == null && blockNode.start != blockNode.handler)
                 .forEach(block -> tryCatchFinallyBlocks.add(
-                        new TryCatchFinallyBlock(block.start, block.end, null, null, block.handler)));
+                        new TryCatchFinallyBlock(block.start, block.end, null, null,
+                                block.handler)));
     }
 
     /**
@@ -644,7 +701,7 @@ public class NeoMethod {
         }
     }
 
-    public void initializeMethod(CompilationUnit compUnit) {
+    public void initializeLocalVariablesAndParameters(CompilationUnit compUnit) {
         checkForUnsupportedLocalVariableTypes();
         if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0
                 && (asmMethod.access & Opcodes.ACC_STATIC) > 0
