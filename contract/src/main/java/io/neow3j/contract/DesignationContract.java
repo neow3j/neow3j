@@ -1,26 +1,21 @@
 package io.neow3j.contract;
 
 import static io.neow3j.contract.ContractParameter.array;
+import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.publicKey;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.OpCode;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.DesignationRole;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.wallet.Account;
-import java.util.stream.Collectors;
-import org.bouncycastle.math.ec.ECPoint;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Represents an Oracle contract and provides methods to invoke it.
+ * Represents a Designation contract and provides methods to invoke it.
  */
 public class DesignationContract extends SmartContract {
 
@@ -40,45 +35,40 @@ public class DesignationContract extends SmartContract {
     }
 
     /**
-     * Gets the designate by its role and index.
+     * Gets the designated nodes by their role and the block index.
      *
-     * @param role the designate role.
-     * @param index the index.
-     * @return the designates by the given role and index.
+     * @param role The designation role.
+     * @param blockIndex The block index for which the nodes are designated.
+     * @return the {@code ECPublicKeys} of the designated nodes.
      */
-    public ECPoint[] getDesignatedByRole(DesignationRole role, int index) throws IOException {
-//    params:
-//    - role: Integer
-//    - index: Integer
-//    returnType: ECPoint[]
-        NeoInvokeFunction invoc = callInvokeFunction(GET_DESIGNATED_BY_ROLE,
+    public List<ECPublicKey> getDesignatedByRole(DesignationRole role, int blockIndex) throws IOException {
+        NeoInvokeFunction invocation = callInvokeFunction(GET_DESIGNATED_BY_ROLE,
                 Arrays.asList(
-                        ContractParameter.integer(role.byteValue()),
-                        ContractParameter.integer(index)));
-        StackItem stackItem = invoc.getInvocationResult().getStack().get(0);
-        // TODO: 14.12.20 Michael: check return type and implement it.
-        return null;
+                        integer(role.byteValue()),
+                        integer(blockIndex)));
+
+        List<StackItem> arrayOfDesignates = invocation.getInvocationResult().getStack().get(0).asArray().getValue();
+
+        return arrayOfDesignates.stream()
+                .map(item -> new ECPublicKey(item.asByteString().getValue()))
+                .collect(Collectors.toList());
     }
 
     /**
      * Creates a transaction script to designate nodes as a {@link DesignationRole} and
      * initializes a {@link TransactionBuilder} based on this script.
      *
-     * @param role  The role.
-     * @param nodes The nodes to be designated.
+     * @param role The designation role.
+     * @param pubKeys The public keys of the nodes that are designated.
      */
     public TransactionBuilder designateAsRole(DesignationRole role, List<ECPublicKey> pubKeys) {
-//    params:
-//    - role: Integer
-//    - nodes: Array of ECPoints
-//    returnType: Void
         if (role == null) {
-            throw new IllegalArgumentException("Role cannot be null.");
+            throw new IllegalArgumentException("The designation role cannot be null.");
         }
         if (pubKeys == null || pubKeys.isEmpty()) {
-            throw new IllegalArgumentException("At least one node is required for designation.");
+            throw new IllegalArgumentException("At least one public key is required for designation.");
         }
-        ContractParameter roleParam = ContractParameter.integer(role.byteValue());
+        ContractParameter roleParam = integer(role.byteValue());
         List<ContractParameter> pubKeysParams = pubKeys.stream()
                 .map(k -> publicKey(k.getEncoded(true)))
                 .collect(Collectors.toList());
