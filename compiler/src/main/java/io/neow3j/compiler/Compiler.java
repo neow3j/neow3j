@@ -13,6 +13,7 @@ import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.constants.OperandSize;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
@@ -25,6 +26,7 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,6 +63,9 @@ public class Compiler {
     private static final String CLASS_CTOR = "<clinit>";
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
     public static final String THIS_KEYWORD = "this";
+
+    public static final String INSTRUCTION_ANNOTATION_OPERAND = "operand";
+    public static final String INSTRUCTION_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
 
     private CompilationUnit compUnit;
 
@@ -551,28 +556,64 @@ public class Compiler {
             // The default value OpCode.NOP was set explicitly. Nothing to do.
             return;
         }
-        if (insnAnnotation.values.size() == 4) {
-            byte[] operand = getOperand(insnAnnotation);
-            if (operand.length != getOperandSize(opcode).size()) {
-                throw new CompilerException(neoMethod, format("Operand extracted from annotation"
-                                + "%s did not have correct size for corresponding neo-vm opcode "
-                                + "%s. Byte size was %d but neo-vm opcode needs an operand of %d "
-                                + "bytes.",
-                        insnAnnotation.desc, opcode.name(), operand.length,
+
+        OperandSize operandSizeDefinition = getOperandSize(opcode);
+        byte[] operandPrefix = new byte[]{};
+        if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND_PREFIX)) {
+            operandPrefix = getOperandPrefix(insnAnnotation);
+            if (operandPrefix.length != operandSizeDefinition.prefixSize()) {
+                throw new CompilerException(format("Instruction operand prefix did not have "
+                                + "correct size for corresponding opcode %s. Byte size was %d but "
+                                + "opcode needs an operand of %d bytes.", opcode.name(),
+                        operandPrefix.length, getOperandSize(opcode).size()));
+            }
+        }
+        byte[] operand = new byte[]{};
+        if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND)) {
+            operand = getOperand(insnAnnotation);
+            if (operandSizeDefinition.prefixSize() == 0 &&
+                    operand.length != operandSizeDefinition.size()) {
+                throw new CompilerException(neoMethod, format("Instruction operand did not have "
+                                + "correct size for corresponding %s. Byte size was %d but opcode "
+                                + "needs an operand of %d bytes.",
+                        opcode.name(), operand.length,
                         getOperandSize(opcode).size()));
             }
-            neoMethod.addInstruction(new NeoInstruction(opcode, operand));
+        }
+        // Is this of length 0?
+        byte[] wholeOperand = ArrayUtils.concatenate(operandPrefix, operand);
+        if (wholeOperand.length > 0) {
+            neoMethod.addInstruction(new NeoInstruction(opcode, wholeOperand));
         } else {
             neoMethod.addInstruction(new NeoInstruction(opcode));
         }
     }
 
+    private static byte[] getOperandPrefix(AnnotationNode insnAnnotation) {
+        byte[] operandPrefix = new byte[]{};
+        int idx = insnAnnotation.values.indexOf(INSTRUCTION_ANNOTATION_OPERAND_PREFIX);
+        Object prefixObj = insnAnnotation.values.get(idx+1);
+        if (prefixObj instanceof byte[]) {
+            operandPrefix = (byte[]) prefixObj;
+        } else if (prefixObj instanceof List) {
+            List<?> prefixObjAsList = (List<?>) prefixObj;
+            operandPrefix = new byte[prefixObjAsList.size()];
+            int i = 0;
+            for (Object element : prefixObjAsList) {
+                operandPrefix[i++] = (byte) element;
+            }
+        }
+        return operandPrefix;
+    }
+
     private static byte[] getOperand(AnnotationNode insnAnnotation) {
         byte[] operand = new byte[]{};
-        if (insnAnnotation.values.get(3) instanceof byte[]) {
-            operand = (byte[]) insnAnnotation.values.get(3);
-        } else if (insnAnnotation.values.get(3) instanceof List) {
-            List<?> operandAsList = (List<?>) insnAnnotation.values.get(3);
+        int idx = insnAnnotation.values.indexOf(INSTRUCTION_ANNOTATION_OPERAND);
+        Object operandObj = insnAnnotation.values.get(idx+1);
+        if (operandObj instanceof byte[]) {
+            operand = (byte[]) operandObj;
+        } else if (operandObj instanceof List) {
+            List<?> operandAsList = (List<?>) operandObj;
             operand = new byte[operandAsList.size()];
             int i = 0;
             for (Object element : operandAsList) {

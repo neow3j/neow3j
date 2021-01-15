@@ -17,8 +17,8 @@ public class Hash160 {
      *
      * @return the zero-valued {@code Hash160}.
      */
-    @Instruction(opcode = OpCode.PUSHDATA1, operand = {LENGTH, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0})
+    @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = LENGTH, operand = {0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
     public static native Hash160 zero();
 
     /**
