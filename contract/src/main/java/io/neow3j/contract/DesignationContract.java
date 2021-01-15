@@ -40,6 +40,7 @@ public class DesignationContract extends SmartContract {
      * @param role The designation role.
      * @param blockIndex The block index for which the nodes are designated.
      * @return the {@code ECPublicKeys} of the designated nodes.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<ECPublicKey> getDesignatedByRole(DesignationRole role, int blockIndex) throws IOException {
         checkBlockIndexValidity(blockIndex);
@@ -73,6 +74,7 @@ public class DesignationContract extends SmartContract {
      *
      * @param role The designation role.
      * @param pubKeys The public keys of the nodes that are designated.
+     * @return the transaction builder.
      */
     public TransactionBuilder designateAsRole(DesignationRole role, List<ECPublicKey> pubKeys) {
         if (role == null) {
