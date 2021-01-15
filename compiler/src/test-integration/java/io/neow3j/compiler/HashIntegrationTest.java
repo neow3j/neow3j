@@ -1,14 +1,18 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,12 +47,12 @@ public class HashIntegrationTest extends ContractTest {
     @Test
     public void isHash160Valid() throws IOException {
         String validHash = "0000000000000000000000000000000000000001";
-        String invalidHash = "00000000000000000000000000000000000001"; // One byte to short.
-        NeoInvokeFunction response = callInvokeFunction(byteArray(validHash),
-                byteArray(invalidHash));
+        String invalidHash = "00000000000000000000000000000000000001"; // One byte short.
+        NeoInvokeFunction response = callInvokeFunction(
+                byteArray(validHash), byteArray(invalidHash));
         ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
+        assertTrue(array.get(0).asBoolean().getValue());
+        assertFalse(array.get(1).asBoolean().getValue());
     }
 
     @Test
@@ -147,7 +151,7 @@ public class HashIntegrationTest extends ContractTest {
     @Test
     public void createHash256FromValidString() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000";
-        NeoInvokeFunction response = callInvokeFunction(string(hash));
+        NeoInvokeFunction response = callInvokeFunction(byteArray(hash));
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
                 is(hash));
     }
@@ -156,7 +160,7 @@ public class HashIntegrationTest extends ContractTest {
     public void createHash256FromInvalidString() throws IOException {
         // One byte to long.
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b00000000000000000000000000";
-        NeoInvokeFunction response = callInvokeFunction(string(hash));
+        NeoInvokeFunction response = callInvokeFunction(byteArray(hash));
         assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
     }
 
@@ -189,10 +193,10 @@ public class HashIntegrationTest extends ContractTest {
             return b;
         }
 
-        public static boolean[] isHash160Valid(byte[] arr1, byte[] arr2) {
+        public static boolean[] isHash160Valid(Hash160 h1, Hash160 h2) {
             boolean[] b = new boolean[2];
-            b[0] = new Hash160(arr1).isValid();
-            b[1] = new Hash160(arr2).isValid();
+            b[0] = h1.isValid();
+            b[1] = h2.isValid();
             return b;
         }
 
