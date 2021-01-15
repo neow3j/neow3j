@@ -26,6 +26,7 @@ import static io.neow3j.contract.ContractParameter.publicKey;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 public class DesignationContractTest {
@@ -55,11 +56,22 @@ public class DesignationContractTest {
 
     @Test
     public void testGetDesignateByRole() throws IOException {
-        setUpWireMockForCall("invokefunction", "designation_getByRole.json");
+        setUpWireMockForCall("invokefunction", "designation_getByRole.json",
+                String.valueOf(DesignationRole.STATE_VALIDATOR.byteValue()), "10");
 
         DesignationContract designationContract = new DesignationContract(neow);
         List<ECPublicKey> list = designationContract.getDesignatedByRole(DesignationRole.STATE_VALIDATOR, 10);
         assertThat(list, contains(account1.getECKeyPair().getPublicKey()));
+    }
+
+    @Test
+    public void testGetDesignatedByRole_emptyResponse() throws IOException {
+        setUpWireMockForCall("invokefunction", "designation_getByRole_empty.json",
+                String.valueOf(DesignationRole.STATE_VALIDATOR.byteValue()), "12");
+
+        DesignationContract designationContract = new DesignationContract(neow);
+        List<ECPublicKey> list = designationContract.getDesignatedByRole(DesignationRole.ORACLE, 12);
+        assertThat(list, hasSize(0));
     }
 
     @Test
