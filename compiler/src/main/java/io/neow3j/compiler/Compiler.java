@@ -232,7 +232,7 @@ public class Compiler {
      * @return the compilation unit holding the NEF and contract manifest.
      */
     private CompilationUnit compileClass(ClassNode classNode) throws IOException {
-        compUnit.addContractClass(classNode);
+        compUnit.setContractClass(classNode);
         compUnit.getNeoModule().addMethod(initializeStaticConstructor(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
         // Need to create a new list from the methods that have been added to the NeoModule so

@@ -147,20 +147,25 @@ public class AsmHelper {
 
     public static Optional<AnnotationNode> getAnnotationNode(FieldNode fieldNode,
             Class<?> annotation) {
-        if (fieldNode.invisibleAnnotations == null) {
-            return Optional.empty();
-        }
-        return fieldNode.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(annotation)))
-                .findFirst();
+        return getAnnotationNode(fieldNode.invisibleAnnotations, annotation);
     }
 
     public static Optional<AnnotationNode> getAnnotationNode(MethodNode methodNode,
             Class<?> annotation) {
-        if (methodNode.invisibleAnnotations == null) {
+        return getAnnotationNode(methodNode.invisibleAnnotations, annotation);
+    }
+
+    public static Optional<AnnotationNode> getAnnotationNode(ClassNode fieldNode,
+            Class<?> annotation) {
+        return getAnnotationNode(fieldNode.invisibleAnnotations, annotation);
+    }
+
+    private static Optional<AnnotationNode> getAnnotationNode(List<AnnotationNode> annotationNodes,
+            Class<?> annotation) {
+        if (annotationNodes == null) {
             return Optional.empty();
         }
-        return methodNode.invisibleAnnotations.stream()
+        return annotationNodes.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(annotation)))
                 .findFirst();
     }
