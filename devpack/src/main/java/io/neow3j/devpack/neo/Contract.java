@@ -55,7 +55,7 @@ public class Contract {
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALL)
-    public static native Object call(byte[] scriptHash, String method, Object... arguments);
+    public static native Object call(byte[] scriptHash, String method, Object[] arguments);
 
     /**
      * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing
@@ -68,8 +68,8 @@ public class Contract {
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALLEX)
-    public static native Object call(byte[] scriptHash, String method, byte callFlag,
-            Object... arguments);
+    public static native Object call(byte[] scriptHash, String method, Object[] arguments,
+            byte callFlag);
 
     /**
      * Gets the call flags with which the contract has been called. I.e., use this to know with
