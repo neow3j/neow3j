@@ -19,3 +19,6 @@ jobs:
           java-version: 1.8
       - name: Build with Unit Tests
         run: ./gradlew --info --warning-mode=all check jacocoRootTestReport
+      - uses: codecov/codecov-action@v1
+        with:
+          verbose: true
