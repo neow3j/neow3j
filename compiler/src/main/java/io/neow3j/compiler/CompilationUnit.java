@@ -1,13 +1,9 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
-
 import io.neow3j.contract.NefFile;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
@@ -42,8 +38,8 @@ public class CompilationUnit {
      */
     private DebugInfo debugInfo;
 
-    // The set of classes that represent the compiled contract.
-    private Set<ClassNode> contractClasses = new HashSet<>();
+    // The main contract class
+    private ClassNode contractClass;
 
     // Maps fully qualified class names to their source files (aboslute file paths).
     private Map<String, String> sourceFileMap = new HashMap<>();
@@ -95,21 +91,22 @@ public class CompilationUnit {
      *
      * @param classNode The class to add.
      */
-    protected void addContractClass(ClassNode classNode) {
-        contractClasses.add(classNode);
+    protected void setContractClass(ClassNode classNode) {
+        contractClass = classNode;
     }
 
     /**
-     * Gets the set of classes that make up the smart contract being compiled.
+     * Gets the main contract class of the smart contract being compiled.
      *
-     * @return the contract classes.
+     * @return the contract class.
      */
-    protected Set<ClassNode> getContractClasses() {
-        return contractClasses;
+    protected ClassNode getContractClass() {
+        return contractClass;
     }
 
     /**
      * Gets the absolute path of the source file corresponding to the given class.
+     *
      * @param fullyQualifiedClassName The name of the class.
      * @return the absolute path of the source file.
      */
@@ -120,7 +117,7 @@ public class CompilationUnit {
     /**
      * Adds the given mapping between the compiled class and the source file.
      *
-     * @param className The fully qualified name of the class.
+     * @param className  The fully qualified name of the class.
      * @param sourceFile The absolute path to the source file that the class was compiled from.
      */
     protected void addClassToSourceMapping(String className, String sourceFile) {
