@@ -8,10 +8,9 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.events.Event4Args;
-import io.neow3j.devpack.neo.Oracle;
+import io.neow3j.devpack.neo.OracleContract;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
@@ -20,11 +19,11 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class OracleTest extends ContractTest {
+public class OracleContractTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(OracleTestContract.class.getName());
+        setUp(OracleContractTestContract.class.getName());
     }
 
     @Test
@@ -64,18 +63,18 @@ public class OracleTest extends ContractTest {
         assertThat(states.get(3).asByteString().getAsString(), is("unknown"));
     }
 
-    static class OracleTestContract {
+    static class OracleContractTestContract {
 
         private static Event4Args<String, String, Integer, String> callbackEvent;
 
         public static byte[] getScriptHash() {
-            return Oracle.hash();
+            return OracleContract.getHash();
         }
 
         public static void performRequest(String url, String filter, String userdata,
                 int gasForResponse) {
 
-            Oracle.request(url, filter, "callback", userdata, gasForResponse);
+            OracleContract.request(url, filter, "callback", userdata, gasForResponse);
         }
 
         public static void callback(String url, String userdata, int code, String result) {

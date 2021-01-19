@@ -1,17 +1,10 @@
 package io.neow3j.devpack.neo;
 
-import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.annotations.ContractHash;
 
-@Contract(scriptHash = "0xb1c37d5847c2ae36bdde31d0cc833a7ad9667f8f")
-public class Oracle {
-
-    /**
-     * Gets the script hash of the Oracle contract.
-     *
-     * @return the script hash.
-     */
-    public static native byte[] hash();
-
+@ContractHash("0xb1c37d5847c2ae36bdde31d0cc833a7ad9667f8f")
+public class OracleContract extends ContractInterface {
 
     /**
      * Does a request to the oracle service with the given request data. The given callback function
