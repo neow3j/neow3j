@@ -2,15 +2,15 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "script": "001411c00c0d736574466565506572427974650c149a61a46eec97b89306d7ce81f15b462091d0093241627d5b52",
+    "script": "GhHADA1zZXRGZWVQZXJCeXRlDBQU7swFU5A4OvXVXn+8vv3AhBDj3UFifVtS",
     "state": "HALT",
-    "gasconsumed": "4007420",
+    "gasconsumed": "0.0399918",
+    "exception": null,
     "stack": [
       {
         "type": "Boolean",
         "value": true
       }
-    ],
-    "tx": "006de6752200fea46931b5c22a99277a25233ff431d642b855fc253d0000000000ca64120000000000b8142000002e001411c00c0d736574466565506572427974650c149a61a46eec97b89306d7ce81f15b462091d0093241627d5b5201420c40172ddefabab644447494c5b5ea1662285ac3afa7fd43d44a59b8f0b69bae486254f104b6b9db95c3eb1c217f6cba4aa879b8f242931cc94682207d9b2ded9f8e2b110c2102c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238110b41c330181e"
+    ]
   }
 }

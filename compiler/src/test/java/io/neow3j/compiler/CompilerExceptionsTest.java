@@ -2,6 +2,8 @@ package io.neow3j.compiler;
 
 import static java.util.Arrays.asList;
 
+import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.events.Event1Arg;
 import java.io.IOException;
@@ -65,6 +67,14 @@ public class CompilerExceptionsTest {
         new Compiler().compileClass(DuplicateUseOfEventDisplayName.class.getName());
     }
 
+    @Test
+    public void throwExceptionIfContractInterfaceClassHasInvalidScriptHash() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Script hash", "8",
+                "ContractHash", "CustomContractInterface")));
+        new Compiler().compileClass(InvalidScriptHashContractInterfaceContract.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -123,5 +133,18 @@ public class CompilerExceptionsTest {
             return true;
         }
     }
+
+    static class InvalidScriptHashContractInterfaceContract {
+
+        public static void getScriptHashOfContractInterface() {
+            CustomContractInterface.getHash();
+        }
+
+        @ContractHash("8")
+        static class CustomContractInterface extends ContractInterface {
+
+        }
+    }
+
 }
 

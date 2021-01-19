@@ -3,6 +3,8 @@ package io.neow3j.compiler;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.OnDeployment;
+import io.neow3j.devpack.annotations.OnVerification;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -15,7 +17,7 @@ public class NeoModule {
 
     // Holds this module's methods, mapping from method ID to {@link NeoMethod}; Used by the
     // compiler to quickly search for a method.
-    private final static Map<String, NeoMethod> methods = new HashMap<>();
+    private final Map<String, NeoMethod> methods = new HashMap<>();
 
     // Holds the same references to the methods as {@link NeoModule#methods} but in the order they
     // have been added to this module.
@@ -25,6 +27,13 @@ public class NeoModule {
     // in the smart contract class.
     private final Map<String, NeoEvent> events = new HashMap<>();
 
+    // Determines if this module has a verify method or not. If a method is added that bears the
+    // {@link OnVerification} annotation, then this field is set to true.
+    private boolean hasVerifyMethod = false;
+
+    // Determines if this module has a _deploy method or not. If a method is added that bears the
+    // {@link OnDeployment} annotation, then this field is set to true.
+    private boolean hasDeployMethod = false;
 
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
@@ -40,8 +49,36 @@ public class NeoModule {
     }
 
     public void addMethod(NeoMethod method) {
-        methods.put(method.getId(), method);
-        sortedMethods.add(method);
+        if (method != null) {
+            methods.put(method.getId(), method);
+            sortedMethods.add(method);
+
+            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnVerification.class)) {
+                if (hasVerifyMethod) {
+                    throw new CompilerException(method.getOwnerClass(), format("More than one "
+                            + "method is marked with the '%s' annotation. There can only be "
+                            + "one '%s' method", OnVerification.class.getSimpleName(),
+                            Compiler.VERIFY_METHOD_NAME));
+                }
+                hasVerifyMethod = true;
+            }
+
+            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnDeployment.class)) {
+                if (hasDeployMethod) {
+                    throw new CompilerException(method.getOwnerClass(), format("More than one "
+                                    + "method is marked with the '%s' annotation. There can only be "
+                                    + "one '%s' method", OnDeployment.class.getSimpleName(),
+                            Compiler.DEPLOY_METHOD_NAME));
+                }
+                hasDeployMethod = true;
+            }
+        }
+    }
+
+    public void addMethods(List<NeoMethod> newMethods) {
+        if (newMethods != null) {
+            newMethods.forEach(this::addMethod);
+        }
     }
 
     public void addEvent(NeoEvent event) {

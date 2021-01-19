@@ -161,8 +161,7 @@ public class ArraysConverter implements Converter {
     }
 
     private static boolean isByteArrayInstantiation(AbstractInsnNode insn) {
-        IntInsnNode intInsn = (IntInsnNode) insn;
-        return intInsn.operand == BYTE_ARRAY_TYPE_CODE;
+        return insn instanceof IntInsnNode &&  ((IntInsnNode) insn).operand == BYTE_ARRAY_TYPE_CODE;
     }
 
     // Returns -2 if the given instruction is not a PUSH instruction.

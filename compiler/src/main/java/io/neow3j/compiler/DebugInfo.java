@@ -95,7 +95,8 @@ public class DebugInfo {
                 .map(NeoEvent::getAsDebugInfoEvent)
                 .collect(Collectors.toList());
 
-        return new DebugInfo(compUnit.getNefFile().getScriptHash(), documents, methods, events);
+        ScriptHash scriptHash = ScriptHash.fromScript(compUnit.getNefFile().getScript());
+        return new DebugInfo(scriptHash, documents, methods, events);
     }
 
     private static List<String> collectSequencePoints(NeoMethod neoMethod, int documentIndex) {

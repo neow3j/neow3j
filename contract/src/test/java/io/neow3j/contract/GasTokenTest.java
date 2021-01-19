@@ -29,12 +29,12 @@ public class GasTokenTest {
 
     @Test
     public void getName() {
-        assertThat(new GasToken(neow).getName(), is("GAS"));
+        assertThat(new GasToken(neow).getName(), is("GasToken"));
     }
 
     @Test
     public void getSymbol() {
-        assertThat(new GasToken(neow).getSymbol(), is("gas"));
+        assertThat(new GasToken(neow).getSymbol(), is("GAS"));
     }
 
     @Test

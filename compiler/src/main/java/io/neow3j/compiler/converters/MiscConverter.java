@@ -98,6 +98,11 @@ public class MiscConverter implements Converter {
             case MONITORENTER:
             case MONITOREXIT:
             case WIDE:
+                // This should never happen for variable loading or storing because the compiler
+                // restricts the number of variables to 256, meaning that all local variables can
+                // be indexed with one byte. Also, the Java compiler seems not to use the
+                // WIDE opcode for integer increments, even with numbers larger than a byte.
+                // See https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.wide
                 throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
                         opcode.name()));
                 // endregion ### MISCELLANEOUS ###

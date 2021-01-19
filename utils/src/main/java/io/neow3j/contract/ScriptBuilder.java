@@ -132,6 +132,11 @@ public class ScriptBuilder {
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
+            case ANY:
+                if (value == null) {
+                    opCode(OpCode.PUSHNULL);
+                }
+                break;
             default:
                 throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
                         "' not supported.");

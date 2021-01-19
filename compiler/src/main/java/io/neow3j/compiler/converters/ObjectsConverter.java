@@ -6,10 +6,10 @@ import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.INSTANCE_CTOR;
+import static io.neow3j.compiler.Compiler.addConstructorSyscall;
 import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
-import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
 import static io.neow3j.compiler.Compiler.handleInsn;
@@ -136,7 +136,7 @@ public class ObjectsConverter implements Converter {
             }
             // Now we're at the INVOKESPECIAL call and can convert the ctor method.
             if (hasAnnotations(ctorMethod, Syscall.class, Syscalls.class)) {
-                addSyscall(ctorMethod, callingNeoMethod);
+                addConstructorSyscall(ctorMethod, callingNeoMethod);
             } else if (hasAnnotations(ctorMethod, Instruction.class, Instructions.class)) {
                 addInstructionsFromAnnotation(ctorMethod, callingNeoMethod);
             }
@@ -296,7 +296,7 @@ public class ObjectsConverter implements Converter {
             // Skip the call to the Object ctor and continue processing the rest of the ctor.
             calledNeoMethod = new NeoMethod(ctorMethod, owner);
             compUnit.getNeoModule().addMethod(calledNeoMethod);
-            calledNeoMethod.initializeMethod(compUnit);
+            calledNeoMethod.initializeLocalVariablesAndParameters(compUnit);
             AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod, owner);
             insn = insn.getNext();
             while (insn != null) {

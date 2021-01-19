@@ -1,42 +1,43 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.publicKey;
+
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.wallet.Account;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Represents the NeoToken native contract and provides methods to invoke all its functions.
  */
-public class NeoToken extends Nep5Token {
+public class NeoToken extends Nep17Token {
+
+    public final static String NAME = "NeoToken";
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     public final static int DECIMALS = 0;
-    public final static String NAME = "NEO";
-    public final static String SYMBOL = "neo";
+    public final static String SYMBOL = "NEO";
     public final static BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
-    public static final ScriptHash SCRIPT_HASH = ScriptHash.fromScript(
-            new ScriptBuilder().pushData(NAME).sysCall(InteropServiceCode.NEO_NATIVE_CALL).toArray());
 
     public static final String UNCLAIMED_GAS = "unclaimedGas";
     public static final String REGISTER_CANDIDATE = "registerCandidate";
     public static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
     public static final String VOTE = "vote";
     public static final String GET_CANDIDATES = "getCandidates";
-    public static final String GET_VALIDATORS = "getValidators";
     public static final String GET_COMMITTEE = "getCommittee";
     public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
+    public static final String SET_GAS_PER_BLOCK = "setGasPerBlock";
+    public static final String GET_GAS_PER_BLOCK = "getGasPerBlock";
 
     /**
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
@@ -91,7 +92,7 @@ public class NeoToken extends Nep5Token {
     /**
      * Gets the amount of unclaimed GAS at the given height for the given account.
      *
-     * @param account  the account.
+     * @param account     the account.
      * @param blockHeight the block height.
      * @return the amount of unclaimed GAS
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -109,14 +110,17 @@ public class NeoToken extends Nep5Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger unclaimedGas(ScriptHash scriptHash, long blockHeight) throws IOException {
-        ContractParameter accParam = ContractParameter.hash160(scriptHash);
-        ContractParameter heightParam = ContractParameter.integer(BigInteger.valueOf(blockHeight));
+        ContractParameter accParam = hash160(scriptHash);
+        ContractParameter heightParam = integer(BigInteger.valueOf(blockHeight));
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }
 
     /**
-     * Creates a transaction script for registering a validator candidate and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a {@code TransactionBuilder} for registering a committee candidate with the given
+     * public key.
+     * <p>
+     * Note, that the transaction has to be signed with the account corresponding to the public
+     * key.
      *
      * @param candidateKey The public key to register as a candidate.
      * @return A transaction builder.
@@ -128,8 +132,8 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
-     * Creates a transaction script for registering a validator candidate and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script for registering a validator candidate and initializes a {@link
+     * TransactionBuilder} based on this script.
      *
      * @param candidateKey The public key to register as a candidate.
      * @return A transaction builder.
@@ -138,19 +142,6 @@ public class NeoToken extends Nep5Token {
 
         return invokeFunction(UNREGISTER_CANDIDATE,
                 ContractParameter.publicKey(candidateKey.getEncoded(true)));
-    }
-
-    /**
-     * Gets the public keys of all current validators.
-     *
-     * @return the validators' public keys.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException If the return type is not an array or the returned
-     *                                       array's elements are not public keys.
-     */
-    public List<ECPublicKey> getValidators() throws IOException {
-        return callFunctionReturningListOfPublicKeys(GET_VALIDATORS);
     }
 
     /**
@@ -176,17 +167,18 @@ public class NeoToken extends Nep5Token {
      *                                       elements are not public keys and node counts.
      */
     public Map<ECPublicKey, Integer> getCandidates() throws IOException {
-        StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(0);
+        StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack()
+                .get(0);
         if (!arrayItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), StackItemType.ARRAY);
         }
         Map<ECPublicKey, Integer> validators = new HashMap<>();
         for (StackItem valItem : arrayItem.asArray().getValue()) {
-            if (!valItem.getType().equals(StackItemType.ARRAY)) {
-                throw new UnexpectedReturnTypeException(valItem.getType(), StackItemType.ARRAY);
+            if (!valItem.getType().equals(StackItemType.STRUCT)) {
+                throw new UnexpectedReturnTypeException(valItem.getType(), StackItemType.STRUCT);
             }
-            ECPublicKey key = extractPublicKey(valItem.asArray().getValue().get(0));
-            StackItem nrItem = valItem.asArray().getValue().get(1);
+            ECPublicKey key = extractPublicKey(valItem.asStruct().getValue().get(0));
+            StackItem nrItem = valItem.asStruct().getValue().get(1);
             if (!nrItem.getType().equals(StackItemType.INTEGER)) {
                 throw new UnexpectedReturnTypeException(nrItem.getType(), StackItemType.INTEGER);
             }
@@ -236,34 +228,49 @@ public class NeoToken extends Nep5Token {
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to vote for the given validators and initializes a {@link
+     * TransactionBuilder} based on this script.
      *
-     * @param voter      The account that casts the vote.
-     * @param validators The validators for which to vote for.
+     * @param voter     The account that casts the vote.
+     * @param candidate The candidate to vote for.
      * @return A transaction builder.
      */
-    public TransactionBuilder vote(Account voter, ECPublicKey... validators) {
-        return vote(voter.getScriptHash(), validators);
+    public TransactionBuilder vote(Account voter, ECPublicKey candidate) {
+        return vote(voter.getScriptHash(), candidate);
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to vote for the given validators and initializes a {@link
+     * TransactionBuilder} based on this script.
      *
-     * @param voter      The account that casts the vote.
-     * @param validators The validators for which to vote for.
+     * @param voter     The account that casts the vote.
+     * @param candidate The candidate to vote for.
      * @return A transaction builder.
      */
-    public TransactionBuilder vote(ScriptHash voter, ECPublicKey... validators) {
-        List<ContractParameter> validatorParams = Stream.of(validators)
-                .map(v -> ContractParameter.publicKey(v.getEncoded(true)))
-                .collect(Collectors.toList());
+    public TransactionBuilder vote(ScriptHash voter, ECPublicKey candidate) {
+        return invokeFunction(VOTE, hash160(voter), publicKey(candidate.getEncoded(true)));
+    }
 
-        ArrayList<ContractParameter> params = new ArrayList<>();
-        params.add(ContractParameter.hash160(voter));
-        params.addAll(validatorParams);
+    /**
+     * Gets the max GAS amount per block. This sets a cap on the accumulated GAS cost of all
+     * transactions in a block.
+     *
+     * @return the max GAS amount per block.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getGasPerBlock() throws IOException {
+        return callFuncReturningInt(GET_GAS_PER_BLOCK);
+    }
 
-        return invokeFunction(VOTE, params.toArray(new ContractParameter[]{}));
+    /**
+     * Creates a transaction build for setting the GAS amount per block.
+     * <p>
+     * This contract invocation can only be successful if it is signed by the network committee.
+     *
+     * @param gasPerBlock The desired maximum amount of GAS in one block.
+     * @return the transaction builder.
+     */
+    public TransactionBuilder setGasPerBlock(int gasPerBlock) {
+        return invokeFunction(SET_GAS_PER_BLOCK, integer(gasPerBlock));
     }
 }

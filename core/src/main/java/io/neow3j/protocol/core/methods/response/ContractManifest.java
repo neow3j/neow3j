@@ -14,11 +14,11 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractManifest {
 
+    @JsonProperty("name")
+    private String name;
+
     @JsonProperty("groups")
     private List<ContractGroup> groups;
-
-    @JsonProperty("features")
-    private ContractFeatures features;
 
     @JsonProperty("supportedstandards")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -38,12 +38,6 @@ public class ContractManifest {
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> trusts;
 
-    // TODO: If the wildcard character "*" is read the list should be empty or null.
-    @JsonProperty("safemethods")
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<String> safeMethods;
-
     // Custom user data
     @JsonProperty("extra")
     private Object extra;
@@ -51,30 +45,28 @@ public class ContractManifest {
     public ContractManifest() {
     }
 
-    public ContractManifest(List<ContractGroup> groups,
-            ContractFeatures features,
+    public ContractManifest(String name,
+            List<ContractGroup> groups,
             List<String> supportedStandards,
             ContractABI abi,
             List<ContractPermission> permissions,
             List<String> trusts,
-            List<String> safeMethods,
             Object extra) {
+        this.name = name;
         this.groups = groups;
-        this.features = features;
         this.supportedStandards = supportedStandards;
         this.abi = abi;
         this.permissions = permissions;
         this.trusts = trusts;
-        this.safeMethods = safeMethods;
         this.extra = extra;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public List<ContractGroup> getGroups() {
         return groups;
-    }
-
-    public ContractFeatures getFeatures() {
-        return features;
     }
 
     public List<String> getSupportedStandards() {
@@ -93,18 +85,6 @@ public class ContractManifest {
         return trusts;
     }
 
-    public List<String> getSafeMethods() {
-        return safeMethods;
-    }
-
-    public boolean safeMethods_isWildCard() {
-        return (safeMethods.get(0).equals("*"));
-    }
-
-    public boolean trusts_isWildCard() {
-        return (trusts.get(0).equals("*"));
-    }
-
     public Object getExtra() {
         return extra;
     }
@@ -114,24 +94,22 @@ public class ContractManifest {
         if (this == o) return true;
         if (!(o instanceof ContractManifest)) return false;
         ContractManifest that = (ContractManifest) o;
-        return Objects.equals(getGroups(), that.getGroups()) &&
-                Objects.equals(getFeatures(), that.getFeatures()) &&
+        return Objects.equals(getName(), that.getName()) &&
+                Objects.equals(getGroups(), that.getGroups()) &&
                 Objects.equals(getAbi(), that.getAbi()) &&
                 Objects.equals(getPermissions(), that.getPermissions()) &&
                 Objects.equals(getTrusts(), that.getTrusts()) &&
-                Objects.equals(getSafeMethods(), that.getSafeMethods()) &&
                 Objects.equals(getSupportedStandards(), that.getSupportedStandards()) &&
                 Objects.equals(getExtra(), that.getExtra());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getGroups(),
-                getFeatures(),
+        return Objects.hash(getName(),
+                getGroups(),
                 getAbi(),
                 getPermissions(),
                 getTrusts(),
-                getSafeMethods(),
                 getSupportedStandards(),
                 getExtra());
     }
@@ -139,13 +117,11 @@ public class ContractManifest {
     @Override
     public String toString() {
         return "ContractManifest{" +
-                "groups=" + groups +
-                ", features=" + features +
-                ", features=" + features +
+                "name=" + name +
+                ", groups=" + groups +
                 ", abi=" + abi +
                 ", permissions=" + permissions +
                 ", trusts=" + trusts +
-                ", safeMethods=" + safeMethods +
                 ", supportedStandards=" + supportedStandards +
                 ", extra=" + extra +
                 '}';
@@ -200,63 +176,8 @@ public class ContractManifest {
         }
     }
 
-    // Features available for the contract
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ContractFeatures {
-
-        // Note: 13.05.20 Michael: Neo documentation contains a third entry 'NoProperty', which is not
-        //  available in the current responses. If it will be, just add the additional JsonProperty here.
-
-        @JsonProperty("storage")
-        private Boolean storage;
-
-        @JsonProperty("payable")
-        private Boolean payable;
-
-        public ContractFeatures() {
-        }
-
-        public ContractFeatures(Boolean storage, Boolean payable) {
-            this.storage = storage;
-            this.payable = payable;
-        }
-
-        public Boolean getStorage() {
-            return storage;
-        }
-
-        public Boolean getPayable() {
-            return payable;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContractFeatures)) return false;
-            ContractFeatures that = (ContractFeatures) o;
-            return Objects.equals(getStorage(), that.getStorage()) &&
-                    Objects.equals(getPayable(), that.getPayable());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getStorage(), getPayable());
-        }
-
-        @Override
-        public String toString() {
-            return "ContractFeatures{" +
-                    "storage=" + storage +
-                    ", payable=" + payable +
-                    '}';
-        }
-    }
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContractABI {
-
-        @JsonProperty("hash")
-        private String hash;
 
         @JsonProperty("methods")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -269,14 +190,9 @@ public class ContractManifest {
         public ContractABI() {
         }
 
-        public ContractABI(String hash, List<ContractMethod> methods, List<ContractEvent> events) {
-            this.hash = hash;
+        public ContractABI(List<ContractMethod> methods, List<ContractEvent> events) {
             this.methods = methods != null ? methods : new ArrayList<>();
             this.events = events != null ? events : new ArrayList<>();
-        }
-
-        public String getHash() {
-            return hash;
         }
 
         public List<ContractMethod> getMethods() {
@@ -292,21 +208,19 @@ public class ContractManifest {
             if (this == o) return true;
             if (!(o instanceof ContractABI)) return false;
             ContractABI that = (ContractABI) o;
-            return Objects.equals(getHash(), that.getHash()) &&
-                    Objects.equals(getMethods(), that.getMethods()) &&
+            return Objects.equals(getMethods(), that.getMethods()) &&
                     Objects.equals(getEvents(), that.getEvents());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getHash(), getMethods(), getEvents());
+            return Objects.hash(getMethods(), getEvents());
         }
 
         @Override
         public String toString() {
             return "NeoContractInterface{" +
-                    "hash='" + hash + '\'' +
-                    ", methods=" + methods +
+                    "methods=" + methods +
                     ", events=" + events +
                     '}';
         }
@@ -327,15 +241,19 @@ public class ContractManifest {
             @JsonProperty("returntype")
             private ContractParameterType returnType;
 
+            @JsonProperty("safe")
+            private boolean safe;
+
             public ContractMethod() {
             }
 
-            public ContractMethod(String name, List<ContractParameter> parameters,
-                    ContractParameterType returnType, int offset) {
+            public ContractMethod(String name, List<ContractParameter> parameters, int offset,
+                    ContractParameterType returnType, boolean safe) {
                 this.name = name;
                 this.parameters = parameters != null ? parameters : new ArrayList<>();
-                this.returnType = returnType;
                 this.offset = offset;
+                this.returnType = returnType;
+                this.safe = safe;
             }
 
             public String getName() {
@@ -346,12 +264,16 @@ public class ContractManifest {
                 return parameters;
             }
 
+            public int getOffset() {
+                return offset;
+            }
+
             public ContractParameterType getReturnType() {
                 return returnType;
             }
 
-            public int getOffset() {
-                return this.offset;
+            public boolean isSafe() {
+                return safe;
             }
 
             @Override
@@ -361,13 +283,14 @@ public class ContractManifest {
                 ContractMethod that = (ContractMethod) o;
                 return Objects.equals(getName(), that.getName()) &&
                         Objects.equals(getParameters(), that.getParameters()) &&
+                        getOffset() == that.getOffset() &&
                         getReturnType() == that.getReturnType() &&
-                        getOffset() == that.getOffset();
+                        isSafe() == that.isSafe();
             }
 
             @Override
             public int hashCode() {
-                return Objects.hash(getName(), getParameters(), getReturnType(), getOffset());
+                return Objects.hash(getName(), getParameters(), getOffset(), getReturnType(), isSafe());
             }
 
             @Override
@@ -375,8 +298,9 @@ public class ContractManifest {
                 return "NeoContractFunction{" +
                         "name='" + name + '\'' +
                         ", parameters=" + parameters +
-                        ", returnType=" + returnType +
                         ", offset=" + offset +
+                        ", returnType=" + returnType +
+                        ", safe=" + safe +
                         '}';
             }
         }

@@ -11,11 +11,11 @@ import static io.neow3j.model.types.ContractParameterType.VOID;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.devpack.neo.Map;
+import io.neow3j.devpack.neo.Enumerator;
+import io.neow3j.devpack.neo.Iterator;
+import io.neow3j.devpack.List;
 import io.neow3j.devpack.neo.Transaction;
 import io.neow3j.model.types.ContractParameterType;
-import java.util.Arrays;
-import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -61,9 +61,12 @@ public class CompilerTest {
         assertClassIsMappedToType(Integer[].class, ARRAY);
         assertClassIsMappedToType(boolean[].class, ARRAY);
         assertClassIsMappedToType(byte[][].class, ARRAY);
+        assertClassIsMappedToType(List.class, ARRAY);
 
         // Others
         assertClassIsMappedToType(Transaction.class, INTEROP_INTERFACE);
+        assertClassIsMappedToType(Iterator.class, INTEROP_INTERFACE);
+        assertClassIsMappedToType(Enumerator.class, INTEROP_INTERFACE);
         assertClassIsMappedToType(Object.class, ANY);
         assertClassIsMappedToType(CompilerTest.class, ANY);
     }

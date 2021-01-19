@@ -14,7 +14,6 @@ import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
-import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.annotations.Instruction;
@@ -40,7 +39,6 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
@@ -50,7 +48,7 @@ import org.objectweb.asm.tree.MethodNode;
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j";
-    public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
+    public static final String COMPILER_VERSION = "3.6.0";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -60,6 +58,9 @@ public class Compiler {
     private static final String CLASS_CTOR = "<clinit>";
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
     public static final String THIS_KEYWORD = "this";
+
+    public static final String VERIFY_METHOD_NAME = "verify";
+    public static final String DEPLOY_METHOD_NAME = "_deploy";
 
     private CompilationUnit compUnit;
 
@@ -99,6 +100,10 @@ public class Compiler {
         if (typeName.equals(Void.class.getTypeName())
                 || typeName.equals(void.class.getTypeName())) {
             return ContractParameterType.VOID;
+        }
+        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return ContractParameterType.ARRAY;
         }
         try {
             typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
@@ -195,7 +200,6 @@ public class Compiler {
         }
         compUnit.addClassToSourceMapping(className, sourceFilePath);
         compileClass(asmClass);
-        finalizeCompilation();
         return compUnit;
     }
 
@@ -204,6 +208,7 @@ public class Compiler {
      *
      * @param fullyQualifiedClassName the fully qualified name of the class.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(String fullyQualifiedClassName) throws IOException {
         return compileClass(getAsmClass(fullyQualifiedClassName, compUnit.getClassLoader()));
@@ -214,6 +219,7 @@ public class Compiler {
      *
      * @param classStream the {@link InputStream} pointing to a class file.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(InputStream classStream) throws IOException {
         return compileClass(getAsmClass(classStream));
@@ -226,9 +232,9 @@ public class Compiler {
      * @return the compilation unit holding the NEF and contract manifest.
      */
     private CompilationUnit compileClass(ClassNode classNode) throws IOException {
-        compUnit.addContractClass(classNode);
-        collectAndInitializeStaticFields(classNode);
-        collectAndInitializeMethods(classNode);
+        compUnit.setContractClass(classNode);
+        compUnit.getNeoModule().addMethod(initializeStaticConstructor(classNode));
+        compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -243,16 +249,15 @@ public class Compiler {
         compUnit.getNeoModule().finalizeModule();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
                 compUnit.getNeoModule().toByteArray());
-        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit,
-                nef.getScriptHash());
+        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
 
-    private void collectAndInitializeStaticFields(ClassNode asmClass) throws IOException {
+    private NeoMethod initializeStaticConstructor(ClassNode asmClass) throws IOException {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
-            return;
+            return null;
         }
         if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
             throw new CompilerException(format("The class %s has more than the max supported "
@@ -266,8 +271,7 @@ public class Compiler {
         }
         checkForUsageOfInstanceConstructor(asmClass);
         collectSmartContractEvents(asmClass);
-        NeoMethod neoMethod = createInitsslotMethod(asmClass);
-        compUnit.getNeoModule().addMethod(neoMethod);
+        return createInitsslotMethod(asmClass);
     }
 
     private void collectSmartContractEvents(ClassNode asmClass) throws IOException {
@@ -319,26 +323,15 @@ public class Compiler {
     // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
     // script. This only looks at the <clinit> method of the class. The <clinit> method
     // contains static variable initialization instructions that happen right at the definition
-    // of the variables and not in a static constructor. Static constructors are not supported at
-    // the moment.
+    // of the variables or in the static constructor.
     private NeoMethod createInitsslotMethod(ClassNode asmClass) {
-        MethodNode initsslotMethod = null;
         Optional<MethodNode> classCtorOpt = asmClass.methods.stream()
                 .filter(m -> m.name.equals(CLASS_CTOR))
                 .findFirst();
-        if (classCtorOpt.isPresent()) {
-            initsslotMethod = classCtorOpt.get();
-        } else {
-            // Static variables are not initialized but we still need to add the INITSSLOT method.
-            // Therefore, we create a "fake" ASM method for it here.
-            // TODO: Determine if this is even necessary.
-            initsslotMethod = new MethodNode();
-            initsslotMethod.instructions.add(new InsnNode(JVMOpcode.RETURN.getOpcode()));
-            initsslotMethod.name = CLASS_CTOR;
-            initsslotMethod.desc = "()V";
-            initsslotMethod.access = Opcodes.ACC_STATIC;
+        if (!classCtorOpt.isPresent()) {
+            return null;
         }
-        NeoMethod neoMethod = new NeoMethod(initsslotMethod, asmClass);
+        NeoMethod neoMethod = new NeoMethod(classCtorOpt.get(), asmClass);
         neoMethod.setName(INITSSLOT_METHOD_NAME);
         neoMethod.setIsAbiMethod(true);
         byte[] operand = new byte[]{(byte) asmClass.fields.size()};
@@ -348,7 +341,8 @@ public class Compiler {
 
     // Collects all static methods and initializes them, e.g., sets the parameters and local
     // variables.
-    private void collectAndInitializeMethods(ClassNode asmClass) {
+    private List<NeoMethod> initializeContractMethods(ClassNode asmClass) {
+        List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
                 continue; // Handled in method `collectAndInitializeStaticFields()`.
@@ -360,10 +354,11 @@ public class Compiler {
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
                 NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-                neoMethod.initializeMethod(compUnit);
-                compUnit.getNeoModule().addMethod(neoMethod);
+                neoMethod.initializeLocalVariablesAndParameters(compUnit);
+                methods.add(neoMethod);
             }
         }
+        return methods;
     }
 
     // Handles/converts the given instruction. The given NeoMethod is the method that the
@@ -396,6 +391,10 @@ public class Compiler {
     public static void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Before doing the syscall the arguments have to be reversed.
         addReverseArguments(calledAsmMethod, callingNeoMethod);
+        addSyscallInternal(calledAsmMethod, callingNeoMethod);
+    }
+
+    private static void addSyscallInternal(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         // Annotation has to be either Syscalls or Syscall.
         AnnotationNode syscallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
                 .filter(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
@@ -408,6 +407,11 @@ public class Compiler {
         } else {
             addSingleSyscall(syscallAnnotation, callingNeoMethod);
         }
+    }
+
+    public static void addConstructorSyscall(MethodNode calledAsmMethod,
+            NeoMethod callingNeoMethod) {
+        addSyscallInternal(calledAsmMethod, callingNeoMethod);
     }
 
     public static void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
@@ -464,14 +468,11 @@ public class Compiler {
         return (MethodInsnNode) insn;
     }
 
-
     // Adds an opcode that reverses the ordering of the arguments on the evaluation stack
     // according to the number of arguments the called method takes.
     public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
-        if (calledAsmMethod.localVariables != null
-                && calledAsmMethod.localVariables.size() > 0
-                && calledAsmMethod.localVariables.get(0).name.equals(THIS_KEYWORD)) {
+        if ((calledAsmMethod.access & Opcodes.ACC_STATIC) == 0) {
             // The called method is an instance method, i.e., the instance itself ("this") is
             // also an argument.
             paramsCount++;

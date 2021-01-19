@@ -282,12 +282,12 @@ public class Wallet {
     }
 
     /**
-     * Gets the balances of all NEP-5 tokens that this wallet owns.
+     * Gets the balances of all NEP-17 tokens that this wallet owns.
      * <p>
      * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
-     * Requires on a neo-node with the RpcNep5Tracker plugin installed. The balances are not cached
+     * Requires on a neo-node with the RpcNep17Tracker plugin installed. The balances are not cached
      * locally. Every time this method is called requests are send to the neo-node for all contained
      * accounts.
      *
@@ -295,10 +295,10 @@ public class Wallet {
      * @return the map of token script hashes to token amounts.
      * @throws IOException If something goes wrong when communicating with the neo-node.
      */
-    public Map<ScriptHash, BigInteger> getNep5TokenBalances(Neow3j neow3j) throws IOException {
+    public Map<ScriptHash, BigInteger> getNep17TokenBalances(Neow3j neow3j) throws IOException {
         Map<ScriptHash, BigInteger> balances = new HashMap<>();
         for (Account a : this.accounts.values()) {
-            for (Entry<ScriptHash, BigInteger> e : a.getNep5Balances(neow3j).entrySet()) {
+            for (Entry<ScriptHash, BigInteger> e : a.getNep17Balances(neow3j).entrySet()) {
                 balances.merge(e.getKey(), e.getValue(), BigInteger::add);
             }
         }
