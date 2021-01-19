@@ -335,8 +335,6 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     // SmartContract Methods
 
-    // TODO: 22.12.20 Michael: invokecontractverify
-
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
             String functionName, Signer... witnesses) {

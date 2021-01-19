@@ -30,8 +30,7 @@ public class ByteStringStackItem extends StackItem {
     }
 
     /**
-     * TODO: Rectify the disparity between comment and method logic. Decodes the stack item's
-     * base64-encoded value and returns it as a byte array.
+     * Returns the stack item's value as a byte array.
      *
      * @return the value of this stack item.
      */

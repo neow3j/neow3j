@@ -705,7 +705,7 @@ public class NeoMethod {
         checkForUnsupportedLocalVariableTypes();
         if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0
                 && (asmMethod.access & Opcodes.ACC_STATIC) > 0
-                && compUnit.getContractClasses().contains(sourceClass)) {
+                && compUnit.getContractClass().equals(sourceClass)) {
             // Only contract methods that are public, static and on the smart contract class are
             // added to the ABI and are invokable.
             setIsAbiMethod(true);

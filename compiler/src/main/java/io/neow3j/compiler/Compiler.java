@@ -52,7 +52,7 @@ import org.objectweb.asm.tree.MethodNode;
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j";
-    public static final String COMPILER_VERSION = "3.5.0";
+    public static final String COMPILER_VERSION = "3.6.0";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -244,7 +244,7 @@ public class Compiler {
      * @return the compilation unit holding the NEF and contract manifest.
      */
     private CompilationUnit compileClass(ClassNode classNode) throws IOException {
-        compUnit.addContractClass(classNode);
+        compUnit.setContractClass(classNode);
         compUnit.getNeoModule().addMethod(initializeStaticConstructor(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
         // Need to create a new list from the methods that have been added to the NeoModule so
