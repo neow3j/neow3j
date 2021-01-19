@@ -5,6 +5,7 @@ import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
@@ -50,29 +51,64 @@ public class ManagementContractIntegrationTest extends ContractTest {
     @Test
     public void deploy() throws Throwable {
         CompilationUnit compUnit = new Compiler().compileClass(
-                ManagementContractIntegrationTestContractNew.class.getName());
+                ManagementContractIntegrationTestContractToDeploy.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
-        String txHash = invokeFunctionAndAwaitExecution(byteArray(compUnit.getNefFile().toArray()),
-                string(manifestString));
 
-        NeoInvokeFunction result = callInvokeFunction("newMethod");
-        assertThat(result.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("new method"));
+        String txHash = contract.invokeFunction("deploy",
+                byteArray(compUnit.getNefFile().toArray()), string(manifestString))
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(committee.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+                compUnit.getNefFile().getScript());
+
+        NeoGetContractState result = neow3j.getContractState(contractHash.toString()).send();
+        assertThat(result.getContractState(), notNullValue());
     }
 
     @Test
     public void update() throws Throwable {
         CompilationUnit compUnit = new Compiler().compileClass(
+                ManagementContractIntegrationTestContractToUpdate.class.getName());
+
+        // Deploy contract
+        NeoSendRawTransaction response = new io.neow3j.contract.ManagementContract(neow3j)
+                .deploy(compUnit.getNefFile(), compUnit.getManifest())
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(committee.getScriptHash()))
+                .sign().send();
+        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
+
+        // Check zero updates have been performed
+        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+                compUnit.getNefFile().getScript());
+        NeoGetContractState contractState = neow3j.getContractState(contractHash.toString()).send();
+        assertThat(contractState.getContractState().getUpdateCounter(), is(0));
+
+        // Update contract
+        compUnit = new Compiler().compileClass(
                 ManagementContractIntegrationTestContractUpdated.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
-        String txHash = invokeFunctionAndAwaitExecution(byteArray(compUnit.getNefFile().toArray()),
-                string(manifestString));
+        String txHash = new SmartContract(contractHash, neow3j).invokeFunction("update",
+                byteArray(compUnit.getNefFile().toArray()), string(manifestString))
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(committee.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
-        NeoInvokeFunction result = callInvokeFunction("updatedMethod");
-        assertThat(result.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("updated method"));
+        // Check one update has been performed
+        contractState = neow3j.getContractState(contractHash.toString()).send();
+        assertThat(contractState.getContractState().getUpdateCounter(), is(1));
     }
 
     @Test
@@ -119,21 +155,20 @@ public class ManagementContractIntegrationTest extends ContractTest {
             return ManagementContract.getHash();
         }
 
-        public static void update(byte[] nefFile, String manifest) {
-            ManagementContract.update(nefFile, manifest);
-        }
-
         public static Contract deploy(byte[] nefFile, String manifest) {
             return ManagementContract.deploy(nefFile, manifest);
+        }
+    }
+
+    static class ManagementContractIntegrationTestContractToUpdate {
+
+        public static void update(byte[] nefFile, String manifest) {
+            ManagementContract.update(nefFile, manifest);
         }
 
     }
 
     static class ManagementContractIntegrationTestContractUpdated {
-
-        public static byte[] getHash() {
-            return ManagementContract.getHash();
-        }
 
         public static String updatedMethod() {
             return "updated method";
@@ -141,7 +176,7 @@ public class ManagementContractIntegrationTest extends ContractTest {
 
     }
 
-    static class ManagementContractIntegrationTestContractNew {
+    static class ManagementContractIntegrationTestContractToDeploy {
 
         public static String newMethod() {
             return "new method";
