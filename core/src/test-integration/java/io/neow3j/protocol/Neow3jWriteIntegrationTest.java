@@ -28,6 +28,7 @@ import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.utils.Await;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -40,6 +41,8 @@ import org.testcontainers.containers.GenericContainer;
 // This test class spins up a new private net container for each test. This consumes a lot of time
 // but allows the tests to make changes without interfering with each other.
 public class Neow3jWriteIntegrationTest {
+
+    private static final String NEO_TOKEN_HASH = "0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6";
 
     // Invoke function variables
     protected static final String INVOKE_TRANSFER = "transfer";
@@ -59,23 +62,24 @@ public class Neow3jWriteIntegrationTest {
     protected static final int INVALID_PARAMS_CODE = -32602;
     protected static final String INVALID_PARAMS_MESSAGE = "Invalid params";
 
-    private Neow3jTestWrapper neow3jWrapper;
+    private Neow3j neow3j;
 
     @Rule
     public GenericContainer privateNetContainer = setupPrivateNetContainer();
 
     @Before
     public void setUp() throws IOException {
-        neow3jWrapper = new Neow3jTestWrapper(new HttpService(
+        neow3j = Neow3j.build(new HttpService(
                 IntegrationTestHelper.getNodeUrl(privateNetContainer)));
         // open the wallet for JSON-RPC calls
-        neow3jWrapper.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
+        neow3j.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
-        neow3jWrapper.waitUntilWalletHasBalanceGreaterThanOrEqualToOne();
+        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(
+                "1", new ScriptHash(NEO_TOKEN_HASH), neow3j);
     }
 
     private Neow3j getNeow3j() {
-        return neow3jWrapper;
+        return neow3j;
     }
 
     @Test

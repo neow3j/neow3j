@@ -1,0 +1,21 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "AFUUEsAME2dldERlc2lnbmF0ZWRCeVJvbGUMFHrqSTmbXwbayYBXmTi/aXBMPwfAQWJ9W1I=",
+    "state": "HALT",
+    "gasconsumed": "0.0199921",
+    "exception": null,
+    "stack": [
+      {
+        "type": "Array",
+        "value": [
+          {
+            "type": "ByteString",
+            "value": "AiSUJaBrWh+OYTP8ea+iwrhDC/kycpfxdnYd956NiSnF"
+          }
+        ]
+      }
+    ]
+  }
+}

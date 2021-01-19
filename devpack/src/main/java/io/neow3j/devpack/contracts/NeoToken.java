@@ -1,45 +1,9 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.annotations.ContractHash;
 
-@Contract(scriptHash = "0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6")
-public class NEO {
-
-    /**
-     * Gets the name of the NEO token contract.
-     *
-     * @return the name.
-     */
-    public static native String name();
-
-    /**
-     * Gets the symbol of the NEO token.
-     *
-     * @return the symbol.
-     */
-    public static native String symbol();
-
-    /**
-     * Gets the number of decimals of the NEO token, which is zero.
-     *
-     * @return the number of decimals.
-     */
-    public static native int decimals();
-
-    /**
-     * Gets the total supply of the NEO token.
-     *
-     * @return the total supply.
-     */
-    public static native int totalSupply();
-
-    /**
-     * Gets the NEO balance of the given account.
-     *
-     * @param scriptHash The script hash of the account to get the balance for.
-     * @return the account's balance.
-     */
-    public static native int balanceOf(byte[] scriptHash);
+@ContractHash("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6")
+public class NeoToken extends Nep17Token {
 
     /**
      * Gets the amount of unclaimed GAS for the given account up the the given block number.
@@ -64,10 +28,13 @@ public class NEO {
      * @param publicKey The public key of the candidate.
      * @return true, if deregistering was successful. False, otherwise.
      */
-    public static native boolean unRegisterCandidate(byte[] publicKey);
+    public static native boolean unregisterCandidate(byte[] publicKey);
 
     /**
      * Casts a vote for the candidate with the given public key.
+     * <p>
+     * Note, that a witness (signature) of the account corresponding to the public key has to be
+     * available for this to work.
      *
      * @param scriptHash      The script hash of the account that is used to cast the vote.
      * @param candidatePubKey The public key of the candidate to vote for.
@@ -81,13 +48,6 @@ public class NEO {
      * @return the list of registered candidates.
      */
     public static native Candidate[] getCandidates();
-
-    /**
-     * Gets the public keys of current validators.
-     *
-     * @return the validators' public keys as strings.
-     */
-    public static native String[] getValidators();
 
     /**
      * Gets the public keys of the current committee members.
@@ -104,6 +64,21 @@ public class NEO {
     public static native String[] getNextBlockValidators();
 
     /**
+     * Gets the amount of GAS that is minted per newly generated block.
+     *
+     * @return the amount of minted GAS per block.
+     */
+    public static native int getGasPerBlock();
+
+    /**
+     * Sets the amount of GAS that should be minted per newly generated block.
+     *
+     * @param gasPerBlock The desired amount of GAS per block.
+     * @return true, if setting the amount was successful. False, otherwise.
+     */
+    public static native boolean setGasPerBlock(int gasPerBlock);
+
+    /**
      * Represents a validator candidate.
      */
     public static class Candidate {
@@ -114,13 +89,13 @@ public class NEO {
         public final String publicKey;
 
         /**
-         * This candidates NEO balance.
+         * This candidates votes.
          */
-        public final int neoBalance;
+        public final int votes;
 
         private Candidate() {
             publicKey = "";
-            neoBalance = 0;
+            votes = 0;
         }
     }
 }

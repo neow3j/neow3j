@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.neo.Storage;
 import io.neow3j.devpack.neo.StorageMap;
@@ -222,6 +223,18 @@ public class AsmHelperTest {
 
         Optional<AnnotationNode> opt = getAnnotationNode(fieldNode, DisplayName.class);
         assertThat(opt.get(), is(annNode));
+    }
+
+    @Test
+    public void gettingAnnotationFromAMethodNodeShouldReturnTheCorrectAnnotationNode() {
+        MethodNode methodNode = new MethodNode(0, "methodName", "()V", null, null);
+        List<AnnotationNode> annotations = new ArrayList<>();
+        AnnotationNode ann = new AnnotationNode("Lio/neow3j/devpack/annotations/OnVerification;");
+        annotations.add(ann);
+        methodNode.invisibleAnnotations = annotations;
+
+        Optional<AnnotationNode> opt = getAnnotationNode(methodNode, OnVerification.class);
+        assertThat(opt.get(), is(ann));
     }
 
     @Test

@@ -29,11 +29,14 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +64,9 @@ public class ContractTest {
     protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String VM_STATE_FAULT = "FAULT";
+    protected static final String DEFAULT_ACCOUNT_ADDRES = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
+    protected static final String DEFAULT_ACCOUNT_WIF =
+            "L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda";
 
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
@@ -98,15 +104,14 @@ public class ContractTest {
 
     protected static void setUp(String name) throws Throwable {
         NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
-        defaultAccount = Account.fromWIF("L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda");
+        defaultAccount = Account.fromWIF(DEFAULT_ACCOUNT_WIF);
         committee = Account.createMultiSigAccount(
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         contractName = name;
         contract = deployContract(contractName);
-        waitUntilContractIsDeployed(contract.getScriptHash());
-
+        Await.waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
     }
 
     protected static String getResultFilePath(String testClassName, String methodName) {
@@ -131,7 +136,7 @@ public class ContractTest {
 
         // Remember the transaction and its block.
         deployTxHash = response.getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(deployTxHash);
+        Await.waitUntilTransactionIsExecuted(deployTxHash, neow3j);
         blockHashOfDeployTx = neow3j.getTransaction(deployTxHash).send()
                 .getTransaction().getBlockHash();
         // Get the contract address from the application logs.
@@ -139,8 +144,8 @@ public class ContractTest {
                 response.getSendRawTransaction().getHash()).send().getApplicationLog();
         Execution execution = appLog.getExecutions().get(0);
         if (execution.getState().equals(VM_STATE_FAULT)) {
-           throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
-                           + "message was: '%s'", fullyQualifiedName, execution.getException()));
+            throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
+                    + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
         ArrayStackItem arrayItem = execution.getStack().get(0).asArray();
         ScriptHash scriptHash = new ScriptHash(Numeric.hexStringToByteArray(
@@ -149,10 +154,8 @@ public class ContractTest {
     }
 
     /**
-     * Does a {@code invokefunction} JSON-RPC to the setup contract, the function with the current
+     * Does an {@code invokefunction} JSON-RPC to the setup contract, the function with the current
      * test's name, and the given parameters.
-     * <p>
-     * Doesn't add a signer to the invocation.
      *
      * @param params The parameters to provide to the function call.
      * @return The result of the call.
@@ -180,7 +183,7 @@ public class ContractTest {
         }
         if (signWithDefaultAccount) {
             return contract.callInvokeFunction(function, Arrays.asList(params),
-                    Signer.calledByEntry(defaultAccount.getScriptHash()));
+                    Signer.global(defaultAccount.getScriptHash()));
         }
         return contract.callInvokeFunction(function, Arrays.asList(params));
     }
@@ -215,6 +218,44 @@ public class ContractTest {
     }
 
     /**
+     * Transfers the given amount of GAS to the {@code to} account. The amount is taken from the
+     * committee account.
+     *
+     * @param to     The receiving account.
+     * @param amount The amount to transfer.
+     * @return the hash of the transfer transaction.
+     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     *                   constructing the transaction object.
+     */
+    protected static String transferGas(ScriptHash to, String amount) throws Throwable {
+        io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
+        return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
+                new BigDecimal(amount), committee.getScriptHash())
+                .sign()
+                .send()
+                .getSendRawTransaction().getHash();
+    }
+
+    /**
+     * Transfers the given amount of NEO to the {@code to} account. The amount is taken from the
+     * committee account.
+     *
+     * @param to     The receiving account.
+     * @param amount The amount to transfer.
+     * @return the hash of the transfer transaction.
+     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     *                   constructing the transaction object.
+     */
+    protected static String transferNeo(ScriptHash to, String amount) throws Throwable {
+        io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
+        return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
+                new BigDecimal(amount), committee.getScriptHash())
+                .sign()
+                .send()
+                .getSendRawTransaction().getHash();
+    }
+
+    /**
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters.
      *
@@ -229,7 +270,7 @@ public class ContractTest {
         if (signAsCommittee) {
             signer = Signer.global(committee.getScriptHash());
         } else {
-            signer = Signer.calledByEntry(defaultAccount.getScriptHash());
+            signer = Signer.global(defaultAccount.getScriptHash());
         }
         return contract.invokeFunction(function, params)
                 .wallet(wallet)
@@ -245,15 +286,14 @@ public class ContractTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committee} is used to sign the
-     * transaction.
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
     protected String invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
         String txHash = invokeFunction(params);
-        waitUntilTransactionIsExecuted(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 
@@ -261,88 +301,23 @@ public class ContractTest {
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committee} is used to sign the
-     * transaction.
+     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected String invokeFunctionAndAwaitExecution(String function,
-            ContractParameter... params)
+    protected String invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
             throws Throwable {
 
         String txHash = invokeFunction(function, params);
-        waitUntilTransactionIsExecuted(txHash);
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 
     protected void assertVMExitedWithHalt(String hash) throws IOException {
         NeoGetTransaction response = neow3j.getTransaction(hash).send();
         assertThat(response.getTransaction().getVMState(), is(VM_STATE_HALT));
-    }
-
-    private static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
-        await().timeout(30, TimeUnit.SECONDS).until(callable, matcher);
-    }
-
-    private static Callable<Long> callableGetBalance(String address, ScriptHash tokenScriptHash) {
-        return () -> {
-            try {
-                List<Nep17Balance> balances = neow3j.getNep17Balances(address).send()
-                        .getBalances().getBalances();
-                return balances.stream()
-                        .filter(b -> b.getAssetHash().equals("0x" + tokenScriptHash.toString()))
-                        .findFirst()
-                        .map(b -> Long.valueOf(b.getAmount()))
-                        .orElse(0L);
-            } catch (IOException e) {
-                return 0L;
-            }
-        };
-    }
-
-    private static Callable<Boolean> callableGetContractState(ScriptHash contractScriptHash) {
-        return () -> {
-            try {
-                NeoGetContractState response =
-                        neow3j.getContractState(contractScriptHash.toString()).send();
-                if (response.hasError()) {
-                    return false;
-                }
-                return response.getContractState().getHash().equals("0x" +
-                        contractScriptHash.toString());
-            } catch (IOException e) {
-                return false;
-            }
-        };
-    }
-
-    private static Callable<Long> callableGetTxHash(String txHash) {
-        return () -> {
-            try {
-                NeoGetTransactionHeight tx = neow3j.getTransactionHeight(txHash).send();
-                if (tx.hasError()) {
-                    return null;
-                }
-                return tx.getHeight().longValue();
-            } catch (IOException e) {
-                return null;
-            }
-        };
-    }
-
-    public static void waitUntilBalancesIsGreaterThanZero(String address,
-            ScriptHash tokenScriptHash) {
-        waitUntil(callableGetBalance(address, tokenScriptHash), Matchers.greaterThan(0L));
-    }
-
-    public static void waitUntilContractIsDeployed(ScriptHash contractScripHash) {
-        waitUntil(callableGetContractState(contractScripHash), Matchers.is(true));
-    }
-
-    public static void waitUntilTransactionIsExecuted(String txHash) {
-        waitUntil(callableGetTxHash(txHash), notNullValue());
     }
 
     protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)

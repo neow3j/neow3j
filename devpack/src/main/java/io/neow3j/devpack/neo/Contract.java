@@ -13,6 +13,21 @@ import io.neow3j.devpack.annotations.Syscall;
 public class Contract {
 
     /**
+     * The contract's ID. Each contract is assigned an ID at deployment time and is fixed.
+     */
+    public final int id;
+
+    /**
+     * The number of times the contract has been updated.
+     */
+    public final int updateCounter;
+
+    /**
+     * The contract's hash.
+     */
+    public final byte[] hash;
+
+    /**
      * The contract's VM script.
      */
     public final byte[] script;
@@ -23,6 +38,9 @@ public class Contract {
     public final String manifest;
 
     private Contract() {
+        id = 0;
+        updateCounter = 0;
+        hash = new byte[0];
         script = new byte[0];
         manifest = null;
     }
@@ -37,7 +55,7 @@ public class Contract {
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALL)
-    public static native Object call(byte[] scriptHash, String method, Object... arguments);
+    public static native Object call(byte[] scriptHash, String method, Object[] arguments);
 
     /**
      * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing
@@ -50,11 +68,12 @@ public class Contract {
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALLEX)
-    public static native Object call(byte[] scriptHash, String method, byte callFlag,
-            Object... arguments);
+    public static native Object call(byte[] scriptHash, String method, Object[] arguments,
+            byte callFlag);
 
     /**
-     * Gets the call flags with which the contract has been called.
+     * Gets the call flags with which the contract has been called. I.e., use this to know with
+     * which call flags your contract is being called.
      *
      * @return the call flags encoded in one byte.
      */

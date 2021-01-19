@@ -36,6 +36,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
@@ -334,8 +335,6 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     // SmartContract Methods
 
-    // TODO: 22.12.20 Michael: invokecontractverify
-
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
             String functionName, Signer... witnesses) {
@@ -379,6 +378,23 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                 params,
                 neow3jService,
                 NeoInvokeScript.class);
+    }
+
+    @Override
+    public Request<?, NeoInvokeContractVerify> invokeContractVerify(String scriptHash,
+            List<ContractParameter> methodParams, Signer... signers) {
+
+        if (methodParams == null) {
+            methodParams = new ArrayList<>();
+        }
+        List<TransactionSigner> txSigners =
+                Arrays.stream(signers).map(TransactionSigner::new).collect(Collectors.toList());
+        List<?> params = asList(scriptHash, methodParams, txSigners);
+        return new Request<>(
+                "invokecontractverify",
+                params.stream().filter(Objects::nonNull).collect(Collectors.toList()),
+                neow3jService,
+                NeoInvokeContractVerify.class);
     }
 
     @Override
