@@ -228,9 +228,7 @@ public class MethodsConverter implements Converter {
             throw new CompilerException(callingNeoMethod, "Static field converter "
                     + "methods can only be applied to constant string literals.");
         }
-        int pushDataPrefixSize = getOperandSize(lastNeoInsn.getOpcode()).prefixSize();
-        String stringLiteral = new String(ArrayUtils.getLastNBytes(lastNeoInsn.getOperand(),
-                lastNeoInsn.getOperand().length - pushDataPrefixSize), UTF_8);
+        String stringLiteral = new String(lastNeoInsn.getOperand(), UTF_8);
         byte[] newInsnBytes = null;
 
         if (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)) {

@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
+import static io.neow3j.constants.OpCode.PUSHDATA1;
 import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -443,15 +444,19 @@ public class Compiler {
     }
 
     public static NeoInstruction buildPushDataInsn(byte[] data) {
-        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
-        byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
+        return buildPushDataInsnFromInsnBytes(new ScriptBuilder().pushData(data).toArray());
     }
 
     public static NeoInstruction buildPushDataInsn(String data) {
-        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
-        byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
+        return buildPushDataInsnFromInsnBytes(new ScriptBuilder().pushData(data).toArray());
+    }
+
+    private static NeoInstruction buildPushDataInsnFromInsnBytes(byte[] insnBytes) {
+        OpCode opcode = OpCode.get(insnBytes[0]);
+        int prefixSize = OpCode.getOperandSize(opcode).prefixSize();
+        byte[] operandPrefix = Arrays.copyOfRange(insnBytes, 1, prefixSize);
+        byte[] operand = Arrays.copyOfRange(insnBytes, prefixSize, insnBytes.length);
+        return new NeoInstruction(opcode, operandPrefix, operand);
     }
 
     // Goes through the instructions of the given method and looks for the call to the `Object`
@@ -548,41 +553,30 @@ public class Compiler {
             return;
         }
 
-        OperandSize operandSizeDefinition = getOperandSize(opcode);
         byte[] operandPrefix = new byte[]{};
         if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND_PREFIX)) {
             operandPrefix = getOperandPrefix(insnAnnotation);
-            if (operandPrefix.length != operandSizeDefinition.prefixSize()) {
-                throw new CompilerException(format("Instruction operand prefix did not have "
-                                + "correct size for corresponding opcode %s. Byte size was %d but "
-                                + "opcode needs an operand of %d bytes.", opcode.name(),
-                        operandPrefix.length, getOperandSize(opcode).size()));
-            }
         }
         byte[] operand = new byte[]{};
         if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND)) {
             operand = getOperand(insnAnnotation);
-            if (operandSizeDefinition.prefixSize() == 0 &&
-                    operand.length != operandSizeDefinition.size()) {
-                throw new CompilerException(neoMethod, format("Instruction operand did not have "
-                                + "correct size for corresponding %s. Byte size was %d but opcode "
-                                + "needs an operand of %d bytes.",
-                        opcode.name(), operand.length,
-                        getOperandSize(opcode).size()));
-            }
         }
-        // Is this of length 0?
-        byte[] wholeOperand = ArrayUtils.concatenate(operandPrefix, operand);
-        if (wholeOperand.length > 0) {
-            neoMethod.addInstruction(new NeoInstruction(opcode, wholeOperand));
-        } else {
-            neoMethod.addInstruction(new NeoInstruction(opcode));
-        }
+        // Correctness of operand prefix and operand are checked in the NeoInstruction.
+        neoMethod.addInstruction(new NeoInstruction(opcode, operandPrefix, operand));
     }
 
     private static byte[] getOperandPrefix(AnnotationNode insnAnnotation) {
+        return getInstructionOperandBytes(insnAnnotation, INSTRUCTION_ANNOTATION_OPERAND_PREFIX);
+    }
+
+    private static byte[] getOperand(AnnotationNode insnAnnotation) {
+        return getInstructionOperandBytes(insnAnnotation, INSTRUCTION_ANNOTATION_OPERAND);
+    }
+
+    private static byte[] getInstructionOperandBytes(AnnotationNode insnAnnotation,
+            String instructionAnnotationOperandPrefix) {
         byte[] operandPrefix = new byte[]{};
-        int idx = insnAnnotation.values.indexOf(INSTRUCTION_ANNOTATION_OPERAND_PREFIX);
+        int idx = insnAnnotation.values.indexOf(instructionAnnotationOperandPrefix);
         Object prefixObj = insnAnnotation.values.get(idx+1);
         if (prefixObj instanceof byte[]) {
             operandPrefix = (byte[]) prefixObj;
@@ -595,23 +589,6 @@ public class Compiler {
             }
         }
         return operandPrefix;
-    }
-
-    private static byte[] getOperand(AnnotationNode insnAnnotation) {
-        byte[] operand = new byte[]{};
-        int idx = insnAnnotation.values.indexOf(INSTRUCTION_ANNOTATION_OPERAND);
-        Object operandObj = insnAnnotation.values.get(idx+1);
-        if (operandObj instanceof byte[]) {
-            operand = (byte[]) operandObj;
-        } else if (operandObj instanceof List) {
-            List<?> operandAsList = (List<?>) operandObj;
-            operand = new byte[operandAsList.size()];
-            int i = 0;
-            for (Object element : operandAsList) {
-                operand[i++] = (byte) element;
-            }
-        }
-        return operand;
     }
 
     public static void addPushNumber(long number, NeoMethod neoMethod) {
