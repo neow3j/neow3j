@@ -9,18 +9,12 @@ import static org.junit.Assert.fail;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.compiler.DebugInfo;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 
 public class Neow3jPluginUtilsTest {
@@ -37,35 +31,16 @@ public class Neow3jPluginUtilsTest {
     }
 
     @Test
-    public void testGetCompileOutputFileName() throws IOException {
-        String outputFileName1 = Neow3jPluginUtils
-                .getCompileOutputFileName("io.neow3j.blah.Test");
-        assertThat(outputFileName1, is("Test.nef"));
-
-        String outputFileName2 = Neow3jPluginUtils
-                .getCompileOutputFileName("io.neow3j.blah.");
-        assertThat(outputFileName2, is(Neow3jPluginUtils.DEFAULT_FILENAME));
-
-        String outputFileName3 = Neow3jPluginUtils
-                .getCompileOutputFileName("");
-        assertThat(outputFileName3, is(Neow3jPluginUtils.DEFAULT_FILENAME));
-
-        String outputFileName4 = Neow3jPluginUtils
-                .getCompileOutputFileName(null);
-        assertThat(outputFileName4, is(Neow3jPluginUtils.DEFAULT_FILENAME));
-    }
-
-    @Test
-    public void generateDebugInfoZipShouldGenerateCorrectZipFileWithCorrectEntry()
+    public void writeDebugInfoZipShouldGenerateCorrectZipFileWithCorrectEntry()
             throws IOException {
 
-        String zipFileName = "DbgnfoZip";
+        String contractName = "contract";
         DebugInfo dbgnfo = new DebugInfo();
-        File tmpDir = Files.createTempDirectory("debuginfo").toFile();
-        tmpDir.deleteOnExit();
-        String zipFilePath = Neow3jPluginUtils.generateDebugInfoZip(dbgnfo,
-                tmpDir.getAbsolutePath(), zipFileName);
-        assertThat(zipFilePath, is(tmpDir.getAbsoluteFile() + "/" + zipFileName
+        Path outDir = Files.createTempDirectory("debuginfo");
+        outDir.toFile().deleteOnExit();
+
+        String zipFilePath = Neow3jPluginUtils.writeDebugInfoZip(dbgnfo, contractName, outDir);
+        assertThat(zipFilePath, is(outDir.toFile().getAbsolutePath() + "/" + contractName
                 + NEFDBGNFO_SUFFIX));
         ZipFile generatedZipFile = new ZipFile(zipFilePath);
         Enumeration<? extends ZipEntry> entries = generatedZipFile.entries();
@@ -73,7 +48,7 @@ public class Neow3jPluginUtilsTest {
             fail("Zip file didn't contain an entry.");
         }
         ZipEntry entry = entries.nextElement();
-        assertThat(entry.getName(), is(zipFileName + DEBUG_JSON_SUFFIX));
+        assertThat(entry.getName(), is(contractName + DEBUG_JSON_SUFFIX));
         DebugInfo debugInfo = objectMapper.readValue(generatedZipFile.getInputStream(entry),
                 DebugInfo.class);
         if (entries.hasMoreElements()) {

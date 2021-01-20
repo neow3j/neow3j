@@ -1,24 +1,21 @@
 package io.neow3j.devpack.gradle;
 
-import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeNefFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.generateDebugInfoZip;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getCompileOutputFileName;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsFilesURL;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.writeToFile;
 import static java.nio.file.Files.createDirectories;
 import static java.util.Optional.ofNullable;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
-import io.neow3j.utils.ClassUtils;
+import io.neow3j.contract.ContractUtils;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.gradle.api.Action;
@@ -71,30 +68,26 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             }
             byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
-            // get the output directory
-            String outDirString = createDirectories(neow3jPluginCompile.getCompilerOutputDir())
-                    .toString();
-            Path outDirPath = Paths.get(outDirString);
+            Path outDir = createDirectories(neow3jPluginCompile.getCompilerOutputDir());
+            String contractName = compilationUnit.getManifest().getName();
+            if (contractName == null || contractName.length() == 0) {
+                throw new IllegalStateException("No contract name is set in the contract's "
+                        + "manifest.");
+            }
 
-            // output the result to the output file
-            String nefOutFileName = getCompileOutputFileName(canonicalClassName);
-            Path outputFile = Paths.get(outDirString, nefOutFileName);
-            writeToFile(outputFile.toFile(), nefBytes);
-
-            // generate the manifest to the output dir
-            String manifestOutFileName = generateContractManifestFile(
-                    compilationUnit.getManifest(),
-                    outDirPath.toFile());
+            String nefFileName = writeNefFile(compilationUnit.getNefFile(), contractName, outDir);
+            String manifestFileName = writeContractManifestFile(compilationUnit.getManifest(),
+                    outDir);
 
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
-            System.out.println("NEF file: " + outputFile.toAbsolutePath());
-            System.out.println("Manifest file: " + manifestOutFileName);
+            System.out.println("NEF file: " + nefFileName);
+            System.out.println("Manifest file: " + manifestFileName);
 
             if (debugSymbols) {
                 // Pack the debug info into a ZIP archive.
-                String debugInfoZipFileName = generateDebugInfoZip(compilationUnit.getDebugInfo(),
-                        outDirString, ClassUtils.getClassName(canonicalClassName));
+                String debugInfoZipFileName = Neow3jPluginUtils.writeDebugInfoZip(
+                        compilationUnit.getDebugInfo(), contractName, outDir);
                 System.out.println("Debug info zip file: " + debugInfoZipFileName);
             }
 
