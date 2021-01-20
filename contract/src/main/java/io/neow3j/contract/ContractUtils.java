@@ -4,15 +4,22 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @SuppressWarnings("unchecked")
 public class ContractUtils {
 
     static final String MANIFEST_FILENAME_SUFFIX = "manifest.json";
+    static final String NEF_SUFFIX = ".nef";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
@@ -21,18 +28,36 @@ public class ContractUtils {
         objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
     }
 
-    public static String generateContractManifestFile(
-            ContractManifest manifest, File destinationDirectory) throws IOException {
-
-        String fileName = getContractManifestFilename(manifest);
-        return generateContractManifestFile(manifest, fileName, destinationDirectory);
-    }
-
-    public static String generateContractManifestFile(
-            ContractManifest manifest, String fileName, File destinationDirectory)
+    /**
+     * Writes given NEF to "{@code <outdir>/<contractName>.nef}".
+     *
+     * @param nef          The contract NEF file to write.
+     * @param contractName The contract's name
+     * @param outDir       The directory to which to write to.
+     * @return the absolute path of the written file.
+     * @throws IOException if an error occurs when writting to file.
+     */
+    public static String writeNefFile(NefFile nef, String contractName, Path outDir)
             throws IOException {
 
-        File destination = new File(destinationDirectory, fileName);
+        File nefFile = outDir.resolve(contractName + NEF_SUFFIX).toFile();
+        try (FileOutputStream outputStream = new FileOutputStream(nefFile)) {
+            outputStream.write(nef.toArray());
+        }
+        return nefFile.getAbsolutePath();
+    }
+
+    public static String writeContractManifestFile(ContractManifest manifest, Path outDir)
+            throws IOException {
+
+        String fileName = getContractManifestFilename(manifest);
+        return writeContractManifestFile(manifest, fileName, outDir);
+    }
+
+    public static String writeContractManifestFile(ContractManifest manifest, String fileName,
+            Path outDir) throws IOException {
+
+        File destination = new File(outDir.toString(), fileName);
         objectMapper.writeValue(destination, manifest);
 
         return destination.getAbsolutePath();
@@ -50,4 +75,5 @@ public class ContractUtils {
         }
         return MANIFEST_FILENAME_SUFFIX;
     }
+
 }

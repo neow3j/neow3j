@@ -48,7 +48,7 @@ import org.objectweb.asm.tree.MethodNode;
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j";
-    public static final String COMPILER_VERSION = "3.6.0";
+    public static final String COMPILER_VERSION = "3.6.1";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
