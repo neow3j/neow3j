@@ -1,8 +1,9 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractUtils.generateContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
 import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
 import static io.neow3j.contract.ContractUtils.loadContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeNefFile;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -10,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
@@ -18,7 +20,9 @@ import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.Con
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,14 +32,14 @@ import org.junit.Test;
 public class ContractUtilsTest {
 
     @Test
-    public void testGenerateContractManifestFile() throws Exception {
+    public void testWriteContractManifestFile() throws Exception {
         File tempDir = Files.createTempDirectory(
                 ContractUtils.class.getSimpleName() + "-test-generate-manifest").toFile();
         tempDir.deleteOnExit();
 
         ContractManifest cm = buildContractManifest();
 
-        generateContractManifestFile(cm, tempDir);
+        writeContractManifestFile(cm, tempDir.toPath());
 
         File expectedOutputFile = Paths.get(tempDir.getAbsolutePath(),
                 "neowww" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX)
@@ -75,6 +79,25 @@ public class ContractUtilsTest {
         ContractManifest m = new ContractManifest("", null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is(ContractUtils.MANIFEST_FILENAME_SUFFIX));
+    }
+
+    @Test
+    public void testWriteNefFile() throws DeserializationException, IOException {
+        String contractName = "DotnetContract";
+        Path outDir = Files.createTempDirectory(ContractUtils.class.getSimpleName()
+                + "-test-write-nef");
+        outDir.toFile().deleteOnExit();
+        NefFile nefFile = NefFile.readFromFile(new File(
+                ContractUtilsTest.class.getResource("/contracts/DotnetContract.nef").getFile()));
+
+        String nefFilePath = writeNefFile(nefFile, contractName, outDir);
+        assertThat(nefFilePath, is(outDir.toFile().getAbsolutePath() + "/" + contractName + ".nef"));
+        File writtenFile = new File(nefFilePath);
+        assertTrue(writtenFile.exists());
+        assertThat(writtenFile.length(), greaterThan(0L));
+
+        NefFile rereadNefFile = NefFile.readFromFile(writtenFile);
+        assertThat(nefFile.getCheckSum(), is(rereadNefFile.getCheckSum()));
     }
 
     private ContractManifest buildContractManifest() {
