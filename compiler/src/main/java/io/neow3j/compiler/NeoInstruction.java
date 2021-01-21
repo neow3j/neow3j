@@ -68,6 +68,7 @@ public class NeoInstruction {
      */
     public NeoInstruction(OpCode opcode) {
         this.opcode = opcode;
+        this.operandPrefix = new byte[]{};
         this.operand = new byte[]{};
     }
 
@@ -209,6 +210,11 @@ public class NeoInstruction {
     // Checks if a given operand and its prefix are compatible with this instruction's opcode.
     private void checkOperandSize(byte[] operandPrefix, byte[] operand) {
         OperandSize operandSize = OpCode.getOperandSize(opcode);
+
+        // Opcode does not take an operand
+        if (operandSize == null && (operand == null || operand.length == 0)) {
+            return;
+        }
 
         // Opcode does not take an operand but an operand was specified.
         if (operandSize == null && operand != null && operand.length != 0) {

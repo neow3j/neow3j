@@ -454,8 +454,8 @@ public class Compiler {
     private static NeoInstruction buildPushDataInsnFromInsnBytes(byte[] insnBytes) {
         OpCode opcode = OpCode.get(insnBytes[0]);
         int prefixSize = OpCode.getOperandSize(opcode).prefixSize();
-        byte[] operandPrefix = Arrays.copyOfRange(insnBytes, 1, prefixSize);
-        byte[] operand = Arrays.copyOfRange(insnBytes, prefixSize, insnBytes.length);
+        byte[] operandPrefix = Arrays.copyOfRange(insnBytes, 1, 1 + prefixSize);
+        byte[] operand = Arrays.copyOfRange(insnBytes, 1 + prefixSize, insnBytes.length);
         return new NeoInstruction(opcode, operandPrefix, operand);
     }
 
@@ -592,10 +592,14 @@ public class Compiler {
     }
 
     public static void addPushNumber(long number, NeoMethod neoMethod) {
-        byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number))
+        neoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(number)));
+    }
+
+    public static NeoInstruction buildPushNumberInstruction(BigInteger number) {
+        byte[] insnBytes = new ScriptBuilder().pushInteger(number)
                 .toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
+        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
     }
 
     /**

@@ -9,6 +9,7 @@ import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
+import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.constants.OpCode.getOperandSize;
@@ -229,36 +230,31 @@ public class MethodsConverter implements Converter {
                     + "methods can only be applied to constant string literals.");
         }
         String stringLiteral = new String(lastNeoInsn.getOperand(), UTF_8);
-        byte[] newInsnBytes = null;
-
+//        byte[] newInsnBytes = null;
+        NeoInstruction newInsn = null;
         if (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)) {
             if (!AddressUtils.isValidAddress(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid address "
                         + "'%s' used in static field initialization.", stringLiteral));
             }
             byte[] scriptHash = AddressUtils.addressToScriptHash(stringLiteral);
-            newInsnBytes = new ScriptBuilder().pushData(scriptHash).toArray();
-
+            newInsn = buildPushDataInsn(scriptHash);
         } else if (methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)) {
             if (!Numeric.isValidHexString(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid hex string ('%s') "
                         + "used in static field initialization.", stringLiteral));
             }
             byte[] bytes = Numeric.hexStringToByteArray(stringLiteral);
-            newInsnBytes = new ScriptBuilder().pushData(bytes).toArray();
-
+            newInsn = buildPushDataInsn(bytes);
         } else if (methodNode.name.equals(STRING_TO_INT_METHOD_NAME)) {
             try {
-                newInsnBytes = new ScriptBuilder().pushInteger(new BigInteger(stringLiteral))
-                        .toArray();
+                newInsn = buildPushNumberInstruction(new BigInteger(stringLiteral));
             } catch (NumberFormatException e) {
                 throw new CompilerException(callingNeoMethod, format("Invalid number string ('%s') "
                         + "used in static field initialization.", stringLiteral));
             }
         }
-        byte[] newOperand = Arrays.copyOfRange(newInsnBytes, 1, newInsnBytes.length);
-        callingNeoMethod.replaceLastInstruction(
-                new NeoInstruction(OpCode.get(newInsnBytes[0]), newOperand));
+        callingNeoMethod.replaceLastInstruction(newInsn);
     }
 
     public static boolean hasSyscallAnnotation(MethodNode asmMethod) {
