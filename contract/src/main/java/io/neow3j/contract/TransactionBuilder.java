@@ -324,12 +324,12 @@ public class TransactionBuilder {
                     "invalid. The vm returned the error code " +
                     response.getError().getCode() +
                     " with the message: "
-                    + response.getError().getMessage() + ".");
+                    + response.getError().getMessage());
         }
         if (response.getResult().hasStateFault()) {
             throw new TransactionConfigurationException("The vm exited due " +
-                    "to an exception: " +
-                    response.getResult().getException() + ".");
+                    "to the following exception: " +
+                    response.getResult().getException());
         }
         return getSystemFeeFromDecimalString(
                 response.getInvocationResult().getGasConsumed())

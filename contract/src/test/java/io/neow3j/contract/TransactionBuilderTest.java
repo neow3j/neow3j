@@ -773,7 +773,7 @@ public class TransactionBuilderTest {
                 .script(Numeric.hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
                 .signers(Signer.calledByEntry(account1.getScriptHash()));
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("The vm exited due to an exception: Object reference not set to an instance of an object.");
+        exceptionRule.expectMessage("The vm exited due to the following exception: Object reference not set to an instance of an object.");
         b.buildTransaction();
     }
 
