@@ -1,5 +1,8 @@
 package io.neow3j.devpack.neo;
 
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Hash256;
+
 /**
  * Represents a block and provides block-related information. It is returned for example when
  * calling {@link Blockchain#getBlock(int)}.
@@ -9,7 +12,7 @@ public class Block {
     /**
      * The hash of this block.
      */
-    public final byte[] hash;
+    public final Hash256 hash;
 
     /**
      * This block's version number.
@@ -19,12 +22,12 @@ public class Block {
     /**
      * The hash of the preceding block.
      */
-    public final byte[] prevHash;
+    public final Hash256 prevHash;
 
     /**
      * The merkle root of this block.
      */
-    public final byte[] merkleRoot;
+    public final Hash256 merkleRoot;
 
     /**
      * The time at which this block was generated.
@@ -37,10 +40,10 @@ public class Block {
     public final long index;
 
     /**
-     * The consensus contract for the next block, i.e. a multi-party signed contract composed of
-     * more than 2/3 of the consensus nodes.
+     * The verification script hash of the validators of the next block. I.e., the script hash of
+     * the multisig account made up of the validator's public keys.
      */
-    public final byte[] nextConsensus;
+    public final Hash160 nextConsensus;
 
     /**
      * The number of transactions in this block.
@@ -48,13 +51,13 @@ public class Block {
     public final int transactionsCount;
 
     private Block() {
-        hash = new byte[0];
+        hash = new Hash256(new byte[0]);
         version = 0;
-        prevHash = new byte[0];
-        merkleRoot = new byte[0];
+        prevHash = new Hash256(new byte[0]);
+        merkleRoot = new Hash256(new byte[0]);
         timestamp = 0;
         transactionsCount = 0;
-        nextConsensus = new byte[0];
+        nextConsensus = new Hash160(new byte[0]);
         index = 0;
     }
 }

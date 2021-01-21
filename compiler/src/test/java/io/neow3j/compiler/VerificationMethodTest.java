@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.devpack.neo.Runtime;
@@ -65,7 +66,7 @@ public class VerificationMethodTest {
 
     static class VerificationMethodTestContract {
 
-        static byte[] ownerScriptHash = StringLiteralHelper.addressToScriptHash(
+        static Hash160 ownerScriptHash = StringLiteralHelper.addressToScriptHash(
                 "NiNmXL8FjEUEs1nfX9uHFBNaenxDHJtmuB");
 
         @OnVerification

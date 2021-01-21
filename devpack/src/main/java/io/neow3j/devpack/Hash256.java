@@ -47,6 +47,8 @@ public class Hash256 {
     /**
      * Creates a {@code Hash256} from the given byte array. Checks if it is valid and fails if it is
      * not.
+     *
+     * @param value The hash byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     @Instruction(opcode = OpCode.DUP)
@@ -60,6 +62,8 @@ public class Hash256 {
     /**
      * Creates a {@code Hash256} from the given string. Checks if it is valid and fails if it is
      * not.
+     *
+     * @param value The hash string.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.SIZE)

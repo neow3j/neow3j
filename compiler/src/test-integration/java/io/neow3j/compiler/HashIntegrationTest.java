@@ -23,7 +23,6 @@ import org.junit.Test;
 
 public class HashIntegrationTest extends ContractTest {
 
-
     @BeforeClass
     public static void setUp() throws Throwable {
         setUp(HashIntegrationTestContract.class.getName());

@@ -1,5 +1,6 @@
 package io.neow3j.devpack.contracts;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
 @ContractHash("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6")
@@ -12,7 +13,7 @@ public class NeoToken extends Nep17Token {
      * @param blockHeight The block height up to which the GAS amount will be fetched.
      * @return the amount of unclaimed GAS.
      */
-    public static native int unclaimedGas(byte[] scriptHash, int blockHeight);
+    public static native int unclaimedGas(Hash160 scriptHash, int blockHeight);
 
     /**
      * Registers the given public key as a validator candidate.
@@ -40,7 +41,7 @@ public class NeoToken extends Nep17Token {
      * @param candidatePubKey The public key of the candidate to vote for.
      * @return true, if voting was successful. False, otherwise.
      */
-    public static native boolean vote(byte[] scriptHash, byte[] candidatePubKey);
+    public static native boolean vote(Hash160 scriptHash, byte[] candidatePubKey);
 
     /**
      * Gets the registered candidates.

@@ -18,6 +18,6 @@ public abstract class ContractInterface {
      *
      * @return the contract's script hash.
      */
-    public static native byte[] getHash();
+    public static native Hash160 getHash();
 
 }

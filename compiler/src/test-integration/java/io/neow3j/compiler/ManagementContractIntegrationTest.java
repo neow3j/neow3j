@@ -12,6 +12,7 @@ import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.ManagementContract;
 import io.neow3j.devpack.neo.Contract;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -147,11 +148,11 @@ public class ManagementContractIntegrationTest extends ContractTest {
 
     static class ManagementContractIntegrationTestContract {
 
-        public static Contract getContract(byte[] contractHash) {
+        public static Contract getContract(Hash160 contractHash) {
             return ManagementContract.getContract(contractHash);
         }
 
-        public static byte[] getHash() {
+        public static Hash160 getHash() {
             return ManagementContract.getHash();
         }
 

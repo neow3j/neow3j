@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.devpack.contracts.NeoToken.Candidate;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -127,7 +128,7 @@ public class NeoTokenTest extends ContractTest {
 
     static class NeoTokenTestContract {
 
-        public static int unclaimedGas(byte[] scriptHash, int blockHeight) {
+        public static int unclaimedGas(Hash160 scriptHash, int blockHeight) {
             return NeoToken.unclaimedGas(scriptHash, blockHeight);
         }
 
@@ -159,11 +160,11 @@ public class NeoTokenTest extends ContractTest {
             return NeoToken.setGasPerBlock(gasPerBlock);
         }
 
-        public static boolean vote(byte[] scriptHash, byte[] pubKey) {
+        public static boolean vote(Hash160 scriptHash, byte[] pubKey) {
             return NeoToken.vote(scriptHash, pubKey);
         }
 
-        public static byte[] getHash() {
+        public static Hash160 getHash() {
             return NeoToken.getHash();
         }
 
