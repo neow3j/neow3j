@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DA5PcmFjbGVDb250cmFjdEEa93tn",
+    "state": "FAULT",
+    "gasconsumed": "0.0099915",
+    "exception": "Object reference not set to an instance of an object.",
+    "stack": []
+  }
+}

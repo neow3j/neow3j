@@ -281,9 +281,10 @@ public class TransactionBuilder {
         }
 
         if (signers.isEmpty()) {
-            throw new IllegalStateException("Can't create a transaction without any signer. " +
-                    "A transaction requires at least one signer with witness scope fee-only " +
-                    "or higher.");
+            throw new TransactionConfigurationException("Can't create a " +
+                    "transaction without any signer. A transaction requires " +
+                    "at least one signer with witness scope fee-only or " +
+                    "higher.");
         }
 
         long systemFee = getSystemFeeForScript();
@@ -318,7 +319,20 @@ public class TransactionBuilder {
         NeoInvokeScript response = neow.invokeScript(
                 Base64.encode(Numeric.hexStringToByteArray(script)), signers)
                 .send();
-        return getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed())
+        if (response.hasError()) {
+            throw new TransactionConfigurationException("The script is " +
+                    "invalid. The vm returned the error code " +
+                    response.getError().getCode() +
+                    " with the message: "
+                    + response.getError().getMessage() + ".");
+        }
+        if (response.getResult().hasStateFault()) {
+            throw new TransactionConfigurationException("The vm exited due " +
+                    "to an exception: " +
+                    response.getResult().getException() + ".");
+        }
+        return getSystemFeeFromDecimalString(
+                response.getInvocationResult().getGasConsumed())
                 .longValue();
     }
 
@@ -456,8 +470,10 @@ public class TransactionBuilder {
         VerificationScript multiSigVerifScript = signerAcc.getVerificationScript();
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
             ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
-            Account a = wallet.getAccount(accScriptHash);
-            if (a == null) {
+            Account a;
+            try {
+                a = wallet.getAccount(accScriptHash);
+            } catch (IllegalArgumentException e) {
                 continue;
             }
             ECKeyPair ecKeyPair;

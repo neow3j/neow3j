@@ -197,7 +197,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failBuildingTxWithoutAnySigner() throws Throwable {
-        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("without any signer");
         new TransactionBuilder(neow)
                 .validUntilBlock(100L)
@@ -302,7 +302,7 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failTryingToSignTransactionWithMultiSigAccountMissingAPrivateKey()
+    public void failTryingToSignTransaction_multiSig_withoutEnoughSigningAccounts()
             throws Throwable {
         Wallet w = Wallet.create();
         Account a2 = Account.create();
@@ -322,12 +322,36 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1000);
 
         exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("Wallet does not contain enough accounts (with decrypted private keys)");
         b.sign();
     }
 
     @Test
-    public void addDefaultAccountSignerIfNotExplicitlySet() throws Throwable {
+    public void signMultiSigTransaction_continueAfterNotFindingFirstSigningAccount() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        // Dummy multi-sig that only requires one signature.
+        Account dummyMultiSig = Account.createMultiSigAccount(Arrays.asList(
+                account1.getECKeyPair().getPublicKey(),
+                account2.getECKeyPair().getPublicKey()),
+                1);
+        Wallet w = Wallet.withAccounts(dummyMultiSig, account2);
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(w)
+                .signers(Signer.feeOnly(dummyMultiSig.getScriptHash()));
+        // The first signing account for the multi-sig is not in the wallet.
+        // The sign method should execute normally and ignore the absence.
+        b.sign();
+        assertThat(b.transaction.getWitnesses().get(0).getScriptHash(),
+                is(dummyMultiSig.getScriptHash()));
+        assertThat(Numeric.toHexStringNoPrefix(b.transaction.getScript()),
+                is(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL));
+    }
 
+    @Test
+    public void addDefaultAccountSignerIfNotExplicitlySet() throws Throwable {
         Wallet wallet = Wallet.create();
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -720,6 +744,36 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("script");
+        b.buildTransaction();
+    }
+
+    @Test
+    public void buildWithInvalidScript() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript",
+                "invokescript_invalidscript.json",
+                "DAASDBSTrRVy");
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .wallet(Wallet.withAccounts(account1))
+                .script(Numeric.hexStringToByteArray("0c00120c1493ad1572"))
+                .signers(Signer.calledByEntry(account1.getScriptHash()));
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("The vm returned the error code");
+        b.buildTransaction();
+    }
+
+    @Test
+    public void buildWithScript_vmFaults() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript",
+                "invokescript_exception.json",
+                "DA5PcmFjbGVDb250cmFjdEEa93tn");
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .wallet(Wallet.create())
+                .script(Numeric.hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
+                .signers(Signer.calledByEntry(account1.getScriptHash()));
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("The vm exited due to an exception: Object reference not set to an instance of an object.");
         b.buildTransaction();
     }
 
