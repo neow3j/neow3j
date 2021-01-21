@@ -6,6 +6,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSA
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT;
 
+import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -32,7 +33,7 @@ public class Blockchain {
      * @return the <tt>Block</tt>.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETBLOCK)
-    public static native Block getBlock(byte[] hash);
+    public static native Block getBlock(Hash256 hash);
 
     /**
      * Gets the transaction with the given transaction hash.
@@ -41,7 +42,7 @@ public class Blockchain {
      * @return the <tt>Transaction</tt>.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETTRANSACTION)
-    public static native Transaction getTransaction(byte[] hash);
+    public static native Transaction getTransaction(Hash256 hash);
 
     /**
      * Gets the transaction at the given index in the block with the given block hash.
@@ -51,7 +52,7 @@ public class Blockchain {
      * @return the <tt>Transaction</tt>.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK)
-    public static native Transaction getTransactionFromBlock(byte[] blockHash, int txIndex);
+    public static native Transaction getTransactionFromBlock(Hash256 blockHash, int txIndex);
 
     /**
      * Gets the transaction at the given index in the block with the given height.
@@ -71,6 +72,6 @@ public class Blockchain {
      * @return the transaction's height.
      */
     @Syscall(SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT)
-    public static native int getTransactionHeight(byte[] transactionHash);
+    public static native int getTransactionHeight(Hash256 transactionHash);
 
 }

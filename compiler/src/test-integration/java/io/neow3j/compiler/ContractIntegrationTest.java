@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.NeoToken;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.neo.CallFlags;
 import io.neow3j.devpack.neo.Contract;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -54,17 +55,17 @@ public class ContractIntegrationTest extends ContractTest {
 
    static class ContractIntegrationTestContract {
 
-       public static Object callWithoutCallFlagsWithoutArguments(byte[] hash, String method) {
+       public static Object callWithoutCallFlagsWithoutArguments(Hash160 hash, String method) {
            return Contract.call(hash, method, new Object[]{});
        }
 
-       public static Object callWithoutCallFlagsWithArgument(byte[] hash, String method,
-               byte[] scriptHash) {
+       public static Object callWithoutCallFlagsWithArgument(Hash160 hash, String method,
+               Hash160 scriptHash) {
            return Contract.call(hash, method, new Object[]{scriptHash});
        }
 
-       public static Object callWitCallFlagsWithArgument(byte[] hash, String method,
-               byte[] scriptHash) {
+       public static Object callWitCallFlagsWithArgument(Hash160 hash, String method,
+               Hash160 scriptHash) {
            return Contract.call(hash, method, new Object[]{scriptHash}, CallFlags.ALL);
        }
 

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -169,19 +170,19 @@ public class PolicyContractTest extends ContractTest {
             return sizes;
         }
 
-        public static boolean blockAccount(byte[] scriptHash) {
+        public static boolean blockAccount(Hash160 scriptHash) {
             return PolicyContract.blockAccount(scriptHash);
         }
 
-        public static boolean isBlocked(byte[] scriptHash) {
+        public static boolean isBlocked(Hash160 scriptHash) {
             return PolicyContract.isBlocked(scriptHash);
         }
 
-        public static boolean unblockAccount(byte[] scriptHash) {
+        public static boolean unblockAccount(Hash160 scriptHash) {
             return PolicyContract.unblockAccount(scriptHash);
         }
 
-        public static byte[] getHash() {
+        public static Hash160 getHash() {
             return PolicyContract.getHash();
         }
 

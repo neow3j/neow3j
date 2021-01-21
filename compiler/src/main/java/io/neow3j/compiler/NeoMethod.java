@@ -561,7 +561,7 @@ public class NeoMethod {
     }
 
     private void increaseLastAddress(NeoInstruction neoInsn) {
-        this.lastAddress += 1 + neoInsn.getOperand().length;
+        this.lastAddress += neoInsn.byteSize();
     }
 
     /**
@@ -581,7 +581,7 @@ public class NeoMethod {
     private void removeLastInstructionInternal() {
         NeoInstruction insn = instructions.remove(instructions.lastKey());
         jumpInstructions.remove(insn);
-        lastAddress -= (1 + insn.getOperand().length);
+        lastAddress -= insn.byteSize();
     }
 
     /**

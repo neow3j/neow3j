@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import io.neow3j.contract.NeoToken;
 import io.neow3j.crypto.Sign;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnVerification;
@@ -56,7 +57,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
     static class VerificationMethodIntegrationTestContract {
 
         // default account
-        static byte[] ownerScriptHash =
+        static Hash160 ownerScriptHash =
                 StringLiteralHelper.addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
 
         @OnVerification

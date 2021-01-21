@@ -1,5 +1,7 @@
 package io.neow3j.compiler;
 
+import static java.lang.String.format;
+
 import io.neow3j.constants.OpCode;
 import io.neow3j.constants.OperandSize;
 import io.neow3j.io.BinaryReader;
@@ -15,7 +17,11 @@ public class NeoInstruction {
     // The NeoVM opcode.
     private OpCode opcode;
 
-    // One or multiple operands of variable byte size, joined together in one byte array.
+    // The (optional) prefix of the instructions operand usually determining the length of the
+    // operand.
+    private byte[] operandPrefix;
+
+    // The operand of the instruction.
     private byte[] operand;
 
     // Stores data depending on the type of this transaction. If this transaction is a method
@@ -37,8 +43,21 @@ public class NeoInstruction {
      * @param operand the operand.
      */
     public NeoInstruction(OpCode opcode, byte[] operand) {
+        this(opcode, new byte[]{}, operand);
+    }
+
+    /**
+     * Constructs a new instruction with the given opcode, operand prefix, and operand. The
+     * operand prefix states the length of the following operand.
+     *
+     * @param opcode  The Neo opcode of this instruction.
+     * @param operandPrefix The operand prefix.
+     * @param operand The operand.
+     */
+    public NeoInstruction(OpCode opcode, byte[] operandPrefix, byte[] operand) {
         this.opcode = opcode;
-        checkOperandSize(operand);
+        checkOperandSize(operandPrefix, operand);
+        this.operandPrefix = operandPrefix;
         this.operand = operand;
     }
 
@@ -49,6 +68,7 @@ public class NeoInstruction {
      */
     public NeoInstruction(OpCode opcode) {
         this.opcode = opcode;
+        this.operandPrefix = new byte[]{};
         this.operand = new byte[]{};
     }
 
@@ -61,6 +81,15 @@ public class NeoInstruction {
         return opcode;
     }
 
+    /**
+     * Gets the operand prefix of this instruction if it has one. If this instruction doesn't
+     * have an operand prefix, an empty array is returned.
+     *
+     * @return the operand.
+     */
+    public byte[] getOperandPrefix() {
+        return operandPrefix;
+    }
     /**
      * Gets the operand of this instruction if it has one. If this instruction doesn't have an
      * operand, an empty array is returned.
@@ -120,10 +149,11 @@ public class NeoInstruction {
      *
      * @return the instruction as a byte array.
      */
-    byte[] toByteArray() {
-        byte[] bytes = new byte[1 + operand.length];
+    public byte[] toByteArray() {
+        byte[] bytes = new byte[1 + operandPrefix.length + operand.length];
         bytes[0] = (byte) opcode.getCode();
-        System.arraycopy(operand, 0, bytes, 1, operand.length);
+        System.arraycopy(operandPrefix, 0, bytes, 1, operandPrefix.length);
+        System.arraycopy(operand, 0, bytes, 1 + operandPrefix.length, operand.length);
         return bytes;
     }
 
@@ -132,13 +162,14 @@ public class NeoInstruction {
      *
      * @return The byte-size of this instruction.
      */
-    int byteSize() {
-        return 1 + operand.length;
+    public int byteSize() {
+        return 1 + operandPrefix.length + operand.length;
     }
 
     @Override
     public String toString() {
-        return opcode.toString() + " " + Numeric.toHexStringNoPrefix(operand);
+        return opcode.toString() + " " + Numeric.toHexStringNoPrefix(operand)  + " "
+                + Numeric.toHexStringNoPrefix(operand);
     }
 
     public void setOpcode(OpCode opcode) {
@@ -155,51 +186,90 @@ public class NeoInstruction {
 
     /**
      * Sets the given operand on this instruction. Overwrites if there was one set before. Checks if
+     * the operand prefix and operand's size are supported by this instruction's opcode.
+     *
+     * @param operandPrefix The operand prefix.
+     * @param operand The operand.
+     */
+    public void setOperand(byte[] operandPrefix, byte[] operand) {
+        checkOperandSize(operandPrefix, operand);
+        this.operandPrefix = operandPrefix;
+        this.operand = operand;
+    }
+
+    /**
+     * Sets the given operand on this instruction. Overwrites if there was one set before. Checks if
      * the operand's size is supported by this instruction's opcode.
      *
      * @param operand The operand.
      */
     public void setOperand(byte[] operand) {
-        checkOperandSize(operand);
-        this.operand = operand;
+        setOperand(new byte[]{}, operand);
     }
 
-    // Checks if a given operand is compatible with this instructions opcode. This should help
-    // to detect some errors when implementing the compiler.
-    private void checkOperandSize(byte[] operand) {
-        OperandSize operandSize = OpCode.getOperandSize(this.opcode);
-        if (operandSize == null) {
-            assert operand == null || operand.length == 0 : "Tried to set the operand "
-                    + Numeric.toHexStringNoPrefix(operand) + " on opcode " + this.opcode.name()
-                    + " but it doesn't take any operands.";
+    // Checks if a given operand and its prefix are compatible with this instruction's opcode.
+    private void checkOperandSize(byte[] operandPrefix, byte[] operand) {
+        OperandSize operandSize = OpCode.getOperandSize(opcode);
+
+        // Opcode does not take an operand
+        if (operandSize == null && (operand == null || operand.length == 0)) {
             return;
         }
+
+        // Opcode does not take an operand but an operand was specified.
+        if (operandSize == null && operand != null && operand.length != 0) {
+            throw new CompilerException(format("Tried to set an operand (%s) on the opcode '%s' "
+                            + "which doesn't take any operands." ,
+                    Numeric.toHexStringNoPrefix(operand), opcode.name()));
+        }
+
+        // Opcode takes an operand but no operand was specified.
+        if (operandSize != null && operand == null) {
+            throw new CompilerException(format("Opcode '%s' requires an operand but no "
+                            + "operand was specified.", opcode.name()));
+        }
+
+        // Opcode takes an operand and no operand prefix but the specified operand has the wrong
+        // size.
+        if (operandSize.prefixSize() == 0 && operand.length != operandSize.size()) {
+            throw new CompilerException(format("Tried to set an operand (%s) with size %d on "
+                            + "opcode '%s' which only takes operands of size %d.",
+                    Numeric.toHexStringNoPrefix(operand), operand.length, this.opcode.name(),
+                    operandSize.size()));
+        }
+
         if (operandSize.prefixSize() > 0) {
-            assert operandSize.prefixSize() == 1 || operandSize.prefixSize() == 2
-                    || operandSize.prefixSize() == 4 : "Unexpected operand prefix size. Prefix "
-                    + "size was " + operandSize.prefixSize() + " but only 1, 2, or 4 are expected.";
-            assert operand.length >= operandSize.prefixSize() : "Opcode " + this.opcode.name()
-                    + " needs a operand prefix of size " + operandSize.prefixSize()
-                    + " but the given operand is only of size " + operand.length;
-            byte[] prefix = ArrayUtils.getFirstNBytes(operand, operandSize.prefixSize());
-            BinaryReader reader = new BinaryReader(prefix);
-            int operandContentSize = 0;
+            // Opcode takes a operand prefix but the prefix size is not of one of the allowed
+            // values.
+            if (operandSize.prefixSize() != 1 && operandSize.prefixSize() != 2 && operandSize.prefixSize() != 4) {
+                throw new CompilerException(format("Unexpected operand prefix size. Size was %d "
+                        + "but only 1, 2, or 4 are allowed.", operandSize.prefixSize()));
+            }
+
+            // Opcode takes an operand prefix but the given prefix is not of the required length.
+            if (operandPrefix.length != operandSize.prefixSize()) {
+                throw new CompilerException(format("Opcode '%s' needs an operand prefix of size "
+                        + "%d but the given operand prefix is of size %d.", opcode.name(),
+                        operandSize.prefixSize(), operandPrefix.length));
+            }
+
+            // Check if operand has correct length according to specified operand prefix.
+            BinaryReader reader = new BinaryReader(operandPrefix);
+            int specifiedOperandSize = 0;
             try {
                 if (operandSize.prefixSize() == 1) {
-                    operandContentSize = reader.readByte();
+                    specifiedOperandSize = reader.readByte();
                 } else if (operandSize.prefixSize() == 2) {
-                    operandContentSize = reader.readShort();
+                    specifiedOperandSize = reader.readShort();
                 } else if (operandSize.prefixSize() == 4) {
-                    operandContentSize = reader.readInt();
+                    specifiedOperandSize = reader.readInt();
                 }
             } catch (IOException ignore) {
             }
-            assert operand.length == operandSize.prefixSize() + operandContentSize : "Operand "
-                    + "prefix specified an operand size of " + operandContentSize + " but the "
-                    + "operand had a different length.";
-            return;
+            if (operand.length != specifiedOperandSize)
+                throw new CompilerException(format("Operand prefix specified an operand size of "
+                        + "%d but the operand was %d bytes long.", specifiedOperandSize,
+                        operand.length));
         }
-        assert operand.length == operandSize.size() : "Operand " + Numeric.toHexStringNoPrefix(
-                operand) + " has the wrong size for opcode " + this.opcode.name();
     }
 }

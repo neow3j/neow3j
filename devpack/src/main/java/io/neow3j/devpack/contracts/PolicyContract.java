@@ -1,6 +1,7 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
 @ContractHash("0xdde31084c0fdbebc7f5ed5f53a38905305ccee14")
@@ -72,7 +73,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash The account to block.
      * @return true, if successful. False, otherwise.
      */
-    public static native boolean blockAccount(byte[] scriptHash);
+    public static native boolean blockAccount(Hash160 scriptHash);
 
     /**
      * Unblocks the account with the given script hash.
@@ -80,7 +81,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash The account to unblock.
      * @return true, if successful. False, otherwise.
      */
-    public static native boolean unblockAccount(byte[] scriptHash);
+    public static native boolean unblockAccount(Hash160 scriptHash);
 
     /**
      * Checks if the given account is blocked.
@@ -88,7 +89,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash the script hash of the account.
      * @return true if the account is blocked. False, otherwise.
      */
-    public static native boolean isBlocked(byte[] scriptHash);
+    public static native boolean isBlocked(Hash160 scriptHash);
 
     /**
      * Gets the fee factor used to calculate the GAS cost of contract executions.

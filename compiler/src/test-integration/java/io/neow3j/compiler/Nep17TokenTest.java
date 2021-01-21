@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.neow3j.contract.NeoToken;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.contracts.Nep17Token;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -82,15 +83,15 @@ public class Nep17TokenTest extends ContractTest {
             return CustomNeoToken.totalSupply();
         }
 
-        public static int callBalanceOfMethodOfNep17Token(byte[] scriptHash) {
+        public static int callBalanceOfMethodOfNep17Token(Hash160 scriptHash) {
             return CustomNeoToken.balanceOf(scriptHash);
         }
 
-        public static boolean callTransferMethodOfNep17Token(byte[] from, byte[] to, int amount) {
+        public static boolean callTransferMethodOfNep17Token(Hash160 from, Hash160 to, int amount) {
             return CustomNeoToken.transfer(from, to, amount, new byte[]{});
         }
 
-        public static byte[] getScriptHashOfNep17Token() {
+        public static Hash160 getScriptHashOfNep17Token() {
             return CustomNeoToken.getHash();
         }
 

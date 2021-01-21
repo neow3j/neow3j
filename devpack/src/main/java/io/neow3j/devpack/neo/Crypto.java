@@ -1,6 +1,8 @@
 package io.neow3j.devpack.neo;
 
 import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -15,7 +17,7 @@ public class Crypto {
      * @return the 256 bit long hash.
      */
     @Syscall(InteropServiceCode.NEO_CRYPTO_SHA256)
-    public native static byte[] sha256(byte[] value);
+    public native static Hash256 sha256(byte[] value);
 
     /**
      * Applies the RIPEMD-160 hashing algorithm to the given byte array.
@@ -34,7 +36,7 @@ public class Crypto {
      */
     @Syscall(InteropServiceCode.NEO_CRYPTO_SHA256)
     @Syscall(InteropServiceCode.NEO_CRYPTO_RIPEMD160)
-    public native static byte[] hash160(byte[] value);
+    public native static Hash160 hash160(byte[] value);
 
     /**
      * Applies SHA-256 twice to the given byte array.
@@ -44,7 +46,7 @@ public class Crypto {
      */
     @Syscall(InteropServiceCode.NEO_CRYPTO_SHA256)
     @Syscall(InteropServiceCode.NEO_CRYPTO_SHA256)
-    public native static byte[] hash256(byte[] value);
+    public native static Hash256 hash256(byte[] value);
 
     public static class ECDSA {
 

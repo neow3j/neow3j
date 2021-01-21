@@ -4,6 +4,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALLEX;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_GETCALLFLAGS;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -25,7 +26,7 @@ public class Contract {
     /**
      * The contract's hash.
      */
-    public final byte[] hash;
+    public final Hash160 hash;
 
     /**
      * The contract's VM script.
@@ -40,7 +41,7 @@ public class Contract {
     private Contract() {
         id = 0;
         updateCounter = 0;
-        hash = new byte[0];
+        hash = new Hash160(new byte[0]);
         script = new byte[0];
         manifest = null;
     }
@@ -55,7 +56,7 @@ public class Contract {
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALL)
-    public static native Object call(byte[] scriptHash, String method, Object[] arguments);
+    public static native Object call(Hash160 scriptHash, String method, Object[] arguments);
 
     /**
      * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing
@@ -68,7 +69,7 @@ public class Contract {
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALLEX)
-    public static native Object call(byte[] scriptHash, String method, Object[] arguments,
+    public static native Object call(Hash160 scriptHash, String method, Object[] arguments,
             byte callFlag);
 
     /**
