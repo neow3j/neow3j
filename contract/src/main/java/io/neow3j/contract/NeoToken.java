@@ -228,32 +228,44 @@ public class NeoToken extends Nep17Token {
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes a {@link
-     * TransactionBuilder} based on this script.
+     * Creates a transaction script to vote for the given validators and
+     * initializes a {@link TransactionBuilder} based on this script.
      *
      * @param voter     The account that casts the vote.
      * @param candidate The candidate to vote for.
      * @return A transaction builder.
      */
-    public TransactionBuilder vote(Account voter, ECPublicKey candidate) {
+    public TransactionBuilder vote(Account voter, ECPublicKey candidate)
+            throws IOException {
         return vote(voter.getScriptHash(), candidate);
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes a {@link
-     * TransactionBuilder} based on this script.
+     * Creates a transaction script to vote for the given validators and
+     * initializes a {@link TransactionBuilder} based on this script.
      *
      * @param voter     The account that casts the vote.
      * @param candidate The candidate to vote for.
      * @return A transaction builder.
      */
-    public TransactionBuilder vote(ScriptHash voter, ECPublicKey candidate) {
-        return invokeFunction(VOTE, hash160(voter), publicKey(candidate.getEncoded(true)));
+    public TransactionBuilder vote(ScriptHash voter, ECPublicKey candidate)
+            throws IOException {
+        if (!isCandidate(candidate)) {
+            throw new IllegalArgumentException("The provided public key is" +
+                    " not a candidate. Only candidates can be voted for.");
+        }
+        return invokeFunction(VOTE, hash160(voter),
+                publicKey(candidate.getEncoded(true)));
+    }
+
+    private boolean isCandidate(ECPublicKey publicKey) throws IOException {
+        Map<ECPublicKey, Integer> candidates = getCandidates();
+        return candidates.containsKey(publicKey);
     }
 
     /**
-     * Gets the max GAS amount per block. This sets a cap on the accumulated GAS cost of all
-     * transactions in a block.
+     * Gets the max GAS amount per block. This sets a cap on the accumulated
+     * GAS cost of all transactions in a block.
      *
      * @return the max GAS amount per block.
      * @throws IOException if there was a problem fetching information from the Neo node.
