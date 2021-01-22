@@ -28,19 +28,22 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class NeoTokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     private Account account1;
     private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
@@ -55,7 +58,7 @@ public class NeoTokenTest {
     @Before
     public void setUp() {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
-        int port = this.wireMockRule.port();
+        int port = wireMockRule.port();
         WireMock.configureFor(port);
         neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
@@ -207,6 +210,7 @@ public class NeoTokenTest {
 
     @Test
     public void voteWithAccountProducesCorrectScript() throws IOException {
+        setUpWireMockForInvokeFunction("getCandidates", "invokefunction_getcandidates.json");
         setUpWireMockForCall("invokescript", "invokescript_vote.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
@@ -227,6 +231,7 @@ public class NeoTokenTest {
 
     @Test
     public void voteWitScriptHashProducesCorrectScript() throws IOException {
+        setUpWireMockForInvokeFunction("getCandidates", "invokefunction_getcandidates.json");
         setUpWireMockForCall("invokescript", "invokescript_vote.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
@@ -244,6 +249,18 @@ public class NeoTokenTest {
                 .signers(Signer.global(account1.getScriptHash()));
 
         assertThat(b.getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void voteForNonCandidateThrows() throws IOException {
+        setUpWireMockForInvokeFunction("getCandidates",
+                "invokefunction_getcandidates.json");
+        NeoToken neoToken = new NeoToken(neow);
+        Account nonCandidateAccount = Account.fromWIF("KyHFg26DHTUWZtmUVTRqDHg8uVvZi9dr5zV3tQ22JZUjvWVCFvtw");
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("provided public key is not a candidate");
+        neoToken.vote(nonCandidateAccount.getScriptHash(),
+                nonCandidateAccount.getECKeyPair().getPublicKey());
     }
 
     @Test
