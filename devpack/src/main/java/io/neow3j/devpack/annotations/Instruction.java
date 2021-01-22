@@ -20,6 +20,8 @@ public @interface Instruction {
 
     OpCode opcode() default OpCode.NOP;
 
+    byte[] operandPrefix() default {};
+
     byte[] operand() default {};
 
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

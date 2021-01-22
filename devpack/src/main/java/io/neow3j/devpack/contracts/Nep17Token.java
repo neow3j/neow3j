@@ -1,6 +1,7 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
 /**
@@ -37,7 +38,7 @@ public abstract class Nep17Token extends ContractInterface {
      * @param scriptHash The script hash of the account to get the balance for.
      * @return the account's balance.
      */
-    public static native int balanceOf(byte[] scriptHash);
+    public static native int balanceOf(Hash160 scriptHash);
 
     /**
      * Transfers the token {@code amount} from the {@code from} account to the {@code to} account.
@@ -50,5 +51,5 @@ public abstract class Nep17Token extends ContractInterface {
      * @param data The data to pass along with the transfer.
      * @return True, if the transfer was successful. False, otherwise.
      */
-    public static native boolean transfer(byte[] from, byte[] to, int amount, Object data);
+    public static native boolean transfer(Hash160 from, Hash160 to, int amount, Object data);
 }

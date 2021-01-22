@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.neo.Blockchain;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.IntegerStackItem;
@@ -155,7 +156,7 @@ public class BlockchainTest extends ContractTest {
 
     static class BlockchainTestContract {
 
-        public static int getTransactionHeight(byte[] blockHash) {
+        public static int getTransactionHeight(Hash256 blockHash) {
             return Blockchain.getTransactionHeight(blockHash);
         }
 
@@ -163,15 +164,15 @@ public class BlockchainTest extends ContractTest {
             return Blockchain.getTransactionFromBlock(blockNr, txNr);
         }
 
-        public static Object getTransactionFromBlockWithBlockHash(byte[] blockHash, int txNr) {
+        public static Object getTransactionFromBlockWithBlockHash(Hash256 blockHash, int txNr) {
             return Blockchain.getTransactionFromBlock(blockHash, txNr);
         }
 
-        public static Object getTransaction(byte[] txHash) {
+        public static Object getTransaction(Hash256 txHash) {
             return Blockchain.getTransaction(txHash);
         }
 
-        public static Object getBlockWithBlockHash(byte[] blockHash) {
+        public static Object getBlockWithBlockHash(Hash256 blockHash) {
             return Blockchain.getBlock(blockHash);
         }
 

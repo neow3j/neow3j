@@ -6,6 +6,7 @@ import static io.neow3j.devpack.StringLiteralHelper.stringToInt;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
@@ -97,23 +98,23 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
 
     static class StringLiterals {
 
-        private static final byte[] scriptHash =
+        private static final Hash160 scriptHash =
                 addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
 
         private static final byte[] bytes = hexToBytes("0x010203");
 
         private static final int integer = stringToInt("1000000000000000000000000000000");
 
-        public static byte[] addressToScriptHashInMethod() {
+        public static Hash160 addressToScriptHashInMethod() {
             return addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
         }
 
-        public static byte[] addressToScriptHashInStaticVariableInitialization() {
+        public static Hash160 addressToScriptHashInStaticVariableInitialization() {
             return scriptHash;
         }
 
-        public static byte[] addressToScriptHashInLocalVariable() {
-            byte[] bytes = addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+        public static Hash160 addressToScriptHashInLocalVariable() {
+            Hash160 bytes = addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
             return bytes;
         }
 

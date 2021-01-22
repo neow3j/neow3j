@@ -10,6 +10,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_LOG;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_NOTIFY;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_PLATFORM;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -71,13 +72,23 @@ public class Runtime {
 
     /**
      * Verifies whether the container (e.g. the transactions) calling the contract is signed by the
-     * given script hash or public key (e.g. an account).
+     * given public key (e.g. an account).
      *
-     * @param scriptHashOrPubkey The script hash or public key to check.
+     * @param pubKey The public key to check.
+     * @return true if the given public key is the signer of the transaction. False, otherwise.
+     */
+    @Syscall(SYSTEM_RUNTIME_CHECKWITNESS)
+    public static native boolean checkWitness(byte[] pubKey);
+
+    /**
+     * Verifies whether the container (e.g. the transactions) calling the contract is signed by the
+     * given script hash (e.g. an account).
+     *
+     * @param scriptHash The script hash to check.
      * @return true if the given script hash is the signer of the transaction. False, otherwise.
      */
     @Syscall(SYSTEM_RUNTIME_CHECKWITNESS)
-    public static native boolean checkWitness(byte[] scriptHashOrPubkey);
+    public static native boolean checkWitness(Hash160 scriptHash);
 
     /**
      * Issues a notification, notifying the client that invoked the contract.

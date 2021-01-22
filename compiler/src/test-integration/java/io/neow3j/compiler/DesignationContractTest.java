@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.neo.Role;
 import io.neow3j.devpack.neo.DesignationContract;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
@@ -56,7 +57,7 @@ public class DesignationContractTest extends ContractTest {
 
     static class DesignationContractTestContract {
 
-        public static byte[] getHash() {
+        public static Hash160 getHash() {
             return DesignationContract.getHash();
         }
 

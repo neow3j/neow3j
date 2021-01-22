@@ -1,6 +1,7 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.neo.Contract;
 
@@ -13,7 +14,7 @@ public class ManagementContract extends ContractInterface {
      * @param hash The contract's script hash.
      * @return the contract.
      */
-    public static native Contract getContract(byte[] hash);
+    public static native Contract getContract(Hash160 hash);
 
     /**
      * Deploys a new contract with the given NEF (Neo Executable Format) file and manifest.
