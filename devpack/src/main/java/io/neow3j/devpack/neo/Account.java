@@ -3,6 +3,7 @@ package io.neow3j.devpack.neo;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_ISSTANDARD;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -20,7 +21,7 @@ public class Account {
      * @return the script hash.
      */
     @Syscall(SYSTEM_CONTRACT_CREATESTANDARDACCOUNT)
-    public static native byte[] createStandardAccount(byte[] pubKey);
+    public static native Hash160 createStandardAccount(byte[] pubKey);
 
     /**
      * Checks if the account with the given script hash is a standard account.
@@ -29,6 +30,6 @@ public class Account {
      * @return {@code True} if it is a standard account. {@code False}, otherwise.
      */
     @Syscall(SYSTEM_CONTRACT_ISSTANDARD)
-    public static native boolean isStandard(byte[] scriptHash);
+    public static native boolean isStandard(Hash160 scriptHash);
 
 }

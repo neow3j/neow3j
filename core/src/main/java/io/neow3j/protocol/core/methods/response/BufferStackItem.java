@@ -1,16 +1,15 @@
 package io.neow3j.protocol.core.methods.response;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BufferStackItem extends StackItem {
@@ -28,8 +27,7 @@ public class BufferStackItem extends StackItem {
     }
 
     /**
-     * // TODO: Rectify the disparity between comment and method logic.
-     * Decodes the stack item's base64-encoded value and returns it as a byte array.
+     * Returns the stack item's value as a byte array.
      *
      * @return the value of this stack item.
      */
@@ -74,8 +72,12 @@ public class BufferStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BufferStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BufferStackItem)) {
+            return false;
+        }
         BufferStackItem other = (BufferStackItem) o;
         return getType() == other.getType() && Arrays.equals(this.getValue(), other.getValue());
     }

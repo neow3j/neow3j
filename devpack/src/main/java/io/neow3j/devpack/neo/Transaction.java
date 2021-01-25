@@ -1,17 +1,19 @@
 package io.neow3j.devpack.neo;
 
 import io.neow3j.devpack.ApiInterface;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Hash256;
 
 /**
  * Represents a transaction and provides transaction-related information. It is returned for example
- * when calling {@link Blockchain#getTransaction(byte[])}.
+ * when calling {@link Blockchain#getTransaction(Hash256)} .
  */
 public class Transaction implements ApiInterface {
 
     /**
      * The hash of the transaction.
      */
-    public final byte[] hash;
+    public final Hash256 hash;
 
     /**
      * The transaction's version number.
@@ -27,7 +29,7 @@ public class Transaction implements ApiInterface {
     /**
      * Script hash of the transaction's sender.
      */
-    public final byte[] sender;
+    public final Hash160 sender;
 
     /**
      * The system fee payed with this transaction. The system fee covers the execution cost of
@@ -53,12 +55,12 @@ public class Transaction implements ApiInterface {
     public final byte[] script;
 
     private Transaction() {
-        hash = new byte[0];
+        hash = new Hash256(new byte[0]);
         script = new byte[0];
         systemFee = 0;
         version = 0;
         nonce = 0;
-        sender = new byte[0];
+        sender = new Hash160(new byte[0]);
         networkFee = 0;
         validUntilBlock = 0;
     }

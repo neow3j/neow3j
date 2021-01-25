@@ -108,7 +108,7 @@ public class Transaction extends NeoSerializable {
         // the sender of the transaction. If there is no such signer then the order of the
         // signers defines the sender, i.e., the first signer is the sender of the transaction.
         return signers.stream()
-                .filter(signer -> signer.getScopes().contains(WitnessScope.FEE_ONLY))
+                .filter(signer -> signer.getScopes().contains(WitnessScope.NONE))
                 .findFirst()
                 .orElse(signers.get(0))
                 .getScriptHash();

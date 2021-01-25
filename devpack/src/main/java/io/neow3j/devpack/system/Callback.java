@@ -4,6 +4,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_CALLBACK_CREATEFROMM
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CALLBACK_CREATEFROMSYSCALL;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CALLBACK_INVOKE;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Syscall;
 
 public class Callback {
@@ -38,7 +39,7 @@ public class Callback {
      * @return the callback.
      */
     @Syscall(SYSTEM_CALLBACK_CREATEFROMMETHOD)
-    public static native Callback createFromMethod(byte[] scriptHash, String method);
+    public static native Callback createFromMethod(Hash160 scriptHash, String method);
 
     /**
      * Creates a call back from the given syscall.

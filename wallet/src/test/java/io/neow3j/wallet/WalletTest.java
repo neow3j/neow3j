@@ -439,21 +439,21 @@ public class WalletTest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Test
-    public void getNep5Balances() throws IOException {
+    public void getNep17Balances() throws IOException {
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
         Account a1 = Account.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
         Account a2 = Account.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
-        WalletTestHelper.setUpWireMockForCall("getnep5balances",
-                "getnep5balances_NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy.json",
+        WalletTestHelper.setUpWireMockForCall("getnep17balances",
+                "getnep17balances_NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy.json",
                 "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
-        WalletTestHelper.setUpWireMockForCall("getnep5balances",
-                "getnep5balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
+        WalletTestHelper.setUpWireMockForCall("getnep17balances",
+                "getnep17balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
                 "NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
         Wallet w = Wallet.withAccounts(a1, a2);
-        Map<ScriptHash, BigInteger> balances = w.getNep5TokenBalances(neow);
+        Map<ScriptHash, BigInteger> balances = w.getNep17TokenBalances(neow);
         assertThat(balances.keySet(), containsInAnyOrder(GAS_SCRIPT_HASH, NEO_SCRIPT_HASH));
         assertThat(balances.values(), containsInAnyOrder(
                 new BigInteger("411285799730"),

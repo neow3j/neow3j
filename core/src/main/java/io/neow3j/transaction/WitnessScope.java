@@ -9,9 +9,10 @@ import java.util.List;
 public enum WitnessScope {
 
     /**
-     * This scope is used to mark the transaction sender.
+     * This scope is used when a witness is meant for only paying transaction fees.
+     * A witness with this scope is invalid for contract invocations.
      */
-    FEE_ONLY("FeeOnly", 0x00),
+    NONE("None", 0x00),
 
     /**
      * This scope limits the use of a witness to the level of the contract called in the
@@ -52,8 +53,8 @@ public enum WitnessScope {
      * @return the list of scopes encoded by the given byte.
      */
     public static List<WitnessScope> extractCombinedScopes(byte combinedScopes) {
-        if (combinedScopes == FEE_ONLY.byteValue()) {
-            return Arrays.asList(FEE_ONLY);
+        if (combinedScopes == NONE.byteValue()) {
+            return Arrays.asList(NONE);
         }
         List<WitnessScope> scopes = new ArrayList<>();
         if ((combinedScopes & GLOBAL.byteValue()) != 0) {

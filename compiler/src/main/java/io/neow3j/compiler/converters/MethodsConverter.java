@@ -9,6 +9,7 @@ import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
+import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.constants.OpCode.getOperandSize;
@@ -28,7 +29,7 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.devpack.annotations.Contract;
+import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
@@ -93,39 +94,49 @@ public class MethodsConverter implements Converter {
     private static final String STRING_TO_INT_METHOD_NAME = "stringToInt";
     private static final String EQUALS_METHOD_NAME = "hashCode";
     private static final String LENGTH_METHOD_NAME = "length";
+    private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
 
 
     /**
      * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor
      * calls (INVOKESPECIAL) are handled in the {@link ObjectsConverter}
+     *
+     * @param insn             The instruction to handle.
+     * @param callingNeoMethod The method in which the invoke happens.
+     * @param compUnit         The {@code CompilationUnit}.
+     * @return the instruction that should be processed next.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public static AbstractInsnNode handleInvoke(AbstractInsnNode insn,
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        ClassNode owner = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
-        Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, owner);
-        // If the called method cannot be found on the owner type, we look through the super
-        // types until we find the method.
+        ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner,
+                compUnit.getClassLoader());
+        Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, ownerClass);
+        // If the called method cannot be found on the owner type, we look through the super types
+        // until we find the method.
+        ClassNode topLevelOwnerClass = ownerClass;
         while (!calledAsmMethod.isPresent()) {
-            if (owner.superName == null) {
+            if (ownerClass.superName == null) {
                 throw new CompilerException(callingNeoMethod, format("Couldn't find method '%s' "
                                 + "on its owner class %s and its super classes.", methodInsn.name,
-                        getFullyQualifiedNameForInternalName(owner.name)));
+                        getFullyQualifiedNameForInternalName(ownerClass.name)));
             }
-            owner = getAsmClassForInternalName(owner.superName, compUnit.getClassLoader());
-            calledAsmMethod = getMethodNode(methodInsn, owner);
+            ownerClass = getAsmClassForInternalName(ownerClass.superName,
+                    compUnit.getClassLoader());
+            calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         }
         if (hasSyscallAnnotation(calledAsmMethod.get())) {
             addSyscall(calledAsmMethod.get(), callingNeoMethod);
         } else if (hasInstructionAnnotation(calledAsmMethod.get())) {
             addInstructionsFromAnnotation(calledAsmMethod.get(), callingNeoMethod);
-        } else if (isContractCall(owner)) {
-            addContractCall(calledAsmMethod.get(), callingNeoMethod, owner);
-        } else if (isSrtingLiteralConverter(calledAsmMethod.get(), owner)) {
+        } else if (isContractCall(topLevelOwnerClass)) {
+            addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass);
+        } else if (isSrtingLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
         } else {
-            return handleMethodCall(callingNeoMethod, owner, calledAsmMethod.get(), methodInsn,
+            return handleMethodCall(callingNeoMethod, ownerClass, calledAsmMethod.get(), methodInsn,
                     compUnit);
         }
         return insn;
@@ -169,7 +180,7 @@ public class MethodsConverter implements Converter {
         }
         NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
         compUnit.getNeoModule().addMethod(calledNeoMethod);
-        calledNeoMethod.initializeMethod(compUnit);
+        calledNeoMethod.initializeLocalVariablesAndParameters(compUnit);
         calledNeoMethod.convert(compUnit);
         addReverseArguments(calledAsmMethod, callingNeoMethod);
         // The actual address offset for the method call is set at a later point in compilation.
@@ -178,9 +189,9 @@ public class MethodsConverter implements Converter {
         return methodInsn;
     }
 
-    private static boolean isStringLengthCall(MethodInsnNode methodInsn)  {
-        return  methodInsn.owner.equals(Type.getInternalName(String.class))
-            && methodInsn.name.equals(LENGTH_METHOD_NAME);
+    private static boolean isStringLengthCall(MethodInsnNode methodInsn) {
+        return methodInsn.owner.equals(Type.getInternalName(String.class))
+                && methodInsn.name.equals(LENGTH_METHOD_NAME);
     }
 
     private static boolean isStringSwitch(ClassNode owner, MethodNode calledAsmMethod,
@@ -218,39 +229,32 @@ public class MethodsConverter implements Converter {
             throw new CompilerException(callingNeoMethod, "Static field converter "
                     + "methods can only be applied to constant string literals.");
         }
-        int pushDataPrefixSize = getOperandSize(lastNeoInsn.getOpcode()).prefixSize();
-        String stringLiteral = new String(ArrayUtils.getLastNBytes(lastNeoInsn.getOperand(),
-                lastNeoInsn.getOperand().length - pushDataPrefixSize), UTF_8);
-        byte[] newInsnBytes = null;
-
+        String stringLiteral = new String(lastNeoInsn.getOperand(), UTF_8);
+//        byte[] newInsnBytes = null;
+        NeoInstruction newInsn = null;
         if (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)) {
             if (!AddressUtils.isValidAddress(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid address "
                         + "'%s' used in static field initialization.", stringLiteral));
             }
             byte[] scriptHash = AddressUtils.addressToScriptHash(stringLiteral);
-            newInsnBytes = new ScriptBuilder().pushData(scriptHash).toArray();
-
+            newInsn = buildPushDataInsn(scriptHash);
         } else if (methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)) {
             if (!Numeric.isValidHexString(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid hex string ('%s') "
                         + "used in static field initialization.", stringLiteral));
             }
             byte[] bytes = Numeric.hexStringToByteArray(stringLiteral);
-            newInsnBytes = new ScriptBuilder().pushData(bytes).toArray();
-
+            newInsn = buildPushDataInsn(bytes);
         } else if (methodNode.name.equals(STRING_TO_INT_METHOD_NAME)) {
             try {
-                newInsnBytes = new ScriptBuilder().pushInteger(new BigInteger(stringLiteral))
-                        .toArray();
+                newInsn = buildPushNumberInstruction(new BigInteger(stringLiteral));
             } catch (NumberFormatException e) {
                 throw new CompilerException(callingNeoMethod, format("Invalid number string ('%s') "
                         + "used in static field initialization.", stringLiteral));
             }
         }
-        byte[] newOperand = Arrays.copyOfRange(newInsnBytes, 1, newInsnBytes.length);
-        callingNeoMethod.replaceLastInstruction(
-                new NeoInstruction(OpCode.get(newInsnBytes[0]), newOperand));
+        callingNeoMethod.replaceLastInstruction(newInsn);
     }
 
     public static boolean hasSyscallAnnotation(MethodNode asmMethod) {
@@ -258,11 +262,11 @@ public class MethodsConverter implements Converter {
     }
 
     /**
-     * Checks if the given class node carries the {@link Contract} annotation.
+     * Checks if the given class node carries the {@link ContractHash} annotation.
      */
     private static boolean isContractCall(ClassNode owner) {
         return owner.invisibleAnnotations != null && owner.invisibleAnnotations.stream().
-                anyMatch(a -> a.desc.equals(Type.getDescriptor(Contract.class)));
+                anyMatch(a -> a.desc.equals(Type.getDescriptor(ContractHash.class)));
     }
 
     private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
@@ -336,16 +340,23 @@ public class MethodsConverter implements Converter {
             ClassNode owner) {
 
         AnnotationNode annotation = owner.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Contract.class))).findFirst().get();
+                .filter(a -> a.desc.equals(Type.getDescriptor(ContractHash.class))).findFirst().get();
         byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
         if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
             throw new CompilerException(owner, format("Script hash '%s' of the @%s annotation on "
-                    + "class %s does not have the length of a correct script hash.",
+                            + "class %s does not have the length of a correct script hash.",
                     Numeric.toHexStringNoPrefix(scriptHash),
-                    Contract.class.getSimpleName(), getClassNameForInternalName(owner.name)));
+                    ContractHash.class.getSimpleName(), getClassNameForInternalName(owner.name)));
+        }
+
+        // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
+        if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
+            callingNeoMethod.addInstruction(buildPushDataInsn(scriptHash));
+            return;
         }
 
         int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;
+        addReverseArguments(callingNeoMethod, nrOfParams);
         addPushNumber(nrOfParams, callingNeoMethod);
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
         callingNeoMethod.addInstruction(buildPushDataInsn(calledAsmMethod.name));

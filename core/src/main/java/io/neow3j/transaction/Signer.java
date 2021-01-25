@@ -56,7 +56,7 @@ public class Signer extends NeoSerializable {
 
     /**
      * Creates a Signer for the given account with fee only witness scope ({@link
-     * WitnessScope#FEE_ONLY}).
+     * WitnessScope#NONE}).
      *
      * @param address The originator of the witness.
      * @return {@link Signer}
@@ -64,13 +64,13 @@ public class Signer extends NeoSerializable {
     public static Signer feeOnly(String address) {
         return new Builder()
                 .account(ScriptHash.fromAddress(address))
-                .scopes(WitnessScope.FEE_ONLY)
+                .scopes(WitnessScope.NONE)
                 .build();
     }
 
     /**
      * Creates a Signer for the given account with fee only witness scope ({@link
-     * WitnessScope#FEE_ONLY}).
+     * WitnessScope#NONE}).
      *
      * @param account The originator of the witness.
      * @return {@link Signer}
@@ -78,7 +78,7 @@ public class Signer extends NeoSerializable {
     public static Signer feeOnly(ScriptHash account) {
         return new Builder()
                 .account(account)
-                .scopes(WitnessScope.FEE_ONLY)
+                .scopes(WitnessScope.NONE)
                 .build();
     }
 
@@ -342,7 +342,7 @@ public class Signer extends NeoSerializable {
                 throw new SignerConfigurationException("No scope has been defined. A signer" +
                         " object requires at least one scope.");
             }
-            if (scopes.contains(WitnessScope.FEE_ONLY) && scopes.size() > 1) {
+            if (scopes.contains(WitnessScope.NONE) && scopes.size() > 1) {
                 throw new SignerConfigurationException("The fee-only witness scope cannot be " +
                         "combined with other scopes.");
             }

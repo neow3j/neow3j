@@ -2,19 +2,19 @@
   "hash":"0xf798b2b69bfb380573787c6e177e4571643993c4",
   "documents":
   [
-    "/templates/Template.NEP5.CSharp/NEP5.Helpers.cs",
-    "/templates/Template.NEP5.CSharp/NEP5.cs",
-    "/templates/Template.NEP5.CSharp/NEP5.Crowdsale.cs",
-    "/templates/Template.NEP5.CSharp/NEP5.Owner.cs",
-    "/templates/Template.NEP5.CSharp/NEP5.Methods.cs",
-    "/templates/Template.NEP5.CSharp/Storage/TotalSupplyStorage.cs",
-    "/templates/Template.NEP5.CSharp/Storage/AssetStorage.cs"
+    "/templates/Template.NEP17.CSharp/NEP17.Helpers.cs",
+    "/templates/Template.NEP17.CSharp/NEP17.cs",
+    "/templates/Template.NEP17.CSharp/NEP17.Crowdsale.cs",
+    "/templates/Template.NEP17.CSharp/NEP17.Owner.cs",
+    "/templates/Template.NEP17.CSharp/NEP17.Methods.cs",
+    "/templates/Template.NEP17.CSharp/Storage/TotalSupplyStorage.cs",
+    "/templates/Template.NEP17.CSharp/Storage/AssetStorage.cs"
   ],
   "methods":
   [
     {
-      "id":"System.Boolean Template.NEP5.CSharp.NEP5::ValidateAddress(System.Byte[])",
-      "name":"Template.NEP5.CSharp.NEP5,validateAddress",
+      "id":"System.Boolean Template.NEP17.CSharp.NEP17::ValidateAddress(System.Byte[])",
+      "name":"Template.NEP17.CSharp.NEP17,validateAddress",
       "range":"0-35",
       "params":
       [
@@ -30,8 +30,8 @@
       ]
     },
     {
-      "id":"System.Boolean Template.NEP5.CSharp.NEP5::IsPayable(System.Byte[])",
-      "name":"Template.NEP5.CSharp.NEP5,isPayable",
+      "id":"System.Boolean Template.NEP17.CSharp.NEP17::IsPayable(System.Byte[])",
+      "name":"Template.NEP17.CSharp.NEP17,isPayable",
       "range":"36-57",
       "params":
       [
@@ -47,8 +47,8 @@
       ]
     },
     {
-      "id":"System.Boolean Template.NEP5.CSharp.NEP5::Verify()",
-      "name":"Template.NEP5.CSharp.NEP5,verify",
+      "id":"System.Boolean Template.NEP17.CSharp.NEP17::Verify()",
+      "name":"Template.NEP17.CSharp.NEP17,verify",
       "range":"58-64",
       "params":
       [
@@ -63,8 +63,8 @@
       ]
     },
     {
-      "id":"System.String Template.NEP5.CSharp.NEP5::Name()",
-      "name":"Template.NEP5.CSharp.NEP5,name",
+      "id":"System.String Template.NEP17.CSharp.NEP17::Name()",
+      "name":"Template.NEP17.CSharp.NEP17,name",
       "range":"65-77",
       "params":
       [
@@ -79,8 +79,8 @@
       ]
     },
     {
-      "id":"System.String Template.NEP5.CSharp.NEP5::Symbol()",
-      "name":"Template.NEP5.CSharp.NEP5,symbol",
+      "id":"System.String Template.NEP17.CSharp.NEP17::Symbol()",
+      "name":"Template.NEP17.CSharp.NEP17,symbol",
       "range":"78-91",
       "params":
       [
@@ -95,8 +95,8 @@
       ]
     },
     {
-      "id":"System.UInt64 Template.NEP5.CSharp.NEP5::Decimals()",
-      "name":"Template.NEP5.CSharp.NEP5,decimals",
+      "id":"System.UInt64 Template.NEP17.CSharp.NEP17::Decimals()",
+      "name":"Template.NEP17.CSharp.NEP17,decimals",
       "range":"92-93",
       "params":
       [
@@ -111,8 +111,8 @@
       ]
     },
     {
-      "id":"System.Numerics.BigInteger Template.NEP5.CSharp.NEP5::GetTransactionAmount(System.Object)",
-      "name":"Template.NEP5.CSharp.NEP5,getTransactionAmount",
+      "id":"System.Numerics.BigInteger Template.NEP17.CSharp.NEP17::GetTransactionAmount(System.Object)",
+      "name":"Template.NEP17.CSharp.NEP17,getTransactionAmount",
       "range":"94-164",
       "params":
       [
@@ -140,8 +140,8 @@
       ]
     },
     {
-      "id":"System.Boolean Template.NEP5.CSharp.NEP5::Mint()",
-      "name":"Template.NEP5.CSharp.NEP5,mint",
+      "id":"System.Boolean Template.NEP17.CSharp.NEP17::Mint()",
+      "name":"Template.NEP17.CSharp.NEP17,mint",
       "range":"165-618",
       "params":
       [
@@ -195,8 +195,8 @@
       ]
     },
     {
-      "id":"System.Boolean Template.NEP5.CSharp.NEP5::Deploy()",
-      "name":"Template.NEP5.CSharp.NEP5,deploy",
+      "id":"System.Boolean Template.NEP17.CSharp.NEP17::Deploy()",
+      "name":"Template.NEP17.CSharp.NEP17,deploy",
       "range":"619-812",
       "params":
       [
@@ -220,8 +220,8 @@
       ]
     },
     {
-      "id":"System.Boolean Template.NEP5.CSharp.NEP5::Update(System.Byte[],System.String)",
-      "name":"Template.NEP5.CSharp.NEP5,update",
+      "id":"System.Boolean Template.NEP17.CSharp.NEP17::Update(System.Byte[],System.String)",
+      "name":"Template.NEP17.CSharp.NEP17,update",
       "range":"813-874",
       "params":
       [
@@ -246,8 +246,8 @@
   "events":
   [
     {
-      "id":"Template.NEP5.CSharp.NEP5::OnTransfer",
-      "name":"Template.NEP5.CSharp.NEP5,Transfer",
+      "id":"Template.NEP17.CSharp.NEP17::OnTransfer",
+      "name":"Template.NEP17.CSharp.NEP17,Transfer",
       "params":
       [
         "arg1,ByteArray",

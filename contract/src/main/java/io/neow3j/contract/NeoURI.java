@@ -14,8 +14,13 @@ import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 
+import static io.neow3j.contract.ContractParameter.any;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.transaction.Signer.calledByEntry;
+
 /**
- * Wrapper class to generate NEP-9 compatible URI schemes for NEP-5 Token transfers.
+ * Wrapper class to generate NEP-9 compatible URI schemes for NEP-17 Token transfers.
  */
 public class NeoURI {
 
@@ -30,6 +35,9 @@ public class NeoURI {
     private static final String NEO_SCHEME = "neo";
     private static final String TRANSFER_FUNCTION = "transfer";
     private static final int MIN_NEP9_URI_LENGTH = 38;
+
+    private static final String NEO_ASSET = "neo";
+    private static final String GAS_ASSET = "gas";
 
     public NeoURI() {
     }
@@ -70,9 +78,9 @@ public class NeoURI {
                 if (singleQueryParts.length != 2) throw new IllegalArgumentException("This uri contains invalid queries.");
                 if (singleQueryParts[0].equals("asset") && neoURI.asset == null) {
                     String assetID = singleQueryParts[1];
-                    if (assetID.equals(NeoToken.SYMBOL)) {
+                    if (assetID.equals(NEO_ASSET)) {
                         neoURI.asset = NeoToken.SCRIPT_HASH;
-                    } else if (assetID.equals(GasToken.SYMBOL)) {
+                    } else if (assetID.equals(GAS_ASSET)) {
                         neoURI.asset = GasToken.SCRIPT_HASH;
                     } else {
                         neoURI.asset = new ScriptHash(assetID);
@@ -86,11 +94,14 @@ public class NeoURI {
     }
 
     /**
-     * Builds a {@code TransactionBuilder} from this NeoURI.
+     * Creates a transaction script to transfer and initializes a {@link
+     * TransactionBuilder} based on this script which is ready to be
+     * signed and sent.
      * <p>
-     * Needs all necessary parameters to create a transfer invocation.
+     * Uses only the wallet's default account.
      *
-     * @return a TransactionBuilder object.
+     * @return A transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder buildTransfer() throws IOException {
         if (neow3j == null) {
@@ -118,12 +129,15 @@ public class NeoURI {
             fractions = computeFractions(neow3j, asset);
         }
 
+        ScriptHash sender = wallet.getDefaultAccount().getScriptHash();
         return new SmartContract(asset, neow3j)
                 .invokeFunction(TRANSFER_FUNCTION,
-                        ContractParameter.hash160(wallet.getDefaultAccount().getScriptHash()),
-                        ContractParameter.hash160(toAddress),
-                        ContractParameter.integer(fractions))
-                .wallet(wallet);
+                        hash160(sender),
+                        hash160(toAddress),
+                        integer(fractions),
+                        any(null))
+                .wallet(wallet)
+                .signers(calledByEntry(sender));
     }
 
     private boolean isNeoToken(ScriptHash asset) {
@@ -135,7 +149,7 @@ public class NeoURI {
     }
 
     private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset) throws IOException {
-        int decimals = new Nep5Token(asset, neow3j).getDecimals();
+        int decimals = new Nep17Token(asset, neow3j).getDecimals();
         BigDecimal factor = BigDecimal.TEN.pow(decimals);
         return amount.multiply(factor).toBigInteger();
     }
@@ -144,7 +158,7 @@ public class NeoURI {
      * Sets the recipient address.
      *
      * @param address the recipient address.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI toAddress(String address) {
         if (!AddressUtils.isValidAddress(address)) {
@@ -159,7 +173,7 @@ public class NeoURI {
      * Sets the recipient address.
      *
      * @param address the recipient address.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI toAddress(ScriptHash address) {
         toAddress = address;
@@ -170,7 +184,7 @@ public class NeoURI {
      * Sets the asset.
      *
      * @param asset the asset script hash as big endian byte array.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI asset(byte[] asset) {
         this.asset = new ScriptHash(ArrayUtils.reverseArray(asset));
@@ -181,7 +195,7 @@ public class NeoURI {
      * Sets the asset.
      *
      * @param asset the asset.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI asset(ScriptHash asset) {
         this.asset = asset;
@@ -192,7 +206,7 @@ public class NeoURI {
      * Sets the asset.
      *
      * @param asset the asset.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI asset(String asset) {
         if (asset.equals("neo")) {
@@ -209,7 +223,7 @@ public class NeoURI {
      * Sets the amount.
      *
      * @param amount the amount.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI amount(String amount) {
         this.amount = new BigDecimal(amount);
@@ -220,7 +234,7 @@ public class NeoURI {
      * Sets the amount.
      *
      * @param amount the amount.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI amount(Integer amount) {
         this.amount = new BigDecimal(amount);
@@ -231,7 +245,7 @@ public class NeoURI {
      * Sets the amount.
      *
      * @param amount the amount.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI amount(BigInteger amount) {
         this.amount = new BigDecimal(amount);
@@ -242,7 +256,7 @@ public class NeoURI {
      * Sets the amount.
      *
      * @param amount the amount.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI amount(BigDecimal amount) {
         this.amount = amount;
@@ -253,7 +267,7 @@ public class NeoURI {
      * Sets the neow3j instance.
      *
      * @param neow3j the neow3j instance.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI neow3j(Neow3j neow3j) {
         this.neow3j = neow3j;
@@ -264,7 +278,7 @@ public class NeoURI {
      * Sets the wallet.
      *
      * @param wallet the wallet.
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI wallet(Wallet wallet) {
         this.wallet = wallet;
@@ -289,9 +303,10 @@ public class NeoURI {
     }
 
     /**
-     * Builds a NEP-9 URI from the set variables.
+     * Builds a NEP-9 URI from the set variables and stores its
+     * value to its variable {@code uri} as a {@link URI}.
      *
-     * @return this.
+     * @return this NeoURI object.
      */
     public NeoURI buildURI() {
         if (toAddress == null) {
@@ -312,16 +327,16 @@ public class NeoURI {
     }
 
     /**
-     * Gets the NEP-9 URI of this instance.
+     * Gets the NEP-9 URI of this NeoURI.
      *
-     * @return the URI of this instance.
+     * @return the {@link URI} of this NeoURI.
      */
     public URI getURI() {
         return uri;
     }
 
     /**
-     * Gets the NEP-9 URI of this instance.
+     * Gets the NEP-9 URI of this  NeoURI.
      *
      * @return the URI of this instance as string.
      */
@@ -363,9 +378,9 @@ public class NeoURI {
      */
     public String getAssetAsString() {
         if (asset.equals(NeoToken.SCRIPT_HASH)) {
-            return NeoToken.SYMBOL;
+            return NEO_ASSET;
         } else if (asset.equals(GasToken.SCRIPT_HASH)) {
-            return GasToken.SYMBOL;
+            return GAS_ASSET;
         }
         return asset.toString();
     }

@@ -21,7 +21,7 @@ public class StringLiteralHelper {
      * @param address The address to convert to script hash.
      * @return the script hash.
      */
-    public static native byte[] addressToScriptHash(String address);
+    public static native Hash160 addressToScriptHash(String address);
 
     /**
      * Converts the given hex string to a byte array.

@@ -6,8 +6,9 @@ to date.
 
 ## Release the Source Code
 
-- Bump the version on the develop branch (e.g., `develop-3.x`) -- in the `build.gradle` file, search for `group`
-and `version` clauses
+- Bump the version on the develop branch (e.g., `develop-3.x`) 
+  - in the `build.gradle` file, search for `group` and `version` clauses 
+  - in the `Compiler` class search for `COMPILER_VERSION`
 - Create a Pull Request from develop to master (e.g., from `develop-3.x` to `master-3.x`) -- this
 is called a "Release Pull Request"
   - Set the name as, e.g., "Release 3.2.1"

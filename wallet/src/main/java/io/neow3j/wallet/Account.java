@@ -12,7 +12,7 @@ import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoGetNep5Balances;
+import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
@@ -209,22 +209,22 @@ public class Account {
     }
 
     /**
-     * Gets the balances of all NEP-5 tokens that this account owns.
+     * Gets the balances of all NEP-17 tokens that this account owns.
      * <p>
      * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
-     * Requires on a neo-node with the RpcNep5Tracker plugin installed. The balances are not cached
+     * Requires on a neo-node with the RpcNep17Tracker plugin installed. The balances are not cached
      * locally. Every time this method is called a request is send to the neo-node.
      *
      * @param neow3j The {@link Neow3j} object used to call a neo-node.
      * @return the map of token script hashes to token amounts.
      * @throws IOException If something goes wrong when communicating with the neo-node.
      */
-    public Map<ScriptHash, BigInteger> getNep5Balances(Neow3j neow3j)
+    public Map<ScriptHash, BigInteger> getNep17Balances(Neow3j neow3j)
             throws IOException {
 
-        NeoGetNep5Balances result = neow3j.getNep5Balances(getAddress()).send();
+        NeoGetNep17Balances result = neow3j.getNep17Balances(getAddress()).send();
         Map<ScriptHash, BigInteger> balances = new HashMap<>();
         result.getBalances().getBalances().forEach(b ->
                 balances.put(new ScriptHash(b.getAssetHash()), new BigInteger(b.getAmount())));

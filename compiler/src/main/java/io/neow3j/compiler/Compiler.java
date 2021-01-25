@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
+import static io.neow3j.constants.OpCode.PUSHDATA1;
 import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -13,12 +14,14 @@ import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.constants.OperandSize;
 import io.neow3j.contract.NefFile;
-import io.neow3j.contract.NefFile.Version;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Map;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
@@ -26,6 +29,7 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +46,6 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
@@ -52,7 +55,7 @@ import org.objectweb.asm.tree.MethodNode;
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j";
-    public static final Version COMPILER_VERSION = new Version(0, 1, 0, 0);
+    public static final String COMPILER_VERSION = "3.6.1";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -62,6 +65,11 @@ public class Compiler {
     private static final String CLASS_CTOR = "<clinit>";
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
     public static final String THIS_KEYWORD = "this";
+
+    public static final String INSTRUCTION_ANNOTATION_OPERAND = "operand";
+    public static final String INSTRUCTION_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
+    public static final String VERIFY_METHOD_NAME = "verify";
+    public static final String DEPLOY_METHOD_NAME = "_deploy";
 
     private CompilationUnit compUnit;
 
@@ -107,6 +115,12 @@ public class Compiler {
         }
         if (typeName.equals(Map.class.getTypeName())) {
             return ContractParameterType.MAP;
+        }
+        if (typeName.equals(Hash160.class.getTypeName())) {
+            return ContractParameterType.HASH160;
+        }
+        if (typeName.equals(Hash256.class.getTypeName())) {
+            return ContractParameterType.HASH256;
         }
         if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
             // The io.neow3j.devpack.List type is simply an array-abstraction.
@@ -215,6 +229,7 @@ public class Compiler {
      *
      * @param fullyQualifiedClassName the fully qualified name of the class.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(String fullyQualifiedClassName) throws IOException {
         return compileClass(getAsmClass(fullyQualifiedClassName, compUnit.getClassLoader()));
@@ -225,6 +240,7 @@ public class Compiler {
      *
      * @param classStream the {@link InputStream} pointing to a class file.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compileClass(InputStream classStream) throws IOException {
         return compileClass(getAsmClass(classStream));
@@ -237,9 +253,9 @@ public class Compiler {
      * @return the compilation unit holding the NEF and contract manifest.
      */
     private CompilationUnit compileClass(ClassNode classNode) throws IOException {
-        compUnit.addContractClass(classNode);
-        collectAndInitializeStaticFields(classNode);
-        collectAndInitializeMethods(classNode);
+        compUnit.setContractClass(classNode);
+        compUnit.getNeoModule().addMethod(initializeStaticConstructor(classNode));
+        compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
@@ -254,16 +270,15 @@ public class Compiler {
         compUnit.getNeoModule().finalizeModule();
         NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
                 compUnit.getNeoModule().toByteArray());
-        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit,
-                nef.getScriptHash());
+        ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
 
-    private void collectAndInitializeStaticFields(ClassNode asmClass) throws IOException {
+    private NeoMethod initializeStaticConstructor(ClassNode asmClass) throws IOException {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
-            return;
+            return null;
         }
         if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
             throw new CompilerException(format("The class %s has more than the max supported "
@@ -277,8 +292,7 @@ public class Compiler {
         }
         checkForUsageOfInstanceConstructor(asmClass);
         collectSmartContractEvents(asmClass);
-        NeoMethod neoMethod = createInitsslotMethod(asmClass);
-        compUnit.getNeoModule().addMethod(neoMethod);
+        return createInitsslotMethod(asmClass);
     }
 
     private void collectSmartContractEvents(ClassNode asmClass) throws IOException {
@@ -330,26 +344,15 @@ public class Compiler {
     // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
     // script. This only looks at the <clinit> method of the class. The <clinit> method
     // contains static variable initialization instructions that happen right at the definition
-    // of the variables and not in a static constructor. Static constructors are not supported at
-    // the moment.
+    // of the variables or in the static constructor.
     private NeoMethod createInitsslotMethod(ClassNode asmClass) {
-        MethodNode initsslotMethod = null;
         Optional<MethodNode> classCtorOpt = asmClass.methods.stream()
                 .filter(m -> m.name.equals(CLASS_CTOR))
                 .findFirst();
-        if (classCtorOpt.isPresent()) {
-            initsslotMethod = classCtorOpt.get();
-        } else {
-            // Static variables are not initialized but we still need to add the INITSSLOT method.
-            // Therefore, we create a "fake" ASM method for it here.
-            // TODO: Determine if this is even necessary.
-            initsslotMethod = new MethodNode();
-            initsslotMethod.instructions.add(new InsnNode(JVMOpcode.RETURN.getOpcode()));
-            initsslotMethod.name = CLASS_CTOR;
-            initsslotMethod.desc = "()V";
-            initsslotMethod.access = Opcodes.ACC_STATIC;
+        if (!classCtorOpt.isPresent()) {
+            return null;
         }
-        NeoMethod neoMethod = new NeoMethod(initsslotMethod, asmClass);
+        NeoMethod neoMethod = new NeoMethod(classCtorOpt.get(), asmClass);
         neoMethod.setName(INITSSLOT_METHOD_NAME);
         neoMethod.setIsAbiMethod(true);
         byte[] operand = new byte[]{(byte) asmClass.fields.size()};
@@ -359,7 +362,8 @@ public class Compiler {
 
     // Collects all static methods and initializes them, e.g., sets the parameters and local
     // variables.
-    private void collectAndInitializeMethods(ClassNode asmClass) {
+    private List<NeoMethod> initializeContractMethods(ClassNode asmClass) {
+        List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
                 continue; // Handled in method `collectAndInitializeStaticFields()`.
@@ -371,10 +375,11 @@ public class Compiler {
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
                 NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-                neoMethod.initializeMethod(compUnit);
-                compUnit.getNeoModule().addMethod(neoMethod);
+                neoMethod.initializeLocalVariablesAndParameters(compUnit);
+                methods.add(neoMethod);
             }
         }
+        return methods;
     }
 
     // Handles/converts the given instruction. The given NeoMethod is the method that the
@@ -447,15 +452,19 @@ public class Compiler {
     }
 
     public static NeoInstruction buildPushDataInsn(byte[] data) {
-        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
-        byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
+        return buildPushDataInsnFromInsnBytes(new ScriptBuilder().pushData(data).toArray());
     }
 
     public static NeoInstruction buildPushDataInsn(String data) {
-        byte[] insnBytes = new ScriptBuilder().pushData(data).toArray();
-        byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
+        return buildPushDataInsnFromInsnBytes(new ScriptBuilder().pushData(data).toArray());
+    }
+
+    private static NeoInstruction buildPushDataInsnFromInsnBytes(byte[] insnBytes) {
+        OpCode opcode = OpCode.get(insnBytes[0]);
+        int prefixSize = OpCode.getOperandSize(opcode).prefixSize();
+        byte[] operandPrefix = Arrays.copyOfRange(insnBytes, 1, 1 + prefixSize);
+        byte[] operand = Arrays.copyOfRange(insnBytes, 1 + prefixSize, insnBytes.length);
+        return new NeoInstruction(opcode, operandPrefix, operand);
     }
 
     // Goes through the instructions of the given method and looks for the call to the `Object`
@@ -483,7 +492,6 @@ public class Compiler {
                 + "couldn't find it.";
         return (MethodInsnNode) insn;
     }
-
 
     // Adds an opcode that reverses the ordering of the arguments on the evaluation stack
     // according to the number of arguments the called method takes.
@@ -552,42 +560,54 @@ public class Compiler {
             // The default value OpCode.NOP was set explicitly. Nothing to do.
             return;
         }
-        if (insnAnnotation.values.size() == 4) {
-            byte[] operand = getOperand(insnAnnotation);
-            if (operand.length != getOperandSize(opcode).size()) {
-                throw new CompilerException(neoMethod, format("Operand extracted from annotation"
-                                + "%s did not have correct size for corresponding neo-vm opcode "
-                                + "%s. Byte size was %d but neo-vm opcode needs an operand of %d "
-                                + "bytes.",
-                        insnAnnotation.desc, opcode.name(), operand.length,
-                        getOperandSize(opcode).size()));
-            }
-            neoMethod.addInstruction(new NeoInstruction(opcode, operand));
-        } else {
-            neoMethod.addInstruction(new NeoInstruction(opcode));
+
+        byte[] operandPrefix = new byte[]{};
+        if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND_PREFIX)) {
+            operandPrefix = getOperandPrefix(insnAnnotation);
         }
+        byte[] operand = new byte[]{};
+        if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND)) {
+            operand = getOperand(insnAnnotation);
+        }
+        // Correctness of operand prefix and operand are checked in the NeoInstruction.
+        neoMethod.addInstruction(new NeoInstruction(opcode, operandPrefix, operand));
+    }
+
+    private static byte[] getOperandPrefix(AnnotationNode insnAnnotation) {
+        return getInstructionOperandBytes(insnAnnotation, INSTRUCTION_ANNOTATION_OPERAND_PREFIX);
     }
 
     private static byte[] getOperand(AnnotationNode insnAnnotation) {
-        byte[] operand = new byte[]{};
-        if (insnAnnotation.values.get(3) instanceof byte[]) {
-            operand = (byte[]) insnAnnotation.values.get(3);
-        } else if (insnAnnotation.values.get(3) instanceof List) {
-            List<?> operandAsList = (List<?>) insnAnnotation.values.get(3);
-            operand = new byte[operandAsList.size()];
+        return getInstructionOperandBytes(insnAnnotation, INSTRUCTION_ANNOTATION_OPERAND);
+    }
+
+    private static byte[] getInstructionOperandBytes(AnnotationNode insnAnnotation,
+            String instructionAnnotationOperandPrefix) {
+        byte[] operandPrefix = new byte[]{};
+        int idx = insnAnnotation.values.indexOf(instructionAnnotationOperandPrefix);
+        Object prefixObj = insnAnnotation.values.get(idx+1);
+        if (prefixObj instanceof byte[]) {
+            operandPrefix = (byte[]) prefixObj;
+        } else if (prefixObj instanceof List) {
+            List<?> prefixObjAsList = (List<?>) prefixObj;
+            operandPrefix = new byte[prefixObjAsList.size()];
             int i = 0;
-            for (Object element : operandAsList) {
-                operand[i++] = (byte) element;
+            for (Object element : prefixObjAsList) {
+                operandPrefix[i++] = (byte) element;
             }
         }
-        return operand;
+        return operandPrefix;
     }
 
     public static void addPushNumber(long number, NeoMethod neoMethod) {
-        byte[] insnBytes = new ScriptBuilder().pushInteger(BigInteger.valueOf(number))
+        neoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(number)));
+    }
+
+    public static NeoInstruction buildPushNumberInstruction(BigInteger number) {
+        byte[] insnBytes = new ScriptBuilder().pushInteger(number)
                 .toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
-        neoMethod.addInstruction(new NeoInstruction(OpCode.get(insnBytes[0]), operand));
+        return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
     }
 
     /**
