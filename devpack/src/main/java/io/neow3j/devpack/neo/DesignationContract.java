@@ -1,6 +1,7 @@
 package io.neow3j.devpack.neo;
 
 import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.annotations.ContractHash;
 
 /**
@@ -18,7 +19,7 @@ public class DesignationContract extends ContractInterface {
      * @param index The block index at which to get the designates for.
      * @return the public keys of the designates with the given role.
      */
-    public static native byte[][] getDesignatedByRole(byte role, int index);
+    public static native ECPoint[] getDesignatedByRole(byte role, int index);
 
     /**
      * Designates the nodes with the given public keys to the {@link Role};
@@ -26,6 +27,6 @@ public class DesignationContract extends ContractInterface {
      * @param role       The role of the designated nodes.
      * @param publicKeys The node's public keys.
      */
-    public static native void designateAsRole(byte role, byte[][] publicKeys);
+    public static native void designateAsRole(byte role, ECPoint[] publicKeys);
 
 }

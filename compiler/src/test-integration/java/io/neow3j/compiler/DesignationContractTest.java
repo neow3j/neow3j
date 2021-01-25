@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.neo.Role;
 import io.neow3j.devpack.neo.DesignationContract;
@@ -61,11 +62,11 @@ public class DesignationContractTest extends ContractTest {
             return DesignationContract.getHash();
         }
 
-        public static byte[][] getDesignatedByRole(byte role, int index) {
+        public static ECPoint[] getDesignatedByRole(byte role, int index) {
             return DesignationContract.getDesignatedByRole(role, index);
         }
 
-        public static void designateAsRole(byte role, byte[][] publicKeys) {
+        public static void designateAsRole(byte role, ECPoint[] publicKeys) {
             DesignationContract.designateAsRole(role, publicKeys);
         }
     }
