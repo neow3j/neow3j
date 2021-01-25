@@ -211,6 +211,19 @@ public class ContractParameter {
     }
 
     /**
+     * Creates a public key parameter from the given public key.
+     * <p>
+     * The public key must be encoded in compressed format as described in section 2.3.3 of
+     * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
+     *
+     * @param publicKey The public key in hexadecimal representation.
+     * @return the contract parameter.
+     */
+    public static ContractParameter publicKey(String publicKey) {
+        return publicKey(Numeric.hexStringToByteArray(publicKey));
+    }
+
+    /**
      * Creates a public key parameter from the given public key bytes.
      * <p>
      * The public key must be encoded in compressed format as described in section 2.3.3 of
