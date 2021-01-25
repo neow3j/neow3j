@@ -10,6 +10,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_LOG;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_NOTIFY;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_PLATFORM;
 
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Syscall;
 
@@ -68,7 +69,7 @@ public class Runtime {
      * @return an array of all notifications matching the given script hash.
      */
     @Syscall(SYSTEM_RUNTIME_GETNOTIFICATIONS)
-    public static native Notification[] getNotifications(byte[] hash);
+    public static native Notification[] getNotifications(Hash160 hash);
 
     /**
      * Verifies whether the container (e.g. the transactions) calling the contract is signed by the
@@ -78,7 +79,7 @@ public class Runtime {
      * @return true if the given public key is the signer of the transaction. False, otherwise.
      */
     @Syscall(SYSTEM_RUNTIME_CHECKWITNESS)
-    public static native boolean checkWitness(byte[] pubKey);
+    public static native boolean checkWitness(ECPoint pubKey);
 
     /**
      * Verifies whether the container (e.g. the transactions) calling the contract is signed by the

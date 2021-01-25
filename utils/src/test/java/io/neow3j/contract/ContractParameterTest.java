@@ -6,10 +6,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +49,8 @@ public class ContractParameterTest {
 
     @Test
     public void testByteArrayParamCreationFromString() {
-        ContractParameter p =ContractParameter.byteArrayFromString("Neo");
-        assertThat(((byte[]) p.getValue()), is(new byte[] {(byte) 0x4e, (byte) 0x65, (byte) 0x6f}));
+        ContractParameter p = ContractParameter.byteArrayFromString("Neo");
+        assertThat(((byte[]) p.getValue()), is(new byte[]{(byte) 0x4e, (byte) 0x65, (byte) 0x6f}));
         assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
     }
 
@@ -220,6 +218,42 @@ public class ContractParameterTest {
     public void testHash256ParamCreationFromNoHexString() {
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cg";
         ContractParameter.hash256(sig);
+    }
+
+    @Test
+    public void testPublicKeyParamCreationFromByteArray() {
+        byte[] pubKey = Numeric.hexStringToByteArray(
+                "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816");
+        ContractParameter p = ContractParameter.publicKey(pubKey);
+        assertThat((byte[]) p.getValue(), is(pubKey));
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPublicKeyParamCreationFromInvalidByteArray() {
+        // one byte too short
+        byte[] pubKey = Numeric.hexStringToByteArray(
+                "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368");
+        ContractParameter p = ContractParameter.publicKey(pubKey);
+        assertThat((byte[]) p.getValue(), is(pubKey));
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
+    }
+
+    @Test
+    public void testPublicKeyParamCreationFromHexString() {
+        String pubKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
+        ContractParameter p = ContractParameter.publicKey(pubKey);
+        assertThat((byte[]) p.getValue(), is(Numeric.hexStringToByteArray(pubKey)));
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPublicKeyParamCreationFromInvalidHexString() {
+        // one byte too short.
+        String pubKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368";
+        ContractParameter p = ContractParameter.publicKey(pubKey);
+        assertThat((byte[]) p.getValue(), is(Numeric.hexStringToByteArray(pubKey)));
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package io.neow3j.devpack.neo;
 
 import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Syscall;
@@ -62,19 +63,19 @@ public class Crypto {
              * @return {@code True}, if the signature is correct. {@code False}, otherwise.
              */
             @Syscall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
-            public native static boolean verify(byte[] message, byte[] pubKey, byte[] signature);
+            public native static boolean verify(byte[] message, ECPoint pubKey, byte[] signature);
 
             /**
              * Verifies if the given ECDSA signatures were produced from the given message and
              * public keys using the secp256r1 curve.
              *
              * @param message The signed message
-             * @param pubKey The public keys of the signing key pairs.
+             * @param pubKeys The public keys of the signing key pairs.
              * @param signature The signatures created from the message.
              * @return {@code True}, if the signatures are correct. {@code False}, otherwise.
              */
             @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1)
-            public native static boolean checkMultiSig(byte[] message, byte[][] pubKey,
+            public native static boolean checkMultiSig(byte[] message, ECPoint[] pubKeys,
                     byte[][] signature);
         }
 
@@ -90,19 +91,19 @@ public class Crypto {
              * @return {@code True}, if the signature is correct. {@code False}, otherwise.
              */
             @Syscall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256K1)
-            public native static boolean verify(byte[] message, byte[] pubKey, byte[] signature);
+            public native static boolean verify(byte[] message, ECPoint pubKey, byte[] signature);
 
             /**
              * Verifies if the given ECDSA signatures were produced from the given message and
              * public keys using the secp256k1 curve.
              *
              * @param message The signed message
-             * @param pubKey The public keys of the signing key pairs.
+             * @param pubKeys The public keys of the signing key pairs.
              * @param signature The signatures created from the message.
              * @return {@code True}, if the signatures are correct. {@code False}, otherwise.
              */
             @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1)
-            public native static boolean checkMultiSig(byte[] message, byte[][] pubKey,
+            public native static boolean checkMultiSig(byte[] message, ECPoint[] pubKeys,
                     byte[][] signature);
         }
     }
