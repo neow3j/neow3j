@@ -13,16 +13,17 @@ public class Neow3jCompileTask extends DefaultTask {
 
     public static final String NEOW3J_COMPILE_TASK_NAME = "neow3jCompile";
     public static final String NEOW3J_COMPILER_OPTIONS_NAME = "neow3jCompiler";
+    public static final String NEOW3J_DEFAULT_OUTPUT_DIR = "neow3j";
 
     private Neow3jPluginOptions options;
     private File projectBuildDir;
-    private Path compilerOutputDir;
+    private Path compilerDefaultOutputDir;
 
     public Neow3jCompileTask() {
         this.options = getProject().getExtensions()
                 .create(NEOW3J_COMPILER_OPTIONS_NAME, Neow3jPluginOptions.class);
         this.projectBuildDir = this.getProject().getBuildDir();
-        this.compilerOutputDir = Paths.get(projectBuildDir.getAbsolutePath(), "neow3j");
+        this.compilerDefaultOutputDir = Paths.get(projectBuildDir.getAbsolutePath(), NEOW3J_DEFAULT_OUTPUT_DIR);
         this.getProject().getPluginManager().apply(JavaLibraryPlugin.class);
         this.dependsOn(JavaPlugin.COMPILE_JAVA_TASK_NAME);
         Action action = new Neow3jCompileAction();
@@ -37,8 +38,8 @@ public class Neow3jCompileTask extends DefaultTask {
         return projectBuildDir;
     }
 
-    public Path getCompilerOutputDir() {
-        return compilerOutputDir;
+    public Path getCompilerDefaultOutputDir() {
+        return this.compilerDefaultOutputDir;
     }
 
 }
