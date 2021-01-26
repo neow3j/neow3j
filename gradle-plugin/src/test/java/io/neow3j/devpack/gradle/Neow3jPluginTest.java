@@ -1,5 +1,6 @@
 package io.neow3j.devpack.gradle;
 
+import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILE_TASK_NAME;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -17,7 +18,7 @@ public class Neow3jPluginTest {
         assertTrue(project.getPluginManager()
                 .hasPlugin("io.neow3j.gradle-plugin"));
 
-        assertNotNull(project.getTasks().getByName("neow3jCompile"));
+        assertNotNull(project.getTasks().getByName(NEOW3J_COMPILE_TASK_NAME));
     }
 
 }

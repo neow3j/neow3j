@@ -29,7 +29,6 @@ public class GradleProjectTestCase {
     public static final String SETTINGS_FILENAME = "settings.gradle";
     public static final String BUILD_FILENAME = "build.gradle";
     public static final String DEFAULT_BUILD_OUTPUT_DIR_NAME = "build";
-    public static final String DEFAULT_NEOW3J_BUILD_OUTPUT_DIR_NAME = "neow3";
 
     private TemporaryFolder projectRootDir;
     private String contractName;
@@ -49,7 +48,8 @@ public class GradleProjectTestCase {
 
         this.settingsFile = this.projectRootDir.newFile(SETTINGS_FILENAME);
         this.buildFile = this.projectRootDir.newFile(BUILD_FILENAME);
-        this.defaultBaseBuildOutputDir = this.projectRootDir.newFolder(DEFAULT_BUILD_OUTPUT_DIR_NAME);
+        this.defaultBaseBuildOutputDir = this.projectRootDir
+                .newFolder(DEFAULT_BUILD_OUTPUT_DIR_NAME);
         this.buildNeow3jOutputDir = Paths.get(defaultBaseBuildOutputDir.getAbsolutePath(),
                 NEOW3J_DEFAULT_OUTPUT_DIR).toFile();
         this.smartContractPackageDir = projectRootDir.newFolder("src", "main",
