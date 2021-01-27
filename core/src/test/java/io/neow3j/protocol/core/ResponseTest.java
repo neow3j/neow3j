@@ -51,6 +51,7 @@ import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.NeoWitness;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.transaction.TransactionAttributeType;
@@ -60,6 +61,7 @@ import io.neow3j.utils.Numeric;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -67,6 +69,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 
 import java.math.BigInteger;
+import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
@@ -748,46 +751,51 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetTransaction getTransaction = deserialiseResponse(NeoGetTransaction.class);
-        assertThat(getTransaction.getTransaction(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getHash(),
+        Transaction transaction = getTransaction.getTransaction();
+        assertThat(transaction, is(notNullValue()));
+        assertThat(transaction.getHash(),
                 is("0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89"));
-        assertThat(getTransaction.getTransaction().getSize(), is(267L));
-        assertThat(getTransaction.getTransaction().getVersion(), is(0));
-        assertThat(getTransaction.getTransaction().getNonce(), is(1046354582L));
-        assertThat(getTransaction.getTransaction().getSender(), is("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"));
-        assertThat(getTransaction.getTransaction().getSysFee(), is("9007810"));
-        assertThat(getTransaction.getTransaction().getNetFee(), is("1267450"));
-        assertThat(getTransaction.getTransaction().getValidUntilBlock(), is(2103622L));
+        assertThat(transaction.getSize(), is(267L));
+        assertThat(transaction.getVersion(), is(0));
+        assertThat(transaction.getNonce(), is(1046354582L));
+        assertThat(transaction.getSender(), is("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"));
+        assertThat(transaction.getSysFee(), is("9007810"));
+        assertThat(transaction.getNetFee(), is("1267450"));
+        assertThat(transaction.getValidUntilBlock(), is(2103622L));
 
-        assertThat(getTransaction.getTransaction().getSigners(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getSigners(), hasSize(1));
-        assertThat(getTransaction.getTransaction().getSigners().get(0).getAccount(), is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(getTransaction.getTransaction().getSigners().get(0).getScopes(), hasSize(1));
-        assertThat(getTransaction.getTransaction().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
+        List<TransactionSigner> signers = transaction.getSigners();
+        assertThat(signers, is(notNullValue()));
+        assertThat(signers, hasSize(1));
+        assertThat(signers.get(0).getAccount(), is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+        assertThat(signers.get(0).getScopes(), hasSize(1));
+        assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 
-        assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(1));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0),
+        List<TransactionAttribute> attributes = transaction.getAttributes();
+        assertThat(attributes, is(notNullValue()));
+        assertThat(attributes, hasSize(1));
+        assertThat(attributes.get(0),
                 is(new HighPriorityAttribute()));
-        assertThat(getTransaction.getTransaction().getAttributes().get(0).getType(),
+        assertThat(attributes.get(0).asHighPriority(),
+                is(instanceOf(HighPriorityAttribute.class)));
+        assertThat(attributes.get(0).getType(),
                 is(TransactionAttributeType.HIGH_PRIORITY));
 
-        assertThat(getTransaction.getTransaction().getScript(),
+        assertThat(transaction.getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));
-        assertThat(getTransaction.getTransaction().getWitnesses(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getWitnesses(), hasSize(1));
-        assertThat(getTransaction.getTransaction().getWitnesses(),
+        assertThat(transaction.getWitnesses(), is(notNullValue()));
+        assertThat(transaction.getWitnesses(), hasSize(1));
+        assertThat(transaction.getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
                                 "DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
-        assertThat(getTransaction.getTransaction().getBlockHash(),
+        assertThat(transaction.getBlockHash(),
                 is("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299"));
-        assertThat(getTransaction.getTransaction().getConfirmations(), is(1388));
-        assertThat(getTransaction.getTransaction().getBlockTime(), is(1589019142879L));
-        assertThat(getTransaction.getTransaction().getVMState(), is("HALT"));
+        assertThat(transaction.getConfirmations(), is(1388));
+        assertThat(transaction.getBlockTime(), is(1589019142879L));
+        assertThat(transaction.getVMState(), is("HALT"));
     }
 
     @Test
