@@ -1,12 +1,12 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
+import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.ManifestExtra;
 import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
+import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.annotations.SupportedStandards;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -34,11 +33,11 @@ import org.objectweb.asm.tree.ClassNode;
 public class ManifestBuilder {
 
     public static ContractManifest buildManifest(CompilationUnit compUnit) {
-        Optional<AnnotationNode> annotationNode = AsmHelper.getAnnotationNode(
+        Optional<AnnotationNode> annotationNode = getAnnotationNode(
                 compUnit.getContractClass(), DisplayName.class);
         String name = ClassUtils.getClassNameForInternalName(compUnit.getContractClass().name);
         if (annotationNode.isPresent()) {
-            name = (String)annotationNode.get().values.get(1);
+            name = (String) annotationNode.get().values.get(1);
         }
         Map<String, String> extras = buildManifestExtra(compUnit.getContractClass());
         List<String> supportedStandards = buildSupportedStandards(compUnit.getContractClass());
@@ -70,8 +69,9 @@ public class ManifestBuilder {
             }
             ContractParameterType paramType = Compiler.mapTypeToParameterType(
                     Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType());
+            boolean isSafe = getAnnotationNode(neoMethod.getAsmMethod(), Safe.class).isPresent();
             methods.add(new ContractMethod(neoMethod.getName(), contractParams,
-                    neoMethod.getStartAddress(), paramType, false));
+                    neoMethod.getStartAddress(), paramType, isSafe));
         }
         return new ContractABI(methods, events);
     }
@@ -81,13 +81,13 @@ public class ManifestBuilder {
         List<AnnotationNode> annotations = new ArrayList<>();
         // First check if multiple @ManifestExtra where added to the contract. In this case the
         // expected annotation is a @ManifestExtras (plural).
-        Optional<AnnotationNode> annotation = AsmHelper.getAnnotationNode(classNode,
+        Optional<AnnotationNode> annotation = getAnnotationNode(classNode,
                 ManifestExtras.class);
         if (annotation.isPresent()) {
             annotations = (List<AnnotationNode>) annotation.get().values.get(1);
         } else {
             // If there is no @ManifestExtras, there could still be a single @ManifestExtra.
-            annotation = AsmHelper.getAnnotationNode(classNode, ManifestExtra.class);
+            annotation = getAnnotationNode(classNode, ManifestExtra.class);
             if (annotation.isPresent()) {
                 annotations.add(annotation.get());
             }
@@ -105,7 +105,7 @@ public class ManifestBuilder {
     }
 
     private static List<String> buildSupportedStandards(ClassNode asmClass) {
-        Optional<AnnotationNode> annotationNode = AsmHelper.getAnnotationNode(asmClass,
+        Optional<AnnotationNode> annotationNode = getAnnotationNode(asmClass,
                 SupportedStandards.class);
         if (!annotationNode.isPresent()) {
             return new ArrayList<>();
