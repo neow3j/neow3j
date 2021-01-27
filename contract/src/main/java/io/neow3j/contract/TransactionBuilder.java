@@ -8,9 +8,11 @@ import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
+import io.neow3j.transaction.HighPriorityAttribute;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.WitnessScope;
@@ -239,11 +241,23 @@ public class TransactionBuilder {
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
         if (this.attributes.size() + attributes.length >
                 NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-            throw new TransactionConfigurationException("A transaction cannot have more than "
-                    + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
+            throw new TransactionConfigurationException("A transaction " +
+                    "cannot have more than " +
+                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
         }
-        this.attributes.addAll(Arrays.asList(attributes));
+        Arrays.stream(attributes).forEach(attr -> {
+            if (attr.getType() == TransactionAttributeType.HIGH_PRIORITY) {
+                safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
+            }
+        });
         return this;
+    }
+
+    // Make sure that only one high priority attribute is present
+    private void safeAddHighPriorityAttribute(HighPriorityAttribute attr) {
+        if (!isHighPriority()) {
+            attributes.add(attr);
+        }
     }
 
     private boolean containsDuplicateSigners(Signer... signers) {
@@ -281,9 +295,15 @@ public class TransactionBuilder {
         }
 
         if (signers.isEmpty()) {
-            throw new IllegalStateException("Can't create a transaction without any signer. " +
-                    "A transaction requires at least one signer with witness scope fee-only " +
-                    "or higher.");
+            throw new IllegalStateException("Can't create a transaction " +
+                    "without any signer. A transaction requires at least " +
+                    "one signer with witness scope fee-only or higher.");
+        }
+
+        if (isHighPriority() && !isAllowedForHighPriority()) {
+            throw new IllegalStateException("This transaction does not " +
+                    "have a committee member as signer. Only committee " +
+                    "members can send transactions with high priority.");
         }
 
         long systemFee = getSystemFeeForScript();
@@ -300,6 +320,26 @@ public class TransactionBuilder {
         }
         return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
                 networkFee, attributes, script, new ArrayList<>());
+    }
+
+    // Checks if this transaction builder contains a high priority attribute.
+    private boolean isHighPriority() {
+        return attributes.stream()
+                .anyMatch(t ->
+                        t.getType() == TransactionAttributeType.HIGH_PRIORITY);
+    }
+
+    // Checks if this transaction contains a signer that is a committee member.
+    private boolean isAllowedForHighPriority() throws IOException {
+        List<ScriptHash> committee = neow.getCommittee().send()
+                .getCommittee()
+                .stream().map(ECPublicKey::new)
+                .map(key -> key.getEncoded(true))
+                .map(ScriptHash::fromPublicKey)
+                .collect(Collectors.toList());
+        return signers.stream()
+                .map(Signer::getScriptHash)
+                .anyMatch(committee::contains);
     }
 
     private long fetchCurrentBlockNr() throws IOException {
