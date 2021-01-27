@@ -16,6 +16,7 @@ public class SafeMethodTest {
         CompilationUnit unit = new Compiler().compileClass(SafeMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods();
         assertTrue(methods.get(0).isSafe());
+        assertTrue(methods.get(2).isSafe());
     }
 
     @Test
@@ -34,6 +35,11 @@ public class SafeMethodTest {
         public static void unsafeMethod() {
         }
 
+        @Safe
+        public static void secondSafeMethod() {
+        }
+
     }
+
 
 }
