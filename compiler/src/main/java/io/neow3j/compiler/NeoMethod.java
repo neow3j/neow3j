@@ -10,6 +10,7 @@ import static java.lang.String.format;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
+import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.utils.ArrayUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -701,16 +702,24 @@ public class NeoMethod {
         }
     }
 
-    public void initializeLocalVariablesAndParameters(CompilationUnit compUnit) {
-        checkForUnsupportedLocalVariableTypes();
+    public void initialize(CompilationUnit compUnit) {
         if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0
                 && (asmMethod.access & Opcodes.ACC_STATIC) > 0
                 && compUnit.getContractClass().equals(sourceClass)) {
             // Only contract methods that are public, static and on the smart contract class are
             // added to the ABI and are invokable.
             setIsAbiMethod(true);
+        } else if (AsmHelper.hasAnnotations(asmMethod, Safe.class)){
+            throw new CompilerException(sourceClass, format("Method '%s' is not a public contract "
+                    + "method, therefore, marking it as \"safe\" is obsolete and has no effect.",
+                    getSourceMethodName()));
         }
 
+        initializeLocalVariablesAndParameters();
+    }
+
+    private void initializeLocalVariablesAndParameters() {
+        checkForUnsupportedLocalVariableTypes();
         // Look for method params and local variables and add them to the NeoMethod. Note that Java
         // mixes method params and local variables.
         if (asmMethod.maxLocals == 0) {

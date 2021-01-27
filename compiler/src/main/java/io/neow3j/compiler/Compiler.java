@@ -3,8 +3,6 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
-import static io.neow3j.constants.OpCode.PUSHDATA1;
-import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -14,7 +12,6 @@ import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
-import io.neow3j.constants.OperandSize;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
@@ -29,7 +26,6 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -375,7 +371,7 @@ public class Compiler {
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
                 NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-                neoMethod.initializeLocalVariablesAndParameters(compUnit);
+                neoMethod.initialize(compUnit);
                 methods.add(neoMethod);
             }
         }
