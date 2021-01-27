@@ -6,9 +6,12 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum TransactionAttributeType {
 
     /**
-     * This is just a placeholder. In future new attribute types might be added.
+     * This attribute allows committee members to prioritize a transaction.
      */
-    VOID("Void", 0x00, null);
+    HIGH_PRIORITY(TransactionAttributeType.HIGH_PRIORITY_VALUE, 0x01,
+            HighPriorityAttribute.class);
+
+    public static final String HIGH_PRIORITY_VALUE = "HighPriority";
 
     private String jsonValue;
     private byte byteValue;

@@ -29,9 +29,12 @@ import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.HighPriorityAttribute;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
@@ -237,8 +240,24 @@ public class TransactionBuilderTest {
                 Signer.feeOnly(account2.getScriptHash()));
     }
 
-    // TODO: 14.09.20 Michael: Once TransactionAttributes are defined, write this test
-    @Ignore
+    @Test
+    public void attributes() throws Throwable {
+        Wallet wallet = Wallet.create();
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .attributes(attr)
+                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .buildTransaction();
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(),
+                is(TransactionAttributeType.HIGH_PRIORITY));
+    }
+
     @Test
     public void failAddingMoreThanMaxAttributesToTxBuilder() {
         exceptionRule.expect(TransactionConfigurationException.class);

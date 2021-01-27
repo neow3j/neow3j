@@ -8,6 +8,7 @@ import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.ConsensusData;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.HighPriorityAttribute;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
@@ -52,6 +53,7 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.ResponseTester;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 
@@ -67,7 +69,6 @@ import static org.hamcrest.core.IsNull.nullValue;
 import java.math.BigInteger;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -726,7 +727,11 @@ public class ResponseTest extends ResponseTester {
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
                         "        ],\n" +
-                        "        \"attributes\": []," +
+                        "        \"attributes\": [\n" +
+                        "            {\n" +
+                        "                \"type\": \"HighPriority\"" +
+                        "            }" +
+                        "        ]," +
                         "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -761,7 +766,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(getTransaction.getTransaction().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 
         assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(0));
+        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(1));
+        assertThat(getTransaction.getTransaction().getAttributes().get(0),
+                is(new HighPriorityAttribute()));
+        assertThat(getTransaction.getTransaction().getAttributes().get(0).getType(),
+                is(TransactionAttributeType.HIGH_PRIORITY));
 
         assertThat(getTransaction.getTransaction().getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));
