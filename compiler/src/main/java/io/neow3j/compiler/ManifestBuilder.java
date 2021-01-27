@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
+import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
@@ -69,7 +70,7 @@ public class ManifestBuilder {
             }
             ContractParameterType paramType = Compiler.mapTypeToParameterType(
                     Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType());
-            boolean isSafe = getAnnotationNode(neoMethod.getAsmMethod(), Safe.class).isPresent();
+            boolean isSafe = hasAnnotations(neoMethod.getAsmMethod(), Safe.class);
             methods.add(new ContractMethod(neoMethod.getName(), contractParams,
                     neoMethod.getStartAddress(), paramType, isSafe));
         }
