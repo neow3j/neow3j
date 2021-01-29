@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,6 +19,8 @@ public class ContractManifest {
     private String name;
 
     @JsonProperty("groups")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<ContractGroup> groups;
 
     @JsonProperty("supportedstandards")
@@ -131,7 +134,8 @@ public class ContractManifest {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContractGroup {
 
-        @JsonProperty("pubkey")
+        @JsonProperty("pubKey")
+        @JsonAlias("pubkey")
         private String pubKey;
 
         @JsonProperty("signature")
@@ -219,7 +223,7 @@ public class ContractManifest {
 
         @Override
         public String toString() {
-            return "NeoContractInterface{" +
+            return "ContractABI{" +
                     "methods=" + methods +
                     ", events=" + events +
                     '}';
@@ -295,7 +299,7 @@ public class ContractManifest {
 
             @Override
             public String toString() {
-                return "NeoContractFunction{" +
+                return "ContractMethod{" +
                         "name='" + name + '\'' +
                         ", parameters=" + parameters +
                         ", offset=" + offset +
@@ -348,7 +352,7 @@ public class ContractManifest {
 
             @Override
             public String toString() {
-                return "NeoContractEvent{" +
+                return "ContractEvent{" +
                         "name='" + name + '\'' +
                         ", parameters=" + parameters +
                         '}';
