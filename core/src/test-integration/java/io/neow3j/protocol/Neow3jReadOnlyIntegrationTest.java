@@ -32,7 +32,6 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.BlockParameterIndex;
-import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
@@ -56,6 +55,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers.Nep17TransferWrapper;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
@@ -64,7 +64,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
@@ -386,18 +385,7 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testGetStorage() throws IOException {
         NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH, NEXT_VALIDATORS_PREFIX).send();
         String storage = getStorage.getStorage();
-        assertThat(storage,
-                is("40014102282102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b602100"));
-    }
-
-    @Test
-    public void testGetStorage_with_HexParameter() throws IOException {
-        NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH,
-                HexParameter.valueOf(new BigInteger(NEXT_VALIDATORS_PREFIX, 16)))
-                .send();
-        String storage = getStorage.getStorage();
-        assertThat(storage,
-                is("40014102282102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b602100"));
+        assertThat(storage, is("QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA="));
     }
 
     @Test

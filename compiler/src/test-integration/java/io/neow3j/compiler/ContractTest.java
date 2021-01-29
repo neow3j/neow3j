@@ -15,21 +15,16 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.Transaction;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -39,11 +34,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -214,8 +204,7 @@ public class ContractTest {
      * @param expectedValue The expected value.
      */
     protected void assertStorageContains(String key, String expectedValue) throws IOException {
-        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(),
-                HexParameter.valueOf(key)).send();
+        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(), key).send();
         String value = new String(
                 Numeric.hexStringToByteArray(response.getStorage()),
                 StandardCharsets.UTF_8);

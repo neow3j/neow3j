@@ -1,11 +1,22 @@
 package io.neow3j.crypto;
 
+import io.neow3j.utils.Numeric;
 import java.nio.charset.StandardCharsets;
 
 /**
  * Convenience class for encoding and decoding to and from Base64. Wraps {@link java.util.Base64}.
  */
 public class Base64 {
+
+    /**
+     * Base64 encodes the given hexadecimal string according to RFC4648.
+     *
+     * @param input The hexadecimal string to encode.
+     * @return the base64-encoded string.
+     */
+    public static String encode(String input) {
+        return encode(Numeric.hexStringToByteArray(input));
+    }
 
     /**
      * Base64 encodes the given byte array according to RFC4648.
