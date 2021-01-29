@@ -65,7 +65,7 @@ public class Neow3jWriteIntegrationTest {
     private Neow3j neow3j;
 
     @Rule
-    public GenericContainer privateNetContainer = setupPrivateNetContainer();
+    public GenericContainer<?> privateNetContainer = setupPrivateNetContainer();
 
     @Before
     public void setUp() throws IOException {

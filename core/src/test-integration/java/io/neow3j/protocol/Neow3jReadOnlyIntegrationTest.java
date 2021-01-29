@@ -139,7 +139,7 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static Neow3j neow3j;
 
     @ClassRule
-    public static GenericContainer privateNetContainer = setupPrivateNetContainer();
+    public static GenericContainer<?> privateNetContainer = setupPrivateNetContainer();
 
     private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
