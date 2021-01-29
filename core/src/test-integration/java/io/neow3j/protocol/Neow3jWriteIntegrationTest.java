@@ -42,7 +42,7 @@ import org.testcontainers.containers.GenericContainer;
 // but allows the tests to make changes without interfering with each other.
 public class Neow3jWriteIntegrationTest {
 
-    private static final String NEO_TOKEN_HASH = "0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6";
+    private static final String NEO_TOKEN_HASH = "0xf61eebf573ea36593fd43aa150c055ad7906ab83";
 
     // Invoke function variables
     protected static final String INVOKE_TRANSFER = "transfer";

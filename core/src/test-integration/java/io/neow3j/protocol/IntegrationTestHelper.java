@@ -11,7 +11,7 @@ import org.testcontainers.utility.MountableFile;
 public class IntegrationTestHelper {
 
     static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
-            "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
+            "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:master-latest";
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
     static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
@@ -21,6 +21,8 @@ public class IntegrationTestHelper {
     static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
     static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
     static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
+    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
+    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
     // Wallet password for the node's wallnet at node-config/wallet.json.
@@ -29,8 +31,8 @@ public class IntegrationTestHelper {
     static final String NODE_WALLET_PATH = "wallet.json";
 
     // Native token hashes.
-    static final String NEO_HASH = "0a46e2e37c9987f570b4af253fb77e7eef0f72b6";
-    static final String GAS_HASH = "a6a6c15dcdc9b997dac448b6926522d22efeedfb";
+    static final String NEO_HASH = "f61eebf573ea36593fd43aa150c055ad7906ab83";
+    static final String GAS_HASH = "70e2301955bf1e74cbb31d18c2f96972abadb328";
     // Total supply of NEO tokens.
     static final int NEO_TOTAL_SUPPLY = 100000000;
     // First account (multi-sig) in the node's wallet
@@ -46,13 +48,13 @@ public class IntegrationTestHelper {
     static final String VM_STATE_HALT = "HALT";
 
 
-    static String getNodeUrl(GenericContainer container) {
+    static String getNodeUrl(GenericContainer<?> container) {
         return "http://" + container.getContainerIpAddress() +
                 ":" + container.getMappedPort(EXPOSED_JSONRPC_PORT);
     }
 
-    static GenericContainer setupPrivateNetContainer() {
-        return new GenericContainer(
+    static GenericContainer<?> setupPrivateNetContainer() {
+        return new GenericContainer<>(
                 DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
                 .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
                         BindMode.READ_ONLY)
@@ -62,6 +64,8 @@ public class IntegrationTestHelper {
                         MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
                         WALLET_FILE_DESTINATION)
                 .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
+                        BindMode.READ_ONLY)
+                .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
                         BindMode.READ_ONLY)
                 .withExposedPorts(EXPOSED_JSONRPC_PORT)
                 .waitingFor(Wait.forListeningPort());

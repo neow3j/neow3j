@@ -55,10 +55,25 @@ import org.testcontainers.utility.MountableFile;
 
 public class ContractTest {
 
-    // Exposed port of the neo node running in the docker container.
-    protected static int EXPOSED_JSONRPC_PORT = 40332;
-    protected static final String NEO3_PRIVATENET_CONTAINER_IMG =
-            "ghcr.io/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
+    static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
+            "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:master-latest";
+
+    static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
+    static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
+    static final String PROTOCOL_FILE_SOURCE = "/node-config/protocol.json";
+    static final String PROTOCOL_FILE_DESTINATION = "/neo-cli/protocol.json";
+    static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
+    static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
+    static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
+    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
+    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
+    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
+    // This is the port of one of the .NET nodes which is exposed internally by the container.
+    static final int EXPOSED_JSONRPC_PORT = 40332;
+    // Wallet password for the node's wallnet at node-config/wallet.json.
+    static final String NODE_WALLET_PASSWORD = "neo";
+    // The path to the wallet from the directory of the node process.
+    static final String NODE_WALLET_PATH = "wallet.json";
 
     protected static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
@@ -71,15 +86,17 @@ public class ContractTest {
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
             DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
-            .withClasspathResourceMapping("/node-config/config.json",
-                    "/neo-cli/config.json", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("/node-config/protocol.json",
-                    "/neo-cli/protocol.json", BindMode.READ_ONLY)
+            .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(PROTOCOL_FILE_SOURCE, PROTOCOL_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
             .withCopyFileToContainer(
-                    MountableFile.forClasspathResource("/node-config/wallet.json", 777),
-                    "/neo-cli/wallet.json")
-            .withClasspathResourceMapping("/node-config/rpcserver.config.json",
-                    "/neo-cli/Plugins/RpcServer/config.json", BindMode.READ_ONLY)
+                    MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
+                    WALLET_FILE_DESTINATION)
+            .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());
 

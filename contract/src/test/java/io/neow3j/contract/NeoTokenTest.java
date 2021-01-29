@@ -94,7 +94,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
+                        + ".*\"f61eebf573ea36593fd43aa150c055ad7906ab83\"" // neo contract
                         + ".*\"unclaimedGas\"" // function
                         + ".*\"f68f181731a47036a99f04dad90043a744edec0f\"" // script hash
                         + ".*100.*" // block height
@@ -155,7 +155,7 @@ public class NeoTokenTest {
     @Test
     public void getCandidates() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
-                "0a46e2e37c9987f570b4af253fb77e7eef0f72b6",
+                "f61eebf573ea36593fd43aa150c055ad7906ab83",
                 "getCandidates");
 
         Map<ECPublicKey, Integer> result = new NeoToken(neow).getCandidates();
@@ -174,7 +174,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
+                        + ".*\"f61eebf573ea36593fd43aa150c055ad7906ab83\"" // neo contract
                         + ".*\"getCommittee\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -195,7 +195,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"0a46e2e37c9987f570b4af253fb77e7eef0f72b6\"" // neo contract
+                        + ".*\"f61eebf573ea36593fd43aa150c055ad7906ab83\"" // neo contract
                         + ".*\"getNextBlockValidators\".*" // function
                 ))
                 .willReturn(aResponse()

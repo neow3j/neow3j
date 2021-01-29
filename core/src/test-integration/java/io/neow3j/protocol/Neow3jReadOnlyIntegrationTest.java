@@ -94,7 +94,7 @@ import org.testcontainers.containers.GenericContainer;
 // every test. Therefore only tests that don't need a new and clean blockchain should be added here.
 public class Neow3jReadOnlyIntegrationTest {
 
-    private static final String NEO_TOKEN_HASH = "0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6";
+    private static final String NEO_TOKEN_HASH = "0xf61eebf573ea36593fd43aa150c055ad7906ab83";
 
     // Information about the transaction that is sent after starting the node.
     private static String txHash;
