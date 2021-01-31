@@ -22,6 +22,15 @@ public class TrustManifestTest {
     }
 
     @Test
+    public void withTrustsAnnotationSingle() throws IOException {
+        CompilationUnit unit = new Compiler()
+                .compileClass(TrustManifestTestContractWithSingleAnnotation.class.getName());
+        List<String> trusts = unit.getManifest().getTrusts();
+        assertThat(trusts, hasSize(1));
+        assertThat(trusts, hasItems("contract1"));
+    }
+
+    @Test
     public void withTrustsAnnotationWrapper() throws IOException {
         CompilationUnit unit = new Compiler()
                 .compileClass(TrustManifestTestContractWithTrustsAnnotation.class.getName());
@@ -41,6 +50,14 @@ public class TrustManifestTest {
     @Trust("contract1")
     @Trust("contract2")
     static class TrustManifestTestContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Trust("contract1")
+    static class TrustManifestTestContractWithSingleAnnotation {
 
         public static void main() {
         }

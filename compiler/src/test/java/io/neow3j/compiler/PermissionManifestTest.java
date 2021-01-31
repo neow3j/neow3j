@@ -28,6 +28,18 @@ public class PermissionManifestTest {
     }
 
     @Test
+    public void withPermissionsAnnotationSingle() throws IOException {
+        CompilationUnit unit = new Compiler()
+                .compileClass(PermissionManifestTestContractWithSingleAnnotation.class.getName());
+        List<ContractPermission> permissions = unit.getManifest().getPermissions();
+        assertThat(permissions, hasSize(1));
+        assertThat(permissions.get(0).getContract(), is("contract1"));
+        assertThat(permissions.get(0).getMethods(), hasSize(2));
+        assertThat(permissions.get(0).getMethods().get(0), is("method1"));
+        assertThat(permissions.get(0).getMethods().get(1), is("method2"));
+    }
+
+    @Test
     public void withPermissionsAnnotationWrapper() throws IOException {
         CompilationUnit unit = new Compiler()
                 .compileClass(
@@ -56,6 +68,14 @@ public class PermissionManifestTest {
     @Permission(contract = "contract1")
     @Permission(contract = "contract2", methods = {"method1", "method2"})
     static class PermissionManifestTestContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Permission(contract = "contract1", methods = {"method1", "method2"})
+    static class PermissionManifestTestContractWithSingleAnnotation {
 
         public static void main() {
         }

@@ -6,12 +6,15 @@ import static java.util.Optional.ofNullable;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.annotations.Group;
 import io.neow3j.devpack.annotations.Group.Groups;
 import io.neow3j.devpack.annotations.ManifestExtra;
 import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.annotations.Permission.Permissions;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.annotations.SupportedStandards;
+import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
@@ -83,20 +86,9 @@ public class ManifestBuilder {
     }
 
     private static Map<String, String> buildManifestExtra(ClassNode classNode) {
-        List<AnnotationNode> annotations = new ArrayList<>();
-        // First check if multiple @ManifestExtra where added to the contract. In this case the
-        // expected annotation is a @ManifestExtras (plural).
-        Optional<AnnotationNode> annotation = getAnnotationNode(classNode,
-                ManifestExtras.class);
-        if (annotation.isPresent()) {
-            annotations = (List<AnnotationNode>) annotation.get().values.get(1);
-        } else {
-            // If there is no @ManifestExtras, there could still be a single @ManifestExtra.
-            annotation = getAnnotationNode(classNode, ManifestExtra.class);
-            if (annotation.isPresent()) {
-                annotations.add(annotation.get());
-            }
-        }
+        List<AnnotationNode> annotations = checkForSingleOrMultipleAnnotations(classNode,
+                ManifestExtras.class, ManifestExtra.class);
+
         Map<String, String> extras = new HashMap<>();
         for (AnnotationNode node : annotations) {
             int i = node.values.indexOf("key");
@@ -116,25 +108,34 @@ public class ManifestBuilder {
     }
 
     private static List<ContractGroup> buildGroups(ClassNode asmClass) {
-        return getAnnotationNode(asmClass, Groups.class)
-                .map(ManifestBuilder::getContractGroups)
-                .orElse(new ArrayList<>());
+        return checkForSingleOrMultipleAnnotations(asmClass, Groups.class, Group.class)
+                .stream()
+                .map(ManifestBuilder::getContractGroup)
+                .collect(Collectors.toList());
     }
 
     public static List<ContractPermission> buildPermissions(ClassNode asmClass) {
-        return getAnnotationNode(asmClass, Permissions.class)
-                .map(ManifestBuilder::getContractPermissions)
-                .orElseGet(() -> {
-                    ContractPermission contractPermission = new ContractPermission("*",
-                            Collections.singletonList("*"));
-                    return Collections.singletonList(contractPermission);
-                });
+        List<ContractPermission> permissions = checkForSingleOrMultipleAnnotations(asmClass,
+                Permissions.class, Permission.class)
+                .stream()
+                .map(ManifestBuilder::getContractPermission)
+                .collect(Collectors.toList());
+
+        if (permissions.isEmpty()) {
+            ContractPermission contractPermission = new ContractPermission("*",
+                    Collections.singletonList("*"));
+            return Collections.singletonList(contractPermission);
+        } else {
+            return permissions;
+        }
     }
 
     private static List<String> buildTrusts(ClassNode asmClass) {
-        return getAnnotationNode(asmClass, Trusts.class)
-                .map(ManifestBuilder::getContractTrusts)
-                .orElse(new ArrayList<>());
+        return checkForSingleOrMultipleAnnotations(asmClass,
+                Trusts.class, Trust.class)
+                .stream()
+                .map(ManifestBuilder::getContractTrust)
+                .collect(Collectors.toList());
     }
 
     private static Optional<List<String>> transformAnnotationNodeStringValue(
@@ -150,52 +151,57 @@ public class ManifestBuilder {
                 });
     }
 
-    private static List<ContractPermission> getContractPermissions(AnnotationNode ann) {
-        List<ContractPermission> permissions = new ArrayList<>();
-        for (AnnotationNode permission : (List<AnnotationNode>) ann.values.get(1)) {
-            int i = permission.values.indexOf("contract");
-            String contract = (String) permission.values.get(i + 1);
+    private static ContractPermission getContractPermission(AnnotationNode ann) {
+        int i = ann.values.indexOf("contract");
+        String contract = (String) ann.values.get(i + 1);
 
-            i = permission.values.indexOf("methods");
-            List<String> methods = new ArrayList<>();
-            // if 'methods' is not found, it means we need to add a "wildcard"
-            // to that manifest
-            if (i < 0) {
-                methods.add("*");
-            } else {
-                List<?> methodsValues = (List<?>) permission.values.get(i + 1);
-                // this is required since we want to create an ArrayList of new
-                // String objects, and not rely on what ASM provides us
-                methods.addAll((List<String>) methodsValues);
-            }
-
-            ContractPermission contractPermission = new ContractPermission(contract, methods);
-            permissions.add(contractPermission);
+        i = ann.values.indexOf("methods");
+        List<String> methods = new ArrayList<>();
+        // if 'methods' is not found, it means we need to add a "wildcard"
+        // to that manifest
+        if (i < 0) {
+            methods.add("*");
+        } else {
+            List<?> methodsValues = (List<?>) ann.values.get(i + 1);
+            // this is required since we want to create an ArrayList of new
+            // String objects, and not rely on what ASM provides us
+            methods.addAll((List<String>) methodsValues);
         }
-        return permissions;
+
+        return new ContractPermission(contract, methods);
     }
 
-    private static List<ContractGroup> getContractGroups(AnnotationNode ann) {
-        List<ContractGroup> groups = new ArrayList<>();
-        for (AnnotationNode group : (List<AnnotationNode>) ann.values.get(1)) {
-            int i = group.values.indexOf("pubKey");
-            String pubkey = (String) group.values.get(i + 1);
-            i = group.values.indexOf("signature");
-            String signature = (String) group.values.get(i + 1);
-            ContractGroup cgManifest = new ContractGroup(pubkey, signature);
-            groups.add(cgManifest);
-        }
-        return groups;
+    private static ContractGroup getContractGroup(AnnotationNode ann) {
+        int i = ann.values.indexOf("pubKey");
+        String pubkey = (String) ann.values.get(i + 1);
+        i = ann.values.indexOf("signature");
+        String signature = (String) ann.values.get(i + 1);
+        return new ContractGroup(pubkey, signature);
     }
 
-    private static List<String> getContractTrusts(AnnotationNode ann) {
-        List<String> trusts = new ArrayList<>();
-        for (AnnotationNode trust : (List<AnnotationNode>) ann.values.get(1)) {
-            int i = trust.values.indexOf("value");
-            String trustValue = (String) trust.values.get(i + 1);
-            trusts.add(trustValue);
-        }
-        return trusts;
+    private static String getContractTrust(AnnotationNode ann) {
+        int i = ann.values.indexOf("value");
+        return (String) ann.values.get(i + 1);
+    }
+
+    private static List<AnnotationNode> checkForSingleOrMultipleAnnotations(ClassNode asmClass,
+            Class<?> multipleAnnotationType, Class<?> singleAnnotationType) {
+
+        Optional<AnnotationNode> annotation = getAnnotationNode(asmClass,
+                multipleAnnotationType);
+
+        return annotation
+                .map(a -> (List<AnnotationNode>) a.values.get(1))
+                .orElseGet(() -> {
+                    // For example:
+                    // If there is no @ManifestExtras, there could still be a single @ManifestExtra.
+                    // We check for this, here.
+                    Optional<AnnotationNode> ann = getAnnotationNode(asmClass,
+                            singleAnnotationType);
+                    List<AnnotationNode> annotations = new ArrayList<>();
+                    ann.map(annotations::add);
+                    return annotations;
+                });
     }
 
 }

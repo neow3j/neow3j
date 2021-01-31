@@ -29,6 +29,15 @@ public class GroupManifestTest {
     }
 
     @Test
+    public void withGroupsAnnotationSingle() throws IOException {
+        CompilationUnit unit = new Compiler().compileClass(GroupManifestTestContractWithSingleAnnotation.class.getName());
+        List<ContractGroup> groups = unit.getManifest().getGroups();
+        assertThat(groups, hasSize(1));
+        assertThat(groups.get(0).getPubKey(), is("pubKey1"));
+        assertThat(groups.get(0).getSignature(), is("signature1"));
+    }
+
+    @Test
     public void withGroupsAnnotationWrapper() throws IOException {
         CompilationUnit unit = new Compiler().compileClass(GroupManifestTestContractWithGroupsAnnotation.class.getName());
         List<ContractGroup> groups = unit.getManifest().getGroups();
@@ -49,6 +58,14 @@ public class GroupManifestTest {
     @Group(pubKey = "pubKey1", signature = "signature1")
     @Group(pubKey = "pubKey2", signature = "signature2")
     static class GroupManifestTestContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Group(pubKey = "pubKey1", signature = "signature1")
+    static class GroupManifestTestContractWithSingleAnnotation {
 
         public static void main() {
         }
