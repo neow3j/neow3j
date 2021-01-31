@@ -295,7 +295,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetContractState.ContractState contractState = getContractState.getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-1));
+        assertThat(contractState.getId(), is(-3));
         assertThat(contractState.getHash(), is("0x" + NEO_HASH));
         assertThat(contractState.getScript(), is("DAhOZW9Ub2tlbkEa93tn"));
 
