@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.COMPILER_NAME;
 import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
 import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
@@ -57,28 +56,28 @@ public class NeoMethod {
     // This list contains those instructions that represent a jump, i.e. they remember a label to
     // which they need to jump. All instructions in this list are also present in the `instructions`
     // map.
-    private List<NeoJumpInstruction> jumpInstructions = new ArrayList<>();
+    private final List<NeoJumpInstruction> jumpInstructions = new ArrayList<>();
 
     // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
     // track of possible jump targets. This is needed when resolving jump addresses for
     // opcodes like JMPIF.
-    private Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
+    private final Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
 
     // This list contains those instructions that represent the beginning of a try block.
     // All instructions in this list are also present in the `instructions` map.
-    private List<NeoTryInstruction> tryInstructions = new ArrayList<>();
+    private final List<NeoTryInstruction> tryInstructions = new ArrayList<>();
 
     // This method's local variables (excl. method parametrs).
-    private SortedMap<Integer, NeoVariable> variablesByNeoIndex = new TreeMap<>();
+    private final SortedMap<Integer, NeoVariable> variablesByNeoIndex = new TreeMap<>();
 
     // Maps JVM bytecode indices to local variables.
-    private SortedMap<Integer, NeoVariable> variablesByJVMIndex = new TreeMap<>();
+    private final SortedMap<Integer, NeoVariable> variablesByJVMIndex = new TreeMap<>();
 
     // This method's parameters.
-    private SortedMap<Integer, NeoVariable> parametersByNeoIndex = new TreeMap<>();
+    private final SortedMap<Integer, NeoVariable> parametersByNeoIndex = new TreeMap<>();
 
     // Maps JVM bytecode indices to method parameters.
-    private SortedMap<Integer, NeoVariable> parametersByJVMIndex = new TreeMap<>();
+    private final SortedMap<Integer, NeoVariable> parametersByJVMIndex = new TreeMap<>();
 
     // Determines if this method will show up in the contract's ABI.
     private boolean isAbiMethod = false;
@@ -105,7 +104,7 @@ public class NeoMethod {
     // number is added to the instruction.
     private boolean isFreshNewLine = false;
 
-    private List<TryCatchFinallyBlock> tryCatchFinallyBlocks = new ArrayList<>();
+    private final List<TryCatchFinallyBlock> tryCatchFinallyBlocks = new ArrayList<>();
 
     /**
      * Constructs a new Neo method.
@@ -512,8 +511,7 @@ public class NeoMethod {
     private void insertInstruction(int atAddr, NeoInstruction newInsn) {
         SortedMap<Integer, NeoInstruction> head = instructions.headMap(atAddr);
         SortedMap<Integer, NeoInstruction> tail = instructions.tailMap(atAddr);
-        SortedMap<Integer, NeoInstruction> newMap = new TreeMap<>();
-        newMap.putAll(head);
+        SortedMap<Integer, NeoInstruction> newMap = new TreeMap<>(head);
         newInsn.setAddress(atAddr);
         newMap.put(newInsn.getAddress(), newInsn);
         int shift = newInsn.byteSize();
