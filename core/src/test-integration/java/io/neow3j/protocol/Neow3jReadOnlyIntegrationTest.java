@@ -490,7 +490,7 @@ public class Neow3jReadOnlyIntegrationTest {
         List<NeoListPlugins.Plugin> plugins = listPlugins.getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(7));
+        assertThat(plugins, hasSize(8));
     }
 
     @Test
