@@ -80,6 +80,7 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Await;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Collections;
@@ -584,7 +585,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoCalculateNetworkFee calcNetworkFee = getNeow3j().calculateNetworkFee(CALC_NETWORK_FEE_TX).send();
         NeoNetworkFee networkFee = calcNetworkFee.getNetworkFee();
 
-        assertThat(networkFee.getNetworkFee(), is(new BigInteger("1230610")));
+        assertThat(networkFee.getNetworkFee(), is(new BigDecimal("0.0123061")));
     }
 
     @Test

@@ -2,24 +2,23 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NeoNetworkFee {
 
     @JsonProperty("networkfee")
-    private BigInteger networkFee;
+    private BigDecimal networkFee;
 
     public NeoNetworkFee() {
     }
 
-    public NeoNetworkFee(BigInteger networkFee) {
+    public NeoNetworkFee(BigDecimal networkFee) {
         this.networkFee = networkFee;
     }
 
-    public BigInteger getNetworkFee() {
+    public BigDecimal getNetworkFee() {
         return networkFee;
     }
 
