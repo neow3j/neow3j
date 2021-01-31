@@ -5,6 +5,9 @@ import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static java.util.Optional.ofNullable;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Group;
 import io.neow3j.devpack.annotations.Group.Groups;
@@ -155,6 +158,8 @@ public class ManifestBuilder {
         int i = ann.values.indexOf("contract");
         String contract = (String) ann.values.get(i + 1);
 
+        throwIfNotValidContractHashOrPubKey(contract);
+
         i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();
         // if 'methods' is not found, it means we need to add a "wildcard"
@@ -173,15 +178,76 @@ public class ManifestBuilder {
 
     private static ContractGroup getContractGroup(AnnotationNode ann) {
         int i = ann.values.indexOf("pubKey");
-        String pubkey = (String) ann.values.get(i + 1);
+        String pubKey = (String) ann.values.get(i + 1);
         i = ann.values.indexOf("signature");
         String signature = (String) ann.values.get(i + 1);
-        return new ContractGroup(pubkey, signature);
+
+        throwIfNotValidPubKey(pubKey);
+        throwIfNotValidSignature(signature);
+
+        return new ContractGroup(pubKey, signature);
+    }
+
+    private static void throwIfNotValidSignature(String signature) {
+        try {
+            Base64.decode(signature);
+        } catch (Exception e) {
+            throw new CompilerException(
+                    String.format("Invalid signature: %s. Please, add a valid signature in "
+                            + "base64 format.", signature)
+            );
+        }
+    }
+
+    private static void throwIfNotValidPubKey(String pubKey) {
+        try {
+            new ECPublicKey(pubKey);
+        } catch (Exception e) {
+            throw new CompilerException(
+                    String.format("Invalid public key: %s", pubKey)
+            );
+        }
+    }
+
+    private static void throwIfNotValidContractHash(String contractHash) {
+        try {
+            new ScriptHash(contractHash);
+        } catch (Exception e) {
+            throw new CompilerException(
+                    String.format("Invalid contract hash: %s", contractHash)
+            );
+        }
+    }
+
+    private static void throwIfNotValidContractHashOrPubKey(String contract) {
+        Exception notValidContractHash = null;
+        try {
+            throwIfNotValidContractHash(contract);
+        } catch (Exception e) {
+            notValidContractHash = e;
+        }
+
+        Exception notValidPubKey = null;
+        try {
+            throwIfNotValidPubKey(contract);
+        } catch (Exception e) {
+            notValidPubKey = e;
+        }
+
+        if (notValidContractHash != null && notValidPubKey != null) {
+            // we can't evaluate which one is not valid, so, we raise an
+            // exception with a message specifying both.
+            throw new CompilerException(
+                    String.format("Invalid contract hash or public key: %s", contract)
+            );
+        }
     }
 
     private static String getContractTrust(AnnotationNode ann) {
         int i = ann.values.indexOf("value");
-        return (String) ann.values.get(i + 1);
+        String trust = (String) ann.values.get(i + 1);
+        throwIfNotValidContractHashOrPubKey(trust);
+        return trust;
     }
 
     private static List<AnnotationNode> checkForSingleOrMultipleAnnotations(ClassNode asmClass,
