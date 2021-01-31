@@ -6,9 +6,9 @@ import org.objectweb.asm.Label;
 public class NeoTryInstruction extends NeoInstruction {
 
     // The target label of the catch block. Can be null.
-    private Label catchOffsetLabel;
+    private final Label catchOffsetLabel;
     // The target label of the finally block. Can be null.
-    private Label finallyOffsetLabel;
+    private final Label finallyOffsetLabel;
 
     public NeoTryInstruction(Label catchOffsetLabel, Label finallyOffsetLabel) {
         super(OpCode.TRY_L, new byte[8]); // The operand holds two offsets of 4 bytes each.
