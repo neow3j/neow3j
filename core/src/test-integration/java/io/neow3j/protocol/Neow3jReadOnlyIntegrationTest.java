@@ -667,11 +667,11 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(balances.getAddress(), is(ACCOUNT_1_ADDRESS));
         assertNotNull(balances.getBalances());
         assertThat(balances.getBalances(), hasSize(2));
-        assertThat(balances.getBalances().get(0).getAssetHash(), is("0x" + NEO_HASH));
+        assertThat(balances.getBalances().get(0).getAssetHash(), is("0x" + GAS_HASH));
         assertNotNull(balances.getBalances().get(0).getAmount());
         assertThat(balances.getBalances().get(0).getLastUpdatedBlock(),
                 is(greaterThanOrEqualTo(new BigInteger("0"))));
-        assertThat(balances.getBalances().get(1).getAssetHash(), is("0x" + GAS_HASH));
+        assertThat(balances.getBalances().get(1).getAssetHash(), is("0x" + NEO_HASH));
         assertNotNull(balances.getBalances().get(1).getAmount());
         assertNotNull(balances.getBalances().get(1).getLastUpdatedBlock());
     }
