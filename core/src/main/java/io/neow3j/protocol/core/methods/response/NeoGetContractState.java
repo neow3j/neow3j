@@ -23,8 +23,8 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         @JsonProperty("hash")
         private String hash;
 
-        @JsonProperty("script")
-        private String script;
+        @JsonProperty("nef")
+        private ContractNef nef;
 
         @JsonProperty("manifest")
         private ContractManifest manifest;
@@ -32,12 +32,12 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         public ContractState() {
         }
 
-        public ContractState(int id, int updateCounter, String hash, String script,
+        public ContractState(int id, int updateCounter, String hash, ContractNef nef,
                              ContractManifest manifest) {
             this.id = id;
             this.updateCounter = updateCounter;
             this.hash = hash;
-            this.script = script;
+            this.nef = nef;
             this.manifest = manifest;
         }
 
@@ -53,8 +53,8 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             return hash;
         }
 
-        public String getScript() {
-            return script;
+        public ContractNef getNef() {
+            return nef;
         }
 
         public ContractManifest getManifest() {
@@ -63,28 +63,32 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContractState)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ContractState)) {
+                return false;
+            }
             ContractState that = (ContractState) o;
-            return Objects.equals(getId(), that.getId()) &&
-                    Objects.equals(getUpdateCounter(), that.getUpdateCounter()) &&
+            return getId() == that.getId() &&
+                    getUpdateCounter() == that.getUpdateCounter() &&
                     Objects.equals(getHash(), that.getHash()) &&
-                    Objects.equals(getScript(), that.getScript()) &&
+                    Objects.equals(getNef(), that.getNef()) &&
                     Objects.equals(getManifest(), that.getManifest());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getId(), getUpdateCounter(), getHash(), getScript(), getManifest());
+            return Objects.hash(getId(), getUpdateCounter(), getHash(), getNef(), getManifest());
         }
 
         @Override
         public String toString() {
             return "ContractState{" +
                     "id=" + id +
-                    ", updatecounter=" + updateCounter +
-                    ", hash=" + hash +
-                    ", script=" + script +
+                    ", updateCounter=" + updateCounter +
+                    ", hash='" + hash + '\'' +
+                    ", nef=" + nef +
                     ", manifest=" + manifest +
                     '}';
         }
