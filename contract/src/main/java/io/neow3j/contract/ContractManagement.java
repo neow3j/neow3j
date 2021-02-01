@@ -20,10 +20,11 @@ import java.util.Arrays;
 /**
  * Represents a Management contract and provides methods to invoke it.
  */
-public class ManagementContract extends SmartContract {
+public class ContractManagement extends SmartContract {
 
-    private static final String NAME = "ManagementContract";
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    private static final String NAME = "ContractManagement";
+    public final static long NEF_CHECKSUM = 3516775561L;
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
@@ -36,7 +37,7 @@ public class ManagementContract extends SmartContract {
      *
      * @param neow The {@link Neow3j} instance to use for invocations.
      */
-    public ManagementContract(Neow3j neow) {
+    public ContractManagement(Neow3j neow) {
         super(SCRIPT_HASH, neow);
     }
 

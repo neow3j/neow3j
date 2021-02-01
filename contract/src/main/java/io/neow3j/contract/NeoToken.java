@@ -9,6 +9,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -23,7 +24,8 @@ import java.util.Map;
 public class NeoToken extends Nep17Token {
 
     public final static String NAME = "NeoToken";
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public final static long NEF_CHECKSUM = 3921333105L;
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     public final static int DECIMALS = 0;
     public final static String SYMBOL = "NEO";
@@ -285,4 +287,5 @@ public class NeoToken extends Nep17Token {
     public TransactionBuilder setGasPerBlock(int gasPerBlock) {
         return invokeFunction(SET_GAS_PER_BLOCK, integer(gasPerBlock));
     }
+
 }

@@ -5,8 +5,8 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.neo.Contract;
 
-@ContractHash("0xcd97b70d82d69adfcd9165374109419fade8d6ab")
-public class ManagementContract extends ContractInterface {
+@ContractHash("0xa501d7d7d10983673b61b7a2d3a813b36f9f0e43")
+public class ContractManagement extends ContractInterface {
 
     /**
      * Gets the contract with the given script hash.

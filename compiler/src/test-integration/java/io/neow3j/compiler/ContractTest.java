@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
-import io.neow3j.contract.ManagementContract;
+import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
@@ -132,7 +132,7 @@ public class ContractTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        NeoSendRawTransaction response = new ManagementContract(neow3j)
+        NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
