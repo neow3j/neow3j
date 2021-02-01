@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
+import static io.neow3j.utils.ArrayUtils.trimTrailingBytes;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
@@ -9,7 +11,6 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,36 +19,38 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
- * +------------+-----------+------------------------------------------------------------+
- * |   Field    |  Length   |                          Comment                           |
- * +------------+-----------+------------------------------------------------------------+
- * | Magic      | 4 bytes   | Magic header                                               |
- * | Compiler   | 32 bytes  | Compiler used                                              |
- * | Version    | 32 bytes  | Compiler version                                           |
- * +------------+-----------+------------------------------------------------------------+
- * | Script     | Var bytes | Var bytes for the payload                                  |
- * +------------+-----------+------------------------------------------------------------+
- * | Checksum   | 4 bytes   | First four bytes of double SHA256 hash                     |
- * +------------+-----------+------------------------------------------------------------+
+ * ┌───────────────────────────────────────────────────────────────────────┐
+ * │                    NEO Executable Format 3 (NEF3)                     │
+ * ├──────────┬───────────────┬────────────────────────────────────────────┤
+ * │  Field   │     Type      │                  Comment                   │
+ * ├──────────┼───────────────┼────────────────────────────────────────────┤
+ * │ Magic    │ uint32        │ Magic header                               │
+ * │ Compiler │ byte[64]      │ Compiler name and version                  │
+ * ├──────────┼───────────────┼────────────────────────────────────────────┤
+ * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
+ * │ Tokens   │ MethodToken[] │ Method tokens.                             │
+ * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
+ * │ Script   │ byte[]        │ Var bytes for the payload                  │
+ * ├──────────┼───────────────┼────────────────────────────────────────────┤
+ * │ Checksum │ uint32        │ First four bytes of double SHA256 hash     │
+ * └──────────┴───────────────┴────────────────────────────────────────────┘
  */
 public class NefFile extends NeoSerializable {
 
     // NEO Executable Format 3 (NEF3)
     private static final int MAGIC = 0x3346454E; // 860243278 in decimal
     private static final int MAGIC_SIZE = 4;
-    private static final int COMPILER_SIZE = 32;
-    private static final int VERSION_SIZE = 32;
+    private static final int COMPILER_SIZE = 64;
     private static final int MAX_SCRIPT_LENGTH = 512 * 1024;
     private static final int CHECKSUM_SIZE = 4;
+    private static final int RESERVED_BYTES_SIZE = 2;
 
-    private static final int HEADER_SIZE = MAGIC_SIZE   // Magic (uint32)
-            + COMPILER_SIZE                             // Compiler (32 bytes)
-            + VERSION_SIZE;                             // Version (32 bytes)
+    private static final int HEADER_SIZE = MAGIC_SIZE + COMPILER_SIZE;
 
     private String compiler;
-    private String version;
-    public byte[] checkSum; // 4 bytes. A uint in neo-core
-    public byte[] script;
+    private List<MethodToken> methodTokens;
+    private byte[] checkSum; // 4 bytes unsigned integer.
+    private byte[] script;
 
     public NefFile() {
         checkSum = new byte[]{};
@@ -55,45 +58,62 @@ public class NefFile extends NeoSerializable {
     }
 
     public NefFile(String compiler, String version, byte[] script) {
-        int compilerNameSize = compiler.getBytes(StandardCharsets.UTF_8).length;
-        if (compilerNameSize > COMPILER_SIZE) {
-            throw new IllegalArgumentException(format("The compiler name can be max %d bytes long, "
-                    + "but was %d bytes long.", COMPILER_SIZE, compilerNameSize));
+        int compilerSize = compiler.getBytes(UTF_8).length;
+        if (compilerSize > COMPILER_SIZE) {
+            throw new IllegalArgumentException(format("The compiler name and version string can "
+                    + "be max %d bytes long, but was %d bytes long.", COMPILER_SIZE, compilerSize));
         }
         this.compiler = compiler;
-
-        int versionSize = version.getBytes(StandardCharsets.UTF_8).length;
-        if (versionSize > VERSION_SIZE) {
-            throw new IllegalArgumentException(format("The version string can be max %d bytes "
-                    + "long, but was %d bytes long.", VERSION_SIZE, versionSize));
-        }
-        this.version = version;
-
         this.script = script;
         // Need to initialize the check sum because it is required for calculating the check sum.
         checkSum = new byte[CHECKSUM_SIZE];
         checkSum = computeChecksum(this);
     }
 
+    /**
+     * Gets the compiler (and version) with which this NEF file has been generated.
+     * @return the compiler name and version.
+     */
     public String getCompiler() {
         return compiler;
     }
 
-    public String getVersion() {
-        return version;
+    /**
+     * Gets the contract's method tokens.
+     * <p>
+     * The tokens represent calls to other contracts.
+     * @return the contract's method tokens.
+     */
+    public List<MethodToken> getMethodTokens() {
+        return methodTokens;
     }
 
+    /**
+     * Gets the contract script.
+     * @return the contract script.
+     */
     public byte[] getScript() {
         return script;
     }
 
+    /**
+     * Gets this NEF file's check sum.
+     * @return the check sum.
+     */
     public byte[] getCheckSum() {
         return checkSum;
     }
 
+    /**
+     * Gets the byte size of this NEF file when serialized.
+     * @return the byte size.
+     */
     @Override
     public int getSize() {
         return HEADER_SIZE
+                + RESERVED_BYTES_SIZE
+                + IOUtils.getVarSize(methodTokens)
+                + RESERVED_BYTES_SIZE
                 + IOUtils.getVarSize(script)
                 + CHECKSUM_SIZE;
     }
@@ -102,7 +122,9 @@ public class NefFile extends NeoSerializable {
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeUInt32(MAGIC);
         writer.writeFixedString(compiler, COMPILER_SIZE);
-        writer.writeFixedString(version, VERSION_SIZE);
+        writer.writeUInt16(0); // reserved bytes
+        writer.writeSerializableVariable(methodTokens);
+        writer.writeUInt16(0); // reserved bytes
         writer.writeVarBytes(script);
         writer.write(checkSum);
     }
@@ -110,14 +132,21 @@ public class NefFile extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
+            // Magic
             long l = reader.readUInt32();
             if (l != MAGIC) {
                 throw new DeserializationException("Wrong magic number in NEF file.");
             }
-            byte[] compilerBytes = ArrayUtils.trimTrailingBytes(reader.readBytes(COMPILER_SIZE), (byte) 0);
-            compiler = new String(compilerBytes, StandardCharsets.UTF_8);
-            byte[] versionBytes = ArrayUtils.trimTrailingBytes(reader.readBytes(VERSION_SIZE), (byte) 0);
-            version = new String(versionBytes, StandardCharsets.UTF_8);
+
+            // Compiler
+            byte[] compilerBytes = reader.readBytes(COMPILER_SIZE);
+            compiler = new String(trimTrailingBytes(compilerBytes, (byte) 0), UTF_8);
+
+            // Reserved bytes
+            if (reader.readUInt16() != 0) {
+                throw new DeserializationException("Reserve bytes in NEF file must be 0.");
+            }
+
             script = reader.readVarBytes(MAX_SCRIPT_LENGTH);
             if (script.length == 0) {
                 throw new DeserializationException("Script can't be empty in NEF file.");
