@@ -86,9 +86,7 @@ public interface Neo {
 
     Request<?, NeoGetRawTransaction> getRawTransaction(String txId);
 
-    Request<?, NeoGetStorage> getStorage(String contractAddress, HexParameter keyToLookUp);
-
-    Request<?, NeoGetStorage> getStorage(String contractAddress, String keyToLookUpAsHexString);
+    Request<?, NeoGetStorage> getStorage(String contractAddress, String keyHexString);
 
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 

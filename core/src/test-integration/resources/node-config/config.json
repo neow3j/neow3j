@@ -1,7 +1,8 @@
 {
   "ApplicationConfiguration": {
     "Storage": {
-      "Engine": "LevelDBStore"
+      "Engine": "LevelDBStore",
+      "Path": "Data_LevelDB_{0}"
     },
     "Paths": {
       "Chain": "Consensus_Chain_{0}"
@@ -13,7 +14,6 @@
     "UnlockWallet": {
       "Path": "wallet.json",
       "Password": "neo",
-      "StartConsensus": true,
       "IsActive": true
     },
     "PluginURL": "https://github.com/neo-project/neo-modules/releases/download/v{1}/{0}.zip"
