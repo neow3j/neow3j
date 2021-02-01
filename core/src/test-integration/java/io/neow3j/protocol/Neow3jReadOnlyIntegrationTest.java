@@ -2,6 +2,7 @@ package io.neow3j.protocol;
 
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_WIF;
+import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_TOTAL_SUPPLY;
@@ -69,6 +70,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoNetworkFee;
@@ -78,10 +80,13 @@ import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Await;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -98,7 +103,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     // Information about the transaction that is sent after starting the node.
     private static String txHash;
-    private static final String TX_GAS_CONSUMED = "0.0999972";
+    private static final String TX_GAS_CONSUMED = "0.0999954";
     private static final long TX_BLOCK_IDX = 2L;
     private static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     private static final int TX_VERSION = 0;
@@ -135,6 +140,9 @@ public class Neow3jReadOnlyIntegrationTest {
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVWHgUp8gG/opUbVeYsix9tm7/OLPI0Hiue25Q3blOFCI6hnvVQEAAAAAAAB6/SAyVcspcr0KaoJ+dOOH7TIr7AEAAREA";
     protected static String BLOCK_0_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVWHgUp8gG/opUbVeYsix9tm7/OLPI0Hiue25Q3blOFCI6hnvVQEAAAAAAAB6/SAyVcspcr0KaoJ+dOOH7TIr7AEAAREBAB2sK3wAAAAA";
+
+    // wif KxwrYazXiCdK33JEddpwHbXTpAYyhXC1YyC4SXTVF6GLRPBuVBFb
+    private static final String RECIPIENT = "NhixBNjEBvgyk18RzuXJt1T3BpqgAwANSA";
 
     protected static Neow3j neow3j;
 
@@ -463,7 +471,7 @@ public class Neow3jReadOnlyIntegrationTest {
     }
 
     @Test
-    public void testInvokeFunction() throws IOException {
+    public void testInvokeFunctionWithBalanceOf() throws IOException {
         List<ContractParameter> parameters = Collections.singletonList(
                 ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS)));
         ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS));
@@ -472,6 +480,32 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send();
 
         assertNotNull(invokeFunction.getInvocationResult());
+    }
+
+    @Test
+    public void testInvokeFunctionWithTransfer() throws IOException {
+        List<ContractParameter> params = Arrays.asList(
+                ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS)),
+                ContractParameter.hash160(ScriptHash.fromAddress(RECIPIENT)),
+                ContractParameter.integer(1),
+                ContractParameter.any(null));
+        Signer signer = new Signer.Builder()
+                .account(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS))
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .allowedContracts(new ScriptHash(NEO_HASH))
+                .build();
+        InvocationResult invoc = getNeow3j()
+                .invokeFunction(NEO_HASH, "transfer", params, signer)
+                .send()
+                .getInvocationResult();
+
+        assertNotNull(invoc);
+        assertNotNull(invoc.getScript());
+        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNull(invoc.getException());
+        assertNotNull(invoc.getStack());
+        assertNotNull(invoc.getTx());
     }
 
     @Test
@@ -716,5 +750,24 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(state.asArray().getValue().get(2).asInteger().getValue(),
                 is(new BigInteger("100000000")));
     }
+
+    @Test
+    public void testInvokeScript() throws IOException {
+        // Script that transfers 100 NEO from NX8GreRFGFK5wpGMWetpX93HmtrezGogzk to
+        // NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj.
+        String script = "CwBkDBSTrRVypLNcS5JUg84XAbeHQtxGDwwUev0gMlXLKXK9CmqCfnTjh+0yK+wUwB8MCHRyYW5zZmVyDBSDqwZ5rVXAUKE61D9ZNupz9ese9kFifVtSOQ==";
+        Signer signer = Signer.calledByEntry(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS));
+        NeoInvokeScript invokeScript = getNeow3j().invokeScript(script, signer).send();
+        InvocationResult invoc = invokeScript.getInvocationResult();
+
+        assertNotNull(invoc);
+        assertThat(invoc.getScript(), is(script));
+        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNull(invoc.getException());
+        assertNotNull(invoc.getStack());
+        assertNotNull(invoc.getTx());
+    }
+
 
 }

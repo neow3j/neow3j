@@ -39,6 +39,7 @@ public class IntegrationTestHelper {
     static final String ACCOUNT_1_ADDRESS = "NX8GreRFGFK5wpGMWetpX93HmtrezGogzk";
     static final String ACCOUNT_1_WIF =
             "L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda";
+
     // Second account (single-sig) in the node's wallet
     static final String ACCOUNT_2_ADDRESS = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
     static final ECPublicKey ACCOUNT_2_PUBKEY = new ECPublicKey(
