@@ -11,6 +11,7 @@ import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.getNodeUrl;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -319,7 +320,12 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(contractState);
         assertThat(contractState.getId(), is(-3));
         assertThat(contractState.getHash(), is("0x" + NEO_HASH));
-        assertThat(contractState.getScript(), is("DAhOZW9Ub2tlbkEa93tn"));
+        assertThat(contractState.getNef(), is(notNullValue()));
+        assertThat(contractState.getNef().getCompiler(), is("neo-core-v3.0"));
+        assertThat(contractState.getNef().getTokens(), is(empty()));
+        assertThat(contractState.getNef().getScript(), is("AP1BGvd7Zw=="));
+        assertThat(contractState.getNef().getChecksum(), is(3921333105L));
+
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -331,7 +337,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(abi.getMethods());
         assertThat(abi.getMethods(), hasSize(14));
-        ContractMethod method = abi.getMethods().get(4);
+        ContractMethod method = abi.getMethods().get(6);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getParamName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getParamType(),
