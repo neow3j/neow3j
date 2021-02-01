@@ -80,11 +80,16 @@ public class ContractManagement extends SmartContract {
         int updateCounter = stackItem.asArray().get(1).asInteger().getValue().intValue();
         String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString()
                 .getAsHexString());
-        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString()
-                .getValue());
-        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
-                ContractManifest.class);
-        return new ContractState(id, updateCounter, hash, script, manifest);
+
+        // TODO: 01.02.21 Guil:
+        // We need to fix how we get from StackItem to a NefFile/ContractManifest
+        // Implementing a method called `.fromStackItem()` in each of the classes is an option.
+//        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString()
+//                .getValue());
+//        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
+//                ContractManifest.class);
+
+        return new ContractState(id, updateCounter, hash, null, null);
     }
 
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)
