@@ -67,7 +67,7 @@ public class Compiler {
     public static final String VERIFY_METHOD_NAME = "verify";
     public static final String DEPLOY_METHOD_NAME = "_deploy";
 
-    private CompilationUnit compUnit;
+    private final CompilationUnit compUnit;
 
     public Compiler() {
         compUnit = new CompilationUnit(this.getClass().getClassLoader());
@@ -272,7 +272,7 @@ public class Compiler {
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
 
-    private NeoMethod initializeStaticConstructor(ClassNode asmClass) throws IOException {
+    private NeoMethod initializeStaticConstructor(ClassNode asmClass) {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
             return null;
         }
@@ -291,17 +291,14 @@ public class Compiler {
         return createInitsslotMethod(asmClass);
     }
 
-    private void collectSmartContractEvents(ClassNode asmClass) throws IOException {
+    private void collectSmartContractEvents(ClassNode asmClass) {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
             return;
         }
-        List<FieldNode> eventFields = asmClass.fields.stream().filter(field -> {
-            try {
-                return isEvent(getInternalNameForDescriptor(field.desc));
-            } catch (IOException e) {
-                throw new CompilerException(e);
-            }
-        }).collect(Collectors.toList());
+        List<FieldNode> eventFields = asmClass.fields
+                .stream()
+                .filter(field -> isEvent(getInternalNameForDescriptor(field.desc)))
+                .collect(Collectors.toList());
 
         if (eventFields.size() == 0) {
             return;
@@ -611,10 +608,8 @@ public class Compiler {
      *
      * @param classInternalName instructions under inspection.
      * @return true, if the given class is an event. False, otherwise.
-     * @throws IOException if an error occurs when loading classes.
      */
-    public static boolean isEvent(String classInternalName)
-            throws IOException {
+    public static boolean isEvent(String classInternalName) {
 
         Class<?> clazz;
         try {
