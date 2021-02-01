@@ -2,6 +2,7 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ScriptHash;
+import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
@@ -171,20 +172,12 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetStorage() throws Exception {
-        neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", "616e797468696e67").send();
-
+        String key = "616e797468696e67";
+        neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", key).send();
+        String keyBase64 = Base64.encode("616e797468696e67");
         verifyResult(
                 "{\"jsonrpc\":\"2.0\",\"method\":\"getstorage\","
-                        + "\"params\":[\"03febccf81ac85e3d795bc5cbd4e84e907812aa3\",\"616e797468696e67\"],\"id\":1}");
-    }
-
-    @Test
-    public void testGetStorage_with_HexParameter() throws Exception {
-        neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", HexParameter.valueOf("anything")).send();
-
-        verifyResult(
-                "{\"jsonrpc\":\"2.0\",\"method\":\"getstorage\","
-                        + "\"params\":[\"03febccf81ac85e3d795bc5cbd4e84e907812aa3\",\"616e797468696e67\"],\"id\":1}");
+                        + "\"params\":[\"03febccf81ac85e3d795bc5cbd4e84e907812aa3\",\"" + keyBase64 + "\"],\"id\":1}");
     }
 
     @Test

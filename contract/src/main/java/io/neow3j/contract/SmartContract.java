@@ -208,38 +208,32 @@ public class SmartContract {
         return getManifest().getName();
     }
 
-    protected static ScriptHash getScriptHashOfNativeContract(String contractName) {
+    protected static ScriptHash getScriptHashOfNativeContract(long nefCheckSum,
+            String contractName) {
 
-        byte[] script = new ScriptBuilder()
-                .pushData(contractName)
-                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
-                .toArray();
-
-        return ScriptHash.fromScript(
-                new ScriptBuilder()
-                        .opCode(OpCode.ABORT)
-                        .pushData(ScriptHash.ZERO.toArray())
-                        .pushData(script)
-                        .toArray());
+        return getContractHash(ScriptHash.ZERO, nefCheckSum, contractName);
     }
 
     /**
-     * Calculates the hash of the contract with {@code script} deployed by {@code sender}.
+     * Calculates the hash of the contract deployed by {@code sender}.
      * <p>
      * A contract's hash doesn't change after deployment. Even if the contract's script is updated
-     * the hash stays the same. It depends on the initial script and the account that sent the
-     * deployment transaction.
+     * the hash stays the same. It depends on the initial NEF checksum, contract name, and the
+     * account that sent the deployment transaction.
      *
-     * @param sender         The account that deployed the contract.
-     * @param contractScript The contract's script.
+     * @param sender       The account that deployed the contract.
+     * @param nefCheckSum  The checksum of the contract's NEF file.
+     * @param contractName The contract's name
      * @return the hash of the contract.
      */
-    public static ScriptHash getContractHash(ScriptHash sender, byte[] contractScript) {
+    public static ScriptHash getContractHash(ScriptHash sender, long nefCheckSum,
+            String contractName) {
+
         return ScriptHash.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)
                         .pushData(sender.toArray())
-                        .pushData(contractScript)
-                        .toArray());
+                        .pushInteger(nefCheckSum)
+                        .pushData(contractName).toArray());
     }
 }

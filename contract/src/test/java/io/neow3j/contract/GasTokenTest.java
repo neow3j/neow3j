@@ -19,6 +19,8 @@ public class GasTokenTest {
 
     private Neow3j neow;
 
+    private final static String GASTOKEN_SCRIPTHASH = "70e2301955bf1e74cbb31d18c2f96972abadb328";
+
     @Before
     public void setUp() {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
@@ -40,5 +42,10 @@ public class GasTokenTest {
     @Test
     public void getDecimals() {
         assertThat(new GasToken(neow).getDecimals(), is(8));
+    }
+
+    @Test
+    public void scriptHash() {
+        assertThat(new GasToken(neow).getScriptHash().toString(), is(GASTOKEN_SCRIPTHASH));
     }
 }
