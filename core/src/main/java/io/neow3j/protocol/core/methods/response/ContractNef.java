@@ -28,7 +28,7 @@ public class ContractNef {
     public ContractNef() {
     }
 
-    public ContractNef(String compiler, List<ContractMethodToken> tokens, String script, long checksum) {
+    public ContractNef(String compiler, List<ContractMethodToken> tokens, String script, Long checksum) {
         this.compiler = compiler;
         this.tokens = tokens;
         this.script = script;
