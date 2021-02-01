@@ -22,7 +22,7 @@ public class RoleManagementTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(DesignationContractTestContract.class.getName());
+        setUp(RoleManagementTestContract.class.getName());
     }
 
     @Test
@@ -54,7 +54,7 @@ public class RoleManagementTest extends ContractTest {
         assertThat(pubKeys.get(0).asByteString().getValue(), is(pubKey));
     }
 
-    static class DesignationContractTestContract {
+    static class RoleManagementTestContract {
 
         public static Hash160 getHash() {
             return RoleManagement.getHash();
