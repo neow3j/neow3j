@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -108,7 +109,7 @@ public class Neow3jReadOnlyIntegrationTest {
     private static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     private static final int TX_VERSION = 0;
     private static final String TX_SCRIPT =
-            "CwHECQwUbazId3tftsqZsILCa3hs63feRfAMFHr9IDJVyylyvQpqgn5044ftMivsFMAMCHRyYW5zZmVyDBS2cg/vfn63PyWvtHD1h5l84+JGCkFifVtSOA==";
+            "CwHECQwUbazId3tftsqZsILCa3hs63feRfAMFHr9IDJVyylyvQpqgn5044ftMivsFMAfDAh0cmFuc2ZlcgwUg6sGea1VwFChOtQ/WTbqc/XrHvZBYn1bUjk=";
     private static final String TX_AMOUNT = "2500";
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
     private static final String TX_RECIPIENT_1 = "NVuspqtyaV92cDo7SQdiYDCMvPUEZ3Ys3f";
@@ -131,7 +132,7 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String IMPORT_ADDRESS = "NcVYTbDRzThKUFxEvjA4nPDn1nVpBK5CVH";
     // The address from which account 2 receives GAS when sending NEO to the recipient address.
     protected static final String TX_GAS_ADDRESS = "NKuyBkoGdZZSLyPbJEetheRhMjeznFZszf";
-    protected static final String TX_GAS_AMOUNT = "100000000";
+    protected static final String TX_GAS_AMOUNT = "1";
 
     protected static long BLOCK_0_IDX = 0;
     protected static String BLOCK_0_HASH =
@@ -379,7 +380,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(transaction.getBlockHash());
         assertThat(transaction.getConfirmations(), greaterThanOrEqualTo(0));
         assertThat(transaction.getBlockTime(), greaterThanOrEqualTo(0L));
-        assertThat(transaction.getVMState(), is(VM_STATE_HALT));
+        assertThat(transaction.getVMState(), is(nullValue()));
     }
 
     @Test
