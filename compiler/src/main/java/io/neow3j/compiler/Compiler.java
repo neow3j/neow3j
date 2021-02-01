@@ -3,8 +3,6 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
-import static io.neow3j.constants.OpCode.PUSHDATA1;
-import static io.neow3j.constants.OpCode.getOperandSize;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -14,7 +12,6 @@ import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
-import io.neow3j.constants.OperandSize;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.devpack.ApiInterface;
@@ -29,7 +26,6 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +67,7 @@ public class Compiler {
     public static final String VERIFY_METHOD_NAME = "verify";
     public static final String DEPLOY_METHOD_NAME = "_deploy";
 
-    private CompilationUnit compUnit;
+    private final CompilationUnit compUnit;
 
     public Compiler() {
         compUnit = new CompilationUnit(this.getClass().getClassLoader());
@@ -276,7 +272,7 @@ public class Compiler {
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
 
-    private NeoMethod initializeStaticConstructor(ClassNode asmClass) throws IOException {
+    private NeoMethod initializeStaticConstructor(ClassNode asmClass) {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
             return null;
         }
@@ -295,17 +291,14 @@ public class Compiler {
         return createInitsslotMethod(asmClass);
     }
 
-    private void collectSmartContractEvents(ClassNode asmClass) throws IOException {
+    private void collectSmartContractEvents(ClassNode asmClass) {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
             return;
         }
-        List<FieldNode> eventFields = asmClass.fields.stream().filter(field -> {
-            try {
-                return isEvent(getInternalNameForDescriptor(field.desc));
-            } catch (IOException e) {
-                throw new CompilerException(e);
-            }
-        }).collect(Collectors.toList());
+        List<FieldNode> eventFields = asmClass.fields
+                .stream()
+                .filter(field -> isEvent(getInternalNameForDescriptor(field.desc)))
+                .collect(Collectors.toList());
 
         if (eventFields.size() == 0) {
             return;
@@ -375,7 +368,7 @@ public class Compiler {
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
                 NeoMethod neoMethod = new NeoMethod(asmMethod, asmClass);
-                neoMethod.initializeLocalVariablesAndParameters(compUnit);
+                neoMethod.initialize(compUnit);
                 methods.add(neoMethod);
             }
         }
@@ -615,10 +608,8 @@ public class Compiler {
      *
      * @param classInternalName instructions under inspection.
      * @return true, if the given class is an event. False, otherwise.
-     * @throws IOException if an error occurs when loading classes.
      */
-    public static boolean isEvent(String classInternalName)
-            throws IOException {
+    public static boolean isEvent(String classInternalName) {
 
         Class<?> clazz;
         try {

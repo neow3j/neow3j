@@ -22,11 +22,6 @@ public enum InteropServiceCode {
     SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1 << 15),
     SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1 << 15),
 
-    SYSTEM_CALLBACK_CREATE("System.Callback.Create", 1 << 4),
-    SYSTEM_CALLBACK_CREATEFROMMETHOD("System.Callback.CreateFromMethod", 1 << 15),
-    SYSTEM_CALLBACK_CREATEFROMSYSCALL("System.Callback.CreateFromSyscall", 1 << 4),
-    SYSTEM_CALLBACK_INVOKE("System.Callback.Invoke", 1 << 15),
-
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
     SYSTEM_CONTRACT_CALLEX("System.Contract.CallEx", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),

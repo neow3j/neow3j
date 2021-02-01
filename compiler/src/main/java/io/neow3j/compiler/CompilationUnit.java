@@ -21,7 +21,7 @@ public class CompilationUnit {
     /**
      * The module containing the compiled classes and methods.
      */
-    private NeoModule neoModule;
+    private final NeoModule neoModule;
 
     /**
      * The NEF file containing the compiled script.
@@ -42,7 +42,7 @@ public class CompilationUnit {
     private ClassNode contractClass;
 
     // Maps fully qualified class names to their source files (aboslute file paths).
-    private Map<String, String> sourceFileMap = new HashMap<>();
+    private final Map<String, String> sourceFileMap = new HashMap<>();
 
     public CompilationUnit(ClassLoader classLoader) {
         this.classLoader = classLoader;

@@ -4,7 +4,7 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6")
+@ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83")
 public class NeoToken extends Nep17Token {
 
     /**

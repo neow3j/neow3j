@@ -720,7 +720,7 @@ public class TransactionBuilderTest {
     public void throwIfSenderCannotCoverFees() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
-                "a6a6c15dcdc9b997dac448b6926522d22efeedfb",
+                "70e2301955bf1e74cbb31d18c2f96972abadb328",
                 "balanceOf",
                 "721e1376b75fe93889023d47832c160fcc5d4a06");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");

@@ -2091,7 +2091,7 @@ public class ResponseTest extends ResponseTester {
                         "                ],\n" +
                         "                \"notifications\": [\n" +
                         "                    {\n" +
-                        "                        \"contract\": \"0xa6a6c15dcdc9b997dac448b6926522d22efeedfb\",\n" +
+                        "                        \"contract\": \"0x70e2301955bf1e74cbb31d18c2f96972abadb328\",\n" +
                         "                        \"eventname\": \"Transfer\",\n" +
                         "                        \"state\": {\n" +
                         "                            \"type\": \"Array\",\n" +
@@ -2111,7 +2111,7 @@ public class ResponseTest extends ResponseTester {
                         "                        }\n" +
                         "                    },\n" +
                         "                    {\n" +
-                        "                        \"contract\": \"0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6\",\n" +
+                        "                        \"contract\": \"0xf61eebf573ea36593fd43aa150c055ad7906ab83\",\n" +
                         "                        \"eventname\": \"Transfer\",\n" +
                         "                        \"state\": {\n" +
                         "                            \"type\": \"Array\",\n" +
@@ -2164,7 +2164,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 0
         NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
 
-        assertThat(notification0.getContract(), is("0xa6a6c15dcdc9b997dac448b6926522d22efeedfb"));
+        assertThat(notification0.getContract(), is("0x70e2301955bf1e74cbb31d18c2f96972abadb328"));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
@@ -2181,7 +2181,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 1
         NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
 
-        assertThat(notification1.getContract(), is("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6"));
+        assertThat(notification1.getContract(), is("0xf61eebf573ea36593fd43aa150c055ad7906ab83"));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 

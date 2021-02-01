@@ -8,13 +8,13 @@ public class CompilerException extends RuntimeException {
         super(s);
     }
 
-    public CompilerException(NeoMethod neoMethod, String s) {
-        super(neoMethod.getOwnerClass().sourceFile + ":" + neoMethod.getCurrentLine() + ": "
-                + "error:\n" + s);
+    public CompilerException(NeoMethod neoMethod, String errorMessage) {
+        super(neoMethod.getOwnerClass().sourceFile + ".java: " + neoMethod.getCurrentLine() + ": "
+                + "error:\n" + errorMessage);
     }
 
-    public CompilerException(ClassNode owner, String s) {
-        super(owner.sourceFile + ": error:\n" + s);
+    public CompilerException(ClassNode owner, String errorMessage) {
+        super(owner.sourceFile + ".java: error:\n" + errorMessage);
     }
 
     public CompilerException(Exception e) {

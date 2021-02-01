@@ -4,7 +4,13 @@
   "result": {
     "id": -1,
     "hash": "",
-    "script": "",
+    "nef": {
+      "magic": 860243278,
+      "compiler": "neo-core-v3.0",
+      "tokens": [],
+      "script": "AP1BGvd7Zw==",
+      "checksum": 3921333105
+    },
     "manifest": {
       "name": "neow3j",
       "groups": [],

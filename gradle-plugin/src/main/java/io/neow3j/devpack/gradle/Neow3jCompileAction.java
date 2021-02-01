@@ -8,17 +8,18 @@ import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsFilesURL;
 import static java.nio.file.Files.createDirectories;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
-import io.neow3j.contract.ContractUtils;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.gradle.api.Action;
+import org.gradle.api.logging.configuration.ShowStacktrace;
 
 public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
@@ -32,6 +33,9 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
                         + "'" + CLASSNAME_NAME + "' needs to be set in the "
                         + "'" + NEOW3J_COMPILER_OPTIONS_NAME + "' "
                         + "declaration in your build.gradle file."));
+
+        Path outputDir = ofNullable(neow3jPluginCompile.getOptions().getOutputDir())
+                .orElse(neow3jPluginCompile.getCompilerDefaultOutputDir());
 
         List<URL> clDirs = new ArrayList<>();
 
@@ -68,7 +72,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             }
             byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
-            Path outDir = createDirectories(neow3jPluginCompile.getCompilerOutputDir());
+            Path outDir = createDirectories(outputDir);
             String contractName = compilationUnit.getManifest().getName();
             if (contractName == null || contractName.length() == 0) {
                 throw new IllegalStateException("No contract name is set in the contract's "
@@ -92,8 +96,16 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             }
 
         } catch (Exception e) {
-            System.out.println("Compilation failed. Reason: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("Compilation failed.");
+            ShowStacktrace showStacktrace = neow3jPluginCompile.getProject().getGradle()
+                    .getStartParameter().getShowStacktrace();
+            RuntimeException r;
+            if (showStacktrace.equals(ShowStacktrace.ALWAYS)) {
+                r = new RuntimeException(e);
+            } else {
+                r = new RuntimeException(e.getMessage());
+            }
+            throw r;
         }
     }
 
