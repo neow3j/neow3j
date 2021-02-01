@@ -97,7 +97,7 @@ public class Nep17TokenTest extends ContractTest {
 
     }
 
-    @ContractHash("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6") // NEO script hash
+    @ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83") // NEO script hash
     static class CustomNeoToken extends Nep17Token {
 
     }

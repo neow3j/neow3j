@@ -152,7 +152,7 @@ public class ScriptBuilder {
      * @return this.
      * @throws IllegalArgumentException if the given number is smaller than -1.
      */
-    public ScriptBuilder pushInteger(int v) {
+    public ScriptBuilder pushInteger(long v) {
         return pushInteger(BigInteger.valueOf(v));
     }
 

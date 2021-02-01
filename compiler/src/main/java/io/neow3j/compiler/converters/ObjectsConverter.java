@@ -361,8 +361,7 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
-    private static boolean isMethodCallToEventSend(AbstractInsnNode insn)
-            throws IOException {
+    private static boolean isMethodCallToEventSend(AbstractInsnNode insn) {
 
         if (!(insn instanceof MethodInsnNode)) {
             return false;

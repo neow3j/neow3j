@@ -8,7 +8,8 @@ import io.neow3j.protocol.Neow3j;
 public class GasToken extends Nep17Token {
 
     public final static String NAME = "GasToken";
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public final static long NEF_CHECKSUM = 3155977747L;
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     public final static int DECIMALS = 8;
     public final static String SYMBOL = "GAS";

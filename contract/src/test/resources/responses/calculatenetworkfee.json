@@ -2,6 +2,6 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "networkfee": 1230610
+    "networkfee": 0.01230610
   }
 }

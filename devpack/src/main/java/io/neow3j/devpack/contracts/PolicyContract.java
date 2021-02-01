@@ -4,7 +4,7 @@ import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0xdde31084c0fdbebc7f5ed5f53a38905305ccee14")
+@ContractHash("0x79bcd398505eb779df6e67e4be6c14cded08e2f2")
 public class PolicyContract extends ContractInterface {
 
     /**

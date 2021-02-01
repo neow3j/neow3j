@@ -6,43 +6,47 @@ import static io.neow3j.contract.ContractParameter.publicKey;
 
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.DesignationRole;
+import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents a Designation contract and provides methods to invoke it.
+ * Represents the RoleManagment contract that is used to assign roles to and check roles of
+ * designated nodes.
  */
-public class DesignationContract extends SmartContract {
+public class RoleManagement extends SmartContract {
 
-    private static final String NAME = "DesignationContract";
-    public static final ScriptHash SCRIPT_HASH = SmartContract.getScriptHashOfNativeContract(NAME);
+    private static final String NAME = "RoleManagement";
+    public final static long NEF_CHECKSUM = 3289425910L;
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+
     private static final String GET_DESIGNATED_BY_ROLE = "getDesignatedByRole";
     private static final String DESIGNATE_AS_ROLE = "designateAsRole";
 
     /**
-     * Constructs a new <tt>DesignateContract</tt> that uses the given {@link Neow3j} instance for
+     * Constructs a new {@code RoleManagement} that uses the given {@link Neow3j} instance for
      * invocations.
      *
      * @param neow The {@link Neow3j} instance to use for invocations.
      */
-    public DesignationContract(Neow3j neow) {
+    public RoleManagement(Neow3j neow) {
         super(SCRIPT_HASH, neow);
     }
 
     /**
      * Gets the designated nodes by their role and the block index.
      *
-     * @param role The designation role.
+     * @param role The role.
      * @param blockIndex The block index for which the nodes are designated.
      * @return the {@code ECPublicKeys} of the designated nodes.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<ECPublicKey> getDesignatedByRole(DesignationRole role, int blockIndex) throws IOException {
+    public List<ECPublicKey> getDesignatedByRole(Role role, int blockIndex) throws IOException {
         checkBlockIndexValidity(blockIndex);
         NeoInvokeFunction invocation = callInvokeFunction(GET_DESIGNATED_BY_ROLE,
                 Arrays.asList(
@@ -69,14 +73,14 @@ public class DesignationContract extends SmartContract {
     }
 
     /**
-     * Creates a transaction script to designate nodes as a {@link DesignationRole} and
+     * Creates a transaction script to designate nodes as a {@link Role} and
      * initializes a {@link TransactionBuilder} based on this script.
      *
      * @param role The designation role.
      * @param pubKeys The public keys of the nodes that are designated.
      * @return the transaction builder.
      */
-    public TransactionBuilder designateAsRole(DesignationRole role, List<ECPublicKey> pubKeys) {
+    public TransactionBuilder designateAsRole(Role role, List<ECPublicKey> pubKeys) {
         if (role == null) {
             throw new IllegalArgumentException("The designation role cannot be null.");
         }

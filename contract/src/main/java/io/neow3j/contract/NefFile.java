@@ -10,6 +10,7 @@ import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 
+import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -89,6 +90,10 @@ public class NefFile extends NeoSerializable {
 
     public byte[] getCheckSum() {
         return checkSum;
+    }
+
+    public long getCheckSumAsInteger() {
+        return Numeric.toBigInt(checkSum).longValue();
     }
 
     @Override
