@@ -94,7 +94,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"f61eebf573ea36593fd43aa150c055ad7906ab83\"" // neo contract
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
                         + ".*\"unclaimedGas\"" // function
                         + ".*\"f68f181731a47036a99f04dad90043a744edec0f\"" // script hash
                         + ".*100.*" // block height
@@ -157,8 +157,7 @@ public class NeoTokenTest {
     @Test
     public void getCandidates() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
-                "f61eebf573ea36593fd43aa150c055ad7906ab83",
-                "getCandidates");
+                NEOTOKEN_SCRIPTHASH, "getCandidates");
 
         Map<ECPublicKey, Integer> result = new NeoToken(neow).getCandidates();
         assertThat(result.size(), is(2));
@@ -176,7 +175,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"f61eebf573ea36593fd43aa150c055ad7906ab83\"" // neo contract
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
                         + ".*\"getCommittee\".*" // function
                 ))
                 .willReturn(aResponse()
@@ -197,7 +196,7 @@ public class NeoTokenTest {
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":"
-                        + ".*\"f61eebf573ea36593fd43aa150c055ad7906ab83\"" // neo contract
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
                         + ".*\"getNextBlockValidators\".*" // function
                 ))
                 .willReturn(aResponse()
