@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -12,8 +13,12 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.CallFlags;
+import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -197,6 +202,21 @@ public class NefFile extends NeoSerializable {
                     + nefFileSize + " bytes, but a max of 2^20 bytes is allowed.");
         }
         try (FileInputStream nefStream = new FileInputStream(nefFile)) {
+            BinaryReader reader = new BinaryReader(nefStream);
+            return reader.readSerializable(NefFile.class);
+        }
+    }
+
+    public static NefFile readFromStackitem(StackItem stackItem)
+            throws DeserializationException, IOException {
+
+        // the 'nef' is represented in a ByteString stack item
+        if (!stackItem.getType().equals(StackItemType.BYTE_STRING)) {
+            throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.BYTE_STRING);
+        }
+        ByteStringStackItem byteStringStackItem = stackItem.asByteString();
+        byte[] nefBytes = byteStringStackItem.getValue();
+        try (ByteArrayInputStream nefStream = new ByteArrayInputStream(nefBytes)) {
             BinaryReader reader = new BinaryReader(nefStream);
             return reader.readSerializable(NefFile.class);
         }

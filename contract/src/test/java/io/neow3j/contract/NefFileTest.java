@@ -1,16 +1,19 @@
 package io.neow3j.contract;
 
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.crypto.Base64;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.utils.Numeric;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Objects;
-
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,7 +84,8 @@ public class NefFileTest {
 
     @Test
     public void serializeNewNefFile() {
-        NefFile nef = new NefFile("neon", "3.0.0.0", Numeric.hexStringToByteArray(REFERENCE_SCRIPT));
+        NefFile nef = new NefFile("neon", "3.0.0.0",
+                Numeric.hexStringToByteArray(REFERENCE_SCRIPT));
         assertThat(nef.toArray(), is(Numeric.hexStringToByteArray(REFERENCE_NEF)));
     }
 
@@ -89,7 +93,9 @@ public class NefFileTest {
     public void deserializeAndSerialize() throws DeserializationException {
         byte[] nefBytes = Numeric.hexStringToByteArray(REFERENCE_NEF);
         NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
-        assertThat(nef.getVersion(), is("3.0.0.0"));
+        // TODO: 02.02.21 Guil:
+        // Version is not there anymore... we should remove and embed in the compiler attribute
+        //assertThat(nef.getVersion(), is("3.0.0.0"));
         assertThat(nef.getCompiler(), is("neon"));
         assertThat(nef.getScript(), is(Numeric.hexStringToByteArray(REFERENCE_SCRIPT)));
         assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is(REFERENCE_CHECKSUM));
@@ -145,4 +151,29 @@ public class NefFileTest {
         NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
         assertThat(nef.getSize(), is(345));
     }
+
+    @Test
+    public void neoTokenNef_ContractManagement_getContract() throws DeserializationException {
+        byte[] nefBytes = Numeric.hexStringToByteArray(
+                "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
+        NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
+        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getCheckSum(), is(3921333105L));
+        assertThat(nef.getMethodTokens(), is(empty()));
+        assertThat(nef.getScript(), is(nullValue()));
+    }
+
+    @Test
+    public void readFromStackitem() throws DeserializationException, IOException {
+        byte[] nefBytes = Numeric.hexStringToByteArray(
+                "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
+        ByteStringStackItem stackItem = new ByteStringStackItem(
+                Numeric.hexStringToByteArray(Base64.encode(nefBytes)));
+        NefFile nef = NefFile.readFromStackitem(stackItem);
+        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getCheckSum(), is(3921333105L));
+        assertThat(nef.getMethodTokens(), is(empty()));
+        assertThat(nef.getScript(), is(nullValue()));
+    }
+
 }
