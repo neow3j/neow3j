@@ -7,6 +7,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
@@ -318,14 +319,14 @@ public class TransactionBuilder {
         NeoInvokeScript response = neow.invokeScript(
                 Base64.encode(Numeric.hexStringToByteArray(script)), signers)
                 .send();
-        return getSystemFeeFromDecimalString(response.getInvocationResult().getGasConsumed())
+        return getFeeFromDecimalString(response.getInvocationResult().getGasConsumed())
                 .longValue();
     }
 
     /*
      * Multiplies the GAS amount given in decimals to fractions.
      */
-    private BigInteger getSystemFeeFromDecimalString(String systemFee) {
+    private BigInteger getFeeFromDecimalString(String systemFee) {
         return new BigDecimal(systemFee)
                 .multiply(new BigDecimal(10).pow(GasToken.DECIMALS))
                 .stripTrailingZeros()
@@ -345,8 +346,10 @@ public class TransactionBuilder {
         getSignerAccounts().forEach(s -> {
             tx.addWitness(new Witness(new byte[]{}, s.getVerificationScript().getScript()));
         });
-        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(tx.toArray()))
-                .send().getNetworkFee().getNetworkFee().longValue();
+        NeoCalculateNetworkFee networkFeeResult = neow
+                .calculateNetworkFee(Numeric.toHexStringNoPrefix(tx.toArray())).send();
+        BigDecimal networkFee = networkFeeResult.getNetworkFee().getNetworkFee();
+        return getFeeFromDecimalString(networkFee.toPlainString()).longValue();
     }
 
     /**

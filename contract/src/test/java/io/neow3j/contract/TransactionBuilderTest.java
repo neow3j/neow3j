@@ -270,7 +270,7 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void testAutomaticSettingOfSystemFee() throws Throwable {
+    public void testAutomaticSettingOfSystemFeeAndNetworkFee() throws Throwable {
         Wallet wallet = Wallet.create();
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -283,6 +283,7 @@ public class TransactionBuilderTest {
                 .buildTransaction();
 
         assertThat(tx.getSystemFee(), is(1007390L));
+        assertThat(tx.getNetworkFee(), is(1230610L));
     }
 
     @Test
