@@ -1,5 +1,7 @@
 package io.neow3j.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.util.List;
 
 public class IOUtils {
@@ -44,6 +46,16 @@ public class IOUtils {
      */
     public static int getVarSize(byte[] bytes) {
         return getVarSize(bytes.length) + bytes.length;
+    }
+
+    /**
+     * Gets the byte size of the given string when Neo-serialized.
+     *
+     * @param value The string to serialize.
+     * @return the byte size.
+     */
+    public static int getVarSize(String value) {
+        return getVarSize(value.getBytes(UTF_8));
     }
 
 }

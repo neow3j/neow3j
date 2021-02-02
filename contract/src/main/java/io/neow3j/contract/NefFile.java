@@ -4,12 +4,14 @@ import static io.neow3j.utils.ArrayUtils.trimTrailingBytes;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.model.types.CallFlags;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * ┌───────────────────────────────────────────────────────────────────────┐
@@ -155,6 +158,8 @@ public class NefFile extends NeoSerializable {
                 throw new DeserializationException("Reserve bytes in NEF file must be 0.");
             }
 
+            // TODO: Deserialize method tokens
+
             script = reader.readVarBytes(MAX_SCRIPT_LENGTH);
             if (script.length == 0) {
                 throw new DeserializationException("Script can't be empty in NEF file.");
@@ -194,6 +199,50 @@ public class NefFile extends NeoSerializable {
         try (FileInputStream nefStream = new FileInputStream(nefFile)) {
             BinaryReader reader = new BinaryReader(nefStream);
             return reader.readSerializable(NefFile.class);
+        }
+    }
+
+    public static class MethodToken extends NeoSerializable {
+
+        private static final int PARAMS_COUNT_SIZE = 2; // short
+        private static final int HAS_RETURN_VALUE_SIZE = 1; // boolean
+        private static final int CALL_FLAGS_SIZE = 1; // byte
+
+        public ScriptHash hash;
+        public String method;
+        public int parametersCount;
+        public boolean hasReturnValue;
+        public CallFlags callFlags;
+
+        @Override
+        public void deserialize(BinaryReader reader) throws DeserializationException {
+            try {
+                hash = reader.readSerializable(ScriptHash.class);
+                method = reader.readVarString();
+                parametersCount = reader.readUInt16();
+                hasReturnValue = reader.readBoolean();
+                callFlags = CallFlags.valueOf(reader.readByte());
+            } catch(IOException e) {
+                throw new DeserializationException(e);
+            }
+        }
+
+        @Override
+        public void serialize(BinaryWriter writer) throws IOException {
+            writer.writeSerializableFixed(hash);
+                writer.writeVarString(method);
+                writer.writeUInt16(parametersCount);
+                writer.writeBoolean(hasReturnValue);
+                writer.writeByte(callFlags.getValue());
+        }
+
+        @Override
+        public int getSize() {
+            return NeoConstants.SCRIPTHASH_SIZE
+                + IOUtils.getVarSize(method)
+                + PARAMS_COUNT_SIZE
+            + HAS_RETURN_VALUE_SIZE
+            + CALL_FLAGS_SIZE;
         }
     }
 }

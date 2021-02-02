@@ -293,10 +293,21 @@ public class BinaryReader implements AutoCloseable {
     }
 
     /**
+     * Reads bytes as a UTF8 encoded string. It is assumed that the string is prefixed with its
+     * length.
+     *
+     * @return The read string.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public String readVarString() throws IOException {
+        return new String(readVarBytes(), StandardCharsets.UTF_8);
+    }
+
+    /**
      * Tries to read a PUSHDATA OpCode and the following data from the underlying byte stream.
      *
-     * @throws DeserializationException if the sequence of data cannot be deserialized
      * @return The data read
+     * @throws DeserializationException if the sequence of data cannot be deserialized
      */
     public byte[] readPushData() throws DeserializationException {
         try {
@@ -391,4 +402,5 @@ public class BinaryReader implements AutoCloseable {
             throw new RuntimeException(e);
         }
     }
+
 }
