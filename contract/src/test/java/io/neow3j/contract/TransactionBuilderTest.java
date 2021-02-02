@@ -819,7 +819,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        String txHash = "1a17f8e9e76804fb92756eb09748dbaa6f0b80dcfa184073c4a17f2c774d4842";
+        String txHash = "e082b8fdb5df2ddce9e5e6328e130d2bf66ebdc4c28b32237dc30ec12db2185b";
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
