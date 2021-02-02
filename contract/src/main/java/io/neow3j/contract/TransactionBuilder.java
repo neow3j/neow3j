@@ -326,8 +326,8 @@ public class TransactionBuilder {
     /*
      * Multiplies the GAS amount given in decimals to fractions.
      */
-    private BigInteger getFeeFromDecimalString(String systemFee) {
-        return new BigDecimal(systemFee)
+    private BigInteger getFeeFromDecimalString(String fee) {
+        return new BigDecimal(fee)
                 .multiply(new BigDecimal(10).pow(GasToken.DECIMALS))
                 .stripTrailingZeros()
                 .toBigInteger();
