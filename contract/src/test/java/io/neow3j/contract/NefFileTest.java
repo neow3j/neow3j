@@ -6,9 +6,11 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.NefFile.MethodToken;
+import io.neow3j.crypto.Base64;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.CallFlags;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.utils.Numeric;
 import java.io.File;
 import java.io.IOException;
@@ -206,28 +208,27 @@ public class NefFileTest {
         assertThat(nef.getSize(), is(nefBytes.length));
     }
 
-//    @Test
-//    public void neoTokenNef_ContractManagement_getContract() throws DeserializationException {
-//        byte[] nefBytes = Numeric.hexStringToByteArray(
-//                "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
-//        NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
-//        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
-//        assertThat(nef.getCheckSum(), is(3921333105L));
-//        assertThat(nef.getMethodTokens(), is(empty()));
-//        assertThat(nef.getScript(), is(nullValue()));
-//    }
-//
-//    @Test
-//    public void readFromStackitem() throws DeserializationException, IOException {
-//        byte[] nefBytes = Numeric.hexStringToByteArray(
-//                "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
-//        ByteStringStackItem stackItem = new ByteStringStackItem(
-//                Numeric.hexStringToByteArray(Base64.encode(nefBytes)));
-//        NefFile nef = NefFile.readFromStackitem(stackItem);
-//        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
-//        assertThat(nef.getCheckSum(), is(3921333105L));
-//        assertThat(nef.getMethodTokens(), is(empty()));
-//        assertThat(nef.getScript(), is(nullValue()));
-//    }
+    @Test
+    public void deserializeNeoTokenNefFile() throws DeserializationException {
+        byte[] nefBytes = Numeric.hexStringToByteArray(
+                "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
+        NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
+        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getScript(), is(Numeric.hexStringToByteArray("00fd411af77b67")));
+        assertThat(nef.getMethodTokens(), is(empty()));
+        assertThat(nef.getCheckSumAsInteger(), is(3921333105L));
+    }
+
+    @Test
+    public void readNeoNefFileFromStackItem() throws DeserializationException, IOException {
+        byte[] nefBytes = Numeric.hexStringToByteArray(
+                "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
+        ByteStringStackItem stackItem = new ByteStringStackItem(nefBytes);
+        NefFile nef = NefFile.readFromStackitem(stackItem);
+        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getScript(), is(Numeric.hexStringToByteArray("00fd411af77b67")));
+        assertThat(nef.getMethodTokens(), is(empty()));
+        assertThat(nef.getCheckSumAsInteger(), is(3921333105L));
+    }
 
 }
