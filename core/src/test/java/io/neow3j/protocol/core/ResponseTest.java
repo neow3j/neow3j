@@ -61,13 +61,13 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 
 import java.math.BigInteger;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -432,7 +432,13 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"id\": -2,\n" +
                         "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "        \"script\": \"QetD9PQ=\",\n" +
+                        "        \"nef\": {\n" +
+                        "            \"magic\": 860243278,\n" +
+                        "            \"compiler\": \"neo-core-v3.0\",\n" +
+                        "            \"tokens\": [],\n" +
+                        "            \"script\": \"QetD9PQ=\",\n" +
+                        "            \"checksum\": 3921333105\n" +
+                        "        },\n" +
                         "        \"manifest\": {\n" +
                         "            \"name\": \"GasToken\"," +
                         "            \"groups\": [\n" +
@@ -542,7 +548,10 @@ public class ResponseTest extends ResponseTester {
         assertThat(getContractState.getContractState().getId(), is(-2));
         assertThat(getContractState.getContractState().getHash(),
                 is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
-        assertThat(getContractState.getContractState().getScript(), is("QetD9PQ="));
+        assertThat(getContractState.getContractState().getNef().getScript(), is("QetD9PQ="));
+        assertThat(getContractState.getContractState().getNef().getTokens(), is(empty()));
+        assertThat(getContractState.getContractState().getNef().getChecksum(), is(3921333105L));
+        assertThat(getContractState.getContractState().getNef().getCompiler(), is("neo-core-v3.0"));
 
         ContractManifest manifest = getContractState.getContractState().getManifest();
         assertThat(manifest, is(notNullValue()));
