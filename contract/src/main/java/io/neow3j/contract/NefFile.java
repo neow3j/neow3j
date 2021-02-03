@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,9 +45,7 @@ import java.util.List;
  * └──────────┴───────────────┴────────────────────────────────────────────┘
  */
 public class NefFile extends NeoSerializable {
-
-    // NEO Executable Format 3 (NEF3)
-    private static final int MAGIC = 0x3346454E; // 860243278 in decimal
+    private static final int MAGIC = 0x3346454E; // "NEF3".getBytes(UTF_8));
     private static final int MAGIC_SIZE = 4;
     private static final int COMPILER_SIZE = 64;
     private static final int MAX_SCRIPT_LENGTH = 512 * 1024;
@@ -61,11 +60,19 @@ public class NefFile extends NeoSerializable {
     private byte[] script;
 
     public NefFile() {
+        methodTokens = new ArrayList<>();
         checkSum = new byte[]{};
         script = new byte[]{};
     }
 
-    public NefFile(String compiler, String version, byte[] script) {
+    /**
+     * Constructs a new {@code NefFile} from the given contract information.
+     *
+     * @param compiler     The compiler name and version with which the contract has been compiled.
+     * @param script       The contract's script.
+     * @param methodTokens The method tokens of the contract.
+     */
+    public NefFile(String compiler, byte[] script, List<MethodToken> methodTokens) {
         int compilerSize = compiler.getBytes(UTF_8).length;
         if (compilerSize > COMPILER_SIZE) {
             throw new IllegalArgumentException(format("The compiler name and version string can "
@@ -73,6 +80,8 @@ public class NefFile extends NeoSerializable {
         }
         this.compiler = compiler;
         this.script = script;
+        this.methodTokens = methodTokens == null ? new ArrayList<>() : methodTokens;
+
         // Need to initialize the check sum because it is required for calculating the check sum.
         checkSum = new byte[CHECKSUM_SIZE];
         checkSum = computeChecksum(this);
@@ -80,6 +89,7 @@ public class NefFile extends NeoSerializable {
 
     /**
      * Gets the compiler (and version) with which this NEF file has been generated.
+     *
      * @return the compiler name and version.
      */
     public String getCompiler() {
@@ -90,6 +100,7 @@ public class NefFile extends NeoSerializable {
      * Gets the contract's method tokens.
      * <p>
      * The tokens represent calls to other contracts.
+     *
      * @return the contract's method tokens.
      */
     public List<MethodToken> getMethodTokens() {
@@ -98,6 +109,7 @@ public class NefFile extends NeoSerializable {
 
     /**
      * Gets the contract script.
+     *
      * @return the contract script.
      */
     public byte[] getScript() {
@@ -106,6 +118,7 @@ public class NefFile extends NeoSerializable {
 
     /**
      * Gets this NEF file's check sum.
+     *
      * @return the check sum.
      */
     public byte[] getCheckSum() {
@@ -114,6 +127,7 @@ public class NefFile extends NeoSerializable {
 
     /**
      * Gets the NEF file's check sum as an integer.
+     *
      * @return the check sum.
      */
     public long getCheckSumAsInteger() {
@@ -122,6 +136,7 @@ public class NefFile extends NeoSerializable {
 
     /**
      * Gets the byte size of this NEF file when serialized.
+     *
      * @return the byte size.
      */
     @Override
@@ -149,26 +164,28 @@ public class NefFile extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             // Magic
-            long l = reader.readUInt32();
-            if (l != MAGIC) {
+            if (reader.readUInt32() != MAGIC) {
                 throw new DeserializationException("Wrong magic number in NEF file.");
             }
-
             // Compiler
             byte[] compilerBytes = reader.readBytes(COMPILER_SIZE);
             compiler = new String(trimTrailingBytes(compilerBytes, (byte) 0), UTF_8);
-
             // Reserved bytes
             if (reader.readUInt16() != 0) {
                 throw new DeserializationException("Reserve bytes in NEF file must be 0.");
             }
-
-            // TODO: Deserialize method tokens
-
+            // Method tokens
+            methodTokens = reader.readSerializableList(MethodToken.class);
+            // Reserved bytes
+            if (reader.readUInt16() != 0) {
+                throw new DeserializationException("Reserve bytes in NEF file must be 0.");
+            }
+            // Script
             script = reader.readVarBytes(MAX_SCRIPT_LENGTH);
             if (script.length == 0) {
                 throw new DeserializationException("Script can't be empty in NEF file.");
             }
+            // Check sum
             checkSum = reader.readBytes(CHECKSUM_SIZE);
             if (!Arrays.equals(checkSum, computeChecksum(this))) {
                 throw new DeserializationException("The checksums did not match");
@@ -222,17 +239,37 @@ public class NefFile extends NeoSerializable {
         }
     }
 
+    /**
+     * Represents a static call to another contract from within a smart contract.
+     * <p>
+     * Method tokens are referenced in the smart contract's script whenever the referenced method is
+     * called.
+     */
     public static class MethodToken extends NeoSerializable {
 
         private static final int PARAMS_COUNT_SIZE = 2; // short
         private static final int HAS_RETURN_VALUE_SIZE = 1; // boolean
         private static final int CALL_FLAGS_SIZE = 1; // byte
 
-        public ScriptHash hash;
-        public String method;
-        public int parametersCount;
-        public boolean hasReturnValue;
-        public CallFlags callFlags;
+        private ScriptHash hash;
+        private String method;
+        private int parametersCount;
+        private boolean hasReturnValue;
+        private CallFlags callFlags;
+
+        public MethodToken(ScriptHash hash, String method, int parametersCount,
+                boolean hasReturnValue,
+                CallFlags callFlags) {
+            this.hash = hash;
+            this.method = method;
+            this.parametersCount = parametersCount;
+            this.hasReturnValue = hasReturnValue;
+            this.callFlags = callFlags;
+        }
+
+        public MethodToken() {
+
+        }
 
         @Override
         public void deserialize(BinaryReader reader) throws DeserializationException {
@@ -242,7 +279,7 @@ public class NefFile extends NeoSerializable {
                 parametersCount = reader.readUInt16();
                 hasReturnValue = reader.readBoolean();
                 callFlags = CallFlags.valueOf(reader.readByte());
-            } catch(IOException e) {
+            } catch (IOException e) {
                 throw new DeserializationException(e);
             }
         }
@@ -250,19 +287,45 @@ public class NefFile extends NeoSerializable {
         @Override
         public void serialize(BinaryWriter writer) throws IOException {
             writer.writeSerializableFixed(hash);
-                writer.writeVarString(method);
-                writer.writeUInt16(parametersCount);
-                writer.writeBoolean(hasReturnValue);
-                writer.writeByte(callFlags.getValue());
+            writer.writeVarString(method);
+            writer.writeUInt16(parametersCount);
+            writer.writeBoolean(hasReturnValue);
+            writer.writeByte(callFlags.getValue());
         }
 
         @Override
         public int getSize() {
             return NeoConstants.SCRIPTHASH_SIZE
-                + IOUtils.getVarSize(method)
-                + PARAMS_COUNT_SIZE
-            + HAS_RETURN_VALUE_SIZE
-            + CALL_FLAGS_SIZE;
+                    + IOUtils.getVarSize(method)
+                    + PARAMS_COUNT_SIZE
+                    + HAS_RETURN_VALUE_SIZE
+                    + CALL_FLAGS_SIZE;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof MethodToken)) {
+                return false;
+            }
+            MethodToken that = (MethodToken) o;
+
+            return parametersCount == that.parametersCount
+                    && hasReturnValue == that.hasReturnValue
+                    && hash.equals(that.hash) && method.equals(that.method)
+                    && callFlags == that.callFlags;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = hash != null ? hash.hashCode() : 0;
+            result = 31 * result + (method != null ? method.hashCode() : 0);
+            result = 31 * result + parametersCount;
+            result = 31 * result + (hasReturnValue ? 1 : 0);
+            result = 31 * result + (callFlags != null ? callFlags.hashCode() : 0);
+            return result;
         }
     }
 }
