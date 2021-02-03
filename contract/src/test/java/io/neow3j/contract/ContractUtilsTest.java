@@ -232,7 +232,7 @@ public class ContractUtilsTest {
                 + "-test-write-nef");
         outDir.toFile().deleteOnExit();
         NefFile nefFile = NefFile.readFromFile(new File(
-                ContractUtilsTest.class.getResource("/contracts/DotnetContract.nef").getFile()));
+                ContractUtilsTest.class.getResource("/contracts/ContractWithMethodTokens.nef").getFile()));
 
         String nefFilePath = writeNefFile(nefFile, contractName, outDir);
         assertThat(nefFilePath,
