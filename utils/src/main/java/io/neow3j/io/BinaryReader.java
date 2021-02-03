@@ -120,10 +120,70 @@ public class BinaryReader implements AutoCloseable {
         return buffer;
     }
 
-    public double readDouble() throws IOException {
+    /**
+     * Reads a 16-bit unsigned integer in little-endian format from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a
+     * int.
+     *
+     * @return the 16-bit unsigned integer as a normal Java int.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public int readUInt16() throws IOException {
+        reader.readFully(array, 0, 2);
+        position += 2;
+        return Short.toUnsignedInt(buffer.getShort(0));
+    }
+
+    /**
+     * Reads a 16-bit signed integer in little-endian format from the underlying input stream.
+     *
+     * @return the 16-bit signed integer.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public short readInt16() throws IOException {
+        reader.readFully(array, 0, 2);
+        position += 2;
+        return buffer.getShort(0);
+    }
+
+    /**
+     * Reads a 32-bit unsigned integer in little-endian format from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a
+     * long.
+     *
+     * @return the 32-bit unsigned integer.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readUInt32() throws IOException {
+        reader.readFully(array, 0, 4);
+        position += 4;
+        return Integer.toUnsignedLong(buffer.getInt(0));
+    }
+
+    /**
+     * Reads a 32-bit signed integer in little-endian format from the underlying input stream.
+     *
+     * @return the 32-bit signed integer.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public int readInt32() throws IOException {
+        reader.readFully(array, 0, 4);
+        position += 4;
+        return buffer.getInt(0);
+    }
+
+    /**
+     * Reads a 64-bit signed integer in little-endian format from the underlying input stream.
+     *
+     * @return the 34-bit unsigned integer represented as a long.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public long readInt64() throws IOException {
         reader.readFully(array, 0, 8);
         position += 8;
-        return buffer.getDouble(0);
+        return buffer.getLong(0);
     }
 
     /**
@@ -178,60 +238,6 @@ public class BinaryReader implements AutoCloseable {
         return NeoConstants.curve().getCurve().decodePoint(encoded);
     }
 
-    public float readFloat() throws IOException {
-        reader.readFully(array, 0, 4);
-        position += 4;
-        return buffer.getFloat(0);
-    }
-
-    public int readInt() throws IOException {
-        reader.readFully(array, 0, 4);
-        position += 4;
-        return buffer.getInt(0);
-    }
-
-    /**
-     * Reads a 16-bit unsigned integer from the underlying input stream.
-     * <p>
-     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a
-     * int.
-     *
-     * @return the 16-bit unsigned integer as a normal Java int.
-     * @throws IOException if an I/O exception occurs.
-     */
-    public int readUInt16() throws IOException {
-        reader.readFully(array, 0, 2);
-        position += 2;
-        return Short.toUnsignedInt(buffer.getShort(0));
-    }
-
-    /**
-     * Reads a 32-bit unsigned integer from the underlying input stream.
-     * <p>
-     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a
-     * long.
-     *
-     * @return the 32-bit unsigned integer.
-     * @throws IOException if an I/O exception occurs.
-     */
-    public long readUInt32() throws IOException {
-        reader.readFully(array, 0, 4);
-        position += 4;
-        return Integer.toUnsignedLong(buffer.getInt(0));
-    }
-
-    /**
-     * Reads a 64-bit signed integer from the underlying input stream.
-     *
-     * @return the 34-bit unsigned integer represented as a long.
-     * @throws IOException if an I/O exception occurs.
-     */
-    public long readInt64() throws IOException {
-        reader.readFully(array, 0, 8);
-        position += 8;
-        return buffer.getLong(0);
-    }
-
     public <T extends NeoSerializable> T readSerializable(Class<T> t)
             throws DeserializationException {
 
@@ -282,12 +288,6 @@ public class BinaryReader implements AutoCloseable {
         }
     }
 
-    public short readShort() throws IOException {
-        reader.readFully(array, 0, 2);
-        position += 2;
-        return buffer.getShort(0);
-    }
-
     public byte[] readVarBytes() throws IOException {
         return readVarBytes(0x1000000);
     }
@@ -316,9 +316,9 @@ public class BinaryReader implements AutoCloseable {
             if (singleByte == OpCode.PUSHDATA1.getCode()) {
                 size = readUnsignedByte();
             } else if (singleByte == OpCode.PUSHDATA2.getCode()) {
-                size = readShort();
+                size = readInt16();
             } else if (singleByte == OpCode.PUSHDATA4.getCode()) {
-                size = readInt();
+                size = readInt32();
             } else {
                 throw new DeserializationException("Stream did not contain a PUSHDATA OpCode at "
                         + "the current position.");
@@ -345,9 +345,9 @@ public class BinaryReader implements AutoCloseable {
         long fb = Byte.toUnsignedLong(readByte());
         long value;
         if (fb == 0xFD) {
-            value = Short.toUnsignedLong(readShort());
+            value = Short.toUnsignedLong(readInt16());
         } else if (fb == 0xFE) {
-            value = Integer.toUnsignedLong(readInt());
+            value = Integer.toUnsignedLong(readInt32());
         } else if (fb == 0xFF) {
             value = readInt64();
         } else {
@@ -389,18 +389,6 @@ public class BinaryReader implements AutoCloseable {
             throw new DeserializationException(e);
         }
         throw new DeserializationException("Couldn't parse PUSHINT OpCode");
-    }
-
-
-    public static int readUInt16(byte[] bytes) {
-        try (ByteArrayInputStream ms = new ByteArrayInputStream(bytes)) {
-            try (BinaryReader reader = new BinaryReader(ms)) {
-                return reader.readUInt16();
-            }
-        } catch (IOException e) {
-            // Shouldn't happen because the underlying stream is a ByteArrayInputStream.
-            throw new RuntimeException(e);
-        }
     }
 
 }
