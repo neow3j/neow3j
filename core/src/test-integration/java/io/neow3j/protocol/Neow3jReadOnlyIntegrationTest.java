@@ -667,7 +667,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoCalculateNetworkFee calcNetworkFee = getNeow3j().calculateNetworkFee(CALC_NETWORK_FEE_TX).send();
         NeoNetworkFee networkFee = calcNetworkFee.getNetworkFee();
 
-        assertThat(networkFee.getNetworkFee(), is(new BigDecimal("0.0123061")));
+        assertThat(networkFee.getNetworkFee(), is(new BigInteger("1230610")));
     }
 
     @Test
