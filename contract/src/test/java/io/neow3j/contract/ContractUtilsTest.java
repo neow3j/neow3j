@@ -37,6 +37,9 @@ import org.junit.Test;
 
 public class ContractUtilsTest {
 
+    private final static String TESTCONTRACT_WITH_TOKENS_FILE =
+            "/contracts/TestContractWithMethodTokens.nef";
+
     @Test
     public void testWriteContractManifestFile() throws Exception {
         File tempDir = Files.createTempDirectory(
@@ -231,8 +234,8 @@ public class ContractUtilsTest {
         Path outDir = Files.createTempDirectory(ContractUtils.class.getSimpleName()
                 + "-test-write-nef");
         outDir.toFile().deleteOnExit();
-        NefFile nefFile = NefFile.readFromFile(new File(
-                ContractUtilsTest.class.getResource("/contracts/ContractWithMethodTokens.nef").getFile()));
+        NefFile nefFile = NefFile.readFromFile(new File(ContractUtilsTest.class.getResource(
+                TESTCONTRACT_WITH_TOKENS_FILE).getFile()));
 
         String nefFilePath = writeNefFile(nefFile, contractName, outDir);
         assertThat(nefFilePath,
