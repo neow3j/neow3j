@@ -3,9 +3,7 @@ package io.neow3j.devpack.neo;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_GETCALLFLAGS;
 
-import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -48,8 +46,8 @@ public class Contract {
     }
 
     /**
-     * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing
-     * the {@code arguments}.
+     * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing the
+     * {@code arguments}.
      *
      * @param scriptHash The script hash of the contract to invoke.
      * @param method     The method to call.
