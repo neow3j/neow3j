@@ -6,6 +6,7 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFuncti
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -102,7 +103,10 @@ public class ContractManagementTest {
         assertThat(state.getUpdateCounter(), is(0));
         assertThat(state.getHash(), is(NeoToken.SCRIPT_HASH.toString()));
 
-//        assertThat(state.getNef().getScript(), is("0c084e656f546f6b656e411af77b67"));
+        assertThat(state.getNef().getMagic(), is(860243278L));
+        assertThat(state.getNef().getCompiler(), is("neo-core-v3.0"));
+        assertThat(state.getNef().getScript(), is(nullValue()));
+        assertThat(state.getNef().getChecksum(), is(3921333105L));
 
         assertThat(state.getManifest().getName(), is(NeoToken.NAME));
         assertThat(state.getManifest().getAbi().getMethods(), hasSize(14));

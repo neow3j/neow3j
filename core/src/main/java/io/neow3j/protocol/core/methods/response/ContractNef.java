@@ -11,6 +11,9 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractNef {
 
+    @JsonProperty("magic")
+    private Long magic;
+
     @JsonProperty("compiler")
     private String compiler;
 
@@ -28,11 +31,17 @@ public class ContractNef {
     public ContractNef() {
     }
 
-    public ContractNef(String compiler, List<ContractMethodToken> tokens, String script, Long checksum) {
+    public ContractNef(Long magic, String compiler,
+            List<ContractMethodToken> tokens, String script, Long checksum) {
+        this.magic = magic;
         this.compiler = compiler;
         this.tokens = tokens;
         this.script = script;
         this.checksum = checksum;
+    }
+
+    public Long getMagic() {
+        return magic;
     }
 
     public String getCompiler() {
@@ -60,21 +69,23 @@ public class ContractNef {
             return false;
         }
         ContractNef that = (ContractNef) o;
-        return Objects.equals(getCompiler(), that.getCompiler()) &&
-                Objects.equals(getTokens(), that.getTokens()) &&
-                Objects.equals(getScript(), that.getScript()) &&
-                Objects.equals(getChecksum(), that.getChecksum());
+        return Objects.equals(magic, that.magic) &&
+                Objects.equals(compiler, that.compiler) &&
+                Objects.equals(tokens, that.tokens) &&
+                Objects.equals(script, that.script) &&
+                Objects.equals(checksum, that.checksum);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCompiler(), getTokens(), getScript(), getChecksum());
+        return Objects.hash(magic, compiler, tokens, script, checksum);
     }
 
     @Override
     public String toString() {
         return "ContractNef{" +
-                "compiler='" + compiler + '\'' +
+                "magic=" + magic +
+                ", compiler='" + compiler + '\'' +
                 ", tokens=" + tokens +
                 ", script='" + script + '\'' +
                 ", checksum=" + checksum +

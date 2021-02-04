@@ -321,11 +321,11 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(contractState.getId(), is(-3));
         assertThat(contractState.getHash(), is("0x" + NEO_HASH));
         assertThat(contractState.getNef(), is(notNullValue()));
+        assertThat(contractState.getNef().getMagic(), is(860243278L));
         assertThat(contractState.getNef().getCompiler(), is("neo-core-v3.0"));
         assertThat(contractState.getNef().getTokens(), is(empty()));
         assertThat(contractState.getNef().getScript(), is("AP1BGvd7Zw=="));
         assertThat(contractState.getNef().getChecksum(), is(3921333105L));
-
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);

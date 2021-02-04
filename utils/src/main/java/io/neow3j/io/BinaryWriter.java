@@ -208,4 +208,14 @@ public class BinaryWriter implements AutoCloseable {
         }
     }
 
+    /**
+     * Writes the given variable-sized string as a UTF8-encoded byte array. The array is prefixed
+     * with its size.
+     *
+     * @param value The string to write.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public void writeVarString(String value) throws IOException {
+        writeVarBytes(value.getBytes(UTF_8));
+    }
 }
