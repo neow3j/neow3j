@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -23,25 +24,17 @@ public class ContractIntegrationTest extends ContractTest {
    }
 
    @Test
-   public void callWithoutCallFlagsWithoutArguments() throws IOException {
-       NeoInvokeFunction resp = callInvokeFunction(hash160(NeoToken.SCRIPT_HASH), string(
-               "symbol"));
+   public void callWithoutArguments() throws IOException {
+       NeoInvokeFunction resp = callInvokeFunction("call",
+               hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(CallFlags.ALL));
        assertThat(resp.getInvocationResult().getStack().get(0).asByteString().getAsString(),
                is("NEO"));
    }
 
     @Test
-    public void callWithoutCallFlagsWithArgument() throws IOException {
-        NeoInvokeFunction resp = callInvokeFunction(hash160(NeoToken.SCRIPT_HASH), string(
-                "balanceOf"), hash160(committee.getScriptHash()));
-        assertThat(resp.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
-                is(100_000_000));
-    }
-
-    @Test
-    public void callWitCallFlagsWithArgument() throws IOException {
-        NeoInvokeFunction resp = callInvokeFunction(hash160(NeoToken.SCRIPT_HASH), string(
-                "balanceOf"), hash160(committee.getScriptHash()));
+    public void callWithArgument() throws IOException {
+        NeoInvokeFunction resp = callInvokeFunction("call", hash160(NeoToken.SCRIPT_HASH), string(
+                "balanceOf"), integer(CallFlags.ALL), hash160(committee.getScriptHash()));
         assertThat(resp.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
                 is(100_000_000));
     }
@@ -55,18 +48,12 @@ public class ContractIntegrationTest extends ContractTest {
 
    static class ContractIntegrationTestContract {
 
-       public static Object callWithoutCallFlagsWithoutArguments(Hash160 hash, String method) {
-           return Contract.call(hash, method, new Object[]{});
+       public static Object call(Hash160 hash, String method, byte callFlags, Object param) {
+           return Contract.call(hash, method, callFlags, new Object[]{param});
        }
 
-       public static Object callWithoutCallFlagsWithArgument(Hash160 hash, String method,
-               Hash160 scriptHash) {
-           return Contract.call(hash, method, new Object[]{scriptHash});
-       }
-
-       public static Object callWitCallFlagsWithArgument(Hash160 hash, String method,
-               Hash160 scriptHash) {
-           return Contract.call(hash, method, new Object[]{scriptHash}, CallFlags.ALL);
+       public static Object call(Hash160 hash, String method, byte callFlags) {
+           return Contract.call(hash, method, callFlags, new Object[0]);
        }
 
        public static byte getCallFlags() {
