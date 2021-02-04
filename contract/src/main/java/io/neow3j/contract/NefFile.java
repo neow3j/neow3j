@@ -127,11 +127,12 @@ public class NefFile extends NeoSerializable {
 
     /**
      * Gets the NEF file's check sum as an integer.
-     *
+     * <p>
+     * The check sum bytes of the NEF file are read as a little endian unsigned integer.
      * @return the check sum.
      */
     public long getCheckSumAsInteger() {
-        return Numeric.toBigInt(checkSum).longValue();
+        return Numeric.toBigInt(ArrayUtils.reverseArray(checkSum)).longValue();
     }
 
     /**
@@ -196,14 +197,7 @@ public class NefFile extends NeoSerializable {
     }
 
     public static byte[] computeChecksum(NefFile file) {
-        byte[] serialized = new byte[]{};
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            BinaryWriter writer = new BinaryWriter(stream);
-            writer.writeSerializableFixed(file);
-            serialized = stream.toByteArray();
-        } catch (IOException e) {
-            // Doesn't happen because we're not writing to anywhere.
-        }
+        byte[] serialized = file.toArray();
         // Get nef file bytes without the checksum.
         int fileSizeWithoutCheckSum = serialized.length - CHECKSUM_SIZE;
         byte[] nefFileBytes = ArrayUtils.getFirstNBytes(serialized, fileSizeWithoutCheckSum);
