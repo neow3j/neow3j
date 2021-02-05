@@ -265,6 +265,26 @@ public class NefFile extends NeoSerializable {
 
         }
 
+        public ScriptHash getHash() {
+            return hash;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public int getParametersCount() {
+            return parametersCount;
+        }
+
+        public boolean hasReturnValue() {
+            return hasReturnValue;
+        }
+
+        public CallFlags getCallFlags() {
+            return callFlags;
+        }
+
         @Override
         public void deserialize(BinaryReader reader) throws DeserializationException {
             try {

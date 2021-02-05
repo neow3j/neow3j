@@ -264,7 +264,8 @@ public class Compiler {
     private void finalizeCompilation() {
         compUnit.getNeoModule().finalizeModule();
         // TODO: Pass MethodTokens to the NefFile constructor.
-        NefFile nef = new NefFile(COMPILER_NAME, compUnit.getNeoModule().toByteArray(), null);
+        NefFile nef = new NefFile(COMPILER_NAME, compUnit.getNeoModule().toByteArray(),
+                compUnit.getNeoModule().getMethodTokens());
         ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);

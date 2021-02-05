@@ -23,7 +23,6 @@ public enum InteropServiceCode {
     SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1 << 15),
 
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
-    SYSTEM_CONTRACT_CALLEX("System.Contract.CallEx", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
     SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 1 << 10),
     SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 1 << 10),
