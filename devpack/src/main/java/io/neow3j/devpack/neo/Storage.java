@@ -8,6 +8,7 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_GETREADONLYC
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_PUT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_PUTEX;
 
+import io.neow3j.devpack.Map.Entry;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -165,7 +166,8 @@ public class Storage {
      * @return an iterator over key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<byte[], byte[]> find(StorageContext context, byte[] prefix);
+    public static native Iterator<Entry<byte[], byte[]>> find(StorageContext context,
+            byte[] prefix);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
@@ -175,7 +177,8 @@ public class Storage {
      * @return an iterator over key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<String, byte[]> find(StorageContext context, String prefix);
+    public static native Iterator<Entry<String, byte[]>> find(StorageContext context,
+            String prefix);
 
     /**
      * Returns the value corresponding to the given key.
@@ -428,23 +431,23 @@ public class Storage {
      * <p>
      * Implicitly makes a Syscall to retrieve the current contract's storage context.
      *
-     * @param prefix  The key prefix.
+     * @param prefix The key prefix.
      * @return an iterator over key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_GETCONTEXT)
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<byte[], byte[]> find(byte[] prefix);
+    public static native Iterator<Entry<byte[], byte[]>> find(byte[] prefix);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
      * <p>
      * Implicitly makes a Syscall to retrieve the current contract's storage context.
      *
-     * @param prefix  The key prefix.
+     * @param prefix The key prefix.
      * @return an iterator over key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_GETCONTEXT)
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<String, byte[]> find(String prefix);
+    public static native Iterator<Entry<String, byte[]>> find(String prefix);
 
 }
