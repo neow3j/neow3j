@@ -377,6 +377,7 @@ public class MethodsConverter implements Converter {
         int idx = compUnit.getNeoModule().addMethodToken(token);
         byte[] idxBytes = ArrayUtils.getFirstNBytes(ByteBuffer.allocate(4).order(
                 ByteOrder.LITTLE_ENDIAN).putInt(idx).array(), 2);
+        addReverseArguments(callingNeoMethod, nrOfParams);
         callingNeoMethod.addInstruction(new NeoInstruction(CALLT, idxBytes));
     }
 
