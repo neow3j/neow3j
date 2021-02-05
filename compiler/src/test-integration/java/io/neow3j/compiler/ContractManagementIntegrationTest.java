@@ -39,14 +39,14 @@ public class ContractManagementIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.hash160(io.neow3j.contract.NeoToken.SCRIPT_HASH));
         ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(arrayStackItem.get(0).asInteger().getValue().intValue(), is(-1)); // ID
+        assertThat(arrayStackItem.get(0).asInteger().getValue().intValue(), is(-3)); // ID
         assertThat(arrayStackItem.get(1).asInteger().getValue().intValue(), is(0)); // updateCounter
         assertThat(Numeric.reverseHexString(arrayStackItem.get(2).asByteString().getAsHexString()),
                 is(NeoToken.SCRIPT_HASH.toString())); // contract hash
-        // script
+        // nef
         assertThat(arrayStackItem.get(3).asByteString().getAsHexString(), not(isEmptyString()));
         // manifest
-        assertThat(arrayStackItem.get(4).asByteString().getAsHexString(), not(isEmptyString()));
+        assertThat(arrayStackItem.get(4).asStruct().getValue(), notNullValue());
     }
 
     @Test
