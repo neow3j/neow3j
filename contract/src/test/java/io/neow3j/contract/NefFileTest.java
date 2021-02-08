@@ -223,7 +223,7 @@ public class NefFileTest {
         byte[] nefBytes = Numeric.hexStringToByteArray(
                 "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
         ByteStringStackItem stackItem = new ByteStringStackItem(nefBytes);
-        NefFile nef = NefFile.readFromStackItem(stackItem);
+        NefFile nef = NefFile.fromStackItem(stackItem);
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getScript(), is(Numeric.hexStringToByteArray("00fd411af77b67")));
         assertThat(nef.getMethodTokens(), is(empty()));

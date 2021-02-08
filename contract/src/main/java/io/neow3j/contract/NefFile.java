@@ -226,7 +226,7 @@ public class NefFile extends NeoSerializable {
         }
     }
 
-    public static NefFile readFromStackItem(StackItem stackItem)
+    public static NefFile fromStackItem(StackItem stackItem)
             throws DeserializationException, IOException {
 
         // the 'nef' is represented in a ByteString stack item
