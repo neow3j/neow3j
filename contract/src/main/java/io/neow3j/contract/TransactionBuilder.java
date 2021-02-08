@@ -382,18 +382,32 @@ public class TransactionBuilder {
     }
 
     /*
-     * Fetches the GAS consumed by this transaction. It does this by making an RPC call to the
-     * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
+     * Fetches the GAS consumed by this transaction. It does this by making an
+     * RPC call to the Neo node.
+     * The returned GAS amount is in fractions of GAS (10^-8).
      */
     private long getSystemFeeForScript() throws IOException {
-        // The signers are required for `invokescript` calls that will hit a CheckWitness
-        // check in the smart contract.
+        // The signers are required for `invokescript` calls that will hit a
+        // CheckWitness check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = Numeric.toHexStringNoPrefix(this.script);
         NeoInvokeScript response = neow.invokeScript(
                 Base64.encode(Numeric.hexStringToByteArray(script)), signers)
                 .send();
-        return new BigInteger(response.getInvocationResult().getGasConsumed()).longValue();
+        if (response.hasError()) {
+            throw new TransactionConfigurationException("The script is " +
+                    "invalid. The vm returned the error code " +
+                    response.getError().getCode() +
+                    " with the message: "
+                    + response.getError().getMessage());
+        }
+        if (response.getResult().hasStateFault()) {
+            throw new TransactionConfigurationException("The vm exited due " +
+                    "to the following exception: " +
+                    response.getResult().getException());
+        }
+        return new BigInteger(response.getInvocationResult().getGasConsumed())
+                .longValue();
     }
 
     /*
@@ -522,8 +536,10 @@ public class TransactionBuilder {
         VerificationScript multiSigVerifScript = signerAcc.getVerificationScript();
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
             ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
-            Account a = wallet.getAccount(accScriptHash);
-            if (a == null) {
+            Account a;
+            try {
+                a = wallet.getAccount(accScriptHash);
+            } catch (IllegalArgumentException e) {
                 continue;
             }
             ECKeyPair ecKeyPair;
