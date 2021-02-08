@@ -1,15 +1,21 @@
 package io.neow3j.protocol.core.methods.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import io.neow3j.transaction.TransactionAttributeType;
 
 @JsonTypeInfo(use = Id.NAME, property = "type", include = As.EXISTING_PROPERTY)
+@JsonSubTypes(value = {
+        @JsonSubTypes.Type(value = HighPriorityAttribute.class,
+                name = TransactionAttributeType.HIGH_PRIORITY_VALUE)
+})
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TransactionAttribute {
+public abstract class TransactionAttribute {
 
     @JsonProperty("type")
     public TransactionAttributeType type;
@@ -19,6 +25,25 @@ public class TransactionAttribute {
 
     public TransactionAttribute(TransactionAttributeType type) {
         this.type = type;
+    }
+
+    /**
+     * Casts this transaction attribute to a {@link HighPriorityAttribute}
+     * if possible, and returns it.
+     *
+     * @return this transaction attribute as a {@link HighPriorityAttribute}.
+     * @throws IllegalStateException    if this transaction attribute is not an
+     *                                  instance of {@link HighPriorityAttribute}.
+     */
+    @JsonIgnore
+    public HighPriorityAttribute asHighPriority() {
+        if (this instanceof HighPriorityAttribute) {
+            return (HighPriorityAttribute) this;
+        }
+        throw new IllegalStateException("This transaction attribute is not " +
+                "of type " +
+                TransactionAttributeType.HIGH_PRIORITY.jsonValue() +
+                " but of " + type.jsonValue());
     }
 
     public TransactionAttributeType getType() {
