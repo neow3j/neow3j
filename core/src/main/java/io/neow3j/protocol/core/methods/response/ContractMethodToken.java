@@ -25,6 +25,15 @@ public class ContractMethodToken {
     public ContractMethodToken() {
     }
 
+    public ContractMethodToken(String hash, String method, Integer paramCount,
+            Boolean returnValue, String callFlags) {
+        this.hash = hash;
+        this.method = method;
+        this.paramCount = paramCount;
+        this.returnValue = returnValue;
+        this.callFlags = callFlags;
+    }
+
     public String getHash() {
         return hash;
     }
