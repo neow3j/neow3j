@@ -19,7 +19,6 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -85,6 +84,15 @@ public class NefFile extends NeoSerializable {
         // Need to initialize the check sum because it is required for calculating the check sum.
         checkSum = new byte[CHECKSUM_SIZE];
         checkSum = computeChecksum(this);
+    }
+
+    /**
+     * Gets the magic number of NEF files.
+     *
+     * @return the NEF file magic number.
+     */
+    public int getMagic() {
+        return MAGIC;
     }
 
     /**
@@ -265,6 +273,26 @@ public class NefFile extends NeoSerializable {
 
         }
 
+        public ScriptHash getHash() {
+            return hash;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public int getParametersCount() {
+            return parametersCount;
+        }
+
+        public boolean isHasReturnValue() {
+            return hasReturnValue;
+        }
+
+        public CallFlags getCallFlags() {
+            return callFlags;
+        }
+
         @Override
         public void deserialize(BinaryReader reader) throws DeserializationException {
             try {
@@ -284,7 +312,7 @@ public class NefFile extends NeoSerializable {
             writer.writeVarString(method);
             writer.writeUInt16(parametersCount);
             writer.writeBoolean(hasReturnValue);
-            writer.writeByte(callFlags.getValue());
+            writer.writeByte(callFlags.byteValue());
         }
 
         @Override
