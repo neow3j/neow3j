@@ -262,6 +262,32 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void attributes_highPriority_multiSigContainingCommitteeMember() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+
+        Account multiSigAccount = Account.createMultiSigAccount(
+                Arrays.asList(account2.getECKeyPair().getPublicKey(),
+                        account1.getECKeyPair().getPublicKey()),
+                1);
+        Wallet wallet = Wallet.withAccounts(multiSigAccount, account1);
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .attributes(attr)
+                .signers(Signer.feeOnly(multiSigAccount.getScriptHash()))
+                .buildTransaction();
+
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(),
+                is(TransactionAttributeType.HIGH_PRIORITY));
+    }
+
+    @Test
     public void attributes_highPriority_noCommitteeMember() throws Throwable {
         setUpWireMockForCall("getcommittee", "getcommittee.json");
         ContractTestHelper.setUpWireMockForGetBlockCount(1000);

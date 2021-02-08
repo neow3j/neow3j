@@ -22,11 +22,11 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -338,9 +338,43 @@ public class TransactionBuilder {
                 .map(key -> key.getEncoded(true))
                 .map(ScriptHash::fromPublicKey)
                 .collect(Collectors.toList());
-        return signers.stream()
+
+        boolean signersContainSingleSigCommitteeMember = signers.stream()
+                .map(Signer::getScriptHash).anyMatch(committee::contains);
+        if (signersContainSingleSigCommitteeMember) {
+            return true;
+        }
+        return signersContainMultiSigWithCommitteeMember(committee);
+    }
+
+    // Checks if the signers contains a multi-sig account that contains a
+    // committee member.
+    private boolean signersContainMultiSigWithCommitteeMember(List<ScriptHash> committee) {
+        Iterator<ScriptHash> iterator = signers.stream()
                 .map(Signer::getScriptHash)
-                .anyMatch(committee::contains);
+                .iterator();
+        while (iterator.hasNext()) {
+            ScriptHash scriptHash = iterator.next();
+            try {
+                Account account = wallet.getAccount(scriptHash);
+                if (account.isMultiSig()) {
+                    Stream<ScriptHash> accountStream = account
+                            .getVerificationScript().getPublicKeys()
+                            .stream()
+                            .map(s -> s.getEncoded(true))
+                            .map(ScriptHash::fromPublicKey);
+                    boolean multiSigContainsCommitteeMember = accountStream
+                            .filter(sh ->
+                                    wallet.holdsAccount(sh))
+                            .anyMatch(committee::contains);
+                    if (multiSigContainsCommitteeMember) {
+                        return true;
+                    }
+                }
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return false;
     }
 
     private long fetchCurrentBlockNr() throws IOException {
