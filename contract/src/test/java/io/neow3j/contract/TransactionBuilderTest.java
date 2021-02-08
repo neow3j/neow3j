@@ -202,7 +202,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failBuildingTxWithoutAnySigner() throws Throwable {
-        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("without any signer");
         new TransactionBuilder(neow)
                 .validUntilBlock(100L)
