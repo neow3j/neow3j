@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
 import java.nio.ByteBuffer;
@@ -35,6 +36,10 @@ public class NeoModule {
     // {@link OnDeployment} annotation, then this field is set to true.
     private boolean hasDeployMethod = false;
 
+    // An ordered list of static method calls that are referenced by their index in this list. Used
+    // in CALLT instructions.
+    private List<MethodToken> methodTokens = new ArrayList<>();
+
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
     }
@@ -48,6 +53,44 @@ public class NeoModule {
         return sortedMethods;
     }
 
+    /**
+     * Gets the index of the given method token in the list of tokens.
+     * <p>
+     * The index is also the ID to be used in combination with the CALLT opcode.
+     *
+     * @param token The token to search for.
+     * @return the index of the token or -1 if it doesn't exist.
+     */
+    public int getIndexOfMethodToken(MethodToken token) {
+        int idx = 0;
+        for (MethodToken t : methodTokens) {
+            if (token.equals(t)) {
+                return idx;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Adds the given method token to this module's tokens and returns the tokens ID. If the token
+     * is already present, it's current ID is returned.
+     *
+     * @param token The method token to add.
+     * @return the ID of the added method token.
+     */
+    public int addMethodToken(MethodToken token) {
+        int idx = getIndexOfMethodToken(token);
+        if (idx != -1) {
+            return idx;
+        }
+        methodTokens.add(token);
+        return methodTokens.size() - 1;
+    }
+
+    public List<MethodToken> getMethodTokens() {
+        return methodTokens;
+    }
+
     public void addMethod(NeoMethod method) {
         if (method != null) {
             methods.put(method.getId(), method);
@@ -56,8 +99,9 @@ public class NeoModule {
             if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnVerification.class)) {
                 if (hasVerifyMethod) {
                     throw new CompilerException(method.getOwnerClass(), format("More than one "
-                            + "method is marked with the '%s' annotation. There can only be "
-                            + "one '%s' method", OnVerification.class.getSimpleName(),
+                                    + "method is marked with the '%s' annotation. There can only "
+                                    + "be "
+                                    + "one '%s' method", OnVerification.class.getSimpleName(),
                             Compiler.VERIFY_METHOD_NAME));
                 }
                 hasVerifyMethod = true;
@@ -66,7 +110,8 @@ public class NeoModule {
             if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnDeployment.class)) {
                 if (hasDeployMethod) {
                     throw new CompilerException(method.getOwnerClass(), format("More than one "
-                                    + "method is marked with the '%s' annotation. There can only be "
+                                    + "method is marked with the '%s' annotation. There can only "
+                                    + "be "
                                     + "one '%s' method", OnDeployment.class.getSimpleName(),
                             Compiler.DEPLOY_METHOD_NAME));
                 }

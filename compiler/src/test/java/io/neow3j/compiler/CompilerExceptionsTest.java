@@ -78,7 +78,7 @@ public class CompilerExceptionsTest {
     public void throwExceptionIfContractInterfaceClassHasInvalidScriptHash() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList("Script hash", "8",
-                "ContractHash", "CustomContractInterface")));
+                "CustomContractInterface")));
         new Compiler().compileClass(InvalidScriptHashContractInterfaceContract.class.getName());
     }
 

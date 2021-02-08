@@ -5,7 +5,6 @@ import static java.lang.String.format;
 import io.neow3j.constants.OpCode;
 import io.neow3j.constants.OperandSize;
 import io.neow3j.io.BinaryReader;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 
@@ -260,9 +259,9 @@ public class NeoInstruction {
                 if (operandSize.prefixSize() == 1) {
                     specifiedOperandSize = reader.readByte();
                 } else if (operandSize.prefixSize() == 2) {
-                    specifiedOperandSize = reader.readShort();
+                    specifiedOperandSize = reader.readInt16();
                 } else if (operandSize.prefixSize() == 4) {
-                    specifiedOperandSize = reader.readInt();
+                    specifiedOperandSize = reader.readInt32();
                 }
             } catch (IOException ignore) {
             }

@@ -50,8 +50,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j";
-    public static final String COMPILER_VERSION = "3.6.1";
+    public static final String COMPILER_NAME = "neow3j-3.6.1";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -264,8 +263,9 @@ public class Compiler {
 
     private void finalizeCompilation() {
         compUnit.getNeoModule().finalizeModule();
-        NefFile nef = new NefFile(COMPILER_NAME, COMPILER_VERSION,
-                compUnit.getNeoModule().toByteArray());
+        // TODO: Pass MethodTokens to the NefFile constructor.
+        NefFile nef = new NefFile(COMPILER_NAME, compUnit.getNeoModule().toByteArray(),
+                compUnit.getNeoModule().getMethodTokens());
         ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);

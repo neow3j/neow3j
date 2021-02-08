@@ -81,9 +81,9 @@ public class ScriptReader {
         if (operandSize.prefixSize() == 1) {
             return r.readUnsignedByte();
         } else if (operandSize.prefixSize() == 2) {
-            return r.readShort();
+            return r.readInt16();
         } else if (operandSize.prefixSize() == 4) {
-            return r.readInt();
+            return r.readInt32();
         } else {
             throw new UnsupportedOperationException("Only operand prefix sizes 1, 2, and 4 are "
                     + "supported, but got " + operandSize.prefixSize());

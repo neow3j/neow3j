@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static java.lang.String.format;
 
@@ -95,6 +96,11 @@ public class ContractManagement extends SmartContract {
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)
             throws JsonProcessingException {
 
+        return deploy(nef, manifest, null);
+    }
+
+    public TransactionBuilder deploy(NefFile nef, ContractManifest manifest, ContractParameter data)
+            throws JsonProcessingException {
         if (nef == null) {
             throw new IllegalArgumentException("The NEF file cannot be null.");
         }
@@ -107,7 +113,11 @@ public class ContractManagement extends SmartContract {
                             + "Manifest was %d bytes big, but a max of %d bytes is allowed.",
                     manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
         }
-        return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));
+        if (data == null) {
+            return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));
+        } else {
+            return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes), data);
+        }
     }
 
 }

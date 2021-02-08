@@ -359,18 +359,7 @@ public class TransactionBuilder {
         NeoInvokeScript response = neow.invokeScript(
                 Base64.encode(Numeric.hexStringToByteArray(script)), signers)
                 .send();
-        return getFeeFromDecimalString(response.getInvocationResult().getGasConsumed())
-                .longValue();
-    }
-
-    /*
-     * Multiplies the GAS amount given in decimals to fractions.
-     */
-    private BigInteger getFeeFromDecimalString(String fee) {
-        return new BigDecimal(fee)
-                .multiply(new BigDecimal(10).pow(GasToken.DECIMALS))
-                .stripTrailingZeros()
-                .toBigInteger();
+        return new BigInteger(response.getInvocationResult().getGasConsumed()).longValue();
     }
 
     /*
@@ -388,8 +377,8 @@ public class TransactionBuilder {
         });
         NeoCalculateNetworkFee networkFeeResult = neow
                 .calculateNetworkFee(Numeric.toHexStringNoPrefix(tx.toArray())).send();
-        BigDecimal networkFee = networkFeeResult.getNetworkFee().getNetworkFee();
-        return getFeeFromDecimalString(networkFee.toPlainString()).longValue();
+        BigInteger networkFee = networkFeeResult.getNetworkFee().getNetworkFee();
+        return networkFee.longValue();
     }
 
     /**

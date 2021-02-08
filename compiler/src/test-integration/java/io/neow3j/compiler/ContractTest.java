@@ -45,8 +45,8 @@ import org.testcontainers.utility.MountableFile;
 
 public class ContractTest {
 
-    static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
-            "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:master-latest";
+    static final String NEO3_PRIVATENET_CONTAINER_IMG =
+            "ghcr.io/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:master-latest";
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
     static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";

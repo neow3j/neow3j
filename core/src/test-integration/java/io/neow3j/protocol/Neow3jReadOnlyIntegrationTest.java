@@ -106,7 +106,7 @@ public class Neow3jReadOnlyIntegrationTest {
     // Information about the transaction that is sent after starting the node.
     private static String txHashNeoTransfer;
     private static String txHashGasTransfer;
-    private static final String TX_GAS_CONSUMED = "0.0999954";
+    private static final String TX_GAS_CONSUMED = "9999540";
     private static final long TX_BLOCK_IDX = 2L;
     private static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     private static final int TX_VERSION = 0;
@@ -130,14 +130,14 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_BALANCE = "balanceOf";
 
     protected static int BLOCK_HASH_LENGTH_WITH_PREFIX = 66;
-    protected static final String UNCLAIMED_GAS = "0.999975";
+    protected static final String UNCLAIMED_GAS = "99997500";
 
     // The address that is imported to the wallet.
     protected static final String IMPORT_ADDRESS_WIF = "L3ijcgFEaNvR5nYYHuMNLtCc8e5Qwerj9qe6VUHNkF74GkUZtiD8";
     protected static final String IMPORT_ADDRESS = "NcVYTbDRzThKUFxEvjA4nPDn1nVpBK5CVH";
     // The address from which account 2 receives GAS when sending NEO to the recipient address.
     protected static final String TX_GAS_ADDRESS = "NKuyBkoGdZZSLyPbJEetheRhMjeznFZszf";
-    protected static final String TX_GAS_AMOUNT_EXPECTED = "1";
+    protected static final String TX_GAS_AMOUNT_EXPECTED = "100000000";
 
     protected static long BLOCK_0_IDX = 0;
     protected static String BLOCK_0_HASH =
@@ -321,11 +321,11 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(contractState.getId(), is(-3));
         assertThat(contractState.getHash(), is("0x" + NEO_HASH));
         assertThat(contractState.getNef(), is(notNullValue()));
+        assertThat(contractState.getNef().getMagic(), is(860243278L));
         assertThat(contractState.getNef().getCompiler(), is("neo-core-v3.0"));
         assertThat(contractState.getNef().getTokens(), is(empty()));
         assertThat(contractState.getNef().getScript(), is("AP1BGvd7Zw=="));
         assertThat(contractState.getNef().getChecksum(), is(3921333105L));
-
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -573,7 +573,7 @@ public class Neow3jReadOnlyIntegrationTest {
         List<NeoListPlugins.Plugin> plugins = listPlugins.getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(8));
+        assertThat(plugins, hasSize(10));
     }
 
     @Test
@@ -667,7 +667,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoCalculateNetworkFee calcNetworkFee = getNeow3j().calculateNetworkFee(CALC_NETWORK_FEE_TX).send();
         NeoNetworkFee networkFee = calcNetworkFee.getNetworkFee();
 
-        assertThat(networkFee.getNetworkFee(), is(new BigDecimal("0.0123061")));
+        assertThat(networkFee.getNetworkFee(), is(new BigInteger("1230610")));
     }
 
     @Test
