@@ -13,7 +13,7 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.contracts.ManagementContract;
+import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.neo.Contract;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
@@ -27,7 +27,7 @@ import java.io.IOException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ManagementContractIntegrationTest extends ContractTest {
+public class ContractManagementIntegrationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -67,7 +67,7 @@ public class ManagementContractIntegrationTest extends ContractTest {
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
         ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
-                compUnit.getNefFile().getScript());
+                compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
 
         NeoGetContractState result = neow3j.getContractState(contractHash.toString()).send();
         assertThat(result.getContractState(), notNullValue());
@@ -79,7 +79,7 @@ public class ManagementContractIntegrationTest extends ContractTest {
                 ManagementContractIntegrationTestContractToUpdate.class.getName());
 
         // Deploy contract
-        NeoSendRawTransaction response = new io.neow3j.contract.ManagementContract(neow3j)
+        NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(neow3j)
                 .deploy(compUnit.getNefFile(), compUnit.getManifest())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
@@ -88,7 +88,7 @@ public class ManagementContractIntegrationTest extends ContractTest {
 
         // Check zero updates have been performed
         ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
-                compUnit.getNefFile().getScript());
+                compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState contractState = neow3j.getContractState(contractHash.toString()).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
@@ -116,7 +116,7 @@ public class ManagementContractIntegrationTest extends ContractTest {
     public void destroy() throws Throwable {
         CompilationUnit res = new Compiler().compileClass(
                 ManagementContractIntegrationTestContractToDestroy.class.getName());
-        NeoSendRawTransaction response = new io.neow3j.contract.ManagementContract(neow3j)
+        NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
@@ -124,7 +124,7 @@ public class ManagementContractIntegrationTest extends ContractTest {
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
         ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
-                res.getNefFile().getScript());
+                res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         SmartContract sc = new SmartContract(contractHash, neow3j);
         String txHash = sc.invokeFunction("destroy")
                 .wallet(wallet)
@@ -143,28 +143,28 @@ public class ManagementContractIntegrationTest extends ContractTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is(io.neow3j.contract.ManagementContract.SCRIPT_HASH.toString()));
+                is(io.neow3j.contract.ContractManagement.SCRIPT_HASH.toString()));
     }
 
     static class ManagementContractIntegrationTestContract {
 
         public static Contract getContract(Hash160 contractHash) {
-            return ManagementContract.getContract(contractHash);
+            return ContractManagement.getContract(contractHash);
         }
 
         public static Hash160 getHash() {
-            return ManagementContract.getHash();
+            return ContractManagement.getHash();
         }
 
         public static Contract deploy(byte[] nefFile, String manifest) {
-            return ManagementContract.deploy(nefFile, manifest);
+            return ContractManagement.deploy(nefFile, manifest);
         }
     }
 
     static class ManagementContractIntegrationTestContractToUpdate {
 
         public static void update(byte[] nefFile, String manifest) {
-            ManagementContract.update(nefFile, manifest);
+            ContractManagement.update(nefFile, manifest);
         }
 
     }
@@ -187,7 +187,7 @@ public class ManagementContractIntegrationTest extends ContractTest {
     static class ManagementContractIntegrationTestContractToDestroy {
 
         public static void destroy() {
-            ManagementContract.destroy();
+            ContractManagement.destroy();
         }
     }
 }

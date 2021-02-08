@@ -6,11 +6,10 @@ import static io.neow3j.contract.ContractParameter.publicKey;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.neo.Role;
-import io.neow3j.devpack.neo.DesignationContract;
+import io.neow3j.devpack.contracts.Role;
+import io.neow3j.devpack.contracts.RoleManagement;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
@@ -19,11 +18,11 @@ import java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DesignationContractTest extends ContractTest {
+public class RoleManagementTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(DesignationContractTestContract.class.getName());
+        setUp(RoleManagementTestContract.class.getName());
     }
 
     @Test
@@ -55,18 +54,18 @@ public class DesignationContractTest extends ContractTest {
         assertThat(pubKeys.get(0).asByteString().getValue(), is(pubKey));
     }
 
-    static class DesignationContractTestContract {
+    static class RoleManagementTestContract {
 
         public static Hash160 getHash() {
-            return DesignationContract.getHash();
+            return RoleManagement.getHash();
         }
 
-        public static byte[][] getDesignatedByRole(byte role, int index) {
-            return DesignationContract.getDesignatedByRole(role, index);
+        public static ECPoint[] getDesignatedByRole(byte role, int index) {
+            return RoleManagement.getDesignatedByRole(role, index);
         }
 
-        public static void designateAsRole(byte role, byte[][] publicKeys) {
-            DesignationContract.designateAsRole(role, publicKeys);
+        public static void designateAsRole(byte role, ECPoint[] publicKeys) {
+            RoleManagement.designateAsRole(role, publicKeys);
         }
     }
 }

@@ -1,9 +1,7 @@
 package io.neow3j.devpack.gradle;
 
-import static java.util.Arrays.asList;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Neow3jPluginOptions {
 
@@ -13,6 +11,8 @@ public class Neow3jPluginOptions {
 
     // Default behavior: generate debug symbols
     private Boolean debug = true;
+
+    private String outputDir;
 
     public Neow3jPluginOptions() {
     }
@@ -41,4 +41,18 @@ public class Neow3jPluginOptions {
         setDebug(debug);
     }
 
+    public Path getOutputDir() {
+        if (this.outputDir != null) {
+            return Paths.get(outputDir);
+        }
+        return null;
+    }
+
+    public void setOutputDir(String outputDir) {
+        this.outputDir = outputDir;
+    }
+
+    public void outputDir(String outputDir) {
+        setOutputDir(outputDir);
+    }
 }

@@ -71,4 +71,9 @@ public class Map<K, V> {
     @Instruction(opcode = OpCode.REMOVE)
     public native void remove(K key);
 
+    public static class Entry<K, V> {
+        public K key;
+        public V value;
+    }
+
 }

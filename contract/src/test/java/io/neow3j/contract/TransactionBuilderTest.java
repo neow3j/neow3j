@@ -270,7 +270,7 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void testAutomaticSettingOfSystemFee() throws Throwable {
+    public void testAutomaticSettingOfSystemFeeAndNetworkFee() throws Throwable {
         Wallet wallet = Wallet.create();
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -283,6 +283,7 @@ public class TransactionBuilderTest {
                 .buildTransaction();
 
         assertThat(tx.getSystemFee(), is(1007390L));
+        assertThat(tx.getNetworkFee(), is(1230610L));
     }
 
     @Test
@@ -670,7 +671,7 @@ public class TransactionBuilderTest {
     public void throwIfSenderCannotCoverFees() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
-                "a6a6c15dcdc9b997dac448b6926522d22efeedfb",
+                "70e2301955bf1e74cbb31d18c2f96972abadb328",
                 "balanceOf",
                 "721e1376b75fe93889023d47832c160fcc5d4a06");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -873,7 +874,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        String txHash = "1a17f8e9e76804fb92756eb09748dbaa6f0b80dcfa184073c4a17f2c774d4842";
+        String txHash = "398bdaba223d43beb071ec31b900c9c26a69ae2a67f783c7fee0acc1be8dc415";
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),

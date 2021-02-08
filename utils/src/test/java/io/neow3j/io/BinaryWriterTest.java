@@ -1,10 +1,14 @@
 package io.neow3j.io;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
 
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -164,6 +168,40 @@ public class BinaryWriterTest {
         byte[] actual = outStream.toByteArray();
         assertArrayEquals(expected, actual);
         outStream.reset();
+    }
+
+    @Test
+    public void writeVarBytes() throws IOException {
+        // Short byte array
+        writer.writeVarBytes(Numeric.hexStringToByteArray("010203"));
+        assertAndResetStreamContents(Numeric.hexStringToByteArray("03" + "010203"));
+
+        // Longer byte array
+        String hex =
+                "00102030102030102030102030102030102030102030102030102030102030102031020301020301020301020301020301020301020301020301020301020301020310203010203010203010203010203010203010203010203010203010203010203102030102030102030102030102030102030102030102030102030102030102030010203010203010203010203010203010203010203010203010203010203010203102030102030102030102030102030102030102030102030102030102030102031020301020301020301020301020301020301020301020301020301020301020310203010203010203010203010203010203010203010203010203010203010203";
+        writer.writeVarBytes(Numeric.hexStringToByteArray(hex));
+        assertAndResetStreamContents(Numeric.hexStringToByteArray("fd" + "0601" + hex));
+
+        // Not tested for arrays longer than 65'535 (0xffff) bytes or even longer than 4'294'967'295
+        // (0xFFFFFFFF) bytes. But that is covered by the test `writeVarInt`.
+    }
+
+    @Test
+    public void writeVarString() throws IOException {
+        // Short String
+        writer.writeVarString("hello, world!");
+        assertAndResetStreamContents(Numeric.hexStringToByteArray("0d" + "68656c6c6f2c20776f726c6421"));
+
+        // Longer byte array
+        String string =
+                "hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!hello, world!";
+        writer.writeVarString(string);
+        byte[] expected = ArrayUtils.concatenate(Numeric.hexStringToByteArray("fd" + "1502"),
+                string.getBytes(UTF_8));
+        assertAndResetStreamContents(expected);
+
+        // Not tested for strings longer than 65'535 (0xffff) bytes or even longer than
+        // 4'294'967'295 (0xFFFFFFFF) bytes. But that is covered by the test `writeVarInt`.
     }
 
 }

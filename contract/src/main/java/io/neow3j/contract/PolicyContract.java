@@ -11,7 +11,8 @@ import java.math.BigInteger;
 public class PolicyContract extends SmartContract {
 
     private static final String NAME = "PolicyContract";
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public final static long NEF_CHECKSUM = 1136340263L;
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
     private static final String GET_MAX_BLOCK_SIZE = "getMaxBlockSize";

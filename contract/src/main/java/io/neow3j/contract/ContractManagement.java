@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static java.lang.String.format;
 
@@ -20,10 +21,11 @@ import java.util.Arrays;
 /**
  * Represents a Management contract and provides methods to invoke it.
  */
-public class ManagementContract extends SmartContract {
+public class ContractManagement extends SmartContract {
 
-    private static final String NAME = "ManagementContract";
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    private static final String NAME = "ContractManagement";
+    public final static long NEF_CHECKSUM = 3516775561L;
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
@@ -36,7 +38,7 @@ public class ManagementContract extends SmartContract {
      *
      * @param neow The {@link Neow3j} instance to use for invocations.
      */
-    public ManagementContract(Neow3j neow) {
+    public ContractManagement(Neow3j neow) {
         super(SCRIPT_HASH, neow);
     }
 
@@ -79,16 +81,26 @@ public class ManagementContract extends SmartContract {
         int updateCounter = stackItem.asArray().get(1).asInteger().getValue().intValue();
         String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString()
                 .getAsHexString());
-        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString()
-                .getValue());
-        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
-                ContractManifest.class);
-        return new ContractState(id, updateCounter, hash, script, manifest);
+
+        // TODO: 01.02.21 Guil:
+        // We need to fix how we get from StackItem to a NefFile/ContractManifest
+        // Implementing a method called `.fromStackItem()` in each of the classes is an option.
+//        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString()
+//                .getValue());
+//        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
+//                ContractManifest.class);
+
+        return new ContractState(id, updateCounter, hash, null, null);
     }
 
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)
             throws JsonProcessingException {
 
+        return deploy(nef, manifest, null);
+    }
+
+    public TransactionBuilder deploy(NefFile nef, ContractManifest manifest, ContractParameter data)
+            throws JsonProcessingException {
         if (nef == null) {
             throw new IllegalArgumentException("The NEF file cannot be null.");
         }
@@ -101,7 +113,11 @@ public class ManagementContract extends SmartContract {
                             + "Manifest was %d bytes big, but a max of %d bytes is allowed.",
                     manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
         }
-        return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));
+        if (data == null) {
+            return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));
+        } else {
+            return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes), data);
+        }
     }
 
 }

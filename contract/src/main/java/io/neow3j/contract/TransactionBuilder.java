@@ -7,6 +7,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
@@ -19,7 +20,6 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -308,12 +308,13 @@ public class TransactionBuilder {
     }
 
     /*
-     * Fetches the GAS consumed by this transaction. It does this by making an RPC call to the
-     * Neo node. The returned GAS amount is in fractions of GAS (10^-8).
+     * Fetches the GAS consumed by this transaction. It does this by making an
+     * RPC call to the Neo node.
+     * The returned GAS amount is in fractions of GAS (10^-8).
      */
     private long getSystemFeeForScript() throws IOException {
-        // The signers are required for `invokescript` calls that will hit a CheckWitness
-        // check in the smart contract.
+        // The signers are required for `invokescript` calls that will hit a
+        // CheckWitness check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = Numeric.toHexStringNoPrefix(this.script);
         NeoInvokeScript response = neow.invokeScript(
@@ -331,19 +332,8 @@ public class TransactionBuilder {
                     "to the following exception: " +
                     response.getResult().getException());
         }
-        return getSystemFeeFromDecimalString(
-                response.getInvocationResult().getGasConsumed())
+        return new BigInteger(response.getInvocationResult().getGasConsumed())
                 .longValue();
-    }
-
-    /*
-     * Multiplies the GAS amount given in decimals to fractions.
-     */
-    private BigInteger getSystemFeeFromDecimalString(String systemFee) {
-        return new BigDecimal(systemFee)
-                .multiply(new BigDecimal(10).pow(GasToken.DECIMALS))
-                .stripTrailingZeros()
-                .toBigInteger();
     }
 
     /*
@@ -359,8 +349,10 @@ public class TransactionBuilder {
         getSignerAccounts().forEach(s -> {
             tx.addWitness(new Witness(new byte[]{}, s.getVerificationScript().getScript()));
         });
-        return neow.calculateNetworkFee(Numeric.toHexStringNoPrefix(tx.toArray()))
-                .send().getNetworkFee().getNetworkFee().longValue();
+        NeoCalculateNetworkFee networkFeeResult = neow
+                .calculateNetworkFee(Numeric.toHexStringNoPrefix(tx.toArray())).send();
+        BigInteger networkFee = networkFeeResult.getNetworkFee().getNetworkFee();
+        return networkFee.longValue();
     }
 
     /**

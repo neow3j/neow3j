@@ -1,14 +1,19 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
 import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
 import static io.neow3j.contract.ContractUtils.loadContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
 import static io.neow3j.contract.ContractUtils.writeNefFile;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertTrue;
 
 import io.neow3j.io.exceptions.DeserializationException;
@@ -27,9 +32,13 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 public class ContractUtilsTest {
+
+    private final static String TESTCONTRACT_WITH_TOKENS_FILE =
+            "/contracts/TestContractWithMethodTokens.nef";
 
     @Test
     public void testWriteContractManifestFile() throws Exception {
@@ -82,16 +91,155 @@ public class ContractUtilsTest {
     }
 
     @Test
+    public void testReadContractManifestFile_empty() throws Exception {
+        Path manifestFilePath = Files.createTempFile(ContractUtils.class.getSimpleName(),
+                "-test-read-manifest");
+
+        String manifestContent = "{\n"
+                + "  \"name\":\"\",\n"
+                + "  \"groups\": [],\n"
+                + "  \"supportedstandards\": [],\n"
+                + "  \"abi\": {},\n"
+                + "  \"permissions\": [],\n"
+                + "  \"trusts\": [], \n"
+                + "  \"extra\": {}\n"
+                + "}";
+
+        FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
+
+        ContractManifest manifestObj = loadContractManifestFile(manifestFilePath.toString());
+        assertThat(manifestObj.getName(), is(""));
+        assertThat(manifestObj.getGroups(), is(empty()));
+        assertThat(manifestObj.getSupportedStandards(), is(empty()));
+        assertThat(manifestObj.getAbi(), is(notNullValue()));
+        assertThat(manifestObj.getPermissions(), is(empty()));
+        assertThat(manifestObj.getTrusts(), is(empty()));
+        assertThat(manifestObj.getExtra(), is(notNullValue()));
+    }
+
+    @Test
+    public void testReadContractManifestFile_case1() throws Exception {
+        Path manifestFilePath = Files.createTempFile(ContractUtils.class.getSimpleName(),
+                "-test-read-manifest");
+
+        String manifestContent = "{\n"
+                + "  \"name\":\"\",\n"
+                + "  \"groups\": [\n"
+                + "       {\n"
+                + "          \"pubKey\": \"pubKey1\",\n"
+                + "          \"signature\": \"signature1\"\n"
+                + "       }\n"
+                + "   ],\n"
+                + "  \"supportedstandards\": [],\n"
+                + "  \"abi\": {},\n"
+                + "  \"permissions\": [\n"
+                + "       {\n"
+                + "          \"contract\": \"contract1\",\n"
+                + "          \"methods\": \"*\"\n"
+                + "       }\n"
+                + "   ],\n"
+                + "  \"trusts\": \"*\",\n"
+                + "  \"extra\": {}\n"
+                + "}";
+
+        FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
+
+        ContractManifest manifestObj = loadContractManifestFile(manifestFilePath.toString());
+        assertThat(manifestObj.getName(), is(""));
+        assertThat(manifestObj.getGroups(), is(not(empty())));
+        assertThat(manifestObj.getGroups(), hasSize(1));
+        assertThat(
+                manifestObj.getGroups(),
+                hasItem(new ContractGroup("pubKey1", "signature1"))
+        );
+        assertThat(manifestObj.getSupportedStandards(), is(empty()));
+        assertThat(manifestObj.getAbi(), is(notNullValue()));
+        assertThat(manifestObj.getPermissions(), is(not(empty())));
+        assertThat(manifestObj.getPermissions(), hasSize(1));
+        assertThat(
+                manifestObj.getPermissions(),
+                hasItem(
+                        new ContractPermission(
+                                "contract1",
+                                Arrays.asList("*")
+                        )
+                )
+        );
+        assertThat(manifestObj.getTrusts(), is(not(empty())));
+        assertThat(manifestObj.getTrusts(), hasSize(1));
+        assertThat(manifestObj.getTrusts(), hasItem("*"));
+        assertThat(manifestObj.getExtra(), is(notNullValue()));
+    }
+
+    @Test
+    public void testReadContractManifestFile_case2() throws Exception {
+        Path manifestFilePath = Files.createTempFile(ContractUtils.class.getSimpleName(),
+                "-test-read-manifest");
+
+        String manifestContent = "{\n"
+                + "  \"name\":\"\",\n"
+                + "  \"groups\": [\n"
+                + "       {\n"
+                + "          \"pubkey\": \"pubKey1\",\n"
+                + "          \"signature\": \"signature1\"\n"
+                + "       }\n"
+                + "   ],\n"
+                + "  \"supportedstandards\": [],\n"
+                + "  \"abi\": {},\n"
+                + "  \"permissions\": [\n"
+                + "       {\n"
+                + "          \"contract\": \"contract1\",\n"
+                + "          \"methods\": [ \"*\", \"main\", \"test\" ]\n"
+                + "       }\n"
+                + "   ],\n"
+                + "  \"trusts\": [ \"contract1\", \"contract2\", \"contract3\" ],\n"
+                + "  \"extra\": {}\n"
+                + "}";
+
+        FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
+
+        ContractManifest manifestObj = loadContractManifestFile(manifestFilePath.toString());
+        assertThat(manifestObj.getName(), is(""));
+        assertThat(manifestObj.getGroups(), is(not(empty())));
+        assertThat(manifestObj.getGroups(), hasSize(1));
+        assertThat(
+                manifestObj.getGroups(),
+                hasItem(new ContractGroup("pubKey1", "signature1"))
+        );
+        assertThat(manifestObj.getSupportedStandards(), is(empty()));
+        assertThat(manifestObj.getAbi(), is(notNullValue()));
+        assertThat(manifestObj.getPermissions(), is(not(empty())));
+        assertThat(manifestObj.getPermissions(), hasSize(1));
+        assertThat(
+                manifestObj.getPermissions(),
+                hasItem(
+                        new ContractPermission(
+                                "contract1",
+                                Arrays.asList("*", "main",  "test")
+                        )
+                )
+        );
+        assertThat(manifestObj.getTrusts(), is(not(empty())));
+        assertThat(manifestObj.getTrusts(), hasSize(3));
+        assertThat(
+                manifestObj.getTrusts(),
+                hasItems("contract1", "contract2", "contract3")
+        );
+        assertThat(manifestObj.getExtra(), is(notNullValue()));
+    }
+
+    @Test
     public void testWriteNefFile() throws DeserializationException, IOException {
         String contractName = "DotnetContract";
         Path outDir = Files.createTempDirectory(ContractUtils.class.getSimpleName()
                 + "-test-write-nef");
         outDir.toFile().deleteOnExit();
-        NefFile nefFile = NefFile.readFromFile(new File(
-                ContractUtilsTest.class.getResource("/contracts/DotnetContract.nef").getFile()));
+        NefFile nefFile = NefFile.readFromFile(new File(ContractUtilsTest.class.getResource(
+                TESTCONTRACT_WITH_TOKENS_FILE).getFile()));
 
         String nefFilePath = writeNefFile(nefFile, contractName, outDir);
-        assertThat(nefFilePath, is(outDir.toFile().getAbsolutePath() + "/" + contractName + ".nef"));
+        assertThat(nefFilePath,
+                is(Paths.get(outDir.toFile().getAbsolutePath(), contractName + ".nef").toString()));
         File writtenFile = new File(nefFilePath);
         assertTrue(writtenFile.exists());
         assertThat(writtenFile.length(), greaterThan(0L));
@@ -170,6 +318,32 @@ public class ContractUtilsTest {
                 contractPermissions,
                 trusts,
                 extras
+        );
+    }
+
+    private ContractManifest buildContractManifestWithCornerCases() {
+        ContractGroup cg1 = new ContractGroup("pubKey1", "sign1");
+        ContractGroup cg2 = new ContractGroup("pubKey2", "sign2");
+        String name = "neowww";
+        List<ContractGroup> cgs = Arrays.asList(cg1, cg2);
+        List<String> supportedStandards = Arrays.asList("nothing", "blah");
+
+        List<ContractPermission> contractPermissions = Arrays.asList(
+                new ContractPermission("contract1", Arrays.asList("test1", "test2", "test3")),
+                new ContractPermission("contract2", Arrays.asList("test1")),
+                new ContractPermission("contract2", Arrays.asList())
+        );
+
+        List<String> trusts = Arrays.asList("trust1", "trust2");
+
+        return new ContractManifest(
+                name,
+                cgs,
+                supportedStandards,
+                null,
+                contractPermissions,
+                trusts,
+                null
         );
     }
 }

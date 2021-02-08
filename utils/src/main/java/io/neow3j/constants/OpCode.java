@@ -321,15 +321,21 @@ public enum OpCode {
     CALLA(0x36, 1 << 9),
 
     /**
+     * Calls the function which is described by the token.
+     */
+    @OperandSize(size = 2)
+    CALLT(0x37, 1 << 15),
+
+    /**
      * Turn the vm state to FAULT immediately, and cannot be caught.
      */
-    ABORT(0x37, 0),
+    ABORT(0x38, 0),
 
     /**
      * Pop the top value of the stack, if it false, then exit vm execution and set vm state to
      * FAULT.
      */
-    ASSERT(0x38, 1),
+    ASSERT(0x39, 1),
 
     /**
      * Pop the top value of the stack, and throw it.

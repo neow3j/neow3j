@@ -3,6 +3,8 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -44,10 +46,6 @@ public class SmartContractTest {
     private static final String NEP17_BALANCEOF = "balanceOf";
     private static final String NEP17_NAME = "name";
     private static final String NEP17_TOTALSUPPLY = "totalSupply";
-
-    private static final String SCRIPT_NEO_INVOKEFUNCTION_SYMBOL = Numeric.toHexStringNoPrefix(
-            new ScriptBuilder().contractCall(NEO_SCRIPT_HASH, "symbol", new ArrayList<>())
-                    .toArray());
 
     private Account account1;
     private ScriptHash recipient;
@@ -235,19 +233,15 @@ public class SmartContractTest {
         assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(3)));
     }
+
     @Test
     public void invokingFunctionPerformsCorrectCall_WithoutParameters() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_symbol_neo.json",
                 NEO_SCRIPT_HASH.toString(),
-                "symbol"
-        );
-
-        NeoInvokeFunction i = new SmartContract(NEO_SCRIPT_HASH, neow)
-                .callInvokeFunction("symbol");
-
+                "symbol");
+        NeoInvokeFunction i = new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("symbol");
         assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), Matchers.is("NEO"));
-        assertThat(i.getResult().getScript(), is(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL));
     }
 
     @Test(expected = IllegalArgumentException.class)

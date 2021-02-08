@@ -1,9 +1,10 @@
 package io.neow3j.devpack.contracts;
 
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6")
+@ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83")
 public class NeoToken extends Nep17Token {
 
     /**
@@ -21,7 +22,7 @@ public class NeoToken extends Nep17Token {
      * @param publicKey The public key of the candidate.
      * @return true, if registering was successful. False, otherwise.
      */
-    public static native boolean registerCandidate(byte[] publicKey);
+    public static native boolean registerCandidate(ECPoint publicKey);
 
     /**
      * Unregisters the given public key from the list of validator candidates.
@@ -29,7 +30,7 @@ public class NeoToken extends Nep17Token {
      * @param publicKey The public key of the candidate.
      * @return true, if deregistering was successful. False, otherwise.
      */
-    public static native boolean unregisterCandidate(byte[] publicKey);
+    public static native boolean unregisterCandidate(ECPoint publicKey);
 
     /**
      * Casts a vote for the candidate with the given public key.
@@ -41,7 +42,7 @@ public class NeoToken extends Nep17Token {
      * @param candidatePubKey The public key of the candidate to vote for.
      * @return true, if voting was successful. False, otherwise.
      */
-    public static native boolean vote(Hash160 scriptHash, byte[] candidatePubKey);
+    public static native boolean vote(Hash160 scriptHash, ECPoint candidatePubKey);
 
     /**
      * Gets the registered candidates.
@@ -55,14 +56,14 @@ public class NeoToken extends Nep17Token {
      *
      * @return the committee members' public keys as strings.
      */
-    public static native String[] getCommittee();
+    public static native ECPoint[] getCommittee();
 
     /**
      * Gets the public keys of the validators that will validate the upcoming block.
      *
      * @return the next validators' public keys as strings.
      */
-    public static native String[] getNextBlockValidators();
+    public static native ECPoint[] getNextBlockValidators();
 
     /**
      * Gets the amount of GAS that is minted per newly generated block.
@@ -87,7 +88,7 @@ public class NeoToken extends Nep17Token {
         /**
          * This candidates public key.
          */
-        public final String publicKey;
+        public final ECPoint publicKey;
 
         /**
          * This candidates votes.
@@ -95,7 +96,7 @@ public class NeoToken extends Nep17Token {
         public final int votes;
 
         private Candidate() {
-            publicKey = "";
+            publicKey = new ECPoint("");
             votes = 0;
         }
     }

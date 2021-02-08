@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.devpack.contracts.NeoToken.Candidate;
@@ -132,23 +133,23 @@ public class NeoTokenTest extends ContractTest {
             return NeoToken.unclaimedGas(scriptHash, blockHeight);
         }
 
-        public static boolean[] registerAndUnregisterCandidate(byte[] publicKey) {
+        public static boolean[] registerAndUnregisterCandidate(ECPoint publicKey) {
             boolean[] b = new boolean[2];
             b[0] = NeoToken.registerCandidate(publicKey);
             b[1] = NeoToken.unregisterCandidate(publicKey);
             return b;
         }
 
-        public static Candidate[] registerAndGetCandidates(byte[] publicKey) {
+        public static Candidate[] registerAndGetCandidates(ECPoint publicKey) {
             NeoToken.registerCandidate(publicKey);
             return NeoToken.getCandidates();
         }
 
-        public static String[] getNextBlockValidators() {
+        public static ECPoint[] getNextBlockValidators() {
             return NeoToken.getNextBlockValidators();
         }
 
-        public static String[] getCommittee() {
+        public static ECPoint[] getCommittee() {
             return NeoToken.getCommittee();
         }
 
@@ -160,7 +161,7 @@ public class NeoTokenTest extends ContractTest {
             return NeoToken.setGasPerBlock(gasPerBlock);
         }
 
-        public static boolean vote(Hash160 scriptHash, byte[] pubKey) {
+        public static boolean vote(Hash160 scriptHash, ECPoint pubKey) {
             return NeoToken.vote(scriptHash, pubKey);
         }
 

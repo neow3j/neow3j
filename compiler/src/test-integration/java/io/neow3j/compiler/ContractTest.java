@@ -9,27 +9,22 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
-import io.neow3j.contract.ManagementContract;
+import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.Transaction;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -39,11 +34,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -55,10 +45,25 @@ import org.testcontainers.utility.MountableFile;
 
 public class ContractTest {
 
-    // Exposed port of the neo node running in the docker container.
-    protected static int EXPOSED_JSONRPC_PORT = 40332;
-    protected static final String NEO3_PRIVATENET_CONTAINER_IMG =
-            "ghcr.io/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
+    static final String NEO3_PRIVATENET_CONTAINER_IMG =
+            "ghcr.io/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:master-latest";
+
+    static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
+    static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
+    static final String PROTOCOL_FILE_SOURCE = "/node-config/protocol.json";
+    static final String PROTOCOL_FILE_DESTINATION = "/neo-cli/protocol.json";
+    static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
+    static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
+    static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
+    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
+    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
+    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
+    // This is the port of one of the .NET nodes which is exposed internally by the container.
+    static final int EXPOSED_JSONRPC_PORT = 40332;
+    // Wallet password for the node's wallnet at node-config/wallet.json.
+    static final String NODE_WALLET_PASSWORD = "neo";
+    // The path to the wallet from the directory of the node process.
+    static final String NODE_WALLET_PATH = "wallet.json";
 
     protected static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
@@ -71,15 +76,17 @@ public class ContractTest {
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
             DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
-            .withClasspathResourceMapping("/node-config/config.json",
-                    "/neo-cli/config.json", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("/node-config/protocol.json",
-                    "/neo-cli/protocol.json", BindMode.READ_ONLY)
+            .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(PROTOCOL_FILE_SOURCE, PROTOCOL_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
             .withCopyFileToContainer(
-                    MountableFile.forClasspathResource("/node-config/wallet.json", 777),
-                    "/neo-cli/wallet.json")
-            .withClasspathResourceMapping("/node-config/rpcserver.config.json",
-                    "/neo-cli/Plugins/RpcServer/config.json", BindMode.READ_ONLY)
+                    MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
+                    WALLET_FILE_DESTINATION)
+            .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());
 
@@ -125,7 +132,7 @@ public class ContractTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        NeoSendRawTransaction response = new ManagementContract(neow3j)
+        NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
@@ -197,8 +204,7 @@ public class ContractTest {
      * @param expectedValue The expected value.
      */
     protected void assertStorageContains(String key, String expectedValue) throws IOException {
-        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(),
-                HexParameter.valueOf(key)).send();
+        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(), key).send();
         String value = new String(
                 Numeric.hexStringToByteArray(response.getStorage()),
                 StandardCharsets.UTF_8);

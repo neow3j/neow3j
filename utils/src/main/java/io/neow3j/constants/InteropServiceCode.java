@@ -22,13 +22,7 @@ public enum InteropServiceCode {
     SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1 << 15),
     SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1 << 15),
 
-    SYSTEM_CALLBACK_CREATE("System.Callback.Create", 1 << 4),
-    SYSTEM_CALLBACK_CREATEFROMMETHOD("System.Callback.CreateFromMethod", 1 << 15),
-    SYSTEM_CALLBACK_CREATEFROMSYSCALL("System.Callback.CreateFromSyscall", 1 << 4),
-    SYSTEM_CALLBACK_INVOKE("System.Callback.Invoke", 1 << 15),
-
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
-    SYSTEM_CONTRACT_CALLEX("System.Contract.CallEx", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
     SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 1 << 10),
     SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 1 << 10),
@@ -45,16 +39,9 @@ public enum InteropServiceCode {
     // The price for check multisig is the price for Secp256k1.Verify times the number of signatures
     NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1("Neo.Crypto.CheckMultisigWithECDsaSecp256k1", 0),
 
-    SYSTEM_ENUMERATOR_CREATE("System.Enumerator.Create", 1 << 4),
-    SYSTEM_ENUMERATOR_NEXT("System.Enumerator.Next", 1 << 15),
-    SYSTEM_ENUMERATOR_VALUE("System.Enumerator.Value", 1 << 4),
-    SYSTEM_ENUMERATOR_CONCAT("System.Enumerator.Concat", 1 << 4),
-
     SYSTEM_ITERATOR_CREATE("System.Iterator.Create", 1 << 4),
-    SYSTEM_ITERATOR_KEY("System.Iterator.Key", 1 << 4),
-    SYSTEM_ITERATOR_KEYS("System.Iterator.Keys", 1 << 4),
-    SYSTEM_ITERATOR_VALUES("System.Iterator.Values", 1 << 4),
-    SYSTEM_ITERATOR_CONCAT("System.Iterator.Concat", 1 << 4),
+    SYSTEM_ITERATOR_NEXT("System.Iterator.Next", 1 << 15),
+    SYSTEM_ITERATOR_VALUE("System.Iterator.Value", 1 << 4),
 
     SYSTEM_JSON_SERIALIZE("System.Json.Serialize", 1 << 12),
     SYSTEM_JSON_DESERIALIZE("System.Json.Deserialize", 1 << 14),

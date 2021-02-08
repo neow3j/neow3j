@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 import io.neow3j.constants.OpCode;
@@ -7,6 +8,7 @@ import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.events.Event1Arg;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,7 +78,7 @@ public class CompilerExceptionsTest {
     public void throwExceptionIfContractInterfaceClassHasInvalidScriptHash() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList("Script hash", "8",
-                "ContractHash", "CustomContractInterface")));
+                "CustomContractInterface")));
         new Compiler().compileClass(InvalidScriptHashContractInterfaceContract.class.getName());
     }
 
@@ -140,6 +142,26 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 "1122", OpCode.ASSERT.name(), "doesn't take any operands.")));
         Compiler.addInstructionsFromAnnotation(method, neoMethod);
+    }
+
+    @Test
+    public void testNonPublicMethodsMarkedWithSafeAnnotation() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                this.getClass().getSimpleName() + ".java", // the file name
+                "privateMethod", "safe")));
+        new Compiler().compileClass(PrivateMethodMarkedAsSafe.class.getName());
+
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                this.getClass().getSimpleName() + ".java", // the file name
+                "protectedMethod", "safe")));
+        new Compiler().compileClass(ProtectedMethodMarkedAsSafe.class.getName());
+
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                this.getClass().getSimpleName() + ".java", // the file name
+                "packagePrivateMethod", "safe")));
     }
 
     static class UnsupportedInheritanceInConstructor {
@@ -238,6 +260,27 @@ public class CompilerExceptionsTest {
 
         @Instruction(opcode = OpCode.ASSERT, operand = {0x11, 0x22})
         public static native void annotatedMethod();
+    }
+
+    static class PrivateMethodMarkedAsSafe {
+
+        @Safe
+        private static void privateMethod() {
+        }
+    }
+
+    static class ProtectedMethodMarkedAsSafe {
+
+        @Safe
+        private static void protectedMethod() {
+        }
+    }
+
+    static class PackagePrivateMethodMarkedAsSafe {
+
+        @Safe
+        private static void packagePrivateMethod() {
+        }
     }
 
 }

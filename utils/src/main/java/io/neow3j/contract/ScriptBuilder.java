@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
+import io.neow3j.model.types.CallFlags;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.List;
 
 public class ScriptBuilder {
@@ -61,10 +63,13 @@ public class ScriptBuilder {
     public ScriptBuilder contractCall(ScriptHash scriptHash, String method,
             List<ContractParameter> params) {
 
-        pushParams(params);
-        if (method != null) {
-            pushData(method);
+        if (params.size() > 0) {
+            pushParams(params);
+        } else {
+            opCode(OpCode.NEWARRAY0);
         }
+        pushInteger(CallFlags.ALL.getValue());
+        pushData(method);
         pushData(scriptHash.toArray());
         sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL);
         return this;
@@ -132,6 +137,7 @@ public class ScriptBuilder {
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
+            // TODO: Add a case for type MAP.
             case ANY:
                 if (value == null) {
                     opCode(OpCode.PUSHNULL);
@@ -152,7 +158,7 @@ public class ScriptBuilder {
      * @return this.
      * @throws IllegalArgumentException if the given number is smaller than -1.
      */
-    public ScriptBuilder pushInteger(int v) {
+    public ScriptBuilder pushInteger(long v) {
         return pushInteger(BigInteger.valueOf(v));
     }
 

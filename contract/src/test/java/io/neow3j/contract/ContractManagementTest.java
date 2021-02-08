@@ -6,6 +6,7 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFuncti
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -26,12 +27,14 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class ManagementContractTest {
+public class ContractManagementTest {
 
-    private static final ScriptHash MANAGEMENT_SCRIPT_HASH = ManagementContract.SCRIPT_HASH;
+    private static final String CONTRACTMANAGEMENT_SCRIPTHASH =
+            "a501d7d7d10983673b61b7a2d3a813b36f9f0e43";
 
     private Neow3j neow3j;
 
@@ -55,8 +58,8 @@ public class ManagementContractTest {
         setUpWireMockForInvokeFunction("getMinimumDeploymentFee",
                 "management_getMinimumDeploymentFee.json");
 
-        ManagementContract managementContract = new ManagementContract(neow3j);
-        assertThat(managementContract.getMinimumDeploymentFee(), is(new BigInteger("1000000000")));
+        ContractManagement contractManagement = new ContractManagement(neow3j);
+        assertThat(contractManagement.getMinimumDeploymentFee(), is(new BigInteger("1000000000")));
     }
 
     @Test
@@ -65,12 +68,12 @@ public class ManagementContractTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(MANAGEMENT_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(ContractManagement.SCRIPT_HASH,
                 "setMinimumDeploymentFee",
                 Arrays.asList(ContractParameter.integer(new BigInteger("70000000")))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
-        Transaction tx = new ManagementContract(neow3j)
+        Transaction tx = new ContractManagement(neow3j)
                 .setMinimumDeploymentFee(new BigInteger("70000000"))
                 .wallet(w)
                 .signers(Signer.calledByEntry(account1.getScriptHash()))
@@ -84,26 +87,35 @@ public class ManagementContractTest {
                 is(account1.getVerificationScript().getScript()));
     }
 
+    // TODO: 01.02.21 Guil:
+    // Update the `ContractManagement` class
+    @Ignore("The ContractManagement.getContract() method should be updated before.")
     @Test
     public void getContract() throws IOException {
         setUpWireMockForInvokeFunction("getContract",
                 "management_getContract.json");
 
-        ManagementContract managementContract = new ManagementContract(neow3j);
-        NeoGetContractState.ContractState state = managementContract.getContract(NeoToken.SCRIPT_HASH);
+        ContractManagement contractManagement = new ContractManagement(neow3j);
+        NeoGetContractState.ContractState state = contractManagement.getContract(
+                NeoToken.SCRIPT_HASH);
         assertNotNull(state);
-        assertThat(state.getId(), is(-1));
+        assertThat(state.getId(), is(-3));
         assertThat(state.getUpdateCounter(), is(0));
         assertThat(state.getHash(), is(NeoToken.SCRIPT_HASH.toString()));
-        assertThat(state.getScript(), is("0c084e656f546f6b656e411af77b67"));
+
+        assertThat(state.getNef().getMagic(), is(860243278L));
+        assertThat(state.getNef().getCompiler(), is("neo-core-v3.0"));
+        assertThat(state.getNef().getScript(), is(nullValue()));
+        assertThat(state.getNef().getChecksum(), is(3921333105L));
+
         assertThat(state.getManifest().getName(), is(NeoToken.NAME));
         assertThat(state.getManifest().getAbi().getMethods(), hasSize(14));
         assertThat(state.getManifest().getAbi().getMethods().get(6).getName(), is("vote"));
         assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters(), hasSize(2));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1).getParamName(),
-                is("voteTo"));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1).getParamType(),
-                is(ContractParameterType.BYTE_ARRAY));
+        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1)
+                .getParamName(), is("voteTo"));
+        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1)
+                .getParamType(), is(ContractParameterType.BYTE_ARRAY));
         assertThat(state.getManifest().getAbi().getMethods().get(6).getOffset(), is(0));
         assertThat(state.getManifest().getAbi().getMethods().get(6).getReturnType(),
                 is(ContractParameterType.BOOLEAN));
@@ -111,12 +123,18 @@ public class ManagementContractTest {
 
         assertThat(state.getManifest().getAbi().getEvents(), hasSize(1));
         assertThat(state.getManifest().getAbi().getEvents().get(0).getName(), is("Transfer"));
-        assertThat(state.getManifest().getAbi().getEvents().get(0).getParameters().get(2).getParamName(),
-                is("amount"));
+        assertThat(state.getManifest().getAbi().getEvents().get(0).getParameters().get(2)
+                .getParamName(), is("amount"));
         assertThat(state.getManifest().getPermissions().get(0).getContract(), is("*"));
         assertThat(state.getManifest().getPermissions().get(0).getMethods(), hasSize(1));
         assertThat(state.getManifest().getPermissions().get(0).getMethods().get(0), is("*"));
         assertThat(state.getManifest().getTrusts(), hasSize(0));
         assertNull(state.getManifest().getExtra());
+    }
+
+    @Test
+    public void scriptHash() {
+        assertThat(new ContractManagement(neow3j).getScriptHash().toString(),
+                is(CONTRACTMANAGEMENT_SCRIPTHASH));
     }
 }
