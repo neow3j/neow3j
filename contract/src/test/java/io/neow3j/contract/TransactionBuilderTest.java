@@ -30,8 +30,11 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.HighPriorityAttribute;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionAttribute;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
@@ -54,7 +57,6 @@ import java.util.stream.Collectors;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -237,11 +239,109 @@ public class TransactionBuilderTest {
                 Signer.feeOnly(account2.getScriptHash()));
     }
 
-    // TODO: 14.09.20 Michael: Once TransactionAttributes are defined, write this test
-    @Ignore
     @Test
-    public void failAddingMoreThanMaxAttributesToTxBuilder() {
+    public void attributes_highPriority() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+
+        Wallet wallet = Wallet.withAccounts(account1);
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .attributes(attr)
+                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .buildTransaction();
+
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(),
+                is(TransactionAttributeType.HIGH_PRIORITY));
+    }
+
+    @Test
+    public void attributes_highPriority_multiSigContainingCommitteeMember() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+
+        Account multiSigAccount = Account.createMultiSigAccount(
+                Arrays.asList(account2.getECKeyPair().getPublicKey(),
+                        account1.getECKeyPair().getPublicKey()),
+                1);
+        Wallet wallet = Wallet.withAccounts(multiSigAccount, account1);
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .attributes(attr)
+                .signers(Signer.feeOnly(multiSigAccount.getScriptHash()))
+                .buildTransaction();
+
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(),
+                is(TransactionAttributeType.HIGH_PRIORITY));
+    }
+
+    @Test
+    public void attributes_highPriority_noCommitteeMember() throws Throwable {
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+
+        Wallet wallet = Wallet.withAccounts(account2);
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("Only committee members can send transactions with high priority.");
+
+        new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .attributes(attr)
+                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .buildTransaction();
+    }
+
+    @Test
+    public void attributes_highPriority_onlyAddedOnce() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        ContractTestHelper.setUpWireMockForGetBlockCount(1000);
+
+        Wallet wallet = Wallet.withAccounts(account1);
+        HighPriorityAttribute attr1 = new HighPriorityAttribute();
+        HighPriorityAttribute attr2 = new HighPriorityAttribute();
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .wallet(wallet)
+                .attributes(attr1)
+                .attributes(attr2)
+                .buildTransaction();
+
+        assertThat(tx.getAttributes(), hasSize(1));
+    }
+
+    @Test
+    public void attributes_failAddingMoreThanMaxToTxBuilder() {
+        List<TransactionAttribute> attrs = new ArrayList<>();
+        for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
+            attrs.add(new HighPriorityAttribute());
+        }
+        TransactionAttribute[] attrArray = attrs.toArray(new TransactionAttribute[0]);
+
         exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("A transaction cannot have " +
+                "more than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES +
+                " attributes.");
+
+        new TransactionBuilder(neow).attributes(attrArray);
     }
 
     @Test

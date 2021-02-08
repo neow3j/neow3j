@@ -9,9 +9,11 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
+import io.neow3j.transaction.HighPriorityAttribute;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttribute;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.WitnessScope;
@@ -20,11 +22,11 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -240,11 +242,23 @@ public class TransactionBuilder {
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
         if (this.attributes.size() + attributes.length >
                 NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-            throw new TransactionConfigurationException("A transaction cannot have more than "
-                    + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
+            throw new TransactionConfigurationException("A transaction " +
+                    "cannot have more than " +
+                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
         }
-        this.attributes.addAll(Arrays.asList(attributes));
+        Arrays.stream(attributes).forEach(attr -> {
+            if (attr.getType() == TransactionAttributeType.HIGH_PRIORITY) {
+                safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
+            }
+        });
         return this;
+    }
+
+    // Make sure that only one high priority attribute is present
+    private void safeAddHighPriorityAttribute(HighPriorityAttribute attr) {
+        if (!isHighPriority()) {
+            attributes.add(attr);
+        }
     }
 
     private boolean containsDuplicateSigners(Signer... signers) {
@@ -282,9 +296,15 @@ public class TransactionBuilder {
         }
 
         if (signers.isEmpty()) {
-            throw new IllegalStateException("Can't create a transaction without any signer. " +
-                    "A transaction requires at least one signer with witness scope fee-only " +
-                    "or higher.");
+            throw new IllegalStateException("Can't create a transaction " +
+                    "without any signer. A transaction requires at least " +
+                    "one signer with witness scope fee-only or higher.");
+        }
+
+        if (isHighPriority() && !isAllowedForHighPriority()) {
+            throw new IllegalStateException("This transaction does not " +
+                    "have a committee member as signer. Only committee " +
+                    "members can send transactions with high priority.");
         }
 
         long systemFee = getSystemFeeForScript();
@@ -301,6 +321,60 @@ public class TransactionBuilder {
         }
         return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
                 networkFee, attributes, script, new ArrayList<>());
+    }
+
+    // Checks if this transaction builder contains a high priority attribute.
+    private boolean isHighPriority() {
+        return attributes.stream()
+                .anyMatch(t ->
+                        t.getType() == TransactionAttributeType.HIGH_PRIORITY);
+    }
+
+    // Checks if this transaction contains a signer that is a committee member.
+    private boolean isAllowedForHighPriority() throws IOException {
+        List<ScriptHash> committee = neow.getCommittee().send()
+                .getCommittee()
+                .stream().map(ECPublicKey::new)
+                .map(key -> key.getEncoded(true))
+                .map(ScriptHash::fromPublicKey)
+                .collect(Collectors.toList());
+
+        boolean signersContainSingleSigCommitteeMember = signers.stream()
+                .map(Signer::getScriptHash).anyMatch(committee::contains);
+        if (signersContainSingleSigCommitteeMember) {
+            return true;
+        }
+        return signersContainMultiSigWithCommitteeMember(committee);
+    }
+
+    // Checks if the signers contains a multi-sig account that contains a
+    // committee member.
+    private boolean signersContainMultiSigWithCommitteeMember(List<ScriptHash> committee) {
+        Iterator<ScriptHash> iterator = signers.stream()
+                .map(Signer::getScriptHash)
+                .iterator();
+        while (iterator.hasNext()) {
+            ScriptHash scriptHash = iterator.next();
+            try {
+                Account account = wallet.getAccount(scriptHash);
+                if (account.isMultiSig()) {
+                    Stream<ScriptHash> accountStream = account
+                            .getVerificationScript().getPublicKeys()
+                            .stream()
+                            .map(s -> s.getEncoded(true))
+                            .map(ScriptHash::fromPublicKey);
+                    boolean multiSigContainsCommitteeMember = accountStream
+                            .filter(sh ->
+                                    wallet.holdsAccount(sh))
+                            .anyMatch(committee::contains);
+                    if (multiSigContainsCommitteeMember) {
+                        return true;
+                    }
+                }
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return false;
     }
 
     private long fetchCurrentBlockNr() throws IOException {
