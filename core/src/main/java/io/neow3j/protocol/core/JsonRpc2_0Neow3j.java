@@ -565,6 +565,9 @@ public class JsonRpc2_0Neow3j implements Neow3j {
 
     /**
      * Invokes a contract in verification mode.
+     * <p>
+     * Requires an open wallet on the neo-node that contains the accounts for
+     * the signers.
      *
      * @param scriptHash the contract script hash.
      * @param methodParams a list of parameters of the verify function.
