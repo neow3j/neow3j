@@ -8,7 +8,7 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.CallFlags;
+import io.neow3j.model.types.CallFlagsType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.utils.Numeric;
 import java.io.File;
@@ -52,8 +52,8 @@ public class NefFileTest {
             "contracts/TestContractWithMethodTokens.nef";
     private static final String TESTCONTRACT_WITH_TOKENS_SCRIPT = "213701004021370000405700017840";
     private final static List<MethodToken> TESTCONTRACT_METHOD_TOKENS = Arrays.asList(
-            new MethodToken(NeoToken.SCRIPT_HASH, "getGasPerBlock", 0, true, CallFlags.ALL),
-            new MethodToken(GasToken.SCRIPT_HASH, "totalSupply", 0, true, CallFlags.ALL));
+            new MethodToken(NeoToken.SCRIPT_HASH, "getGasPerBlock", 0, true, CallFlagsType.ALL),
+            new MethodToken(GasToken.SCRIPT_HASH, "totalSupply", 0, true, CallFlagsType.ALL));
     private static final String TESTCONTRACT_WITH_TOKENS_CHECKSUM = "b559a069";
 
 
