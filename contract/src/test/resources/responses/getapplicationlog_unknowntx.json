@@ -3,6 +3,6 @@
   "id": 1,
   "error": {
     "code": -100,
-    "message": "Unknown transaction"
+    "message": "Unknown transaction/blockhash"
   }
 }

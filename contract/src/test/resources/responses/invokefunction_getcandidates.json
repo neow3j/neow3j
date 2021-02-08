@@ -2,9 +2,9 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "script": "EMAMDWdldENhbmRpZGF0ZXMMFLZyD+9+frc/Ja+0cPWHmXzj4kYKQWJ9W1I=",
+    "script": "EMAfDA1nZXRDYW5kaWRhdGVzDBTGocJKW4f7jM16xfeUj/5SbU4B90FifVtS",
     "state": "HALT",
-    "gasconsumed": "1.0099915",
+    "gasconsumed": "100999150",
     "exception": null,
     "stack": [
       {

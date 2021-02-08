@@ -4,8 +4,8 @@
   "result": {
     "script": "DA5PcmFjbGVDb250cmFjdEEa93tn",
     "state": "FAULT",
-    "gasconsumed": "0.0099915",
-    "exception": "Object reference not set to an instance of an object.",
+    "gasconsumed": "240",
+    "exception": "Value was either too large or too small for an Int32.",
     "stack": []
   }
 }

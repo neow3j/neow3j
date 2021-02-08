@@ -2,14 +2,14 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "script": "DBRXIJHMMlxle0sZ4McQS64GInq5EhHAHwwJYmFsYW5jZU9mDBSDqwZ5rVXAUKE61D9ZNupz9ese9kFifVtS",
+    "script": "AQID",
     "state": "HALT",
-    "gasconsumed": "1999210",
+    "gasconsumed": "30",
     "exception": null,
     "stack": [
       {
         "type": "Integer",
-        "value": "5"
+        "value": "770"
       }
     ]
   }

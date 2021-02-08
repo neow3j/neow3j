@@ -3,7 +3,8 @@
   "id": 1,
   "result": {
     "id": -1,
-    "hash": "",
+    "updatecounter": 0,
+    "hash": "0xf61eebf573ea36593fd43aa150c055ad7906ab83",
     "nef": {
       "magic": 860243278,
       "compiler": "neo-core-v3.0",
@@ -16,7 +17,6 @@
       "groups": [],
       "supportedstandards": [],
       "abi": {
-        "hash": "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
         "methods": []
       },
       "permissions": [
