@@ -40,6 +40,7 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
  */
 public class NeoMethod {
 
+
     // The ASM counterpart of this method.
     private final MethodNode asmMethod;
 
@@ -154,7 +155,8 @@ public class NeoMethod {
         if (!deployAnnotation.isPresent()) {
             // Check if method has _deploy signature but isn't annotated.
             if (asmMethod.name.equals(Compiler.DEPLOY_METHOD_NAME) &&
-                    asmMethod.desc.equals("(Z)V")) {
+                    asmMethod.desc.equals(Compiler.DEPLOY_METHOD_SIGNATURE)) {
+
                 throw new CompilerException(sourceClass, format("Contract has a '%s' method which "
                                 + "is not annotated with the '%s' annotation. Either change its "
                                 + "name or add the annotation.", Compiler.DEPLOY_METHOD_NAME,
@@ -163,9 +165,10 @@ public class NeoMethod {
             return;
         }
 
-        if (!asmMethod.desc.equals("(Z)V")) {
+        if (!asmMethod.desc.equals(Compiler.DEPLOY_METHOD_SIGNATURE)) {
             throw new CompilerException(sourceClass, format("The method annotated with %s is "
-                            + "required to have a boolean parameter and a void return type.",
+                            + "required to have an Object and Boolean parameter, and a void return "
+                            + "type.",
                     OnDeployment.class.getSimpleName()));
         }
         name = Compiler.DEPLOY_METHOD_NAME;

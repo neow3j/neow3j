@@ -41,16 +41,20 @@ public class DeploymentMethodTest {
     public void throwExceptionWhenDeployMethodHasIllegalSignature() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                OnDeployment.class.getSimpleName(),
-                "required to have a boolean parameter and a void return type")));
+                OnDeployment.class.getSimpleName(), "Object", "Boolean", "void")));
         new Compiler().compileClass(DeploymentMethodIllegalReturnTypeTestContract.class.getName());
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                OnDeployment.class.getSimpleName(),
-                "required to have a boolean parameter and a void return type")));
+                OnDeployment.class.getSimpleName(), "Object", "Boolean", "void")));
         new Compiler().compileClass(
                 DeploymentMethodIllegalParameterTypeTestContract.class.getName());
+
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                OnDeployment.class.getSimpleName(), "Object", "Boolean", "void")));
+        new Compiler().compileClass(
+                DeploymentMethodMissingParameterTestContract.class.getName());
     }
 
     @Test
@@ -74,7 +78,7 @@ public class DeploymentMethodTest {
     static class DeploymentMethodTestContract {
 
         @OnDeployment
-        public static void doDeploy(boolean update) {
+        public static void doDeploy(Object data, boolean update) {
             return;
         }
     }
@@ -82,7 +86,7 @@ public class DeploymentMethodTest {
     static class DeploymentMethodIllegalReturnTypeTestContract {
 
         @OnDeployment
-        public static int doDeploy(boolean update) {
+        public static int doDeploy(Object data, boolean update) {
             return 41;
         }
 
@@ -91,7 +95,16 @@ public class DeploymentMethodTest {
     static class DeploymentMethodIllegalParameterTypeTestContract {
 
         @OnDeployment
-        public static void doDeploy(int wrongParam) {
+        public static void doDeploy(Object data, int wrongParam) {
+            return;
+        }
+
+    }
+
+    static class DeploymentMethodMissingParameterTestContract {
+
+        @OnDeployment
+        public static void doDeploy(boolean update) {
             return;
         }
 
@@ -100,12 +113,12 @@ public class DeploymentMethodTest {
     static class MultipleDeploymentMethodsTestContract {
 
         @OnDeployment
-        public static void doDeploy1(boolean update) {
+        public static void doDeploy1(Object data, boolean update) {
             return;
         }
 
         @OnDeployment
-        public static void doDeploy2(boolean update) {
+        public static void doDeploy2(Object data, boolean update) {
             return;
         }
 
@@ -113,7 +126,7 @@ public class DeploymentMethodTest {
 
     static class DeploymentMethodWithoutAnnotationContract {
 
-        public static void _deploy(boolean update) {
+        public static void _deploy(Object data, boolean update) {
             return;
         }
 

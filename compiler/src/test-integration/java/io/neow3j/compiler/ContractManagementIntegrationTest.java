@@ -159,6 +159,10 @@ public class ContractManagementIntegrationTest extends ContractTest {
         public static Contract deploy(byte[] nefFile, String manifest) {
             return ContractManagement.deploy(nefFile, manifest);
         }
+
+        public static Contract deploy(byte[] nefFile, String manifest, Object data) {
+            return ContractManagement.deploy(nefFile, manifest, data);
+        }
     }
 
     static class ManagementContractIntegrationTestContractToUpdate {
