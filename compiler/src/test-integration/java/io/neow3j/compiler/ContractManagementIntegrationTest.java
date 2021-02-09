@@ -13,10 +13,14 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.contracts.ContractManagement;
+import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.neo.Contract;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -31,7 +35,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(ManagementContractIntegrationTestContract.class.getName());
+        setUp(ContractManagementIntegrationTestContract.class.getName());
     }
 
     @Test
@@ -50,25 +54,51 @@ public class ContractManagementIntegrationTest extends ContractTest {
     }
 
     @Test
-    public void deploy() throws Throwable {
+    public void deployWithoutData() throws Throwable {
         CompilationUnit compUnit = new Compiler().compileClass(
-                ManagementContractIntegrationTestContractToDeploy.class.getName());
+                ContractManagementIntegrationTestContractToDeployWithoutData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
 
-        String txHash = contract.invokeFunction("deploy",
-                byteArray(compUnit.getNefFile().toArray()), string(manifestString))
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(committee.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        signAsCommittee();
+        // Call the method that calls the ContractManagement.deploy(...) method and pass the
+        // compiled contract to it.
+        String txHash = invokeFunction(byteArray(compUnit.getNefFile().toArray()),
+                string(manifestString));
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        Notification notification = neow3j.getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getNotifications().get(0);
+        assertThat(notification.getEventName(), is("onDeployWithoutData"));
 
         ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
+        NeoGetContractState result = neow3j.getContractState(contractHash.toString()).send();
+        assertThat(result.getContractState(), notNullValue());
+    }
 
+    @Test
+    public void deployWithData() throws Throwable {
+        CompilationUnit compUnit = new Compiler().compileClass(
+                ContractManagementIntegrationTestContractToDeployWithData.class.getName());
+        String manifestString = ObjectMapperFactory.getObjectMapper()
+                .writeValueAsString(compUnit.getManifest());
+
+        signAsCommittee();
+        // Call the method that calls the ContractManagement.deploy(...) method and pass the
+        // compiled contract to it.
+        String txHash = invokeFunction(byteArray(compUnit.getNefFile().toArray()),
+                string(manifestString), string("hello, world!"));
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        Notification notification = neow3j.getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getNotifications().get(0);
+        assertThat(notification.getEventName(), is("onDeployWithData"));
+        assertThat(notification.getState().asArray().get(0).asByteString().getAsString(),
+                is("hello, world!"));
+
+        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+                compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState result = neow3j.getContractState(contractHash.toString()).send();
         assertThat(result.getContractState(), notNullValue());
     }
@@ -76,7 +106,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
     @Test
     public void update() throws Throwable {
         CompilationUnit compUnit = new Compiler().compileClass(
-                ManagementContractIntegrationTestContractToUpdate.class.getName());
+                ContractManagementIntegrationTestContractToUpdate.class.getName());
 
         // Deploy contract
         NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(neow3j)
@@ -94,7 +124,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
         // Update contract
         compUnit = new Compiler().compileClass(
-                ManagementContractIntegrationTestContractUpdated.class.getName());
+                ContractManagementIntegrationTestContractUpdated.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
         String txHash = new SmartContract(contractHash, neow3j).invokeFunction("update",
@@ -115,7 +145,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
     @Test
     public void destroy() throws Throwable {
         CompilationUnit res = new Compiler().compileClass(
-                ManagementContractIntegrationTestContractToDestroy.class.getName());
+                ContractManagementIntegrationTestContractToDestroy.class.getName());
         NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
@@ -146,7 +176,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
                 is(io.neow3j.contract.ContractManagement.SCRIPT_HASH.toString()));
     }
 
-    static class ManagementContractIntegrationTestContract {
+    static class ContractManagementIntegrationTestContract {
 
         public static Contract getContract(Hash160 contractHash) {
             return ContractManagement.getContract(contractHash);
@@ -156,16 +186,16 @@ public class ContractManagementIntegrationTest extends ContractTest {
             return ContractManagement.getHash();
         }
 
-        public static Contract deploy(byte[] nefFile, String manifest) {
+        public static Contract deployWithoutData(byte[] nefFile, String manifest) {
             return ContractManagement.deploy(nefFile, manifest);
         }
 
-        public static Contract deploy(byte[] nefFile, String manifest, Object data) {
+        public static Contract deployWithData(byte[] nefFile, String manifest, Object data) {
             return ContractManagement.deploy(nefFile, manifest, data);
         }
     }
 
-    static class ManagementContractIntegrationTestContractToUpdate {
+    static class ContractManagementIntegrationTestContractToUpdate {
 
         public static void update(byte[] nefFile, String manifest) {
             ContractManagement.update(nefFile, manifest);
@@ -173,7 +203,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
     }
 
-    static class ManagementContractIntegrationTestContractUpdated {
+    static class ContractManagementIntegrationTestContractUpdated {
 
         public static String updatedMethod() {
             return "updated method";
@@ -181,14 +211,27 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
     }
 
-    static class ManagementContractIntegrationTestContractToDeploy {
+    static class ContractManagementIntegrationTestContractToDeployWithoutData {
 
-        public static String newMethod() {
-            return "new method";
+        private static Event1Arg<String> onDeployWithoutData;
+
+        @OnDeployment
+        public static void deploy(Object data, boolean update) {
+            onDeployWithoutData.notify("Deploy without data.");
         }
     }
 
-    static class ManagementContractIntegrationTestContractToDestroy {
+    static class ContractManagementIntegrationTestContractToDeployWithData {
+
+        private static Event1Arg<Object> onDeployWithData;
+
+        @OnDeployment
+        public static void deploy(Object data, boolean update) {
+            onDeployWithData.notify(data);
+        }
+    }
+
+    static class ContractManagementIntegrationTestContractToDestroy {
 
         public static void destroy() {
             ContractManagement.destroy();
