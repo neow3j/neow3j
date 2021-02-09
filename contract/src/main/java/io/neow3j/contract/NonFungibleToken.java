@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Represents a NEP-11 Non-Fungible Token contract and provides methods to invoke it.
  */
-public class NFToken extends Token {
+public class NonFungibleToken extends Token {
 
     private static final String TRANSFER = "transfer";
     private static final String OWNER_OF = "ownerOf";
@@ -35,7 +35,7 @@ public class NFToken extends Token {
      * @param scriptHash the token contract's script hash.
      * @param neow the {@link Neow3j} instance to use for invocations.
      */
-    public NFToken(ScriptHash scriptHash, Neow3j neow) {
+    public NonFungibleToken(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 

@@ -29,7 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class NFTokenTest {
+public class NonFungibleTokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -43,7 +43,7 @@ public class NFTokenTest {
     public static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
     private static final byte[] TOKEN_ID = new byte[]{1, 2, 3};
     private static final String TRANSFER = "transfer";
-    NFToken nfTestToken;
+    NonFungibleToken nfTestToken;
 
     @Before
     public void setUp() {
@@ -52,7 +52,7 @@ public class NFTokenTest {
         WireMock.configureFor(port);
 
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        nfTestToken = new NFToken(NF_TOKEN_SCRIPT_HASH, neow);
+        nfTestToken = new NonFungibleToken(NF_TOKEN_SCRIPT_HASH, neow);
 
         // APiZTA6Ym7EHpLK5PLpSLKn62qeMyCZEER
         account1 = new Account(ECKeyPair.create(
