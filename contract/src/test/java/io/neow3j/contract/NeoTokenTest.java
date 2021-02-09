@@ -183,7 +183,7 @@ public class NeoTokenTest {
                         .withBody(responseBody)));
 
         List<ECPublicKey> result = new NeoToken(neow).getCommittee();
-        String expKeyHex = "026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d";
+        String expKeyHex = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
         ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
         assertThat(result, contains(expKey));
     }
@@ -204,7 +204,7 @@ public class NeoTokenTest {
                         .withBody(responseBody)));
 
         List<ECPublicKey> result = new NeoToken(neow).getNextBlockValidators();
-        String expKeyHex = "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238";
+        String expKeyHex = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
         ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
         assertThat(result, contains(expKey));
     }

@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DA5PcmFjbGVDb250cmFjdEEa93tn",
+    "state": "FAULT",
+    "gasconsumed": "240",
+    "exception": "Value was either too large or too small for an Int32.",
+    "stack": []
+  }
+}
