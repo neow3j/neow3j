@@ -278,13 +278,16 @@ public class ContractTest {
         } else {
             signer = Signer.global(defaultAccount.getScriptHash());
         }
-        return contract.invokeFunction(function, params)
+        NeoSendRawTransaction response = contract.invokeFunction(function, params)
                 .wallet(wallet)
                 .signers(signer)
                 .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+                .send();
+
+        if (response.hasError()) {
+            throw new RuntimeException(response.getError().getMessage());
+        }
+        return response.getSendRawTransaction().getHash();
     }
 
     /**
