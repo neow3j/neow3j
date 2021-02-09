@@ -5,12 +5,33 @@
     "script": "",
     "state": "HALT",
     "gasconsumed": "",
+    "exception": null,
     "stack": [
       {
-        "type": "ByteString",
-        "value": "eyJuYW1lIjoiQSBuYW1lIiwiZGVzY3JpcHRpb24iOiJBIGRlc2NyaXB0aW9uIiwiaW1hZ2UiOiJTb21lIGltYWdlIFVSSSIsInRva2VuVVJJIjoiU29tZSBVUkkifQ=="
+        "type": "Map",
+        "value": [
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "bmFtZQ=="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "QSBuYW1l"
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "ZGVzY3JpcHRpb24="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "QSBkZXNjcmlwdGlvbg=="
+            }
+          }
+        ]
       }
-    ],
-    "tx": null
+    ]
   }
 }

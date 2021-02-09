@@ -2,27 +2,23 @@ package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
-import io.neow3j.protocol.core.methods.response.NFTokenProperties;
-import io.neow3j.wallet.Wallet;
-import io.neow3j.wallet.exceptions.InsufficientFundsException;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.protocol.core.methods.response.TokenState;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
+import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,11 +35,10 @@ public class NonFungibleTokenTest {
 
     private Account account1;
     private Account account2;
-    private Account account3;
-    public static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
+    private static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
     private static final byte[] TOKEN_ID = new byte[]{1, 2, 3};
     private static final String TRANSFER = "transfer";
-    NonFungibleToken nfTestToken;
+    private static NonFungibleToken nfTestToken;
 
     @Before
     public void setUp() {
@@ -61,9 +56,6 @@ public class NonFungibleTokenTest {
         account2 = new Account(ECKeyPair.create(
                 Numeric.hexStringToByteArray(
                         "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
-        account3 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
-                        "3a100280baf46ea7db17bc01b53365891876b4a2db11028dbc1ccb8c782725f8")));
     }
 
     @Test
@@ -83,26 +75,6 @@ public class NonFungibleTokenTest {
     }
 
     @Test
-    public void testTransfer_Divisible() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("method is only implemented on NF tokens that are indivisible.");
-        nfTestToken.transfer(Wallet.create(), account1.getScriptHash(), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransfer_MultipleOwners() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof_multiple.json");
-
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("has 2 owners. To transfer fractions use the method " +
-                "transferFractions.");
-        nfTestToken.transfer(Wallet.create(), account1.getScriptHash(), TOKEN_ID);
-    }
-
-    @Test
     public void testTransfer_WalletDoesNotContainTokenOwner() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
@@ -113,134 +85,56 @@ public class NonFungibleTokenTest {
     }
 
     @Test
-    public void testTransferFraction() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
-
-        byte[] expectedScript = new ScriptBuilder().contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
-                Arrays.asList(
-                        ContractParameter.hash160(account1.getScriptHash()),
-                        ContractParameter.hash160(account2.getScriptHash()),
-                        ContractParameter.integer(new BigInteger("244")),
-                        ContractParameter.byteArray(TOKEN_ID)))
-                .toArray();
-
-        Wallet wallet = Wallet.withAccounts(account1);
-        TransactionBuilder b = nfTestToken.transferFraction(wallet, account1.getScriptHash(),
-                account2.getScriptHash(), new BigDecimal("0.00244"), TOKEN_ID);
-
-        assertThat(b.getScript(), is(expectedScript));
-    }
-
-    @Test
-    public void testTransferFractions_InsufficientFunds() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
-
-        Wallet wallet = Wallet.withAccounts(account1);
-
-        exceptionRule.expect(InsufficientFundsException.class);
-        exceptionRule.expectMessage("The provided account can not cover the given amount.");
-        nfTestToken.transferFraction(wallet, account1.getScriptHash(),
-                account2.getScriptHash(), new BigDecimal("0.3"), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransferFractions_IllegalAmount() throws IOException {
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        Wallet wallet = Wallet.withAccounts(account1);
-
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("must be in the range of 0 to 1");
-        nfTestToken.transferFraction(wallet, account1.getScriptHash(),
-                account2.getScriptHash(), new BigDecimal("2"), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransferFractions_IllegalAmount_ScaleHigherThanDecimals() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-
-        Wallet wallet = Wallet.withAccounts(account1);
-
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("scale of the provided amount is higher than the decimals");
-        nfTestToken.transferFraction(wallet, account1.getScriptHash(),
-                account2.getScriptHash(), new BigDecimal("0.00000001"), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransferFractions_IllegalAmount_Negative() throws IOException {
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        Wallet wallet = Wallet.withAccounts(account1);
-
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("must be in the range of 0 to 1");
-        nfTestToken.transferFraction(wallet, account1.getScriptHash(),
-                account2.getScriptHash(), new BigDecimal("-0.1"), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransferFraction_FromIsNotAnOwner() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof_multiple.json");
-
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("is not an owner of the token with ID");
-        nfTestToken.transferFraction(Wallet.create(), account3.getScriptHash(), account1.getScriptHash(),
-                new BigDecimal("0.1"), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransferFraction_WalletDoesNotContainFromAccount() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
-
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The provided wallet does not contain the provided from account");
-        nfTestToken.transferFraction(Wallet.withAccounts(account2), account1.getScriptHash(),
-                account3.getScriptHash(), new BigDecimal("0.002"), TOKEN_ID);
-    }
-
-    @Test
     public void testOwnerOf() throws IOException {
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        List<ScriptHash> owners = nfTestToken.ownerOf(TOKEN_ID);
+        ScriptHash owner = nfTestToken.ownerOf(TOKEN_ID);
 
-        assertThat(owners, hasSize(1));
-        assertThat(owners, contains(account1.getScriptHash()));
+        assertThat(owner, is(account1.getScriptHash()));
+    }
+
+    @Test
+    public void testOwnerOf_returnNotScriptHash() throws IOException {
+        setUpWireMockForInvokeFunction("ownerOf", "response_stack_integer.json");
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage("but expected ByteString");
+        nfTestToken.ownerOf(new byte[]{1});
+    }
+
+    @Test
+    public void testOwnerOf_returnInvalidAddress() throws IOException {
+        setUpWireMockForInvokeFunction("ownerOf", "response_invalid_address.json");
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage("did not contain script hash in expected format");
+        nfTestToken.ownerOf(new byte[]{1});
+    }
+
+    @Test
+    public void testGetDecimals() {
+        assertThat(nfTestToken.getDecimals(), is(0));
     }
 
     @Test
     public void testBalanceOf() throws IOException {
         setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
-        BigInteger balance = nfTestToken.balanceOf(account1.getScriptHash(), TOKEN_ID);
+        BigInteger balance = nfTestToken.balanceOf(account1.getScriptHash());
 
         assertThat(balance, is(new BigInteger("244")));
     }
 
     @Test
-    public void testTokensOf() throws IOException {
-        setUpWireMockForInvokeFunction("tokensOf", "nft_tokensof.json");
-        List<ScriptHash> ownedTokens = nfTestToken.tokensOf(account1.getScriptHash());
-
-        assertThat(ownedTokens, hasSize(2));
-        assertThat(ownedTokens, contains(
-                ScriptHash.fromAddress("NUdMXSrJ6hy7ncjVJMEuDZNQKznafQrPgP"),
-                ScriptHash.fromAddress("NQKcUMKeP6QzjTPy4G7uW1nt6JHFw9ojB7")));
-    }
-
-    @Test
     public void testGetProperties() throws IOException {
         setUpWireMockForInvokeFunction("properties", "nft_properties.json");
-        NFTokenProperties properties = nfTestToken.properties(new byte[]{1});
+        TokenState properties = nfTestToken.properties(new byte[]{1});
 
         assertThat(properties.getName(), is("A name"));
         assertThat(properties.getDescription(), is("A description"));
-        assertThat(properties.getImage(), is("Some image URI"));
-        assertThat(properties.getTokenURI(), is("Some URI"));
+    }
+
+    @Test
+    public void testGetProperties_unexpectedReturnType() throws IOException {
+        setUpWireMockForInvokeFunction("properties", "response_stack_integer.json");
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage("but expected Map");
+        nfTestToken.properties(new byte[]{1});
     }
 }

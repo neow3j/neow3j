@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "",
+    "state": "",
+    "gasconsumed": "",
+    "stack": [
+      {
+        "type": "Integer",
+        "value": "5"
+      }
+    ]
+  }
+}
