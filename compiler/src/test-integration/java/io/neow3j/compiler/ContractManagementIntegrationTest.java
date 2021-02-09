@@ -17,7 +17,6 @@ import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.neo.Contract;
-import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
@@ -104,9 +103,9 @@ public class ContractManagementIntegrationTest extends ContractTest {
     }
 
     @Test
-    public void update() throws Throwable {
+    public void updateWithoutData() throws Throwable {
         CompilationUnit compUnit = new Compiler().compileClass(
-                ContractManagementIntegrationTestContractToUpdate.class.getName());
+                ContractManagementIntegrationTestContractToUpdateWithoutData.class.getName());
 
         // Deploy contract
         NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(neow3j)
@@ -122,13 +121,57 @@ public class ContractManagementIntegrationTest extends ContractTest {
         NeoGetContractState contractState = neow3j.getContractState(contractHash.toString()).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
-        // Update contract
+        // Compile updated version of contract
         compUnit = new Compiler().compileClass(
                 ContractManagementIntegrationTestContractUpdated.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
-        String txHash = new SmartContract(contractHash, neow3j).invokeFunction("update",
+
+        // Update the contract
+        String txHash = new SmartContract(contractHash, neow3j).invokeFunction("updateWithoutData",
                 byteArray(compUnit.getNefFile().toArray()), string(manifestString))
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(committee.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        // Check one update has been performed
+        contractState = neow3j.getContractState(contractHash.toString()).send();
+        assertThat(contractState.getContractState().getUpdateCounter(), is(1));
+    }
+
+    @Test
+    public void updateWithData() throws Throwable {
+        CompilationUnit compUnit = new Compiler().compileClass(
+                ContractManagementIntegrationTestContractToUpdateWithData.class.getName());
+
+        // Deploy contract
+        NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(neow3j)
+                .deploy(compUnit.getNefFile(), compUnit.getManifest())
+                .wallet(wallet)
+                .signers(Signer.calledByEntry(committee.getScriptHash()))
+                .sign().send();
+        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
+
+        // Check zero updates have been performed
+        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+                compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
+        NeoGetContractState contractState = neow3j.getContractState(contractHash.toString()).send();
+        assertThat(contractState.getContractState().getUpdateCounter(), is(0));
+
+        // Compile updated version of contract
+        compUnit = new Compiler().compileClass(
+                ContractManagementIntegrationTestContractUpdated.class.getName());
+        String manifestString = ObjectMapperFactory.getObjectMapper()
+                .writeValueAsString(compUnit.getManifest());
+
+        // Update the contract
+        String txHash = new SmartContract(contractHash, neow3j).invokeFunction("updateWithData",
+                byteArray(compUnit.getNefFile().toArray()), string(manifestString),
+                string("hello, world!"))
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
                 .sign()
@@ -195,9 +238,17 @@ public class ContractManagementIntegrationTest extends ContractTest {
         }
     }
 
-    static class ContractManagementIntegrationTestContractToUpdate {
+    static class ContractManagementIntegrationTestContractToUpdateWithData {
 
-        public static void update(byte[] nefFile, String manifest) {
+        public static void updateWithData(byte[] nefFile, String manifest, Object data) {
+            ContractManagement.update(nefFile, manifest, data);
+        }
+
+    }
+
+    static class ContractManagementIntegrationTestContractToUpdateWithoutData {
+
+        public static void updateWithoutData(byte[] nefFile, String manifest) {
             ContractManagement.update(nefFile, manifest);
         }
 
@@ -205,8 +256,11 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
     static class ContractManagementIntegrationTestContractUpdated {
 
-        public static String updatedMethod() {
-            return "updated method";
+        static Event1Arg<Object> onUpdate;
+
+        @OnDeployment
+        public static void deploy(Object data, boolean update) {
+            onUpdate.notify(data);
         }
 
     }
