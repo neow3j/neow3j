@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -197,62 +196,6 @@ public class StackItemTest extends ResponseTester {
                 Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
-    }
-
-    @Test
-    public void testDeserializeByteStringStackItem_getAsJson() throws IOException {
-        String json = ""
-                + " {"
-                + "   \"type\": \"ByteString\",\n"
-                + "   \"value\": \"eyJuYW1lIjoidGVzdCBuYW1lIiwiZGVzY3JpcHRpb24iOiJ0ZXN0IGRlc2NyaXB0aW9uIn0=\"\n"
-                + " }";
-        StackItem rawItem = OBJECT_MAPPER.readValue(json, StackItem.class);
-        assertThat(rawItem.getType(), is(StackItemType.BYTE_STRING));
-        ByteStringStackItem item = rawItem.asByteString();
-        NFTokenProperties properties = item.getAsJson(NFTokenProperties.class);
-        assertThat(properties.getName(), is("test name"));
-        assertThat(properties.getDescription(), is("test description"));
-        assertNull(properties.getImage());
-        assertNull(properties.getTokenURI());
-
-        json = ""
-                + " {"
-                + "   \"type\": \"ByteString\",\n"
-                + "   \"value\": \"eyJuYW1lIjoidGVzdCBuYW1lIiwiZGVzY3JpcHRpb24iOiJ0ZXN0IGRlc2NyaXB0aW9uIiwiaW1hZ2UiOiAic29tZSBpbWFnZSBVUkkifQ==\"\n"
-                + " }";
-
-        item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteString();
-        properties = item.getAsJson(NFTokenProperties.class);
-        assertThat(properties.getName(), is("test name"));
-        assertThat(properties.getDescription(), is("test description"));
-        assertThat(properties.getImage(), is("some image URI"));
-        assertNull(properties.getTokenURI());
-
-        json = ""
-                + " {"
-                + "   \"type\": \"ByteString\",\n"
-                + "   \"value\": \"eyJuYW1lIjoidGVzdCBuYW1lIiwiZGVzY3JpcHRpb24iOiJ0ZXN0IGRlc2NyaXB0aW9uIiwidG9rZW5VUkkiOiJzb21lIFVSSSJ9\"\n"
-                + " }";
-
-        item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteString();
-        properties = item.getAsJson(NFTokenProperties.class);
-        assertThat(properties.getName(), is("test name"));
-        assertThat(properties.getDescription(), is("test description"));
-        assertNull(properties.getImage());
-        assertThat(properties.getTokenURI(), is("some URI"));
-
-        json = ""
-                + " {"
-                + "   \"type\": \"ByteString\",\n"
-                + "   \"value\": \"eyJuYW1lIjoidGVzdCBuYW1lIiwiZGVzY3JpcHRpb24iOiJ0ZXN0IGRlc2NyaXB0aW9uIiwiaW1hZ2UiOiJzb21lIGltYWdlIFVSSSIsInRva2VuVVJJIjoic29tZSBVUkkifQ==\"\n"
-                + " }";
-
-        item = OBJECT_MAPPER.readValue(json, StackItem.class).asByteString();
-        properties = item.getAsJson(NFTokenProperties.class);
-        assertThat(properties.getName(), is("test name"));
-        assertThat(properties.getDescription(), is("test description"));
-        assertThat(properties.getImage(), is("some image URI"));
-        assertThat(properties.getTokenURI(), is("some URI"));
     }
 
     @Test

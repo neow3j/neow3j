@@ -84,19 +84,6 @@ public class ByteStringStackItem extends StackItem {
         return BigIntegers.fromLittleEndianByteArray(getValue());
     }
 
-    /**
-     * Deserializes this byte array into the given class.
-     *
-     * @param clazz The class to deserialize to.
-     * @return the deserialized JSON content of the byte array's value.
-     * @throws IOException if an error occurs when trying to deserialize to the given class.
-     */
-    public <T> T getAsJson(Class<T> clazz) throws IOException {
-        String json = new String(getValue(), UTF_8);
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(json, clazz);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
