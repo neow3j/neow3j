@@ -7,7 +7,7 @@
     "TrustedAuthorities": [],
     "RpcUser": "",
     "RpcPass": "",
-    "MaxGasInvoke": 20,
+    "MaxGasInvoke": 10000,
     "MaxFee": 0.1,
     "MaxConcurrentConnections": 40,
     "DisabledMethods": [ ]
