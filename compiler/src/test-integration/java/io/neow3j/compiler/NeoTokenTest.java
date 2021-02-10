@@ -1,13 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.NeoToken;
@@ -16,17 +8,29 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Await;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.publicKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class NeoTokenTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
         setUp(NeoTokenTestContract.class.getName());
+        String gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
+        String neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
+        Await.waitUntilTransactionIsExecuted(gasTxHash, neow3j);
+        Await.waitUntilTransactionIsExecuted(neoTxHash, neow3j);
     }
 
     @Test
@@ -96,13 +100,7 @@ public class NeoTokenTest extends ContractTest {
 
     @Test
     public void vote() throws Throwable {
-        // Needs GAS for the transaction costs.
-        Await.waitUntilTransactionIsExecuted(
-                transferGas(defaultAccount.getScriptHash(), "100"), neow3j);
-        // Needs NEo to be able to vote.
-        Await.waitUntilTransactionIsExecuted(
-                transferNeo(defaultAccount.getScriptHash(), "100"), neow3j);
-
+        signWithDefaultAccount();
         // Add the default account as a candidate
         String txHash = new io.neow3j.contract.NeoToken(neow3j)
                 .registerCandidate(defaultAccount.getECKeyPair().getPublicKey())
@@ -157,8 +155,8 @@ public class NeoTokenTest extends ContractTest {
             return NeoToken.getGasPerBlock();
         }
 
-        public static boolean setGasPerBlock(int gasPerBlock) {
-            return NeoToken.setGasPerBlock(gasPerBlock);
+        public static void setGasPerBlock(int gasPerBlock) {
+            NeoToken.setGasPerBlock(gasPerBlock);
         }
 
         public static boolean vote(Hash160 scriptHash, ECPoint pubKey) {

@@ -78,7 +78,7 @@ public class NeoToken extends Nep17Token {
      * @param gasPerBlock The desired amount of GAS per block.
      * @return true, if setting the amount was successful. False, otherwise.
      */
-    public static native boolean setGasPerBlock(int gasPerBlock);
+    public static native void setGasPerBlock(int gasPerBlock);
 
     /**
      * Represents a validator candidate.
