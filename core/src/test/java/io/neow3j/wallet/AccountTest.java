@@ -1,5 +1,6 @@
 package io.neow3j.wallet;
 
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import io.neow3j.transaction.VerificationScript;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
@@ -337,7 +338,7 @@ public class AccountTest {
     }
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
+    public WireMockRule wireMockRule = new WireMockRule(WireMockConfiguration.options().dynamicPort());
 
     @Test
     public void getNep17Balances() throws IOException {

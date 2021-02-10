@@ -5,7 +5,6 @@ dependencies {
             project(':model'),
             project(':core'),
             project(':crypto'),
-            project(':wallet'),
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     testCompile "com.github.tomakehurst:wiremock-jre8:$wiremockVersion"

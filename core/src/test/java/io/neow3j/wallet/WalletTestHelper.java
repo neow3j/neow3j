@@ -19,12 +19,12 @@ public class WalletTestHelper {
 
         String responseBody = loadFile("/responses/" + responseFile);
 
-        WireMock.stubFor(post(urlEqualTo("/"))
+        WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
                         + ".*\"method\":\"" + call + "\".*"
                         + ".*\"params\":.*"
                         + ".*\"" + param + "\".*"))
-                .willReturn(aResponse()
+                .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withBody(responseBody)));
     }
