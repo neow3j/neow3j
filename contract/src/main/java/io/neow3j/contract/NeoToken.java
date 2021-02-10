@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * Represents the NeoToken native contract and provides methods to invoke its functions.
  */
-public class NeoToken extends Nep17Token {
+public class NeoToken extends FungibleToken {
 
     public final static String NAME = "NeoToken";
     public final static long NEF_CHECKSUM = 3921333105L;

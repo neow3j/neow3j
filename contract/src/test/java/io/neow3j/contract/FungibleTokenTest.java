@@ -7,6 +7,7 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCoun
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -25,13 +26,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class Nep17TokenTest {
+public class FungibleTokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -39,8 +39,8 @@ public class Nep17TokenTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-    private Nep17Token neoToken;
-    private Nep17Token gasToken;
+    private FungibleToken neoToken;
+    private FungibleToken gasToken;
     private Account account1;
     private Account account2;
     private Account account3;
@@ -59,8 +59,8 @@ public class Nep17TokenTest {
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
-        neoToken = new Nep17Token(NEO_TOKEN_SCRIPT_HASH, neow);
-        gasToken = new Nep17Token(GAS_TOKEN_SCRIPT_HASH, neow);
+        neoToken = new FungibleToken(NEO_TOKEN_SCRIPT_HASH, neow);
+        gasToken = new FungibleToken(GAS_TOKEN_SCRIPT_HASH, neow);
 
         account1 = new Account(ECKeyPair.create(
                 Numeric.hexStringToByteArray(
@@ -132,9 +132,10 @@ public class Nep17TokenTest {
                         ContractParameter.integer(100000000),
                         ContractParameter.any(null))).toArray();
 
-        Transaction tx = gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1, account2),
-                RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
-                .buildTransaction();
+        Transaction tx =
+                gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1, account2),
+                        RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
+                        .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
     }
@@ -156,9 +157,10 @@ public class Nep17TokenTest {
                         ContractParameter.integer(100000000), // 1 GAS
                         ContractParameter.any(null))).toArray();
 
-        Transaction tx = gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1, account2),
-                RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE, account1.getScriptHash())
-                .buildTransaction();
+        Transaction tx =
+                gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1, account2),
+                        RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE, account1.getScriptHash())
+                        .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
     }
@@ -225,7 +227,8 @@ public class Nep17TokenTest {
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
+        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
+                                    "handle");
         neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
                 RECIPIENT_SCRIPT_HASH, new BigDecimal("0.1"));
     }
@@ -251,7 +254,8 @@ public class Nep17TokenTest {
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
+        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
+                                    "handle");
         neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
                 RECIPIENT_SCRIPT_HASH, new BigDecimal("1.1"));
     }
@@ -261,7 +265,8 @@ public class Nep17TokenTest {
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals_gas.json");
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
+        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
+                                    "handle");
         gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("0.0000000002"), account1.getScriptHash());
     }
@@ -271,7 +276,8 @@ public class Nep17TokenTest {
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can handle");
+        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
+                                    "handle");
         neoToken.transfer(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("0.2"));
     }

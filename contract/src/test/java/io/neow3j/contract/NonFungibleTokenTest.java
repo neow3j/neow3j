@@ -35,7 +35,8 @@ public class NonFungibleTokenTest {
 
     private Account account1;
     private Account account2;
-    private static final ScriptHash NF_TOKEN_SCRIPT_HASH = ScriptHash.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
+    private static final ScriptHash NF_TOKEN_SCRIPT_HASH =
+            ScriptHash.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
     private static final byte[] TOKEN_ID = new byte[]{1, 2, 3};
     private static final String TRANSFER = "transfer";
     private static NonFungibleToken nfTestToken;

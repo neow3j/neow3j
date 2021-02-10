@@ -159,7 +159,7 @@ public class NeoURI {
     private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset)
             throws IOException {
 
-        int decimals = new Nep17Token(asset, neow3j).getDecimals();
+        int decimals = new FungibleToken(asset, neow3j).getDecimals();
         BigDecimal factor = BigDecimal.TEN.pow(decimals);
         return amount.multiply(factor).toBigInteger();
     }

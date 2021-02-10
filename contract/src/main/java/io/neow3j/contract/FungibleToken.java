@@ -22,21 +22,22 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Represents a NEP-17 token contract and provides methods to invoke it.
+ * Represents a fungible token contract that is compliant with the NEP-17 standard and provides
+ * methods to invoke it.
  */
-public class Nep17Token extends Token {
+public class FungibleToken extends Token {
 
     private static final String BALANCE_OF = "balanceOf";
     private static final String TRANSFER = "transfer";
 
     /**
-     * Constructs a new {@code Nep17Token} representing the token contract with the given script
+     * Constructs a new {@code FungibleToken} representing the token contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash the token contract's script hash
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public Nep17Token(ScriptHash scriptHash, Neow3j neow) {
+    public FungibleToken(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 

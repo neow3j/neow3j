@@ -5,7 +5,7 @@ import io.neow3j.protocol.Neow3j;
 /**
  * Represents the GasToken native contract and provides methods to invoke its functions.
  */
-public class GasToken extends Nep17Token {
+public class GasToken extends FungibleToken {
 
     public final static String NAME = "GasToken";
     public final static long NEF_CHECKSUM = 3155977747L;
