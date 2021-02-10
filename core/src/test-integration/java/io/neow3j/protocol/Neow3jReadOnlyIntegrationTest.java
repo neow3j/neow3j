@@ -86,7 +86,6 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Await;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Calendar;

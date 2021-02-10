@@ -1,6 +1,0 @@
-description 'neow3j: Utils'
-
-dependencies {
-    compile project(":model"),
-        "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
-}

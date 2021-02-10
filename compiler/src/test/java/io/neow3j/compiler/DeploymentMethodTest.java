@@ -5,10 +5,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnDeployment;
-import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
 import java.io.IOException;

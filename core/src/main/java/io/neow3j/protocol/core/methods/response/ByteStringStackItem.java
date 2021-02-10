@@ -4,12 +4,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;

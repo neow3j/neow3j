@@ -7,7 +7,6 @@ import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
-import io.neow3j.compiler.converters.Converter;
 import io.neow3j.constants.OpCode;
 import java.io.IOException;
 import org.objectweb.asm.tree.AbstractInsnNode;

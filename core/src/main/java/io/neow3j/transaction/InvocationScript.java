@@ -8,6 +8,7 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
+import io.neow3j.constants.OpCode;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
 
@@ -31,9 +32,9 @@ public class InvocationScript extends NeoSerializable {
     /**
      * Creates an invocation script with the given script.
      * If the script represents a signature make sure that it starts with either of the following
-     * opcodes, dynamically: {@link io.neow3j.constants.OpCode#PUSHDATA1},
-     * {@link io.neow3j.constants.OpCode#PUSHDATA2}, and
-     * {@link io.neow3j.constants.OpCode#PUSHDATA4}. The opcode is not added automatically.
+     * opcodes, dynamically: {@link OpCode#PUSHDATA1},
+     * {@link OpCode#PUSHDATA2}, and
+     * {@link OpCode#PUSHDATA4}. The opcode is not added automatically.
      * It's recommended to use {@link InvocationScript#fromSignature(Sign.SignatureData)} or {@link
      * InvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need
      * a signature invocation script.
