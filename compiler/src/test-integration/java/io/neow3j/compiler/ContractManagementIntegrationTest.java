@@ -13,6 +13,7 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
@@ -123,7 +124,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
         // Compile updated version of contract
         compUnit = new Compiler().compileClass(
-                ContractManagementIntegrationTestContractUpdated.class.getName());
+                ContractManagementIntegrationTestContractUpdatedWithoutData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
 
@@ -164,7 +165,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
         // Compile updated version of contract
         compUnit = new Compiler().compileClass(
-                ContractManagementIntegrationTestContractUpdated.class.getName());
+                ContractManagementIntegrationTestContractUpdatedWithData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
 
@@ -254,7 +255,21 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
     }
 
-    static class ContractManagementIntegrationTestContractUpdated {
+    @DisplayName("ContractManagementIntegrationTest$ContractManagementIntegrationTestContractToUpdateWithData")
+    static class ContractManagementIntegrationTestContractUpdatedWithData {
+
+        static Event1Arg<Object> onUpdate;
+
+        @OnDeployment
+        public static void deploy(Object data, boolean update) {
+            onUpdate.notify(data);
+        }
+
+    }
+
+    @DisplayName(
+            "ContractManagementIntegrationTest$ContractManagementIntegrationTestContractToUpdateWithoutData")
+    static class ContractManagementIntegrationTestContractUpdatedWithoutData {
 
         static Event1Arg<Object> onUpdate;
 
