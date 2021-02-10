@@ -7,13 +7,8 @@
     "gasconsumed": "101007570",
     "stack": [
       {
-        "type": "Array",
-        "value": [
-          {
-            "type": "ByteString",
-            "value": "VyCRzDJcZXtLGeDHEEuuBiJ6uRI="
-          }
-        ]
+        "type": "ByteString",
+        "value": "VyCRzDJcZXtLGeDHEEuuBiJ6uRI="
       }
     ],
     "tx": null

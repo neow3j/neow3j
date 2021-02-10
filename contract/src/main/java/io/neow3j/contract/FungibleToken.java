@@ -1,11 +1,17 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.any;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.transaction.Signer.calledByEntry;
+
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.Signer;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.exceptions.InsufficientFundsException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -16,21 +22,22 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Represents a NEP-17 token contract and provides methods to invoke it.
+ * Represents a fungible token contract that is compliant with the NEP-17 standard and provides
+ * methods to invoke it.
  */
-public class Nep17Token extends Token {
+public class FungibleToken extends Token {
 
     private static final String BALANCE_OF = "balanceOf";
     private static final String TRANSFER = "transfer";
 
     /**
-     * Constructs a new {@code Nep17Token} representing the token contract with the given script
+     * Constructs a new {@code FungibleToken} representing the token contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash the token contract's script hash
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public Nep17Token(ScriptHash scriptHash, Neow3j neow) {
+    public FungibleToken(ScriptHash scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 
@@ -95,7 +102,7 @@ public class Nep17Token extends Token {
     public BigInteger getBalanceOf(ScriptHash scriptHash) throws IOException,
             UnexpectedReturnTypeException {
 
-        ContractParameter ofParam = ContractParameter.hash160(scriptHash);
+        ContractParameter ofParam = hash160(scriptHash);
         return callFuncReturningInt(BALANCE_OF, ofParam);
     }
 
@@ -163,9 +170,10 @@ public class Nep17Token extends Token {
                     "The parameter amount must be greater than or equal to 0");
         }
         if (!amountDecimalsIsValid(amount)) {
-            throw new IllegalArgumentException("The amount contains more decimal places than this token " +
-                    "can handle. This token has " + getDecimals() + " decimals. The amount provided " +
-                    "had " + amount.stripTrailingZeros().scale() + " decimal places.");
+            throw new IllegalArgumentException(
+                    "The amount contains more decimal places than this token can handle. This " +
+                    "token has " + getDecimals() + " decimals. The amount provided had " +
+                    amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         List<Account> accountsOrdered = new ArrayList<>(wallet.getAccounts());
@@ -223,23 +231,24 @@ public class Nep17Token extends Token {
                     "The parameter amount must be greater than or equal to 0");
         }
         if (!amountDecimalsIsValid(amount)) {
-            throw new IllegalArgumentException("The amount contains more decimal places than this token " +
-                    "can handle. This token has " + getDecimals() + " decimals. The amount provided " +
-                    "had " + amount.stripTrailingZeros().scale() + " decimal places.");
+            throw new IllegalArgumentException(
+                    "The amount contains more decimal places than this token can handle. This " +
+                    "token has " + getDecimals() + " decimals. The amount provided had " +
+                    amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         List<Account> accounts = new ArrayList<>();
         for (ScriptHash fromScriptHash : from) {
             Account a = wallet.getAccount(fromScriptHash);
-            // TODO: 15.10.20 Michael: Remove this multi-sig check. The signers for a multi-sig can still
-            //  be added to the TransactionBuilder.
+            // TODO: 15.10.20 Michael: Remove this multi-sig check. The signers for a multi-sig can
+            //  still be added to the TransactionBuilder.
             // Verify that potential multi-sig accounts can be used.
             if (a.isMultiSig() && a.getVerificationScript() != null &&
-                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
-                throw new IllegalArgumentException("The multi-sig account with script hash "
-                        + fromScriptHash.toString() + " does not have the corresponding private "
-                        + "keys in the wallet that are required for signing the transfer "
-                        + "transaction.");
+                !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
+                throw new IllegalArgumentException(
+                        "The multi-sig account with script hash " + fromScriptHash.toString() +
+                        " does not have the corresponding private keys in the wallet that are " +
+                        "required for signing the transfer transaction.");
             }
             accounts.add(a);
         }
@@ -256,14 +265,14 @@ public class Nep17Token extends Token {
         while (remainingAmount.signum() > 0 && it.hasNext()) {
             Account a = it.next();
             if (a.isMultiSig() && a.getVerificationScript() != null &&
-                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
+                !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
                 continue;
             }
             BigInteger balance = getBalanceOf(a.getScriptHash());
             if (balance.signum() <= 0) {
                 continue;
             }
-            signers.add(Signer.calledByEntry(a.getScriptHash()));
+            signers.add(calledByEntry(a.getScriptHash()));
             if (balance.compareTo(remainingAmount) >= 0) {
                 // Full remaining amount can be covered by current account.
                 scripts.add(buildSingleTransferScript(a, to, remainingAmount));
@@ -277,20 +286,21 @@ public class Nep17Token extends Token {
         if (remainingAmount.signum() > 0) {
             BigInteger amountToCover = getAmountAsBigInteger(amount);
             BigInteger coveredAmount = amountToCover.subtract(remainingAmount);
-            throw new InsufficientFundsException("The wallet does not hold enough tokens, resp. "
-                    + "token-holding accounts with available private keys. The transfer amount is "
-                    + amountToCover.toString() + " " + getSymbol() + " but the wallet only holds "
-                    + coveredAmount.toString() + " " + getSymbol() + " (in token fractions).");
+            throw new InsufficientFundsException(
+                    "The wallet does not hold enough tokens, resp. token-holding accounts with " +
+                    "available private keys. The transfer amount is " +
+                    amountToCover.toString() + " " + getSymbol() + " but the wallet only holds " +
+                    coveredAmount.toString() + " " + getSymbol() + " (in token fractions).");
         }
         return assembleMultiTransferTransaction(wallet, scripts, signers);
     }
 
     private byte[] buildSingleTransferScript(Account acc, ScriptHash to, BigInteger amount) {
         List<ContractParameter> params = Arrays.asList(
-                ContractParameter.hash160(acc.getScriptHash()),
-                ContractParameter.hash160(to),
-                ContractParameter.integer(amount),
-                ContractParameter.any(null));
+                hash160(acc.getScriptHash()),
+                hash160(to),
+                integer(amount),
+                any(null));
 
         return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
     }
@@ -343,30 +353,33 @@ public class Nep17Token extends Token {
             throw new IllegalArgumentException("The amount must be greater than or equal to 0.");
         }
         if (!amountDecimalsIsValid(amount)) {
-            throw new IllegalArgumentException("The amount contains more decimal places than this token " +
-                    "can handle. This token has " + getDecimals() + " decimals. The amount provided " +
-                    "had " + amount.stripTrailingZeros().scale() + " decimal places.");
+            throw new IllegalArgumentException(
+                    "The amount contains more decimal places than this token can handle. This " +
+                    "token has " + getDecimals() + " decimals. The amount provided had " +
+                    amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         Account acc = wallet.getDefaultAccount();
         BigInteger fractions = getAmountAsBigInteger(amount);
         BigInteger accBalance = getBalanceOf(acc.getScriptHash());
         if (accBalance.compareTo(fractions) < 0) {
-            throw new InsufficientFundsException("The wallet's default account does not hold enough"
-                    + " tokens. Transfer amount is " + fractions.toString() + " but account"
-                    + " only holds " + accBalance.toString() + " (in token fractions).");
+            throw new InsufficientFundsException(
+                    "The wallet's default account does not hold enough tokens. Transfer amount " +
+                    "is " + fractions.toString() + " but account only holds " +
+                    accBalance.toString() + " (in token fractions).");
         }
 
         return invokeFunction(TRANSFER,
-                ContractParameter.hash160(acc.getScriptHash()),
-                ContractParameter.hash160(to),
-                ContractParameter.integer(fractions),
-                ContractParameter.any(null))
+                hash160(acc.getScriptHash()),
+                hash160(to),
+                integer(fractions),
+                any(null))
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(acc.getScriptHash()));
+                .signers(calledByEntry(acc.getScriptHash()));
     }
 
     private boolean amountDecimalsIsValid(BigDecimal amount) throws IOException {
         return amount.stripTrailingZeros().scale() <= getDecimals();
     }
+
 }

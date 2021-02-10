@@ -1,7 +1,7 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
 import static java.lang.String.format;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,6 +14,7 @@ import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -36,7 +37,7 @@ public class ContractManagement extends SmartContract {
      * Constructs a new <tt>ManagementContract</tt> that uses the given {@link Neow3j} instance for
      * invocations.
      *
-     * @param neow The {@link Neow3j} instance to use for invocations.
+     * @param neow the {@link Neow3j} instance to use for invocations.
      */
     public ContractManagement(Neow3j neow) {
         super(SCRIPT_HASH, neow);
@@ -45,7 +46,7 @@ public class ContractManagement extends SmartContract {
     /**
      * Gets the minimum fee required for deployment.
      *
-     * @return The minimum required fee for contract deployment.
+     * @return the minimum required fee for contract deployment.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getMinimumDeploymentFee() throws IOException {
@@ -57,7 +58,7 @@ public class ContractManagement extends SmartContract {
      * TransactionBuilder} based on this script.
      *
      * @param minimumFee the minimum deployment fee.
-     * @return A transaction builder.
+     * @return a transaction builder.
      */
     public TransactionBuilder setMinimumDeploymentFee(BigInteger minimumFee) {
         return invokeFunction(SET_MINIMUM_DEPLOYMENT_FEE, ContractParameter.integer(minimumFee));
@@ -66,13 +67,13 @@ public class ContractManagement extends SmartContract {
     /**
      * Returns the state of a smart contract.
      *
-     * @param scriptHash The script hash of the smart contract.
-     * @return The state of the smart contract.
+     * @param scriptHash the script hash of the smart contract.
+     * @return the state of the smart contract.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public ContractState getContract(ScriptHash scriptHash) throws IOException {
         StackItem stackItem = callInvokeFunction(GET_CONTRACT,
-                Arrays.asList(ContractParameter.hash160(scriptHash)))
+                Arrays.asList(hash160(scriptHash)))
                 .getInvocationResult().getStack().get(0);
         if (!stackItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.ARRAY);
@@ -109,9 +110,10 @@ public class ContractManagement extends SmartContract {
         }
         byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
         if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
-            throw new IllegalArgumentException(format("The given contract manifest is too long. "
-                            + "Manifest was %d bytes big, but a max of %d bytes is allowed.",
-                    manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
+            throw new IllegalArgumentException(
+                    format("The given contract manifest is too long. Manifest was %d bytes big, " +
+                           "but a max of %d bytes is allowed.",
+                            manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
         }
         if (data == null) {
             return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));

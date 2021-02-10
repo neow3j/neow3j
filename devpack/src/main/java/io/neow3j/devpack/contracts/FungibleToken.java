@@ -5,11 +5,12 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
 /**
- * Base class for NEP-17 contracts. Extend this class in combination with the {@link
- * ContractHash} annotation to create an "interface" to a NEP-17 token contract on the Neo
- * blockchain. Examples are the {@link NeoToken} and {@link GasToken} contracts.
+ * Base class for fungible token contracts that are compliant with the NEP-17 standard. Extend this
+ * class in combination with the {@link ContractHash} annotation to create an "interface" to a
+ * NEP-17 token contract on the Neo blockchain. Examples are the {@link NeoToken} and
+ * {@link GasToken} contracts.
  */
-public abstract class Nep17Token extends ContractInterface {
+public abstract class FungibleToken extends ContractInterface {
 
     /**
      * Gets the symbol of this token.

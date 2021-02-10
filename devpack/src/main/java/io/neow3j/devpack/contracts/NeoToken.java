@@ -5,7 +5,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
 @ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83")
-public class NeoToken extends Nep17Token {
+public class NeoToken extends FungibleToken {
 
     /**
      * Gets the amount of unclaimed GAS for the given account up the the given block number.
