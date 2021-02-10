@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.Matchers.contains;
@@ -16,6 +18,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
@@ -23,8 +27,11 @@ import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -35,6 +42,10 @@ public class ContractManagementTest {
 
     private static final String CONTRACTMANAGEMENT_SCRIPTHASH =
             "a501d7d7d10983673b61b7a2d3a813b36f9f0e43";
+
+    private final static Path TESTCONTRACT_NEF_FILE = Paths.get("/contracts", "TestContract.nef");
+    private final static Path TESTCONTRACT_MANIFEST_FILE =
+            Paths.get("/contracts", "TestContract.manifest.json");
 
     private Neow3j neow3j;
 
@@ -136,5 +147,68 @@ public class ContractManagementTest {
     public void scriptHash() {
         assertThat(new ContractManagement(neow3j).getScriptHash().toString(),
                 is(CONTRACTMANAGEMENT_SCRIPTHASH));
+    }
+
+    @Test
+    public void deployWithoutData() throws Throwable {
+        setUpWireMockForCall("invokescript", "management_deploy.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Wallet w = Wallet.withAccounts(account1);
+        File nefFile = new File(
+                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        NefFile nef = NefFile.readFromFile(nefFile);
+
+        File manifestFile = new File(this.getClass()
+                .getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
+        ContractManifest manifest = ObjectMapperFactory.getObjectMapper()
+                .readValue(manifestFile, ContractManifest.class);
+        byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(
+                ContractManagement.SCRIPT_HASH, "deploy",
+                Arrays.asList(byteArray(nef.toArray()), byteArray(manifestBytes))).toArray();
+
+        Transaction tx = new ContractManagement(neow3j)
+                .deploy(nef, manifest)
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .sign();
+
+        assertThat(tx.getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void deployWithData() throws Throwable {
+        setUpWireMockForCall("invokescript", "management_deploy.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Wallet w = Wallet.withAccounts(account1);
+        File nefFile = new File(
+                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        NefFile nef = NefFile.readFromFile(nefFile);
+
+        File manifestFile = new File(this.getClass()
+                .getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
+        ContractManifest manifest = ObjectMapperFactory.getObjectMapper()
+                .readValue(manifestFile, ContractManifest.class);
+        byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
+
+        ContractParameter data = string("some data");
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(
+                ContractManagement.SCRIPT_HASH, "deploy", Arrays.asList(
+                        byteArray(nef.toArray()), byteArray(manifestBytes), data))
+                .toArray();
+
+        Transaction tx = new ContractManagement(neow3j)
+                .deploy(nef, manifest, data)
+                .wallet(w)
+                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .sign();
+
+        assertThat(tx.getScript(), is(expectedScript));
     }
 }

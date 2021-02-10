@@ -366,12 +366,8 @@ public class MethodsConverter implements Converter {
         }
 
         int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;
-        boolean hasReturnValue = true;
-        String returnType = Type.getMethodType(calledAsmMethod.desc).getReturnType().getClassName();
-        if (returnType.equals(void.class.getTypeName())) {
-            hasReturnValue = false;
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
-        }
+        boolean hasReturnValue = !Type.getMethodType(calledAsmMethod.desc)
+                .getReturnType().getClassName().equals(void.class.getTypeName());
         MethodToken token = new MethodToken(scriptHash, calledAsmMethod.name, nrOfParams,
                 hasReturnValue, CallFlags.ALL);
         int idx = compUnit.getNeoModule().addMethodToken(token);

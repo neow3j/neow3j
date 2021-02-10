@@ -65,6 +65,7 @@ public class Compiler {
     public static final String INSTRUCTION_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
     public static final String VERIFY_METHOD_NAME = "verify";
     public static final String DEPLOY_METHOD_NAME = "_deploy";
+    public static final String DEPLOY_METHOD_SIGNATURE = "(Ljava/lang/Object;Z)V";
 
     private final CompilationUnit compUnit;
 
