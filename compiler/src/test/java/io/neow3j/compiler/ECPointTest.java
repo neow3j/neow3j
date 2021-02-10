@@ -3,7 +3,6 @@ package io.neow3j.compiler;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.compiler.ListTest.ListTestContract;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.model.types.ContractParameterType;
 import java.io.IOException;

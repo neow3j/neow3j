@@ -2,8 +2,6 @@ package io.neow3j.model.types;
 
 import static java.lang.String.format;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum CallFlags {
 
     NONE(0),
