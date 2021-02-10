@@ -3,32 +3,29 @@ package io.neow3j.contract;
 import io.neow3j.protocol.Neow3j;
 
 /**
- * Represents the GasToken native contract and provides methods to invoke its
- * functions.
+ * Represents the GasToken native contract and provides methods to invoke its functions.
  */
 public class GasToken extends Nep17Token {
 
     public final static String NAME = "GasToken";
     public final static long NEF_CHECKSUM = 3155977747L;
-    public static final ScriptHash SCRIPT_HASH =
-            getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     public final static int DECIMALS = 8;
     public final static String SYMBOL = "GAS";
 
     /**
-     * Constructs a new {@code GasToken} that uses the given {@link Neow3j}
-     * instance for invocations.
+     * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for
+     * invocations.
      *
-     * @param neow The {@link Neow3j} instance to use for invocations.
+     * @param neow the {@link Neow3j} instance to use for invocations.
      */
     public GasToken(Neow3j neow) {
         super(SCRIPT_HASH, neow);
     }
 
     /**
-     * Returns the name of the GasToken contract. Doesn't require a call to the
-     * Neo node.
+     * Returns the name of the GasToken contract. Doesn't require a call to the Neo node.
      *
      * @return the name.
      */
@@ -38,8 +35,7 @@ public class GasToken extends Nep17Token {
     }
 
     /**
-     * Returns the symbol of the GasToken contract. Doesn't require a call to
-     * the Neo node.
+     * Returns the symbol of the GasToken contract. Doesn't require a call to the Neo node.
      *
      * @return the symbol.
      */
@@ -49,8 +45,7 @@ public class GasToken extends Nep17Token {
     }
 
     /**
-     * Returns the number of decimals of the GAS token. Doesn't require a call
-     * to the Neo node.
+     * Returns the number of decimals of the GAS token. Doesn't require a call to the Neo node.
      *
      * @return the number of decimals.
      */
@@ -58,4 +53,5 @@ public class GasToken extends Nep17Token {
     public int getDecimals() {
         return DECIMALS;
     }
+
 }

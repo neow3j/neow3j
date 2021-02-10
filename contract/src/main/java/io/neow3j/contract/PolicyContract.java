@@ -1,5 +1,8 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+
 import io.neow3j.protocol.Neow3j;
 
 import java.io.IOException;
@@ -12,6 +15,7 @@ public class PolicyContract extends SmartContract {
 
     private static final String NAME = "PolicyContract";
     public final static long NEF_CHECKSUM = 1136340263L;
+
     public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
@@ -34,7 +38,7 @@ public class PolicyContract extends SmartContract {
      * Constructs a new <tt>PolicyContract</tt> that uses the given {@link Neow3j} instance for
      * invocations.
      *
-     * @param neow The {@link Neow3j} instance to use for invocations.
+     * @param neow the {@link Neow3j} instance to use for invocations.
      */
     public PolicyContract(Neow3j neow) {
         super(SCRIPT_HASH, neow);
@@ -108,118 +112,119 @@ public class PolicyContract extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean isBlocked(ScriptHash scriptHash) throws IOException {
-        return callFuncReturningBool(IS_BLOCKED, ContractParameter.hash160(scriptHash));
+        return callFuncReturningBool(IS_BLOCKED, hash160(scriptHash));
     }
 
     /**
      * Creates a transaction script to set the maximal size of a block and initializes
      * a {@link TransactionBuilder} based on this script.
      *
-     * @param maxBlockSize The maximal size of a block.
-     * @return A {@link TransactionBuilder}.
+     * @param maxBlockSize the maximal size of a block.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder setMaxBlockSize(Integer maxBlockSize) {
-        return invokeFunction(SET_MAX_BLOCK_SIZE, ContractParameter.integer(maxBlockSize));
+        return invokeFunction(SET_MAX_BLOCK_SIZE, integer(maxBlockSize));
     }
 
     /**
-     * Creates a transaction script to set the maximal amount of transactions per block and initializes
+     * Creates a transaction script to set the maximal amount of transactions per block and
+     * initializes
      * a {@link TransactionBuilder} based on this script.
      *
-     * @param maxTxPerBlock The maximal allowed number of transactions per block.
-     * @return A {@link TransactionBuilder}.
+     * @param maxTxPerBlock the maximal allowed number of transactions per block.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder setMaxTransactionsPerBlock(Integer maxTxPerBlock) {
-        return invokeFunction(SET_MAX_TX_PER_BLOCK, ContractParameter.integer(maxTxPerBlock));
+        return invokeFunction(SET_MAX_TX_PER_BLOCK, integer(maxTxPerBlock));
     }
 
     /**
      * Creates a transaction script to set the maximal system fee per block and initializes a
      * {@link TransactionBuilder} based on this script.
      *
-     * @param maxBlockSystemFee The maximal system fee per block.
-     * @return A {@link TransactionBuilder}.
+     * @param maxBlockSystemFee the maximal system fee per block.
+     * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder setMaxBlockSystemFee(BigInteger maxBlockSystemFee){
-        return invokeFunction(SET_MAX_BLOCK_SYSTEM_FEE, ContractParameter.integer(maxBlockSystemFee));
+    public TransactionBuilder setMaxBlockSystemFee(BigInteger maxBlockSystemFee) {
+        return invokeFunction(SET_MAX_BLOCK_SYSTEM_FEE,
+                integer(maxBlockSystemFee));
     }
 
     /**
      * Creates a transaction script to set the fee per byte and initializes a
      * {@link TransactionBuilder} based on this script.
      *
-     * @param fee The fee per byte.
-     * @return A {@link TransactionBuilder}.
+     * @param fee the fee per byte.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder setFeePerByte(Integer fee) {
-        return invokeFunction(SET_FEE_PER_BYTE, ContractParameter.integer(fee));
+        return invokeFunction(SET_FEE_PER_BYTE, integer(fee));
     }
 
     /**
      * Creates a transaction script to set the execution fee factor and initializes a
      * {@link TransactionBuilder} based on this script.
      *
-     * @param fee The execution fee factor.
-     * @return A {@link TransactionBuilder}.
+     * @param fee the execution fee factor.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder setExecFeeFactor(Integer fee) {
-        return invokeFunction(SET_EXEC_FEE_FACTOR, ContractParameter.integer(fee));
+        return invokeFunction(SET_EXEC_FEE_FACTOR, integer(fee));
     }
 
     /**
      * Creates a transaction script to set the storage price and initializes a
      * {@link TransactionBuilder} based on this script.
      *
-     * @param price The storage price.
-     * @return A {@link TransactionBuilder}.
+     * @param price the storage price.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder setStoragePrice(Integer price) {
-        return invokeFunction(SET_STORAGE_PRICE, ContractParameter.integer(price));
+        return invokeFunction(SET_STORAGE_PRICE, integer(price));
     }
 
     /**
-     * Creates a transaction script to block an account in the neo-network and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to block an account in the neo-network and initializes a
+     * {@link TransactionBuilder} based on this script.
      *
-     * @param addressToBlock The address of the account to block.
-     * @return A {@link TransactionBuilder}.
+     * @param addressToBlock the address of the account to block.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder blockAccount(String addressToBlock) {
-        return invokeFunction(BLOCK_ACCOUNT,
-                ContractParameter.hash160(ScriptHash.fromAddress(addressToBlock)));
+        return invokeFunction(BLOCK_ACCOUNT, hash160(ScriptHash.fromAddress(addressToBlock)));
     }
 
     /**
-     * Creates a transaction script to block an account in the neo-network and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to block an account in the neo-network and initializes a
+     * {@link TransactionBuilder} based on this script.
      *
-     * @param accountToBlock The account to block.
-     * @return A {@link TransactionBuilder}.
+     * @param accountToBlock the account to block.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder blockAccount(ScriptHash accountToBlock) {
-        return invokeFunction(BLOCK_ACCOUNT, ContractParameter.hash160(accountToBlock));
+        return invokeFunction(BLOCK_ACCOUNT, hash160(accountToBlock));
     }
 
     /**
-     * Creates a transaction script to unblock an account in the neo-network and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to unblock an account in the neo-network and initializes a
+     * {@link TransactionBuilder} based on this script.
      *
-     * @param addressToBlock The address of the account to unblock.
-     * @return A {@link TransactionBuilder}.
+     * @param addressToBlock the address of the account to unblock.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder unblockAccount(String addressToBlock) {
-        return invokeFunction(UNBLOCK_ACCOUNT,
-                ContractParameter.hash160(ScriptHash.fromAddress(addressToBlock)));
+        return invokeFunction(UNBLOCK_ACCOUNT, hash160(ScriptHash.fromAddress(addressToBlock)));
     }
 
     /**
-     * Creates a transaction script to unblock an account in the neo-network and initializes
-     * a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to unblock an account in the neo-network and initializes a
+     * {@link TransactionBuilder} based on this script.
      *
-     * @param accountToUnblock The account to unblock.
-     * @return A {@link TransactionBuilder}.
+     * @param accountToUnblock the account to unblock.
+     * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder unblockAccount(ScriptHash accountToUnblock) {
-        return invokeFunction(UNBLOCK_ACCOUNT, ContractParameter.hash160(accountToUnblock));
+        return invokeFunction(UNBLOCK_ACCOUNT, hash160(accountToUnblock));
     }
+
 }

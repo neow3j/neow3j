@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.utils.ArrayUtils.trimTrailingBytes;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -13,13 +14,12 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.CallFlags;
-import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -75,8 +75,9 @@ public class NefFile extends NeoSerializable {
     public NefFile(String compiler, byte[] script, List<MethodToken> methodTokens) {
         int compilerSize = compiler.getBytes(UTF_8).length;
         if (compilerSize > COMPILER_SIZE) {
-            throw new IllegalArgumentException(format("The compiler name and version string can "
-                    + "be max %d bytes long, but was %d bytes long.", COMPILER_SIZE, compilerSize));
+            throw new IllegalArgumentException(
+                    format("The compiler name and version string can be max %d bytes long, but " +
+                           "was %d bytes long.", COMPILER_SIZE, compilerSize));
         }
         this.compiler = compiler;
         this.script = script;
@@ -129,6 +130,7 @@ public class NefFile extends NeoSerializable {
      * Gets the NEF file's check sum as an integer.
      * <p>
      * The check sum bytes of the NEF file are read as a little endian unsigned integer.
+     *
      * @return the check sum.
      */
     public long getCheckSumAsInteger() {
@@ -143,11 +145,11 @@ public class NefFile extends NeoSerializable {
     @Override
     public int getSize() {
         return HEADER_SIZE
-                + RESERVED_BYTES_SIZE
-                + IOUtils.getVarSize(methodTokens)
-                + RESERVED_BYTES_SIZE
-                + IOUtils.getVarSize(script)
-                + CHECKSUM_SIZE;
+               + RESERVED_BYTES_SIZE
+               + IOUtils.getVarSize(methodTokens)
+               + RESERVED_BYTES_SIZE
+               + IOUtils.getVarSize(script)
+               + CHECKSUM_SIZE;
     }
 
     @Override
@@ -209,8 +211,9 @@ public class NefFile extends NeoSerializable {
         int nefFileSize = (int) nefFile.length();
         if (nefFileSize > 0x100000) {
             // This maximum size was taken from the neo-core code.
-            throw new IllegalArgumentException("The given NEF file is too large. File was "
-                    + nefFileSize + " bytes, but a max of 2^20 bytes is allowed.");
+            throw new IllegalArgumentException(
+                    "The given NEF file is too large. File was " + nefFileSize + " bytes, but a " +
+                    "max of 2^20 bytes is allowed.");
         }
         try (FileInputStream nefStream = new FileInputStream(nefFile)) {
             BinaryReader reader = new BinaryReader(nefStream);
@@ -222,8 +225,8 @@ public class NefFile extends NeoSerializable {
             throws DeserializationException, IOException {
 
         // the 'nef' is represented in a ByteString stack item
-        if (!stackItem.getType().equals(StackItemType.BYTE_STRING)) {
-            throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.BYTE_STRING);
+        if (!stackItem.getType().equals(BYTE_STRING)) {
+            throw new UnexpectedReturnTypeException(stackItem.getType(), BYTE_STRING);
         }
         ByteStringStackItem byteStringStackItem = stackItem.asByteString();
         byte[] nefBytes = byteStringStackItem.getValue();
@@ -252,8 +255,7 @@ public class NefFile extends NeoSerializable {
         private CallFlags callFlags;
 
         public MethodToken(ScriptHash hash, String method, int parametersCount,
-                boolean hasReturnValue,
-                CallFlags callFlags) {
+                boolean hasReturnValue, CallFlags callFlags) {
             this.hash = hash;
             this.method = method;
             this.parametersCount = parametersCount;
@@ -310,10 +312,10 @@ public class NefFile extends NeoSerializable {
         @Override
         public int getSize() {
             return NeoConstants.SCRIPTHASH_SIZE
-                    + IOUtils.getVarSize(method)
-                    + PARAMS_COUNT_SIZE
-                    + HAS_RETURN_VALUE_SIZE
-                    + CALL_FLAGS_SIZE;
+                   + IOUtils.getVarSize(method)
+                   + PARAMS_COUNT_SIZE
+                   + HAS_RETURN_VALUE_SIZE
+                   + CALL_FLAGS_SIZE;
         }
 
         @Override
@@ -327,9 +329,9 @@ public class NefFile extends NeoSerializable {
             MethodToken that = (MethodToken) o;
 
             return parametersCount == that.parametersCount
-                    && hasReturnValue == that.hasReturnValue
-                    && hash.equals(that.hash) && method.equals(that.method)
-                    && callFlags == that.callFlags;
+                   && hasReturnValue == that.hasReturnValue
+                   && hash.equals(that.hash) && method.equals(that.method)
+                   && callFlags == that.callFlags;
         }
 
         @Override
@@ -342,4 +344,5 @@ public class NefFile extends NeoSerializable {
             return result;
         }
     }
+
 }

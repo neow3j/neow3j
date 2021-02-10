@@ -9,14 +9,14 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents the RoleManagment contract that is used to assign roles to and check roles of
+ * Represents the RoleManagement contract that is used to assign roles to and check roles of
  * designated nodes.
  */
 public class RoleManagement extends SmartContract {
@@ -32,7 +32,7 @@ public class RoleManagement extends SmartContract {
      * Constructs a new {@code RoleManagement} that uses the given {@link Neow3j} instance for
      * invocations.
      *
-     * @param neow The {@link Neow3j} instance to use for invocations.
+     * @param neow the {@link Neow3j} instance to use for invocations.
      */
     public RoleManagement(Neow3j neow) {
         super(SCRIPT_HASH, neow);
@@ -41,8 +41,8 @@ public class RoleManagement extends SmartContract {
     /**
      * Gets the designated nodes by their role and the block index.
      *
-     * @param role The role.
-     * @param blockIndex The block index for which the nodes are designated.
+     * @param role       the role.
+     * @param blockIndex the block index for which the nodes are designated.
      * @return the {@code ECPublicKeys} of the designated nodes.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -53,7 +53,8 @@ public class RoleManagement extends SmartContract {
                         integer(role.byteValue()),
                         integer(blockIndex)));
 
-        List<StackItem> arrayOfDesignates = invocation.getInvocationResult().getStack().get(0).asArray().getValue();
+        List<StackItem> arrayOfDesignates =
+                invocation.getInvocationResult().getStack().get(0).asArray().getValue();
 
         return arrayOfDesignates.stream()
                 .map(item -> new ECPublicKey(item.asByteString().getValue()))
@@ -67,8 +68,9 @@ public class RoleManagement extends SmartContract {
 
         int currentBlockIndex = neow.getBlockCount().send().getBlockIndex().intValue();
         if (blockIndex > currentBlockIndex) {
-            throw new IllegalArgumentException("The provided block index (" + blockIndex + ") is too high." +
-                    " The current block count is " + currentBlockIndex + ".");
+            throw new IllegalArgumentException(
+                    "The provided block index (" + blockIndex + ") is too high. The current block" +
+                    " count is " + currentBlockIndex + ".");
         }
     }
 
@@ -76,8 +78,8 @@ public class RoleManagement extends SmartContract {
      * Creates a transaction script to designate nodes as a {@link Role} and
      * initializes a {@link TransactionBuilder} based on this script.
      *
-     * @param role The designation role.
-     * @param pubKeys The public keys of the nodes that are designated.
+     * @param role    the designation role.
+     * @param pubKeys the public keys of the nodes that are designated.
      * @return the transaction builder.
      */
     public TransactionBuilder designateAsRole(Role role, List<ECPublicKey> pubKeys) {
@@ -85,7 +87,8 @@ public class RoleManagement extends SmartContract {
             throw new IllegalArgumentException("The designation role cannot be null.");
         }
         if (pubKeys == null || pubKeys.isEmpty()) {
-            throw new IllegalArgumentException("At least one public key is required for designation.");
+            throw new IllegalArgumentException(
+                    "At least one public key is required for designation.");
         }
         ContractParameter roleParam = integer(role.byteValue());
         List<ContractParameter> pubKeysParams = pubKeys.stream()
@@ -94,4 +97,5 @@ public class RoleManagement extends SmartContract {
 
         return invokeFunction(DESIGNATE_AS_ROLE, roleParam, array(pubKeysParams));
     }
+
 }
