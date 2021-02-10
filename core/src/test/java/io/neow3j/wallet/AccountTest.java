@@ -216,7 +216,7 @@ public class AccountTest {
 
     @Test
     public void loadAccountFromNEP6Account() throws URISyntaxException, IOException {
-        URL nep6AccountFileUrl = AccountTest.class.getClassLoader().getResource("account.json");
+        URL nep6AccountFileUrl = AccountTest.class.getClassLoader().getResource("wallet/account.json");
         FileInputStream stream = new FileInputStream(new File(nep6AccountFileUrl.toURI()));
         NEP6Account nep6Acc = new ObjectMapper().readValue(stream, NEP6Account.class);
         Account a = Account.fromNEP6Account(nep6Acc);

@@ -97,10 +97,10 @@ public class WalletTest {
 
     @Test
     public void testCreateWalletFromNEP6File() throws IOException {
-        Wallet w = Wallet.fromNEP6Wallet("wallet.json");
+        Wallet w = Wallet.fromNEP6Wallet("wallet/wallet.json");
 
         ObjectMapper mapper = new ObjectMapper();
-        URL nep6WalletFile = WalletTest.class.getClassLoader().getResource("wallet.json");
+        URL nep6WalletFile = WalletTest.class.getClassLoader().getResource("wallet/wallet.json");
         NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
 
         assertEquals("Wallet", w.getName());
@@ -134,7 +134,7 @@ public class WalletTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateWalletFromNEP6File_noDefaultAccount() throws IOException {
-        Wallet.fromNEP6Wallet("wallet_noDefaultAccount.json");
+        Wallet.fromNEP6Wallet("wallet/wallet_noDefaultAccount.json");
     }
 
     @Test
@@ -255,7 +255,7 @@ public class WalletTest {
 
     @Test
     public void fromNEP6WalletToNEP6Wallet() throws IOException, URISyntaxException {
-        URL nep6WalletFile = WalletTest.class.getClassLoader().getResource("wallet.json");
+        URL nep6WalletFile = WalletTest.class.getClassLoader().getResource("wallet/wallet.json");
         assertNotNull(nep6WalletFile);
         Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile.toURI());
 
