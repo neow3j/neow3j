@@ -17,7 +17,6 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Await;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;

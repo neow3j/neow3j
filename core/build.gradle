@@ -2,8 +2,6 @@ description 'neow3j: Java/Kotlin/Android Development Toolkit for the Neo Blockch
 
 dependencies {
     compile project(':model'),
-            project(':crypto'),
-            project(':utils'),
             "com.github.jnr:jnr-unixsocket:$jnr_unixsocketVersion",
             "com.squareup.okhttp3:okhttp:$okhttpVersion",
             "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
@@ -11,7 +9,8 @@ dependencies {
             "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "org.slf4j:slf4j-api:$slf4jVersion",
-            "org.awaitility:awaitility:$awaitility"
+            "org.awaitility:awaitility:$awaitility",
+            "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
     testCompile "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
             "ch.qos.logback:logback-classic:$logbackVersion",
             "org.jetbrains:annotations:$jetbrainsAnnotationsVersion",

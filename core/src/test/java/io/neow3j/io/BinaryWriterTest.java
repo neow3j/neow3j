@@ -8,7 +8,6 @@ import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.junit.Before;
 import org.junit.Test;
 

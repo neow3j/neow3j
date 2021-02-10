@@ -1,11 +1,9 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.compiler.ByteArrayTest.ByteArrays;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.StringLiteralHelper;
