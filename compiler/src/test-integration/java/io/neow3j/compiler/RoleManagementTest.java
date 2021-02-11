@@ -6,6 +6,7 @@ import static io.neow3j.contract.ContractParameter.publicKey;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.Role;
@@ -15,6 +16,8 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -29,29 +32,28 @@ public class RoleManagementTest extends ContractTest {
     public void getHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).asByteString().getValue(),
-                is(Numeric.hexStringToByteArray("c0073f4c7069bf38995780c9da065f9b3949ea7a")));
+                is(Numeric.hexStringToByteArray("597b1471bbce497b7809e2c8f10db67050008b02")));
     }
 
     @Test
     public void setAndGetDesignateAsRole() throws Throwable {
         byte[] pubKey = defaultAccount.getECKeyPair().getPublicKey().getEncoded(true);
-
         signAsCommittee();
+
         String txHash = invokeFunctionAndAwaitExecution("designateAsRole",
                 integer(Role.STATE_VALIDATOR), array(publicKey(pubKey)));
-
         int blockIndex = neow3j.getTransactionHeight(txHash).send().getHeight().intValue();
-        ArrayStackItem pubKeys = neow3j.invokeFunction(
-                "c0073f4c7069bf38995780c9da065f9b3949ea7a",
-                "getDesignatedByRole",
-                Arrays.asList(integer(4), integer(blockIndex + 1)))
-                .send().getInvocationResult().getStack().get(0).asArray();
-        assertThat(pubKeys.get(0).asByteString().getValue(), is(pubKey));
 
+        // Check if the role has been successfully assigned.
+        List<ECKeyPair.ECPublicKey> pubKeys = new io.neow3j.contract.RoleManagement(neow3j)
+                .getDesignatedByRole(io.neow3j.protocol.core.Role.STATE_VALIDATOR, blockIndex + 1);
+        assertThat(pubKeys.get(0).getEncoded(true), is(pubKey));
+
+        // Test if the designate can be fetched via a smart contract call.
         NeoInvokeFunction response = callInvokeFunction("getDesignatedByRole",
                 integer(Role.STATE_VALIDATOR), integer(blockIndex + 1));
-        pubKeys = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(pubKeys.get(0).asByteString().getValue(), is(pubKey));
+        ArrayStackItem pubKeysItem = response.getInvocationResult().getStack().get(0).asArray();
+        assertThat(pubKeysItem.get(0).asByteString().getValue(), is(pubKey));
     }
 
     static class RoleManagementTestContract {
