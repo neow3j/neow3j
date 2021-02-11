@@ -76,7 +76,6 @@ public class NeoToken extends FungibleToken {
      * Sets the amount of GAS that should be minted per newly generated block.
      *
      * @param gasPerBlock The desired amount of GAS per block.
-     * @return true, if setting the amount was successful. False, otherwise.
      */
     public static native void setGasPerBlock(int gasPerBlock);
 

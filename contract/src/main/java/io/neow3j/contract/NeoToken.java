@@ -1,13 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
-import static io.neow3j.model.types.StackItemType.ARRAY;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.INTEGER;
-import static io.neow3j.model.types.StackItemType.STRUCT;
-
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
@@ -20,6 +12,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.model.types.StackItemType.ARRAY;
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.model.types.StackItemType.INTEGER;
+import static io.neow3j.model.types.StackItemType.STRUCT;
 
 /**
  * Represents the NeoToken native contract and provides methods to invoke its functions.
@@ -241,6 +241,7 @@ public class NeoToken extends FungibleToken {
      * @param voter     the account that casts the vote.
      * @param candidate the candidate to vote for.
      * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder vote(Account voter, ECPublicKey candidate) throws IOException {
         return vote(voter.getScriptHash(), candidate);
@@ -253,6 +254,7 @@ public class NeoToken extends FungibleToken {
      * @param voter     the account that casts the vote.
      * @param candidate the candidate to vote for.
      * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder vote(ScriptHash voter, ECPublicKey candidate) throws IOException {
         if (!isCandidate(candidate)) {

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * This annotation is used on contract class level to describe which contracts may be
  * invoked and which methods are called.
- * <p>
+ *
  * <ul>
  * <li>The `contract` field indicates the contract to be invoked. It can be a hash of a contract, a
  * public key of a group, or a wildcard "*".</li>
@@ -20,7 +20,6 @@ import java.lang.annotation.Target;
  * <li>If a contract invokes a contract or method that is not declared in the manifest at runtime,
  * the invocation will fail.</li>
  * </ul>
- * <p>
  * Usage of this annotation is not mandatory.
  */
 @Target(ElementType.TYPE)
