@@ -39,33 +39,29 @@ public class PolicyContract extends ContractInterface {
      * Sets the maximum block size to the given value.
      *
      * @param size The desired block size.
-     * @return true, if successful. False, otherwise.
      */
-    public static native boolean setMaxBlockSize(int size);
+    public static native void setMaxBlockSize(int size);
 
     /**
      * Sets the maximum number of transactions per block.
      *
      * @param size The desired number of transactions.
-     * @return true, if successful. False, otherwise.
      */
-    public static native boolean setMaxTransactionsPerBlock(int size);
+    public static native void setMaxTransactionsPerBlock(int size);
 
     /**
      * Sets the maximum allowed system fee of all transactions in a block.
      *
      * @param fee The desired maximum fee.
-     * @return true, if successful. False, otherwise.
      */
-    public static native boolean setMaxBlockSystemFee(int fee);
+    public static native void setMaxBlockSystemFee(int fee);
 
     /**
      * Sets the fee to be paid per transaction byte.
      *
      * @param fee The desired fee per byte
-     * @return true, if successful. False, otherwise.
      */
-    public static native boolean setFeePerByte(long fee);
+    public static native void setFeePerByte(long fee);
 
     /**
      * Blocks the account with the given script hash.
@@ -108,9 +104,8 @@ public class PolicyContract extends ContractInterface {
      * in the actual GAS cost.
      *
      * @param factor The desired factor.
-     * @return true, if the factor was successfully set. False, otherwise.
      */
-    public static native boolean setExecFeeFactor(int factor);
+    public static native void setExecFeeFactor(int factor);
 
     /**
      * Gets the GAS price per byte of contract storage.
@@ -123,8 +118,7 @@ public class PolicyContract extends ContractInterface {
      * Sets the GAS price per byte of contract storage.
      *
      * @param price The desired price for one byte of storage.
-     * @return true, if the price was successfully set. False, otherwise.
      */
-    public static native boolean setStoragePrice(int price);
+    public static native void setStoragePrice(int price);
 
 }

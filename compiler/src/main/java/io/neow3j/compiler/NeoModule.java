@@ -67,6 +67,7 @@ public class NeoModule {
             if (token.equals(t)) {
                 return idx;
             }
+            idx++;
         }
         return -1;
     }
