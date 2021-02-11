@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.ScriptHash;
-import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.ClassUtils;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,7 +1,6 @@
 package io.neow3j.devpack.system;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.ApiInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.neo.Transaction;
