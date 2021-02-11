@@ -167,7 +167,7 @@ public class NeoInstruction {
 
     @Override
     public String toString() {
-        return opcode.toString() + " " + Numeric.toHexStringNoPrefix(operand)  + " "
+        return opcode.toString() + " " + Numeric.toHexStringNoPrefix(operandPrefix)  + " "
                 + Numeric.toHexStringNoPrefix(operand);
     }
 
