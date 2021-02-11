@@ -2,19 +2,15 @@ package io.neow3j.compiler;
 
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.annotations.DisplayName;
-import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
-import io.neow3j.devpack.neo.Blockchain;
-import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import java.util.List;

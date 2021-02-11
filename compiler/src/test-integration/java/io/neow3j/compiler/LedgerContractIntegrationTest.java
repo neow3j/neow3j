@@ -9,8 +9,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
-import io.neow3j.devpack.neo.Blockchain;
+import io.neow3j.devpack.contracts.LedgerContract;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.IntegerStackItem;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
@@ -21,13 +22,13 @@ import java.math.BigInteger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BlockchainTest extends ContractTest {
+public class LedgerContractIntegrationTest extends ContractTest {
 
     private static NeoBlock blockOfDeployTx;
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(BlockchainTestContract.class.getName());
+        setUp(LedgerContractIntegrationTestContract.class.getName());
         blockOfDeployTx = neow3j.getBlock(blockHashOfDeployTx, true).send().getBlock();
     }
 
@@ -148,40 +149,62 @@ public class BlockchainTest extends ContractTest {
     }
 
     @Test
-    public void getHeight() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
-        IntegerStackItem height = response.getInvocationResult().getStack().get(0).asInteger();
-        assertThat(height.getValue().intValue(), greaterThanOrEqualTo(0));
+    public void currentIndex() throws IOException {
+//        NeoInvokeFunction response = callInvokeFunction();
+//        IntegerStackItem height = response.getInvocationResult().getStack().get(0).asInteger();
+//        assertThat(height.getValue().intValue(), greaterThanOrEqualTo(0));
     }
 
-    static class BlockchainTestContract {
+    @Test
+    public void currentHash() throws IOException {
+//        NeoInvokeFunction response = callInvokeFunction();
+//        IntegerStackItem height = response.getInvocationResult().getStack().get(0).asInteger();
+//        assertThat(height.getValue().intValue(), greaterThanOrEqualTo(0));
+    }
+
+    @Test
+    public void getHash() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction();
+        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+                is(io.neow3j.contract.NeoToken.SCRIPT_HASH.toString()));
+    }
+
+    static class LedgerContractIntegrationTestContract {
 
         public static int getTransactionHeight(Hash256 blockHash) {
-            return Blockchain.getTransactionHeight(blockHash);
+            return LedgerContract.getTransactionHeight(blockHash);
         }
 
         public static Object getTransactionFromBlock(int blockNr, int txNr) {
-            return Blockchain.getTransactionFromBlock(blockNr, txNr);
+            return LedgerContract.getTransactionFromBlock(blockNr, txNr);
         }
 
         public static Object getTransactionFromBlockWithBlockHash(Hash256 blockHash, int txNr) {
-            return Blockchain.getTransactionFromBlock(blockHash, txNr);
+            return LedgerContract.getTransactionFromBlock(blockHash, txNr);
         }
 
         public static Object getTransaction(Hash256 txHash) {
-            return Blockchain.getTransaction(txHash);
+            return LedgerContract.getTransaction(txHash);
         }
 
         public static Object getBlockWithBlockHash(Hash256 blockHash) {
-            return Blockchain.getBlock(blockHash);
+            return LedgerContract.getBlock(blockHash);
         }
 
         public static Object getBlockWithBlockNumber(int blockNr) {
-            return Blockchain.getBlock(blockNr);
+            return LedgerContract.getBlock(blockNr);
         }
 
-        public static int getHeight() {
-            return Blockchain.getHeight();
+        public static int currentIndex() {
+            return LedgerContract.currentIndex();
+        }
+
+        public static Hash256 currentHash() {
+            return LedgerContract.currentHash();
+        }
+
+        public static Hash160 getHash() {
+            return LedgerContract.getHash();
         }
     }
 }

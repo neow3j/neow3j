@@ -16,12 +16,6 @@ public enum InteropServiceCode {
     SYSTEM_BINARY_ITOA("System.Binary.Itoa", 1 << 12),
     SYSTEM_BINARY_ATOI("System.Binary.Atoi", 1 << 12),
 
-    SYSTEM_BLOCKCHAIN_GETHEIGHT("System.Blockchain.GetHeight", 1 << 4),
-    SYSTEM_BLOCKCHAIN_GETBLOCK("System.Blockchain.GetBlock", 1 << 16),
-    SYSTEM_BLOCKCHAIN_GETTRANSACTION("System.Blockchain.GetTransaction", 1 << 15),
-    SYSTEM_BLOCKCHAIN_GETTRANSACTIONHEIGHT("System.Blockchain.GetTransactionHeight", 1 << 15),
-    SYSTEM_BLOCKCHAIN_GETTRANSACTIONFROMBLOCK("System.Blockchain.GetTransactionFromBlock", 1 << 15),
-
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
     SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 1 << 10),

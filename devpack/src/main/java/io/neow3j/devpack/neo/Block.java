@@ -5,7 +5,7 @@ import io.neow3j.devpack.Hash256;
 
 /**
  * Represents a block and provides block-related information. It is returned for example when
- * calling {@link Blockchain#getBlock(int)}.
+ * calling {@link io.neow3j.devpack.contracts.LedgerContract#getBlock(Hash256)}.
  */
 public class Block {
 
