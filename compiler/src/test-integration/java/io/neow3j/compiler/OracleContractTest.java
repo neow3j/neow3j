@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.devpack.neo.OracleContract;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
@@ -67,7 +68,7 @@ public class OracleContractTest extends ContractTest {
 
         private static Event4Args<String, String, Integer, String> callbackEvent;
 
-        public static byte[] getScriptHash() {
+        public static Hash160 getScriptHash() {
             return OracleContract.getHash();
         }
 
