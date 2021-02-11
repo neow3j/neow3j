@@ -119,7 +119,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 hash256("0000000000000000000000000000000000000000000000000000000000000000"));
         assertThat(response.getInvocationResult().getStack().get(0)
-                .asInteger().getValue().intValue(), is (1));
+                .asInteger().getValue().intValue(), is(1));
     }
 
     @Test
