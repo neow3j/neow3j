@@ -3,16 +3,19 @@ package io.neow3j.compiler;
 import static io.neow3j.contract.ContractParameter.hash256;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.contracts.LedgerContract;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.IntegerStackItem;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -20,6 +23,7 @@ import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class LedgerContractIntegrationTest extends ContractTest {
@@ -38,6 +42,15 @@ public class LedgerContractIntegrationTest extends ContractTest {
         assertThat(
                 response.getInvocationResult().getStack().get(0).asInteger().getValue().longValue(),
                 is(blockOfDeployTx.getIndex()));
+    }
+
+    @Test
+    public void getTransactionHeightOfNonExistentTransaction() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction("getTransactionHeight",
+                hash256("0000000000000000000000000000000000000000000000000000000000000000"));
+        assertThat(
+                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                is(-1));
     }
 
     @Test
@@ -102,6 +115,14 @@ public class LedgerContractIntegrationTest extends ContractTest {
     }
 
     @Test
+    public void getNonExistentTransaction() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction(
+                hash256("0000000000000000000000000000000000000000000000000000000000000000"));
+        assertThat(response.getInvocationResult().getStack().get(0)
+                .asInteger().getValue().intValue(), is (1));
+    }
+
+    @Test
     public void getBlockWithBlockHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(hash256(blockHashOfDeployTx));
 
@@ -150,23 +171,25 @@ public class LedgerContractIntegrationTest extends ContractTest {
 
     @Test
     public void currentIndex() throws IOException {
-//        NeoInvokeFunction response = callInvokeFunction();
-//        IntegerStackItem height = response.getInvocationResult().getStack().get(0).asInteger();
-//        assertThat(height.getValue().intValue(), greaterThanOrEqualTo(0));
+        NeoInvokeFunction response = callInvokeFunction();
+        IntegerStackItem height = response.getInvocationResult().getStack().get(0).asInteger();
+        assertThat(height.getValue().intValue(), greaterThanOrEqualTo(0));
     }
 
     @Test
     public void currentHash() throws IOException {
-//        NeoInvokeFunction response = callInvokeFunction();
-//        IntegerStackItem height = response.getInvocationResult().getStack().get(0).asInteger();
-//        assertThat(height.getValue().intValue(), greaterThanOrEqualTo(0));
+        NeoInvokeFunction response = callInvokeFunction();
+        ByteStringStackItem hash = response.getInvocationResult().getStack().get(0).asByteString();
+        assertThat(hash.getValue().length, is(32));
     }
 
+    @Ignore("Waiting for the implementation of the LedgerContract in the contract module.")
     @Test
     public void getHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is(io.neow3j.contract.NeoToken.SCRIPT_HASH.toString()));
+        // TODO: Get the script hash of the LedgerContract form the contract module.
+//      assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+//              is(io.neow3j.contract.LedgerContract.SCRIPT_HASH.toString()));
     }
 
     static class LedgerContractIntegrationTestContract {
@@ -185,6 +208,13 @@ public class LedgerContractIntegrationTest extends ContractTest {
 
         public static Object getTransaction(Hash256 txHash) {
             return LedgerContract.getTransaction(txHash);
+        }
+
+        public static boolean getNonExistentTransaction(Hash256 txHash) {
+            if (LedgerContract.getTransaction(txHash) == null) {
+                return true;
+            }
+            return false;
         }
 
         public static Object getBlockWithBlockHash(Hash256 blockHash) {
