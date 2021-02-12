@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -13,11 +14,13 @@ import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
+import io.neow3j.crypto.Base64;
 import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -204,10 +207,9 @@ public class ContractTest {
      * @param expectedValue The expected value.
      */
     protected void assertStorageContains(String key, String expectedValue) throws IOException {
-        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(), key).send();
-        String value = new String(
-                Numeric.hexStringToByteArray(response.getStorage()),
-                StandardCharsets.UTF_8);
+        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(),
+                        Numeric.toHexStringNoPrefix(key.getBytes(UTF_8))).send();
+        String value = new String(Base64.decode(response.getStorage()), UTF_8);
 
         assertThat(value, is(expectedValue));
     }
@@ -325,8 +327,9 @@ public class ContractTest {
     }
 
     protected void assertVMExitedWithHalt(String hash) throws IOException {
-        NeoGetTransaction response = neow3j.getTransaction(hash).send();
-        assertThat(response.getTransaction().getVMState(), is(VM_STATE_HALT));
+        NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
+        assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
+                is(VM_STATE_HALT));
     }
 
     protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)
