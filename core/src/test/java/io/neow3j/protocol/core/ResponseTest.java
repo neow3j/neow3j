@@ -49,6 +49,8 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.NeoWitness;
+import io.neow3j.protocol.core.methods.response.OracleResponseAttribute;
+import io.neow3j.protocol.core.methods.response.OracleResponseCode;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionAttribute;
@@ -741,8 +743,14 @@ public class ResponseTest extends ResponseTester {
                         "            }\n" +
                         "        ],\n" +
                         "        \"attributes\": [\n" +
-                        "            {\n" +
+                        "            {" +
                         "                \"type\": \"HighPriority\"" +
+                        "            }," +
+                        "            {" +
+                        "                \"type\": \"OracleResponse\"," +
+                        "                \"id\": 0," +
+                        "                \"code\": \"Success\"," +
+                        "                \"result\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"" +
                         "            }" +
                         "        ]," +
                         "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
@@ -782,13 +790,14 @@ public class ResponseTest extends ResponseTester {
 
         List<TransactionAttribute> attributes = transaction.getAttributes();
         assertThat(attributes, is(notNullValue()));
-        assertThat(attributes, hasSize(1));
-        assertThat(attributes.get(0),
-                is(new HighPriorityAttribute()));
-        assertThat(attributes.get(0).asHighPriority(),
-                is(instanceOf(HighPriorityAttribute.class)));
-        assertThat(attributes.get(0).getType(),
-                is(TransactionAttributeType.HIGH_PRIORITY));
+        assertThat(attributes.get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
+        assertThat(attributes.get(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
+        assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
+        OracleResponseAttribute oracleResp = (OracleResponseAttribute) attributes.get(1);
+        assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
+        assertThat(oracleResp.getResult(),
+                is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
+        assertThat(oracleResp.getId(), is(0));
 
         assertThat(transaction.getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));
