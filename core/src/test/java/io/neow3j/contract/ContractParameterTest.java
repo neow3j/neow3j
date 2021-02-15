@@ -141,6 +141,28 @@ public class ContractParameterTest {
     }
 
     @Test
+    public void testArrayParamCreationFromObjects_Null() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(
+                "provided object could not be casted into a supported contract");
+        array((Object) null);
+    }
+
+    @Test
+    public void testArrayParam_Null() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Cannot add a null object to an array contract parameter");
+        array((ContractParameter) null);
+    }
+
+    @Test
+    public void testArrayParam_Empty() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("At least one parameter is required");
+        array();
+    }
+
+    @Test
     public void testSignatureParamCreationFromValidString() {
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                      "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
@@ -187,8 +209,8 @@ public class ContractParameterTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testSignatureParamCreationFromNoHexString() {
-        String sig =
-                "d8485d4771e9112cca6ac7e6b75fc52585t2e7ee9a702db4a39dfad0f888ea6c22b6185ceab38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
+        String sig = "d8485d4771e9112cca6ac7e6b75fc52585t2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
+                     "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         signature(sig);
     }
 

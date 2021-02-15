@@ -118,6 +118,15 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter array(ContractParameter... params) {
+        if (params.length == 0) {
+            throw new IllegalArgumentException(
+                    "At least one parameter is required to create an array contract parameter.");
+        }
+        boolean anyNull = Arrays.stream(params).anyMatch(Objects::isNull);
+        if (anyNull) {
+            throw new IllegalArgumentException(
+                    "Cannot add a null object to an array contract parameter.");
+        }
         return new ContractParameter(ContractParameterType.ARRAY, params);
     }
 
