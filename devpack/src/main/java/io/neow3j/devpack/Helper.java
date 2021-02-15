@@ -76,7 +76,6 @@ public class Helper {
     @Instruction(opcode = OpCode.ASSERT)
     public native static byte asByte(int value);
 
-
     /**
      * Asserts that the given value is in the range [0, 255], i.e., the range of an unsigned byte.
      * Returns the value as a signed byte if true, faults if not.

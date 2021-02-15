@@ -32,12 +32,12 @@ public class Block {
     /**
      * The time at which this block was generated.
      */
-    public final long timestamp;
+    public final int timestamp;
 
     /**
      * The block height (counted from 0).
      */
-    public final long index;
+    public final int index;
 
     /**
      * The verification script hash of the validators of the next block. I.e., the script hash of

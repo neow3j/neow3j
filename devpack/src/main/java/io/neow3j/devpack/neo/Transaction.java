@@ -6,7 +6,7 @@ import io.neow3j.devpack.Hash256;
 
 /**
  * Represents a transaction and provides transaction-related information. It is returned for example
- * when calling {@link Blockchain#getTransaction(Hash256)} .
+ * when calling {@link io.neow3j.devpack.contracts.LedgerContract#getTransaction(Hash256)} .
  */
 public class Transaction implements ApiInterface {
 
@@ -24,7 +24,7 @@ public class Transaction implements ApiInterface {
      * A random number assigned to this transaction to make it unique (e.g. to thwart replay
      * attacks).
      */
-    public final long nonce;
+    public final int nonce;
 
     /**
      * Script hash of the transaction's sender.
@@ -35,19 +35,19 @@ public class Transaction implements ApiInterface {
      * The system fee payed with this transaction. The system fee covers the execution cost of
      * the script contained in a transaction.
      */
-    public final long systemFee;
+    public final int systemFee;
 
     /**
      * The network fee payed with this transaction. The network fee covers the size cost of the
      * transaction and the execution cost for checking its signatures.
      */
-    public final long networkFee;
+    public final int networkFee;
 
     /**
      * The block height up to which this transaction is valid as long as it is not included into
      * a block.
      */
-    public final long validUntilBlock;
+    public final int validUntilBlock;
 
     /**
      * The script contained in this transaction.

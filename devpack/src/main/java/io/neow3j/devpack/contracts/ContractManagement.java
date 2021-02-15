@@ -30,8 +30,8 @@ public class ContractManagement extends ContractInterface {
      *
      * @param nefFile  The NEF file of the contract to deploy.
      * @param manifest The manifest of the contract to deploy.
-     * @param data Data that is passed on to the {@code _deploy} method of the deployed contract
-     *             if it exists.
+     * @param data     Data that is passed on to the {@code _deploy} method of the deployed contract
+     *                 if it exists.
      * @return The deployed <tt>Contract</tt>.
      */
     public static native Contract deploy(byte[] nefFile, String manifest, Object data);
@@ -55,7 +55,7 @@ public class ContractManagement extends ContractInterface {
      *
      * @param nefFile  The updated NEF file of the contract.
      * @param manifest The updated manifest of the contract.
-     * @param data Data passed {@code update} method of the contract being deployed.
+     * @param data     Data passed {@code update} method of the contract being deployed.
      */
     public static native void update(byte[] nefFile, String manifest, Object data);
 
@@ -73,6 +73,5 @@ public class ContractManagement extends ContractInterface {
      * @return the minumum deployment fee.
      */
     public static native int getMinimumDeploymentFee();
-
 
 }

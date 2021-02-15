@@ -11,12 +11,11 @@ public class OracleContract extends ContractInterface {
      * will be called with the response of the oracle as input.
      *
      * @param url            The URL to query.
-     * @param filter         The filter to filter return data.
+     * @param filter         The filter to filter returned data with.
      * @param callback       The callback function.
      * @param userData       Additional data.
-     * @param gasForResponse The cost of getting a response.
+     * @param gasForResponse The GAS amount to pay for the oracle response.
      */
-    // TODO: Adapt documentation as soon as Neo core developers have created documentation.
     public static native void request(String url, String filter, String callback, Object userData,
             int gasForResponse);
 }
