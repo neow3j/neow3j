@@ -7,6 +7,11 @@ import io.neow3j.devpack.annotations.ContractHash;
 public class OracleContract extends ContractInterface {
 
     /**
+     * The minimum GAS fee necessary on an oracle request to pay for the response.
+     */
+    public static final int MINIMUM_RESPONSE_FEE = 10000000;
+
+    /**
      * Does a request to the oracle service with the given request data. The given callback function
      * will be called with the response of the oracle as input.
      *
