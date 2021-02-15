@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.events.Event4Args;
-import io.neow3j.devpack.neo.OracleContract;
+import io.neow3j.devpack.OracleContract;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;

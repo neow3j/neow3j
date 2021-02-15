@@ -1,7 +1,4 @@
-package io.neow3j.devpack.neo;
-
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.Hash256;
+package io.neow3j.devpack;
 
 /**
  * Represents a block and provides block-related information. It is returned for example when
@@ -32,12 +29,12 @@ public class Block {
     /**
      * The time at which this block was generated.
      */
-    public final long timestamp;
+    public final int timestamp;
 
     /**
      * The block height (counted from 0).
      */
-    public final long index;
+    public final int index;
 
     /**
      * The verification script hash of the validators of the next block. I.e., the script hash of

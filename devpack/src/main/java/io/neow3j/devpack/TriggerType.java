@@ -1,4 +1,4 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
 /**
  * The <tt>TriggerType</tt> defines the mode in which a smart contract is invoked. This implies that

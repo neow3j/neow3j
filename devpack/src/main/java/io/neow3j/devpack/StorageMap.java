@@ -1,4 +1,4 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
 import static io.neow3j.devpack.Helper.concat;
 import static io.neow3j.devpack.Helper.toByteArray;

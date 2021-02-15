@@ -1,4 +1,4 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.devpack.annotations.Syscall;

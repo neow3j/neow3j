@@ -1,7 +1,4 @@
-package io.neow3j.devpack.neo;
-
-import io.neow3j.devpack.ApiInterface;
-import io.neow3j.devpack.Hash160;
+package io.neow3j.devpack;
 
 /**
  * A notification consists of a script hash (the sender of the notification) and content itself

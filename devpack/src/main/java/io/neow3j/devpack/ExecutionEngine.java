@@ -1,9 +1,7 @@
-package io.neow3j.devpack.system;
+package io.neow3j.devpack;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.devpack.neo.Transaction;
 
 /**
  * Provides access to the caller of a smart contract and other information about the current

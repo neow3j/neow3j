@@ -1,11 +1,9 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
+
+import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_ISSTANDARD;
-
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * Offers several account-related methods for use in smart contracts.

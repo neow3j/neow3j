@@ -2,6 +2,7 @@ package io.neow3j.devpack.annotations;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Target;
