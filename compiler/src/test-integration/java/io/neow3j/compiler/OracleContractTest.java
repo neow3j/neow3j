@@ -1,22 +1,13 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.devpack.neo.OracleContract;
-import io.neow3j.protocol.core.BlockParameterIndex;
+import io.neow3j.protocol.core.BlockParameter;
 import io.neow3j.protocol.core.Role;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -26,13 +17,20 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Await;
-import io.neow3j.utils.Numeric;
+import io.reactivex.disposables.Disposable;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.string;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class OracleContractTest extends ContractTest {
 
@@ -71,7 +69,7 @@ public class OracleContractTest extends ContractTest {
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
         // Invoke contract that requests data from oracle.
-        String url = "http://127.0.0.1:98239/test"; // Request URL that is not reachable
+        String url = "http://127.0.0.1:64928/test"; // Request URL that is not reachable
         String filter = "$.value";  // JSONPath
         String userdata = "userdata";
         int gasForResponse = 100000000;
@@ -79,16 +77,23 @@ public class OracleContractTest extends ContractTest {
                 string(userdata), integer(gasForResponse));
 
         // The oracle response should be available in the next block.
-        int oracleResponseBlock =
-                neow3j.getTransactionHeight(txHash).send().getHeight().intValue() + 1;
-        Transaction oracleResponseTx = neow3j.getBlock(
-                new BlockParameterIndex(oracleResponseBlock), true).send().getBlock()
-                .getTransactions().get(0);
+        BigInteger height = neow3j.getTransactionHeight(txHash).send().getHeight();
+        AtomicReference<Transaction> tx = new AtomicReference<>();
+        Disposable subscribe = neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(
+                BlockParameter.valueOf(height), true).subscribe(b -> {
+            List<Transaction> transactions = b.getBlock().getTransactions();
+            if (!transactions.isEmpty() && transactions.get(0).getAttributes().stream()
+                    .anyMatch(a -> a.getType().equals(TransactionAttributeType.ORACLE_RESPONSE))) {
+                tx.set(transactions.get(0));
+            }
+        });
 
-        assertThat(oracleResponseTx.getAttributes().get(0).getType(),
+        while (tx.get() == null) {
+            Thread.sleep(1000);
+        }
+        assertThat(tx.get().getAttributes().get(0).getType(),
                 is(TransactionAttributeType.ORACLE_RESPONSE));
-
-        List<Notification> notifications = neow3j.getApplicationLog(oracleResponseTx.getHash())
+        List<Notification> notifications = neow3j.getApplicationLog(tx.get().getHash())
                 .send().getApplicationLog().getExecutions().get(0).getNotifications();
         assertThat(notifications.get(0).getEventName(), is("OracleResponse"));
         assertThat(notifications.get(1).getEventName(), is("callbackEvent"));
@@ -96,7 +101,7 @@ public class OracleContractTest extends ContractTest {
         assertThat(eventState.get(0).asByteString().getAsString(), is(url));
         assertThat(eventState.get(1).asByteString().getAsString(), is(userdata));
         assertThat(eventState.get(2).asInteger().getValue().byteValue(),
-                is(OracleResponseCode.TIMEOUT.byteValue()));
+                is(OracleResponseCode.PROTOCOL_NOT_SUPPORTED.byteValue()));
         assertThat(eventState.get(3).asByteString().getValue(), is(new byte[]{}));
     }
 
