@@ -1,7 +1,4 @@
-package io.neow3j.devpack.neo;
-
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.Hash256;
+package io.neow3j.devpack;
 
 /**
  * Represents a block and provides block-related information. It is returned for example when

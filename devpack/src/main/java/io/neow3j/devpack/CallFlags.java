@@ -1,4 +1,4 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
 /**
  * Defines flags for invoking smart contracts.

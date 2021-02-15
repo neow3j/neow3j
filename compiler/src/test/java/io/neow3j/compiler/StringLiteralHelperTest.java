@@ -2,7 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.devpack.neo.Runtime;
+import io.neow3j.devpack.Runtime;
 import java.io.IOException;
 import java.util.Arrays;
 import org.hamcrest.core.StringContains;

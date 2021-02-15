@@ -6,11 +6,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.compiler.SupportedStandardsTest.MultiStandardContract;
-import io.neow3j.compiler.SupportedStandardsTest.SingleStandardContract;
 import io.neow3j.devpack.annotations.DisplayName;
-import io.neow3j.devpack.annotations.SupportedStandards;
-import io.neow3j.devpack.neo.Account;
+
 import java.io.IOException;
 import org.junit.Test;
 

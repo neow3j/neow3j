@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Map.Entry;
-import io.neow3j.devpack.neo.Iterator;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;

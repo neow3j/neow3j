@@ -1,9 +1,6 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**

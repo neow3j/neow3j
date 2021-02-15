@@ -8,8 +8,8 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.neo.CallFlags;
-import io.neow3j.devpack.neo.Contract;
+import io.neow3j.devpack.CallFlags;
+import io.neow3j.devpack.Contract;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import org.junit.BeforeClass;

@@ -1,8 +1,4 @@
-package io.neow3j.devpack.neo;
-
-import io.neow3j.devpack.ApiInterface;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.Hash256;
+package io.neow3j.devpack;
 
 /**
  * Represents a transaction and provides transaction-related information. It is returned for example

@@ -1,4 +1,6 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
+
+import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_CHECKWITNESS;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GASLEFT;
@@ -9,10 +11,6 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GETTRIGGER;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_LOG;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_NOTIFY;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_PLATFORM;
-
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * Provides a set of general methods for usage in smart contracts.

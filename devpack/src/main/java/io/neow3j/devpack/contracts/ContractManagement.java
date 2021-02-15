@@ -1,9 +1,9 @@
 package io.neow3j.devpack.contracts;
 
+import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
-import io.neow3j.devpack.neo.Contract;
 
 @ContractHash("0xa501d7d7d10983673b61b7a2d3a813b36f9f0e43")
 public class ContractManagement extends ContractInterface {

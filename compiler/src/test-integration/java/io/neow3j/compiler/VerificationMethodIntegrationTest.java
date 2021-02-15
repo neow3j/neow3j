@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.neo.Runtime;
+import io.neow3j.devpack.Runtime;
 import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
 import io.neow3j.transaction.Signer;
 import java.util.Arrays;

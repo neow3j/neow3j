@@ -1,6 +1,5 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
-import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.annotations.ContractHash;
 
 @ContractHash("0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee")
