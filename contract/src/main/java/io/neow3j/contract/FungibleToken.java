@@ -4,6 +4,7 @@ import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static java.util.Arrays.asList;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
@@ -401,13 +402,13 @@ public class FungibleToken extends Token {
             ContractParameter data) {
         List<ContractParameter> params;
         if (data == null) {
-            params = Arrays.asList(
+            params = asList(
                     hash160(acc.getScriptHash()),
                     hash160(to),
                     integer(amount),
                     any(null));
         } else {
-            params = Arrays.asList(
+            params = asList(
                     hash160(acc.getScriptHash()),
                     hash160(to),
                     integer(amount),

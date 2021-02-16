@@ -2,6 +2,7 @@ package io.neow3j.contract;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static java.util.Arrays.asList;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
@@ -201,7 +202,7 @@ public class TransactionBuilder {
                     "Can't add multiple signers with the fee-only witness scope. Only one signer " +
                     "can be used to cover the transaction fees.");
         }
-        this.signers = new ArrayList<>(Arrays.asList(signers));
+        this.signers = new ArrayList<>(asList(signers));
         return this;
     }
 
