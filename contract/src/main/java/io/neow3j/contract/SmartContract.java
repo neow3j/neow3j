@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static io.neow3j.model.types.StackItemType.BOOLEAN;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.INTEGER;
+import static java.util.Arrays.asList;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
@@ -17,7 +18,6 @@ import io.neow3j.utils.Strings;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -62,7 +62,7 @@ public class SmartContract {
                     "The invocation function must not be null or empty.");
         }
         ScriptBuilder b = new ScriptBuilder().contractCall(scriptHash, function,
-                Arrays.asList(contractParameters));
+                asList(contractParameters));
         return new TransactionBuilder(neow).script(b.toArray());
     }
 
@@ -78,11 +78,10 @@ public class SmartContract {
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a
      *                                       String.
      */
-    public String callFuncReturningString(String function,
-            ContractParameter... params)
+    public String callFuncReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
 
-        StackItem item = callInvokeFunction(function, Arrays.asList(params))
+        StackItem item = callInvokeFunction(function, asList(params))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(BYTE_STRING)) {
             return item.asByteString().getAsString();
@@ -109,7 +108,7 @@ public class SmartContract {
         if (params.length == 0) {
             item = callInvokeFunction(function).getInvocationResult().getStack().get(0);
         } else {
-            item = callInvokeFunction(function, Arrays.asList(params))
+            item = callInvokeFunction(function, asList(params))
                     .getInvocationResult().getStack().get(0);
         }
         if (item.getType().equals(INTEGER)) {
@@ -137,7 +136,7 @@ public class SmartContract {
         if (params.length == 0) {
             item = callInvokeFunction(function).getInvocationResult().getStack().get(0);
         } else {
-            item = callInvokeFunction(function, Arrays.asList(params))
+            item = callInvokeFunction(function, asList(params))
                     .getInvocationResult().getStack().get(0);
         }
         if (item.getType().equals(BOOLEAN)) {
@@ -212,7 +211,6 @@ public class SmartContract {
 
     protected static ScriptHash getScriptHashOfNativeContract(long nefCheckSum,
             String contractName) {
-
         return getContractHash(ScriptHash.ZERO, nefCheckSum, contractName);
     }
 
