@@ -15,6 +15,12 @@ import java.lang.annotation.Target;
  * This annotation can only be used on a {@code public static} method of a smart contract class,
  * and not on other classes that provide functionality for the contract.
  */
+
+@MethodSignature(
+        name = "verify",
+        parameterTypes = {},
+        returnType = boolean.class
+)
 @Target(ElementType.METHOD)
 public @interface OnVerification {
 

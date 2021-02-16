@@ -5,30 +5,32 @@ import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
+import static java.util.Arrays.stream;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.devpack.annotations.OnDeployment;
-import io.neow3j.devpack.annotations.OnVerification;
+import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.utils.ArrayUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LocalVariableNode;
@@ -117,61 +119,67 @@ public class NeoMethod {
         this.asmMethod = asmMethod;
         this.name = asmMethod.name;
         this.sourceClass = sourceClass;
-        handleVerifyMethod();
-        handleDeployMethod();
+        handleExpectedMethodSignatureAnnotation();
         collectTryCatchBlocks(asmMethod.tryCatchBlocks);
     }
 
-    private void handleVerifyMethod() {
-        Optional<AnnotationNode> verifyAnnotation = AsmHelper.getAnnotationNode(asmMethod,
-                OnVerification.class);
-        if (!verifyAnnotation.isPresent()) {
-            // Check if method has verify signature but isn't annotated.
-            if (asmMethod.name.equals(Compiler.VERIFY_METHOD_NAME) && hasBooleanReturnType()) {
-                throw new CompilerException(sourceClass, format("Contract has a '%s' method which "
-                        + "is not annotated with the '%s' annotation. Either change its name or "
-                                + "add the annotation.", Compiler.VERIFY_METHOD_NAME,
-                        OnVerification.class.getSimpleName()));
-            }
+    private void handleExpectedMethodSignatureAnnotation() {
+        if (asmMethod.invisibleAnnotations == null) {
             return;
         }
+        List<MethodSignature> annotations = asmMethod.invisibleAnnotations.stream()
+                .map(a -> {
+                    try {
+                        return Class.forName(
+                                Type.getType(
+                                        a.desc)
+                                        .getClassName())
+                                .getAnnotation(
+                                        MethodSignature.class);
+                    } catch (ClassNotFoundException e) {
+                        throw new CompilerException(
+                                e);
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors
+                        .toList());
 
-        if (!hasBooleanReturnType()) {
-            throw new CompilerException(sourceClass, format("The method annotated with %s is "
-                    + "required to have a boolean return type.",
-                    OnVerification.class.getSimpleName()));
-        }
-        name = Compiler.VERIFY_METHOD_NAME;
-    }
-
-    private boolean hasBooleanReturnType() {
-        return asmMethod.desc.lastIndexOf('Z') == asmMethod.desc.length() - 1  &&
-                asmMethod.desc.lastIndexOf(')') == asmMethod.desc.length() - 2;
-    }
-
-    private void handleDeployMethod() {
-        Optional<AnnotationNode> deployAnnotation = AsmHelper.getAnnotationNode(asmMethod,
-                OnDeployment.class);
-        if (!deployAnnotation.isPresent()) {
-            // Check if method has _deploy signature but isn't annotated.
-            if (asmMethod.name.equals(Compiler.DEPLOY_METHOD_NAME) &&
-                    asmMethod.desc.equals(Compiler.DEPLOY_METHOD_SIGNATURE)) {
-
-                throw new CompilerException(sourceClass, format("Contract has a '%s' method which "
-                                + "is not annotated with the '%s' annotation. Either change its "
-                                + "name or add the annotation.", Compiler.DEPLOY_METHOD_NAME,
-                        OnDeployment.class.getSimpleName()));
-            }
+        if (annotations.isEmpty()) {
             return;
         }
-
-        if (!asmMethod.desc.equals(Compiler.DEPLOY_METHOD_SIGNATURE)) {
-            throw new CompilerException(sourceClass, format("The method annotated with %s is "
-                            + "required to have an Object and Boolean parameter, and a void return "
-                            + "type.",
-                    OnDeployment.class.getSimpleName()));
+        if (annotations.size() > 1) {
+            throw new CompilerException(sourceClass, format("The method %s cannot have multiple "
+                            +
+                            "annotations that require a specific " +
+                            "method signature.",
+                    getSourceMethodName()));
         }
-        name = Compiler.DEPLOY_METHOD_NAME;
+
+        MethodSignature expectedSig = annotations.get(0);
+        Type[] actualParameterTypes = Type.getType(asmMethod.desc).getArgumentTypes();
+        Type[] expectedParameterTypes = stream(expectedSig.parameterTypes()).map(Type::getType)
+                .toArray(Type[]::new);
+        Type actualReturnType = Type.getType(asmMethod.desc).getReturnType();
+        Type expectedReturnType = Type.getType(expectedSig.returnType());
+
+        if (!actualReturnType.equals(expectedReturnType) || (expectedParameterTypes.length != 0 &&
+                !Arrays.equals(actualParameterTypes, expectedParameterTypes))) {
+
+            String paramTypesString = Arrays.stream(expectedSig.parameterTypes())
+                    .map(c -> "'" + c.getName() + "'").collect(Collectors.joining(", "));
+            String message = format("The annotated method '%s' is required to have the parameters "
+                            + "(%s) and return type '%s'.", getSourceMethodName(), paramTypesString,
+                    expectedSig.returnType().getName());
+            if (expectedParameterTypes.length == 0) {
+                message = format("The annotated method '%s' is required to have return type '%s'.",
+                        getSourceMethodName(), expectedSig.returnType().getName());
+            }
+            throw new CompilerException(sourceClass, message);
+        }
+
+        // If all is fine, set the name of the method it must have in the contract manifest.
+        name = expectedSig.name();
     }
 
     // Sifts through the exception table of this method and constructs try-catch-finally blocks
@@ -318,8 +326,9 @@ public class NeoMethod {
     /**
      * Creates a unique ID for the given method used to identify this method in the {@link
      * NeoModule}.
+     *
      * @param asmMethod The method to create the ID for.
-     * @param owner The class owning the method.
+     * @param owner     The class owning the method.
      * @return the ID.
      */
     public static String getMethodId(MethodNode asmMethod, ClassNode owner) {

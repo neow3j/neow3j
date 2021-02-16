@@ -1,5 +1,6 @@
 package io.neow3j.devpack.annotations;
 
+import io.neow3j.devpack.Hash160;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
@@ -14,6 +15,12 @@ import java.lang.annotation.Target;
  * This annotation can only be used on a {@code public static} method of a smart contract class,
  * and not on other classes that provide functionality for the contract.
  */
+
+@MethodSignature(
+        name = "_deploy",
+        parameterTypes = {Object.class, boolean.class},
+        returnType = void.class
+)
 @Target(ElementType.METHOD)
 public @interface OnDeployment {
 
