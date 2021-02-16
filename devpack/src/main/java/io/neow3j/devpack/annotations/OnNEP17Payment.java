@@ -8,4 +8,5 @@ import io.neow3j.devpack.Hash160;
         returnType = void.class
 )
 public @interface OnNEP17Payment {
+
 }

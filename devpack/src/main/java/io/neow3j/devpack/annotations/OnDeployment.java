@@ -1,6 +1,5 @@
 package io.neow3j.devpack.annotations;
 
-import io.neow3j.devpack.Hash160;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
@@ -12,8 +11,8 @@ import java.lang.annotation.Target;
  * The deployment method - named {@code _deploy} in the contract's manifest - needs to have a
  * boolean parameter and {@code void} as its return type.
  * <p>
- * This annotation can only be used on a {@code public static} method of a smart contract class,
- * and not on other classes that provide functionality for the contract.
+ * This annotation can only be used on a {@code public static} method of a smart contract class, and
+ * not on other classes that provide functionality for the contract.
  */
 
 @MethodSignature(
