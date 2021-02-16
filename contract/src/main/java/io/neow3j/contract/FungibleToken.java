@@ -47,8 +47,8 @@ public class FungibleToken extends Token {
      * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
-     * The balance is not cached locally. Every time this method is called requests are send to the
-     * neo-node.
+     * The balance is not cached locally. Every time this method is called requests are sent to the
+     * Neo node.
      *
      * @param account the account to fetch the balance for.
      * @return the token balance.
@@ -68,8 +68,8 @@ public class FungibleToken extends Token {
      * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
-     * The balance is not cached locally. Every time this method is called requests are send to the
-     * neo-node.
+     * The balance is not cached locally. Every time this method is called requests are sent to the
+     * Neo node.
      *
      * @param address the address of the account to fetch the balance for.
      * @return the token balance.
@@ -89,8 +89,8 @@ public class FungibleToken extends Token {
      * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
-     * The balance is not cached locally. Every time this method is called requests are send to the
-     * neo-node.
+     * The balance is not cached locally. Every time this method is called requests are sent to the
+     * Neo node.
      *
      * @param scriptHash the script hash of the account to fetch the balance for.
      * @return the token balance.
@@ -112,8 +112,8 @@ public class FungibleToken extends Token {
      * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
      * 1*10^8 GAS fractions.
      * <p>
-     * The balance is not cached locally. Every time this method is called requests are send to the
-     * neo-node.
+     * The balance is not cached locally. Every time this method is called requests are sent to the
+     * Neo node.
      *
      * @param wallet the wallet to fetch the balance for.
      * @return the token balance.
@@ -174,14 +174,18 @@ public class FungibleToken extends Token {
      * The default account is used first to cover the amount. If it cannot cover the full amount,
      * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
      * the amount can be covered, all necessary transfers are packed in one transaction.
+     * <p>
+     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
+     * additional fees. Otherwise, use the method without a contract parameter for data.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param data   the data that is passed to the {@code onPayment} method of the receiving
+     *               smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    // TODO: 16.02.21 Michael: add javadoc for data parameter
     public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount,
             ContractParameter data)
             throws IOException {
@@ -194,14 +198,18 @@ public class FungibleToken extends Token {
      * The default account is used first to cover the amount. If it cannot cover the full amount,
      * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
      * the amount can be covered, all necessary transfers packed in one transaction.
+     * <p>
+     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
+     * additional fees. Otherwise, use the method without a contract parameter for data.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param data   the data that is passed to the {@code onPayment} method of the receiving
+     *               smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    // TODO: 16.02.21 Michael: add javadoc for data parameter
     public TransactionBuilder transfer(Wallet wallet, ScriptHash to, BigDecimal amount,
             ContractParameter data) throws IOException {
         if (amount.signum() < 0) {
@@ -249,17 +257,20 @@ public class FungibleToken extends Token {
      * account cannot cover the full amount, the second account is used to cover the remaining
      * amount and so on. If the amount can be covered by the specified accounts, all necessary
      * transfers are packed in one transaction.
+     * <p>
+     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
+     * additional fees. Otherwise, use the method without a contract parameter for data.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param data   the data that is passed to the {@code onPayment} method of the receiving
+     *               smart contract.
      * @param from   the script hashes of the accounts in the wallet that should be used to cover
      *               the amount.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    // TODO: 16.02.21 Michael: add javadoc for data parameter
-    // TODO: 16.02.21 Michael: data javadoc
     public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String to,
             BigDecimal amount, ContractParameter data, String... from) throws IOException {
         ScriptHash[] fromScriptHashes =
@@ -296,10 +307,15 @@ public class FungibleToken extends Token {
      * account cannot cover the full amount, the second account is used to cover the remaining
      * amount and so on. If the amount can be covered by the specified accounts, all necessary
      * transfers are packed in one transaction.
+     * <p>
+     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
+     * additional fees. Otherwise, use the method without a contract parameter for data.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param data   the data that is passed to the {@code onPayment} method of the receiving
+     *               smart contract.
      * @param from   the script hashes of the accounts in the wallet that should be used to cover
      *               the amount.
      * @return a transaction builder.
@@ -417,9 +433,8 @@ public class FungibleToken extends Token {
     }
 
     /**
-     * Creates a transfer transaction.
-     * <p>
-     * Uses only the wallet's default account to cover the token amount.
+     * Creates a transfer transaction that uses only the wallet's default account to cover the
+     * token amount.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
@@ -433,26 +448,28 @@ public class FungibleToken extends Token {
     }
 
     /**
-     * Creates a transfer transaction.
+     * Creates a transfer transaction that uses only the wallet's default account to cover the
+     * token amount.
      * <p>
-     * Uses only the wallet's default account to cover the token amount.
+     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
+     * additional fees. Otherwise, use the method without a contract parameter for data.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param data   the data that is passed to the {@code onPayment} method of the receiving
+     *               smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    // TODO: 16.02.21 Michael: add javadoc for data parameter
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
             BigDecimal amount, ContractParameter data) throws IOException {
         return transferFromDefaultAccount(wallet, ScriptHash.fromAddress(to), amount, data);
     }
 
     /**
-     * Creates a transfer transaction.
-     * <p>
-     * Uses only the wallet's default account to cover the token amount.
+     * Creates a transfer transaction that uses only the wallet's default account to cover the
+     * token amount.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
@@ -466,17 +483,20 @@ public class FungibleToken extends Token {
     }
 
     /**
-     * Creates a transfer transaction.
+     * Creates a transfer transaction that uses only the wallet's default account to cover the
+     * token amount.
      * <p>
-     * Uses only the wallet's default account to cover the token amount.
+     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
+     * additional fees. Otherwise, use the method without a contract parameter for data.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param data   the data that is passed to the {@code onPayment} method of the receiving
+     *               smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    // TODO: 16.02.21 Michael: add javadoc for data parameter
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, ScriptHash to,
             BigDecimal amount, ContractParameter data) throws IOException {
         if (amount.signum() < 0) {
