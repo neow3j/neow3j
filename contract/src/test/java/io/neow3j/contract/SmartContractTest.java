@@ -1,10 +1,12 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -26,7 +28,6 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 
 import org.hamcrest.core.StringContains;
 import org.hamcrest.Matchers;
@@ -123,17 +124,17 @@ public class SmartContractTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_SCRIPT_HASH, NEP17_TRANSFER, Arrays.asList(
-                        ContractParameter.hash160(account1.getScriptHash()),
-                        ContractParameter.hash160(recipient),
-                        ContractParameter.integer(5))).toArray();
+                .contractCall(NEO_SCRIPT_HASH, NEP17_TRANSFER, asList(
+                        hash160(account1.getScriptHash()),
+                        hash160(recipient),
+                        integer(5))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         Transaction tx = sc.invokeFunction(NEP17_TRANSFER,
-                ContractParameter.hash160(account1.getScriptHash()),
-                ContractParameter.hash160(recipient),
-                ContractParameter.integer(5))
+                hash160(account1.getScriptHash()),
+                hash160(recipient),
+                integer(5))
                 .wallet(w)
                 .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
                 .sign();
@@ -175,7 +176,7 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), NEP17_BALANCEOF);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         BigInteger balance = sc.callFuncReturningInt(NEP17_BALANCEOF,
-                ContractParameter.hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
+                hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
         assertThat(balance, is(BigInteger.valueOf(3)));
     }
 
@@ -205,7 +206,7 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         boolean transferSuccessful = sc.callFuncReturningBool(NEP17_TRANSFER,
-                ContractParameter.hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
+                hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
         assertTrue(transferSuccessful);
     }
 
@@ -227,7 +228,7 @@ public class SmartContractTest {
 
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         NeoInvokeFunction response = sc.callInvokeFunction(NEP17_BALANCEOF,
-                Arrays.asList(ContractParameter.hash160(account1.getScriptHash())));
+                singletonList(hash160(account1.getScriptHash())));
         assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
                 is(BigInteger.valueOf(3)));
     }
@@ -239,13 +240,14 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(),
                 "symbol");
         NeoInvokeFunction i = new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("symbol");
-        assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), Matchers.is("NEO"));
+        assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), Matchers.is("NEO"
+        ));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void callInvokeFunction_missingFunction() throws IOException {
         new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("",
-                Arrays.asList(ContractParameter.hash160(account1.getScriptHash())));
+                singletonList(hash160(account1.getScriptHash())));
     }
 
     @Test(expected = IllegalArgumentException.class)

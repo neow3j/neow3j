@@ -9,8 +9,10 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+
 import java.io.IOException;
 import java.math.BigInteger;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

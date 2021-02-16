@@ -6,6 +6,8 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -45,11 +47,12 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import io.reactivex.Observable;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -57,6 +60,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Before;
@@ -98,7 +102,7 @@ public class TransactionBuilderTest {
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
         account2 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
-        multiSigAcc = Account.createMultiSigAccount(Arrays.asList(
+        multiSigAcc = Account.createMultiSigAccount(asList(
                 account1.getECKeyPair().getPublicKey(),
                 account2.getECKeyPair().getPublicKey()),
                 2);
@@ -272,7 +276,7 @@ public class TransactionBuilderTest {
         ContractTestHelper.setUpWireMockForGetBlockCount(1000);
 
         Account multiSigAccount = Account.createMultiSigAccount(
-                Arrays.asList(account2.getECKeyPair().getPublicKey(),
+                asList(account2.getECKeyPair().getPublicKey(),
                         account1.getECKeyPair().getPublicKey()),
                 1);
         Wallet wallet = Wallet.withAccounts(multiSigAccount, account1);
@@ -299,7 +303,8 @@ public class TransactionBuilderTest {
         HighPriorityAttribute attr = new HighPriorityAttribute();
 
         exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Only committee members can send transactions with high priority.");
+        exceptionRule.expectMessage("Only committee members can send transactions with high " +
+                                    "priority.");
 
         new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
@@ -341,8 +346,8 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("A transaction cannot have " +
-                "more than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES +
-                " attributes.");
+                                    "more than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES +
+                                    " attributes.");
 
         new TransactionBuilder(neow).attributes(attrArray);
     }
@@ -410,7 +415,7 @@ public class TransactionBuilderTest {
             throws Throwable {
         Wallet w = Wallet.create();
         Account a2 = Account.create();
-        List<ECPublicKey> keys = Arrays.asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
+        List<ECPublicKey> keys = asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
         Account multiSigAcc = Account.createMultiSigAccount(keys, 2);
         w.addAccounts(a2);
@@ -426,7 +431,8 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1000);
 
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("Wallet does not contain enough accounts (with decrypted private keys)");
+        exceptionRule.expectMessage("Wallet does not contain enough accounts (with decrypted " +
+                                    "private keys)");
         b.sign();
     }
 
@@ -436,7 +442,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         // Dummy multi-sig that only requires one signature.
-        Account dummyMultiSig = Account.createMultiSigAccount(Arrays.asList(
+        Account dummyMultiSig = Account.createMultiSigAccount(asList(
                 account1.getECKeyPair().getPublicKey(),
                 account2.getECKeyPair().getPublicKey()),
                 1);
@@ -588,7 +594,7 @@ public class TransactionBuilderTest {
                 .signers(Signer.calledByEntry(signer.getScriptHash()))
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Cannot find account", signer.getScriptHash().toString())));
         b.buildTransaction();
     }
@@ -612,7 +618,7 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("The transaction does not have a signature"
-                + " for each of its signers"));
+                                                       + " for each of its signers"));
         tx.send();
     }
 
@@ -648,7 +654,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP17_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(recipient),
                         integer(5),
@@ -683,7 +689,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
-                NEP17_TRANSFER, Arrays.asList(
+                NEP17_TRANSFER, asList(
                         hash160(multiSigAcc.getScriptHash()),
                         hash160(recipient),
                         integer(1),
@@ -719,7 +725,7 @@ public class TransactionBuilderTest {
 
         NeoInvokeFunction i = new NeoToken(neow)
                 .callInvokeFunction(NEP17_TRANSFER,
-                        Arrays.asList(
+                        asList(
                                 hash160(account1.getScriptHash()),
                                 hash160(recipient),
                                 integer(5),
@@ -727,7 +733,8 @@ public class TransactionBuilderTest {
 
         // The script that's in the `invokefunction_transfer_neo.json` response file.
         String scriptInResponse =
-                "CxUMFJQTQyOSE/oOdl8QJ850L0jbd5qWDBQGSl3MDxYsg0c9Aok46V+3dhMechTAHwwIdHJhbnNmZXIMFIOrBnmtVcBQoTrUP1k26nP16x72QWJ9W1I=";
+                "CxUMFJQTQyOSE/oOdl8QJ850L0jbd5qWDBQGSl3MDxYsg0c9Aok46V" +
+                "+3dhMechTAHwwIdHJhbnNmZXIMFIOrBnmtVcBQoTrUP1k26nP16x72QWJ9W1I=";
         assertThat(i.getResult().getScript(), is(scriptInResponse));
     }
 
@@ -882,7 +889,8 @@ public class TransactionBuilderTest {
                 .script(Numeric.hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
                 .signers(Signer.calledByEntry(account1.getScriptHash()));
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("The vm exited due to the following exception: Value was either too large or too small for an Int32.");
+        exceptionRule.expectMessage("The vm exited due to the following exception: Value was " +
+                                    "either too large or too small for an Int32.");
         b.buildTransaction();
     }
 
@@ -1046,7 +1054,7 @@ public class TransactionBuilderTest {
 
         NeoGetBlock neoGetBlock = new NeoGetBlock();
         NeoBlock block = new NeoBlock("", 0L, 0, "", "", 123456789, number, "nonce", null, null,
-                Arrays.asList(tx), 1, "next");
+                singletonList(tx), 1, "next");
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }

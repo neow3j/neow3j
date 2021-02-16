@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -50,8 +51,9 @@ public class ContractTestHelper {
 
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
-                        + ".*\"method\":\"invokefunction\""
-                        + ".*\"params\":.*\"" + contractFunction + "\".*"))
+                                                  + ".*\"method\":\"invokefunction\""
+                                                  + ".*\"params\":.*\"" + contractFunction +
+                                                  "\".*"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(responseBody)));
@@ -64,9 +66,9 @@ public class ContractTestHelper {
 
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
-                        + ".*\"method\":\"invokefunction\""
-                        + ".*\"params\":.*\"balanceOf\".*"
-                        + ".*\"" + account.toString() + "\".*"))
+                                                  + ".*\"method\":\"invokefunction\""
+                                                  + ".*\"params\":.*\"balanceOf\".*"
+                                                  + ".*\"" + account.toString() + "\".*"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(responseBody)));

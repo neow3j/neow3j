@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.core.Is.is;
@@ -11,14 +12,15 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.CallFlags;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.utils.Numeric;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,18 +42,18 @@ public class NefFileTest {
     private static final String TESTCONTRACT_SCRIPT = "5700017840";
     private static final String TESTCONTRACT_CHECKSUM = "760f39a0";
     private final static String TESTCONTRACT_NEF = MAGIC
-            + TESTCONTRACT_COMPILER
-            + RESERVED_BYTES
-            + "00" // no method tokens
-            + RESERVED_BYTES
-            + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
-            + TESTCONTRACT_CHECKSUM;
+                                                   + TESTCONTRACT_COMPILER
+                                                   + RESERVED_BYTES
+                                                   + "00" // no method tokens
+                                                   + RESERVED_BYTES
+                                                   + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
+                                                   + TESTCONTRACT_CHECKSUM;
 
     // Test contract with method tokens:
     private final static String TESTCONTRACT_WITH_TOKENS_FILE =
             "contracts/TestContractWithMethodTokens.nef";
     private static final String TESTCONTRACT_WITH_TOKENS_SCRIPT = "213701004021370000405700017840";
-    private final static List<MethodToken> TESTCONTRACT_METHOD_TOKENS = Arrays.asList(
+    private final static List<MethodToken> TESTCONTRACT_METHOD_TOKENS = asList(
             new MethodToken(NeoToken.SCRIPT_HASH, "getGasPerBlock", 0, true, CallFlags.ALL),
             new MethodToken(GasToken.SCRIPT_HASH, "totalSupply", 0, true, CallFlags.ALL));
     private static final String TESTCONTRACT_WITH_TOKENS_CHECKSUM = "b559a069";
@@ -156,13 +158,13 @@ public class NefFileTest {
     @Test
     public void deserializeWithWrongMagicNumber() throws DeserializationException {
         String nef = ""
-                + "00000000"
-                + TESTCONTRACT_COMPILER_HEX
-                + RESERVED_BYTES
-                + "00" // no tokens
-                + RESERVED_BYTES
-                + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
-                + TESTCONTRACT_CHECKSUM;
+                     + "00000000"
+                     + TESTCONTRACT_COMPILER_HEX
+                     + RESERVED_BYTES
+                     + "00" // no tokens
+                     + RESERVED_BYTES
+                     + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
+                     + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = Numeric.hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("magic"));
@@ -172,12 +174,12 @@ public class NefFileTest {
     @Test
     public void deserializeWithWrongCheckSum() throws DeserializationException {
         String nef = MAGIC
-                + TESTCONTRACT_COMPILER_HEX
-                + RESERVED_BYTES
-                + "00" // no tokens
-                + RESERVED_BYTES
-                + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
-                + "00000000";
+                     + TESTCONTRACT_COMPILER_HEX
+                     + RESERVED_BYTES
+                     + "00" // no tokens
+                     + RESERVED_BYTES
+                     + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
+                     + "00000000";
         byte[] nefBytes = Numeric.hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("checksum"));
@@ -187,12 +189,12 @@ public class NefFileTest {
     @Test
     public void deserializeWithEmptyScript() throws DeserializationException {
         String nef = MAGIC
-                + TESTCONTRACT_COMPILER_HEX
-                + RESERVED_BYTES
-                + "00" //no tokens
-                + RESERVED_BYTES
-                + "00" // empty script
-                + TESTCONTRACT_CHECKSUM;
+                     + TESTCONTRACT_COMPILER_HEX
+                     + RESERVED_BYTES
+                     + "00" //no tokens
+                     + RESERVED_BYTES
+                     + "00" // empty script
+                     + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = Numeric.hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("Script can't be empty"));
