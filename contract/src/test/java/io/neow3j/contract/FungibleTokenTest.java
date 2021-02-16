@@ -340,16 +340,16 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  The following test cases use a wallet that contains three accounts with the following
-     *  balances (unless otherwise declared):
-     *      1. NTrezR3C4X8aMLVg7vozt5wguyNfFhwuFx: 5 neo (default account in the wallet)
-     *      2. NT8qbZozQoSHwTkTE2TEYQP4vMt7pD9QWg: 4 neo
-     *      3. Ng1xVxVM1mfbEv8xaqS3mcKPvxcgb9AbpC: 3 neo
+     * The following test cases use a wallet that contains three accounts with the following
+     * balances (unless otherwise declared):
+     *     1. NTrezR3C4X8aMLVg7vozt5wguyNfFhwuFx: 5 neo (default account in the wallet)
+     *     2. NT8qbZozQoSHwTkTE2TEYQP4vMt7pD9QWg: 4 neo
+     *     3. Ng1xVxVM1mfbEv8xaqS3mcKPvxcgb9AbpC: 3 neo
      */
 
     /*
-     *  In this test case, 7 neo should be transferred.
-     *  Result: Account 1 should transfer 5 neo and Account 2 should transfer the rest (2 neo).
+     * In this test case, 7 neo should be transferred.
+     * Result: Account 1 should transfer 5 neo and Account 2 should transfer the rest (2 neo).
      */
     @Test
     public void testTransferWithTheFirstTwoAccountsNeededToCoverAmount() throws IOException {
@@ -409,9 +409,9 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case, 12 neo should be transferred.
-     *  Result: Account 1 should transfer 5 neo, 2 should transfer 4 neo and 3 should transfer 3
-     *  neo.
+     * In this test case, 12 neo should be transferred.
+     * Result: Account 1 should transfer 5 neo, 2 should transfer 4 neo and 3 should transfer 3
+     * neo.
      */
     @Test
     public void testTransfer_allAccountsNeededToCoverAmount() throws IOException {
@@ -448,8 +448,8 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case, 4 neo should be transferred.
-     *  Result: Account 1 should transfer 5 neo.
+     * In this test case, 4 neo should be transferred.
+     * Result: Account 1 should transfer 5 neo.
      */
     @Test
     public void testTransfer_defaultAccountCoversAmount() throws IOException {
@@ -495,9 +495,9 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case, 1 neo should be transferred.
-     *  Only for this test, the default and the second account are not holding any neo.
-     *  Result: Account 3 should transfer 1 neo.
+     * In this test case, 1 neo should be transferred.
+     * Only for this test, the default and the second account are not holding any neo.
+     * Result: Account 3 should transfer 1 neo.
      */
     @Test
     public void testTransfer_defaultAccountHasNoBalance() throws IOException {
@@ -523,12 +523,12 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case, 3 neo should be transferred.
-     *  For this test, the wallet contains a multi-sig account (created from account 4, account 5
-     *  and account 6 with
-     *  threshold 2) and only account 4 additionally. The multi-sig account is the default
-     *  account in this wallet.
-     *  Result: Multi-sig account should transfer 2 neo and account 4 should transfer 1 neo.
+     * In this test case, 3 neo should be transferred.
+     * For this test, the wallet contains a multi-sig account (created from account 4, account 5
+     * and account 6 with
+     * threshold 2) and only account 4 additionally. The multi-sig account is the default
+     * account in this wallet.
+     * Result: Multi-sig account should transfer 2 neo and account 4 should transfer 1 neo.
      */
     @Test
     public void testTransfer_MultiSig() throws IOException {
@@ -562,11 +562,11 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case, 2 neo should be transferred.
-     *  For this test, the wallet contains a multi-sig account (created from account 4, account 5
-     *  and account 6 with threshold 2) and only account 4 additionally.
-     *  The multi-sig account is the default account in this wallet.
-     *  Result: Account 4 should transfer 2 neo.
+     * In this test case, 2 neo should be transferred.
+     * For this test, the wallet contains a multi-sig account (created from account 4, account 5
+     * and account 6 with threshold 2) and only account 4 additionally.
+     * The multi-sig account is the default account in this wallet.
+     * Result: Account 4 should transfer 2 neo.
      */
     @Test
     public void testTransfer_MultiSig_NotEnoughSignersPresent() throws IOException {
@@ -592,7 +592,7 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  For this test, the wallet contains only a multi-sig account.
+     * For this test, the wallet contains only a multi-sig account.
      */
     @Test
     public void testTransfer_MultiSigNotEnoughSignersPresent_NoOtherAccountPresent()
@@ -634,8 +634,8 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case 5 neo should be transferred from accounts 3 and 2 (order matters!).
-     *  Result: Account 3 should transfer 3 neo and account 2 should transfer 2 neo.
+     * In this test case 5 neo should be transferred from accounts 3 and 2 (order matters!).
+     * Result: Account 3 should transfer 3 neo and account 2 should transfer 2 neo.
      */
     @Test
     public void testTransferFromSpecificAccounts() throws IOException {
@@ -668,8 +668,8 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case 4 neo should be transferred with accounts 2 and 3 (order matters!).
-     *  Result: Account 2 should transfer 4 neo.
+     * In this test case 4 neo should be transferred with accounts 2 and 3 (order matters!).
+     * Result: Account 2 should transfer 4 neo.
      */
     @Test
     public void testTransferFromSpecificAccounts_firstAccountCoversAmount() throws IOException {
@@ -694,9 +694,9 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case 1 neo should be transferred with accounts 2 and 3, whereas account 2
-     *  holds no neo.
-     *  Result: Account 3 should transfer 1 neo.
+     * In this test case 1 neo should be transferred with accounts 2 and 3, whereas account 2
+     * holds no neo.
+     * Result: Account 3 should transfer 1 neo.
      */
     @Test
     public void testTransferFromSpecificAccounts_firstConsideredAccountHasNoBalance()
@@ -746,7 +746,7 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  For this test, the wallet contains only a multi-sig account.
+     * For this test, the wallet contains only a multi-sig account.
      */
     @Test
     public void
@@ -768,8 +768,8 @@ public class FungibleTokenTest {
     }
 
     /*
-     *  In this test case, 12 neo should be transferred from only accounts 1 and 3.
-     *  Result: This should fail, since accounts 1 and 3 only hold 8 neo in total.
+     * In this test case, 12 neo should be transferred from only accounts 1 and 3.
+     * Result: This should fail, since accounts 1 and 3 only hold 8 neo in total.
      */
     @Test
     public void testTransferFromSpecificAccounts_insufficientBalance() throws IOException {
