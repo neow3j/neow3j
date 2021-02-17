@@ -4,15 +4,19 @@ import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile.MethodToken;
+import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
 public class NeoModule {
 
@@ -27,14 +31,6 @@ public class NeoModule {
     // Holds this module's events. The keys are the variable names used when defining the events
     // in the smart contract class.
     private final Map<String, NeoEvent> events = new HashMap<>();
-
-    // Determines if this module has a verify method or not. If a method is added that bears the
-    // {@link OnVerification} annotation, then this field is set to true.
-    private boolean hasVerifyMethod = false;
-
-    // Determines if this module has a _deploy method or not. If a method is added that bears the
-    // {@link OnDeployment} annotation, then this field is set to true.
-    private boolean hasDeployMethod = false;
 
     // An ordered list of static method calls that are referenced by their index in this list. Used
     // in CALLT instructions.
@@ -96,28 +92,6 @@ public class NeoModule {
         if (method != null) {
             methods.put(method.getId(), method);
             sortedMethods.add(method);
-
-            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnVerification.class)) {
-                if (hasVerifyMethod) {
-                    throw new CompilerException(method.getOwnerClass(), format("More than one "
-                                    + "method is marked with the '%s' annotation. There can only "
-                                    + "be "
-                                    + "one '%s' method", OnVerification.class.getSimpleName(),
-                            Compiler.VERIFY_METHOD_NAME));
-                }
-                hasVerifyMethod = true;
-            }
-
-            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnDeployment.class)) {
-                if (hasDeployMethod) {
-                    throw new CompilerException(method.getOwnerClass(), format("More than one "
-                                    + "method is marked with the '%s' annotation. There can only "
-                                    + "be "
-                                    + "one '%s' method", OnDeployment.class.getSimpleName(),
-                            Compiler.DEPLOY_METHOD_NAME));
-                }
-                hasDeployMethod = true;
-            }
         }
     }
 
@@ -136,6 +110,7 @@ public class NeoModule {
     }
 
     void finalizeModule() {
+        checkForDuplicatesOfMethodSignatureAnnotations();
         int startAddress = 0;
         for (NeoMethod method : this.sortedMethods) {
             method.finalizeMethod();
@@ -165,6 +140,20 @@ public class NeoModule {
                 }
             }
         }
+    }
+
+    private void checkForDuplicatesOfMethodSignatureAnnotations() {
+        Set<MethodSignature> methodSigs = new HashSet<>();
+        sortedMethods.stream().map(NeoMethod::getMethodSignatureAnnotation)
+                .filter(Objects::nonNull)
+                .forEach(sig -> {
+                    if (methodSigs.contains(sig)) {
+                        throw new CompilerException(format("There are multiple methods that are "
+                                + "annotated as candidates for the '%s' method but only one is "
+                                + "allowed.", sig.name()));
+                    }
+                    methodSigs.add(sig);
+                });
     }
 
     int byteSize() {
