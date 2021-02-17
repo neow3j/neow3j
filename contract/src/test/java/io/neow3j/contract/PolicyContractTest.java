@@ -48,7 +48,7 @@ public class PolicyContractTest {
         int port = wireMockRule.port();
         WireMock.configureFor(port);
         neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-
+        neow3j.setNetworkMagicNumber(769);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new ScriptHash("969a77db482f74ce27105f760efa139223431394");
     }

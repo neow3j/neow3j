@@ -15,6 +15,8 @@ public abstract class Neow3j implements Neo, Neow3jRx {
 
     private Integer networkMagicNumber;
 
+    private static Byte addressVersion = 0x35;
+
     /**
      * Construct a new Neow3j instance.
      *
@@ -65,8 +67,34 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         return array;
     }
 
+    /**
+     * Sets the network magic number to the given value without consulting the connected neo-node.
+     *
+     * @param magicNumber The magic number.
+     */
     public void setNetworkMagicNumber(int magicNumber) {
         networkMagicNumber = magicNumber;
+    }
+
+    /**
+     * Gets the locally configured address version number to use for address creation and
+     * verification.
+     * <p>
+     * The default address version is 53.
+     *
+     * @return The address version.
+     */
+    public static byte getAddressVersion() {
+        return addressVersion;
+    }
+
+    /**
+     * Sets the address version to use for address creation and verification.
+     *
+     * @param version The address version.
+     */
+    public static void setAddressVersion(byte version) {
+        addressVersion = version;
     }
 
 }
