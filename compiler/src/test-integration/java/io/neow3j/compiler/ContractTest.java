@@ -113,12 +113,12 @@ public class ContractTest {
     }
 
     protected static void setUp(String name) throws Throwable {
-        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
         defaultAccount = Account.fromWIF(DEFAULT_ACCOUNT_WIF);
         committee = Account.createMultiSigAccount(
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
+        neow3j.setNetworkMagicNumber(769);
         contractName = name;
         contract = deployContract(contractName);
         Await.waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);

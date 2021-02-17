@@ -10,12 +10,11 @@ import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -204,8 +203,8 @@ public class TransactionTest {
     }
 
     @Test
-    public void getTxId() {
-        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
+    public void getTxId() throws IOException {
+        neow.setNetworkMagicNumber(769);
 
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
@@ -234,6 +233,7 @@ public class TransactionTest {
 
     @Test
     public void toArrayWithoutWitness() {
+        neow.setNetworkMagicNumber(5195086);
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
         Transaction tx = new Transaction(neow,
@@ -254,9 +254,8 @@ public class TransactionTest {
     }
 
     @Test
-    public void getHashData() {
-        byte[] magicNumber = new byte[]{0x4e, 0x45, 0x4F, 0x00};
-        NeoConfig.setMagicNumber(magicNumber);
+    public void getHashData() throws IOException {
+        neow.setNetworkMagicNumber(769);
 
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.feeOnly(account1));
