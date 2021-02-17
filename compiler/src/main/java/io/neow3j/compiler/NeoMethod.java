@@ -123,40 +123,40 @@ public class NeoMethod {
         collectTryCatchBlocks(asmMethod.tryCatchBlocks);
     }
 
-    private void handleExpectedMethodSignatureAnnotation() {
+    /**
+     * Gets this method's {@code MethodSignature} annotation if it has one.
+     *
+     * @return The {@code MethodSignature} annotation, or null if this method is not annotated with
+     * a specific signature requirement.
+     */
+    public MethodSignature getMethodSignatureAnnotation() {
         if (asmMethod.invisibleAnnotations == null) {
-            return;
+            return null;
         }
         List<MethodSignature> annotations = asmMethod.invisibleAnnotations.stream()
                 .map(a -> {
                     try {
-                        return Class.forName(
-                                Type.getType(
-                                        a.desc)
-                                        .getClassName())
-                                .getAnnotation(
-                                        MethodSignature.class);
+                        return Class.forName(Type.getType(a.desc).getClassName())
+                                .getAnnotation(MethodSignature.class);
                     } catch (ClassNotFoundException e) {
-                        throw new CompilerException(
-                                e);
+                        throw new CompilerException(e);
                     }
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors
-                        .toList());
+                }).filter(Objects::nonNull).collect(Collectors.toList());
 
         if (annotations.isEmpty()) {
-            return;
+            return null;
         }
         if (annotations.size() > 1) {
             throw new CompilerException(sourceClass, format("The method %s cannot have multiple "
-                            +
-                            "annotations that require a specific " +
-                            "method signature.",
+                            + "annotations that require a specific method signature.",
                     getSourceMethodName()));
         }
+        return annotations.get(0);
+    }
 
-        MethodSignature expectedSig = annotations.get(0);
+    private void handleExpectedMethodSignatureAnnotation() {
+        MethodSignature expectedSig = getMethodSignatureAnnotation();
+        if (expectedSig == null) return;
         Type[] actualParameterTypes = Type.getType(asmMethod.desc).getArgumentTypes();
         Type[] expectedParameterTypes = stream(expectedSig.parameterTypes()).map(Type::getType)
                 .toArray(Type[]::new);
@@ -719,9 +719,10 @@ public class NeoMethod {
             // Only contract methods that are public, static and on the smart contract class are
             // added to the ABI and are invokable.
             setIsAbiMethod(true);
-        } else if (AsmHelper.hasAnnotations(asmMethod, Safe.class)){
+        } else if (AsmHelper.hasAnnotations(asmMethod, Safe.class)) {
             throw new CompilerException(sourceClass, format("Method '%s' is not a public contract "
-                    + "method, therefore, marking it as \"safe\" is obsolete and has no effect.",
+                            + "method, therefore, marking it as \"safe\" is obsolete and has no "
+                            + "effect.",
                     getSourceMethodName()));
         }
 
