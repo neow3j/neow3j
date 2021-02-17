@@ -97,7 +97,7 @@ public class TransactionBuilderTest {
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
         neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-
+        neow.setNetworkMagicNumber(769);
         account1 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
         account2 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
@@ -990,7 +990,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        String txHash = "59edb3789e8a2a1208adf63f92478ec3c0fb620730a86458a2bcbbd9cc5a7c14";
+        String txHash = "efd2ef6d0a68e01c2170110aab9d621df3e129dccae14e7ffc2b7b5822563885";
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),

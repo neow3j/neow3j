@@ -27,6 +27,9 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
         @JsonProperty("useragent")
         private String userAgent;
 
+        @JsonProperty("magic")
+        private int magic;
+
         public Result() {
         }
 
@@ -62,20 +65,25 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
             this.userAgent = userAgent;
         }
 
+        public int getMagic() {
+            return magic;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Result)) return false;
-            Result result = (Result) o;
-            return getTCPPort() == result.getTCPPort() &&
-                    getWSPort() == result.getWSPort() &&
-                    getNonce() == result.getNonce() &&
-                    Objects.equals(getUserAgent(), result.getUserAgent());
+            Result that = (Result) o;
+            return getTCPPort() == that.getTCPPort() &&
+                    getWSPort() == that.getWSPort() &&
+                    getNonce() == that.getNonce() &&
+                    Objects.equals(getUserAgent(), that.getUserAgent()) &&
+                    getMagic() == that.getMagic();
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent());
+            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent(), getMagic());
         }
 
         @Override
@@ -85,6 +93,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
                     ", wsport=" + wsPort +
                     ", nonce=" + nonce +
                     ", useragent='" + userAgent + '\'' +
+                    ", magic=" + magic +
                     '}';
         }
     }

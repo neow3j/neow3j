@@ -70,7 +70,7 @@ import java.util.stream.Stream;
 /**
  * JSON-RPC 2.0 factory implementation.
  */
-public class JsonRpc2_0Neow3j implements Neow3j {
+public class JsonRpc2_0Neow3j extends Neow3j {
 
     public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
 
