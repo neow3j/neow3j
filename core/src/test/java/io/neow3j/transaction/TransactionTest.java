@@ -271,7 +271,8 @@ public class TransactionTest {
 
         byte[] txHexWithoutWitness = Numeric.hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
-        byte[] expectedData = ArrayUtils.concatenate(magicNumber, txHexWithoutWitness);
+        byte[] expectedData = ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
+                txHexWithoutWitness);
         assertThat(tx.getHashData(), is(expectedData));
     }
 }
