@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
@@ -76,7 +77,9 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex);
 
-    Request<?, NeoGetContractState> getContractState(String scriptHash);
+    Request<?, NeoGetContractState> getContractState(ScriptHash scriptHash);
+
+    Request<?, NeoGetContractState> getContractState(String contractName);
 
     Request<?, NeoGetMemPool> getMemPool();
 

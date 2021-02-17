@@ -4,6 +4,9 @@ import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
 import static io.neow3j.contract.ContractUtils.loadContractManifestFile;
 import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
 import static io.neow3j.contract.ContractUtils.writeNefFile;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -24,14 +27,15 @@ import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.Con
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
@@ -96,14 +100,14 @@ public class ContractUtilsTest {
                 "-test-read-manifest");
 
         String manifestContent = "{\n"
-                + "  \"name\":\"\",\n"
-                + "  \"groups\": [],\n"
-                + "  \"supportedstandards\": [],\n"
-                + "  \"abi\": {},\n"
-                + "  \"permissions\": [],\n"
-                + "  \"trusts\": [], \n"
-                + "  \"extra\": {}\n"
-                + "}";
+                                 + "  \"name\":\"\",\n"
+                                 + "  \"groups\": [],\n"
+                                 + "  \"supportedstandards\": [],\n"
+                                 + "  \"abi\": {},\n"
+                                 + "  \"permissions\": [],\n"
+                                 + "  \"trusts\": [], \n"
+                                 + "  \"extra\": {}\n"
+                                 + "}";
 
         FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
 
@@ -123,24 +127,24 @@ public class ContractUtilsTest {
                 "-test-read-manifest");
 
         String manifestContent = "{\n"
-                + "  \"name\":\"\",\n"
-                + "  \"groups\": [\n"
-                + "       {\n"
-                + "          \"pubKey\": \"pubKey1\",\n"
-                + "          \"signature\": \"signature1\"\n"
-                + "       }\n"
-                + "   ],\n"
-                + "  \"supportedstandards\": [],\n"
-                + "  \"abi\": {},\n"
-                + "  \"permissions\": [\n"
-                + "       {\n"
-                + "          \"contract\": \"contract1\",\n"
-                + "          \"methods\": \"*\"\n"
-                + "       }\n"
-                + "   ],\n"
-                + "  \"trusts\": \"*\",\n"
-                + "  \"extra\": {}\n"
-                + "}";
+                                 + "  \"name\":\"\",\n"
+                                 + "  \"groups\": [\n"
+                                 + "       {\n"
+                                 + "          \"pubKey\": \"pubKey1\",\n"
+                                 + "          \"signature\": \"signature1\"\n"
+                                 + "       }\n"
+                                 + "   ],\n"
+                                 + "  \"supportedstandards\": [],\n"
+                                 + "  \"abi\": {},\n"
+                                 + "  \"permissions\": [\n"
+                                 + "       {\n"
+                                 + "          \"contract\": \"contract1\",\n"
+                                 + "          \"methods\": \"*\"\n"
+                                 + "       }\n"
+                                 + "   ],\n"
+                                 + "  \"trusts\": \"*\",\n"
+                                 + "  \"extra\": {}\n"
+                                 + "}";
 
         FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
 
@@ -161,7 +165,7 @@ public class ContractUtilsTest {
                 hasItem(
                         new ContractPermission(
                                 "contract1",
-                                Arrays.asList("*")
+                                singletonList("*")
                         )
                 )
         );
@@ -177,24 +181,25 @@ public class ContractUtilsTest {
                 "-test-read-manifest");
 
         String manifestContent = "{\n"
-                + "  \"name\":\"\",\n"
-                + "  \"groups\": [\n"
-                + "       {\n"
-                + "          \"pubkey\": \"pubKey1\",\n"
-                + "          \"signature\": \"signature1\"\n"
-                + "       }\n"
-                + "   ],\n"
-                + "  \"supportedstandards\": [],\n"
-                + "  \"abi\": {},\n"
-                + "  \"permissions\": [\n"
-                + "       {\n"
-                + "          \"contract\": \"contract1\",\n"
-                + "          \"methods\": [ \"*\", \"main\", \"test\" ]\n"
-                + "       }\n"
-                + "   ],\n"
-                + "  \"trusts\": [ \"contract1\", \"contract2\", \"contract3\" ],\n"
-                + "  \"extra\": {}\n"
-                + "}";
+                                 + "  \"name\":\"\",\n"
+                                 + "  \"groups\": [\n"
+                                 + "       {\n"
+                                 + "          \"pubkey\": \"pubKey1\",\n"
+                                 + "          \"signature\": \"signature1\"\n"
+                                 + "       }\n"
+                                 + "   ],\n"
+                                 + "  \"supportedstandards\": [],\n"
+                                 + "  \"abi\": {},\n"
+                                 + "  \"permissions\": [\n"
+                                 + "       {\n"
+                                 + "          \"contract\": \"contract1\",\n"
+                                 + "          \"methods\": [ \"*\", \"main\", \"test\" ]\n"
+                                 + "       }\n"
+                                 + "   ],\n"
+                                 +
+                                 "  \"trusts\": [ \"contract1\", \"contract2\", \"contract3\" ],\n"
+                                 + "  \"extra\": {}\n"
+                                 + "}";
 
         FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
 
@@ -215,7 +220,7 @@ public class ContractUtilsTest {
                 hasItem(
                         new ContractPermission(
                                 "contract1",
-                                Arrays.asList("*", "main",  "test")
+                                asList("*", "main", "test")
                         )
                 )
         );
@@ -232,7 +237,7 @@ public class ContractUtilsTest {
     public void testWriteNefFile() throws DeserializationException, IOException {
         String contractName = "DotnetContract";
         Path outDir = Files.createTempDirectory(ContractUtils.class.getSimpleName()
-                + "-test-write-nef");
+                                                + "-test-write-nef");
         outDir.toFile().deleteOnExit();
         NefFile nefFile = NefFile.readFromFile(new File(ContractUtilsTest.class.getResource(
                 TESTCONTRACT_WITH_TOKENS_FILE).getFile()));
@@ -252,17 +257,17 @@ public class ContractUtilsTest {
         ContractGroup cg1 = new ContractGroup("pubKey1", "sign1");
         ContractGroup cg2 = new ContractGroup("pubKey2", "sign2");
         String name = "neowww";
-        List<ContractGroup> cgs = Arrays.asList(cg1, cg2);
-        List<String> supportedStandards = Arrays.asList("nothing", "blah");
+        List<ContractGroup> cgs = asList(cg1, cg2);
+        List<String> supportedStandards = asList("nothing", "blah");
 
         HashMap<String, Object> extras = new HashMap<>();
         extras.put("test-bool", true);
         extras.put("test-int", 1);
 
-        List<ContractMethod> contractMethods = Arrays.asList(
+        List<ContractMethod> contractMethods = asList(
                 new ContractMethod(
                         "main",
-                        Arrays.asList(
+                        asList(
                                 new ContractParameter("param1", ContractParameterType.BOOLEAN,
                                         null),
                                 new ContractParameter("param2", ContractParameterType.BYTE_ARRAY,
@@ -274,23 +279,23 @@ public class ContractUtilsTest {
                 ),
                 new ContractMethod(
                         "deploy",
-                        Arrays.asList(),
+                        emptyList(),
                         100,
                         ContractParameterType.BOOLEAN,
                         false
                 )
         );
-        List<ContractEvent> contractEvents = Arrays.asList(
+        List<ContractEvent> contractEvents = asList(
                 new ContractEvent(
                         "event1",
-                        Arrays.asList(
+                        asList(
                                 new ContractParameter("eventParam1", ContractParameterType.INTEGER),
                                 new ContractParameter("eventParam2", ContractParameterType.BOOLEAN)
                         )
                 ),
                 new ContractEvent(
                         "event2",
-                        Arrays.asList(
+                        asList(
                                 new ContractParameter("eventParam1",
                                         ContractParameterType.BYTE_ARRAY),
                                 new ContractParameter("eventParam2", ContractParameterType.HASH160)
@@ -302,13 +307,13 @@ public class ContractUtilsTest {
                 contractEvents
         );
 
-        List<ContractPermission> contractPermissions = Arrays.asList(
-                new ContractPermission("contract1", Arrays.asList("test1", "test2", "test3")),
-                new ContractPermission("contract2", Arrays.asList("test1")),
-                new ContractPermission("contract2", Arrays.asList())
+        List<ContractPermission> contractPermissions = asList(
+                new ContractPermission("contract1", asList("test1", "test2", "test3")),
+                new ContractPermission("contract2", singletonList("test1")),
+                new ContractPermission("contract2", emptyList())
         );
 
-        List<String> trusts = Arrays.asList("trust1", "trust2");
+        List<String> trusts = asList("trust1", "trust2");
 
         return new ContractManifest(
                 name,
@@ -325,16 +330,16 @@ public class ContractUtilsTest {
         ContractGroup cg1 = new ContractGroup("pubKey1", "sign1");
         ContractGroup cg2 = new ContractGroup("pubKey2", "sign2");
         String name = "neowww";
-        List<ContractGroup> cgs = Arrays.asList(cg1, cg2);
-        List<String> supportedStandards = Arrays.asList("nothing", "blah");
+        List<ContractGroup> cgs = asList(cg1, cg2);
+        List<String> supportedStandards = asList("nothing", "blah");
 
-        List<ContractPermission> contractPermissions = Arrays.asList(
-                new ContractPermission("contract1", Arrays.asList("test1", "test2", "test3")),
-                new ContractPermission("contract2", Arrays.asList("test1")),
-                new ContractPermission("contract2", Arrays.asList())
+        List<ContractPermission> contractPermissions = asList(
+                new ContractPermission("contract1", asList("test1", "test2", "test3")),
+                new ContractPermission("contract2", singletonList("test1")),
+                new ContractPermission("contract2", emptyList())
         );
 
-        List<String> trusts = Arrays.asList("trust1", "trust2");
+        List<String> trusts = asList("trust1", "trust2");
 
         return new ContractManifest(
                 name,

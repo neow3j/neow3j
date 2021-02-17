@@ -4,6 +4,7 @@ import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.MAP;
+import static java.util.Collections.singletonList;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
@@ -16,7 +17,6 @@ import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -79,7 +79,7 @@ public class NonFungibleToken extends Token {
      * @throws IOException if an error occurs when interacting with the Neo node.
      */
     public ScriptHash ownerOf(byte[] tokenID) throws IOException {
-        return callFunctionReturningScriptHash(OWNER_OF, Arrays.asList(byteArray(tokenID)));
+        return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenID)));
     }
 
     private ScriptHash callFunctionReturningScriptHash(String function,
@@ -131,7 +131,7 @@ public class NonFungibleToken extends Token {
      * @throws IOException if an error occurs when interacting with the Neo node.
      */
     public TokenState properties(byte[] tokenID) throws IOException {
-        StackItem item = callInvokeFunction(PROPERTIES, Arrays.asList(byteArray(tokenID)))
+        StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
             MapStackItem mapStackItem = item.asMap();

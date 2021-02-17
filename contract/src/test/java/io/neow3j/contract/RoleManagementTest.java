@@ -5,6 +5,7 @@ import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.publicKey;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
@@ -19,10 +20,11 @@ import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
+
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
 import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
@@ -102,7 +104,7 @@ public class RoleManagementTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(RoleManagement.SCRIPT_HASH, DESIGNATE_AS_ROLE,
-                        Arrays.asList(
+                        asList(
                                 integer(Role.ORACLE.byteValue()),
                                 array(publicKey(
                                         account1.getECKeyPair().getPublicKey().getEncoded(true)))))

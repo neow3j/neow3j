@@ -1,7 +1,10 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -18,7 +21,6 @@ import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -65,9 +67,9 @@ public class NonFungibleTokenTest {
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
-                Arrays.asList(
-                        ContractParameter.hash160(account1.getScriptHash()),
-                        ContractParameter.byteArray(TOKEN_ID)))
+                asList(
+                        hash160(account1.getScriptHash()),
+                        byteArray(TOKEN_ID)))
                 .toArray();
 
         Wallet wallet = Wallet.withAccounts(account1);
