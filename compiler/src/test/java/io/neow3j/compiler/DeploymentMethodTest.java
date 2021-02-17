@@ -78,7 +78,6 @@ public class DeploymentMethodTest {
 
         @OnDeployment
         public static void doDeploy(Object data, boolean update) {
-            return;
         }
     }
 
@@ -95,7 +94,6 @@ public class DeploymentMethodTest {
 
         @OnDeployment
         public static void doDeploy(Object data, int wrongParam) {
-            return;
         }
 
     }
@@ -104,7 +102,6 @@ public class DeploymentMethodTest {
 
         @OnDeployment
         public static void doDeploy(boolean update) {
-            return;
         }
 
     }
@@ -113,12 +110,10 @@ public class DeploymentMethodTest {
 
         @OnDeployment
         public static void doDeploy1(Object data, boolean update) {
-            return;
         }
 
         @OnDeployment
         public static void doDeploy2(Object data, boolean update) {
-            return;
         }
 
     }
