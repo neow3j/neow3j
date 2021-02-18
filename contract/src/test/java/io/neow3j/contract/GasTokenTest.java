@@ -14,14 +14,9 @@ import org.junit.Test;
 
 public class GasTokenTest {
 
-    private Neow3j neow;
-
+    // The tests don't need an actual connection to a node.
+    private final Neow3j neow = Neow3j.build(null);
     private final static String GASTOKEN_SCRIPTHASH = "70e2301955bf1e74cbb31d18c2f96972abadb328";
-
-    @Before
-    public void setUp() {
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:8080"));
-    }
 
     @Test
     public void getName() {
