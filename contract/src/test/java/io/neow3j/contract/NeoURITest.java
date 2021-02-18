@@ -5,6 +5,7 @@ import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -39,15 +40,18 @@ public class NeoURITest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     private static final String BEGIN_TX = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
-    private static final String BEGIN_TX_ASSET_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1";
-    private static final String BEGIN_TX_ASSET_NON_NATIVE = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
+    private static final String BEGIN_TX_ASSET_AMOUNT =
+            "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1";
+    private static final String BEGIN_TX_ASSET_NON_NATIVE =
+            "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
     private static final String BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS =
             "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1&asset=gas&amount=80";
 
     private static Neow3j neow3j;
     private static Wallet wallet;
 
-    private static final ScriptHash SENDER = ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
+    private static final ScriptHash SENDER =
+            ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
     private static final String RECIPIENT = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
     private static final ScriptHash RECIPIENT_SCRIPT_HASH = ScriptHash.fromAddress(RECIPIENT);
     private static final BigDecimal AMOUNT = new BigDecimal(1);
@@ -108,14 +112,16 @@ public class NeoURITest {
 
     @Test
     public void fromURI_multipleAssetsAndAmounts() {
-        URI uri = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS).buildURI().getURI();
+        URI uri =
+                NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS).buildURI().getURI();
         assertThat(uri, is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
     }
 
     @Test
     public void fromURI_nonNativeToken() {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_NON_NATIVE);
-        assertThat(neoURI.getAsset(), is(new ScriptHash("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
+        assertThat(neoURI.getAsset(), is(new ScriptHash("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"
+        )));
     }
 
     @Test
@@ -123,10 +129,13 @@ public class NeoURITest {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT).buildURI();
 
         assertThat("getAddress()", neoURI.getToAddress(), is(RECIPIENT));
-        assertThat("getAddressAsScriptHash()", neoURI.getAddressAsScriptHash(), is(RECIPIENT_SCRIPT_HASH));
-        assertThat("getAsset()", neoURI.getAssetAsString(), isOneOf(NeoToken.SCRIPT_HASH.toString(), "neo"));
+        assertThat("getAddressAsScriptHash()", neoURI.getAddressAsScriptHash(),
+                is(RECIPIENT_SCRIPT_HASH));
+        assertThat("getAsset()", neoURI.getAssetAsString(),
+                isOneOf(NeoToken.SCRIPT_HASH.toString(), "neo"));
         assertThat("getAssetAsScriptHash()", neoURI.getAsset(), is(NeoToken.SCRIPT_HASH));
-        assertThat("getAssetAsAddress()", neoURI.getAssetAsAddress(), is(NeoToken.SCRIPT_HASH.toAddress()));
+        assertThat("getAssetAsAddress()", neoURI.getAssetAsAddress(),
+                is(NeoToken.SCRIPT_HASH.toAddress()));
         assertThat("getAmount()", neoURI.getAmount(), is(AMOUNT));
         assertThat("getAmountAsString()", neoURI.getAmountAsString(), is(AMOUNT.toString()));
     }
@@ -136,9 +145,11 @@ public class NeoURITest {
         String BEGIN_TX_ASSET_GAS = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas";
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_GAS).buildURI();
 
-        assertThat("getAsset()", neoURI.getAssetAsString(), isOneOf(GasToken.SCRIPT_HASH.toString(), "gas"));
+        assertThat("getAsset()", neoURI.getAssetAsString(),
+                isOneOf(GasToken.SCRIPT_HASH.toString(), "gas"));
         assertThat("getAssetAsScriptHash()", neoURI.getAsset(), is(GasToken.SCRIPT_HASH));
-        assertThat("getAssetAsAddress()", neoURI.getAssetAsAddress(), is(GasToken.SCRIPT_HASH.toAddress()));
+        assertThat("getAssetAsAddress()", neoURI.getAssetAsAddress(),
+                is(GasToken.SCRIPT_HASH.toAddress()));
     }
 
     @Test
@@ -195,7 +206,9 @@ public class NeoURITest {
                         Numeric.hexStringToByteArray("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"))
                 .buildURI();
 
-        String BEGIN_TX_ASSET = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
+        String BEGIN_TX_ASSET =
+                "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset" +
+                "=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_ASSET)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_ASSET));
     }
@@ -277,7 +290,7 @@ public class NeoURITest {
     @Test
     public void buildTransfer() throws IOException {
         byte[] expectedScript = new ScriptBuilder().contractCall(NeoToken.SCRIPT_HASH,
-                "transfer", Arrays.asList(
+                "transfer", asList(
                         hash160(SENDER),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(1),
@@ -299,7 +312,7 @@ public class NeoURITest {
     @Test
     public void buildTransfer_Gas() throws IOException {
         byte[] expectedScript = new ScriptBuilder().contractCall(GasToken.SCRIPT_HASH,
-                "transfer", Arrays.asList(
+                "transfer", asList(
                         hash160(SENDER),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(200000000),
@@ -386,8 +399,8 @@ public class NeoURITest {
     @Test
     public void getAsset() {
         assertThat(new NeoURI(neow3j)
-                .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .getAsset(),
+                        .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                        .getAsset(),
                 is(new ScriptHash("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
     }
 

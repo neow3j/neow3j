@@ -2,7 +2,9 @@ package io.neow3j.contract;
 
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
@@ -17,7 +19,6 @@ import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Arrays;
 
 /**
  * Represents a Management contract and provides methods to invoke it.
@@ -61,7 +62,7 @@ public class ContractManagement extends SmartContract {
      * @return a transaction builder.
      */
     public TransactionBuilder setMinimumDeploymentFee(BigInteger minimumFee) {
-        return invokeFunction(SET_MINIMUM_DEPLOYMENT_FEE, ContractParameter.integer(minimumFee));
+        return invokeFunction(SET_MINIMUM_DEPLOYMENT_FEE, integer(minimumFee));
     }
 
     /**
@@ -73,7 +74,7 @@ public class ContractManagement extends SmartContract {
      */
     public ContractState getContract(ScriptHash scriptHash) throws IOException {
         StackItem stackItem = callInvokeFunction(GET_CONTRACT,
-                Arrays.asList(hash160(scriptHash)))
+                singletonList(hash160(scriptHash)))
                 .getInvocationResult().getStack().get(0);
         if (!stackItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.ARRAY);

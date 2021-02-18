@@ -2,9 +2,12 @@ package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -27,12 +30,13 @@ import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -60,7 +64,7 @@ public class ContractManagementTest {
         int port = wireMockRule.port();
         WireMock.configureFor(port);
         neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-
+        neow3j.setNetworkMagicNumber(769);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
     }
 
@@ -81,7 +85,7 @@ public class ContractManagementTest {
 
         byte[] expectedScript = new ScriptBuilder().contractCall(ContractManagement.SCRIPT_HASH,
                 "setMinimumDeploymentFee",
-                Arrays.asList(ContractParameter.integer(new BigInteger("70000000")))).toArray();
+                singletonList(integer(new BigInteger("70000000")))).toArray();
 
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new ContractManagement(neow3j)
@@ -168,7 +172,7 @@ public class ContractManagementTest {
 
         byte[] expectedScript = new ScriptBuilder().contractCall(
                 ContractManagement.SCRIPT_HASH, "deploy",
-                Arrays.asList(byteArray(nef.toArray()), byteArray(manifestBytes))).toArray();
+                asList(byteArray(nef.toArray()), byteArray(manifestBytes))).toArray();
 
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(nef, manifest)
@@ -199,7 +203,7 @@ public class ContractManagementTest {
         ContractParameter data = string("some data");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(
-                ContractManagement.SCRIPT_HASH, "deploy", Arrays.asList(
+                ContractManagement.SCRIPT_HASH, "deploy", asList(
                         byteArray(nef.toArray()), byteArray(manifestBytes), data))
                 .toArray();
 

@@ -1,15 +1,14 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
 import java.io.IOException;
@@ -22,6 +21,8 @@ import org.junit.rules.ExpectedException;
 
 public class VerificationMethodTest {
 
+    private static final String VERIFY_METHOD_NAME = "verify";
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -32,7 +33,7 @@ public class VerificationMethodTest {
         CompilationUnit unit = new Compiler()
                 .compileClass(VerificationMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods().stream()
-                .filter(m -> m.getName().equals(Compiler.VERIFY_METHOD_NAME))
+                .filter(m -> m.getName().equals(VERIFY_METHOD_NAME))
                 .collect(Collectors.toList());
         assertThat(methods, hasSize(1));
         assertThat(methods.get(0).getReturnType(), is(ContractParameterType.BOOLEAN));
@@ -42,26 +43,16 @@ public class VerificationMethodTest {
     public void throwExceptionWhenVerifyMethodHasIllegalSignature() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                OnVerification.class.getSimpleName(), "required to have a boolean return type")));
+                "doVerify", "required to have return type", "boolean")));
         new Compiler().compileClass(VerificationMethodIllegalSignatureTestContract.class.getName());
     }
 
     @Test
     public void throwExceptionWhenMultipleVerifyMethodsAreUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "More than one method is marked", OnVerification.class.getSimpleName(),
-                Compiler.VERIFY_METHOD_NAME)));
+        exceptionRule.expectMessage(new StringContainsInOrder(
+                asList("multiple methods", VERIFY_METHOD_NAME)));
         new Compiler().compileClass(MultipleVerificationMethodsTestContract.class.getName());
-    }
-
-    @Test
-    public void throwExceptionWhenVerifyMethodIsUsedWithoutAnnotation() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(Compiler.VERIFY_METHOD_NAME,
-                "method which is not annotated", OnVerification.class.getSimpleName())));
-        new Compiler().compileClass(VerificationMethodWithoutAnnotationContract.class.getName());
-
     }
 
     static class VerificationMethodTestContract {
@@ -93,14 +84,6 @@ public class VerificationMethodTest {
 
         @OnVerification
         public static boolean doVerify2() {
-            return true;
-        }
-
-    }
-
-    static class VerificationMethodWithoutAnnotationContract {
-
-        public static boolean verify(int i) {
             return true;
         }
 

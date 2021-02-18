@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.SupportedStandards;
-import io.neow3j.devpack.neo.Account;
+import io.neow3j.devpack.Account;
 import java.io.IOException;
 import org.junit.Test;
 

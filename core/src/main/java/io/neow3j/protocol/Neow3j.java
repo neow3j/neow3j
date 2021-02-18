@@ -3,13 +3,19 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.rx.Neow3jRx;
-
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * JSON-RPC Request object building factory.
  */
-public interface Neow3j extends Neo, Neow3jRx {
+public abstract class Neow3j implements Neo, Neow3jRx {
+
+    private Integer networkMagicNumber;
+
+    private static Byte addressVersion = 0x35;
 
     /**
      * Construct a new Neow3j instance.
@@ -17,7 +23,7 @@ public interface Neow3j extends Neo, Neow3jRx {
      * @param neow3jService neow3j service instance - i.e. HTTP or IPC
      * @return new Neow3j instance
      */
-    static Neow3j build(Neow3jService neow3jService) {
+    public static Neow3j build(Neow3jService neow3jService) {
         return new JsonRpc2_0Neow3j(neow3jService);
     }
 
@@ -31,7 +37,7 @@ public interface Neow3j extends Neo, Neow3jRx {
      *                                 pool</strong>
      * @return new Neow3j instance
      */
-    static Neow3j build(
+    public static Neow3j build(
             Neow3jService neow3jService, long pollingInterval,
             ScheduledExecutorService scheduledExecutorService) {
         return new JsonRpc2_0Neow3j(neow3jService, pollingInterval, scheduledExecutorService);
@@ -40,5 +46,55 @@ public interface Neow3j extends Neo, Neow3jRx {
     /**
      * Shutdowns a Neow3j instance and closes opened resources.
      */
-    void shutdown();
+    public abstract void shutdown();
+
+    /**
+     * Gets the magic number of the connect Neo network.
+     * <p>
+     * If the magic number is not explicitly set with {@link Neow3j#setNetworkMagicNumber(int)}, it
+     * is retrieved from the connected neo-node.
+     *
+     * @return The network's magic number.
+     * @throws IOException if an error occurs when tyring to fetch the magic number from the
+     *                     connected neo-node.
+     */
+    public byte[] getNetworkMagicNumber() throws IOException {
+        if (networkMagicNumber == null) {
+            networkMagicNumber = getVersion().send().getVersion().getMagic();
+        }
+        byte[] array = new byte[4];
+        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicNumber);
+        return array;
+    }
+
+    /**
+     * Sets the network magic number to the given value without consulting the connected neo-node.
+     *
+     * @param magicNumber The magic number.
+     */
+    public void setNetworkMagicNumber(int magicNumber) {
+        networkMagicNumber = magicNumber;
+    }
+
+    /**
+     * Gets the locally configured address version number to use for address creation and
+     * verification.
+     * <p>
+     * The default address version is 53.
+     *
+     * @return The address version.
+     */
+    public static byte getAddressVersion() {
+        return addressVersion;
+    }
+
+    /**
+     * Sets the address version to use for address creation and verification.
+     *
+     * @param version The address version.
+     */
+    public static void setAddressVersion(byte version) {
+        addressVersion = version;
+    }
+
 }

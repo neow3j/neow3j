@@ -1,4 +1,6 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
+
+import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_CHECKWITNESS;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GASLEFT;
@@ -9,10 +11,6 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GETTRIGGER;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_LOG;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_NOTIFY;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_PLATFORM;
-
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * Provides a set of general methods for usage in smart contracts.
@@ -41,15 +39,13 @@ public class Runtime {
      * @return the timestamp
      */
     @Syscall(SYSTEM_RUNTIME_GETTIME)
-    public static native long getTime();
+    public static native int getTime();
 
     /**
-     * Gets the call number of the current contract.
+     * Gets the number of times the current contract has been invoked.
      *
-     * @return the call number.
+     * @return the invocation counter.
      */
-    // TODO: For documentation, clarify if this is actually the number of times the contract has
-    //  been invoked.
     @Syscall(SYSTEM_RUNTIME_GETINVOCATIONCOUNTER)
     public static native int getInvocationCounter();
 
@@ -57,9 +53,8 @@ public class Runtime {
      * Gets the amount of GAS left in the current invocation of the contract.
      * @return the amount in fractions of GAS.
      */
-    // TODO: For documentation, make sure that the above description is correct.
     @Syscall(SYSTEM_RUNTIME_GASLEFT)
-    public static native long getGasLeft();
+    public static native int getGasLeft();
 
     /**
      * Gets current invocation notifications matching the given sender script hash. The script hash

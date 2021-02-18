@@ -4,8 +4,10 @@ import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Strings.isEmpty;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
@@ -63,11 +65,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * JSON-RPC 2.0 factory implementation.
  */
-public class JsonRpc2_0Neow3j implements Neow3j {
+public class JsonRpc2_0Neow3j extends Neow3j {
 
     public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
 
@@ -116,7 +119,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoBlockHash> getBlockHash(BlockParameterIndex blockIndex) {
         return new Request<>(
                 "getblockhash",
-                asList(blockIndex.getBlockIndex()),
+                singletonList(blockIndex.getBlockIndex()),
                 neow3jService,
                 NeoBlockHash.class);
     }
@@ -286,10 +289,25 @@ public class JsonRpc2_0Neow3j implements Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetContractState> getContractState(String scriptHash) {
+    public Request<?, NeoGetContractState> getContractState(ScriptHash scriptHash) {
         return new Request<>(
                 "getcontractstate",
-                asList(scriptHash),
+                singletonList(scriptHash.toString()),
+                neow3jService,
+                NeoGetContractState.class);
+    }
+
+    /**
+     * Gets the contract information.
+     *
+     * @param contractName the name of the contract or its script hash as a String.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetContractState> getContractState(String contractName) {
+        return new Request<>(
+                "getcontractstate",
+                singletonList(contractName),
                 neow3jService,
                 NeoGetContractState.class);
     }
@@ -303,7 +321,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetMemPool> getMemPool() {
         return new Request<>(
                 "getrawmempool",
-                Arrays.asList(1),
+                singletonList(1),
                 neow3jService,
                 NeoGetMemPool.class);
     }
@@ -380,7 +398,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId) {
         return new Request<>(
                 "gettransactionheight",
-                asList(txId),
+                singletonList(txId),
                 neow3jService,
                 NeoGetTransactionHeight.class);
     }
@@ -468,7 +486,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex) {
         return new Request<>(
                 "sendrawtransaction",
-                asList(Base64.encode(Numeric.hexStringToByteArray(rawTransactionHex))),
+                singletonList(Base64.encode(Numeric.hexStringToByteArray(rawTransactionHex))),
                 neow3jService,
                 NeoSendRawTransaction.class);
     }
@@ -483,7 +501,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex) {
         return new Request<>(
                 "submitblock",
-                asList(serializedBlockAsHex),
+                singletonList(serializedBlockAsHex),
                 neow3jService,
                 NeoSubmitBlock.class);
     }
@@ -554,7 +572,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
                     .map(TransactionSigner::new)
                     .collect(Collectors.toList()));
         } else {
-            params = asList(script);
+            params = singletonList(script);
         }
         return new Request<>(
                 "invokescript",
@@ -601,7 +619,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address) {
         return new Request<>(
                 "getunclaimedgas",
-                asList(address),
+                singletonList(address),
                 neow3jService,
                 NeoGetUnclaimedGas.class);
     }
@@ -632,7 +650,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoValidateAddress> validateAddress(String address) {
         return new Request<>(
                 "validateaddress",
-                asList(address),
+                singletonList(address),
                 neow3jService,
                 NeoValidateAddress.class);
     }
@@ -663,7 +681,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoDumpPrivKey> dumpPrivKey(String address) {
         return new Request<>(
                 "dumpprivkey",
-                asList(address),
+                singletonList(address),
                 neow3jService,
                 NeoDumpPrivKey.class);
     }
@@ -678,7 +696,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetWalletBalance> getWalletBalance(String assetId) {
         return new Request<>(
                 "getwalletbalance",
-                asList(cleanHexPrefix(assetId)),
+                singletonList(cleanHexPrefix(assetId)),
                 neow3jService,
                 NeoGetWalletBalance.class);
     }
@@ -721,7 +739,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoImportPrivKey> importPrivKey(String privateKeyInWIF) {
         return new Request<>(
                 "importprivkey",
-                asList(privateKeyInWIF),
+                singletonList(privateKeyInWIF),
                 neow3jService,
                 NeoImportPrivKey.class);
     }
@@ -736,7 +754,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String txHex) {
         return new Request<>(
                 "calculatenetworkfee",
-                asList(Base64.encode(Numeric.hexStringToByteArray(txHex))),
+                singletonList(Base64.encode(Numeric.hexStringToByteArray(txHex))),
                 neow3jService,
                 NeoCalculateNetworkFee.class);
     }
@@ -858,7 +876,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
             String value) {
         return new Request<>(
                 "sendtoaddress",
-                asList(assetId, toAddress, value).stream()
+                Stream.of(assetId, toAddress, value)
                         .filter((param) -> (param != null && !isEmpty(param)))
                         .collect(Collectors.toList()),
                 neow3jService,
@@ -893,7 +911,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
         return new Request<>(
                 "getapplicationlog",
-                asList(txId),
+                singletonList(txId),
                 neow3jService,
                 NeoGetApplicationLog.class);
     }
@@ -910,7 +928,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetNep17Balances> getNep17Balances(String address) {
         return new Request<>(
                 "getnep17balances",
-                asList(address),
+                singletonList(address),
                 neow3jService,
                 NeoGetNep17Balances.class);
     }
@@ -926,7 +944,7 @@ public class JsonRpc2_0Neow3j implements Neow3j {
     public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address) {
         return new Request<>(
                 "getnep17transfers",
-                asList(address),
+                singletonList(address),
                 neow3jService,
                 NeoGetNep17Transfers.class);
     }
@@ -1018,4 +1036,5 @@ public class JsonRpc2_0Neow3j implements Neow3j {
             throw new RuntimeException("Failed to close neow3j service", e);
         }
     }
+
 }

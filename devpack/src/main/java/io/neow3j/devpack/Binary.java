@@ -1,12 +1,12 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
+
+import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_BASE64DECODE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_BASE64ENCODE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_DESERIALIZE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_SERIALIZE;
-
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.annotations.Syscall;
 
 public class Binary {
 

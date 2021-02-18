@@ -1,13 +1,11 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
+
+import io.neow3j.devpack.Map.Entry;
+import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_CREATE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_NEXT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_VALUE;
-
-import io.neow3j.devpack.ApiInterface;
-import io.neow3j.devpack.Map;
-import io.neow3j.devpack.Map.Entry;
-import io.neow3j.devpack.annotations.Syscall;
 
 /**
  * A NeoVM-specific iterator used to iterate over a set of elements.

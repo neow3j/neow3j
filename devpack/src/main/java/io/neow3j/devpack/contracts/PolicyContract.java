@@ -61,7 +61,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param fee The desired fee per byte
      */
-    public static native void setFeePerByte(long fee);
+    public static native void setFeePerByte(int fee);
 
     /**
      * Blocks the account with the given script hash.

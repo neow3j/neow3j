@@ -17,4 +17,5 @@ public class InvocationConfigurationException extends RuntimeException {
     public InvocationConfigurationException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

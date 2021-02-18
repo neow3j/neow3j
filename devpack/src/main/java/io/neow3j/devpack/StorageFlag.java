@@ -1,4 +1,4 @@
-package io.neow3j.devpack.neo;
+package io.neow3j.devpack;
 
 /**
  * Defines attributes of data written to a contract's storage. E.g. one can define if data should be

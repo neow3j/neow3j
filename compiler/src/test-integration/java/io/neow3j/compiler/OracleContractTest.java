@@ -1,9 +1,7 @@
 package io.neow3j.compiler;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.contract.ContractParameter.integer;
@@ -12,14 +10,13 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.OracleContract;
 import io.neow3j.devpack.events.Event4Args;
-import io.neow3j.devpack.neo.OracleContract;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.BlockParameter;
 import io.neow3j.protocol.core.Role;

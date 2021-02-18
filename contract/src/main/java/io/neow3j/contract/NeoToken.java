@@ -1,5 +1,13 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.model.types.StackItemType.ARRAY;
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.model.types.StackItemType.INTEGER;
+import static io.neow3j.model.types.StackItemType.STRUCT;
+
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
@@ -12,14 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
-import static io.neow3j.model.types.StackItemType.ARRAY;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.INTEGER;
-import static io.neow3j.model.types.StackItemType.STRUCT;
 
 /**
  * Represents the NeoToken native contract and provides methods to invoke its functions.

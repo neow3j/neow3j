@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.publicKey;
+import static java.util.Arrays.asList;
 
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
@@ -11,7 +12,6 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +49,7 @@ public class RoleManagement extends SmartContract {
     public List<ECPublicKey> getDesignatedByRole(Role role, int blockIndex) throws IOException {
         checkBlockIndexValidity(blockIndex);
         NeoInvokeFunction invocation = callInvokeFunction(GET_DESIGNATED_BY_ROLE,
-                Arrays.asList(
+                asList(
                         integer(role.byteValue()),
                         integer(blockIndex)));
 
