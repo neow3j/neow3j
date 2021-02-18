@@ -68,6 +68,9 @@ public class OracleContractTest extends ContractTest {
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
+        // Start the oracle service on the neo-node
+        privateNetContainer.execInContainer("screen", "-X", "stuff", "start oracle \\015");
+
         // Invoke contract that requests data from oracle.
         String url = "http://127.0.0.1:64928/test"; // Request URL that is not reachable
         String filter = "$.value";  // JSONPath
