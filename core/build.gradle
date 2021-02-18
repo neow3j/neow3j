@@ -13,7 +13,6 @@ dependencies {
             "ch.qos.logback:logback-classic:$logbackVersion",
             "org.jetbrains:annotations:$jetbrainsAnnotationsVersion",
             "com.github.tomakehurst:wiremock-jre8:$wiremockVersion"
-    integrationTestCompile "org.awaitility:awaitility:$awaitility"
 }
 
 configurations {
