@@ -19,18 +19,21 @@ public class Iterator<V> implements ApiInterface {
      * Creates an {@code Iterator} over the entries of the given array.
      *
      * @param entries The elements to iterator over.
+     * @param <V> The type of the iterator's entries.
      * @return the iterator.
      */
     @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native <T> Iterator<T> create(T[] entries);
+    public static native <V> Iterator<V> create(V[] entries);
 
     /**
      * Creates a {@code Iterator} over the entries of the given map.
      * @param map The map to iterate over.
+     * @param <K> The type of the keys.
+     * @param <V> The type of the values.
      * @return the iterator.
      */
     @Syscall(SYSTEM_ITERATOR_CREATE)
-    public static native <T1, T2> Iterator<Entry<T1, T2>> create(Map<T1, T2> map);
+    public static native <K, V> Iterator<Entry<K, V>> create(Map<K, V> map);
 
     /**
      * Moves this {@code Iterator}'s position to the next element.

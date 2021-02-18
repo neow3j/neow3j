@@ -6,7 +6,7 @@ import io.neow3j.devpack.Hash256;
 
 /**
  * Represents a transaction and provides transaction-related information. It is returned for example
- * when calling {@link Blockchain#getTransaction(Hash256)} .
+ * when calling {@link io.neow3j.devpack.contracts.LedgerContract#getTransaction(Hash256)} .
  */
 public class Transaction implements ApiInterface {
 
