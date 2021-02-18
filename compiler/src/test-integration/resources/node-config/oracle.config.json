@@ -1,12 +1,6 @@
 {
   "PluginConfiguration": {
     "AllowPrivateHost": true,
-//    "AllowedContentTypes": [
-//      "application/json"
-//    ],
-    "Https": {
-      "Timeout": 50000
-    }
   }
 }
 
