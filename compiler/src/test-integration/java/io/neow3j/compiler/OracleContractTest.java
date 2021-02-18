@@ -78,6 +78,8 @@ public class OracleContractTest extends ContractTest {
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
+        // TODO: Remove this when https://github.com/neo-project/neo-modules/issues/523
+        // gets implemented.
         // Start the oracle service on the neo-node
         privateNetContainer.execInContainer("screen", "-X", "stuff", "start oracle \\015");
 
