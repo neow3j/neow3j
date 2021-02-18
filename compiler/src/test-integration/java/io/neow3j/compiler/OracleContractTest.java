@@ -1,11 +1,26 @@
 package io.neow3j.compiler;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.string;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.devpack.neo.OracleContract;
+import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.BlockParameter;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
@@ -18,21 +33,19 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Await;
 import io.reactivex.disposables.Disposable;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class OracleContractTest extends ContractTest {
+
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -71,9 +84,17 @@ public class OracleContractTest extends ContractTest {
         // Start the oracle service on the neo-node
         privateNetContainer.execInContainer("screen", "-X", "stuff", "start oracle \\015");
 
+        // Setup WireMock
+        String json = "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"result\": 1000 }";
+        JsonNode jsonNode = ObjectMapperFactory.getObjectMapper().readTree(json);
+        int port = wireMockRule.httpsPort();
+        wireMockRule.stubFor(get(urlEqualTo("/test")).willReturn(aResponse()
+                .withStatus(200)
+                .withJsonBody(jsonNode)));
+
         // Invoke contract that requests data from oracle.
-        String url = "http://127.0.0.1:64928/test"; // Request URL that is not reachable
-        String filter = "$.value";  // JSONPath
+        String url = "https://127.0.0.1:" + port + "/test";
+        String filter = "";  // JSONPath
         String userdata = "userdata";
         int gasForResponse = 100000000;
         String txHash = invokeFunctionAndAwaitExecution(string(url), string(filter),
@@ -104,7 +125,7 @@ public class OracleContractTest extends ContractTest {
         assertThat(eventState.get(0).asByteString().getAsString(), is(url));
         assertThat(eventState.get(1).asByteString().getAsString(), is(userdata));
         assertThat(eventState.get(2).asInteger().getValue().byteValue(),
-                is(OracleResponseCode.PROTOCOL_NOT_SUPPORTED.byteValue()));
+                is(OracleResponseCode.TIMEOUT.byteValue()));
         assertThat(eventState.get(3).asByteString().getValue(), is(new byte[]{}));
     }
 

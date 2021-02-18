@@ -8,5 +8,6 @@ dependencies {
             "org.ow2.asm:asm:$asmVersion",
             project(':devpack')
 
-    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion",
+            "com.github.tomakehurst:wiremock-jre8:$wiremockVersion"
 }
