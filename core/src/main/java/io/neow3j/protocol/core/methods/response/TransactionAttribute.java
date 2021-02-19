@@ -12,7 +12,9 @@ import io.neow3j.transaction.TransactionAttributeType;
 @JsonTypeInfo(use = Id.NAME, property = "type", include = As.EXISTING_PROPERTY)
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = HighPriorityAttribute.class,
-                name = TransactionAttributeType.HIGH_PRIORITY_VALUE)
+                name = TransactionAttributeType.HIGH_PRIORITY_VALUE),
+        @JsonSubTypes.Type(value = OracleResponseAttribute.class,
+                name = TransactionAttributeType.ORACLE_RESPONSE_VALUE)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class TransactionAttribute {

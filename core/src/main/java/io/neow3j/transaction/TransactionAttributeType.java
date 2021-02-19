@@ -8,10 +8,18 @@ public enum TransactionAttributeType {
     /**
      * This attribute allows committee members to prioritize a transaction.
      */
-    HIGH_PRIORITY(TransactionAttributeType.HIGH_PRIORITY_VALUE, 0x01,
-            HighPriorityAttribute.class);
+    HIGH_PRIORITY(TransactionAttributeType.HIGH_PRIORITY_VALUE, 0x01, HighPriorityAttribute.class),
+
+    /**
+     * This attribute is used by oracle nodes to append oracle responses to a transaction.
+     */
+    ORACLE_RESPONSE(TransactionAttributeType.ORACLE_RESPONSE_VALUE, 0x11,
+            // We don't support the OracleResponse attribute for transaction building, therefore,
+            // the generic `TransactionAttribute` class is used here.
+            TransactionAttribute.class);
 
     public static final String HIGH_PRIORITY_VALUE = "HighPriority";
+    public static final String ORACLE_RESPONSE_VALUE = "OracleResponse";
 
     private String jsonValue;
     private byte byteValue;

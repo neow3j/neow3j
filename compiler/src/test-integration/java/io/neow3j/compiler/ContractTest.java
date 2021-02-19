@@ -58,6 +58,10 @@ public class ContractTest {
     static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
     static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
     static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
+    static final String ORACLECONFIG_FILE_SOURCE = "/node-config/oracle.config.json";
+    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
+            + ".json";
+
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
     // Wallet password for the node's wallnet at node-config/wallet.json.
@@ -65,8 +69,6 @@ public class ContractTest {
     // The path to the wallet from the directory of the node process.
     static final String NODE_WALLET_PATH = "wallet.json";
 
-    protected static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String VM_STATE_FAULT = "FAULT";
     protected static final String DEFAULT_ACCOUNT_ADDRES = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
@@ -86,6 +88,8 @@ public class ContractTest {
             .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY)
             .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY)
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());

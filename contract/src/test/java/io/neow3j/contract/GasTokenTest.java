@@ -14,20 +14,9 @@ import org.junit.Test;
 
 public class GasTokenTest {
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    private Neow3j neow;
-
+    // The tests don't need an actual connection to a node.
+    private final Neow3j neow = Neow3j.build(null);
     private final static String GASTOKEN_SCRIPTHASH = "70e2301955bf1e74cbb31d18c2f96972abadb328";
-
-    @Before
-    public void setUp() {
-        // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
-        int port = this.wireMockRule.port();
-        WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-    }
 
     @Test
     public void getName() {
