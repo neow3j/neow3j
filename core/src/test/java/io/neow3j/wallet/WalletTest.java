@@ -162,15 +162,6 @@ public class WalletTest {
         assertEquals(2, w.addAccounts(acct).getAccounts().size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testGetAccountNotInWallet() throws InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, NoSuchProviderException {
-        Account account = new Account(ECKeyPair.createEcKeyPair());
-        Wallet wallet = Wallet.create();
-
-        wallet.getAccount(account.getScriptHash());
-    }
-
     @Test
     public void testRemoveAccounts() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
@@ -430,8 +421,6 @@ public class WalletTest {
         assertThat(w.getAccounts().get(1).getECKeyPair(), notNullValue());
         w.encryptAllAccounts("pw");
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("This account does not hold an EC key pair.");
         assertThat(w.getAccounts().get(0).getECKeyPair(), nullValue());
     }
 

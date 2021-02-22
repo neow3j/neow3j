@@ -61,14 +61,13 @@ public class Account {
     }
 
     /**
-     * Gets this account's EC key pair.
+     * Gets this account's EC key pair if available.
+     * <p>
+     * The key pair is not available, e.g., if this account was encrypted.
      *
-     * @return the key pair.
+     * @return the key pair or null if it is not available.
      */
     public ECKeyPair getECKeyPair() {
-        if (keyPair == null) {
-            throw new IllegalStateException("This account does not hold an EC key pair.");
-        }
         return keyPair;
     }
 
