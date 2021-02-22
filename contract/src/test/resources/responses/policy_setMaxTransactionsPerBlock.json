@@ -4,7 +4,7 @@
   "result": {
     "script": "GhHADBpzZXRNYXhUcmFuc2FjdGlvbnNQZXJCbG9jawwUFO7MBVOQODr11V5/vL79wIQQ491BYn1bUg==",
     "state": "HALT",
-    "gasconsumed": "0.0399918",
+    "gasconsumed": "3999180",
     "exception": null,
     "stack": [
       {

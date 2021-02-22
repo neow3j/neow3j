@@ -49,6 +49,10 @@ public class InvocationResult {
         return state;
     }
 
+    public boolean hasStateFault() {
+        return state.equals("FAULT");
+    }
+
     public String getGasConsumed() {
         return gasConsumed;
     }

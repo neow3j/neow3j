@@ -8,6 +8,7 @@ import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.ConsensusData;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.HighPriorityAttribute;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
@@ -48,26 +49,32 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.NeoWitness;
+import io.neow3j.protocol.core.methods.response.OracleResponseAttribute;
+import io.neow3j.protocol.core.methods.response.OracleResponseCode;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.methods.response.TransactionAttribute;
 import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.ResponseTester;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 
 import java.math.BigInteger;
+import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -432,7 +439,13 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"id\": -2,\n" +
                         "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "        \"script\": \"QetD9PQ=\",\n" +
+                        "        \"nef\": {\n" +
+                        "            \"magic\": 860243278,\n" +
+                        "            \"compiler\": \"neo-core-v3.0\",\n" +
+                        "            \"tokens\": [],\n" +
+                        "            \"script\": \"QetD9PQ=\",\n" +
+                        "            \"checksum\": 3921333105\n" +
+                        "        },\n" +
                         "        \"manifest\": {\n" +
                         "            \"name\": \"GasToken\"," +
                         "            \"groups\": [\n" +
@@ -542,7 +555,10 @@ public class ResponseTest extends ResponseTester {
         assertThat(getContractState.getContractState().getId(), is(-2));
         assertThat(getContractState.getContractState().getHash(),
                 is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
-        assertThat(getContractState.getContractState().getScript(), is("QetD9PQ="));
+        assertThat(getContractState.getContractState().getNef().getScript(), is("QetD9PQ="));
+        assertThat(getContractState.getContractState().getNef().getTokens(), is(empty()));
+        assertThat(getContractState.getContractState().getNef().getChecksum(), is(3921333105L));
+        assertThat(getContractState.getContractState().getNef().getCompiler(), is("neo-core-v3.0"));
 
         ContractManifest manifest = getContractState.getContractState().getManifest();
         assertThat(manifest, is(notNullValue()));
@@ -726,7 +742,17 @@ public class ResponseTest extends ResponseTester {
                         "                \"scopes\": \"CalledByEntry\"\n" +
                         "            }\n" +
                         "        ],\n" +
-                        "        \"attributes\": []," +
+                        "        \"attributes\": [\n" +
+                        "            {" +
+                        "                \"type\": \"HighPriority\"" +
+                        "            }," +
+                        "            {" +
+                        "                \"type\": \"OracleResponse\"," +
+                        "                \"id\": 0," +
+                        "                \"code\": \"Success\"," +
+                        "                \"result\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"" +
+                        "            }" +
+                        "        ]," +
                         "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -743,42 +769,52 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetTransaction getTransaction = deserialiseResponse(NeoGetTransaction.class);
-        assertThat(getTransaction.getTransaction(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getHash(),
+        Transaction transaction = getTransaction.getTransaction();
+        assertThat(transaction, is(notNullValue()));
+        assertThat(transaction.getHash(),
                 is("0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89"));
-        assertThat(getTransaction.getTransaction().getSize(), is(267L));
-        assertThat(getTransaction.getTransaction().getVersion(), is(0));
-        assertThat(getTransaction.getTransaction().getNonce(), is(1046354582L));
-        assertThat(getTransaction.getTransaction().getSender(), is("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"));
-        assertThat(getTransaction.getTransaction().getSysFee(), is("9007810"));
-        assertThat(getTransaction.getTransaction().getNetFee(), is("1267450"));
-        assertThat(getTransaction.getTransaction().getValidUntilBlock(), is(2103622L));
+        assertThat(transaction.getSize(), is(267L));
+        assertThat(transaction.getVersion(), is(0));
+        assertThat(transaction.getNonce(), is(1046354582L));
+        assertThat(transaction.getSender(), is("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"));
+        assertThat(transaction.getSysFee(), is("9007810"));
+        assertThat(transaction.getNetFee(), is("1267450"));
+        assertThat(transaction.getValidUntilBlock(), is(2103622L));
 
-        assertThat(getTransaction.getTransaction().getSigners(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getSigners(), hasSize(1));
-        assertThat(getTransaction.getTransaction().getSigners().get(0).getAccount(), is("0xf68f181731a47036a99f04dad90043a744edec0f"));
-        assertThat(getTransaction.getTransaction().getSigners().get(0).getScopes(), hasSize(1));
-        assertThat(getTransaction.getTransaction().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
+        List<TransactionSigner> signers = transaction.getSigners();
+        assertThat(signers, is(notNullValue()));
+        assertThat(signers, hasSize(1));
+        assertThat(signers.get(0).getAccount(), is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+        assertThat(signers.get(0).getScopes(), hasSize(1));
+        assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 
-        assertThat(getTransaction.getTransaction().getAttributes(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getAttributes(), hasSize(0));
+        List<TransactionAttribute> attributes = transaction.getAttributes();
+        assertThat(attributes, is(notNullValue()));
+        assertThat(attributes.get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
+        assertThat(attributes.get(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
+        assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
+        OracleResponseAttribute oracleResp = (OracleResponseAttribute) attributes.get(1);
+        assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
+        assertThat(oracleResp.getResult(),
+                is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
+        assertThat(oracleResp.getId(), is(0));
 
-        assertThat(getTransaction.getTransaction().getScript(),
+        assertThat(transaction.getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));
-        assertThat(getTransaction.getTransaction().getWitnesses(), is(notNullValue()));
-        assertThat(getTransaction.getTransaction().getWitnesses(), hasSize(1));
-        assertThat(getTransaction.getTransaction().getWitnesses(),
+        assertThat(transaction.getWitnesses(), is(notNullValue()));
+        assertThat(transaction.getWitnesses(), hasSize(1));
+        assertThat(transaction.getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
                                 "DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
-        assertThat(getTransaction.getTransaction().getBlockHash(),
+        assertThat(transaction.getBlockHash(),
                 is("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299"));
-        assertThat(getTransaction.getTransaction().getConfirmations(), is(1388));
-        assertThat(getTransaction.getTransaction().getBlockTime(), is(1589019142879L));
-        assertThat(getTransaction.getTransaction().getVMState(), is("HALT"));
+        assertThat(transaction.getConfirmations(), is(1388));
+        assertThat(transaction.getBlockTime(), is(1589019142879L));
+        assertThat(transaction.getVMState(), is("HALT"));
     }
 
     @Test
@@ -1022,7 +1058,8 @@ public class ResponseTest extends ResponseTester {
                         "        \"tcpport\": 40333,\n" +
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
-                        "        \"useragent\": \"/Neo:3.0.0-preview3-00/\"\n" +
+                        "        \"useragent\": \"/Neo:3.0.0-preview3-00/\",\n" +
+                        "        \"magic\": 769\n" +
                         "    }\n" +
                         "}"
         );
@@ -1033,6 +1070,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(getVersion.getVersion().getWSPort(), is(40334));
         assertThat(getVersion.getVersion().getNonce(), is(224036820L));
         assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview3-00/"));
+        assertThat(getVersion.getVersion().getMagic(), is(769));
     }
 
     @Test
@@ -2074,7 +2112,7 @@ public class ResponseTest extends ResponseTester {
                         "                ],\n" +
                         "                \"notifications\": [\n" +
                         "                    {\n" +
-                        "                        \"contract\": \"0xa6a6c15dcdc9b997dac448b6926522d22efeedfb\",\n" +
+                        "                        \"contract\": \"0x70e2301955bf1e74cbb31d18c2f96972abadb328\",\n" +
                         "                        \"eventname\": \"Transfer\",\n" +
                         "                        \"state\": {\n" +
                         "                            \"type\": \"Array\",\n" +
@@ -2094,7 +2132,7 @@ public class ResponseTest extends ResponseTester {
                         "                        }\n" +
                         "                    },\n" +
                         "                    {\n" +
-                        "                        \"contract\": \"0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6\",\n" +
+                        "                        \"contract\": \"0xf61eebf573ea36593fd43aa150c055ad7906ab83\",\n" +
                         "                        \"eventname\": \"Transfer\",\n" +
                         "                        \"state\": {\n" +
                         "                            \"type\": \"Array\",\n" +
@@ -2147,7 +2185,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 0
         NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
 
-        assertThat(notification0.getContract(), is("0xa6a6c15dcdc9b997dac448b6926522d22efeedfb"));
+        assertThat(notification0.getContract(), is("0x70e2301955bf1e74cbb31d18c2f96972abadb328"));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
@@ -2164,7 +2202,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 1
         NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
 
-        assertThat(notification1.getContract(), is("0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6"));
+        assertThat(notification1.getContract(), is("0xf61eebf573ea36593fd43aa150c055ad7906ab83"));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 

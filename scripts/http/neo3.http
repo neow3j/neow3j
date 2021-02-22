@@ -379,7 +379,7 @@ Content-Type: application/javascript'
 {
   "jsonrpc": "2.0",
   "method": "getcontractstate",
-  "params":["0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"],
+  "params":["0xf61eebf573ea36593fd43aa150c055ad7906ab83"],
   "id": 1
 }
 

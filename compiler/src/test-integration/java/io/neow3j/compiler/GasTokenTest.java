@@ -1,19 +1,14 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.GasToken;
-import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,7 +28,7 @@ public class GasTokenTest extends ContractTest {
 
     static class GasTokenTestContract {
 
-        public static byte[] getHash() {
+        public static Hash160 getHash() {
             return GasToken.getHash();
         }
     }

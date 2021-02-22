@@ -296,7 +296,7 @@ public class ObjectsConverter implements Converter {
             // Skip the call to the Object ctor and continue processing the rest of the ctor.
             calledNeoMethod = new NeoMethod(ctorMethod, owner);
             compUnit.getNeoModule().addMethod(calledNeoMethod);
-            calledNeoMethod.initializeLocalVariablesAndParameters(compUnit);
+            calledNeoMethod.initialize(compUnit);
             AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod, owner);
             insn = insn.getNext();
             while (insn != null) {
@@ -361,8 +361,7 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
-    private static boolean isMethodCallToEventSend(AbstractInsnNode insn)
-            throws IOException {
+    private static boolean isMethodCallToEventSend(AbstractInsnNode insn) {
 
         if (!(insn instanceof MethodInsnNode)) {
             return false;

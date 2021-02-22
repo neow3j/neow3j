@@ -5,10 +5,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
 import java.io.IOException;
@@ -21,6 +19,8 @@ import org.junit.rules.ExpectedException;
 
 public class DeploymentMethodTest {
 
+    private static final String DEPLOY_METHOD_NAME = "_deploy";
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -31,7 +31,7 @@ public class DeploymentMethodTest {
         CompilationUnit unit = new Compiler()
                 .compileClass(DeploymentMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods().stream()
-                .filter(m -> m.getName().equals(Compiler.DEPLOY_METHOD_NAME))
+                .filter(m -> m.getName().equals(DEPLOY_METHOD_NAME))
                 .collect(Collectors.toList());
         assertThat(methods, hasSize(1));
         assertThat(methods.get(0).getReturnType(), is(ContractParameterType.VOID));
@@ -40,49 +40,51 @@ public class DeploymentMethodTest {
     @Test
     public void throwExceptionWhenDeployMethodHasIllegalSignature() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                OnDeployment.class.getSimpleName(),
-                "required to have a boolean parameter and a void return type")));
+        exceptionRule.expectMessage(new StringContainsInOrder(
+                asList("doDeploy", "Object", "boolean", "void")));
         new Compiler().compileClass(DeploymentMethodIllegalReturnTypeTestContract.class.getName());
 
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                OnDeployment.class.getSimpleName(),
-                "required to have a boolean parameter and a void return type")));
+        exceptionRule.expectMessage(new StringContainsInOrder(
+                asList("doDeploy", "Object", "boolean", "void")));
         new Compiler().compileClass(
                 DeploymentMethodIllegalParameterTypeTestContract.class.getName());
+
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                "doDeploy", "Object", "Boolean", "void")));
+        new Compiler().compileClass(
+                DeploymentMethodMissingParameterTestContract.class.getName());
     }
 
     @Test
     public void throwExceptionWhenMultipleDeployMethodsAreUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "More than one method is marked", OnDeployment.class.getSimpleName(),
-                Compiler.DEPLOY_METHOD_NAME)));
+        exceptionRule.expectMessage(new StringContainsInOrder(
+                asList("multiple methods", DEPLOY_METHOD_NAME)));
         new Compiler().compileClass(MultipleDeploymentMethodsTestContract.class.getName());
     }
 
     @Test
-    public void throwExceptionWhenDeployMethodIsUsedWithoutAnnotation() throws IOException {
+    public void throwExceptionWhenTwoMethodSignatureAnnotationsAreUsedOnTheSameMethod()
+            throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(Compiler.DEPLOY_METHOD_NAME,
-                "method which is not annotated", OnDeployment.class.getSimpleName())));
-        new Compiler().compileClass(DeploymentMethodWithoutAnnotationContract.class.getName());
-
+        exceptionRule.expectMessage(new StringContainsInOrder(
+                asList("annotatedMethod", "multiple annotations", "specific method signature")));
+        new Compiler().compileClass(MultipleMethodSignatureAnnotationsTestContract.class.getName());
     }
 
     static class DeploymentMethodTestContract {
 
         @OnDeployment
-        public static void doDeploy(boolean update) {
-            return;
+        public static void doDeploy(Object data, boolean update) {
         }
     }
 
     static class DeploymentMethodIllegalReturnTypeTestContract {
 
         @OnDeployment
-        public static int doDeploy(boolean update) {
+        public static int doDeploy(Object data, boolean update) {
             return 41;
         }
 
@@ -91,8 +93,15 @@ public class DeploymentMethodTest {
     static class DeploymentMethodIllegalParameterTypeTestContract {
 
         @OnDeployment
-        public static void doDeploy(int wrongParam) {
-            return;
+        public static void doDeploy(Object data, int wrongParam) {
+        }
+
+    }
+
+    static class DeploymentMethodMissingParameterTestContract {
+
+        @OnDeployment
+        public static void doDeploy(boolean update) {
         }
 
     }
@@ -100,23 +109,22 @@ public class DeploymentMethodTest {
     static class MultipleDeploymentMethodsTestContract {
 
         @OnDeployment
-        public static void doDeploy1(boolean update) {
-            return;
+        public static void doDeploy1(Object data, boolean update) {
         }
 
         @OnDeployment
-        public static void doDeploy2(boolean update) {
-            return;
+        public static void doDeploy2(Object data, boolean update) {
         }
 
     }
 
-    static class DeploymentMethodWithoutAnnotationContract {
+    static class MultipleMethodSignatureAnnotationsTestContract {
 
-        public static void _deploy(boolean update) {
-            return;
+        @OnDeployment
+        @OnVerification
+        public static void annotatedMethod(Object data, boolean update) {
+
         }
-
     }
 
 }

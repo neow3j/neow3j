@@ -1,10 +1,5 @@
 description 'neow3j: Gradle Plugin'
 
-dependencies {
-    compile project(':compiler')
-    compile gradleApi()
-}
-
 gradlePlugin {
     plugins {
         neow3jDevpackGradlePlugin {
@@ -32,4 +27,28 @@ pluginBundle {
         }
     }
 
+}
+
+// from:
+// https://docs.gradle.org/current/userguide/test_kit.html#sec:working_with_gradle_versions_prior_to_213
+task createClasspathManifest {
+    def outputDir = file("$buildDir/$name")
+
+    inputs.files(sourceSets.main.runtimeClasspath)
+            .withPropertyName("runtimeClasspath")
+            .withNormalizer(ClasspathNormalizer)
+    outputs.dir(outputDir)
+            .withPropertyName("outputDir")
+
+    doLast {
+        outputDir.mkdirs()
+        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+    }
+}
+
+dependencies {
+    compile project(':compiler')
+    compile gradleApi()
+    testImplementation gradleTestKit()
+    testRuntime files(createClasspathManifest)
 }

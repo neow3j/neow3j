@@ -7,7 +7,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.PolicyContract;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
@@ -43,13 +45,13 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void setAndGetMaxBlockSystemFee() throws Throwable {
-        int fee = 4007601;
+        BigInteger fee = new BigInteger("4007601");
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(fee));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
         assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(MAX_BLOCK_SYSTEM_FEE)));
-        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(fee)));
+        assertThat(res.get(1).asInteger().getValue(), is(fee));
     }
 
     @Test
@@ -147,9 +149,8 @@ public class PolicyContractTest extends ContractTest {
         public static int[] setAndGetMaxBlockSystemFee(int newFee) {
             int[] sizes = new int[2];
             sizes[0] = PolicyContract.getMaxBlockSystemFee();
-            if (PolicyContract.setMaxBlockSystemFee(newFee)) {
-                sizes[1] = PolicyContract.getMaxBlockSystemFee();
-            }
+            PolicyContract.setMaxBlockSystemFee(newFee);
+            sizes[1] = PolicyContract.getMaxBlockSystemFee();
             return sizes;
         }
 
@@ -169,19 +170,19 @@ public class PolicyContractTest extends ContractTest {
             return sizes;
         }
 
-        public static boolean blockAccount(byte[] scriptHash) {
+        public static boolean blockAccount(Hash160 scriptHash) {
             return PolicyContract.blockAccount(scriptHash);
         }
 
-        public static boolean isBlocked(byte[] scriptHash) {
+        public static boolean isBlocked(Hash160 scriptHash) {
             return PolicyContract.isBlocked(scriptHash);
         }
 
-        public static boolean unblockAccount(byte[] scriptHash) {
+        public static boolean unblockAccount(Hash160 scriptHash) {
             return PolicyContract.unblockAccount(scriptHash);
         }
 
-        public static byte[] getHash() {
+        public static Hash160 getHash() {
             return PolicyContract.getHash();
         }
 

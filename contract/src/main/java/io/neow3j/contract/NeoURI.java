@@ -1,5 +1,10 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.any;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.transaction.Signer.calledByEntry;
+
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
@@ -13,11 +18,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
-
-import static io.neow3j.contract.ContractParameter.any;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.transaction.Signer.calledByEntry;
 
 /**
  * Wrapper class to generate NEP-9 compatible URI schemes for NEP-17 Token transfers.
@@ -49,11 +49,13 @@ public class NeoURI {
     /**
      * Creates a NeoURI from a NEP-9 URI String.
      *
-     * @param uriString A NEP-9 URI String.
-     * @return A NeoURI object
+     * @param uriString a NEP-9 URI String.
+     * @return a NeoURI object
      * @throws IllegalFormatException if the provided URI has an invalid format.
      */
-    public static NeoURI fromURI(String uriString) throws IllegalFormatException {
+    public static NeoURI fromURI(String uriString)
+            throws IllegalFormatException {
+
         if (uriString == null) {
             throw new IllegalArgumentException("The provided String is null.");
         }
@@ -62,8 +64,9 @@ public class NeoURI {
         String[] beginTx = baseAndQuery[0].split(":");
 
         if (!beginTx[0].equals(NEO_SCHEME) || beginTx.length != 2 ||
-                uriString.length() < MIN_NEP9_URI_LENGTH) {
-            throw new IllegalArgumentException("The provided string does not conform to the NEP-9 standard.");
+            uriString.length() < MIN_NEP9_URI_LENGTH) {
+            throw new IllegalArgumentException(
+                    "The provided string does not conform to the NEP-9 standard.");
         }
         NeoURI neoURI = new NeoURI();
 
@@ -74,9 +77,13 @@ public class NeoURI {
         if (baseAndQuery.length == 2) {
             String[] query = baseAndQuery[1].split("&");
             for (String singleQuery : query) {
-                String[] singleQueryParts = singleQuery.split("=", 2);
-                if (singleQueryParts.length != 2) throw new IllegalArgumentException("This uri contains invalid queries.");
-                if (singleQueryParts[0].equals("asset") && neoURI.asset == null) {
+                String[] singleQueryParts = singleQuery
+                        .split("=", 2);
+                if (singleQueryParts.length != 2) {
+                    throw new IllegalArgumentException("This uri contains invalid queries.");
+                }
+                if (singleQueryParts[0].equals("asset") &&
+                    neoURI.asset == null) {
                     String assetID = singleQueryParts[1];
                     if (assetID.equals(NEO_ASSET)) {
                         neoURI.asset = NeoToken.SCRIPT_HASH;
@@ -85,7 +92,8 @@ public class NeoURI {
                     } else {
                         neoURI.asset = new ScriptHash(assetID);
                     }
-                } else if (singleQueryParts[0].equals("amount") && neoURI.amount == null) {
+                } else if (singleQueryParts[0].equals("amount") &&
+                           neoURI.amount == null) {
                     neoURI.amount = new BigDecimal(singleQueryParts[1]);
                 }
             }
@@ -94,13 +102,13 @@ public class NeoURI {
     }
 
     /**
-     * Creates a transaction script to transfer and initializes a {@link
-     * TransactionBuilder} based on this script which is ready to be
+     * Creates a transaction script to transfer and initializes a
+     * {@link TransactionBuilder} based on this script which is ready to be
      * signed and sent.
      * <p>
      * Uses only the wallet's default account.
      *
-     * @return A transaction builder.
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder buildTransfer() throws IOException {
@@ -148,8 +156,10 @@ public class NeoURI {
         return asset.equals(GasToken.SCRIPT_HASH);
     }
 
-    private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset) throws IOException {
-        int decimals = new Nep17Token(asset, neow3j).getDecimals();
+    private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset)
+            throws IOException {
+
+        int decimals = new FungibleToken(asset, neow3j).getDecimals();
         BigDecimal factor = BigDecimal.TEN.pow(decimals);
         return amount.multiply(factor).toBigInteger();
     }
@@ -303,14 +313,15 @@ public class NeoURI {
     }
 
     /**
-     * Builds a NEP-9 URI from the set variables and stores its
-     * value to its variable {@code uri} as a {@link URI}.
+     * Builds a NEP-9 URI from the set variables and stores its value to its variable {@code uri}
+     * as a {@link URI}.
      *
      * @return this NeoURI object.
      */
     public NeoURI buildURI() {
         if (toAddress == null) {
-            throw new IllegalStateException("Could not create a NEP-9 URI without a recipient address.");
+            throw new IllegalStateException(
+                    "Could not create a NEP-9 URI without a recipient address.");
         }
         String basePart = NEO_SCHEME + ":" + toAddress.toAddress();
         String queryPart = buildQueryPart();
@@ -411,4 +422,5 @@ public class NeoURI {
     public String getAmountAsString() {
         return amount.toString();
     }
+
 }

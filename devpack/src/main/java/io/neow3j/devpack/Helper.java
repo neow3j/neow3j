@@ -1,11 +1,8 @@
 package io.neow3j.devpack;
 
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.StackItem;
 
 /**
  * Provides helper methods to be used in a smart contract.
@@ -78,7 +75,6 @@ public class Helper {
     @Instruction(opcode = OpCode.NUMEQUAL)
     @Instruction(opcode = OpCode.ASSERT)
     public native static byte asByte(int value);
-
 
     /**
      * Asserts that the given value is in the range [0, 255], i.e., the range of an unsigned byte.

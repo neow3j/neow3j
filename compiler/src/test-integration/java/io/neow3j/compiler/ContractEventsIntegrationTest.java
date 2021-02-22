@@ -2,17 +2,15 @@ package io.neow3j.compiler;
 
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
-import io.neow3j.devpack.neo.Blockchain;
-import io.neow3j.devpack.neo.Runtime;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import java.util.List;
@@ -20,6 +18,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ContractEventsIntegrationTest extends ContractTest {
+
+    private static final int FEE_PER_BYTE = 1000;
+    private static final int EXEC_FEE_FACTOR = 30;
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -58,10 +59,10 @@ public class ContractEventsIntegrationTest extends ContractTest {
         List<NeoApplicationLog.Execution.Notification> notifications = executions.get(0).getNotifications();
         assertThat(notifications, hasSize(1));
 
-        assertThat(notifications.get(0).getEventName(), is("event1"));
+        assertThat(notifications.get(0).getEventName(), is("event4"));
         ArrayStackItem state = notifications.get(0).getState().asArray();
-        assertThat(state.get(0).asByteString().getAsString(), is("NEO"));
-        assertThat(state.get(1).asInteger().getValue().intValue(), greaterThanOrEqualTo(1));
+        assertThat(state.get(0).asInteger().getValue().intValue(), is(FEE_PER_BYTE));
+        assertThat(state.get(1).asInteger().getValue().intValue(), is(EXEC_FEE_FACTOR));
     }
 
     @Test
@@ -92,6 +93,8 @@ public class ContractEventsIntegrationTest extends ContractTest {
 
         private static Event3Args<byte[], byte[], int[]> event3;
 
+        private static Event2Args<Integer, Integer> event4;
+
         public static boolean fireTwoEvents() {
             event1.notify("event text", 10);
             event2.notify("event text", 10, true, "more text", "an object");
@@ -99,7 +102,7 @@ public class ContractEventsIntegrationTest extends ContractTest {
         }
 
         public static void fireEventWithMethodReturnValueAsArgument() {
-            event1.notify(Runtime.getPlatform(), (int)Blockchain.getHeight());
+            event4.notify(PolicyContract.getFeePerByte(), PolicyContract.getExecFeeFactor());
         }
 
         public static void fireEvent(byte[] from, byte[] to, int i) {

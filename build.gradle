@@ -1,7 +1,6 @@
 buildscript {
-    ext.bouncycastleVersion = '1.60'
+    ext.bouncycastleVersion = '1.65'
     ext.jacksonVersion = '2.9.7'
-    ext.jnr_unixsocketVersion = '0.15'
     ext.okhttpVersion = '3.8.1'
     ext.rxjavaVersion = '2.2.15'
     ext.slf4jVersion = '1.7.25'
@@ -55,7 +54,7 @@ allprojects { thisproject ->
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.6.1'
+    version '3.7.0'
     archivesBaseName = "${thisproject.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8

@@ -2,6 +2,7 @@ package io.neow3j.protocol;
 
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_WIF;
+import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_TOTAL_SUPPLY;
@@ -10,6 +11,7 @@ import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.getNodeUrl;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -21,6 +23,7 @@ import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -32,12 +35,12 @@ import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.BlockParameterIndex;
-import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.methods.response.ContractNef;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
@@ -56,6 +59,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers.Nep17TransferWrapper;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
@@ -64,12 +68,12 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.protocol.core.methods.response.NeoListAddress;
 import io.neow3j.protocol.core.methods.response.NeoListPlugins;
 import io.neow3j.protocol.core.methods.response.NeoNetworkFee;
@@ -79,12 +83,17 @@ import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Await;
+
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -94,17 +103,23 @@ import org.testcontainers.containers.GenericContainer;
 // every test. Therefore only tests that don't need a new and clean blockchain should be added here.
 public class Neow3jReadOnlyIntegrationTest {
 
-    private static final String NEO_TOKEN_HASH = "0x0a46e2e37c9987f570b4af253fb77e7eef0f72b6";
+    private static final String NEO_TOKEN_HASH = "0xf61eebf573ea36593fd43aa150c055ad7906ab83";
+    private static final String GAS_TOKEN_NAME = "GasToken";
+
 
     // Information about the transaction that is sent after starting the node.
-    private static String txHash;
-    private static final String TX_GAS_CONSUMED = "0.0999972";
+    private static String txHashNeoTransfer;
+    private static String txHashGasTransfer;
+    private static final String TX_GAS_CONSUMED = "9999540";
     private static final long TX_BLOCK_IDX = 2L;
     private static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     private static final int TX_VERSION = 0;
-    private static final String TX_SCRIPT =
-            "CwHECQwUbazId3tftsqZsILCa3hs63feRfAMFHr9IDJVyylyvQpqgn5044ftMivsFMAMCHRyYW5zZmVyDBS2cg/vfn63PyWvtHD1h5l84+JGCkFifVtSOA==";
-    private static final String TX_AMOUNT = "2500";
+    private static final String TX_SCRIPT_NEO_TRANSFER =
+            "CwHECQwUbazId3tftsqZsILCa3hs63feRfAMFHr9IDJVyylyvQpqgn5044ftMivsFMAfDAh0cmFuc2ZlcgwUg6sGea1VwFChOtQ/WTbqc/XrHvZBYn1bUjk=";
+    private static final String TX_SCRIPT_GAS_TRANSFER =
+            "CwMA6HZIFwAAAAwUbazId3tftsqZsILCa3hs63feRfAMFHr9IDJVyylyvQpqgn5044ftMivsFMAfDAh0cmFuc2ZlcgwUKLOtq3Jp+cIYHbPLdB6/VRkw4nBBYn1bUjk=";
+    private static final String TX_AMOUNT_NEO = "2500";
+    private static final String TX_AMOUNT_GAS = "1000";
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
     private static final String TX_RECIPIENT_1 = "NVuspqtyaV92cDo7SQdiYDCMvPUEZ3Ys3f";
     private static final int TX_LENGTH = 508;
@@ -119,14 +134,15 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_BALANCE = "balanceOf";
 
     protected static int BLOCK_HASH_LENGTH_WITH_PREFIX = 66;
-    protected static final String UNCLAIMED_GAS = "0.4999875";
+    protected static final String UNCLAIMED_GAS = "99997500";
 
     // The address that is imported to the wallet.
-    protected static final String IMPORT_ADDRESS_WIF = "L3ijcgFEaNvR5nYYHuMNLtCc8e5Qwerj9qe6VUHNkF74GkUZtiD8";
+    protected static final String IMPORT_ADDRESS_WIF =
+            "L3ijcgFEaNvR5nYYHuMNLtCc8e5Qwerj9qe6VUHNkF74GkUZtiD8";
     protected static final String IMPORT_ADDRESS = "NcVYTbDRzThKUFxEvjA4nPDn1nVpBK5CVH";
     // The address from which account 2 receives GAS when sending NEO to the recipient address.
     protected static final String TX_GAS_ADDRESS = "NKuyBkoGdZZSLyPbJEetheRhMjeznFZszf";
-    protected static final String TX_GAS_AMOUNT = "100000000";
+    protected static final String TX_GAS_AMOUNT_EXPECTED = "100000000";
 
     protected static long BLOCK_0_IDX = 0;
     protected static String BLOCK_0_HASH =
@@ -136,10 +152,13 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static String BLOCK_0_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVWHgUp8gG/opUbVeYsix9tm7/OLPI0Hiue25Q3blOFCI6hnvVQEAAAAAAAB6/SAyVcspcr0KaoJ+dOOH7TIr7AEAAREBAB2sK3wAAAAA";
 
+    // wif KxwrYazXiCdK33JEddpwHbXTpAYyhXC1YyC4SXTVF6GLRPBuVBFb
+    private static final String RECIPIENT = "NhixBNjEBvgyk18RzuXJt1T3BpqgAwANSA";
+
     protected static Neow3j neow3j;
 
     @ClassRule
-    public static GenericContainer privateNetContainer = setupPrivateNetContainer();
+    public static GenericContainer<?> privateNetContainer = setupPrivateNetContainer();
 
     private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
@@ -152,11 +171,20 @@ public class Neow3jReadOnlyIntegrationTest {
         Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(
                 "1", new ScriptHash(NEO_TOKEN_HASH), neow3j);
         // make a transaction that can be used for the tests
-        txHash = transferNeo(TX_RECIPIENT_1, TX_AMOUNT);
+        txHashNeoTransfer = transferNeo(TX_RECIPIENT_1, TX_AMOUNT_NEO);
+        txHashGasTransfer = transferGas(TX_RECIPIENT_1, TX_AMOUNT_GAS);
     }
 
     private static String transferNeo(String toAddress, String amount) throws IOException {
         NeoSendToAddress send = neow3j.sendToAddress(NEO_HASH, toAddress, amount).send();
+        String txHash = send.getSendToAddress().getHash();
+        // ensure that the transaction is sent
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        return txHash;
+    }
+
+    private static String transferGas(String toAddress, String amount) throws IOException {
+        NeoSendToAddress send = neow3j.sendToAddress(GAS_HASH, toAddress, amount).send();
         String txHash = send.getSendToAddress().getHash();
         // ensure that the transaction is sent
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
@@ -291,13 +319,20 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetContractState() throws IOException {
-        NeoGetContractState getContractState = getNeow3j().getContractState(NEO_HASH).send();
+        NeoGetContractState getContractState =
+                getNeow3j().getContractState(new ScriptHash(NEO_HASH)).send();
         NeoGetContractState.ContractState contractState = getContractState.getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-1));
+        assertThat(contractState.getId(), is(-3));
         assertThat(contractState.getHash(), is("0x" + NEO_HASH));
-        assertThat(contractState.getScript(), is("DAhOZW9Ub2tlbkEa93tn"));
+        ContractNef nef = contractState.getNef();
+        assertThat(nef, is(notNullValue()));
+        assertThat(nef.getMagic(), is(860243278L));
+        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getTokens(), is(empty()));
+        assertThat(nef.getScript(), is("AP1BGvd7Zw=="));
+        assertThat(nef.getChecksum(), is(3921333105L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -309,7 +344,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(abi.getMethods());
         assertThat(abi.getMethods(), hasSize(14));
-        ContractMethod method = abi.getMethods().get(4);
+        ContractMethod method = abi.getMethods().get(6);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getParamName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getParamType(),
@@ -341,6 +376,66 @@ public class Neow3jReadOnlyIntegrationTest {
     }
 
     @Test
+    public void testGetContractState_byName() throws IOException {
+        NeoGetContractState getContractState = getNeow3j().getContractState(GAS_TOKEN_NAME).send();
+        NeoGetContractState.ContractState contractState = getContractState.getContractState();
+
+        assertNotNull(contractState);
+        assertThat(contractState.getId(), is(-4));
+        assertThat(contractState.getHash(), is("0x" + GAS_HASH));
+        ContractNef nef = contractState.getNef();
+        assertNotNull(nef);
+        assertThat(nef.getMagic(), is(860243278L));
+        assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getTokens(), is(empty()));
+        assertThat(nef.getScript(), is("APxBGvd7Zw=="));
+        assertThat(nef.getChecksum(), is(3155977747L));
+
+        ContractManifest manifest = contractState.getManifest();
+        assertNotNull(manifest);
+        assertThat(manifest.getName(), is(GAS_TOKEN_NAME));
+
+        assertNotNull(manifest.getGroups());
+        assertThat(manifest.getGroups(), hasSize(0));
+
+        assertThat(manifest.getSupportedStandards(), hasSize(1));
+        assertThat(manifest.getSupportedStandards().get(0), is("NEP-17"));
+
+        ContractManifest.ContractABI abi = manifest.getAbi();
+        assertNotNull(abi);
+        assertNotNull(abi.getMethods());
+        assertThat(abi.getMethods(), hasSize(5));
+        ContractMethod method = abi.getMethods().get(0);
+        assertThat(method.getName(), is("balanceOf"));
+        assertThat(method.getParameters(), hasSize(1));
+        assertThat(method.getParameters().get(0).getParamName(), is("account"));
+        assertThat(method.getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
+        assertThat(method.getOffset(), is(0));
+        assertThat(method.getReturnType(), is(ContractParameterType.INTEGER));
+        assertTrue(method.isSafe());
+
+        assertNotNull(abi.getEvents());
+        assertThat(abi.getEvents(), hasSize(1));
+        ContractEvent event = abi.getEvents().get(0);
+        assertThat(event.getName(), is("Transfer"));
+        assertThat(event.getParameters(), hasSize(3));
+        assertThat(event.getParameters().get(2).getParamName(), is("amount"));
+        assertThat(event.getParameters().get(2).getParamType(), is(ContractParameterType.INTEGER));
+
+        assertNotNull(manifest.getPermissions());
+        assertThat(manifest.getPermissions(), hasSize(1));
+        ContractPermission permission = manifest.getPermissions().get(0);
+        assertThat(permission.getContract(), is("*"));
+        assertThat(permission.getMethods(), hasSize(1));
+        assertThat(permission.getMethods().get(0), is("*"));
+
+        assertNotNull(manifest.getTrusts());
+        assertThat(manifest.getTrusts(), hasSize(0));
+
+        assertNull(manifest.getExtra());
+    }
+
+    @Test
     public void testGetRawMemPool() throws IOException {
         NeoGetRawMemPool getRawMemPool = getNeow3j().getRawMemPool().send();
         List<String> addresses = getRawMemPool.getAddresses();
@@ -350,14 +445,14 @@ public class Neow3jReadOnlyIntegrationTest {
     }
 
     @Test
-    public void testGetTransaction() throws IOException {
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+    public void testGetTransaction_NeoToken() throws IOException {
+        Await.waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
 
-        NeoGetTransaction getTransaction = getNeow3j().getTransaction(txHash).send();
+        NeoGetTransaction getTransaction = getNeow3j().getTransaction(txHashNeoTransfer).send();
         Transaction transaction = getTransaction.getTransaction();
 
         assertNotNull(transaction);
-        assertThat(transaction.getHash(), is(txHash));
+        assertThat(transaction.getHash(), is(txHashNeoTransfer));
         assertThat(transaction.getVersion(), is(TX_VERSION));
         assertNotNull(transaction.getNonce());
         assertNotNull(transaction.getSender());
@@ -366,18 +461,46 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(transaction.getValidUntilBlock());
         assertNotNull(transaction.getAttributes());
         assertThat(transaction.getAttributes(), hasSize(0));
-        assertThat(transaction.getScript(), is(TX_SCRIPT));
+        assertThat(transaction.getScript(), is(TX_SCRIPT_NEO_TRANSFER));
         assertNotNull(transaction.getWitnesses());
         assertNotNull(transaction.getBlockHash());
         assertThat(transaction.getConfirmations(), greaterThanOrEqualTo(0));
         assertThat(transaction.getBlockTime(), greaterThanOrEqualTo(0L));
-        assertThat(transaction.getVMState(), is(VM_STATE_HALT));
+        // the VMState should be null to the Neo transfer
+        assertThat(transaction.getVMState(), is(nullValue()));
+    }
+
+    @Test
+    public void testGetTransaction_GasToken() throws IOException {
+        Await.waitUntilTransactionIsExecuted(txHashGasTransfer, neow3j);
+
+        NeoGetTransaction getTransaction = getNeow3j().getTransaction(txHashGasTransfer).send();
+        Transaction transaction = getTransaction.getTransaction();
+
+        assertNotNull(transaction);
+        assertThat(transaction.getHash(), is(txHashGasTransfer));
+        assertThat(transaction.getVersion(), is(TX_VERSION));
+        assertNotNull(transaction.getNonce());
+        assertNotNull(transaction.getSender());
+        assertNotNull(transaction.getSysFee());
+        assertNotNull(transaction.getNetFee());
+        assertNotNull(transaction.getValidUntilBlock());
+        assertNotNull(transaction.getAttributes());
+        assertThat(transaction.getAttributes(), hasSize(0));
+        assertThat(transaction.getScript(), is(TX_SCRIPT_GAS_TRANSFER));
+        assertNotNull(transaction.getWitnesses());
+        assertNotNull(transaction.getBlockHash());
+        assertThat(transaction.getConfirmations(), greaterThanOrEqualTo(0));
+        assertThat(transaction.getBlockTime(), greaterThanOrEqualTo(0L));
+        // the VMState should be null to the Gas transfer
+        assertThat(transaction.getVMState(), is(nullValue()));
     }
 
     @Test
     public void testGetRawTransaction() throws IOException {
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
-        NeoGetRawTransaction getRawTransaction = getNeow3j().getRawTransaction(txHash).send();
+        Await.waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
+        NeoGetRawTransaction getRawTransaction =
+                getNeow3j().getRawTransaction(txHashNeoTransfer).send();
         String rawTransaction = getRawTransaction.getRawTransaction();
         assertThat(rawTransaction.length(), is(TX_LENGTH));
     }
@@ -386,25 +509,15 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testGetStorage() throws IOException {
         NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH, NEXT_VALIDATORS_PREFIX).send();
         String storage = getStorage.getStorage();
-        assertThat(storage,
-                is("40014102282102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b602100"));
-    }
-
-    @Test
-    public void testGetStorage_with_HexParameter() throws IOException {
-        NeoGetStorage getStorage = getNeow3j().getStorage(NEO_HASH,
-                HexParameter.valueOf(new BigInteger(NEXT_VALIDATORS_PREFIX, 16)))
-                .send();
-        String storage = getStorage.getStorage();
-        assertThat(storage,
-                is("40014102282102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b602100"));
+        assertThat(storage, is("QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA="));
     }
 
     @Test
     public void testGetTransactionHeight() throws IOException {
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        Await.waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
 
-        NeoGetTransactionHeight getTransactionHeight = getNeow3j().getTransactionHeight(txHash)
+        NeoGetTransactionHeight getTransactionHeight = getNeow3j().getTransactionHeight(
+                txHashNeoTransfer)
                 .send();
         BigInteger height = getTransactionHeight.getHeight();
 
@@ -413,8 +526,10 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetNextBlockValidators() throws IOException {
-        NeoGetNextBlockValidators getNextBlockValidators = getNeow3j().getNextBlockValidators().send();
-        List<NeoGetNextBlockValidators.Validator> validators = getNextBlockValidators.getNextBlockValidators();
+        NeoGetNextBlockValidators getNextBlockValidators =
+                getNeow3j().getNextBlockValidators().send();
+        List<NeoGetNextBlockValidators.Validator> validators =
+                getNextBlockValidators.getNextBlockValidators();
 
         assertNotNull(validators);
         assertThat(validators, hasSize(greaterThanOrEqualTo(0)));
@@ -426,7 +541,8 @@ public class Neow3jReadOnlyIntegrationTest {
         List<String> committee = getCommittee.getCommittee();
 
         assertThat(committee, hasSize(1));
-        assertThat(committee.get(0), is("02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"));
+        assertThat(committee.get(0),
+                is("02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"));
     }
 
     // Node Methods
@@ -461,6 +577,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
         assertThat(versionResult.getTCPPort(), is(greaterThanOrEqualTo(0)));
         assertThat(versionResult.getWSPort(), is(greaterThanOrEqualTo(0)));
+        assertThat(versionResult.getMagic(), is(greaterThanOrEqualTo(0)));
     }
 
     // SmartContract Methods
@@ -474,7 +591,7 @@ public class Neow3jReadOnlyIntegrationTest {
     }
 
     @Test
-    public void testInvokeFunction() throws IOException {
+    public void testInvokeFunctionWithBalanceOf() throws IOException {
         List<ContractParameter> parameters = Collections.singletonList(
                 ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS)));
         ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS));
@@ -483,6 +600,32 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send();
 
         assertNotNull(invokeFunction.getInvocationResult());
+    }
+
+    @Test
+    public void testInvokeFunctionWithTransfer() throws IOException {
+        List<ContractParameter> params = Arrays.asList(
+                ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS)),
+                ContractParameter.hash160(ScriptHash.fromAddress(RECIPIENT)),
+                ContractParameter.integer(1),
+                ContractParameter.any(null));
+        Signer signer = new Signer.Builder()
+                .account(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS))
+                .scopes(WitnessScope.CALLED_BY_ENTRY)
+                .allowedContracts(new ScriptHash(NEO_HASH))
+                .build();
+        InvocationResult invoc = getNeow3j()
+                .invokeFunction(NEO_HASH, "transfer", params, signer)
+                .send()
+                .getInvocationResult();
+
+        assertNotNull(invoc);
+        assertNotNull(invoc.getScript());
+        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNull(invoc.getException());
+        assertNotNull(invoc.getStack());
+        assertNotNull(invoc.getTx());
     }
 
     @Test
@@ -502,7 +645,7 @@ public class Neow3jReadOnlyIntegrationTest {
         List<NeoListPlugins.Plugin> plugins = listPlugins.getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(7));
+        assertThat(plugins, hasSize(10));
     }
 
     @Test
@@ -593,7 +736,8 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testCalculateNetworkFee() throws IOException {
-        NeoCalculateNetworkFee calcNetworkFee = getNeow3j().calculateNetworkFee(CALC_NETWORK_FEE_TX).send();
+        NeoCalculateNetworkFee calcNetworkFee =
+                getNeow3j().calculateNetworkFee(CALC_NETWORK_FEE_TX).send();
         NeoNetworkFee networkFee = calcNetworkFee.getNetworkFee();
 
         assertThat(networkFee.getNetworkFee(), is(new BigInteger("1230610")));
@@ -621,7 +765,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
         assertThat(transfer.getAssetHash(), is("0x" + NEO_HASH));
         assertThat(transfer.getTransferAddress(), is(TX_RECIPIENT_1));
-        assertThat(transfer.getAmount(), is(TX_AMOUNT));
+        assertThat(transfer.getAmount(), is(TX_AMOUNT_NEO));
         assertThat(transfer.getBlockIndex(), is(TX_BLOCK_IDX));
         assertThat(transfer.getTransferNotifyIndex(), is(1L));
 
@@ -631,7 +775,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
         assertThat(transfer.getAssetHash(), is("0x" + GAS_HASH));
         assertNull(transfer.getTransferAddress());
-        assertThat(transfer.getAmount(), is(TX_GAS_AMOUNT));
+        assertThat(transfer.getAmount(), is(TX_GAS_AMOUNT_EXPECTED));
         assertThat(transfer.getBlockIndex(), is(TX_BLOCK_IDX));
         assertThat(transfer.getTransferNotifyIndex(), is(0L));
         assertThat(transfer.getTxHash().length(), is(TX_HASH_LENGTH_WITH_PREFIX));
@@ -679,11 +823,11 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(balances.getAddress(), is(ACCOUNT_1_ADDRESS));
         assertNotNull(balances.getBalances());
         assertThat(balances.getBalances(), hasSize(2));
-        assertThat(balances.getBalances().get(0).getAssetHash(), is("0x" + NEO_HASH));
+        assertThat(balances.getBalances().get(0).getAssetHash(), is("0x" + GAS_HASH));
         assertNotNull(balances.getBalances().get(0).getAmount());
         assertThat(balances.getBalances().get(0).getLastUpdatedBlock(),
                 is(greaterThanOrEqualTo(new BigInteger("0"))));
-        assertThat(balances.getBalances().get(1).getAssetHash(), is("0x" + GAS_HASH));
+        assertThat(balances.getBalances().get(1).getAssetHash(), is("0x" + NEO_HASH));
         assertNotNull(balances.getBalances().get(1).getAmount());
         assertNotNull(balances.getBalances().get(1).getLastUpdatedBlock());
     }
@@ -692,13 +836,14 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetApplicationLog() throws IOException {
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        Await.waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
 
-        NeoGetApplicationLog getApplicationLog = getNeow3j().getApplicationLog(txHash).send();
+        NeoGetApplicationLog getApplicationLog =
+                getNeow3j().getApplicationLog(txHashNeoTransfer).send();
         NeoApplicationLog applicationLog = getApplicationLog.getApplicationLog();
 
         assertNotNull(applicationLog);
-        assertThat(applicationLog.getTransactionId(), is(txHash));
+        assertThat(applicationLog.getTransactionId(), is(txHashNeoTransfer));
         assertThat(applicationLog.getExecutions(), hasSize(1));
 
         NeoApplicationLog.Execution execution = applicationLog.getExecutions().get(0);
@@ -726,6 +871,24 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(state.asArray().getValue().get(2).getType(), is(StackItemType.INTEGER));
         assertThat(state.asArray().getValue().get(2).asInteger().getValue(),
                 is(new BigInteger("100000000")));
+    }
+
+    @Test
+    public void testInvokeScript() throws IOException {
+        // Script that transfers 100 NEO from NX8GreRFGFK5wpGMWetpX93HmtrezGogzk to
+        // NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj.
+        String script = "CwBkDBSTrRVypLNcS5JUg84XAbeHQtxGDwwUev0gMlXLKXK9CmqCfnTjh+0yK+wUwB8MCHRyYW5zZmVyDBSDqwZ5rVXAUKE61D9ZNupz9ese9kFifVtSOQ==";
+        Signer signer = Signer.calledByEntry(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS));
+        NeoInvokeScript invokeScript = getNeow3j().invokeScript(script, signer).send();
+        InvocationResult invoc = invokeScript.getInvocationResult();
+
+        assertNotNull(invoc);
+        assertThat(invoc.getScript(), is(script));
+        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNull(invoc.getException());
+        assertNotNull(invoc.getStack());
+        assertNotNull(invoc.getTx());
     }
 
 }

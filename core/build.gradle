@@ -1,21 +1,18 @@
 description 'neow3j: Java/Kotlin/Android Development Toolkit for the Neo Blockchain'
 
 dependencies {
-    compile project(':model'),
-            project(':crypto'),
-            project(':utils'),
-            "com.github.jnr:jnr-unixsocket:$jnr_unixsocketVersion",
-            "com.squareup.okhttp3:okhttp:$okhttpVersion",
+    compile "com.squareup.okhttp3:okhttp:$okhttpVersion",
             "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
             "io.reactivex.rxjava2:rxjava:$rxjavaVersion",
             "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "org.slf4j:slf4j-api:$slf4jVersion",
-            "org.awaitility:awaitility:$awaitility"
+            "org.awaitility:awaitility:$awaitility",
+            "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
     testCompile "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
             "ch.qos.logback:logback-classic:$logbackVersion",
-            "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
-    integrationTestCompile "org.awaitility:awaitility:$awaitility"
+            "org.jetbrains:annotations:$jetbrainsAnnotationsVersion",
+            "com.github.tomakehurst:wiremock-jre8:$wiremockVersion"
 }
 
 configurations {

@@ -1,0 +1,30 @@
+{
+  "groups": [],
+  "abi": {
+    "methods": [
+      {
+        "name": "main",
+        "offset": "0",
+        "safe": false,
+        "parameters": [
+          {
+            "name": "i",
+            "type": "Integer"
+          }
+        ],
+        "returntype": "Integer"
+      }
+    ],
+    "events": []
+  },
+  "permissions": [
+    {
+      "contract": "*",
+      "methods": "*"
+    }
+  ],
+  "trusts": [],
+  "name": "TestContract",
+  "supportedstandards": [],
+  "extra": null
+}

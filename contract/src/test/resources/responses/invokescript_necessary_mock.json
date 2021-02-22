@@ -1,0 +1,16 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "AQID",
+    "state": "HALT",
+    "gasconsumed": "30",
+    "exception": null,
+    "stack": [
+      {
+        "type": "Integer",
+        "value": "770"
+      }
+    ]
+  }
+}

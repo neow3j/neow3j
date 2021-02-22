@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
@@ -51,7 +52,7 @@ import java.util.List;
  */
 public interface Neo {
 
-    // Blockchain Methods
+    //region Blockchain Methods
 
     Request<?, NeoBlockHash> getBestBlockHash();
 
@@ -76,7 +77,9 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex);
 
-    Request<?, NeoGetContractState> getContractState(String scriptHash);
+    Request<?, NeoGetContractState> getContractState(ScriptHash scriptHash);
+
+    Request<?, NeoGetContractState> getContractState(String contractName);
 
     Request<?, NeoGetMemPool> getMemPool();
 
@@ -86,9 +89,7 @@ public interface Neo {
 
     Request<?, NeoGetRawTransaction> getRawTransaction(String txId);
 
-    Request<?, NeoGetStorage> getStorage(String contractAddress, HexParameter keyToLookUp);
-
-    Request<?, NeoGetStorage> getStorage(String contractAddress, String keyToLookUpAsHexString);
+    Request<?, NeoGetStorage> getStorage(String contractAddress, String keyHexString);
 
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 
@@ -96,7 +97,9 @@ public interface Neo {
 
     Request<?, NeoGetCommittee> getCommittee();
 
-    // Node Methods
+    //endregion
+
+    //region Node Methods
 
     Request<?, NeoConnectionCount> getConnectionCount();
 
@@ -108,7 +111,9 @@ public interface Neo {
 
     Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex);
 
-    // SmartContract Methods
+    //endregion
+
+    //region SmartContract Methods
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
             Signer... signers);
@@ -123,13 +128,17 @@ public interface Neo {
 
     Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address);
 
-    // Utilities Methods
+    //endregion
+
+    //region Utilities Methods
 
     Request<?, NeoListPlugins> listPlugins();
 
     Request<?, NeoValidateAddress> validateAddress(String address);
 
-    // Wallet Methods
+    //endregion
+
+    //region Wallet Methods
 
     Request<?, NeoCloseWallet> closeWallet();
 
@@ -162,7 +171,9 @@ public interface Neo {
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
 
-    // RpcNep17Tracker
+    //endregion
+
+    //region RpcNep17Tracker
 
     Request<?, NeoGetNep17Transfers> getNep17Transfers(String address);
 
@@ -172,8 +183,12 @@ public interface Neo {
 
     Request<?, NeoGetNep17Balances> getNep17Balances(String address);
 
-    // ApplicationLogs
+    //endregion
+
+    //region ApplicationLogs
 
     Request<?, NeoGetApplicationLog> getApplicationLog(String txId);
+
+    //endregion
 
 }

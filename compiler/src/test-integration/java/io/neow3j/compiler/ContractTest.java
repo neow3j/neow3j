@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -9,27 +10,22 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.GasToken;
-import io.neow3j.contract.ManagementContract;
+import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
-import io.neow3j.model.NeoConfig;
+import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.HexParameter;
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
-import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.Transaction;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -37,13 +33,7 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -55,13 +45,30 @@ import org.testcontainers.utility.MountableFile;
 
 public class ContractTest {
 
-    // Exposed port of the neo node running in the docker container.
-    protected static int EXPOSED_JSONRPC_PORT = 40332;
-    protected static final String NEO3_PRIVATENET_CONTAINER_IMG =
-            "ghcr.io/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:latest";
+    static final String NEO3_PRIVATENET_CONTAINER_IMG =
+            "ghcr.io/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:master-latest";
 
-    protected static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    protected static final ScriptHash GAS_SCRIPT_HASH = GasToken.SCRIPT_HASH;
+    static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
+    static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
+    static final String PROTOCOL_FILE_SOURCE = "/node-config/protocol.json";
+    static final String PROTOCOL_FILE_DESTINATION = "/neo-cli/protocol.json";
+    static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
+    static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
+    static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
+    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
+    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
+    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
+    static final String ORACLECONFIG_FILE_SOURCE = "/node-config/oracle.config.json";
+    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
+            + ".json";
+
+    // This is the port of one of the .NET nodes which is exposed internally by the container.
+    static final int EXPOSED_JSONRPC_PORT = 40332;
+    // Wallet password for the node's wallnet at node-config/wallet.json.
+    static final String NODE_WALLET_PASSWORD = "neo";
+    // The path to the wallet from the directory of the node process.
+    static final String NODE_WALLET_PATH = "wallet.json";
+
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String VM_STATE_FAULT = "FAULT";
     protected static final String DEFAULT_ACCOUNT_ADDRES = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
@@ -71,15 +78,19 @@ public class ContractTest {
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
             DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
-            .withClasspathResourceMapping("/node-config/config.json",
-                    "/neo-cli/config.json", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("/node-config/protocol.json",
-                    "/neo-cli/protocol.json", BindMode.READ_ONLY)
+            .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(PROTOCOL_FILE_SOURCE, PROTOCOL_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
             .withCopyFileToContainer(
-                    MountableFile.forClasspathResource("/node-config/wallet.json", 777),
-                    "/neo-cli/wallet.json")
-            .withClasspathResourceMapping("/node-config/rpcserver.config.json",
-                    "/neo-cli/Plugins/RpcServer/config.json", BindMode.READ_ONLY)
+                    MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
+                    WALLET_FILE_DESTINATION)
+            .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
+            .withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY)
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());
 
@@ -103,12 +114,12 @@ public class ContractTest {
     }
 
     protected static void setUp(String name) throws Throwable {
-        NeoConfig.setMagicNumber(new byte[]{0x01, 0x03, 0x00, 0x0}); // Magic number 769
         defaultAccount = Account.fromWIF(DEFAULT_ACCOUNT_WIF);
         committee = Account.createMultiSigAccount(
                 Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
+        neow3j.setNetworkMagicNumber(769);
         contractName = name;
         contract = deployContract(contractName);
         Await.waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
@@ -125,7 +136,7 @@ public class ContractTest {
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        NeoSendRawTransaction response = new ManagementContract(neow3j)
+        NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
@@ -198,10 +209,8 @@ public class ContractTest {
      */
     protected void assertStorageContains(String key, String expectedValue) throws IOException {
         NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(),
-                HexParameter.valueOf(key)).send();
-        String value = new String(
-                Numeric.hexStringToByteArray(response.getStorage()),
-                StandardCharsets.UTF_8);
+                        Numeric.toHexStringNoPrefix(key.getBytes(UTF_8))).send();
+        String value = new String(Base64.decode(response.getStorage()), UTF_8);
 
         assertThat(value, is(expectedValue));
     }
@@ -272,13 +281,16 @@ public class ContractTest {
         } else {
             signer = Signer.global(defaultAccount.getScriptHash());
         }
-        return contract.invokeFunction(function, params)
+        NeoSendRawTransaction response = contract.invokeFunction(function, params)
                 .wallet(wallet)
                 .signers(signer)
                 .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+                .send();
+
+        if (response.hasError()) {
+            throw new RuntimeException(response.getError().getMessage());
+        }
+        return response.getSendRawTransaction().getHash();
     }
 
     /**
@@ -316,8 +328,9 @@ public class ContractTest {
     }
 
     protected void assertVMExitedWithHalt(String hash) throws IOException {
-        NeoGetTransaction response = neow3j.getTransaction(hash).send();
-        assertThat(response.getTransaction().getVMState(), is(VM_STATE_HALT));
+        NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
+        assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
+                is(VM_STATE_HALT));
     }
 
     protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)

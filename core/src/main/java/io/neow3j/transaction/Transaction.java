@@ -9,11 +9,10 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.NeoConfig;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.BlockParameterIndex;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.utils.ArrayUtils;
@@ -152,7 +151,14 @@ public class Transaction extends NeoSerializable {
         this.witnesses.add(witness);
     }
 
-    public String getTxId() {
+    /**
+     * Gets this transactions uniquely identifying ID/hash.
+     *
+     * @return the transaction ID.
+     * @throws IOException if the network magic number cannot be fetched from the connected
+     *                     neo-node. The magic number is needed to calculate the transaction hash.
+     */
+    public String getTxId() throws IOException {
         byte[] hash = hash256(getHashData());
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
@@ -199,8 +205,14 @@ public class Transaction extends NeoSerializable {
 
         Predicate<NeoGetBlock> pred = neoGetBlock ->
                 neoGetBlock.getBlock().getTransactions() != null &&
-                        neoGetBlock.getBlock().getTransactions().stream().anyMatch(transaction ->
-                                Numeric.cleanHexPrefix(transaction.getHash()).equals(getTxId()));
+                        neoGetBlock.getBlock().getTransactions().stream().anyMatch(transaction -> {
+                            try {
+                                return Numeric.cleanHexPrefix(transaction.getHash())
+                                        .equals(getTxId());
+                            } catch (IOException e) {
+                               throw new RuntimeException(e);
+                            }
+                        });
 
         return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 new BlockParameterIndex(blockIndexWhenSent), true)
@@ -212,8 +224,8 @@ public class Transaction extends NeoSerializable {
     /**
      * Gets the application log of this transaction.
      * <p>
-     * The application log is not cached locally. Every time this method is called, requests are send to the
-     * neo-node.
+     * The application log is not cached locally. Every time this method is called, requests are
+     * send to the neo-node.
      * <p>
      * If the application log could not be fetched, {@code null} is returned.
      *
@@ -313,12 +325,15 @@ public class Transaction extends NeoSerializable {
      * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for
      * producing the transaction ID or a transaction signature.
      * <p>
-     * The returned value depends on the configuration of {@link NeoConfig#magicNumber()}.
+     * The returned value depends on the magic number of the used Neo network, which is retrieved
+     * from the neo-node via the {@code getversion} RPC method.
      *
      * @return the transaction data ready for hashing.
+     * @throws IOException if something goes wrong when asking the neo-node for the networks magic
+     *                     number.
      */
-    public byte[] getHashData() {
-        return ArrayUtils.concatenate(NeoConfig.magicNumber(), toArrayWithoutWitnesses());
+    public byte[] getHashData() throws IOException {
+        return ArrayUtils.concatenate(neow.getNetworkMagicNumber(), toArrayWithoutWitnesses());
     }
 
     /**

@@ -3,15 +3,20 @@ package io.neow3j.compiler;
 import static java.lang.String.format;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.NefFile.MethodToken;
+import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
 public class NeoModule {
 
@@ -27,13 +32,9 @@ public class NeoModule {
     // in the smart contract class.
     private final Map<String, NeoEvent> events = new HashMap<>();
 
-    // Determines if this module has a verify method or not. If a method is added that bears the
-    // {@link OnVerification} annotation, then this field is set to true.
-    private boolean hasVerifyMethod = false;
-
-    // Determines if this module has a _deploy method or not. If a method is added that bears the
-    // {@link OnDeployment} annotation, then this field is set to true.
-    private boolean hasDeployMethod = false;
+    // An ordered list of static method calls that are referenced by their index in this list. Used
+    // in CALLT instructions.
+    private List<MethodToken> methodTokens = new ArrayList<>();
 
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
@@ -48,30 +49,49 @@ public class NeoModule {
         return sortedMethods;
     }
 
+    /**
+     * Gets the index of the given method token in the list of tokens.
+     * <p>
+     * The index is also the ID to be used in combination with the CALLT opcode.
+     *
+     * @param token The token to search for.
+     * @return the index of the token or -1 if it doesn't exist.
+     */
+    public int getIndexOfMethodToken(MethodToken token) {
+        int idx = 0;
+        for (MethodToken t : methodTokens) {
+            if (token.equals(t)) {
+                return idx;
+            }
+            idx++;
+        }
+        return -1;
+    }
+
+    /**
+     * Adds the given method token to this module's tokens and returns the tokens ID. If the token
+     * is already present, it's current ID is returned.
+     *
+     * @param token The method token to add.
+     * @return the ID of the added method token.
+     */
+    public int addMethodToken(MethodToken token) {
+        int idx = getIndexOfMethodToken(token);
+        if (idx != -1) {
+            return idx;
+        }
+        methodTokens.add(token);
+        return methodTokens.size() - 1;
+    }
+
+    public List<MethodToken> getMethodTokens() {
+        return methodTokens;
+    }
+
     public void addMethod(NeoMethod method) {
         if (method != null) {
             methods.put(method.getId(), method);
             sortedMethods.add(method);
-
-            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnVerification.class)) {
-                if (hasVerifyMethod) {
-                    throw new CompilerException(method.getOwnerClass(), format("More than one "
-                            + "method is marked with the '%s' annotation. There can only be "
-                            + "one '%s' method", OnVerification.class.getSimpleName(),
-                            Compiler.VERIFY_METHOD_NAME));
-                }
-                hasVerifyMethod = true;
-            }
-
-            if (AsmHelper.hasAnnotations(method.getAsmMethod(), OnDeployment.class)) {
-                if (hasDeployMethod) {
-                    throw new CompilerException(method.getOwnerClass(), format("More than one "
-                                    + "method is marked with the '%s' annotation. There can only be "
-                                    + "one '%s' method", OnDeployment.class.getSimpleName(),
-                            Compiler.DEPLOY_METHOD_NAME));
-                }
-                hasDeployMethod = true;
-            }
         }
     }
 
@@ -90,6 +110,7 @@ public class NeoModule {
     }
 
     void finalizeModule() {
+        checkForDuplicatesOfMethodSignatureAnnotations();
         int startAddress = 0;
         for (NeoMethod method : this.sortedMethods) {
             method.finalizeMethod();
@@ -119,6 +140,20 @@ public class NeoModule {
                 }
             }
         }
+    }
+
+    private void checkForDuplicatesOfMethodSignatureAnnotations() {
+        Set<MethodSignature> methodSigs = new HashSet<>();
+        sortedMethods.stream().map(NeoMethod::getMethodSignatureAnnotation)
+                .filter(Objects::nonNull)
+                .forEach(sig -> {
+                    if (methodSigs.contains(sig)) {
+                        throw new CompilerException(format("There are multiple methods that are "
+                                + "annotated as candidates for the '%s' method but only one is "
+                                + "allowed.", sig.name()));
+                    }
+                    methodSigs.add(sig);
+                });
     }
 
     int byteSize() {

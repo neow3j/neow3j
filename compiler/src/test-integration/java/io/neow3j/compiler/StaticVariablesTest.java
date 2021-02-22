@@ -3,9 +3,9 @@ package io.neow3j.compiler;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.neo.Runtime;
-import io.neow3j.devpack.neo.Storage;
-import io.neow3j.devpack.neo.StorageMap;
+import io.neow3j.devpack.Runtime;
+import io.neow3j.devpack.Storage;
+import io.neow3j.devpack.StorageMap;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import org.hamcrest.core.StringEndsWith;

@@ -1,7 +1,8 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.devpack.neo.Runtime;
+import io.neow3j.devpack.Runtime;
 import java.io.IOException;
 import java.util.Arrays;
 import org.hamcrest.core.StringContains;
@@ -48,10 +49,10 @@ public class StringLiteralHelperTest {
 
     static class InvalidAddressVariable {
 
-        private static final byte[] scriptHash = StringLiteralHelper.addressToScriptHash(
+        private static final Hash160 scriptHash = StringLiteralHelper.addressToScriptHash(
                 "A0unErzotcQTNWP2qktA7LgkXZVdHea97H");
 
-        public static byte[] main() {
+        public static Hash160 main() {
             return scriptHash;
         }
     }
@@ -67,7 +68,8 @@ public class StringLiteralHelperTest {
 
     static class InvalidIntStringVariable {
 
-        private static final int integer = StringLiteralHelper.stringToInt("100e0000000000000000000000000000");
+        private static final int integer = StringLiteralHelper.stringToInt(
+                "100e0000000000000000000000000000");
 
         public static int main() {
             return integer;

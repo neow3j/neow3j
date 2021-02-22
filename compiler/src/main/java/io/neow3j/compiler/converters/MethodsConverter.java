@@ -5,39 +5,42 @@ import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addLoadConstant;
-import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
+import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
-import static io.neow3j.constants.OpCode.getOperandSize;
+import static io.neow3j.constants.OpCode.CALLT;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
 
+import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoJumpInstruction;
 import io.neow3j.compiler.NeoMethod;
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.contract.NefFile.MethodToken;
+import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
+import io.neow3j.model.types.CallFlags;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -131,7 +134,7 @@ public class MethodsConverter implements Converter {
         } else if (hasInstructionAnnotation(calledAsmMethod.get())) {
             addInstructionsFromAnnotation(calledAsmMethod.get(), callingNeoMethod);
         } else if (isContractCall(topLevelOwnerClass)) {
-            addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass);
+            addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass, compUnit);
         } else if (isSrtingLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
         } else {
@@ -179,7 +182,7 @@ public class MethodsConverter implements Converter {
         }
         NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
         compUnit.getNeoModule().addMethod(calledNeoMethod);
-        calledNeoMethod.initializeLocalVariablesAndParameters(compUnit);
+        calledNeoMethod.initialize(compUnit);
         calledNeoMethod.convert(compUnit);
         addReverseArguments(calledAsmMethod, callingNeoMethod);
         // The actual address offset for the method call is set at a later point in compilation.
@@ -228,39 +231,32 @@ public class MethodsConverter implements Converter {
             throw new CompilerException(callingNeoMethod, "Static field converter "
                     + "methods can only be applied to constant string literals.");
         }
-        int pushDataPrefixSize = getOperandSize(lastNeoInsn.getOpcode()).prefixSize();
-        String stringLiteral = new String(ArrayUtils.getLastNBytes(lastNeoInsn.getOperand(),
-                lastNeoInsn.getOperand().length - pushDataPrefixSize), UTF_8);
-        byte[] newInsnBytes = null;
-
+        String stringLiteral = new String(lastNeoInsn.getOperand(), UTF_8);
+//        byte[] newInsnBytes = null;
+        NeoInstruction newInsn = null;
         if (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)) {
             if (!AddressUtils.isValidAddress(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid address "
                         + "'%s' used in static field initialization.", stringLiteral));
             }
             byte[] scriptHash = AddressUtils.addressToScriptHash(stringLiteral);
-            newInsnBytes = new ScriptBuilder().pushData(scriptHash).toArray();
-
+            newInsn = buildPushDataInsn(scriptHash);
         } else if (methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)) {
             if (!Numeric.isValidHexString(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid hex string ('%s') "
                         + "used in static field initialization.", stringLiteral));
             }
             byte[] bytes = Numeric.hexStringToByteArray(stringLiteral);
-            newInsnBytes = new ScriptBuilder().pushData(bytes).toArray();
-
+            newInsn = buildPushDataInsn(bytes);
         } else if (methodNode.name.equals(STRING_TO_INT_METHOD_NAME)) {
             try {
-                newInsnBytes = new ScriptBuilder().pushInteger(new BigInteger(stringLiteral))
-                        .toArray();
+                newInsn = buildPushNumberInstruction(new BigInteger(stringLiteral));
             } catch (NumberFormatException e) {
                 throw new CompilerException(callingNeoMethod, format("Invalid number string ('%s') "
                         + "used in static field initialization.", stringLiteral));
             }
         }
-        byte[] newOperand = Arrays.copyOfRange(newInsnBytes, 1, newInsnBytes.length);
-        callingNeoMethod.replaceLastInstruction(
-                new NeoInstruction(OpCode.get(newInsnBytes[0]), newOperand));
+        callingNeoMethod.replaceLastInstruction(newInsn);
     }
 
     public static boolean hasSyscallAnnotation(MethodNode asmMethod) {
@@ -271,8 +267,7 @@ public class MethodsConverter implements Converter {
      * Checks if the given class node carries the {@link ContractHash} annotation.
      */
     private static boolean isContractCall(ClassNode owner) {
-        return owner.invisibleAnnotations != null && owner.invisibleAnnotations.stream().
-                anyMatch(a -> a.desc.equals(Type.getDescriptor(ContractHash.class)));
+        return hasAnnotations(owner, ContractHash.class);
     }
 
     private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
@@ -343,39 +338,35 @@ public class MethodsConverter implements Converter {
     }
 
     private static void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
-            ClassNode owner) {
+            ClassNode owner, CompilationUnit compUnit) {
 
-        AnnotationNode annotation = owner.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(ContractHash.class))).findFirst().get();
-        byte[] scriptHash = Numeric.hexStringToByteArray((String) annotation.values.get(1));
-        if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
-            throw new CompilerException(owner, format("Script hash '%s' of the @%s annotation on "
-                            + "class %s does not have the length of a correct script hash.",
-                    Numeric.toHexStringNoPrefix(scriptHash),
-                    ContractHash.class.getSimpleName(), getClassNameForInternalName(owner.name)));
+        AnnotationNode annotation = AsmHelper.getAnnotationNode(owner, ContractHash.class).get();
+        ScriptHash scriptHash;
+        try {
+            scriptHash = new ScriptHash((String) annotation.values.get(1));
+        } catch(IllegalArgumentException e) {
+            throw new CompilerException(owner, format("Script hash '%s' of the contract "
+                            + "class '%s' does not have the length of a correct script hash.",
+                    annotation.values.get(1), getClassNameForInternalName(owner.name)));
         }
 
         // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
         if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
-            callingNeoMethod.addInstruction(buildPushDataInsn(scriptHash));
+            callingNeoMethod.addInstruction(
+                    buildPushDataInsn(ArrayUtils.reverseArray(scriptHash.toArray())));
             return;
         }
 
         int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;
+        boolean hasReturnValue = !Type.getMethodType(calledAsmMethod.desc)
+                .getReturnType().getClassName().equals(void.class.getTypeName());
+        MethodToken token = new MethodToken(scriptHash, calledAsmMethod.name, nrOfParams,
+                hasReturnValue, CallFlags.ALL);
+        int idx = compUnit.getNeoModule().addMethodToken(token);
+        byte[] idxBytes = ArrayUtils.getFirstNBytes(ByteBuffer.allocate(4).order(
+                ByteOrder.LITTLE_ENDIAN).putInt(idx).array(), 2);
         addReverseArguments(callingNeoMethod, nrOfParams);
-        addPushNumber(nrOfParams, callingNeoMethod);
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
-        callingNeoMethod.addInstruction(buildPushDataInsn(calledAsmMethod.name));
-        callingNeoMethod.addInstruction(buildPushDataInsn(ArrayUtils.reverseArray(scriptHash)));
-        byte[] contractSyscall = Numeric.hexStringToByteArray(SYSTEM_CONTRACT_CALL.getHash());
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, contractSyscall));
-
-        // If the return type is void, insert a DROP.
-        String returnType = Type.getMethodType(calledAsmMethod.desc).getReturnType().getClassName();
-        if (returnType.equals(void.class.getTypeName())
-                || returnType.equals(Void.class.getTypeName())) {
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
-        }
+        callingNeoMethod.addInstruction(new NeoInstruction(CALLT, idxBytes));
     }
 
     private static AbstractInsnNode skipToInstructionType(AbstractInsnNode insn, int type,

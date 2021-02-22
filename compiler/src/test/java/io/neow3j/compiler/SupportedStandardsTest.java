@@ -5,8 +5,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.SupportedStandards;
-import io.neow3j.devpack.neo.Account;
+import io.neow3j.devpack.Account;
 import java.io.IOException;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ public class SupportedStandardsTest {
     @SupportedStandards({"NEP17", "NEP10"})
     static class MultiStandardContract {
 
-        public static boolean main(byte[] scriptHash) {
+        public static boolean main(Hash160 scriptHash) {
             return Account.isStandard(scriptHash);
         }
     }
@@ -38,7 +39,7 @@ public class SupportedStandardsTest {
     @SupportedStandards("NEP17")
     static class SingleStandardContract {
 
-        public static boolean main(byte[] scriptHash) {
+        public static boolean main(Hash160 scriptHash) {
             return Account.isStandard(scriptHash);
         }
     }

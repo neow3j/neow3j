@@ -1,9 +1,12 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
+import static io.neow3j.model.types.StackItemType.BOOLEAN;
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.model.types.StackItemType.INTEGER;
+import static java.util.Arrays.asList;
+
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
@@ -11,10 +14,10 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,8 +32,8 @@ public class SmartContract {
      * Constructs a {@code SmartContract} representing the smart contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
-     * @param scriptHash The smart contract's script hash.
-     * @param neow       The {@link Neow3j} instance to use for invocations.
+     * @param scriptHash the smart contract's script hash.
+     * @param neow       the {@link Neow3j} instance to use for invocations.
      */
     public SmartContract(ScriptHash scriptHash, Neow3j neow) {
         if (scriptHash == null) {
@@ -44,12 +47,12 @@ public class SmartContract {
     }
 
     /**
-     * Initializes a {@link TransactionBuilder} for an invocation of this contract with the provided
-     * function and parameters. The order of the parameters is relevant.
+     * Initializes a {@link TransactionBuilder} for an invocation of this contract with the
+     * provided function and parameters. The order of the parameters is relevant.
      *
-     * @param function           The function to invoke.
-     * @param contractParameters The parameters to pass with the invocation.
-     * @return An {@link TransactionBuilder} allowing to set further details of the invocation.
+     * @param function           the function to invoke.
+     * @param contractParameters the parameters to pass with the invocation.
+     * @return a {@link TransactionBuilder} allowing to set further details of the invocation.
      */
     public TransactionBuilder invokeFunction(String function,
             ContractParameter... contractParameters) {
@@ -58,17 +61,17 @@ public class SmartContract {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        ScriptBuilder b = new ScriptBuilder()
-                .contractCall(scriptHash, function, Arrays.asList(contractParameters));
+        ScriptBuilder b = new ScriptBuilder().contractCall(scriptHash, function,
+                asList(contractParameters));
         return new TransactionBuilder(neow).script(b.toArray());
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting a String as
-     * return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a String
+     * as return type.
      *
-     * @param function The function to call.
-     * @param params   The contract parameters to include in the call.
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
      * @return the string returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -78,20 +81,20 @@ public class SmartContract {
     public String callFuncReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
 
-        StackItem item = callInvokeFunction(function, Arrays.asList(params))
+        StackItem item = callInvokeFunction(function, asList(params))
                 .getInvocationResult().getStack().get(0);
-        if (item.getType().equals(StackItemType.BYTE_STRING)) {
+        if (item.getType().equals(BYTE_STRING)) {
             return item.asByteString().getAsString();
         }
-        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BYTE_STRING);
+        throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting an Integer
-     * as return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an
+     * Integer as return type.
      *
-     * @param function The function to call.
-     * @param params   The contract parameters to include in the call.
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
      * @return the integer returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
@@ -105,22 +108,22 @@ public class SmartContract {
         if (params.length == 0) {
             item = callInvokeFunction(function).getInvocationResult().getStack().get(0);
         } else {
-            item = callInvokeFunction(function, Arrays.asList(params))
+            item = callInvokeFunction(function, asList(params))
                     .getInvocationResult().getStack().get(0);
         }
-        if (item.getType().equals(StackItemType.INTEGER)) {
+        if (item.getType().equals(INTEGER)) {
             return item.asInteger().getValue();
         }
-        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.INTEGER);
+        throw new UnexpectedReturnTypeException(item.getType(), INTEGER);
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting a Boolean
-     * as return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a
+     * Boolean as return type.
      *
-     * @param function The function to call.
-     * @param params   The contract parameters to include in the call.
-     * @return The boolean returned by the contract.
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the boolean returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as an
@@ -133,22 +136,22 @@ public class SmartContract {
         if (params.length == 0) {
             item = callInvokeFunction(function).getInvocationResult().getStack().get(0);
         } else {
-            item = callInvokeFunction(function, Arrays.asList(params))
+            item = callInvokeFunction(function, asList(params))
                     .getInvocationResult().getStack().get(0);
         }
-        if (item.getType().equals(StackItemType.BOOLEAN)) {
+        if (item.getType().equals(BOOLEAN)) {
             return item.asBoolean().getValue();
         }
-        throw new UnexpectedReturnTypeException(item.getType(), StackItemType.BOOLEAN);
+        throw new UnexpectedReturnTypeException(item.getType(), BOOLEAN);
     }
 
     /**
      * Sends an {@code invokefunction} RPC call to the given contract function.
      *
-     * @param function The function to call.
-     * @param signers  The list of signers for this contract call.
-     * @return The call's response.
-     * @throws IOException if something goes wrong when communicating with the neo-node.
+     * @param function the function to call.
+     * @param signers  the list of signers for this contract call.
+     * @return the call's response.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public NeoInvokeFunction callInvokeFunction(String function, Signer... signers)
             throws IOException {
@@ -158,18 +161,16 @@ public class SmartContract {
     /**
      * Sends an {@code invokefunction} RPC call to the given contract function.
      *
-     * @param function The function to call.
-     * @param params   The contract parameters to include in the call.
-     * @param signers  The list of signers for this contract call.
-     * @return The call's response.
-     * @throws IOException if something goes wrong when communicating with the neo-node.
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @param signers  the list of signers for this contract call.
+     * @return the call's response.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public NeoInvokeFunction callInvokeFunction(String function, List<ContractParameter> params,
             Signer... signers) throws IOException {
-        // Remark: The list of signers is required for `invokefunction` calls that will hit a
-        // CheckWitness check in the smart contract. We add the signers even if that is not the
-        // case because we cannot know if the invoked function needs it or not and it doesn't
-        // lead to failures if we add them in any case.
+        // Remark: The list of signers may be required for `invokefunction`
+        // calls that will hit a CheckWitness check in the smart contract.
         if (Strings.isEmpty(function)) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
@@ -180,7 +181,7 @@ public class SmartContract {
     /**
      * Gets the script hash of this smart contract.
      *
-     * @return The script hash of this smart contract.
+     * @return the script hash of this smart contract.
      */
     public ScriptHash getScriptHash() {
         return scriptHash;
@@ -189,8 +190,8 @@ public class SmartContract {
     /**
      * Gets the manifest of this smart contract.
      *
-     * @return The manifest of this smart contract.
-     * @throws IOException if something goes wrong when communicating with the neo-node.
+     * @return the manifest of this smart contract.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public ContractManifest getManifest() throws IOException {
         ContractState contractState = neow.getContractState(scriptHash.toString()).send()
@@ -201,45 +202,39 @@ public class SmartContract {
     /**
      * Gets the name of this smart contract.
      *
-     * @return The name of this smart contract.
-     * @throws IOException if something goes wrong when communicating with the neo-node.
+     * @return the name of this smart contract.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public String getName() throws IOException {
         return getManifest().getName();
     }
 
-    protected static ScriptHash getScriptHashOfNativeContract(String contractName) {
-
-        byte[] script = new ScriptBuilder()
-                .pushData(contractName)
-                .sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALLNATIVE)
-                .toArray();
-
-        return ScriptHash.fromScript(
-                new ScriptBuilder()
-                        .opCode(OpCode.ABORT)
-                        .pushData(ScriptHash.ZERO.toArray())
-                        .pushData(script)
-                        .toArray());
+    protected static ScriptHash getScriptHashOfNativeContract(long nefCheckSum,
+            String contractName) {
+        return getContractHash(ScriptHash.ZERO, nefCheckSum, contractName);
     }
 
     /**
-     * Calculates the hash of the contract with {@code script} deployed by {@code sender}.
+     * Calculates the hash of the contract deployed by {@code sender}.
      * <p>
-     * A contract's hash doesn't change after deployment. Even if the contract's script is updated
-     * the hash stays the same. It depends on the initial script and the account that sent the
-     * deployment transaction.
+     * A contract's hash doesn't change after deployment. Even if the contract's script is
+     * updated the hash stays the same. It depends on the initial NEF checksum, contract name,
+     * and the account that sent the deployment transaction.
      *
-     * @param sender         The account that deployed the contract.
-     * @param contractScript The contract's script.
+     * @param sender       the account that deployed the contract.
+     * @param nefCheckSum  the checksum of the contract's NEF file.
+     * @param contractName the contract's name.
      * @return the hash of the contract.
      */
-    public static ScriptHash getContractHash(ScriptHash sender, byte[] contractScript) {
+    public static ScriptHash getContractHash(ScriptHash sender, long nefCheckSum,
+            String contractName) {
+
         return ScriptHash.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)
                         .pushData(sender.toArray())
-                        .pushData(contractScript)
-                        .toArray());
+                        .pushInteger(nefCheckSum)
+                        .pushData(contractName).toArray());
     }
+
 }

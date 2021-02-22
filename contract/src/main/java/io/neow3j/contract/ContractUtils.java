@@ -4,16 +4,13 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @SuppressWarnings("unchecked")
 public class ContractUtils {
@@ -31,9 +28,9 @@ public class ContractUtils {
     /**
      * Writes given NEF to "{@code <outdir>/<contractName>.nef}".
      *
-     * @param nef          The contract NEF file to write.
-     * @param contractName The contract's name
-     * @param outDir       The directory to which to write to.
+     * @param nef          the contract NEF file to write.
+     * @param contractName the contract's name
+     * @param outDir       the directory to which to write to.
      * @return the absolute path of the written file.
      * @throws IOException if an error occurs when writting to file.
      */
@@ -71,9 +68,13 @@ public class ContractUtils {
 
     public static String getContractManifestFilename(ContractManifest manifest) {
         if (manifest.getName() != null && !manifest.getName().equals("")) {
-            return manifest.getName() + "." + MANIFEST_FILENAME_SUFFIX;
+            return getContractManifestFilename(manifest.getName());
         }
         return MANIFEST_FILENAME_SUFFIX;
+    }
+
+    public static String getContractManifestFilename(String contractName) {
+        return contractName + "." + MANIFEST_FILENAME_SUFFIX;
     }
 
 }

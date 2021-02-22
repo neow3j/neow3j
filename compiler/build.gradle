@@ -9,5 +9,5 @@ dependencies {
             project(':devpack')
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion",
-            "org.awaitility:awaitility:$awaitility"
+            "com.github.tomakehurst:wiremock-jre8:$wiremockVersion"
 }

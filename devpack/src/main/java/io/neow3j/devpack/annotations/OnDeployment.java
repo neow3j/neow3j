@@ -11,9 +11,15 @@ import java.lang.annotation.Target;
  * The deployment method - named {@code _deploy} in the contract's manifest - needs to have a
  * boolean parameter and {@code void} as its return type.
  * <p>
- * This annotation can only be used on a {@code public static} method of a smart contract class,
- * and not on other classes that provide functionality for the contract.
+ * This annotation can only be used on a {@code public static} method of a smart contract class, and
+ * not on other classes that provide functionality for the contract.
  */
+
+@MethodSignature(
+        name = "_deploy",
+        parameterTypes = {Object.class, boolean.class},
+        returnType = void.class
+)
 @Target(ElementType.METHOD)
 public @interface OnDeployment {
 
