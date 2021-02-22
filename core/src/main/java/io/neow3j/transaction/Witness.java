@@ -8,6 +8,7 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -23,7 +24,13 @@ public class Witness extends NeoSerializable {
     private VerificationScript verificationScript;
     private ScriptHash scriptHash;
 
+    /**
+     * Constructs an empty witness with a zero-valued script hash.
+     */
     public Witness() {
+        invocationScript = new InvocationScript();
+        verificationScript = new VerificationScript();
+        scriptHash = ScriptHash.ZERO;
     }
 
     /**
@@ -66,8 +73,8 @@ public class Witness extends NeoSerializable {
     }
 
     /**
-     * Creates a new script from the given invocation script and script hash.
-     * Use this if you don't need a verification script.
+     * Creates a new witness from the given invocation script and script hash. The verification
+     * script is empty.
      *
      * @param invocationScript the invocation script
      * @param scriptHash       a script hash instead of a verification script.
@@ -83,8 +90,8 @@ public class Witness extends NeoSerializable {
      * given keys for signing the message.
      *
      * @param messageToSign The message from which the signature is added to the invocation script.
-     * @param keyPair       The key pair which is used for signing. The verification script is created
-     *                      from the public key.
+     * @param keyPair       The key pair which is used for signing. The verification script is
+     *                      created from the public key.
      * @return the constructed witness/script.
      */
     public static Witness create(byte[] messageToSign, ECKeyPair keyPair) {
@@ -94,15 +101,14 @@ public class Witness extends NeoSerializable {
     }
 
     public static Witness createMultiSigWitness(int signingThreshold,
-                                                  List<SignatureData> signatures,
-                                                  List<ECPublicKey> publicKeys) {
+            List<SignatureData> signatures, List<ECPublicKey> publicKeys) {
 
         VerificationScript v = new VerificationScript(publicKeys, signingThreshold);
         return createMultiSigWitness(signatures, v);
     }
 
     public static Witness createMultiSigWitness(List<SignatureData> signatures,
-                                                  VerificationScript verificationScript) {
+            VerificationScript verificationScript) {
 
         int signingThreshold = verificationScript.getSigningThreshold();
         if (signatures.size() < signingThreshold) {

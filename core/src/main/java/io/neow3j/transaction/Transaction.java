@@ -1,7 +1,5 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.crypto.Hash.hash256;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.io.BinaryReader;
@@ -19,13 +17,14 @@ import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static io.neow3j.crypto.Hash.hash256;
 
 public class Transaction extends NeoSerializable {
 
@@ -36,6 +35,7 @@ public class Transaction extends NeoSerializable {
             4; // Valid until block uint32
 
     protected Neow3j neow;
+
     private byte version;
     /**
      * Is a random number added to the transaction to prevent replay attacks. It is an unsigned
@@ -169,18 +169,14 @@ public class Transaction extends NeoSerializable {
      * @return the Neo node's response.
      * @throws IOException                       if a problem in communicating with the Neo node
      *                                           occurs.
-     * @throws TransactionConfigurationException if signatures are missing for one or more signers
-     *                                           of the transaction.
+     * @throws TransactionConfigurationException if the number of signers and witnesses on the
+     *                                           transaction are not equal.
      */
     public NeoSendRawTransaction send() throws IOException {
-        List<ScriptHash> witnesses = this.getWitnesses().stream()
-                .map(Witness::getScriptHash).collect(Collectors.toList());
-
-        for (Signer signer : this.getSigners()) {
-            if (!witnesses.contains(signer.getScriptHash())) {
-                throw new TransactionConfigurationException("The transaction does not have a "
-                        + "signature for each of its signers.");
-            }
+        if (getSigners().size() != getWitnesses().size()) {
+            throw new TransactionConfigurationException("The transaction does not have the same " +
+                    "number of signers and witnesses. For every signer there has to be one " +
+                    "witness, even if that witness is empty.");
         }
         String hex = Numeric.toHexStringNoPrefix(toArray());
         blockIndexWhenSent = neow.getBlockCount().send().getBlockIndex();
@@ -210,7 +206,7 @@ public class Transaction extends NeoSerializable {
                                 return Numeric.cleanHexPrefix(transaction.getHash())
                                         .equals(getTxId());
                             } catch (IOException e) {
-                               throw new RuntimeException(e);
+                                throw new RuntimeException(e);
                             }
                         });
 
@@ -298,7 +294,6 @@ public class Transaction extends NeoSerializable {
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
         serializeWithoutWitnesses(writer);
-        this.witnesses.sort(Comparator.comparing(Witness::getScriptHash));
         writer.writeSerializableVariable(this.witnesses);
     }
 
