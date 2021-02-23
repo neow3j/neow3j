@@ -10,6 +10,7 @@ import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
+import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -76,6 +77,8 @@ public interface Neo {
     Request<?, NeoGetRawBlock> getRawBlockHeader(String hash);
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex);
+
+    Request<?, NeoGetNativeContracts> getNativeContracts();
 
     Request<?, NeoGetContractState> getContractState(ScriptHash scriptHash);
 

@@ -110,6 +110,17 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetNativeContracts() throws Exception {
+        neow3j.getNativeContracts().send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\"," +
+                        "\"method\":\"getnativecontracts\"," +
+                        "\"params\":[]," +
+                        "\"id\":1}");
+    }
+
+    @Test
     public void testGetBlockHeader_Hash() throws Exception {
         neow3j.getBlockHeader(
                 "0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d").send();

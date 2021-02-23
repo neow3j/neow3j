@@ -18,7 +18,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         private int id;
 
         @JsonProperty("updatecounter")
-        private int updateCounter;
+        private Integer updateCounter;
 
         @JsonProperty("hash")
         private String hash;
@@ -29,23 +29,27 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         @JsonProperty("manifest")
         private ContractManifest manifest;
 
+        @JsonProperty("activeblockindex")
+        private Integer activeBlockIndex;
+
         public ContractState() {
         }
 
         public ContractState(int id, int updateCounter, String hash, ContractNef nef,
-                             ContractManifest manifest) {
+                             ContractManifest manifest, Integer activeBlockIndex) {
             this.id = id;
             this.updateCounter = updateCounter;
             this.hash = hash;
             this.nef = nef;
             this.manifest = manifest;
+            this.activeBlockIndex = activeBlockIndex;
         }
 
         public int getId() {
             return id;
         }
 
-        public int getUpdateCounter() {
+        public Integer getUpdateCounter() {
             return updateCounter;
         }
 
@@ -61,6 +65,10 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             return manifest;
         }
 
+        public Integer getActiveBlockIndex() {
+            return activeBlockIndex;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -71,15 +79,17 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             }
             ContractState that = (ContractState) o;
             return getId() == that.getId() &&
-                    getUpdateCounter() == that.getUpdateCounter() &&
+                    Objects.equals(getUpdateCounter(),that.getUpdateCounter()) &&
                     Objects.equals(getHash(), that.getHash()) &&
                     Objects.equals(getNef(), that.getNef()) &&
-                    Objects.equals(getManifest(), that.getManifest());
+                    Objects.equals(getManifest(), that.getManifest()) &&
+                    Objects.equals(getActiveBlockIndex(), that.getActiveBlockIndex());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getId(), getUpdateCounter(), getHash(), getNef(), getManifest());
+            return Objects.hash(getId(), getUpdateCounter(), getHash(), getNef(), getManifest(),
+                    getActiveBlockIndex());
         }
 
         @Override
@@ -90,6 +100,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     ", hash='" + hash + '\'' +
                     ", nef=" + nef +
                     ", manifest=" + manifest +
+                    ", activeBlockIndex=" + activeBlockIndex +
                     '}';
         }
     }

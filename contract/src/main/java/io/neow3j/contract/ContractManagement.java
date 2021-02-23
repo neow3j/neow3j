@@ -92,7 +92,7 @@ public class ContractManagement extends SmartContract {
 //        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
 //                ContractManifest.class);
 
-        return new ContractState(id, updateCounter, hash, null, null);
+        return new ContractState(id, updateCounter, hash, null, null, null);
     }
 
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)

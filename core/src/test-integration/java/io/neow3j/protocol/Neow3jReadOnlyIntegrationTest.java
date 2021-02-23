@@ -37,6 +37,7 @@ import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
@@ -55,6 +56,8 @@ import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers.Nep17TransferWrapper;
@@ -318,10 +321,104 @@ public class Neow3jReadOnlyIntegrationTest {
     }
 
     @Test
+    public void testGetNativeContracts() throws IOException {
+        NeoGetNativeContracts getNativeContracts = getNeow3j().getNativeContracts().send();
+        List<ContractState> nativeContracts =
+                getNativeContracts.getNativeContracts();
+
+        assertThat(nativeContracts, hasSize(8));
+        ContractState contractState1 = nativeContracts.get(0);
+        assertThat(contractState1.getId(), is(-1));
+        assertNull(contractState1.getUpdateCounter());
+        assertThat(contractState1.getHash(), is("0xa501d7d7d10983673b61b7a2d3a813b36f9f0e43"));
+
+        ContractNef nef1 = contractState1.getNef();
+        assertThat(nef1.getMagic(), is(860243278L));
+        assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef1.getTokens(), hasSize(0));
+        assertThat(nef1.getScript(), is("D0Ea93tn"));
+        assertThat(nef1.getChecksum(), is(3516775561L));
+
+        ContractManifest manifest1 = contractState1.getManifest();
+        assertThat(manifest1.getName(), is("ContractManagement"));
+        assertThat(manifest1.getGroups(), hasSize(0));
+        assertThat(manifest1.getSupportedStandards(), hasSize(0));
+
+        ContractABI abi1 = manifest1.getAbi();
+        assertThat(abi1.getMethods(), hasSize(8));
+        assertThat(abi1.getMethods().get(7).getName(),
+                is("update"));
+        assertThat(abi1.getMethods().get(7).getParameters(),
+                hasSize(3));
+        assertThat(abi1.getMethods().get(7).getReturnType(),
+                is(ContractParameterType.VOID));
+        assertThat(abi1.getMethods().get(7).getOffset(), is(0));
+        assertFalse(abi1.getMethods().get(7).isSafe());
+        assertThat(abi1.getEvents(), hasSize(3));
+        assertThat(abi1.getEvents().get(1).getName(),
+                is("Update"));
+        assertThat(abi1.getEvents().get(1).getParameters(),
+                hasSize(1));
+        assertThat(abi1.getEvents().get(1).getParameters().get(0).getParamName(), is("Hash"));
+        assertThat(abi1.getEvents().get(1).getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
+
+        assertThat(manifest1.getPermissions(), hasSize(1));
+        assertThat(manifest1.getPermissions().get(0).getContract(), is("*"));
+        assertThat(manifest1.getPermissions().get(0).getMethods(), hasSize(1));
+        assertThat(manifest1.getPermissions().get(0).getMethods().get(0), is("*"));
+        assertThat(manifest1.getTrusts(), hasSize(0));
+        assertNull(manifest1.getExtra());
+        assertThat(contractState1.getActiveBlockIndex(), is(0));
+
+        ContractState contractState8 = nativeContracts.get(7);
+        assertThat(contractState8.getId(), is(-8));
+        assertNull(contractState8.getUpdateCounter());
+        assertThat(contractState8.getHash(), is("0xa2b524b68dfe43a9d56af84f443c6b9843b8028c"));
+
+        ContractNef nef8 = contractState8.getNef();
+        assertThat(nef8.getMagic(), is(860243278L));
+        assertThat(nef8.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef8.getTokens(), hasSize(0));
+        assertThat(nef8.getScript(), is("APhBGvd7Zw=="));
+        assertThat(nef8.getChecksum(), is(3740064217L));
+
+        ContractManifest manifest8 = contractState8.getManifest();
+        assertThat(manifest8.getName(), is("NameService"));
+        assertThat(manifest8.getGroups(), hasSize(0));
+        assertThat(manifest8.getSupportedStandards(), hasSize(0));
+
+        ContractABI abi8 = manifest8.getAbi();
+        assertThat(abi8.getMethods(), hasSize(20));
+        assertThat(abi8.getMethods().get(19).getName(),
+                is("transfer"));
+        assertThat(abi8.getMethods().get(19).getParameters(),
+                hasSize(2));
+        assertThat(abi8.getMethods().get(19).getReturnType(),
+                is(ContractParameterType.BOOLEAN));
+        assertThat(abi8.getMethods().get(19).getOffset(), is(0));
+        assertFalse(abi8.getMethods().get(19).isSafe());
+        assertThat(abi8.getEvents(), hasSize(1));
+        assertThat(abi8.getEvents().get(0).getName(),
+                is("Transfer"));
+        assertThat(abi8.getEvents().get(0).getParameters(), hasSize(4));
+        assertThat(abi8.getEvents().get(0).getParameters().get(3).getParamName(), is("tokenId"));
+        assertThat(abi8.getEvents().get(0).getParameters().get(3).getParamType(),
+                is(ContractParameterType.BYTE_ARRAY));
+
+        assertThat(manifest8.getPermissions(), hasSize(1));
+        assertThat(manifest8.getPermissions().get(0).getContract(), is("*"));
+        assertThat(manifest8.getPermissions().get(0).getMethods(), hasSize(1));
+        assertThat(manifest8.getPermissions().get(0).getMethods().get(0), is("*"));
+        assertThat(manifest8.getTrusts(), hasSize(0));
+        assertNull(manifest8.getExtra());
+        assertThat(contractState8.getActiveBlockIndex(), is(0));
+    }
+
+    @Test
     public void testGetContractState() throws IOException {
         NeoGetContractState getContractState =
                 getNeow3j().getContractState(new ScriptHash(NEO_HASH)).send();
-        NeoGetContractState.ContractState contractState = getContractState.getContractState();
+        ContractState contractState = getContractState.getContractState();
 
         assertNotNull(contractState);
         assertThat(contractState.getId(), is(-3));
@@ -378,7 +475,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetContractState_byName() throws IOException {
         NeoGetContractState getContractState = getNeow3j().getContractState(GAS_TOKEN_NAME).send();
-        NeoGetContractState.ContractState contractState = getContractState.getContractState();
+        ContractState contractState = getContractState.getContractState();
 
         assertNotNull(contractState);
         assertThat(contractState.getId(), is(-4));
@@ -890,5 +987,4 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(invoc.getStack());
         assertNotNull(invoc.getTx());
     }
-
 }

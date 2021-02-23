@@ -22,6 +22,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
+import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
@@ -57,6 +58,7 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Async;
 import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,7 +130,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Gets the corresponding block information according to the specified hash
      * or index.
      *
-     * @param address the block hash.
+     * @param address                      the block hash.
      * @param returnFullTransactionObjects whether to get block information
      *                                     with all transaction objects or
      *                                     just the block header.
@@ -168,7 +170,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Gets the corresponding block information according to the specified
      * index.
      *
-     * @param blockIndex the block index.
+     * @param blockIndex                   the block index.
      * @param returnFullTransactionObjects whether to get block information
      *                                     with all transaction objects or
      *                                     just the block header.
@@ -283,6 +285,21 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
+     * Gets the native contracts list, which includes the basic information of native contracts
+     * and the contract descriptive file manifest.json.
+     *
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetNativeContracts> getNativeContracts() {
+        return new Request<>(
+                "getnativecontracts",
+                emptyList(),
+                neow3jService,
+                NeoGetNativeContracts.class);
+    }
+
+    /**
      * Gets the contract information.
      *
      * @param scriptHash the contract script hash.
@@ -376,7 +393,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Gets the stored value according to the contract script hash and the key.
      *
      * @param contractAddress the contract hash.
-     * @param keyHexString the key to look up in storage as a hexadecimal string.
+     * @param keyHexString    the key to look up in storage as a hexadecimal string.
      * @return the request object.
      */
     @Override
@@ -513,8 +530,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * operation.
      *
      * @param contractScriptHash the contract script hash to invoke.
-     * @param functionName the function to invoke.
-     * @param signers the signers.
+     * @param functionName       the function to invoke.
+     * @param signers            the signers.
      * @return the request object.
      */
     @Override
@@ -527,9 +544,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Invokes a smart contract based on the specified function and parameters.
      *
      * @param contractScriptHash the contract script hash to invoke.
-     * @param functionName the function to invoke.
-     * @param contractParams the parameters of the function.
-     * @param signers the signers.
+     * @param functionName       the function to invoke.
+     * @param contractParams     the parameters of the function.
+     * @param signers            the signers.
      * @return the request object.
      */
     @Override
@@ -559,7 +576,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Invokes a script.
      *
-     * @param script the script to invoke.
+     * @param script  the script to invoke.
      * @param signers the signers.
      * @return the request object.
      */
@@ -587,9 +604,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Requires an open wallet on the neo-node that contains the accounts for
      * the signers.
      *
-     * @param scriptHash the contract script hash.
+     * @param scriptHash   the contract script hash.
      * @param methodParams a list of parameters of the verify function.
-     * @param signers the signers.
+     * @param signers      the signers.
      * @return the request object.
      */
     @Override
@@ -777,7 +794,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Opens the specified wallet.
      *
      * @param walletPath the wallet file path.
-     * @param password the password for the wallet.
+     * @param password   the password for the wallet.
      * @return the request object.
      */
     @Override
@@ -793,9 +810,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Transfers an amount of an asset from an address to another address.
      *
      * @param fromAddress the transferring address.
-     * @param assetId the script hash of the NEP17 contract.
-     * @param toAddress the destination address.
-     * @param value the transfer amount.
+     * @param assetId     the script hash of the NEP17 contract.
+     * @param toAddress   the destination address.
+     * @param value       the transfer amount.
      * @return the request object.
      */
     @Override
@@ -866,9 +883,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Transfers an amount of an asset to another address.
      *
-     * @param assetId the script hash of the NEP17 contract.
+     * @param assetId   the script hash of the NEP17 contract.
      * @param toAddress the destination address.
-     * @param value the transfer amount.
+     * @param value     the transfer amount.
      * @return the request object.
      */
     @Override
@@ -954,7 +971,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * address since the specified time.
      *
      * @param address the address.
-     * @param from the timestamp transactions occurred since.
+     * @param from    the timestamp transactions occurred since.
      * @return the request object.
      */
     @Override
@@ -971,12 +988,13 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * address in the specified time range.
      *
      * @param address the address.
-     * @param from the start timestamp.
-     * @param until the end timestamp.
+     * @param from    the start timestamp.
+     * @param until   the end timestamp.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from, Date until) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from,
+            Date until) {
         return new Request<>(
                 "getnep17transfers",
                 asList(address, from.getTime(), until.getTime()),
@@ -1036,5 +1054,4 @@ public class JsonRpc2_0Neow3j extends Neow3j {
             throw new RuntimeException("Failed to close neow3j service", e);
         }
     }
-
 }
