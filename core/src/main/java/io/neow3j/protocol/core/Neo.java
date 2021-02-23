@@ -9,6 +9,7 @@ import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoBlockHeaderCount;
 import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
 import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
@@ -67,6 +68,8 @@ public interface Neo {
             boolean returnFullTransactionObjects);
 
     Request<?, NeoGetRawBlock> getRawBlock(BlockParameterIndex blockIndex);
+
+    Request<?, NeoBlockHeaderCount> getBlockHeaderCount();
 
     Request<?, NeoBlockCount> getBlockCount();
 

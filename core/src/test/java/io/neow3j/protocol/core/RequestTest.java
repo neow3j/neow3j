@@ -99,6 +99,17 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetBlockHeaderCount() throws Exception {
+        neow3j.getBlockHeaderCount().send();
+
+        verifyResult(
+                "{\"jsonrpc\":\"2.0\"," +
+                        "\"method\":\"getblockheadercount\"," +
+                        "\"params\":[]," +
+                        "\"id\":1}");
+    }
+
+    @Test
     public void testGetBlockCount() throws Exception {
         neow3j.getBlockCount().send();
 

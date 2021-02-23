@@ -48,6 +48,7 @@ import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoBlockHeaderCount;
 import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
@@ -258,6 +259,15 @@ public class Neow3jReadOnlyIntegrationTest {
         String rawBlock = getRawBlock.getRawBlock();
 
         assertThat(rawBlock, is(BLOCK_0_RAW_STRING));
+    }
+
+    @Test
+    public void testGetBlockHeaderCount() throws IOException {
+        NeoBlockHeaderCount blockHeaderCount = getNeow3j().getBlockHeaderCount().send();
+        BigInteger count = blockHeaderCount.getCount();
+
+        assertNotNull(count);
+        assertThat(blockHeaderCount.getCount(), greaterThan(BigInteger.valueOf(0)));
     }
 
     @Test

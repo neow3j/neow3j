@@ -13,6 +13,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoBlockHeaderCount;
 import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
@@ -97,7 +98,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // Blockchain Methods
 
     /**
-     * Gets the hash of the latest block in the main chain.
+     * Gets the hash of the latest block in the blockchain.
      *
      * @return the request object.
      */
@@ -207,7 +208,21 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the block count of the main chain.
+     * Gets the block header count of the blockchain.
+     *
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoBlockHeaderCount> getBlockHeaderCount() {
+        return new Request<>(
+                "getblockheadercount",
+                emptyList(),
+                neow3jService,
+                NeoBlockHeaderCount.class);
+    }
+
+    /**
+     * Gets the block count of the blockchain.
      *
      * @return the request object.
      */
