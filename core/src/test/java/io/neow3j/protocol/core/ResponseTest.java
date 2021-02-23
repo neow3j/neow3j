@@ -8,19 +8,23 @@ import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.ConsensusData;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.ContractNef;
 import io.neow3j.protocol.core.methods.response.HighPriorityAttribute;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
+import io.neow3j.protocol.core.methods.response.NeoBlockHeaderCount;
 import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
 import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
+import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
@@ -76,8 +80,10 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
@@ -415,6 +421,22 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
+    public void testGetBlockHeaderCount() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": 543\n" +
+                        "}"
+        );
+
+        NeoBlockHeaderCount neoBlockHeaderCount = deserialiseResponse(NeoBlockHeaderCount.class);
+        assertThat(neoBlockHeaderCount.getCount(), is(notNullValue()));
+
+        assertThat(neoBlockHeaderCount.getCount(), is(BigInteger.valueOf(543)));
+    }
+
+    @Test
     public void testGetBlockCount() {
         buildResponse(
                 "{\n" +
@@ -431,6 +453,349 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
+    public void testGetNativeContracts() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"id\": -4,\n" +
+                "            \"hash\": \"0x70e2301955bf1e74cbb31d18c2f96972abadb328\",\n" +
+                "            \"nef\": {\n" +
+                "                \"magic\": 860243278,\n" +
+                "                \"compiler\": \"neo-core-v3.0\",\n" +
+                "                \"tokens\": [],\n" +
+                "                \"script\": \"APxBGvd7Zw==\",\n" +
+                "                \"checksum\": 3155977747\n" +
+                "            },\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"GasToken\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"supportedstandards\": [\n" +
+                "                    \"NEP-17\"\n" +
+                "                ],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"balanceOf\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"account\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Integer\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"decimals\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Integer\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"symbol\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"String\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"totalSupply\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Integer\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"transfer\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"from\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"to\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"amount\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"data\",\n" +
+                "                                    \"type\": \"Any\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Boolean\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": false\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"Transfer\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"from\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"to\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"amount\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ]\n" +
+                "                        }\n" +
+                "                    ]\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            },\n" +
+                "            \"activeblockindex\": 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"id\": -6,\n" +
+                "            \"hash\": \"0x597b1471bbce497b7809e2c8f10db67050008b02\",\n" +
+                "            \"nef\": {\n" +
+                "                \"magic\": 860243278,\n" +
+                "                \"compiler\": \"neo-core-v3.0\",\n" +
+                "                \"tokens\": [],\n" +
+                "                \"script\": \"APpBGvd7Zw==\",\n" +
+                "                \"checksum\": 3289425910\n" +
+                "            },\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"RoleManagement\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"supportedstandards\": [],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"designateAsRole\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"role\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"nodes\",\n" +
+                "                                    \"type\": \"Array\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Void\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": false\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"getDesignatedByRole\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"role\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"index\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Array\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": []\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            },\n" +
+                "            \"activeblockindex\": 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"id\": -7,\n" +
+                "            \"hash\": \"0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee\",\n" +
+                "            \"nef\": {\n" +
+                "                \"magic\": 860243278,\n" +
+                "                \"compiler\": \"neo-core-v3.0\",\n" +
+                "                \"tokens\": [],\n" +
+                "                \"script\": \"APlBGvd7Zw==\",\n" +
+                "                \"checksum\": 3902663397\n" +
+                "            },\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"OracleContract\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"supportedstandards\": [],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"finish\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Void\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": false\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"request\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"url\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"filter\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"callback\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"userData\",\n" +
+                "                                    \"type\": \"Any\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"gasForResponse\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Void\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": false\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"verify\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Boolean\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"OracleRequest\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Id\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"RequestContract\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Url\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Filter\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                }\n" +
+                "                            ]\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"OracleResponse\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Id\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"OriginalTx\",\n" +
+                "                                    \"type\": \"Hash256\"\n" +
+                "                                }\n" +
+                "                            ]\n" +
+                "                        }\n" +
+                "                    ]\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            },\n" +
+                "            \"activeblockindex\": 43\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}");
+
+        NeoGetNativeContracts getNativeContracts = deserialiseResponse(NeoGetNativeContracts.class);
+        List<ContractState> nativeContracts =
+                getNativeContracts.getNativeContracts();
+        assertThat(nativeContracts, hasSize(3));
+        ContractState c1 = nativeContracts.get(0);
+        assertThat(c1.getId(), is(-4));
+        assertNull(c1.getUpdateCounter());
+        assertThat(c1.getHash(), is("0x70e2301955bf1e74cbb31d18c2f96972abadb328"));
+        ContractNef nef1 = c1.getNef();
+        assertThat(nef1.getMagic(), is(860243278L));
+        assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef1.getTokens(), hasSize(0));
+        assertThat(nef1.getScript(), is("APxBGvd7Zw=="));
+        assertThat(nef1.getChecksum(), is(3155977747L));
+        ContractManifest manifest1 = c1.getManifest();
+        assertThat(manifest1.getName(), is("GasToken"));
+        assertThat(manifest1.getGroups(), hasSize(0));
+        assertThat(manifest1.getSupportedStandards(), hasSize(1));
+        assertThat(manifest1.getSupportedStandards().get(0), is("NEP-17"));
+        assertThat(manifest1.getAbi().getMethods(), hasSize(5));
+        assertThat(manifest1.getAbi().getEvents(), hasSize(1));
+        assertThat(c1.getActiveBlockIndex(), is(0));
+
+        ContractState c2 = nativeContracts.get(1);
+        assertThat(c2.getId(), is(-6));
+        assertThat(c2.getHash(), is("0x597b1471bbce497b7809e2c8f10db67050008b02"));
+        ContractNef nef2 = c2.getNef();
+        assertThat(nef2.getMagic(), is(860243278L));
+        assertThat(nef2.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef2.getTokens(), hasSize(0));
+        assertThat(nef2.getScript(), is("APpBGvd7Zw=="));
+        assertThat(nef2.getChecksum(), is(3289425910L));
+        ContractManifest manifest2 = c2.getManifest();
+        assertThat(manifest2.getName(), is("RoleManagement"));
+        assertThat(manifest2.getGroups(), hasSize(0));
+        assertThat(manifest2.getSupportedStandards(), hasSize(0));
+        assertThat(manifest2.getAbi().getMethods(), hasSize(2));
+        assertThat(manifest2.getAbi().getEvents(), hasSize(0));
+        assertThat(c2.getActiveBlockIndex(), is(0));
+
+        ContractState c3 = nativeContracts.get(2);
+        assertThat(c3.getId(), is(-7));
+        assertThat(c3.getHash(), is("0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee"));
+        ContractNef nef3 = c3.getNef();
+        assertThat(nef3.getMagic(), is(860243278L));
+        assertThat(nef3.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef3.getTokens(), hasSize(0));
+        assertThat(nef3.getScript(), is("APlBGvd7Zw=="));
+        assertThat(nef3.getChecksum(), is(3902663397L));
+        ContractManifest manifest3 = c3.getManifest();
+        assertThat(manifest3.getName(), is("OracleContract"));
+        assertThat(manifest3.getGroups(), hasSize(0));
+        assertThat(manifest3.getSupportedStandards(), hasSize(0));
+        assertThat(manifest3.getAbi().getMethods(), hasSize(3));
+        assertThat(manifest3.getAbi().getEvents(), hasSize(2));
+        assertThat(c3.getActiveBlockIndex(), is(43));
+    }
+
+    @Test
     public void testGetContractState() {
         buildResponse(
                 "{\n" +
@@ -438,6 +803,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"id\": -2,\n" +
+                        "        \"updatecounter\": 2,\n" +
                         "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
                         "        \"nef\": {\n" +
                         "            \"magic\": 860243278,\n" +
@@ -551,16 +917,17 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
-        assertThat(getContractState.getContractState(), is(notNullValue()));
-        assertThat(getContractState.getContractState().getId(), is(-2));
-        assertThat(getContractState.getContractState().getHash(),
+        ContractState contractState = getContractState.getContractState();
+        assertThat(contractState, is(notNullValue()));
+        assertThat(contractState.getId(), is(-2));
+        assertThat(contractState.getHash(),
                 is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
-        assertThat(getContractState.getContractState().getNef().getScript(), is("QetD9PQ="));
-        assertThat(getContractState.getContractState().getNef().getTokens(), is(empty()));
-        assertThat(getContractState.getContractState().getNef().getChecksum(), is(3921333105L));
-        assertThat(getContractState.getContractState().getNef().getCompiler(), is("neo-core-v3.0"));
+        assertThat(contractState.getNef().getScript(), is("QetD9PQ="));
+        assertThat(contractState.getNef().getTokens(), is(empty()));
+        assertThat(contractState.getNef().getChecksum(), is(3921333105L));
+        assertThat(contractState.getNef().getCompiler(), is("neo-core-v3.0"));
 
-        ContractManifest manifest = getContractState.getContractState().getManifest();
+        ContractManifest manifest = contractState.getManifest();
         assertThat(manifest, is(notNullValue()));
         assertThat(manifest.getName(), is("GasToken"));
         assertThat(manifest.getGroups(), is(notNullValue()));
@@ -607,6 +974,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest.getTrusts().get(0), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
 
         assertThat(manifest.getExtra(), is(nullValue()));
+
+        assertNull(contractState.getActiveBlockIndex());
     }
 
     @Test
@@ -1368,7 +1737,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
     }
 
-        // Utilities Methods
+    // Utilities Methods
 
     @Test
     public void testListPlugins() {
