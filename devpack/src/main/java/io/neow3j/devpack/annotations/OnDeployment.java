@@ -6,13 +6,11 @@ import java.lang.annotation.Target;
 /**
  * When used on a method of a smart contract class, this annotation signals that the annotated
  * method is to be called on deployment of the contract. Nodes will automatically call the method
- * when it is deployd.
+ * when the contract is deployd or updated via the ContractManagement contract.
  * <p>
- * The deployment method - named {@code _deploy} in the contract's manifest - needs to have a
- * boolean parameter and {@code void} as its return type.
- * <p>
- * This annotation can only be used on a {@code public static} method of a smart contract class, and
- * not on other classes that provide functionality for the contract.
+ * The annotated method can have any name but needs to have the signature "{@code void methodName
+ * (Object, boolean)}". The method will appear under the name {@code _deploy} in the contract
+ * manifest.
  */
 
 @MethodSignature(
