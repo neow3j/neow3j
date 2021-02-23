@@ -367,10 +367,12 @@ public class Wallet {
         return this.accounts.containsKey(scriptHash);
     }
 
+    /**
+     * Gets the account with the given script hash if it is in this wallet.
+     * @param scriptHash The script hash of the account.
+     * @return the account if it is in this wallet. Null, otherwise.
+     */
     public Account getAccount(ScriptHash scriptHash) {
-        if (!this.accounts.containsKey(scriptHash)) {
-            throw new IllegalArgumentException("Account not found in the wallet.");
-        }
         return this.accounts.get(scriptHash);
     }
 
