@@ -28,14 +28,6 @@ public class CompilerExceptionsTest {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
-    public void failOnInstantiatingInheritingClass() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Found call to super constructor of", ArrayList.class.getCanonicalName())));
-        new Compiler().compileClass(UnsupportedInheritanceInConstructor.class.getName());
-    }
-
-    @Test
     public void throwExceptionIfNonDefaultExceptionInstanceIsUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
@@ -164,6 +156,15 @@ public class CompilerExceptionsTest {
                 "packagePrivateMethod", "safe")));
     }
 
+    @Test
+    public void failIfLocalVariablesAreUsedInStaticConstructor() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                CompilerExceptionsTest.class.getSimpleName(),
+                "Local variables are not supported in the static constructor")));
+        new Compiler().compileClass(LocalVariableInStaticConstructorContract.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -280,6 +281,20 @@ public class CompilerExceptionsTest {
 
         @Safe
         private static void packagePrivateMethod() {
+        }
+    }
+
+    static class LocalVariableInStaticConstructorContract {
+
+        private static int number;
+
+        static {
+            int i = 1;
+            number = i * 2;
+        }
+
+        public static int method() {
+            return number;
         }
     }
 
