@@ -4,6 +4,7 @@ import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.MAP;
+import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Collections.singletonList;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
@@ -11,7 +12,6 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.MapStackItem;
 import io.neow3j.protocol.core.methods.response.TokenState;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
 
@@ -40,13 +40,21 @@ public class NonFungibleToken extends Token {
         super(scriptHash, neow);
     }
 
+    /**
+     * Returns the decimals of non-fungible tokens.
+     *
+     * @return the decimals.
+     */
     @Override
     public int getDecimals() {
         return 0;
     }
 
     /**
-     * Transfers the token with {@code tokenID} to the account {@code to}.
+     * Creates a transaction script to transfer a non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The returned transaction builder is ready to be signed and sent.
      *
      * @param wallet  the wallet that holds the account of the token owner.
      * @param to      the receiver of the token.
@@ -58,17 +66,16 @@ public class NonFungibleToken extends Token {
             byte[] tokenID) throws IOException {
         ScriptHash tokenOwner = ownerOf(tokenID);
         if (!wallet.holdsAccount(tokenOwner)) {
-            throw new IllegalArgumentException(
-                    "The provided wallet does not contain the account that owns the token with ID" +
-                    " " + Numeric.toHexString(tokenID) + ". The address of the owner of this " +
-                    "token is " + tokenOwner.toAddress() + ".");
+            throw new IllegalArgumentException("The provided wallet does not contain the account " +
+                    "that owns the token with ID " + Numeric.toHexString(tokenID) + ". The " +
+                    "address of the owner of this token is " + tokenOwner.toAddress() + ".");
         }
 
         return invokeFunction(TRANSFER,
                 hash160(to),
                 byteArray(tokenID))
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(tokenOwner));
+                .signers(calledByEntry(tokenOwner));
     }
 
     /**
@@ -76,7 +83,7 @@ public class NonFungibleToken extends Token {
      *
      * @param tokenID the token ID.
      * @return a list of owners of the token.
-     * @throws IOException if an error occurs when interacting with the Neo node.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public ScriptHash ownerOf(byte[] tokenID) throws IOException {
         return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenID)));
@@ -127,8 +134,8 @@ public class NonFungibleToken extends Token {
      * Gets the properties of the token with {@code tokenID}.
      *
      * @param tokenID the token ID.
-     * @return the properties of the token.
-     * @throws IOException if an error occurs when interacting with the Neo node.
+     * @return the properties of the token as {@link TokenState}.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TokenState properties(byte[] tokenID) throws IOException {
         StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))

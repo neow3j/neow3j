@@ -62,7 +62,7 @@ public class TokenState {
     public String toString() {
         return "Properties{" +
                 "name='" + name + '\'' +
-                "description='" + description + '\'' +
+                ", description='" + description + '\'' +
                 "}";
     }
 }
