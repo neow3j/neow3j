@@ -1,37 +1,27 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.model.types.ContractParameterType.ANY;
-import static io.neow3j.model.types.ContractParameterType.ARRAY;
-import static io.neow3j.model.types.ContractParameterType.BOOLEAN;
-import static io.neow3j.model.types.ContractParameterType.BYTE_ARRAY;
-import static io.neow3j.model.types.ContractParameterType.HASH160;
-import static io.neow3j.model.types.ContractParameterType.HASH256;
-import static io.neow3j.model.types.ContractParameterType.INTEGER;
-import static io.neow3j.model.types.ContractParameterType.INTEROP_INTERFACE;
-import static io.neow3j.model.types.ContractParameterType.MAP;
-import static io.neow3j.model.types.ContractParameterType.PUBLIC_KEY;
-import static io.neow3j.model.types.ContractParameterType.STRING;
-import static io.neow3j.model.types.ContractParameterType.VOID;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Map;
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
-import io.neow3j.devpack.List;
-import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.Iterator;
+import io.neow3j.devpack.List;
+import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Transaction;
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.model.types.ContractParameterType;
-import java.io.IOException;
+import io.neow3j.model.types.StackItemType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.io.IOException;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class CompilerTest {
 
@@ -41,60 +31,110 @@ public class CompilerTest {
     @Test
     public void mapTypeToParameterTypeShouldReturnTheCorrectTypes() {
         // Integers
-        assertClassIsMappedToType(byte.class, INTEGER);
-        assertClassIsMappedToType(Byte.class, INTEGER);
-        assertClassIsMappedToType(char.class, INTEGER);
-        assertClassIsMappedToType(Character.class, INTEGER);
-        assertClassIsMappedToType(short.class, INTEGER);
-        assertClassIsMappedToType(Short.class, INTEGER);
-        assertClassIsMappedToType(int.class, INTEGER);
-        assertClassIsMappedToType(Integer.class, INTEGER);
-        assertClassIsMappedToType(long.class, INTEGER);
-        assertClassIsMappedToType(Long.class, INTEGER);
+        assertClassIsMappedToType(byte.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(Byte.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(char.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(Character.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(short.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(Short.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(int.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(Integer.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(long.class, ContractParameterType.INTEGER);
+        assertClassIsMappedToType(Long.class, ContractParameterType.INTEGER);
 
         // Bools
-        assertClassIsMappedToType(boolean.class, BOOLEAN);
-        assertClassIsMappedToType(Boolean.class, BOOLEAN);
+        assertClassIsMappedToType(boolean.class, ContractParameterType.BOOLEAN);
+        assertClassIsMappedToType(Boolean.class, ContractParameterType.BOOLEAN);
 
         // Strings
-        assertClassIsMappedToType(String.class, STRING);
+        assertClassIsMappedToType(String.class, ContractParameterType.STRING);
 
         // Void
-        assertClassIsMappedToType(void.class, VOID);
-        assertClassIsMappedToType(Void.class, VOID);
+        assertClassIsMappedToType(void.class, ContractParameterType.VOID);
+        assertClassIsMappedToType(Void.class, ContractParameterType.VOID);
 
         // Byte arrays
-        assertClassIsMappedToType(byte[].class, BYTE_ARRAY);
-        assertClassIsMappedToType(Byte[].class, BYTE_ARRAY);
+        assertClassIsMappedToType(byte[].class, ContractParameterType.BYTE_ARRAY);
+        assertClassIsMappedToType(Byte[].class, ContractParameterType.BYTE_ARRAY);
 
         // Arrays
-        assertClassIsMappedToType(String[].class, ARRAY);
-        assertClassIsMappedToType(int[].class, ARRAY);
-        assertClassIsMappedToType(Integer[].class, ARRAY);
-        assertClassIsMappedToType(boolean[].class, ARRAY);
-        assertClassIsMappedToType(byte[][].class, ARRAY);
-        assertClassIsMappedToType(List.class, ARRAY);
+        assertClassIsMappedToType(String[].class, ContractParameterType.ARRAY);
+        assertClassIsMappedToType(int[].class, ContractParameterType.ARRAY);
+        assertClassIsMappedToType(Integer[].class, ContractParameterType.ARRAY);
+        assertClassIsMappedToType(boolean[].class, ContractParameterType.ARRAY);
+        assertClassIsMappedToType(byte[][].class, ContractParameterType.ARRAY);
+        assertClassIsMappedToType(List.class, ContractParameterType.ARRAY);
 
         // Public Key
-        assertClassIsMappedToType(ECPoint.class, PUBLIC_KEY);
+        assertClassIsMappedToType(ECPoint.class, ContractParameterType.PUBLIC_KEY);
 
         // Map
-        assertClassIsMappedToType(Map.class, MAP);
+        assertClassIsMappedToType(Map.class, ContractParameterType.MAP);
 
         // Hash
-        assertClassIsMappedToType(Hash160.class, HASH160);
-        assertClassIsMappedToType(Hash256.class, HASH256);
+        assertClassIsMappedToType(Hash160.class, ContractParameterType.HASH160);
+        assertClassIsMappedToType(Hash256.class, ContractParameterType.HASH256);
 
         // Others
-        assertClassIsMappedToType(Transaction.class, INTEROP_INTERFACE);
-        assertClassIsMappedToType(Iterator.class, INTEROP_INTERFACE);
-        assertClassIsMappedToType(Object.class, ANY);
-        assertClassIsMappedToType(CompilerTest.class, ANY);
+        assertClassIsMappedToType(Transaction.class, ContractParameterType.INTEROP_INTERFACE);
+        assertClassIsMappedToType(Iterator.class, ContractParameterType.INTEROP_INTERFACE);
+        assertClassIsMappedToType(Object.class, ContractParameterType.ANY);
+        assertClassIsMappedToType(CompilerTest.class, ContractParameterType.ANY);
+    }
+
+    @Test
+    public void mapTypeToStackItemTypeShouldReturnTheCorrectTypes() {
+        // Integers
+        assertClassIsMappedToType(byte.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(Byte.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(char.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(Character.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(short.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(Short.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(int.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(Integer.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(long.class, StackItemType.INTEGER);
+        assertClassIsMappedToType(Long.class, StackItemType.INTEGER);
+
+        // Bools
+        assertClassIsMappedToType(boolean.class, StackItemType.BOOLEAN);
+        assertClassIsMappedToType(Boolean.class, StackItemType.BOOLEAN);
+
+        // Byte Strings
+        assertClassIsMappedToType(String.class, StackItemType.BYTE_STRING);
+        assertClassIsMappedToType(ECPoint.class, StackItemType.BYTE_STRING);
+        assertClassIsMappedToType(Hash160.class, StackItemType.BYTE_STRING);
+        assertClassIsMappedToType(Hash256.class, StackItemType.BYTE_STRING);
+
+        // Byte arrays
+        assertClassIsMappedToType(byte[].class, StackItemType.BUFFER);
+        assertClassIsMappedToType(Byte[].class, StackItemType.BUFFER);
+
+        // Arrays
+        assertClassIsMappedToType(String[].class, StackItemType.ARRAY);
+        assertClassIsMappedToType(int[].class, StackItemType.ARRAY);
+        assertClassIsMappedToType(Integer[].class, StackItemType.ARRAY);
+        assertClassIsMappedToType(boolean[].class, StackItemType.ARRAY);
+        assertClassIsMappedToType(byte[][].class, StackItemType.ARRAY);
+        assertClassIsMappedToType(List.class, StackItemType.ARRAY);
+
+        // Map
+        assertClassIsMappedToType(Map.class, StackItemType.MAP);
+
+        // Others
+        assertClassIsMappedToType(Transaction.class, StackItemType.ANY);
+        assertClassIsMappedToType(Iterator.class, StackItemType.ANY);
+        assertClassIsMappedToType(Object.class, StackItemType.ANY);
     }
 
     private void assertClassIsMappedToType(Class<?> clazz, ContractParameterType type) {
         Type t = Type.getType(clazz);
         assertThat(Compiler.mapTypeToParameterType(t), is(type));
+    }
+
+    private void assertClassIsMappedToType(Class<?> clazz, StackItemType type) {
+        Type t = Type.getType(clazz);
+        assertThat(Compiler.mapTypeToStackItemType(t), is(type));
     }
 
     @Test
@@ -144,7 +184,6 @@ public class CompilerTest {
         public static native void annotatedMethod();
 
     }
-
 
 
 }
