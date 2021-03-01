@@ -15,7 +15,7 @@ public class ByteArrayTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(ByteArrays.class.getName());
+        setUp(ByteArrayTestContract.class.getName());
     }
 
     @Test
@@ -67,7 +67,7 @@ public class ByteArrayTest extends ContractTest {
         assertThat(result.asBuffer().getValue(), is(new byte[]{0x01, 0x00, 0x00, 0x00, 0x00}));
     }
 
-    static class ByteArrays {
+    static class ByteArrayTestContract {
 
         public static byte[] constructEmptyArray() {
             return new byte[]{};

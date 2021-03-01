@@ -14,7 +14,7 @@ public class ArithmeticOperatorsTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(ArithmeticOperators.class.getName());
+        setUp(ArithmeticOperatorsTestContract.class.getName());
     }
 
     @Test
@@ -75,7 +75,7 @@ public class ArithmeticOperatorsTest extends ContractTest {
         assertThat(response.getInvocationResult().getStack().get(0), is(expected));
     }
 
-    static class ArithmeticOperators {
+    static class ArithmeticOperatorsTestContract {
 
         public static int[] allOperators(int i, int j) {
             int[] arr = new int[5];
