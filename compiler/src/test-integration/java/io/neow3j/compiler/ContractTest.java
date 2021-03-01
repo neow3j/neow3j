@@ -333,15 +333,6 @@ public class ContractTest {
                 is(VM_STATE_HALT));
     }
 
-    protected <T extends StackItem> T loadExpectedResultFile(Class<T> stackItemType)
-            throws IOException {
-
-        String[] splitName = contractName.split("\\$");
-        InputStream s = this.getClass().getClassLoader().getResourceAsStream(
-                getResultFilePath(splitName[splitName.length - 1], getTestName()));
-        return getObjectMapper().readValue(s, stackItemType);
-    }
-
     protected void signAsCommittee() {
         signAsCommittee = true;
     }

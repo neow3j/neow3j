@@ -16,7 +16,7 @@ public class List<T> {
     public List() {
     }
 
-    @Instruction(opcode = OpCode.NOP)
+    @Instruction()
     public List(T[] array) {
     }
 

@@ -25,6 +25,7 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
@@ -137,6 +138,63 @@ public class Compiler {
         // If the type is Object or any other class.
         return ContractParameterType.ANY;
     }
+
+    /**
+     * Maps the given Java type to the corresponding neo-vm stack item type.
+     * <p>
+     * Not every Java type has a specific matching stack item type. For those the stack item type
+     * {@link StackItemType#ANY} is returned.
+     *
+     * @param type The Java type.
+     * @return the corresponding stack item type.
+     */
+    public static StackItemType mapTypeToStackItemType(Type type) {
+        String typeName = type.getClassName();
+        if (typeName.equals(String.class.getTypeName())
+                || typeName.equals(Hash160.class.getTypeName())
+                || typeName.equals(Hash256.class.getTypeName())
+                || typeName.equals(ECPoint.class.getTypeName())) {
+            return StackItemType.BYTE_STRING;
+        }
+        if (typeName.equals(Integer.class.getTypeName())
+                || typeName.equals(int.class.getTypeName())
+                || typeName.equals(Long.class.getTypeName())
+                || typeName.equals(long.class.getTypeName())
+                || typeName.equals(Byte.class.getTypeName())
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
+            return StackItemType.INTEGER;
+        }
+        if (typeName.equals(Boolean.class.getTypeName())
+                || typeName.equals(boolean.class.getTypeName())) {
+            return StackItemType.BOOLEAN;
+        }
+        if (typeName.equals(Byte[].class.getTypeName())
+                || typeName.equals(byte[].class.getTypeName())) {
+            return StackItemType.BUFFER;
+        }
+        if (typeName.equals(Map.class.getTypeName())) {
+            return StackItemType.MAP;
+        }
+        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return StackItemType.ARRAY;
+        }
+        try {
+            typeName = type.getDescriptor().replace("/", ".");
+            Class<?> clazz = Class.forName(typeName);
+            if (clazz.isArray()) {
+                return StackItemType.ARRAY;
+            }
+        } catch (ClassNotFoundException ignore) {
+        }
+        // If the type is Object or any other class.
+        return StackItemType.ANY;
+    }
+
 
 //    /**
 //     * Converts the given classes to neo-vm code and generates debug information with the help of
