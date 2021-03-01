@@ -51,7 +51,6 @@ public class ArraysConverter implements Converter {
                     insn = handleNewByteArray(insn, neoMethod);
                 } else {
                     handleNewArray(insn, neoMethod);
-                    // TODO!!!
                 }
                 break;
             case BASTORE:
