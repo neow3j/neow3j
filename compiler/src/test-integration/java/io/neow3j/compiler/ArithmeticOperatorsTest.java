@@ -23,16 +23,24 @@ public class ArithmeticOperatorsTest extends ContractTest {
                 ContractParameter.integer(-100),
                 ContractParameter.integer(30));
 
-        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
-        assertThat(response.getInvocationResult().getStack().get(0), is(expected));
+        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
+        assertThat(array.get(0).asInteger().getValue().intValue(), is(-70));
+        assertThat(array.get(1).asInteger().getValue().intValue(), is(-130));
+        assertThat(array.get(2).asInteger().getValue().intValue(), is(-3000));
+        assertThat(array.get(3).asInteger().getValue().intValue(), is(-3));
+        assertThat(array.get(4).asInteger().getValue().intValue(), is(-10));
     }
 
     @Test
     public void allAssignmentOperators() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.integer(-100));
 
-        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
-        assertThat(response.getInvocationResult().getStack().get(0), is(expected));
+        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
+        assertThat(array.get(0).asInteger().getValue().intValue(), is(-90));
+        assertThat(array.get(1).asInteger().getValue().intValue(), is(110));
+        assertThat(array.get(2).asInteger().getValue().intValue(), is(-1000));
+        assertThat(array.get(3).asInteger().getValue().intValue(), is(0));
+        assertThat(array.get(4).asInteger().getValue().intValue(), is(10));
     }
 
     @Test
@@ -41,8 +49,10 @@ public class ArithmeticOperatorsTest extends ContractTest {
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
-        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
-        assertThat(response.getInvocationResult().getStack().get(0), is(expected));
+        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
+        assertThat(array.get(0).asInteger().getValue().intValue(), is(0));
+        assertThat(array.get(1).asInteger().getValue().intValue(), is(-99));
+        assertThat(array.get(2).asInteger().getValue().intValue(), is(100));
     }
 
     @Test
@@ -51,8 +61,10 @@ public class ArithmeticOperatorsTest extends ContractTest {
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
-        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
-        assertThat(response.getInvocationResult().getStack().get(0), is(expected));
+        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
+        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
+        assertThat(array.get(1).asInteger().getValue().intValue(), is(-99));
+        assertThat(array.get(2).asInteger().getValue().intValue(), is(100));
     }
 
     @Test
@@ -61,8 +73,10 @@ public class ArithmeticOperatorsTest extends ContractTest {
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
-        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
-        assertThat(response.getInvocationResult().getStack().get(0), is(expected));
+        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
+        assertThat(array.get(0).asInteger().getValue().intValue(), is(-200));
+        assertThat(array.get(1).asInteger().getValue().intValue(), is(-101));
+        assertThat(array.get(2).asInteger().getValue().intValue(), is(100));
     }
 
     @Test
@@ -71,8 +85,10 @@ public class ArithmeticOperatorsTest extends ContractTest {
                 ContractParameter.integer(-100),
                 ContractParameter.integer(100));
 
-        ArrayStackItem expected = loadExpectedResultFile(ArrayStackItem.class);
-        assertThat(response.getInvocationResult().getStack().get(0), is(expected));
+        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
+        assertThat(array.get(0).asInteger().getValue().intValue(), is(-201));
+        assertThat(array.get(1).asInteger().getValue().intValue(), is(-101));
+        assertThat(array.get(2).asInteger().getValue().intValue(), is(100));
     }
 
     static class ArithmeticOperatorsTestContract {
