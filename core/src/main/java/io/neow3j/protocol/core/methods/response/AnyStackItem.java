@@ -26,11 +26,11 @@ public class AnyStackItem extends StackItem {
     }
 
     @Override
-    public String toString() {
-        return "AnyStackItem{" +
-                "type=" + type +
-                ", value=" + value +
-                '}';
+    public String valueToString() {
+        if (value == null) {
+            return "null";
+        }
+        return value.toString();
     }
 
     @Override

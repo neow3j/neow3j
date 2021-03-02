@@ -18,6 +18,7 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a NEP-11 non-fungible token contract and provides methods to invoke it.
@@ -95,7 +96,7 @@ public class NonFungibleToken extends Token {
             throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
         }
         try {
-            return ScriptHash.fromAddress(item.asByteString().getAsAddress());
+            return ScriptHash.fromAddress(item.getAddress());
         } catch (IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException(
                     "Return type did not contain script hash in expected format.", e);
@@ -134,10 +135,10 @@ public class NonFungibleToken extends Token {
         StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
-            MapStackItem mapStackItem = item.asMap();
+            Map<StackItem, StackItem> mapStackItem = item.getMap();
             return new TokenState(
-                    mapStackItem.get("name").asByteString().getAsString(),
-                    mapStackItem.get("description").asByteString().getAsString());
+                    mapStackItem.get("name").getString(),
+                    mapStackItem.get("description").getString());
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
     }

@@ -84,7 +84,7 @@ public class SmartContract {
         StackItem item = callInvokeFunction(function, asList(params))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(BYTE_STRING)) {
-            return item.asByteString().getAsString();
+            return item.getString();
         }
         throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
     }
@@ -112,7 +112,7 @@ public class SmartContract {
                     .getInvocationResult().getStack().get(0);
         }
         if (item.getType().equals(INTEGER)) {
-            return item.asInteger().getValue();
+            return item.getInteger();
         }
         throw new UnexpectedReturnTypeException(item.getType(), INTEGER);
     }
@@ -140,7 +140,7 @@ public class SmartContract {
                     .getInvocationResult().getStack().get(0);
         }
         if (item.getType().equals(BOOLEAN)) {
-            return item.asBoolean().getValue();
+            return item.getBoolean();
         }
         throw new UnexpectedReturnTypeException(item.getType(), BOOLEAN);
     }

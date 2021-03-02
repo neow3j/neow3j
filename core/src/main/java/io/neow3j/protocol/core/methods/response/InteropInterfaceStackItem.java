@@ -27,7 +27,20 @@ public class InteropInterfaceStackItem extends StackItem {
      * @return the value of this stack item.
      */
     public Object getValue() {
-        return this.value;
+        return value;
+    }
+
+    @Override
+    public String valueToString() {
+        if (value == null) {
+            return "null";
+        }
+        return value.toString();
+    }
+
+    @Override
+    public Object getInteropInterface() {
+        return value;
     }
 
     @Override

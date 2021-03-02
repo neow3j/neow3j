@@ -79,10 +79,9 @@ public class ContractManagement extends SmartContract {
         if (!stackItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.ARRAY);
         }
-        int id = stackItem.asArray().get(0).asInteger().getValue().intValue();
-        int updateCounter = stackItem.asArray().get(1).asInteger().getValue().intValue();
-        String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString()
-                .getAsHexString());
+        int id = stackItem.getArray()[0].getInteger().intValue();
+        int updateCounter = stackItem.getArray()[1].getInteger().intValue();
+        String hash = Numeric.reverseHexString(stackItem.getArray()[2].getHexString());
 
         // TODO: 01.02.21 Guil:
         // We need to fix how we get from StackItem to a NefFile/ContractManifest

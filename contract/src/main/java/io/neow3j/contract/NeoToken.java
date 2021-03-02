@@ -181,16 +181,16 @@ public class NeoToken extends FungibleToken {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
         Map<ECPublicKey, Integer> validators = new HashMap<>();
-        for (StackItem valItem : arrayItem.asArray().getValue()) {
+        for (StackItem valItem : arrayItem.getArray()) {
             if (!valItem.getType().equals(STRUCT)) {
                 throw new UnexpectedReturnTypeException(valItem.getType(), STRUCT);
             }
-            ECPublicKey key = extractPublicKey(valItem.asStruct().getValue().get(0));
-            StackItem nrItem = valItem.asStruct().getValue().get(1);
+            ECPublicKey key = extractPublicKey(valItem.getArray()[0]);
+            StackItem nrItem = valItem.getArray()[1];
             if (!nrItem.getType().equals(INTEGER)) {
                 throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
             }
-            validators.put(key, nrItem.asInteger().getValue().intValue());
+            validators.put(key, nrItem.getInteger().intValue());
         }
         return validators;
     }
@@ -216,7 +216,7 @@ public class NeoToken extends FungibleToken {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
         List<ECPublicKey> valKeys = new ArrayList<>();
-        for (StackItem keyItem : arrayItem.asArray().getValue()) {
+        for (StackItem keyItem : arrayItem.getArray()) {
             valKeys.add(extractPublicKey(keyItem));
         }
         return valKeys;
@@ -227,7 +227,7 @@ public class NeoToken extends FungibleToken {
             throw new UnexpectedReturnTypeException(keyItem.getType(), BYTE_STRING);
         }
         try {
-            return new ECPublicKey(keyItem.asByteString().getValue());
+            return new ECPublicKey(keyItem.getByteArray());
         } catch (IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException(
                     "Byte array return type did not contain public key in expected format.", e);

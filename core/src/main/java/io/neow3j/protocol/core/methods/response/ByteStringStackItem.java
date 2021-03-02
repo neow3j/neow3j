@@ -1,16 +1,17 @@
 package io.neow3j.protocol.core.methods.response;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
+
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ByteStringStackItem extends StackItem {
@@ -39,47 +40,62 @@ public class ByteStringStackItem extends StackItem {
     /**
      * Gets this item's value as an address.
      * <p>
-     * Expects the byte string to be a script hash in little-endian order.
+     * Treats the underlying bytes as a script hash in little-endian order.
      *
-     * @return the address represented by this item.
+     * @return the address.
      */
-    public String getAsAddress() {
-        return new ScriptHash(getValue()).toAddress();
+    @Override
+    public String getAddress() {
+        return new ScriptHash(value).toAddress();
     }
 
     /**
-     * Gets this item's value as string.
-     * <p>
-     * Expects the byte string to be UTF-8-encoded.
+     * Treats this item's value as a UTF-8 encoded string, i.e. reads and returns the underlying
+     * bytes as a UTF-8 string.
      *
-     * @return the string represented by this item.
+     * @return the string.
      */
-    public String getAsString() {
-        return new String(getValue(), UTF_8);
+    @Override
+    public String getString() {
+        return new String(value, UTF_8);
     }
 
     /**
      * Gets this item's value as a hexadecimal string.
-     * <p>
-     * Simply translates the underlying byte array into its corresponding hexadecimal form.
      *
-     * @return the hex string represented by this item.
+     * @return the hex string.
      */
-    public String getAsHexString() {
-        return Numeric.toHexStringNoPrefix(getValue());
+    @Override
+    public String getHexString() {
+        return Numeric.toHexStringNoPrefix(value);
     }
 
     /**
-     * Gets this item's value as an integer. Expects the underlying bytes to be in little-endian
-     * order.
+     * Gets the value of this stack item.
      *
-     * @return the integer represented by this item.
+     * @return the bytes;
      */
-    public BigInteger getAsNumber() {
-        if (getValue().length == 0) {
+    @Override
+    public byte[] getByteArray() {
+        return value;
+    }
+
+    /**
+     * Gets this item's value as an integer. Treats the value as a little-endian byte array.
+     *
+     * @return the integer.
+     */
+    @Override
+    public BigInteger getInteger() {
+        if (value.length == 0) {
             return BigInteger.ZERO;
         }
-        return BigIntegers.fromLittleEndianByteArray(getValue());
+        return BigIntegers.fromLittleEndianByteArray(value);
+    }
+
+    @Override
+    public String valueToString() {
+        return Numeric.toHexStringNoPrefix(value);
     }
 
     @Override

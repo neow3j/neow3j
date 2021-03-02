@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.model.types.StackItemType;
 
+import java.math.BigInteger;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -23,6 +24,26 @@ public class BooleanStackItem extends StackItem {
 
     public Boolean getValue() {
         return this.value;
+    }
+
+    @Override
+    public boolean getBoolean() {
+        return value;
+    }
+
+    @Override
+    public BigInteger getInteger() {
+        return value ? BigInteger.ONE : BigInteger.ZERO;
+    }
+
+    @Override
+    public String getString() {
+        return value.toString();
+    }
+
+    @Override
+    public String valueToString() {
+        return value.toString();
     }
 
     @Override

@@ -23,9 +23,24 @@ public class PointerStackItem extends StackItem {
         this.value = value;
     }
 
+    @Override
+    public String valueToString() {
+        return value.toString();
+    }
+
     @JsonValue
     public BigInteger getValue() {
-        return this.value;
+        return value;
+    }
+
+    @Override
+    public BigInteger getInteger() {
+        return value;
+    }
+
+    @Override
+    public BigInteger getPointer() {
+        return value;
     }
 
     @Override

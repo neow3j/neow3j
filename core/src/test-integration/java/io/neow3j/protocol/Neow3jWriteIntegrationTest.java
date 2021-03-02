@@ -152,8 +152,7 @@ public class Neow3jWriteIntegrationTest {
         ScriptHash recipient2ScriptHash = ScriptHash.fromAddress(RECIPIENT_2);
         assertThat(neow3j.invokeFunction(
                 NEO_HASH, "balanceOf", Arrays.asList(hash160(recipient2ScriptHash)))
-                        .send().getInvocationResult().getStack().get(0)
-                        .asInteger().getValue().intValue(),
+                        .send().getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(10));
     }
 

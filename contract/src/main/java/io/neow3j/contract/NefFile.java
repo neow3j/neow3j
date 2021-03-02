@@ -228,8 +228,7 @@ public class NefFile extends NeoSerializable {
         if (!stackItem.getType().equals(BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), BYTE_STRING);
         }
-        ByteStringStackItem byteStringStackItem = stackItem.asByteString();
-        byte[] nefBytes = byteStringStackItem.getValue();
+        byte[] nefBytes = stackItem.getByteArray();
         try (ByteArrayInputStream nefStream = new ByteArrayInputStream(nefBytes)) {
             BinaryReader reader = new BinaryReader(nefStream);
             return reader.readSerializable(NefFile.class);

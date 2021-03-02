@@ -14,6 +14,7 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents the RoleManagement contract that is used to assign roles to and check roles of
@@ -53,11 +54,11 @@ public class RoleManagement extends SmartContract {
                         integer(role.byteValue()),
                         integer(blockIndex)));
 
-        List<StackItem> arrayOfDesignates =
-                invocation.getInvocationResult().getStack().get(0).asArray().getValue();
+        StackItem[] arrayOfDesignates = invocation.getInvocationResult()
+                .getStack().get(0).getArray();
 
-        return arrayOfDesignates.stream()
-                .map(item -> new ECPublicKey(item.asByteString().getValue()))
+        return Stream.of(arrayOfDesignates)
+                .map(item -> new ECPublicKey(item.getByteArray()))
                 .collect(Collectors.toList());
     }
 
