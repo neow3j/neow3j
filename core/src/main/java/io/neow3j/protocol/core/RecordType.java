@@ -20,7 +20,7 @@ public enum RecordType {
     /**
      * A text record.
      */
-    TXT("TXT", 0x16),
+    TXT("TXT", 0x10),
 
     /* endregion */
 
@@ -29,7 +29,7 @@ public enum RecordType {
     /**
      * An IPv6 address record.
      */
-    AAAA("AAAA", 0x25);
+    AAAA("AAAA", 0x1C);
 
     /* endregion */
 

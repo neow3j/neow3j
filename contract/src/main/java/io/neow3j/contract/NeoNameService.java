@@ -81,14 +81,8 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      */
     public TransactionBuilder addRoot(String root) {
-        if (!rootRegexMatches(root)) {
-            throw new IllegalArgumentException("The provided root domain is not allowed.");
-        }
+        checkRegexMatch(ROOT_REGEX_PATTERN, root);
         return invokeFunction(ADD_ROOT, string(root));
-    }
-
-    private boolean rootRegexMatches(String root) {
-        return ROOT_REGEX_PATTERN.matcher(root).matches();
     }
 
     /**
@@ -132,12 +126,17 @@ public class NeoNameService extends NonFungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean isAvailable(String name) throws IOException {
-        checkRegexMatch(NAME_REGEX_PATTERN, name);
-        return callFuncReturningBool(IS_AVAILABLE, string(name));
+        checkDomainNameValidity(name);
+        try {
+            return callFuncReturningBool(IS_AVAILABLE, string(name));
+        } catch (IndexOutOfBoundsException e) {
+            String root = name.split("\\.")[1];
+            throw new IllegalArgumentException("The root domain '" + root + "' does not exist.");
+        }
     }
 
-    private boolean nameRegexMatches(String name) {
-        return NAME_REGEX_PATTERN.matcher(name).matches();
+    public boolean nameRegexDoesNotMatch(String name) {
+        return !NAME_REGEX_PATTERN.matcher(name).matches();
     }
 
     /**
@@ -148,8 +147,38 @@ public class NeoNameService extends NonFungibleToken {
      * @param owner the address of the domain owner.
      * @return a transaction builder.
      */
-    public TransactionBuilder register(String name, ScriptHash owner) {
+    public TransactionBuilder register(String name, ScriptHash owner) throws IOException {
+        checkDomainNameAvailability(name, true);
         return invokeFunction(REGISTER, string(name), hash160(owner));
+    }
+
+    // checks if a domain name is available
+    private void checkDomainNameAvailability(String name, boolean shouldBeAvailable)
+            throws IOException {
+        boolean isAvailable = isAvailable(name);
+        if (shouldBeAvailable && !isAvailable) {
+            throw new IllegalArgumentException("The domain name '" + name + "' is already taken.");
+        }
+        if (!shouldBeAvailable && isAvailable) {
+            throw new IllegalArgumentException("The domain name '" + name + "' is not registered.");
+        }
+    }
+
+    // checks that the domain name matches the required regex and contains two levels.
+    private void checkDomainNameValidity(String name) {
+        checkRegexMatch(NAME_REGEX_PATTERN, name);
+        if (name.split("\\.").length != 2) {
+            throw new IllegalArgumentException("Only second domain names are allowed to be " +
+                    "registered.");
+        }
+    }
+
+    // checks if an input matches the provided regex pattern.
+    private void checkRegexMatch(Pattern pattern, String input) {
+        if (!pattern.matcher(input).matches()) {
+            throw new IllegalArgumentException("The provided input does not match the required " +
+                    "regex.");
+        }
     }
 
     /**
@@ -163,7 +192,8 @@ public class NeoNameService extends NonFungibleToken {
      * @param name the domain name.
      * @return a transaction builder.
      */
-    public TransactionBuilder renew(String name) {
+    public TransactionBuilder renew(String name) throws IOException {
+        checkDomainNameAvailability(name, false);
         return invokeFunction(RENEW, string(name));
     }
 
@@ -175,8 +205,8 @@ public class NeoNameService extends NonFungibleToken {
      * @param admin the hash of the admin address. TODO: check what address exactly
      * @return a transaction builder.
      */
-    public TransactionBuilder setAdmin(String name, ScriptHash admin) {
-        // only committee allowed?
+    public TransactionBuilder setAdmin(String name, ScriptHash admin) throws IOException {
+        checkDomainNameAvailability(name, false);
         return invokeFunction(SET_ADMIN, string(name), hash160(admin));
     }
 
@@ -189,27 +219,37 @@ public class NeoNameService extends NonFungibleToken {
      * @param data the corresponding data.
      * @return a transaction builder.
      */
-    // TODO: 25.02.21 Michael: Needs to verify the signature of the admin or the owner of the
-    //  domain.
-    //  -> check if anything further is necessary for this.
-    public TransactionBuilder setRecord(String name, RecordType type, String data) {
-        // everyone allowed?
-        if (!dataMatchesRecordTypeRegex(type, data)) {
-            throw new IllegalArgumentException("The provided name is not allowed.");
-        }
+    public TransactionBuilder setRecord(String name, RecordType type, String data)
+            throws IOException {
+        checkDomainNameAvailability(name, false);
+        checkDataMatchingRecordType(type, data);
         return invokeFunction(SET_RECORD, string(name), integer(type.byteValue()), string(data));
     }
 
-    private boolean dataMatchesRecordTypeRegex(RecordType type, String data) {
+    private void checkDataMatchingRecordType(RecordType type, String data) {
         if (type.equals(RecordType.A)) {
-            return IPAddress.isValidIPv4(data);
+            if (!IPAddress.isValidIPv4(data)) {
+                handleInvalidDataType(RecordType.A);
+            }
         } else if (type.equals(RecordType.CNAME)) {
-            return nameRegexMatches(data);
+            if (nameRegexDoesNotMatch(data)) {
+                handleInvalidDataType(RecordType.CNAME);
+            }
         } else if (type.equals(RecordType.TXT)) {
-            return data.length() <= 255;
+            byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
+            if (bytes.length > 255) {
+                handleInvalidDataType(RecordType.TXT);
+            }
         } else {
-            return IPAddress.isValidIPv6(data);
+            if (!IPAddress.isValidIPv6(data)) {
+                handleInvalidDataType(RecordType.AAAA);
+            }
         }
+    }
+
+    private void handleInvalidDataType(RecordType expected) {
+        throw new IllegalArgumentException("The provided data is not valid for the record type " +
+                expected.jsonValue() + ".");
     }
 
     /**
@@ -221,9 +261,13 @@ public class NeoNameService extends NonFungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public String getRecord(String name, RecordType type) throws IOException {
-        return callFuncReturningString(GET_RECORD, string(name), integer(type.byteValue()));
-        // returns a Base64-encoded string of the corresponding type data of the domain name.
-        // TODO: 25.02.21 Michael: check if Base64 is parsed.
+        checkDomainNameAvailability(name, false);
+        try {
+            return callFuncReturningString(GET_RECORD, string(name), integer(type.byteValue()));
+        } catch (UnexpectedReturnTypeException e) {
+            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found " +
+                    "for the domain name '" + name + "'.");
+        }
     }
 
     /**
@@ -234,64 +278,66 @@ public class NeoNameService extends NonFungibleToken {
      * @param type the record type.
      * @return a transaction builder.
      */
-    // Needs to verify the signature of the admin or the owner of the domain name.
-    public TransactionBuilder deleteRecord(String name, RecordType type) {
+    public TransactionBuilder deleteRecord(String name, RecordType type) throws IOException {
+        checkDomainNameAvailability(name, false);
         return invokeFunction(DELETE_RECORD, string(name), integer(type.byteValue()));
     }
 
     /**
      * Resolves a domain name.
      *
-     * @param domain the domain.
-     * @param type   the record type.
+     * @param name the domain name.
+     * @param type the record type.
      * @return the resolution result.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public String resolve(String domain, RecordType type) throws IOException {
-        return "";
-        // returns the Base64-encoded string of the resolution result.
-        // TODO: 25.02.21 Michael: check if Base64 is parsed.
+    public String resolve(String name, RecordType type) throws IOException {
+        checkDomainNameAvailability(name, false);
+        try {
+            return callFuncReturningString(RESOLVE, string(name), integer(type.byteValue()));
+        } catch (UnexpectedReturnTypeException e) {
+            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found " +
+                    "for the domain name '" + name + "'.");
+        }
     }
 
     /**
      * Gets the owner of the domain name.
      *
-     * @param domain the domain name.
+     * @param name the domain name.
      * @return the owner of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public ScriptHash ownerOf(String domain) throws IOException {
-        return ownerOf(domain.getBytes(StandardCharsets.UTF_8));
+    public ScriptHash ownerOf(String name) throws IOException {
+        checkDomainNameAvailability(name, false);
+        return ownerOf(name.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
      * Gets the properties of the domain name.
      *
-     * @param domain the domain name.
+     * @param name the domain name.
      * @return the properties of the domain name as {@link NameState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NameState properties(String domain) throws IOException {
-        return properties(domain.getBytes(StandardCharsets.UTF_8));
+    public NameState properties(String name) throws IOException {
+        return properties(name.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
      * Gets the properties of the domain name.
      *
-     * @param domain the domain name.
+     * @param name the domain name.
      * @return the properties of the domain name as {@link NameState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     @Override
-    public NameState properties(byte[] domain) throws IOException {
-        String domainAsString = Numeric.hexToString(Numeric.toHexString(domain));
-        if (!nameRegexMatches(domainAsString)) {
-            throw new IllegalArgumentException("The provided domain, '" + domainAsString + "'," +
-                    "does not match the required regex.");
-        }
+    public NameState properties(byte[] name) throws IOException {
+        String domainAsString = Numeric.hexToString(Numeric.toHexString(name));
+        checkDomainNameAvailability(domainAsString, false);
 
         InvocationResult invocationResult =
-                callInvokeFunction(PROPERTIES, singletonList(byteArray(domain)))
+                callInvokeFunction(PROPERTIES, singletonList(byteArray(name)))
                         .getInvocationResult();
 
         if (invocationResult.getException() != null) {
@@ -325,28 +371,20 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
+     * Creates a transaction script to transfer a domain name and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The returned {@link TransactionBuilder} is ready to be signed and sent.
+     *
      * @param wallet the wallet.
-     * @param to     the receiver of the domain.
-     * @param domain the domain.
+     * @param to     the receiver of the domain name.
+     * @param name   the domain name.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, String domain)
+    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, String name)
             throws IOException {
-        checkRegexMatch(NAME_REGEX_PATTERN, domain);
-        return transfer(wallet, to, domain.getBytes(StandardCharsets.UTF_8));
-    }
-
-    // checks if an input matches the provided regex pattern.
-    private void checkRegexMatch(Pattern pattern, byte[] input) {
-        checkRegexMatch(pattern, Numeric.hexToString(Numeric.toHexString(input)));
-    }
-
-    // checks if an input matches the provided regex pattern.
-    private void checkRegexMatch(Pattern pattern, String input) {
-        if (!nameRegexMatches(input)) {
-            throw new IllegalArgumentException("The provided input, '" + input + "'," +
-                    "does not match the required regex.");
-        }
+        checkDomainNameAvailability(name, false);
+        return transfer(wallet, to, name.getBytes(StandardCharsets.UTF_8));
     }
 }
