@@ -1,5 +1,12 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.model.types.StackItemType.MAP;
+import static java.util.Collections.singletonList;
+
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
@@ -9,19 +16,11 @@ import io.neow3j.protocol.core.methods.response.NameState;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
-import org.bouncycastle.util.IPAddress;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
-
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
-import static io.neow3j.model.types.StackItemType.MAP;
-import static java.util.Collections.singletonList;
 
 /**
  * Represents the NameService native contract and provides methods to invoke its functions.
@@ -48,8 +47,12 @@ public class NeoNameService extends NonFungibleToken {
 
     private static final BigInteger MAXIMAL_PRICE = new BigInteger("1000000000000");
     private static final Pattern ROOT_REGEX_PATTERN = Pattern.compile("^[a-z][a-z0-9]{0,15}$");
-    private static final Pattern NAME_REGEX_PATTERN =
-            Pattern.compile("^(?=.{3,255}$)([a-z0-9]{1,62}\\.)+[a-z][a-z0-9]{0,15}$");
+    public static final Pattern NAME_REGEX_PATTERN = Pattern.compile(
+            "^(?=.{3,255}$)([a-z0-9]{1,62}\\.)+[a-z][a-z0-9]{0,15}$");
+    private static final Pattern IPV4_REGEX_PATTERN = Pattern.compile(
+            "^(2(5[0-5]|[0-4]\\d))|1?\\d{1,2}(\\.((2(5[0-5]|[0-4]\\d))|1?\\d{1,2})){3}$");
+    private static final Pattern IPV6_REGEX_PATTERN = Pattern.compile(
+            "^([a-f0-9]{1,4}:){7}[a-f0-9]{1,4}$");
 
     /**
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
@@ -105,7 +108,7 @@ public class NeoNameService extends NonFungibleToken {
     // true if the price is in the allowed range, false otherwise.
     private boolean isValidPrice(BigInteger price) {
         return price.compareTo(BigInteger.ZERO) > 0 &&
-                price.compareTo(MAXIMAL_PRICE) < 0;
+                price.compareTo(MAXIMAL_PRICE) <= 0;
     }
 
     /**
@@ -133,10 +136,6 @@ public class NeoNameService extends NonFungibleToken {
             String root = name.split("\\.")[1];
             throw new IllegalArgumentException("The root domain '" + root + "' does not exist.");
         }
-    }
-
-    public boolean nameRegexDoesNotMatch(String name) {
-        return !NAME_REGEX_PATTERN.matcher(name).matches();
     }
 
     /**
@@ -200,9 +199,11 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Creates a transaction script to set the admin for the specified domain name and
      * initializes a {@link TransactionBuilder} based on this script.
+     * <p>
+     * Requires to be signed by the current owner and the new admin of the domain.
      *
      * @param name  the domain name.
-     * @param admin the hash of the admin address. TODO: check what address exactly
+     * @param admin the hash of the admin address.
      * @return a transaction builder.
      */
     public TransactionBuilder setAdmin(String name, ScriptHash admin) throws IOException {
@@ -228,28 +229,18 @@ public class NeoNameService extends NonFungibleToken {
 
     private void checkDataMatchingRecordType(RecordType type, String data) {
         if (type.equals(RecordType.A)) {
-            if (!IPAddress.isValidIPv4(data)) {
-                handleInvalidDataType(RecordType.A);
-            }
+            checkRegexMatch(IPV4_REGEX_PATTERN, data);
         } else if (type.equals(RecordType.CNAME)) {
-            if (nameRegexDoesNotMatch(data)) {
-                handleInvalidDataType(RecordType.CNAME);
-            }
+            checkRegexMatch(NAME_REGEX_PATTERN, data);
         } else if (type.equals(RecordType.TXT)) {
             byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
             if (bytes.length > 255) {
-                handleInvalidDataType(RecordType.TXT);
+                throw new IllegalArgumentException("The provided data is not valid for the record" +
+                        " type TXT.");
             }
         } else {
-            if (!IPAddress.isValidIPv6(data)) {
-                handleInvalidDataType(RecordType.AAAA);
-            }
+            checkRegexMatch(IPV6_REGEX_PATTERN, data);
         }
-    }
-
-    private void handleInvalidDataType(RecordType expected) {
-        throw new IllegalArgumentException("The provided data is not valid for the record type " +
-                expected.jsonValue() + ".");
     }
 
     /**
@@ -278,8 +269,7 @@ public class NeoNameService extends NonFungibleToken {
      * @param type the record type.
      * @return a transaction builder.
      */
-    public TransactionBuilder deleteRecord(String name, RecordType type) throws IOException {
-        checkDomainNameAvailability(name, false);
+    public TransactionBuilder deleteRecord(String name, RecordType type) {
         return invokeFunction(DELETE_RECORD, string(name), integer(type.byteValue()));
     }
 
@@ -335,39 +325,27 @@ public class NeoNameService extends NonFungibleToken {
     public NameState properties(byte[] name) throws IOException {
         String domainAsString = Numeric.hexToString(Numeric.toHexString(name));
         checkDomainNameAvailability(domainAsString, false);
-
         InvocationResult invocationResult =
                 callInvokeFunction(PROPERTIES, singletonList(byteArray(name)))
                         .getInvocationResult();
-
-        if (invocationResult.getException() != null) {
-            throw new IllegalArgumentException("The properties for the domain '" + domainAsString +
-                    "' could not be fetched. The vm returned the exception '" +
-                    invocationResult.getException() + "'.");
-        }
         return deserializeProperties(invocationResult);
     }
 
     private NameState deserializeProperties(InvocationResult invocationResult) {
-        try {
-            StackItem stackItem = invocationResult.getStack().get(0);
+        StackItem stackItem = invocationResult.getStack().get(0);
 
-            if (!stackItem.getType().equals(MAP)) {
-                throw new UnexpectedReturnTypeException(stackItem.getType(), MAP);
-            }
-
-            MapStackItem map = stackItem.asMap();
-            StackItem name = map.get("name");
-            StackItem description = map.get("description");
-            StackItem expiration = map.get("expiration");
-
-            return new NameState(name.asByteString().getAsString(),
-                    description.asByteString().getAsString(),
-                    expiration.asInteger().getValue().intValue());
-
-        } catch (IndexOutOfBoundsException e) {
-            throw new RuntimeException(e);
+        if (!stackItem.getType().equals(MAP)) {
+            throw new UnexpectedReturnTypeException(stackItem.getType(), MAP);
         }
+
+        MapStackItem map = stackItem.asMap();
+        StackItem name = map.get("name");
+        StackItem description = map.get("description");
+        StackItem expiration = map.get("expiration");
+
+        return new NameState(name.asByteString().getAsString(),
+                description.asByteString().getAsString(),
+                expiration.asInteger().getValue().intValue());
     }
 
     /**
