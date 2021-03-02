@@ -1,30 +1,39 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
-import static io.neow3j.compiler.Compiler.addPushNumber;
-import static io.neow3j.compiler.Compiler.buildPushDataInsn;
-import static io.neow3j.compiler.AsmHelper.getFieldIndex;
-import static io.neow3j.compiler.JVMOpcode.BASTORE;
-import static io.neow3j.compiler.JVMOpcode.BIPUSH;
-import static io.neow3j.compiler.JVMOpcode.DUP;
-import static io.neow3j.compiler.JVMOpcode.ICONST_0;
-import static io.neow3j.compiler.JVMOpcode.ICONST_5;
-import static java.lang.String.format;
-
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Hash256;
+import io.neow3j.devpack.Map;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
-import java.io.IOException;
-import java.math.BigInteger;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.TypeInsnNode;
+
+import java.io.IOException;
+import java.math.BigInteger;
+
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
+import static io.neow3j.compiler.Compiler.addPushNumber;
+import static io.neow3j.compiler.Compiler.buildPushDataInsn;
+import static io.neow3j.compiler.Compiler.mapTypeToStackItemType;
+import static io.neow3j.compiler.JVMOpcode.BASTORE;
+import static io.neow3j.compiler.JVMOpcode.BIPUSH;
+import static io.neow3j.compiler.JVMOpcode.DUP;
+import static io.neow3j.compiler.JVMOpcode.ICONST_0;
+import static io.neow3j.compiler.JVMOpcode.ICONST_5;
+import static java.lang.String.format;
 
 public class ArraysConverter implements Converter {
 
@@ -41,7 +50,7 @@ public class ArraysConverter implements Converter {
                 if (isByteArrayInstantiation(insn)) {
                     insn = handleNewByteArray(insn, neoMethod);
                 } else {
-                    neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+                    handleNewArray(insn, neoMethod);
                 }
                 break;
             case BASTORE:
@@ -86,6 +95,34 @@ public class ArraysConverter implements Converter {
                         opcode.name()));
         }
         return insn;
+    }
+
+    private void handleNewArray(AbstractInsnNode insn, NeoMethod neoMethod) {
+        StackItemType stackItemType = null;
+        if (insn instanceof IntInsnNode) {
+            IntInsnNode intInsn = (IntInsnNode) insn;
+            switch (intInsn.operand) {
+                case Opcodes.T_BOOLEAN:
+                    stackItemType = StackItemType.BOOLEAN;
+                    break;
+                case Opcodes.T_CHAR:
+                case Opcodes.T_BYTE:
+                case Opcodes.T_SHORT:
+                case Opcodes.T_INT:
+                case Opcodes.T_LONG:
+                    stackItemType = StackItemType.INTEGER;
+                    break;
+            }
+        } else if (insn instanceof TypeInsnNode) {
+            TypeInsnNode typeInsn = (TypeInsnNode) insn;
+            stackItemType = mapTypeToStackItemType(Type.getObjectType(typeInsn.desc));
+        }
+        if (stackItemType == StackItemType.ANY) {
+            neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+        } else {
+            neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY_T,
+                    new byte[]{stackItemType.byteValue()}));
+        }
     }
 
     private AbstractInsnNode handleNewByteArray(AbstractInsnNode insn, NeoMethod neoMethod) {
@@ -161,7 +198,7 @@ public class ArraysConverter implements Converter {
     }
 
     private static boolean isByteArrayInstantiation(AbstractInsnNode insn) {
-        return insn instanceof IntInsnNode &&  ((IntInsnNode) insn).operand == BYTE_ARRAY_TYPE_CODE;
+        return insn instanceof IntInsnNode && ((IntInsnNode) insn).operand == BYTE_ARRAY_TYPE_CODE;
     }
 
     // Returns -2 if the given instruction is not a PUSH instruction.

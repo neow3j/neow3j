@@ -6,16 +6,13 @@ import java.lang.annotation.Target;
 /**
  * When used on a method of a smart contract class, this annotation signals that the annotated
  * method is to be used in the case that the contract is called for verification. The verification
- * method - called {@code verify} in the contract's manifest - can take any number and type of
- * arguments and must return a boolean.
+ * method can have any name, take any number and type of arguments but must return a boolean.
  * <p>
- * The {@code verify} method is called, e.g., when the contract's address is included as a signer in
- * a transaction
+ * The method will appear under the name {@code verify} in the contract manifest.
  * <p>
- * This annotation can only be used on a {@code public static} method of a smart contract class,
- * and not on other classes that provide functionality for the contract.
+ * A verify method is required, for example, when a contract can receive tokens and those tokens
+ * should be only spendable under certain conditions.
  */
-
 @MethodSignature(
         name = "verify",
         parameterTypes = {},

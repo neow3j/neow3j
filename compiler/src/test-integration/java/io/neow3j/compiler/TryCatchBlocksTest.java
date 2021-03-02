@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.protocol.core.methods.response.ArrayStackItem;
@@ -23,7 +24,7 @@ public class TryCatchBlocksTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("tryCatchBlock", integer(1));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(1).asAny().getValue(), nullValue());
+        assertFalse(res.get(1).asBoolean().getValue());
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
     }
 
@@ -31,9 +32,9 @@ public class TryCatchBlocksTest extends ContractTest {
     public void dontHitExceptionInTryCatchBlock() throws IOException {
         NeoInvokeFunction response = callInvokeFunction("tryCatchBlock", integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asAny().getValue(), nullValue());
+        assertFalse(res.get(2).asBoolean().getValue());
     }
 
     @Test
@@ -46,7 +47,7 @@ public class TryCatchBlocksTest extends ContractTest {
     public void dontHitExceptionInTryFinallyBlock() throws IOException {
         NeoInvokeFunction response = callInvokeFunction("tryFinallyBlock", integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
     }
@@ -56,7 +57,7 @@ public class TryCatchBlocksTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("tryCatchFinallyBlock", integer(1));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(1).asAny().getValue(), nullValue());
+        assertFalse(res.get(1).asBoolean().getValue());
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
     }
@@ -65,9 +66,9 @@ public class TryCatchBlocksTest extends ContractTest {
     public void dontHitExceptionInTryCatchFinallyBlock() throws IOException {
         NeoInvokeFunction response = callInvokeFunction("tryCatchFinallyBlock", integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asAny().getValue(), nullValue());
+        assertFalse(res.get(2).asBoolean().getValue());
         assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
     }
 
@@ -77,10 +78,10 @@ public class TryCatchBlocksTest extends ContractTest {
                 integer(1), integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(1).asAny().getValue(), nullValue());
+        assertFalse(res.get(1).asBoolean().getValue());
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(4).asAny().getValue(), nullValue());
+        assertFalse(res.get(4).asBoolean().getValue());
         assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
     }
@@ -97,11 +98,11 @@ public class TryCatchBlocksTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(0), integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asAny().getValue(), nullValue());
+        assertFalse(res.get(2).asBoolean().getValue());
         assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(4).asAny().getValue(), nullValue());
+        assertFalse(res.get(4).asBoolean().getValue());
         assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
     }
@@ -112,12 +113,12 @@ public class TryCatchBlocksTest extends ContractTest {
                 integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(1).asAny().getValue(), nullValue());
-        assertThat(res.get(2).asAny().getValue(), nullValue());
-        assertThat(res.get(3).asAny().getValue(), nullValue());
-        assertThat(res.get(4).asAny().getValue(), nullValue());
-        assertThat(res.get(5).asAny().getValue(), nullValue());
-        assertThat(res.get(6).asAny().getValue(), nullValue());
+        assertFalse(res.get(1).asBoolean().getValue());
+        assertFalse(res.get(2).asBoolean().getValue());
+        assertFalse(res.get(3).asBoolean().getValue());
+        assertFalse(res.get(4).asBoolean().getValue());
+        assertFalse(res.get(5).asBoolean().getValue());
+        assertFalse(res.get(6).asBoolean().getValue());
         assertThat(res.get(7).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(8).asInteger().getValue().intValue(), is(1));
     }
@@ -127,14 +128,14 @@ public class TryCatchBlocksTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
                 integer(1));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(3).asAny().getValue(), nullValue());
+        assertFalse(res.get(3).asBoolean().getValue());
         assertThat(res.get(4).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(7).asAny().getValue(), nullValue());
+        assertFalse(res.get(7).asBoolean().getValue());
         assertThat(res.get(8).asInteger().getValue().intValue(), is(1));
     }
 
@@ -143,14 +144,14 @@ public class TryCatchBlocksTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
                 integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asAny().getValue(), nullValue());
+        assertFalse(res.get(2).asBoolean().getValue());
         assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(4).asAny().getValue(), nullValue());
+        assertFalse(res.get(4).asBoolean().getValue());
         assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(7).asAny().getValue(), nullValue());
+        assertFalse(res.get(7).asBoolean().getValue());
         assertThat(res.get(8).asInteger().getValue().intValue(), is(1));
     }
 
@@ -158,7 +159,7 @@ public class TryCatchBlocksTest extends ContractTest {
     public void hitExceptionsInMethodThrowingException() throws IOException {
         NeoInvokeFunction response = callInvokeFunction("catchExceptionFromMethod", integer(1));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
     }
@@ -168,7 +169,7 @@ public class TryCatchBlocksTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("catchExceptionFromMethod", integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(1).asAny().getValue(), nullValue());
+        assertFalse(res.get(1).asBoolean().getValue());
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
     }
 
@@ -177,7 +178,7 @@ public class TryCatchBlocksTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("nestedBlockInCatch",
                 integer(1), integer(1));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asAny().getValue(), nullValue());
+        assertFalse(res.get(0).asBoolean().getValue());
         assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
@@ -190,7 +191,7 @@ public class TryCatchBlocksTest extends ContractTest {
                 integer(1), integer(0));
         ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
         assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(1).asAny().getValue(), nullValue());
+        assertFalse(res.get(1).asBoolean().getValue());
         assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
         assertThat(res.get(4).asInteger().getValue().intValue(), is(1));

@@ -1,25 +1,5 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
-import static io.neow3j.compiler.AsmHelper.getFieldIndex;
-import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
-import static io.neow3j.compiler.AsmHelper.getMethodNode;
-import static io.neow3j.compiler.AsmHelper.hasAnnotations;
-import static io.neow3j.compiler.Compiler.INSTANCE_CTOR;
-import static io.neow3j.compiler.Compiler.addConstructorSyscall;
-import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
-import static io.neow3j.compiler.Compiler.addPushNumber;
-import static io.neow3j.compiler.Compiler.addReverseArguments;
-import static io.neow3j.compiler.Compiler.buildPushDataInsn;
-import static io.neow3j.compiler.Compiler.findSuperCallToObjectCtor;
-import static io.neow3j.compiler.Compiler.handleInsn;
-import static io.neow3j.compiler.Compiler.isEvent;
-import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
-import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
-import static java.lang.String.format;
-import static org.objectweb.asm.Type.getInternalName;
-
 import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
@@ -35,8 +15,6 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.Numeric;
-import java.io.IOException;
-import java.util.List;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -44,6 +22,30 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+
+import java.io.IOException;
+import java.util.List;
+
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
+import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
+import static io.neow3j.compiler.AsmHelper.getMethodNode;
+import static io.neow3j.compiler.AsmHelper.hasAnnotations;
+import static io.neow3j.compiler.Compiler.addConstructorSyscall;
+import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
+import static io.neow3j.compiler.Compiler.addPushNumber;
+import static io.neow3j.compiler.Compiler.addReverseArguments;
+import static io.neow3j.compiler.Compiler.buildPushDataInsn;
+import static io.neow3j.compiler.Compiler.handleInsn;
+import static io.neow3j.compiler.Compiler.isCallToCtor;
+import static io.neow3j.compiler.Compiler.isEvent;
+import static io.neow3j.compiler.Compiler.skipToCtorCall;
+import static io.neow3j.compiler.Compiler.skipToSuperCtorCall;
+import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
+import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static java.lang.String.format;
+import static org.objectweb.asm.Type.getInternalName;
 
 public class ObjectsConverter implements Converter {
 
@@ -113,8 +115,7 @@ public class ObjectsConverter implements Converter {
         }
 
         ClassNode owner = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
-        MethodInsnNode ctorMethodInsn = skipToCtorMethodInstruction(typeInsn.getNext(), owner,
-                callingNeoMethod);
+        MethodInsnNode ctorMethodInsn = skipToCtorCall(typeInsn.getNext(), owner);
         MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner).orElseThrow(() ->
                 new CompilerException(callingNeoMethod, format(
                         "Couldn't find constructor '%s' on class '%s'.",
@@ -267,21 +268,6 @@ public class ObjectsConverter implements Converter {
                 && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class));
     }
 
-    private static MethodInsnNode skipToCtorMethodInstruction(AbstractInsnNode insn,
-            ClassNode owner, NeoMethod neoMethod) {
-
-        while (insn.getNext() != null) {
-            insn = insn.getNext();
-            if (isCallToCtor(insn, owner.name)) {
-                return (MethodInsnNode) insn;
-            }
-        }
-        throw new CompilerException(neoMethod, format("Tried to skip to an instruction calling "
-                        + "the constructor of the class %s but reached the end of the method.",
-                getFullyQualifiedNameForInternalName(owner.name)));
-
-    }
-
     private static AbstractInsnNode convertConstructorCall(TypeInsnNode typeInsn,
             MethodNode ctorMethod, ClassNode owner, NeoMethod callingNeoMethod,
             CompilationUnit compUnit) throws IOException {
@@ -297,7 +283,7 @@ public class ObjectsConverter implements Converter {
             calledNeoMethod = new NeoMethod(ctorMethod, owner);
             compUnit.getNeoModule().addMethod(calledNeoMethod);
             calledNeoMethod.initialize(compUnit);
-            AbstractInsnNode insn = findSuperCallToObjectCtor(ctorMethod, owner);
+            AbstractInsnNode insn = skipToSuperCtorCall(ctorMethod, owner);
             insn = insn.getNext();
             while (insn != null) {
                 insn = handleInsn(insn, calledNeoMethod, compUnit);
@@ -324,12 +310,6 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
-    // Checks if the given instruction is a call to the given classes constructor (i.e., <init>).
-    private static boolean isCallToCtor(AbstractInsnNode insn, String ownerInternalName) {
-        return insn.getType() == AbstractInsnNode.METHOD_INSN
-                && ((MethodInsnNode) insn).owner.equals(ownerInternalName)
-                && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
-    }
 
     private static AbstractInsnNode convertEvent(FieldInsnNode eventFieldInsn, NeoMethod neoMethod,
             CompilationUnit compUnit) throws IOException {

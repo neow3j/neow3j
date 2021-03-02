@@ -25,6 +25,7 @@ import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.Event;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
@@ -50,7 +51,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.6.1";
+    public static final String COMPILER_NAME = "neow3j-3.7.1";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -58,7 +59,6 @@ public class Compiler {
 
     public static final String INSTANCE_CTOR = "<init>";
     private static final String CLASS_CTOR = "<clinit>";
-    private static final String INITSSLOT_METHOD_NAME = "_initialize";
     public static final String THIS_KEYWORD = "this";
 
     public static final String INSTRUCTION_ANNOTATION_OPERAND = "operand";
@@ -138,6 +138,63 @@ public class Compiler {
         // If the type is Object or any other class.
         return ContractParameterType.ANY;
     }
+
+    /**
+     * Maps the given Java type to the corresponding neo-vm stack item type.
+     * <p>
+     * Not every Java type has a specific matching stack item type. For those the stack item type
+     * {@link StackItemType#ANY} is returned.
+     *
+     * @param type The Java type.
+     * @return the corresponding stack item type.
+     */
+    public static StackItemType mapTypeToStackItemType(Type type) {
+        String typeName = type.getClassName();
+        if (typeName.equals(String.class.getTypeName())
+                || typeName.equals(Hash160.class.getTypeName())
+                || typeName.equals(Hash256.class.getTypeName())
+                || typeName.equals(ECPoint.class.getTypeName())) {
+            return StackItemType.BYTE_STRING;
+        }
+        if (typeName.equals(Integer.class.getTypeName())
+                || typeName.equals(int.class.getTypeName())
+                || typeName.equals(Long.class.getTypeName())
+                || typeName.equals(long.class.getTypeName())
+                || typeName.equals(Byte.class.getTypeName())
+                || typeName.equals(byte.class.getTypeName())
+                || typeName.equals(Short.class.getTypeName())
+                || typeName.equals(short.class.getTypeName())
+                || typeName.equals(Character.class.getTypeName())
+                || typeName.equals(char.class.getTypeName())) {
+            return StackItemType.INTEGER;
+        }
+        if (typeName.equals(Boolean.class.getTypeName())
+                || typeName.equals(boolean.class.getTypeName())) {
+            return StackItemType.BOOLEAN;
+        }
+        if (typeName.equals(Byte[].class.getTypeName())
+                || typeName.equals(byte[].class.getTypeName())) {
+            return StackItemType.BUFFER;
+        }
+        if (typeName.equals(Map.class.getTypeName())) {
+            return StackItemType.MAP;
+        }
+        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return StackItemType.ARRAY;
+        }
+        try {
+            typeName = type.getDescriptor().replace("/", ".");
+            Class<?> clazz = Class.forName(typeName);
+            if (clazz.isArray()) {
+                return StackItemType.ARRAY;
+            }
+        } catch (ClassNotFoundException ignore) {
+        }
+        // If the type is Object or any other class.
+        return StackItemType.ANY;
+    }
+
 
 //    /**
 //     * Converts the given classes to neo-vm code and generates debug information with the help of
@@ -247,7 +304,10 @@ public class Compiler {
      */
     private CompilationUnit compileClass(ClassNode classNode) throws IOException {
         compUnit.setContractClass(classNode);
-        compUnit.getNeoModule().addMethod(initializeStaticConstructor(classNode));
+        checkForUsageOfInstanceConstructor(classNode);
+        checkFieldVariables(classNode);
+        collectSmartContractEvents(classNode);
+        compUnit.getNeoModule().addMethod(createInitsslotMethod(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
@@ -257,6 +317,22 @@ public class Compiler {
         }
         finalizeCompilation();
         return compUnit;
+    }
+
+    private void checkFieldVariables(ClassNode asmClass) {
+        if (asmClass.fields == null) {
+            return;
+        }
+        if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
+            throw new CompilerException(format("The class %s has more than the max supported "
+                            + "number of static field variables (%d).",
+                    getFullyQualifiedNameForInternalName(asmClass.name), MAX_STATIC_FIELDS));
+        }
+        if (asmClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
+            throw new CompilerException(format("Class %s has non-static fields but only static "
+                            + "fields are supported in smart contract classes.",
+                    getFullyQualifiedNameForInternalName(asmClass.name)));
+        }
     }
 
     private void finalizeCompilation() {
@@ -270,24 +346,6 @@ public class Compiler {
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
 
-    private NeoMethod initializeStaticConstructor(ClassNode asmClass) {
-        if (asmClass.fields == null || asmClass.fields.size() == 0) {
-            return null;
-        }
-        if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
-            throw new CompilerException(format("The class %s has more than the max supported "
-                            + "number of static field variables (%d).",
-                    getFullyQualifiedNameForInternalName(asmClass.name), MAX_STATIC_FIELDS));
-        }
-        if (asmClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
-            throw new CompilerException(format("Class %s has non-static fields but only static "
-                            + "fields are supported in smart contract classes.",
-                    getFullyQualifiedNameForInternalName(asmClass.name)));
-        }
-        checkForUsageOfInstanceConstructor(asmClass);
-        collectSmartContractEvents(asmClass);
-        return createInitsslotMethod(asmClass);
-    }
 
     private void collectSmartContractEvents(ClassNode asmClass) {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
@@ -316,7 +374,7 @@ public class Compiler {
         Optional<MethodNode> instanceCtor = asmClass.methods.stream()
                 .filter(m -> m.name.equals(INSTANCE_CTOR)).findFirst();
         if (instanceCtor.isPresent()) {
-            AbstractInsnNode insn = findSuperCallToObjectCtor(instanceCtor.get(), asmClass);
+            AbstractInsnNode insn = skipToSuperCtorCall(instanceCtor.get(), asmClass);
             insn = insn.getNext();
             while (insn != null) {
                 if (insn.getType() != AbstractInsnNode.LINE &&
@@ -336,19 +394,12 @@ public class Compiler {
     // script. This only looks at the <clinit> method of the class. The <clinit> method
     // contains static variable initialization instructions that happen right at the definition
     // of the variables or in the static constructor.
-    private NeoMethod createInitsslotMethod(ClassNode asmClass) {
+    private InitsslotNeoMethod createInitsslotMethod(ClassNode asmClass) {
         Optional<MethodNode> classCtorOpt = asmClass.methods.stream()
                 .filter(m -> m.name.equals(CLASS_CTOR))
                 .findFirst();
-        if (!classCtorOpt.isPresent()) {
-            return null;
-        }
-        NeoMethod neoMethod = new NeoMethod(classCtorOpt.get(), asmClass);
-        neoMethod.setName(INITSSLOT_METHOD_NAME);
-        neoMethod.setIsAbiMethod(true);
-        byte[] operand = new byte[]{(byte) asmClass.fields.size()};
-        neoMethod.addInstruction(new NeoInstruction(OpCode.INITSSLOT, operand));
-        return neoMethod;
+        return classCtorOpt.map(methodNode -> new InitsslotNeoMethod(methodNode, asmClass))
+                .orElse(null);
     }
 
     // Collects all static methods and initializes them, e.g., sets the parameters and local
@@ -458,30 +509,53 @@ public class Compiler {
         return new NeoInstruction(opcode, operandPrefix, operand);
     }
 
-    // Goes through the instructions of the given method and looks for the call to the `Object`
-    // constructor. I.e., the given method should be a constructor. Super calls to other classes
-    // are not allowed and lead to an exception.
-    public static MethodInsnNode findSuperCallToObjectCtor(MethodNode constructor,
-            ClassNode owner) {
+    /**
+     * Skips instructions in the given constructor method up to the super constructor call.
+     * There should always be a super call even if it was not explicitly specified by the developer.
+     *
+     * @param constructor The constructor method.
+     * @param owner The class of the constructor method.
+     * @return The instruction that calls the super constructor.
+     */
+    public static MethodInsnNode skipToSuperCtorCall(MethodNode constructor, ClassNode owner) {
         Iterator<AbstractInsnNode> it = constructor.instructions.iterator();
         AbstractInsnNode insn = null;
         while (it.hasNext()) {
             insn = it.next();
-            if (insn.getType() == AbstractInsnNode.METHOD_INSN
-                    && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR)) {
-                if (((MethodInsnNode) insn).owner.equals(getInternalName(Object.class))) {
-                    break;
-                } else {
-                    throw new CompilerException(format("Found call to super constructor of %s "
-                                    + "but inheritance is not supported, i.e., only super calls "
-                                    + "to the Object constructor are allowed.",
-                            getFullyQualifiedNameForInternalName(owner.name)));
-                }
+            if (isCallToCtor(insn, owner.superName)) {
+               break;
             }
         }
-        assert insn instanceof MethodInsnNode : "Expected call to Object super constructor but "
-                + "couldn't find it.";
+        assert insn != null && insn.getType() == AbstractInsnNode.METHOD_INSN : "Expected call " +
+                "to constructor but couldn't find it.";
         return (MethodInsnNode) insn;
+    }
+
+    /**
+     * Skips instructions, starting at the given one, until the constructor call to the given
+     * class is reached.
+     *
+     * @param insn The instruction from which to start looking for the constructor.
+     * @param owner The class that owns the constructor.
+     * @return The instruction that calls the constructor.
+     */
+    public static MethodInsnNode skipToCtorCall(AbstractInsnNode insn, ClassNode owner) {
+        while (insn != null) {
+            insn = insn.getNext();
+            if (isCallToCtor(insn, owner.name)) {
+                break;
+            }
+        }
+        assert insn != null && insn.getType() == AbstractInsnNode.METHOD_INSN : "Expected call " +
+                "to constructor but couldn't find it.";
+        return (MethodInsnNode) insn;
+    }
+
+    // Checks if the given instruction is a call to the given classes constructor (i.e., <init>).
+    public static boolean isCallToCtor(AbstractInsnNode insn, String ownerInternalName) {
+        return insn.getType() == AbstractInsnNode.METHOD_INSN
+                && ((MethodInsnNode) insn).owner.equals(ownerInternalName)
+                && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
     }
 
     // Adds an opcode that reverses the ordering of the arguments on the evaluation stack

@@ -9,7 +9,7 @@ public class CompilerException extends RuntimeException {
     }
 
     public CompilerException(NeoMethod neoMethod, String errorMessage) {
-        super(neoMethod.getOwnerClass().sourceFile + ".java: " + neoMethod.getCurrentLine() + ": "
+        super(neoMethod.getOwnerClass().sourceFile + ": " + neoMethod.getCurrentLine() + ": "
                 + "error:\n" + errorMessage);
     }
 

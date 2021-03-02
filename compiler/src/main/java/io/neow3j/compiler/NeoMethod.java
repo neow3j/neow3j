@@ -491,7 +491,7 @@ public class NeoMethod {
         insertTryCatchBlocks();
     }
 
-    private void insertTryCatchBlocks() {
+    protected void insertTryCatchBlocks() {
         for (TryCatchFinallyBlock block : tryCatchFinallyBlocks) {
             insertTryInstruction(block);
         }

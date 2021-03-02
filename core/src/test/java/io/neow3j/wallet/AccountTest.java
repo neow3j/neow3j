@@ -79,18 +79,6 @@ public class AccountTest {
     }
 
     @Test
-    public void testThrowIfNoECKeyPair() {
-        Account account = Account.fromVerificationScript(new VerificationScript(
-                Numeric.hexStringToByteArray(
-                        "027a593180860c4037c83c12749845c8ee1424dd297fadcb895e358255d2c7d2b2")));
-
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("account does not hold an EC key pair");
-
-        account.getECKeyPair();
-    }
-
-    @Test
     public void testFromNewECKeyPair() {
         Account a = Account.fromNewECKeyPair()
                 .label("example")

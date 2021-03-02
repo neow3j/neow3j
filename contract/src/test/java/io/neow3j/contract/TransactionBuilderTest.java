@@ -207,7 +207,7 @@ public class TransactionBuilderTest {
     @Test
     public void failBuildingTxWithoutAnySigner() throws Throwable {
         exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("without any signer");
+        exceptionRule.expectMessage("Can't create a transaction without signers.");
         new TransactionBuilder(neow)
                 .validUntilBlock(100L)
                 .wallet(Wallet.withAccounts(account1))
@@ -583,7 +583,8 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failBuildingTransactionBecauseWalletDoesntContainSignerAccount() throws Throwable {
+    public void failBuildingTransactionBecauseWalletDoesntContainAnySignerAccount()
+            throws Throwable {
         Wallet w = Wallet.create();
         Account signer = Account.create();
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
@@ -594,13 +595,13 @@ public class TransactionBuilderTest {
                 .signers(Signer.calledByEntry(signer.getScriptHash()))
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Cannot find account", signer.getScriptHash().toString())));
+        exceptionRule.expectMessage(new StringContains("No signers were set for which an account " +
+                "with verification script exists in the wallet"));
         b.buildTransaction();
     }
 
     @Test
-    public void failSendingTransactionBecauseItDoesntContainSignaturesForAllSigners()
+    public void failSendingTransactionBecauseItDoesntContainTheRightNumberOfWitnesses()
             throws Throwable {
 
         Wallet w = Wallet.create();
@@ -615,10 +616,10 @@ public class TransactionBuilderTest {
                 .signers(Signer.calledByEntry(signer.getScriptHash()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .buildTransaction();
-
+        // Don't add any witnesses, so it has one signer but no witness.
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("The transaction does not have a signature"
-                                                       + " for each of its signers"));
+        exceptionRule.expectMessage(new StringContains("The transaction does not have the same " +
+                "number of signers and witnesses."));
         tx.send();
     }
 
