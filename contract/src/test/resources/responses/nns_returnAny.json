@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "",
+    "state": "HALT",
+    "gasconsumed": "1999240",
+    "exception": null,
+    "stack": [
+      {
+        "type": "Any"
+      }
+    ]
+  }
+}

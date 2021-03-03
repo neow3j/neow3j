@@ -31,7 +31,7 @@ import org.junit.Test;
 
 public class PolicyContractTest {
 
-    private static final String POLILCYCONTRACT_SCRIPTHASH =
+    private static final String POLICYCONTRACT_SCRIPTHASH =
             "79bcd398505eb779df6e67e4be6c14cded08e2f2";
 
     private Neow3j neow3j;
@@ -366,6 +366,6 @@ public class PolicyContractTest {
     @Test
     public void scriptHash() {
         assertThat(new PolicyContract(neow3j).getScriptHash().toString(),
-                is(POLILCYCONTRACT_SCRIPTHASH));
+                is(POLICYCONTRACT_SCRIPTHASH));
     }
 }
