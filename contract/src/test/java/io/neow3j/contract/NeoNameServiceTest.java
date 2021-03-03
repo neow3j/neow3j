@@ -48,7 +48,6 @@ public class NeoNameServiceTest {
 
     private static final String TOTAL_SUPPLY = "totalSupply";
     private static final String SYMBOL = "symbol";
-    private static final String DECIMALS = "decimals";
 
     private static final String OWNER_OF = "ownerOf";
     private static final String PROPERTIES = "properties";
@@ -245,7 +244,8 @@ public class NeoNameServiceTest {
     @Test
     public void isAvailable_invalidDomainName_moreThanTwoLevels() throws IOException {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Only second domain names are allowed to be registered");
+        expectedException.expectMessage("Only second-level domain names are allowed to be " +
+                "registered");
         new NeoNameService(neow).isAvailable("third.second.first");
     }
 

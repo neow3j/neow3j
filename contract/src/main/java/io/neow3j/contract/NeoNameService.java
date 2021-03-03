@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
  */
 public class NeoNameService extends NonFungibleToken {
 
-    public final static String NAME = "NameService";
-    public final static long NEF_CHECKSUM = 3740064217L;
+    public static final String NAME = "NameService";
+    public static final long NEF_CHECKSUM = 3740064217L;
     public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String ADD_ROOT = "addRoot";
@@ -47,7 +47,7 @@ public class NeoNameService extends NonFungibleToken {
 
     private static final BigInteger MAXIMAL_PRICE = new BigInteger("1000000000000");
     private static final Pattern ROOT_REGEX_PATTERN = Pattern.compile("^[a-z][a-z0-9]{0,15}$");
-    public static final Pattern NAME_REGEX_PATTERN = Pattern.compile(
+    private static final Pattern NAME_REGEX_PATTERN = Pattern.compile(
             "^(?=.{3,255}$)([a-z0-9]{1,62}\\.)+[a-z][a-z0-9]{0,15}$");
     private static final Pattern IPV4_REGEX_PATTERN = Pattern.compile(
             "^(2(5[0-5]|[0-4]\\d))|1?\\d{1,2}(\\.((2(5[0-5]|[0-4]\\d))|1?\\d{1,2})){3}$");
@@ -122,7 +122,7 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
-     * Checks if the specified second domain name is available.
+     * Checks if the specified second-level domain name is available.
      *
      * @param name the domain name.
      * @return true if the domain name is available, false otherwise.
@@ -152,13 +152,13 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     // checks if a domain name is available
-    private void checkDomainNameAvailability(String name, boolean shouldBeAvailable)
+    private void checkDomainNameAvailability(String name, boolean isForRegistration)
             throws IOException {
         boolean isAvailable = isAvailable(name);
-        if (shouldBeAvailable && !isAvailable) {
+        if (isForRegistration && !isAvailable) {
             throw new IllegalArgumentException("The domain name '" + name + "' is already taken.");
         }
-        if (!shouldBeAvailable && isAvailable) {
+        if (!isForRegistration && isAvailable) {
             throw new IllegalArgumentException("The domain name '" + name + "' is not registered.");
         }
     }
@@ -167,7 +167,7 @@ public class NeoNameService extends NonFungibleToken {
     private void checkDomainNameValidity(String name) {
         checkRegexMatch(NAME_REGEX_PATTERN, name);
         if (name.split("\\.").length != 2) {
-            throw new IllegalArgumentException("Only second domain names are allowed to be " +
+            throw new IllegalArgumentException("Only second-level domain names are allowed to be " +
                     "registered.");
         }
     }
@@ -186,7 +186,7 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * Each call will extend the validity period of the domain name by one year.
      * <p>
-     * Only supports to renew the second domain name.
+     * Only supports renewing the second-level domain name.
      *
      * @param name the domain name.
      * @return a transaction builder.
