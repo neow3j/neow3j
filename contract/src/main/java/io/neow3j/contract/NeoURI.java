@@ -367,7 +367,7 @@ public class NeoURI {
     /**
      * Gets the recipient address as script hash.
      *
-     * @return the {@link Hash160} of the recipient address.
+     * @return the script hash of the recipient address.
      */
     public Hash160 getAddressAsScriptHash() {
         return toAddress;

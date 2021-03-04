@@ -128,6 +128,8 @@ public class ScriptBuilder {
                 break;
             case HASH160:
             case HASH256:
+                // TODO: 04.03.21 Michael: Cast to Hash256, as soon as the class Hash256 is
+                //  available.
                 pushData(((Hash160) value).toArray());
                 break;
             case STRING:

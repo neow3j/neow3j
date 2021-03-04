@@ -15,9 +15,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A Hash160 is the hash of an executable NeoVM script. It is always 20 bytes long and is a
- * RIPEMD-160 hash of a SHA-256 hash.
- *
+ * A Hash160 is a 20 bytes long hash created from some data by first applying SHA-256 and then
+ * RIPEMD-160. These hashes are mostly used for obtaining the script hash of a smart contract or an
+ * account.
  */
 public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
@@ -39,11 +39,10 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
-     * Constructs a new script hash from the given byte array. The array must represent the script
-     * hash in little-endian order and can be 160 (contract script hash) or 256 (global asset id)
-     * bits long.
+     * Constructs a new hash from the given byte array. The byte array must be in little-endian
+     * order and 160 bits long.
      *
-     * @param hash The script hash in little-endian order.
+     * @param hash the hash in little-endian order.
      */
     public Hash160(byte[] hash) {
         checkAndThrowHashLength(hash);
@@ -51,11 +50,10 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
-     * Constructs a new script hash from the given hexadecimal string. The string must represent the
-     * script hash in big-endian order and can be 160 (contract script hash) or 256 (global asset
-     * id) bits long.
+     * Constructs a new hash from the given hexadecimal string. The string must be in big-endian
+     * order and 160 bits long.
      *
-     * @param hash The script hash in big-endian order.
+     * @param hash the script hash in big-endian order.
      */
     public Hash160(String hash) {
         if (Numeric.isValidHexString(hash)) {
@@ -116,7 +114,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     /**
      * Creates a script hash from the given address.
      *
-     * @param address The address from which to derive the script hash.
+     * @param address the address from which to derive the script hash.
      * @return the script hash.
      */
     public static Hash160 fromAddress(String address) {
@@ -126,7 +124,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     /**
      * Creates a script hash from the given script in byte array form.
      *
-     * @param script The script to calculate the script hash for.
+     * @param script the script to calculate the script hash for.
      * @return the script hash.
      */
     public static Hash160 fromScript(byte[] script) {
@@ -146,7 +144,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     /**
      * Creates a script hash from the given script in hexadecimal string form.
      *
-     * @param script The script to calculate the script hash for.
+     * @param script the script to calculate the script hash for.
      * @return the script hash.
      */
     public static Hash160 fromScript(String script) {
@@ -183,4 +181,5 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     public int hashCode() {
         return Arrays.hashCode(this.hash);
     }
+
 }
