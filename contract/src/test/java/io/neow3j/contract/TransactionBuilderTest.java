@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -62,7 +61,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.hamcrest.core.StringContains;
-import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +69,7 @@ import org.mockito.Mockito;
 
 public class TransactionBuilderTest {
 
-    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
+    private static final Hash160 NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     private static final String NEP17_TRANSFER = "transfer";
 
     private static final String SCRIPT_NEO_INVOKEFUNCTION_SYMBOL = Numeric.toHexStringNoPrefix(
@@ -81,7 +79,7 @@ public class TransactionBuilderTest {
     private Account account1;
     private Account account2;
     private Account multiSigAcc;
-    private ScriptHash recipient;
+    private Hash160 recipient;
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -106,7 +104,7 @@ public class TransactionBuilderTest {
                 account1.getECKeyPair().getPublicKey(),
                 account2.getECKeyPair().getPublicKey()),
                 2);
-        recipient = new ScriptHash("969a77db482f74ce27105f760efa139223431394");
+        recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
     }
 
     @Test
@@ -1124,4 +1122,5 @@ public class TransactionBuilderTest {
 
         assertNull(tx.getApplicationLog());
     }
+
 }

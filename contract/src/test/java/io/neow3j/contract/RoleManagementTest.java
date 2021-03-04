@@ -155,4 +155,5 @@ public class RoleManagementTest {
         assertThat(new RoleManagement(neow).getScriptHash().toString(),
                 is(ROLEMANAGEMENT_SCRIPTHASH));
     }
+
 }

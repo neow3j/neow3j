@@ -28,7 +28,7 @@ public class NeoToken extends FungibleToken {
 
     public final static String NAME = "NeoToken";
     public final static long NEF_CHECKSUM = 3921333105L;
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     public final static int DECIMALS = 0;
     public final static String SYMBOL = "NEO";
@@ -122,7 +122,7 @@ public class NeoToken extends FungibleToken {
      * @return the amount of unclaimed GAS
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public BigInteger unclaimedGas(ScriptHash scriptHash, long blockHeight) throws IOException {
+    public BigInteger unclaimedGas(Hash160 scriptHash, long blockHeight) throws IOException {
         ContractParameter accParam = hash160(scriptHash);
         ContractParameter heightParam = integer(BigInteger.valueOf(blockHeight));
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
@@ -256,11 +256,10 @@ public class NeoToken extends FungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder vote(ScriptHash voter, ECPublicKey candidate) throws IOException {
+    public TransactionBuilder vote(Hash160 voter, ECPublicKey candidate) throws IOException {
         if (!isCandidate(candidate)) {
-            throw new IllegalArgumentException(
-                    "The provided public key is not a candidate. " +
-                    "Only candidates can be voted for.");
+            throw new IllegalArgumentException("The provided public key is not a candidate. Only " +
+                    "candidates can be voted for.");
         }
         return invokeFunction(VOTE, hash160(voter),
                 publicKey(candidate.getEncoded(true)));

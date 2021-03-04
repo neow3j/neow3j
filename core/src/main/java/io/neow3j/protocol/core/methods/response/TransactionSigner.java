@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
@@ -40,7 +40,7 @@ public class TransactionSigner {
         this.account = signer.getScriptHash().toString();
         this.scopes = signer.getScopes();
         this.allowedContracts = signer.getAllowedContracts().stream()
-                .map(ScriptHash::toString)
+                .map(Hash160::toString)
                 .collect(Collectors.toList());
         this.allowedGroups = signer.getAllowedGroups().stream()
                 .map(s -> Numeric.toHexStringNoPrefix(s.getEncoded(true)))

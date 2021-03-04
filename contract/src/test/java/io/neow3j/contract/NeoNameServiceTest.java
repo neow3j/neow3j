@@ -44,6 +44,7 @@ public class NeoNameServiceTest {
 
     private Account account1;
     private Account account2;
+
     private static final String NAMESERVICE_SCRIPTHASH = "a2b524b68dfe43a9d56af84f443c6b9843b8028c";
 
     private static final String TOTAL_SUPPLY = "totalSupply";
@@ -110,7 +111,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(OWNER_OF, "nft_ownerof.json");
         assertThat(new NeoNameService(neow).ownerOf("client1.neo"),
-                is(new ScriptHash("12b97a2206ae4b10c7e0194b7b655c32cc912057")));
+                is(new Hash160("12b97a2206ae4b10c7e0194b7b655c32cc912057")));
     }
 
     @Test
@@ -520,4 +521,5 @@ public class NeoNameServiceTest {
                 .transfer(wallet, account2.getScriptHash() ,"client1.neo");
         assertThat(b.getScript(), is(expectedScript));
     }
+
 }

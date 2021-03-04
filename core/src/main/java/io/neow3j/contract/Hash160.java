@@ -15,26 +15,27 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A script hash is as its name says the hash of a executable NeoVM script. It is always 20 bytes
- * long and is created by hashing a script with SHA256 and then RIPEMD160
+ * A Hash160 is the hash of an executable NeoVM script. It is always 20 bytes long and is a
+ * RIPEMD-160 hash of a SHA-256 hash.
+ *
  */
-public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash> {
+public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
     /**
-     * The script hash is stored as an unsigned integer in little-endian order.
+     * The hash is stored as an unsigned integer in little-endian order.
      */
-    private byte[] scriptHash;
+    private byte[] hash;
 
     /**
-     * A zero address script hash.
+     * A zero address hash.
      */
-    public static final ScriptHash ZERO = new ScriptHash("0000000000000000000000000000000000000000");
+    public static final Hash160 ZERO = new Hash160("0000000000000000000000000000000000000000");
 
     /**
-     * Constructs a new script hash with 20 zero bytes.
+     * Constructs a new hash with 20 zero bytes.
      */
-    public ScriptHash() {
-        this.scriptHash = new byte[NeoConstants.SCRIPTHASH_SIZE];
+    public Hash160() {
+        this.hash = new byte[NeoConstants.HASH160_SIZE];
     }
 
     /**
@@ -42,11 +43,11 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * hash in little-endian order and can be 160 (contract script hash) or 256 (global asset id)
      * bits long.
      *
-     * @param scriptHash The script hash in little-endian order.
+     * @param hash The script hash in little-endian order.
      */
-    public ScriptHash(byte[] scriptHash) {
-        checkAndThrowHashLength(scriptHash);
-        this.scriptHash = scriptHash;
+    public Hash160(byte[] hash) {
+        checkAndThrowHashLength(hash);
+        this.hash = hash;
     }
 
     /**
@@ -54,12 +55,12 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * script hash in big-endian order and can be 160 (contract script hash) or 256 (global asset
      * id) bits long.
      *
-     * @param scriptHash The script hash in big-endian order.
+     * @param hash The script hash in big-endian order.
      */
-    public ScriptHash(String scriptHash) {
-        if (Numeric.isValidHexString(scriptHash)) {
-            this.scriptHash = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(scriptHash));
-            checkAndThrowHashLength(this.scriptHash);
+    public Hash160(String hash) {
+        if (Numeric.isValidHexString(hash)) {
+            this.hash = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(hash));
+            checkAndThrowHashLength(this.hash);
         } else {
             throw new IllegalArgumentException("String argument is not hexadecimal.");
         }
@@ -68,7 +69,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            this.scriptHash = reader.readBytes(NeoConstants.SCRIPTHASH_SIZE);
+            this.hash = reader.readBytes(NeoConstants.HASH160_SIZE);
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
@@ -76,12 +77,12 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        writer.write(this.scriptHash);
+        writer.write(this.hash);
     }
 
     @Override
     public int getSize() {
-        return NeoConstants.SCRIPTHASH_SIZE;
+        return NeoConstants.HASH160_SIZE;
     }
 
     /**
@@ -100,7 +101,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * @return the script hash as hex string in big-endian order.
      */
     public String toString() {
-        return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(scriptHash));
+        return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
     }
 
     /**
@@ -109,7 +110,7 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * @return the address.
      */
     public String toAddress() {
-        return AddressUtils.scriptHashToAddress(this.scriptHash);
+        return AddressUtils.scriptHashToAddress(this.hash);
     }
 
     /**
@@ -118,8 +119,8 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * @param address The address from which to derive the script hash.
      * @return the script hash.
      */
-    public static ScriptHash fromAddress(String address) {
-        return new ScriptHash(AddressUtils.addressToScriptHash(address));
+    public static Hash160 fromAddress(String address) {
+        return new Hash160(AddressUtils.addressToScriptHash(address));
     }
 
     /**
@@ -128,17 +129,17 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * @param script The script to calculate the script hash for.
      * @return the script hash.
      */
-    public static ScriptHash fromScript(byte[] script) {
+    public static Hash160 fromScript(byte[] script) {
         // There is no need to reverse the hash. The hashing method returns the script hash in
         // little-endian format.
-        return new ScriptHash(Hash.sha256AndThenRipemd160(script));
+        return new Hash160(Hash.sha256AndThenRipemd160(script));
     }
 
-    public static ScriptHash fromPublicKey(byte[] encodedPublicKey) {
+    public static Hash160 fromPublicKey(byte[] encodedPublicKey) {
         return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKey));
     }
 
-    public static ScriptHash fromPublicKeys(List<byte[]> encodedPublicKeys, int signingThreshold) {
+    public static Hash160 fromPublicKeys(List<byte[]> encodedPublicKeys, int signingThreshold) {
         return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKeys, signingThreshold));
     }
 
@@ -148,21 +149,21 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
      * @param script The script to calculate the script hash for.
      * @return the script hash.
      */
-    public static ScriptHash fromScript(String script) {
+    public static Hash160 fromScript(String script) {
         return fromScript(Numeric.hexStringToByteArray(script));
     }
 
     private void checkAndThrowHashLength(byte[] scriptHash) {
-        if (scriptHash.length != NeoConstants.SCRIPTHASH_SIZE) {
+        if (scriptHash.length != NeoConstants.HASH160_SIZE) {
             throw new IllegalArgumentException("Script hash must be " +
-                NeoConstants.SCRIPTHASH_SIZE + " bytes long but was " + scriptHash.length +
+                NeoConstants.HASH160_SIZE + " bytes long but was " + scriptHash.length +
                 " bytes.");
         }
     }
 
     @Override
-    public int compareTo(ScriptHash o) {
-        return new BigInteger(1, ArrayUtils.reverseArray(scriptHash))
+    public int compareTo(Hash160 o) {
+        return new BigInteger(1, ArrayUtils.reverseArray(hash))
             .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
     }
 
@@ -174,12 +175,12 @@ public class ScriptHash extends NeoSerializable implements Comparable<ScriptHash
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ScriptHash that = (ScriptHash) o;
-        return Arrays.equals(scriptHash, that.scriptHash);
+        Hash160 that = (Hash160) o;
+        return Arrays.equals(hash, that.hash);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(this.scriptHash);
+        return Arrays.hashCode(this.hash);
     }
 }

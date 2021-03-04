@@ -29,7 +29,7 @@ public class NeoNameService extends NonFungibleToken {
 
     public static final String NAME = "NameService";
     public static final long NEF_CHECKSUM = 3740064217L;
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String ADD_ROOT = "addRoot";
     private static final String SET_PRICE = "setPrice";
@@ -146,7 +146,7 @@ public class NeoNameService extends NonFungibleToken {
      * @param owner the address of the domain owner.
      * @return a transaction builder.
      */
-    public TransactionBuilder register(String name, ScriptHash owner) throws IOException {
+    public TransactionBuilder register(String name, Hash160 owner) throws IOException {
         checkDomainNameAvailability(name, true);
         return invokeFunction(REGISTER, string(name), hash160(owner));
     }
@@ -203,10 +203,10 @@ public class NeoNameService extends NonFungibleToken {
      * Requires to be signed by the current owner and the new admin of the domain.
      *
      * @param name  the domain name.
-     * @param admin the hash of the admin address.
+     * @param admin the script hash of the admin address.
      * @return a transaction builder.
      */
-    public TransactionBuilder setAdmin(String name, ScriptHash admin) throws IOException {
+    public TransactionBuilder setAdmin(String name, Hash160 admin) throws IOException {
         checkDomainNameAvailability(name, false);
         return invokeFunction(SET_ADMIN, string(name), hash160(admin));
     }
@@ -298,7 +298,7 @@ public class NeoNameService extends NonFungibleToken {
      * @return the owner of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public ScriptHash ownerOf(String name) throws IOException {
+    public Hash160 ownerOf(String name) throws IOException {
         checkDomainNameAvailability(name, false);
         return ownerOf(name.getBytes(StandardCharsets.UTF_8));
     }
@@ -360,9 +360,10 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, String name)
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to, String name)
             throws IOException {
         checkDomainNameAvailability(name, false);
         return transfer(wallet, to, name.getBytes(StandardCharsets.UTF_8));
     }
+
 }

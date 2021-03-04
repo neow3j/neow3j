@@ -1,7 +1,7 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
@@ -102,7 +102,7 @@ public class Transaction extends NeoSerializable {
      *
      * @return the sender account's script hash.
      */
-    public ScriptHash getSender() {
+    public Hash160 getSender() {
         // First we look for a signer that has the fee-only scope. The signer with that scope is
         // the sender of the transaction. If there is no such signer then the order of the
         // signers defines the sender, i.e., the first signer is the sender of the transaction.

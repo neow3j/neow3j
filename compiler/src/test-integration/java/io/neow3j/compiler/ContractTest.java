@@ -1,18 +1,13 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.GasToken;
 import io.neow3j.contract.ContractManagement;
-import io.neow3j.contract.NeoToken;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
@@ -23,7 +18,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Await;
@@ -31,7 +25,6 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import org.junit.ClassRule;
@@ -159,7 +152,7 @@ public class ContractTest {
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
         ArrayStackItem arrayItem = execution.getStack().get(0).asArray();
-        ScriptHash scriptHash = new ScriptHash(Numeric.hexStringToByteArray(
+        Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(
                 arrayItem.get(2).asByteString().getAsHexString()));
         return new SmartContract(scriptHash, neow3j);
     }
@@ -236,7 +229,7 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static String transferGas(ScriptHash to, String amount) throws Throwable {
+    protected static String transferGas(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
         return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
                 new BigDecimal(amount), committee.getScriptHash())
@@ -255,7 +248,7 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static String transferNeo(ScriptHash to, String amount) throws Throwable {
+    protected static String transferNeo(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
         return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
                 new BigDecimal(amount), committee.getScriptHash())

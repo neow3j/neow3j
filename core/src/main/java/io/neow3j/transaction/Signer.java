@@ -1,7 +1,7 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -9,6 +9,7 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,7 @@ public class Signer extends NeoSerializable {
     /**
      * The script hash of the signer account.
      */
-    private ScriptHash account;
+    private Hash160 account;
 
     /**
      * The scopes in which the signer's signatures can be used. Multiple scopes can be combined.
@@ -33,7 +34,7 @@ public class Signer extends NeoSerializable {
     /**
      * The script hashes of contracts that are allowed to use the witness.
      */
-    private List<ScriptHash> allowedContracts;
+    private List<Hash160> allowedContracts;
 
     /**
      * The group hashes of contracts that are allowed to use the witness.
@@ -41,7 +42,7 @@ public class Signer extends NeoSerializable {
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
     public Signer() {
-        this.account = new ScriptHash();
+        this.account = new Hash160();
         this.scopes = new ArrayList<>();
         this.allowedContracts = new ArrayList<>();
         this.allowedGroups = new ArrayList<>();
@@ -63,7 +64,7 @@ public class Signer extends NeoSerializable {
      */
     public static Signer feeOnly(String address) {
         return new Builder()
-                .account(ScriptHash.fromAddress(address))
+                .account(Hash160.fromAddress(address))
                 .scopes(WitnessScope.NONE)
                 .build();
     }
@@ -75,7 +76,7 @@ public class Signer extends NeoSerializable {
      * @param account The originator of the witness.
      * @return {@link Signer}
      */
-    public static Signer feeOnly(ScriptHash account) {
+    public static Signer feeOnly(Hash160 account) {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.NONE)
@@ -91,7 +92,7 @@ public class Signer extends NeoSerializable {
      */
     public static Signer calledByEntry(String address) {
         return new Builder()
-                .account(ScriptHash.fromAddress(address))
+                .account(Hash160.fromAddress(address))
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
     }
@@ -103,7 +104,7 @@ public class Signer extends NeoSerializable {
      * @param account The originator of the witness.
      * @return {@link Signer}
      */
-    public static Signer calledByEntry(ScriptHash account) {
+    public static Signer calledByEntry(Hash160 account) {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
@@ -119,7 +120,7 @@ public class Signer extends NeoSerializable {
      */
     public static Signer global(String address) {
         return new Builder()
-                .account(ScriptHash.fromAddress(address))
+                .account(Hash160.fromAddress(address))
                 .scopes(WitnessScope.GLOBAL)
                 .build();
     }
@@ -131,14 +132,14 @@ public class Signer extends NeoSerializable {
      * @param account The originator of the witness.
      * @return {@link Signer}
      */
-    public static Signer global(ScriptHash account) {
+    public static Signer global(Hash160 account) {
         return new Builder()
                 .account(account)
                 .scopes(WitnessScope.GLOBAL)
                 .build();
     }
 
-    public ScriptHash getScriptHash() {
+    public Hash160 getScriptHash() {
         return account;
     }
 
@@ -146,7 +147,7 @@ public class Signer extends NeoSerializable {
         return scopes;
     }
 
-    public List<ScriptHash> getAllowedContracts() {
+    public List<Hash160> getAllowedContracts() {
         return allowedContracts;
     }
 
@@ -157,10 +158,10 @@ public class Signer extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            this.account = reader.readSerializable(ScriptHash.class);
+            this.account = reader.readSerializable(Hash160.class);
             this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
             if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
-                this.allowedContracts = reader.readSerializableList(ScriptHash.class);
+                this.allowedContracts = reader.readSerializableList(Hash160.class);
                 if (this.allowedContracts.size() > NeoConstants.MAX_SIGNER_SUBITEMS) {
                     throw new DeserializationException("A signer's scope can only contain "
                             + NeoConstants.MAX_SIGNER_SUBITEMS + " contracts. The input data "
@@ -195,7 +196,7 @@ public class Signer extends NeoSerializable {
     @Override
     public int getSize() {
         // Account script hash plus scope byte.
-        int size = NeoConstants.SCRIPTHASH_SIZE + 1;
+        int size = NeoConstants.HASH160_SIZE + 1;
         if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
             size += IOUtils.getVarSize(this.allowedContracts);
         }
@@ -227,9 +228,9 @@ public class Signer extends NeoSerializable {
 
     public static class Builder {
 
-        private ScriptHash account;
+        private Hash160 account;
         private List<WitnessScope> scopes;
-        private List<ScriptHash> allowedContracts;
+        private List<Hash160> allowedContracts;
         private List<ECKeyPair.ECPublicKey> allowedGroups;
 
         public Builder() {
@@ -245,7 +246,7 @@ public class Signer extends NeoSerializable {
          * @return this builder.
          */
         public Builder account(String address) {
-            this.account = ScriptHash.fromAddress(address);
+            this.account = Hash160.fromAddress(address);
             return this;
         }
 
@@ -255,7 +256,7 @@ public class Signer extends NeoSerializable {
          * @param account the account's script hash
          * @return this builder.
          */
-        public Builder account(ScriptHash account) {
+        public Builder account(Hash160 account) {
             this.account = account;
             return this;
         }
@@ -283,7 +284,7 @@ public class Signer extends NeoSerializable {
          * @param contracts one or more contract script hashes.
          * @return this builder.
          */
-        public Builder allowedContracts(ScriptHash... contracts) {
+        public Builder allowedContracts(Hash160... contracts) {
             if (!this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
                 this.scopes.add(WitnessScope.CUSTOM_CONTRACTS);
             }

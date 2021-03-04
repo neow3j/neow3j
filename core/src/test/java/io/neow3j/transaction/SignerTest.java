@@ -9,7 +9,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.BinaryWriter;
@@ -18,24 +18,26 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.Signer.Builder;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
 import io.neow3j.utils.Numeric;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
 public class SignerTest {
 
-    private ScriptHash acctScriptHash;
-    private ScriptHash contract1;
-    private ScriptHash contract2;
-    private ECKeyPair.ECPublicKey groupPubKey1;
-    private ECKeyPair.ECPublicKey groupPubKey2;
+    private Hash160 accScriptHash;
+    private Hash160 contract1;
+    private Hash160 contract2;
+    private ECPublicKey groupPubKey1;
+    private ECPublicKey groupPubKey2;
 
     @Before
     public void setUp() {
-        acctScriptHash = ScriptHash.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
-        contract1 = ScriptHash.fromScript(Numeric.hexStringToByteArray("d802a401"));
-        contract2 = ScriptHash.fromScript(Numeric.hexStringToByteArray("c503b112"));
+        accScriptHash = Hash160.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+        contract1 = Hash160.fromScript(Numeric.hexStringToByteArray("d802a401"));
+        contract2 = Hash160.fromScript(Numeric.hexStringToByteArray("c503b112"));
         String encPubKey1 = "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7";
         String encPubKey2 = "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60";
         groupPubKey1 = new ECKeyPair.ECPublicKey(Numeric.hexStringToByteArray(encPubKey1));
@@ -44,72 +46,73 @@ public class SignerTest {
 
     @Test
     public void createSignerWithCallByEntryWitnessScope() {
-        Signer cos = Signer.calledByEntry(acctScriptHash);
-        assertThat(cos.getScriptHash(), is(acctScriptHash));
-        assertThat(cos.getScopes(), hasSize(1));
-        assertThat(cos.getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
-        assertTrue(cos.getAllowedContracts().isEmpty());
-        assertTrue(cos.getAllowedGroups().isEmpty());
+        Signer signer = Signer.calledByEntry(accScriptHash);
+        assertThat(signer.getScriptHash(), is(accScriptHash));
+        assertThat(signer.getScopes(), hasSize(1));
+        assertThat(signer.getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertTrue(signer.getAllowedContracts().isEmpty());
+        assertTrue(signer.getAllowedGroups().isEmpty());
     }
 
     @Test
     public void createSignerWithGlobalWitnessScope() {
-        Signer cos = Signer.global(acctScriptHash);
-        assertThat(cos.getScriptHash(), is(acctScriptHash));
-        assertThat(cos.getScopes(), hasSize(1));
-        assertThat(cos.getScopes(), contains(WitnessScope.GLOBAL));
-        assertTrue(cos.getAllowedContracts().isEmpty());
-        assertTrue(cos.getAllowedGroups().isEmpty());
+        Signer signer = Signer.global(accScriptHash);
+        assertThat(signer.getScriptHash(), is(accScriptHash));
+        assertThat(signer.getScopes(), hasSize(1));
+        assertThat(signer.getScopes(), contains(WitnessScope.GLOBAL));
+        assertTrue(signer.getAllowedContracts().isEmpty());
+        assertTrue(signer.getAllowedGroups().isEmpty());
     }
 
     @Test
     public void buildValidSigner1() {
-        Signer cos = new Signer.Builder()
-                .account(this.acctScriptHash)
+        Signer signer = new Signer.Builder()
+                .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS, WitnessScope.CALLED_BY_ENTRY)
-                .allowedContracts(this.contract1, this.contract2)
+                .allowedContracts(contract1, contract2)
                 .build();
 
-        assertThat(cos.getScriptHash(), is(this.acctScriptHash));
-        assertThat(cos.getScopes(), hasSize(2));
-        assertThat(cos.getScopes(),
+        assertThat(signer.getScriptHash(), is(accScriptHash));
+        assertThat(signer.getScopes(), hasSize(2));
+        assertThat(signer.getScopes(),
                 containsInAnyOrder(WitnessScope.CUSTOM_CONTRACTS, WitnessScope.CALLED_BY_ENTRY));
-        assertThat(cos.getAllowedContracts(), hasSize(2));
-        assertThat(cos.getAllowedContracts(), containsInAnyOrder(this.contract1, this.contract2));
-        assertTrue(cos.getAllowedGroups().isEmpty());
+        assertThat(signer.getAllowedContracts(), hasSize(2));
+        assertThat(signer.getAllowedContracts(),
+                containsInAnyOrder(contract1, contract2));
+        assertTrue(signer.getAllowedGroups().isEmpty());
     }
 
     @Test
     public void buildValidSigner2() {
-        Signer cos = new Signer.Builder()
-                .account(this.acctScriptHash)
+        Signer signer = new Signer.Builder()
+                .account(accScriptHash)
                 // the allowed contracts scope is added automatically.
-                .allowedContracts(this.contract1, this.contract2)
+                .allowedContracts(contract1, contract2)
                 .build();
 
-        assertThat(cos.getScriptHash(), is(this.acctScriptHash));
-        assertThat(cos.getScopes(), hasSize(1));
-        assertThat(cos.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_CONTRACTS));
-        assertThat(cos.getAllowedContracts(), hasSize(2));
-        assertThat(cos.getAllowedContracts(),
-                containsInAnyOrder(this.contract1, this.contract2));
-        assertTrue(cos.getAllowedGroups().isEmpty());
+        assertThat(signer.getScriptHash(), is(accScriptHash));
+        assertThat(signer.getScopes(), hasSize(1));
+        assertThat(signer.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_CONTRACTS));
+        assertThat(signer.getAllowedContracts(), hasSize(2));
+        assertThat(signer.getAllowedContracts(),
+                containsInAnyOrder(contract1, contract2));
+        assertTrue(signer.getAllowedGroups().isEmpty());
     }
 
     @Test
     public void buildValidSigner3() {
-        Signer cos = new Signer.Builder()
-                .account(this.acctScriptHash)
-                .allowedGroups(this.groupPubKey1, this.groupPubKey2)
+        Signer signer = new Signer.Builder()
+                .account(accScriptHash)
+                .allowedGroups(groupPubKey1, groupPubKey2)
                 .build();
 
-        assertThat(cos.getScriptHash(), is(this.acctScriptHash));
-        assertThat(cos.getScopes(), hasSize(1));
-        assertThat(cos.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_GROUPS));
-        assertThat(cos.getAllowedGroups(), hasSize(2));
-        assertThat(cos.getAllowedGroups(),
-                containsInAnyOrder(this.groupPubKey1, this.groupPubKey2));
-        assertTrue(cos.getAllowedContracts().isEmpty());
+        assertThat(signer.getScriptHash(), is(accScriptHash));
+        assertThat(signer.getScopes(), hasSize(1));
+        assertThat(signer.getScopes(), containsInAnyOrder(WitnessScope.CUSTOM_GROUPS));
+        assertThat(signer.getAllowedGroups(), hasSize(2));
+        assertThat(signer.getAllowedGroups(),
+                containsInAnyOrder(groupPubKey1, groupPubKey2));
+        assertTrue(signer.getAllowedContracts().isEmpty());
     }
 
 
@@ -121,7 +124,7 @@ public class SignerTest {
     @Test(expected = SignerConfigurationException.class)
     public void failBuildingSignerWithoutScopes() {
         new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .build();
     }
 
@@ -136,7 +139,7 @@ public class SignerTest {
     public void failBuildingSignerWithGlobalAndAnyOtherScope() {
         try {
             new Signer.Builder()
-                    .account(this.acctScriptHash)
+                    .account(accScriptHash)
                     .scopes(WitnessScope.GLOBAL)
                     .scopes(WitnessScope.CUSTOM_CONTRACTS)
                     .build();
@@ -146,7 +149,7 @@ public class SignerTest {
 
         try {
             new Signer.Builder()
-                    .account(this.acctScriptHash)
+                    .account(accScriptHash)
                     .scopes(WitnessScope.GLOBAL)
                     .scopes(WitnessScope.CUSTOM_GROUPS)
                     .build();
@@ -155,7 +158,7 @@ public class SignerTest {
         }
 
         new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .scopes(WitnessScope.GLOBAL)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
@@ -164,7 +167,7 @@ public class SignerTest {
     @Test(expected = SignerConfigurationException.class)
     public void failBuildingCustomContractsSignerWithoutSpecifyingAllowedContracts() {
         new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .build();
     }
@@ -172,19 +175,19 @@ public class SignerTest {
     @Test(expected = SignerConfigurationException.class)
     public void failBuildingCustomGroupsSignerWithoutSpecifyingAllowedContracts() {
         new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_GROUPS)
                 .build();
     }
 
     @Test(expected = SignerConfigurationException.class)
     public void failBuildingSignerWithTooManyContracts() {
-        ScriptHash[] contracts = new ScriptHash[17];
+        Hash160[] contracts = new Hash160[17];
         for (int i = 0; i <= 16; i++) {
-            contracts[i] = new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88");
+            contracts[i] = new Hash160("3ab0be8672e25cf475219d018ded961ec684ca88");
         }
         new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .allowedContracts(contracts)
                 .build();
@@ -193,12 +196,12 @@ public class SignerTest {
     @Test(expected = SignerConfigurationException.class)
     public void failBuildingSignerWithTooManyContractsAddedSeparately() {
         Builder b = new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
-                .allowedContracts(new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88"));
-        ScriptHash[] contracts = new ScriptHash[16];
+                .allowedContracts(new Hash160("3ab0be8672e25cf475219d018ded961ec684ca88"));
+        Hash160[] contracts = new Hash160[16];
         for (int i = 0; i <= 15; i++) {
-            contracts[i] = new ScriptHash("3ab0be8672e25cf475219d018ded961ec684ca88");
+            contracts[i] = new Hash160("3ab0be8672e25cf475219d018ded961ec684ca88");
         }
         b.allowedContracts(contracts).build();
     }
@@ -212,7 +215,7 @@ public class SignerTest {
             groups[i] = publicKey;
         }
         new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .allowedGroups(groups)
                 .build();
@@ -223,7 +226,7 @@ public class SignerTest {
         ECPublicKey publicKey = new ECPublicKey(Numeric.hexStringToByteArray(
                 "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
         Builder b = new Signer.Builder()
-                .account(this.acctScriptHash)
+                .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .allowedGroups(publicKey);
         ECPublicKey[] groups = new ECPublicKey[16];
@@ -237,25 +240,24 @@ public class SignerTest {
     public void serializeGlobalScope() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        Signer.global(acctScriptHash).serialize(writer);
+        Signer.global(accScriptHash).serialize(writer);
         byte[] actual = outStream.toByteArray();
         String expected = ""
-                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.reverseHexString(accScriptHash.toString())
                 + Numeric.toHexStringNoPrefix(WitnessScope.GLOBAL.byteValue());
         assertThat(Numeric.toHexStringNoPrefix(actual), is(expected));
     }
 
     @Test
-    public void serializingWithCustomContractsScopeProducesCorrectByteArray() throws IOException {
+    public void serializingWithCustomContractsScopeProducesCorrectByteArray() {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        BinaryWriter writer = new BinaryWriter(outStream);
         Signer s = new Signer.Builder()
-                .account(acctScriptHash)
+                .account(accScriptHash)
                 .allowedContracts(contract1, contract2)
                 .build();
         byte[] actual = s.toArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.reverseHexString(accScriptHash.toString())
                 + Numeric.toHexStringNoPrefix(WitnessScope.CUSTOM_CONTRACTS.byteValue())
                 + "02" // array length 2
                 + Numeric.reverseHexString(contract1.toString())
@@ -269,13 +271,13 @@ public class SignerTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new Signer.Builder()
-                .account(acctScriptHash)
+                .account(accScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .build()
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.reverseHexString(accScriptHash.toString())
                 + Numeric.toHexStringNoPrefix(WitnessScope.CUSTOM_GROUPS.byteValue())
                 + "02" // array length 2
                 + Numeric.toHexStringNoPrefix(groupPubKey1.toArray())
@@ -288,7 +290,7 @@ public class SignerTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new Signer.Builder()
-                .account(acctScriptHash)
+                .account(accScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
@@ -296,7 +298,7 @@ public class SignerTest {
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.reverseHexString(accScriptHash.toString())
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
                 + Numeric.reverseHexString(contract1.toString())
@@ -310,7 +312,7 @@ public class SignerTest {
     @Test
     public void deserialize() throws DeserializationException {
         byte[] data = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.reverseHexString(accScriptHash.toString())
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
                 + Numeric.reverseHexString(contract1.toString())
@@ -320,7 +322,7 @@ public class SignerTest {
                 + Numeric.toHexStringNoPrefix(groupPubKey2.toArray()));
 
         Signer c = NeoSerializableInterface.from(data, Signer.class);
-        assertThat(c.getScriptHash(), is(acctScriptHash));
+        assertThat(c.getScriptHash(), is(accScriptHash));
         assertThat(c.getScopes(), containsInAnyOrder(
                 WitnessScope.CUSTOM_CONTRACTS,
                 WitnessScope.CALLED_BY_ENTRY,
@@ -332,7 +334,7 @@ public class SignerTest {
     @Test(expected = DeserializationException.class)
     public void failDeserializingWithTooManyContracts() throws DeserializationException {
         StringBuilder serialized = new StringBuilder(""
-                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.reverseHexString(accScriptHash.toString())
                 + "11" // calledByEntry, custom contracts
                 + "11"); // array length 17 (0x11)
         // Add one too many contract script hashes.
@@ -346,7 +348,7 @@ public class SignerTest {
     @Test(expected = DeserializationException.class)
     public void failDeserializingWithTooManyContractGroups() throws DeserializationException {
         StringBuilder serialized = new StringBuilder(""
-                + Numeric.reverseHexString(acctScriptHash.toString())
+                + Numeric.reverseHexString(accScriptHash.toString())
                 + "21" // calledByEntry, custom contracts
                 + "11"); // array length 17 (0x11)
         // Add one too many contract group public keys.
@@ -359,44 +361,44 @@ public class SignerTest {
 
     @Test
     public void getSize() {
-        Signer c = new Signer.Builder()
-                .account(acctScriptHash)
+        Signer signer = new Signer.Builder()
+                .account(accScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
 
-        int expectedSize =
-                + 20 // Account script hash
+        int expectedSize = 20 // Account script hash
                 + 1 // Scope byte
                 + 1 // length byte of allowed contracts list
                 + 20 + 20 // Script hashes of two allowed contracts
                 + 1 // length byte of allowed groups list
                 + 33 + 33; // Public keys of two allowed groups
 
-        assertThat(c.getSize(), is(expectedSize));
+        assertThat(signer.getSize(), is(expectedSize));
     }
 
     @Test
     public void equals() {
-        Signer c1 = Signer.calledByEntry(acctScriptHash);
-        Signer c2 = Signer.calledByEntry(acctScriptHash);
-        assertThat(c1, equalTo(c2));
+        Signer signer1 = Signer.calledByEntry(accScriptHash);
+        Signer signer2 = Signer.calledByEntry(accScriptHash);
+        assertThat(signer1, equalTo(signer2));
 
-        c1 = new Signer.Builder()
-                .account(acctScriptHash)
+        signer1 = new Signer.Builder()
+                .account(accScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
 
-        c2 = new Signer.Builder()
-                .account(acctScriptHash)
+        signer2 = new Signer.Builder()
+                .account(accScriptHash)
                 .allowedGroups(groupPubKey1, groupPubKey2)
                 .allowedContracts(contract1, contract2)
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
                 .build();
 
-        assertThat(c1, equalTo(c2));
+        assertThat(signer1, equalTo(signer2));
     }
+
 }

@@ -23,7 +23,7 @@ public class RoleManagement extends SmartContract {
 
     private static final String NAME = "RoleManagement";
     public final static long NEF_CHECKSUM = 3289425910L;
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String GET_DESIGNATED_BY_ROLE = "getDesignatedByRole";
     private static final String DESIGNATE_AS_ROLE = "designateAsRole";
@@ -68,9 +68,8 @@ public class RoleManagement extends SmartContract {
 
         int currentBlockIndex = neow.getBlockCount().send().getBlockIndex().intValue();
         if (blockIndex > currentBlockIndex) {
-            throw new IllegalArgumentException(
-                    "The provided block index (" + blockIndex + ") is too high. The current block" +
-                    " count is " + currentBlockIndex + ".");
+            throw new IllegalArgumentException("The provided block index (" + blockIndex + ") is " +
+                    "too high. The current block count is " + currentBlockIndex + ".");
         }
     }
 
@@ -87,8 +86,8 @@ public class RoleManagement extends SmartContract {
             throw new IllegalArgumentException("The designation role cannot be null.");
         }
         if (pubKeys == null || pubKeys.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "At least one public key is required for designation.");
+            throw new IllegalArgumentException("At least one public key is required for " +
+                    "designation.");
         }
         ContractParameter roleParam = integer(role.byteValue());
         List<ContractParameter> pubKeysParams = pubKeys.stream()

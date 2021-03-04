@@ -9,7 +9,7 @@ public class GasToken extends FungibleToken {
 
     public final static String NAME = "GasToken";
     public final static long NEF_CHECKSUM = 3155977747L;
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     public final static int DECIMALS = 8;
     public final static String SYMBOL = "GAS";

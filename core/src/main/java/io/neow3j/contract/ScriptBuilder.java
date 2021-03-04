@@ -54,12 +54,12 @@ public class ScriptBuilder {
     /**
      * Appends a call to the contract denoted by the given script hash.
      *
-     * @param scriptHash The script hash of the contract to call.
+     * @param hash160 The script hash of the contract to call.
      * @param method     The method to call.
      * @param params     The parameters that will be used in the call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder contractCall(ScriptHash scriptHash, String method,
+    public ScriptBuilder contractCall(Hash160 hash160, String method,
             List<ContractParameter> params) {
 
         if (params.size() > 0) {
@@ -69,7 +69,7 @@ public class ScriptBuilder {
         }
         pushInteger(CallFlags.ALL.getValue());
         pushData(method);
-        pushData(scriptHash.toArray());
+        pushData(hash160.toArray());
         sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL);
         return this;
     }
@@ -128,7 +128,7 @@ public class ScriptBuilder {
                 break;
             case HASH160:
             case HASH256:
-                pushData(((ScriptHash) value).toArray());
+                pushData(((Hash160) value).toArray());
                 break;
             case STRING:
                 pushData((String) value);

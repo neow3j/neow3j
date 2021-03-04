@@ -28,8 +28,8 @@ public class NeoURI {
 
     private Neow3j neow3j;
     private Wallet wallet;
-    private ScriptHash toAddress;
-    private ScriptHash asset;
+    private Hash160 toAddress;
+    private Hash160 asset;
     private BigDecimal amount;
 
     private static final String NEO_SCHEME = "neo";
@@ -64,9 +64,9 @@ public class NeoURI {
         String[] beginTx = baseAndQuery[0].split(":");
 
         if (!beginTx[0].equals(NEO_SCHEME) || beginTx.length != 2 ||
-            uriString.length() < MIN_NEP9_URI_LENGTH) {
-            throw new IllegalArgumentException(
-                    "The provided string does not conform to the NEP-9 standard.");
+                uriString.length() < MIN_NEP9_URI_LENGTH) {
+            throw new IllegalArgumentException("The provided string does not conform to the NEP-9" +
+                    " standard.");
         }
         NeoURI neoURI = new NeoURI();
 
@@ -83,17 +83,17 @@ public class NeoURI {
                     throw new IllegalArgumentException("This uri contains invalid queries.");
                 }
                 if (singleQueryParts[0].equals("asset") &&
-                    neoURI.asset == null) {
+                        neoURI.asset == null) {
                     String assetID = singleQueryParts[1];
                     if (assetID.equals(NEO_ASSET)) {
                         neoURI.asset = NeoToken.SCRIPT_HASH;
                     } else if (assetID.equals(GAS_ASSET)) {
                         neoURI.asset = GasToken.SCRIPT_HASH;
                     } else {
-                        neoURI.asset = new ScriptHash(assetID);
+                        neoURI.asset = new Hash160(assetID);
                     }
                 } else if (singleQueryParts[0].equals("amount") &&
-                           neoURI.amount == null) {
+                        neoURI.amount == null) {
                     neoURI.amount = new BigDecimal(singleQueryParts[1]);
                 }
             }
@@ -137,7 +137,7 @@ public class NeoURI {
             fractions = computeFractions(neow3j, asset);
         }
 
-        ScriptHash sender = wallet.getDefaultAccount().getScriptHash();
+        Hash160 sender = wallet.getDefaultAccount().getScriptHash();
         return new SmartContract(asset, neow3j)
                 .invokeFunction(TRANSFER_FUNCTION,
                         hash160(sender),
@@ -148,15 +148,15 @@ public class NeoURI {
                 .signers(calledByEntry(sender));
     }
 
-    private boolean isNeoToken(ScriptHash asset) {
+    private boolean isNeoToken(Hash160 asset) {
         return asset.equals(NeoToken.SCRIPT_HASH);
     }
 
-    private boolean isGasToken(ScriptHash asset) {
+    private boolean isGasToken(Hash160 asset) {
         return asset.equals(GasToken.SCRIPT_HASH);
     }
 
-    private BigInteger computeFractions(Neow3j neow3j, ScriptHash asset)
+    private BigInteger computeFractions(Neow3j neow3j, Hash160 asset)
             throws IOException {
 
         int decimals = new FungibleToken(asset, neow3j).getDecimals();
@@ -175,7 +175,7 @@ public class NeoURI {
             throw new IllegalArgumentException("Invalid address used.");
         }
 
-        toAddress = ScriptHash.fromAddress(address);
+        toAddress = Hash160.fromAddress(address);
         return this;
     }
 
@@ -185,7 +185,7 @@ public class NeoURI {
      * @param address the recipient address.
      * @return this NeoURI object.
      */
-    public NeoURI toAddress(ScriptHash address) {
+    public NeoURI toAddress(Hash160 address) {
         toAddress = address;
         return this;
     }
@@ -197,7 +197,7 @@ public class NeoURI {
      * @return this NeoURI object.
      */
     public NeoURI asset(byte[] asset) {
-        this.asset = new ScriptHash(ArrayUtils.reverseArray(asset));
+        this.asset = new Hash160(ArrayUtils.reverseArray(asset));
         return this;
     }
 
@@ -207,7 +207,7 @@ public class NeoURI {
      * @param asset the asset.
      * @return this NeoURI object.
      */
-    public NeoURI asset(ScriptHash asset) {
+    public NeoURI asset(Hash160 asset) {
         this.asset = asset;
         return this;
     }
@@ -224,7 +224,7 @@ public class NeoURI {
         } else if (asset.equals("gas")) {
             this.asset = GasToken.SCRIPT_HASH;
         } else {
-            this.asset = new ScriptHash(asset);
+            this.asset = new Hash160(asset);
         }
         return this;
     }
@@ -365,11 +365,11 @@ public class NeoURI {
     }
 
     /**
-     * Gets the recipient address.
+     * Gets the recipient address as script hash.
      *
-     * @return the recipient address as script hash.
+     * @return the {@link Hash160} of the recipient address.
      */
-    public ScriptHash getAddressAsScriptHash() {
+    public Hash160 getAddressAsScriptHash() {
         return toAddress;
     }
 
@@ -378,7 +378,7 @@ public class NeoURI {
      *
      * @return the asset.
      */
-    public ScriptHash getAsset() {
+    public Hash160 getAsset() {
         return asset;
     }
 

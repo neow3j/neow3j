@@ -50,11 +50,11 @@ public class FungibleTokenTest {
     private Account account2;
     private Account account3;
     private Account multiSigAccount;
-    private static final ScriptHash RECIPIENT_SCRIPT_HASH =
-            new ScriptHash("969a77db482f74ce27105f760efa139223431394");
+    private static final Hash160 RECIPIENT_SCRIPT_HASH =
+            new Hash160("969a77db482f74ce27105f760efa139223431394");
 
-    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
+    private static final Hash160 NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
+    private static final Hash160 GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
     private static final String NEP17_TRANSFER = "transfer";
 
     @Before
@@ -807,4 +807,5 @@ public class FungibleTokenTest {
         neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("-2"), account1.getScriptHash());
     }
+
 }

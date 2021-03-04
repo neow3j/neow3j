@@ -351,4 +351,5 @@ public class ContractUtilsTest {
                 null
         );
     }
+
 }

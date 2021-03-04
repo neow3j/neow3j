@@ -25,8 +25,8 @@ import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoJumpInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.Hash160;
 import io.neow3j.contract.NefFile.MethodToken;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Instruction;
@@ -341,9 +341,9 @@ public class MethodsConverter implements Converter {
             ClassNode owner, CompilationUnit compUnit) {
 
         AnnotationNode annotation = AsmHelper.getAnnotationNode(owner, ContractHash.class).get();
-        ScriptHash scriptHash;
+        Hash160 scriptHash;
         try {
-            scriptHash = new ScriptHash((String) annotation.values.get(1));
+            scriptHash = new Hash160((String) annotation.values.get(1));
         } catch(IllegalArgumentException e) {
             throw new CompilerException(owner, format("Script hash '%s' of the contract "
                             + "class '%s' does not have the length of a correct script hash.",

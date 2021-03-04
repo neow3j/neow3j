@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Hash;
@@ -19,6 +19,7 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
+
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +27,7 @@ import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.Test;
 
 public class WitnessTest {
@@ -214,12 +216,12 @@ public class WitnessTest {
     @Test
     public void createWithoutVerificationScript() {
         byte[] invocationScript = Numeric.hexStringToByteArray("0000");
-        ScriptHash sh = new ScriptHash("1a70eac53f5882e40dd90f55463cce31a9f72cd4");
-        Witness s = new Witness(invocationScript, sh);
+        Hash160 hash = new Hash160("1a70eac53f5882e40dd90f55463cce31a9f72cd4");
+        Witness witness = new Witness(invocationScript, hash);
         // 02: two bytes of invocation script;
         // 0000: invocation script;
         // 00: zero bytes of verification script
-        assertEquals("02000000", Numeric.toHexStringNoPrefix(s.toArray()));
+        assertEquals("02000000", Numeric.toHexStringNoPrefix(witness.toArray()));
     }
 
 }
