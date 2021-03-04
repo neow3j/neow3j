@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.Test;
 
 public class Hash160Test {
@@ -32,18 +33,8 @@ public class Hash160Test {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void createFromTooShortHash() {
-        new Hash160("23ba2703c53263e8d6e522dc32203339dcd8eee");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createFromTooLongHash() {
-        new Hash160("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9ba");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createFromMidSizedHash() {
-        new Hash160("23ba2703c53263e8d6e522dc32203339dcd8eee9938a3e");
+    public void createFromHashWithInvalidLength() {
+        new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8ee");
     }
 
     @Test(expected = IllegalArgumentException.class)
