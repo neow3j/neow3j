@@ -7,7 +7,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
@@ -317,14 +317,14 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets the contract information.
      *
-     * @param scriptHash the contract script hash.
+     * @param hash160 the contract script hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetContractState> getContractState(ScriptHash scriptHash) {
+    public Request<?, NeoGetContractState> getContractState(Hash160 hash160) {
         return new Request<>(
                 "getcontractstate",
-                singletonList(scriptHash.toString()),
+                singletonList(hash160.toString()),
                 neow3jService,
                 NeoGetContractState.class);
     }

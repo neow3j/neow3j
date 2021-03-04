@@ -93,9 +93,8 @@ public class ContractParameter {
             } else if (o instanceof String) {
                 params.add(string((String) o));
             } else {
-                throw new IllegalArgumentException(
-                        "The provided object could not be casted into a supported contract " +
-                        "parameter type.");
+                throw new IllegalArgumentException("The provided object could not be casted into " +
+                        "a supported contract parameter type.");
             }
         });
         return array(params);
@@ -119,13 +118,13 @@ public class ContractParameter {
      */
     public static ContractParameter array(ContractParameter... params) {
         if (params.length == 0) {
-            throw new IllegalArgumentException(
-                    "At least one parameter is required to create an array contract parameter.");
+            throw new IllegalArgumentException("At least one parameter is required to create an " +
+                    "array contract parameter.");
         }
         boolean anyNull = Arrays.stream(params).anyMatch(Objects::isNull);
         if (anyNull) {
-            throw new IllegalArgumentException(
-                    "Cannot add a null object to an array contract parameter.");
+            throw new IllegalArgumentException("Cannot add a null object to an array contract " +
+                    "parameter.");
         }
         return new ContractParameter(ContractParameterType.ARRAY, params);
     }
@@ -187,9 +186,8 @@ public class ContractParameter {
      */
     public static ContractParameter signature(byte[] signature) {
         if (signature.length != NeoConstants.SIGNATURE_SIZE) {
-            throw new IllegalArgumentException(
-                    "Signature is expected to have a length of " + NeoConstants.SIGNATURE_SIZE +
-                    " bytes, but had " + signature.length + ".");
+            throw new IllegalArgumentException("Signature is expected to have a length of " +
+                    NeoConstants.SIGNATURE_SIZE + " bytes, but had " + signature.length + ".");
         }
         return new ContractParameter(ContractParameterType.SIGNATURE, signature);
     }
@@ -230,7 +228,7 @@ public class ContractParameter {
      * @param hash a script hash
      * @return the contract parameter.
      */
-    public static ContractParameter hash160(ScriptHash hash) {
+    public static ContractParameter hash160(Hash160 hash) {
         if (hash == null) {
             throw new IllegalArgumentException("The script hash argument must not be null.");
         }
@@ -258,9 +256,8 @@ public class ContractParameter {
      */
     public static ContractParameter hash256(byte[] hash) {
         if (hash.length != 32) {
-            throw new IllegalArgumentException(
-                    "A Hash256 parameter must be 32 bytes long but was " + hash.length +
-                    " bytes long.");
+            throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes long but was" +
+                    " " + hash.length + " bytes long.");
         }
         return new ContractParameter(ContractParameterType.HASH256, hash);
     }
@@ -289,9 +286,8 @@ public class ContractParameter {
      */
     public static ContractParameter publicKey(byte[] publicKey) {
         if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
-            throw new IllegalArgumentException(
-                    "Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE +
-                    " long but was " + publicKey.length + " bytes");
+            throw new IllegalArgumentException("Public key argument must be " +
+                    NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length + " bytes");
         }
         return new ContractParameter(ContractParameterType.PUBLIC_KEY, publicKey);
     }
@@ -319,13 +315,13 @@ public class ContractParameter {
         ContractParameter that = (ContractParameter) o;
 
         if (paramType == that.paramType &&
-            Objects.equals(paramName, that.paramName)) {
+                Objects.equals(paramName, that.paramName)) {
 
             if (paramType.equals(ContractParameterType.BYTE_ARRAY) ||
-                paramType.equals(ContractParameterType.SIGNATURE) ||
-                paramType.equals(ContractParameterType.PUBLIC_KEY) ||
-                paramType.equals(ContractParameterType.HASH160) ||
-                paramType.equals(ContractParameterType.HASH256)) {
+                    paramType.equals(ContractParameterType.SIGNATURE) ||
+                    paramType.equals(ContractParameterType.PUBLIC_KEY) ||
+                    paramType.equals(ContractParameterType.HASH160) ||
+                    paramType.equals(ContractParameterType.HASH256)) {
 
                 return Arrays.equals((byte[]) value, (byte[]) that.value);
             } else if (paramType.equals(ContractParameterType.ARRAY)) {
@@ -412,9 +408,8 @@ public class ContractParameter {
                     gen.writeEndArray();
                     break;
                 default:
-                    throw new UnsupportedOperationException(
-                            "Parameter type \'" + p.getParamType().toString() +
-                            "\' not supported.");
+                    throw new UnsupportedOperationException("Parameter type \'" +
+                            p.getParamType().toString() + "\' not supported.");
             }
         }
 
@@ -495,7 +490,7 @@ public class ContractParameter {
                     return new BigInteger(value.asText());
                 case HASH160:
                     // The script hash value is expected to be a big-endian hex string.
-                    return new ScriptHash(value.asText());
+                    return new Hash160(value.asText());
                 case ARRAY:
                     if (value.isArray()) {
                         List<ContractParameter> arr = new ArrayList<>(value.size());
@@ -508,10 +503,9 @@ public class ContractParameter {
                     // We assume that the interop interface parameter holds a plain string.
                     return value.asText();
                 default:
-                    throw new UnsupportedOperationException(
-                            "Parameter type \'" + type + "\' not supported.");
+                    throw new UnsupportedOperationException("Parameter type \'" + type +
+                            "\' not supported.");
             }
         }
     }
-
 }

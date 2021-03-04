@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
-import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,10 +49,10 @@ public class NeoURITest {
     private static Neow3j neow3j;
     private static Wallet wallet;
 
-    private static final ScriptHash SENDER =
-            ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
+    private static final Hash160 SENDER =
+            Hash160.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
     private static final String RECIPIENT = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
-    private static final ScriptHash RECIPIENT_SCRIPT_HASH = ScriptHash.fromAddress(RECIPIENT);
+    private static final Hash160 RECIPIENT_SCRIPT_HASH = Hash160.fromAddress(RECIPIENT);
     private static final BigDecimal AMOUNT = new BigDecimal(1);
 
     @Rule
@@ -120,7 +119,7 @@ public class NeoURITest {
     @Test
     public void fromURI_nonNativeToken() {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_NON_NATIVE);
-        assertThat(neoURI.getAsset(), is(new ScriptHash("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"
+        assertThat(neoURI.getAsset(), is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"
         )));
     }
 
@@ -401,7 +400,7 @@ public class NeoURITest {
         assertThat(new NeoURI(neow3j)
                         .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                         .getAsset(),
-                is(new ScriptHash("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
+                is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
     }
 
     @Test
@@ -419,4 +418,5 @@ public class NeoURITest {
                         .getAssetAsAddress(),
                 is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
     }
+
 }

@@ -38,16 +38,16 @@ import org.junit.rules.ExpectedException;
 
 public class SmartContractTest {
 
-    private static final ScriptHash NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    private static final ScriptHash SOME_SCRIPT_HASH =
-            new ScriptHash("969a77db482f74ce27105f760efa139223431394");
+    private static final Hash160 NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
+    private static final Hash160 SOME_SCRIPT_HASH =
+            new Hash160("969a77db482f74ce27105f760efa139223431394");
     private static final String NEP17_TRANSFER = "transfer";
     private static final String NEP17_BALANCEOF = "balanceOf";
     private static final String NEP17_NAME = "name";
     private static final String NEP17_TOTALSUPPLY = "totalSupply";
 
     private Account account1;
-    private ScriptHash recipient;
+    private Hash160 recipient;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -65,7 +65,7 @@ public class SmartContractTest {
         neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         neow.setNetworkMagicNumber(769);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
-        recipient = new ScriptHash("969a77db482f74ce27105f760efa139223431394");
+        recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
     }
 
     @Test
@@ -176,7 +176,7 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), NEP17_BALANCEOF);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         BigInteger balance = sc.callFuncReturningInt(NEP17_BALANCEOF,
-                hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
+                hash160(new Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
         assertThat(balance, is(BigInteger.valueOf(3)));
     }
 
@@ -206,7 +206,7 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         boolean transferSuccessful = sc.callFuncReturningBool(NEP17_TRANSFER,
-                hash160(new ScriptHash("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
+                hash160(new Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
         assertTrue(transferSuccessful);
     }
 
@@ -254,4 +254,5 @@ public class SmartContractTest {
     public void callInvokeFunctionWithoutParameters_missingFunction() throws IOException {
         new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("");
     }
+
 }

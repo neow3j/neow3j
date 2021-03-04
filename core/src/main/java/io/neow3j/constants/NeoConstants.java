@@ -1,5 +1,6 @@
 package io.neow3j.constants;
 
+import io.neow3j.contract.Hash160;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -50,9 +51,9 @@ public class NeoConstants {
     public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
 
     /**
-     * The byte size of a script hash.
+     * The byte size of a {@link Hash160} hash.
      */
-    public static final int SCRIPTHASH_SIZE = 20;
+    public static final int HASH160_SIZE = 20;
 
     /**
      * Size of a private key in bytes

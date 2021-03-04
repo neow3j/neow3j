@@ -14,7 +14,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.methods.response.NeoSendFrom;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
@@ -62,7 +62,7 @@ public class Neow3jWriteIntegrationTest {
         neow3j.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
         Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(
-                "1", new ScriptHash(NEO_TOKEN_HASH), neow3j);
+                "1", new Hash160(NEO_TOKEN_HASH), neow3j);
     }
 
     @Test
@@ -149,9 +149,9 @@ public class Neow3jWriteIntegrationTest {
                 .send().getApplicationLog().getExecutions().get(0);
         assertThat(execution.getState(), is(VM_STATE_HALT));
 
-        ScriptHash recipient2ScriptHash = ScriptHash.fromAddress(RECIPIENT_2);
+        Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT_2);
         assertThat(neow3j.invokeFunction(
-                NEO_HASH, "balanceOf", Arrays.asList(hash160(recipient2ScriptHash)))
+                NEO_HASH, "balanceOf", Arrays.asList(hash160(recipient2Hash160)))
                         .send().getInvocationResult().getStack().get(0)
                         .asInteger().getValue().intValue(),
                 is(10));

@@ -1,9 +1,9 @@
 package io.neow3j.wallet;
 
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import io.neow3j.contract.Hash160;
 import io.neow3j.transaction.VerificationScript;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,7 +21,6 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
@@ -35,6 +34,7 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,10 +57,10 @@ public class AccountTest {
     private static final String ACCOUNT_JSON_KEY =
             "6PYNxavNrrWiCNgLtd5WJjerGUwJD7LPp5Pzt85azUo4nLHL9dUkJaYtAo";
     private static final String WIF = "L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda";
-    private static final ScriptHash NEO_SCRIPT_HASH = new ScriptHash(
-            "de5f57d430d3dece511cf975a8d37848cb9e0525");
-    private static final ScriptHash GAS_SCRIPT_HASH = new ScriptHash(
-            "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
+    private static final Hash160 NEO_SCRIPT_HASH =
+            new Hash160("de5f57d430d3dece511cf975a8d37848cb9e0525");
+    private static final Hash160 GAS_SCRIPT_HASH =
+            new Hash160("668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -117,11 +118,13 @@ public class AccountTest {
     public void testFromVerificationScript() {
         Account account = Account.fromVerificationScript(
                 new VerificationScript(
-                        Numeric.hexStringToByteArray("0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
+                        Numeric.hexStringToByteArray(
+                                "0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
 
         assertThat(account.getAddress(), is("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj"));
         assertThat(account.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray("0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
+                is(Numeric.hexStringToByteArray(
+                        "0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
     }
 
     @Test
@@ -132,7 +135,8 @@ public class AccountTest {
 
         assertThat(account.getAddress(), is("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj"));
         assertThat(account.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray("0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
+                is(Numeric.hexStringToByteArray(
+                        "0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
     }
 
     @Test
@@ -204,7 +208,8 @@ public class AccountTest {
 
     @Test
     public void loadAccountFromNEP6Account() throws URISyntaxException, IOException {
-        URL nep6AccountFileUrl = AccountTest.class.getClassLoader().getResource("wallet/account.json");
+        URL nep6AccountFileUrl =
+                AccountTest.class.getClassLoader().getResource("wallet/account.json");
         FileInputStream stream = new FileInputStream(new File(nep6AccountFileUrl.toURI()));
         NEP6Account nep6Acc = new ObjectMapper().readValue(stream, NEP6Account.class);
         Account a = Account.fromNEP6Account(nep6Acc);
@@ -326,7 +331,8 @@ public class AccountTest {
     }
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(WireMockConfiguration.options().dynamicPort());
+    public WireMockRule wireMockRule =
+            new WireMockRule(WireMockConfiguration.options().dynamicPort());
 
     @Test
     public void getNep17Balances() throws IOException {
@@ -338,7 +344,7 @@ public class AccountTest {
         WalletTestHelper.setUpWireMockForCall("getnep17balances",
                 "getnep17balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
                 ADDRESS);
-        Map<ScriptHash, BigInteger> balances = a.getNep17Balances(neow);
+        Map<Hash160, BigInteger> balances = a.getNep17Balances(neow);
         assertThat(balances.keySet(), contains(GAS_SCRIPT_HASH, NEO_SCRIPT_HASH));
         assertThat(balances.values(), contains(
                 new BigInteger("300000000"),
@@ -384,4 +390,5 @@ public class AccountTest {
         assertNotNull(a.getWallet());
         assertEquals(wallet, a.getWallet());
     }
+
 }

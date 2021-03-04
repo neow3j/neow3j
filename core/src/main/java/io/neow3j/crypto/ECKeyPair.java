@@ -5,7 +5,7 @@ import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
@@ -80,7 +80,7 @@ public class ECKeyPair {
      */
     public String getAddress() {
         byte[] script = ScriptBuilder.buildVerificationScript(this.publicKey.getEncoded(true));
-        return ScriptHash.fromScript(script).toAddress();
+        return Hash160.fromScript(script).toAddress();
     }
 
     /**

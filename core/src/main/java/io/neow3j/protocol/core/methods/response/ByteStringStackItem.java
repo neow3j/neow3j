@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
@@ -44,7 +44,7 @@ public class ByteStringStackItem extends StackItem {
      * @return the address represented by this item.
      */
     public String getAsAddress() {
-        return new ScriptHash(getValue()).toAddress();
+        return new Hash160(getValue()).toAddress();
     }
 
     /**

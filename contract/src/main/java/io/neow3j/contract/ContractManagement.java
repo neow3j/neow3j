@@ -27,7 +27,7 @@ public class ContractManagement extends SmartContract {
 
     private static final String NAME = "ContractManagement";
     public final static long NEF_CHECKSUM = 3516775561L;
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
@@ -72,7 +72,7 @@ public class ContractManagement extends SmartContract {
      * @return the state of the smart contract.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public ContractState getContract(ScriptHash scriptHash) throws IOException {
+    public ContractState getContract(Hash160 scriptHash) throws IOException {
         StackItem stackItem = callInvokeFunction(GET_CONTRACT,
                 singletonList(hash160(scriptHash)))
                 .getInvocationResult().getStack().get(0);
@@ -111,10 +111,9 @@ public class ContractManagement extends SmartContract {
         }
         byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
         if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
-            throw new IllegalArgumentException(
-                    format("The given contract manifest is too long. Manifest was %d bytes big, " +
-                           "but a max of %d bytes is allowed.",
-                            manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
+            throw new IllegalArgumentException(format("The given contract manifest is too long. " +
+                            "Manifest was %d bytes big, but a max of %d bytes is allowed.",
+                    manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
         }
         if (data == null) {
             return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));

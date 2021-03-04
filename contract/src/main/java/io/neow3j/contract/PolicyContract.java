@@ -16,7 +16,7 @@ public class PolicyContract extends SmartContract {
     private static final String NAME = "PolicyContract";
     public final static long NEF_CHECKSUM = 1136340263L;
 
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
 
     private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
     private static final String GET_MAX_BLOCK_SIZE = "getMaxBlockSize";
@@ -111,7 +111,7 @@ public class PolicyContract extends SmartContract {
      * @return true if the account is blocked. False, otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public boolean isBlocked(ScriptHash scriptHash) throws IOException {
+    public boolean isBlocked(Hash160 scriptHash) throws IOException {
         return callFuncReturningBool(IS_BLOCKED, hash160(scriptHash));
     }
 
@@ -191,7 +191,7 @@ public class PolicyContract extends SmartContract {
      * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder blockAccount(String addressToBlock) {
-        return invokeFunction(BLOCK_ACCOUNT, hash160(ScriptHash.fromAddress(addressToBlock)));
+        return invokeFunction(BLOCK_ACCOUNT, hash160(Hash160.fromAddress(addressToBlock)));
     }
 
     /**
@@ -201,7 +201,7 @@ public class PolicyContract extends SmartContract {
      * @param accountToBlock the account to block.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder blockAccount(ScriptHash accountToBlock) {
+    public TransactionBuilder blockAccount(Hash160 accountToBlock) {
         return invokeFunction(BLOCK_ACCOUNT, hash160(accountToBlock));
     }
 
@@ -213,7 +213,7 @@ public class PolicyContract extends SmartContract {
      * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder unblockAccount(String addressToBlock) {
-        return invokeFunction(UNBLOCK_ACCOUNT, hash160(ScriptHash.fromAddress(addressToBlock)));
+        return invokeFunction(UNBLOCK_ACCOUNT, hash160(Hash160.fromAddress(addressToBlock)));
     }
 
     /**
@@ -223,7 +223,7 @@ public class PolicyContract extends SmartContract {
      * @param accountToUnblock the account to unblock.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder unblockAccount(ScriptHash accountToUnblock) {
+    public TransactionBuilder unblockAccount(Hash160 accountToUnblock) {
         return invokeFunction(UNBLOCK_ACCOUNT, hash160(accountToUnblock));
     }
 

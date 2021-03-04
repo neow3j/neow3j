@@ -38,7 +38,7 @@ public class FungibleToken extends Token {
      * @param scriptHash the token contract's script hash
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public FungibleToken(ScriptHash scriptHash, Neow3j neow) {
+    public FungibleToken(Hash160 scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 
@@ -81,7 +81,7 @@ public class FungibleToken extends Token {
      */
     public BigInteger getBalanceOf(String address) throws IOException,
             UnexpectedReturnTypeException {
-        return getBalanceOf(ScriptHash.fromAddress(address));
+        return getBalanceOf(Hash160.fromAddress(address));
     }
 
     /**
@@ -100,7 +100,7 @@ public class FungibleToken extends Token {
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something
      *                                       interpretable as a number.
      */
-    public BigInteger getBalanceOf(ScriptHash scriptHash) throws IOException,
+    public BigInteger getBalanceOf(Hash160 scriptHash) throws IOException,
             UnexpectedReturnTypeException {
 
         ContractParameter ofParam = hash160(scriptHash);
@@ -148,7 +148,7 @@ public class FungibleToken extends Token {
      */
     public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount)
             throws IOException {
-        return transfer(wallet, ScriptHash.fromAddress(to), amount, null);
+        return transfer(wallet, Hash160.fromAddress(to), amount, null);
     }
 
     /**
@@ -164,7 +164,7 @@ public class FungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, BigDecimal amount)
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to, BigDecimal amount)
             throws IOException {
         return transfer(wallet, to, amount, null);
     }
@@ -190,7 +190,7 @@ public class FungibleToken extends Token {
     public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount,
             ContractParameter data)
             throws IOException {
-        return transfer(wallet, ScriptHash.fromAddress(to), amount, data);
+        return transfer(wallet, Hash160.fromAddress(to), amount, data);
     }
 
     /**
@@ -211,17 +211,16 @@ public class FungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, ScriptHash to, BigDecimal amount,
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to, BigDecimal amount,
             ContractParameter data) throws IOException {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
         if (!amountDecimalsIsValid(amount)) {
-            throw new IllegalArgumentException(
-                    "The amount contains more decimal places than this token can handle. This " +
-                    "token has " + getDecimals() + " decimals. The amount provided had " +
-                    amount.stripTrailingZeros().scale() + " decimal places.");
+            throw new IllegalArgumentException("The amount contains more decimal places than this" +
+                    " token can handle. This token has " + getDecimals() + " decimals. The amount" +
+                    " provided had " + amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         List<Account> accountsOrdered = new ArrayList<>(wallet.getAccounts());
@@ -247,8 +246,8 @@ public class FungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String to,
-            BigDecimal amount, ScriptHash... from) throws IOException {
-        return transferFromSpecificAccounts(wallet, ScriptHash.fromAddress(to), amount, null, from);
+            BigDecimal amount, Hash160... from) throws IOException {
+        return transferFromSpecificAccounts(wallet, Hash160.fromAddress(to), amount, null, from);
     }
 
     /**
@@ -274,9 +273,9 @@ public class FungibleToken extends Token {
      */
     public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String to,
             BigDecimal amount, ContractParameter data, String... from) throws IOException {
-        ScriptHash[] fromScriptHashes =
-                Arrays.stream(from).map(ScriptHash::fromAddress).toArray(ScriptHash[]::new);
-        return transferFromSpecificAccounts(wallet, ScriptHash.fromAddress(to), amount, data,
+        Hash160[] fromScriptHashes =
+                Arrays.stream(from).map(Hash160::fromAddress).toArray(Hash160[]::new);
+        return transferFromSpecificAccounts(wallet, Hash160.fromAddress(to), amount, data,
                 fromScriptHashes);
     }
 
@@ -296,8 +295,8 @@ public class FungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
-            BigDecimal amount, ScriptHash... from) throws IOException {
+    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, Hash160 to,
+            BigDecimal amount, Hash160... from) throws IOException {
         return transferFromSpecificAccounts(wallet, to, amount, null, from);
     }
 
@@ -322,8 +321,8 @@ public class FungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, ScriptHash to,
-            BigDecimal amount, ContractParameter data, ScriptHash... from) throws IOException {
+    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, Hash160 to,
+            BigDecimal amount, ContractParameter data, Hash160... from) throws IOException {
 
         if (from.length == 0) {
             throw new IllegalArgumentException(
@@ -334,31 +333,30 @@ public class FungibleToken extends Token {
                     "The parameter amount must be greater than or equal to 0");
         }
         if (!amountDecimalsIsValid(amount)) {
-            throw new IllegalArgumentException(
-                    "The amount contains more decimal places than this token can handle. This " +
-                    "token has " + getDecimals() + " decimals. The amount provided had " +
-                    amount.stripTrailingZeros().scale() + " decimal places.");
+            throw new IllegalArgumentException("The amount contains more decimal places than this" +
+                    " token can handle. This token has " + getDecimals() + " decimals. The amount" +
+                    " provided had " + amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         List<Account> accounts = new ArrayList<>();
-        for (ScriptHash fromScriptHash : from) {
+        for (Hash160 fromScriptHash : from) {
             Account a = wallet.getAccount(fromScriptHash);
             // TODO: 15.10.20 Michael: Remove this multi-sig check. The signers for a multi-sig can
             //  still be added to the TransactionBuilder.
             // Verify that potential multi-sig accounts can be used.
             if (a.isMultiSig() && a.getVerificationScript() != null &&
-                !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
-                throw new IllegalArgumentException(
-                        "The multi-sig account with script hash " + fromScriptHash.toString() +
-                        " does not have the corresponding private keys in the wallet that are " +
-                        "required for signing the transfer transaction.");
+                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
+                throw new IllegalArgumentException("The multi-sig account with script hash " +
+                        fromScriptHash.toString() + " does not have the corresponding private " +
+                        "keys in the wallet that are required for signing the transfer " +
+                        "transaction.");
             }
             accounts.add(a);
         }
         return buildMultiTransferInvocation(wallet, to, amount, accounts, data);
     }
 
-    TransactionBuilder buildMultiTransferInvocation(Wallet wallet, ScriptHash to, BigDecimal amount,
+    TransactionBuilder buildMultiTransferInvocation(Wallet wallet, Hash160 to, BigDecimal amount,
             List<Account> accounts, ContractParameter data) throws IOException {
 
         List<byte[]> scripts = new ArrayList<>(); // List of the individual invocation scripts.
@@ -368,7 +366,7 @@ public class FungibleToken extends Token {
         while (remainingAmount.signum() > 0 && it.hasNext()) {
             Account a = it.next();
             if (a.isMultiSig() && a.getVerificationScript() != null &&
-                !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
+                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
                 continue;
             }
             BigInteger balance = getBalanceOf(a.getScriptHash());
@@ -389,16 +387,15 @@ public class FungibleToken extends Token {
         if (remainingAmount.signum() > 0) {
             BigInteger amountToCover = getAmountAsBigInteger(amount);
             BigInteger coveredAmount = amountToCover.subtract(remainingAmount);
-            throw new InsufficientFundsException(
-                    "The wallet does not hold enough tokens, resp. token-holding accounts with " +
-                    "available private keys. The transfer amount is " +
+            throw new InsufficientFundsException("The wallet does not hold enough tokens, resp. " +
+                    "token-holding accounts with available private keys. The transfer amount is " +
                     amountToCover.toString() + " " + getSymbol() + " but the wallet only holds " +
                     coveredAmount.toString() + " " + getSymbol() + " (in token fractions).");
         }
         return assembleMultiTransferTransaction(wallet, scripts, signers);
     }
 
-    private byte[] buildSingleTransferScript(Account acc, ScriptHash to, BigInteger amount,
+    private byte[] buildSingleTransferScript(Account acc, Hash160 to, BigInteger amount,
             ContractParameter data) {
         List<ContractParameter> params;
         if (data == null) {
@@ -445,7 +442,7 @@ public class FungibleToken extends Token {
      */
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
             BigDecimal amount) throws IOException {
-        return transferFromDefaultAccount(wallet, ScriptHash.fromAddress(to), amount, null);
+        return transferFromDefaultAccount(wallet, Hash160.fromAddress(to), amount, null);
     }
 
     /**
@@ -465,7 +462,7 @@ public class FungibleToken extends Token {
      */
     public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
             BigDecimal amount, ContractParameter data) throws IOException {
-        return transferFromDefaultAccount(wallet, ScriptHash.fromAddress(to), amount, data);
+        return transferFromDefaultAccount(wallet, Hash160.fromAddress(to), amount, data);
     }
 
     /**
@@ -478,7 +475,7 @@ public class FungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, ScriptHash to,
+    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, Hash160 to,
             BigDecimal amount) throws IOException {
         return transferFromDefaultAccount(wallet, to, amount, null);
     }
@@ -498,26 +495,24 @@ public class FungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, ScriptHash to,
+    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, Hash160 to,
             BigDecimal amount, ContractParameter data) throws IOException {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("The amount must be greater than or equal to 0.");
         }
         if (!amountDecimalsIsValid(amount)) {
-            throw new IllegalArgumentException(
-                    "The amount contains more decimal places than this token can handle. This " +
-                    "token has " + getDecimals() + " decimals. The amount provided had " +
-                    amount.stripTrailingZeros().scale() + " decimal places.");
+            throw new IllegalArgumentException("The amount contains more decimal places than this" +
+                    " token can handle. This token has " + getDecimals() + " decimals. The amount" +
+                    " provided had " + amount.stripTrailingZeros().scale() + " decimal places.");
         }
 
         Account acc = wallet.getDefaultAccount();
         BigInteger fractions = getAmountAsBigInteger(amount);
         BigInteger accBalance = getBalanceOf(acc.getScriptHash());
         if (accBalance.compareTo(fractions) < 0) {
-            throw new InsufficientFundsException(
-                    "The wallet's default account does not hold enough tokens. Transfer amount " +
-                    "is " + fractions.toString() + " but account only holds " +
-                    accBalance.toString() + " (in token fractions).");
+            throw new InsufficientFundsException("The wallet's default account does not hold " +
+                    "enough tokens. Transfer amount is " + fractions.toString() + " but account " +
+                    "only holds " + accBalance.toString() + " (in token fractions).");
         }
 
         TransactionBuilder b;

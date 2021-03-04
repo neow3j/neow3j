@@ -215,4 +215,5 @@ public class ContractManagementTest {
 
         assertThat(tx.getScript(), is(expectedScript));
     }
+
 }

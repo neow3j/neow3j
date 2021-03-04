@@ -23,8 +23,8 @@ public class TokenTest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     private Token someToken;
-    private static final ScriptHash SOME_TOKEN_SCRIPT_HASH =
-            new ScriptHash("f7014e6d52fe8f94f7c57acd8cfb875b4ac2a1c6");
+    private static final Hash160 SOME_TOKEN_SCRIPT_HASH =
+            new Hash160("f7014e6d52fe8f94f7c57acd8cfb875b4ac2a1c6");
 
     @Before
     public void setUp() {
@@ -55,4 +55,5 @@ public class TokenTest {
                 "invokefunction_totalSupply.json");
         assertThat(someToken.getTotalSupply(), is(new BigInteger("3000000000000000")));
     }
+
 }

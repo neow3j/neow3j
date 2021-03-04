@@ -7,34 +7,36 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
 public class TransactionTest {
 
-    private ScriptHash account1;
-    private ScriptHash account2;
-    private ScriptHash account3;
+    private Hash160 account1;
+    private Hash160 account2;
+    private Hash160 account3;
 
     private Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
 
     @Before
     public void setUp() {
-        account1 = ScriptHash.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
-        account2 = ScriptHash.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
-        account3 = ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
+        account1 = Hash160.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+        account2 = Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
+        account3 = Hash160.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
     }
 
     @Test
@@ -129,14 +131,14 @@ public class TransactionTest {
         Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
         assertThat(tx.getVersion(), is((byte) 0));
         assertThat(tx.getNonce(), is(246070626L));
-        assertThat(tx.getSender(), is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSender(), is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
         assertThat(tx.getAttributes(), hasSize(0));
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(),
-                is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+                is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
         assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
@@ -275,4 +277,5 @@ public class TransactionTest {
                 txHexWithoutWitness);
         assertThat(tx.getHashData(), is(expectedData));
     }
+
 }

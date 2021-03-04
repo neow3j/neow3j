@@ -3,7 +3,7 @@ package io.neow3j.crypto;
 import static io.neow3j.utils.Assertions.verifyPrecondition;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.utils.ArrayUtils;
@@ -245,7 +245,7 @@ public class Sign {
         byte[] s = signatureData.getS();
         SignatureData signatureDataV = new Sign.SignatureData(getRealV(v), r, s);
         ECPublicKey key = Sign.signedMessageToKey(message, signatureDataV);
-        return ScriptHash.fromPublicKey(key.getEncoded(true)).toAddress();
+        return Hash160.fromPublicKey(key.getEncoded(true)).toAddress();
     }
 
 

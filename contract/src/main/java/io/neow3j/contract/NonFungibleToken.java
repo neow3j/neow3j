@@ -36,7 +36,7 @@ public class NonFungibleToken extends Token {
      * @param scriptHash the token contract's script hash.
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public NonFungibleToken(ScriptHash scriptHash, Neow3j neow) {
+    public NonFungibleToken(Hash160 scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 
@@ -62,9 +62,9 @@ public class NonFungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, ScriptHash to,
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to,
             byte[] tokenID) throws IOException {
-        ScriptHash tokenOwner = ownerOf(tokenID);
+        Hash160 tokenOwner = ownerOf(tokenID);
         if (!wallet.holdsAccount(tokenOwner)) {
             throw new IllegalArgumentException("The provided wallet does not contain the account " +
                     "that owns the token with ID " + Numeric.toHexString(tokenID) + ". The " +
@@ -79,17 +79,17 @@ public class NonFungibleToken extends Token {
     }
 
     /**
-     * Gets the owner of the token with {@code tokenID}.
+     * Gets the owner of the token with {@code tokenId}.
      *
-     * @param tokenID the token ID.
+     * @param tokenId the token ID.
      * @return a list of owners of the token.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public ScriptHash ownerOf(byte[] tokenID) throws IOException {
-        return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenID)));
+    public Hash160 ownerOf(byte[] tokenId) throws IOException {
+        return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenId)));
     }
 
-    private ScriptHash callFunctionReturningScriptHash(String function,
+    private Hash160 callFunctionReturningScriptHash(String function,
             List<ContractParameter> params) throws IOException {
 
         StackItem stackItem = callInvokeFunction(function, params)
@@ -97,15 +97,15 @@ public class NonFungibleToken extends Token {
         return extractScriptHash(stackItem);
     }
 
-    private ScriptHash extractScriptHash(StackItem item) {
+    private Hash160 extractScriptHash(StackItem item) {
         if (!item.getType().equals(BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
         }
         try {
-            return ScriptHash.fromAddress(item.asByteString().getAsAddress());
+            return Hash160.fromAddress(item.asByteString().getAsAddress());
         } catch (IllegalArgumentException e) {
-            throw new UnexpectedReturnTypeException(
-                    "Return type did not contain script hash in expected format.", e);
+            throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
+                    "expected format.", e);
         }
     }
 
@@ -125,7 +125,7 @@ public class NonFungibleToken extends Token {
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something
      *                                       interpretable as a number.
      */
-    public BigInteger balanceOf(ScriptHash owner)
+    public BigInteger balanceOf(Hash160 owner)
             throws IOException {
         return callFuncReturningInt(BALANCE_OF, hash160(owner));
     }
