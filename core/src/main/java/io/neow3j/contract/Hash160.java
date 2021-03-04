@@ -27,7 +27,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     private byte[] hash;
 
     /**
-     * A zero address hash.
+     * A zero-value hash.
      */
     public static final Hash160 ZERO = new Hash160("0000000000000000000000000000000000000000");
 
@@ -53,7 +53,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * Constructs a new hash from the given hexadecimal string. The string must be in big-endian
      * order and 160 bits long.
      *
-     * @param hash the script hash in big-endian order.
+     * @param hash the hash in big-endian order.
      */
     public Hash160(String hash) {
         if (Numeric.isValidHexString(hash)) {
