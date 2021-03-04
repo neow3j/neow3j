@@ -17,6 +17,9 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.crypto.Base64;
+import io.neow3j.io.StackItemReader;
+import io.neow3j.io.StackItemSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
 
@@ -33,7 +36,7 @@ import java.util.Objects;
  */
 @JsonSerialize(using = ContractParameterSerializer.class)
 @JsonDeserialize(using = ContractParameterDeserializer.class)
-public class ContractParameter {
+public class ContractParameter extends StackItemSerializable {
 
     @JsonProperty("name")
     private String paramName;
@@ -344,6 +347,11 @@ public class ContractParameter {
     @Override
     public int hashCode() {
         return Objects.hash(paramName, paramType, value);
+    }
+
+    @Override
+    public void deserialize(StackItemReader reader) throws DeserializationException {
+
     }
 
     protected static class ContractParameterSerializer extends StdSerializer<ContractParameter> {

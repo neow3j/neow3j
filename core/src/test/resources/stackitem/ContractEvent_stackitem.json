@@ -1,0 +1,53 @@
+{
+  "type": "Struct",
+  "value": [
+    {
+      "type": "ByteString",
+      "value": "VHJhbnNmZXI="
+    },
+    {
+      "type": "Array",
+      "value": [
+        {
+          "type": "Struct",
+          "value": [
+            {
+              "type": "ByteString",
+              "value": "ZnJvbQ=="
+            },
+            {
+              "type": "Integer",
+              "value": "20"
+            }
+          ]
+        },
+        {
+          "type": "Struct",
+          "value": [
+            {
+              "type": "ByteString",
+              "value": "dG8="
+            },
+            {
+              "type": "Integer",
+              "value": "20"
+            }
+          ]
+        },
+        {
+          "type": "Struct",
+          "value": [
+            {
+              "type": "ByteString",
+              "value": "YW1vdW50"
+            },
+            {
+              "type": "Integer",
+              "value": "17"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "type": "Struct",
+  "value": [
+    {
+      "type": "ByteString",
+      "value": "dGVzdA=="
+    },
+    {
+      "type": "ByteString",
+      "value": "dGVzdA=="
+    }
+  ]
+}

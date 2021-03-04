@@ -1,0 +1,13 @@
+{
+  "type": "Struct",
+  "value": [
+    {
+      "type": "ByteString",
+      "value": "YWNjb3VudA=="
+    },
+    {
+      "type": "Integer",
+      "value": "20"
+    }
+  ]
+}

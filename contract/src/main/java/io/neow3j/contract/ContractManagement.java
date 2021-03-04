@@ -8,17 +8,25 @@ import static java.util.Collections.singletonList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.crypto.Base64;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.ContractMethodToken;
+import io.neow3j.protocol.core.methods.response.ContractNef;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a Management contract and provides methods to invoke it.
@@ -71,8 +79,10 @@ public class ContractManagement extends SmartContract {
      * @param scriptHash the script hash of the smart contract.
      * @return the state of the smart contract.
      * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws DeserializationException if there was a problem deserializing info provided by the Neo node.
      */
-    public ContractState getContract(ScriptHash scriptHash) throws IOException {
+    public ContractState getContract(ScriptHash scriptHash) throws IOException,
+            DeserializationException {
         StackItem stackItem = callInvokeFunction(GET_CONTRACT,
                 singletonList(hash160(scriptHash)))
                 .getInvocationResult().getStack().get(0);
@@ -84,15 +94,25 @@ public class ContractManagement extends SmartContract {
         String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString()
                 .getAsHexString());
 
-        // TODO: 01.02.21 Guil:
-        // We need to fix how we get from StackItem to a NefFile/ContractManifest
-        // Implementing a method called `.fromStackItem()` in each of the classes is an option.
-//        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString()
-//                .getValue());
-//        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
-//                ContractManifest.class);
+        // NEF:
+        NefFile nef = NefFile.fromStackItem(stackItem.asArray().get(3).asByteString());
+        String compilerStr = nef.getCompiler();
+        List<MethodToken> originalMethodTokens = nef.getMethodTokens();
+        List<ContractMethodToken> transformedMethodTokens = originalMethodTokens.stream()
+                .map(mt -> new ContractMethodToken(mt.getHash().toAddress(), mt.getMethod(),
+                        mt.getParametersCount(), mt.hasReturnValue(),
+                        mt.getCallFlags().jsonValue()))
+                .collect(Collectors.toList());
+        long chkSumLong = Numeric.toBigInt(ArrayUtils.reverseArray(nef.getCheckSum())).longValue();
+        String script = Base64.encode(nef.getScript());
 
-        return new ContractState(id, updateCounter, hash, null, null);
+        ContractNef contractNef = new ContractNef(Integer.toUnsignedLong(nef.getMagic()),
+                compilerStr, transformedMethodTokens, script, chkSumLong);
+
+        // Manifest:
+        ContractManifest manifest = ManifestFile.fromStackItem(stackItem.asArray().get(4));
+
+        return new ContractState(id, updateCounter, hash, contractNef, manifest);
     }
 
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)

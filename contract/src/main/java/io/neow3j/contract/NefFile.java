@@ -13,7 +13,7 @@ import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.CallFlags;
+import io.neow3j.model.types.CallFlagsType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.ArrayUtils;
@@ -86,6 +86,15 @@ public class NefFile extends NeoSerializable {
         // Need to initialize the check sum because it is required for calculating the check sum.
         checkSum = new byte[CHECKSUM_SIZE];
         checkSum = computeChecksum(this);
+    }
+
+    /**
+     * Gets the magic number of NEF files.
+     *
+     * @return the NEF file magic number.
+     */
+    public int getMagic() {
+        return MAGIC;
     }
 
     /**
@@ -221,7 +230,7 @@ public class NefFile extends NeoSerializable {
         }
     }
 
-    public static NefFile readFromStackitem(StackItem stackItem)
+    public static NefFile fromStackItem(StackItem stackItem)
             throws DeserializationException, IOException {
 
         // the 'nef' is represented in a ByteString stack item
@@ -252,10 +261,10 @@ public class NefFile extends NeoSerializable {
         private String method;
         private int parametersCount;
         private boolean hasReturnValue;
-        private CallFlags callFlags;
+        private CallFlagsType callFlags;
 
         public MethodToken(ScriptHash hash, String method, int parametersCount,
-                boolean hasReturnValue, CallFlags callFlags) {
+                boolean hasReturnValue, CallFlagsType callFlags) {
             this.hash = hash;
             this.method = method;
             this.parametersCount = parametersCount;
@@ -283,7 +292,7 @@ public class NefFile extends NeoSerializable {
             return hasReturnValue;
         }
 
-        public CallFlags getCallFlags() {
+        public CallFlagsType getCallFlags() {
             return callFlags;
         }
 
@@ -294,7 +303,7 @@ public class NefFile extends NeoSerializable {
                 method = reader.readVarString();
                 parametersCount = reader.readUInt16();
                 hasReturnValue = reader.readBoolean();
-                callFlags = CallFlags.valueOf(reader.readByte());
+                callFlags = CallFlagsType.valueOf(reader.readByte());
             } catch (IOException e) {
                 throw new DeserializationException(e);
             }
@@ -306,7 +315,7 @@ public class NefFile extends NeoSerializable {
             writer.writeVarString(method);
             writer.writeUInt16(parametersCount);
             writer.writeBoolean(hasReturnValue);
-            writer.writeByte(callFlags.getValue());
+            writer.writeByte(callFlags.byteValue());
         }
 
         @Override

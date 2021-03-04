@@ -9,7 +9,7 @@ import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.contracts.GasToken;
 import io.neow3j.devpack.contracts.NeoToken;
-import io.neow3j.model.types.CallFlags;
+import io.neow3j.model.types.CallFlagsType;
 import java.io.IOException;
 import java.util.List;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class MethodTokensTest {
         assertThat(tokens.get(0).getParametersCount(), is(1));
         assertTrue(tokens.get(0).hasReturnValue());
         assertThat(tokens.get(0).getMethod(), is("balanceOf"));
-        assertThat(tokens.get(0).getCallFlags(), is(CallFlags.ALL));
+        assertThat(tokens.get(0).getCallFlags(), is(CallFlagsType.ALL));
 
         assertThat(tokens.get(1).getHash(), is(io.neow3j.contract.NeoToken.SCRIPT_HASH));
         assertThat(tokens.get(1).getMethod(), is("decimals"));
@@ -52,7 +52,7 @@ public class MethodTokensTest {
         assertThat(tokens.get(0).getParametersCount(), is(0));
         assertTrue(tokens.get(0).hasReturnValue());
         assertThat(tokens.get(0).getMethod(), is("decimals"));
-        assertThat(tokens.get(0).getCallFlags(), is(CallFlags.ALL));
+        assertThat(tokens.get(0).getCallFlags(), is(CallFlagsType.ALL));
     }
 
     static class MultipleMethodTokensContract {

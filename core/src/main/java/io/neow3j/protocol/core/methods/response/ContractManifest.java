@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.io.StackItemReader;
+import io.neow3j.io.StackItemSerializable;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.ContractParameterType;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +135,7 @@ public class ContractManifest {
 
     // Mutually trusted contract
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ContractGroup {
+    public static class ContractGroup extends StackItemSerializable {
 
         @JsonProperty("pubKey")
         @JsonAlias("pubkey")
@@ -178,10 +181,16 @@ public class ContractManifest {
                     ", signature=" + signature +
                     '}';
         }
+
+        @Override
+        public void deserialize(StackItemReader reader) {
+            this.pubKey = reader.asStructReadByteStringAsString();
+            this.signature = reader.asStructReadByteStringAsString();
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ContractABI {
+    public static class ContractABI  extends StackItemSerializable {
 
         @JsonProperty("methods")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -229,8 +238,13 @@ public class ContractManifest {
                     '}';
         }
 
+        @Override
+        public void deserialize(StackItemReader reader) throws DeserializationException {
+
+        }
+
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class ContractMethod {
+        public static class ContractMethod extends StackItemSerializable {
 
             @JsonProperty("name")
             private String name;
@@ -307,10 +321,15 @@ public class ContractManifest {
                         ", safe=" + safe +
                         '}';
             }
+
+            @Override
+            public void deserialize(StackItemReader reader) throws DeserializationException {
+
+            }
         }
 
         @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class ContractEvent {
+        public static class ContractEvent extends StackItemSerializable {
 
             @JsonProperty("name")
             private String name;
@@ -356,6 +375,11 @@ public class ContractManifest {
                         "name='" + name + '\'' +
                         ", parameters=" + parameters +
                         '}';
+            }
+
+            @Override
+            public void deserialize(StackItemReader reader) throws DeserializationException {
+
             }
         }
     }

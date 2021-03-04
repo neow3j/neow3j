@@ -19,6 +19,7 @@ import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -102,11 +103,8 @@ public class ContractManagementTest {
                 is(account1.getVerificationScript().getScript()));
     }
 
-    // TODO: 01.02.21 Guil:
-    // Update the `ContractManagement` class
-    @Ignore("The ContractManagement.getContract() method should be updated before.")
     @Test
-    public void getContract() throws IOException {
+    public void getContract() throws IOException, DeserializationException {
         setUpWireMockForInvokeFunction("getContract",
                 "management_getContract.json");
 
@@ -120,21 +118,21 @@ public class ContractManagementTest {
 
         assertThat(state.getNef().getMagic(), is(860243278L));
         assertThat(state.getNef().getCompiler(), is("neo-core-v3.0"));
-        assertThat(state.getNef().getScript(), is(nullValue()));
+        assertThat(state.getNef().getScript(), is("AP1BGvd7Zw=="));
         assertThat(state.getNef().getChecksum(), is(3921333105L));
 
         assertThat(state.getManifest().getName(), is(NeoToken.NAME));
         assertThat(state.getManifest().getAbi().getMethods(), hasSize(14));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getName(), is("vote"));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters(), hasSize(2));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1)
+        assertThat(state.getManifest().getAbi().getMethods().get(13).getName(), is("vote"));
+        assertThat(state.getManifest().getAbi().getMethods().get(13).getParameters(), hasSize(2));
+        assertThat(state.getManifest().getAbi().getMethods().get(13).getParameters().get(1)
                 .getParamName(), is("voteTo"));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1)
+        assertThat(state.getManifest().getAbi().getMethods().get(13).getParameters().get(1)
                 .getParamType(), is(ContractParameterType.BYTE_ARRAY));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getOffset(), is(0));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getReturnType(),
+        assertThat(state.getManifest().getAbi().getMethods().get(13).getOffset(), is(0));
+        assertThat(state.getManifest().getAbi().getMethods().get(13).getReturnType(),
                 is(ContractParameterType.BOOLEAN));
-        assertFalse(state.getManifest().getAbi().getMethods().get(6).isSafe());
+        assertFalse(state.getManifest().getAbi().getMethods().get(13).isSafe());
 
         assertThat(state.getManifest().getAbi().getEvents(), hasSize(1));
         assertThat(state.getManifest().getAbi().getEvents().get(0).getName(), is("Transfer"));

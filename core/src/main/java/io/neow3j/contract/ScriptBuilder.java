@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
-import io.neow3j.model.types.CallFlags;
+import io.neow3j.model.types.CallFlagsType;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
@@ -67,7 +67,7 @@ public class ScriptBuilder {
         } else {
             opCode(OpCode.NEWARRAY0);
         }
-        pushInteger(CallFlags.ALL.getValue());
+        pushInteger(CallFlagsType.ALL.byteValue());
         pushData(method);
         pushData(scriptHash.toArray());
         sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL);

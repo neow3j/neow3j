@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.CallFlags;
+import io.neow3j.model.types.CallFlagsType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.utils.Numeric;
 
@@ -54,8 +54,8 @@ public class NefFileTest {
             "contracts/TestContractWithMethodTokens.nef";
     private static final String TESTCONTRACT_WITH_TOKENS_SCRIPT = "213701004021370000405700017840";
     private final static List<MethodToken> TESTCONTRACT_METHOD_TOKENS = asList(
-            new MethodToken(NeoToken.SCRIPT_HASH, "getGasPerBlock", 0, true, CallFlags.ALL),
-            new MethodToken(GasToken.SCRIPT_HASH, "totalSupply", 0, true, CallFlags.ALL));
+            new MethodToken(NeoToken.SCRIPT_HASH, "getGasPerBlock", 0, true, CallFlagsType.ALL),
+            new MethodToken(GasToken.SCRIPT_HASH, "totalSupply", 0, true, CallFlagsType.ALL));
     private static final String TESTCONTRACT_WITH_TOKENS_CHECKSUM = "b559a069";
 
 
@@ -225,7 +225,7 @@ public class NefFileTest {
         byte[] nefBytes = Numeric.hexStringToByteArray(
                 "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
         ByteStringStackItem stackItem = new ByteStringStackItem(nefBytes);
-        NefFile nef = NefFile.readFromStackitem(stackItem);
+        NefFile nef = NefFile.fromStackItem(stackItem);
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getScript(), is(Numeric.hexStringToByteArray("00fd411af77b67")));
         assertThat(nef.getMethodTokens(), is(empty()));

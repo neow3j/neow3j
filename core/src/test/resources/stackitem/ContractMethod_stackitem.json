@@ -1,0 +1,39 @@
+{
+  "type": "Struct",
+  "value": [
+    {
+      "type": "ByteString",
+      "value": "YmFsYW5jZU9m"
+    },
+    {
+      "type": "Array",
+      "value": [
+        {
+          "type": "Struct",
+          "value": [
+            {
+              "type": "ByteString",
+              "value": "YWNjb3VudA=="
+            },
+            {
+              "type": "Integer",
+              "value": "20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Integer",
+      "value": "17"
+    },
+    {
+      "type": "Integer",
+      "value": "0"
+    },
+    {
+      "type": "Boolean",
+      "value": true
+    }
+  ]
+}

@@ -33,7 +33,7 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
-import io.neow3j.model.types.CallFlags;
+import io.neow3j.model.types.CallFlagsType;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -361,7 +361,7 @@ public class MethodsConverter implements Converter {
         boolean hasReturnValue = !Type.getMethodType(calledAsmMethod.desc)
                 .getReturnType().getClassName().equals(void.class.getTypeName());
         MethodToken token = new MethodToken(scriptHash, calledAsmMethod.name, nrOfParams,
-                hasReturnValue, CallFlags.ALL);
+                hasReturnValue, CallFlagsType.ALL);
         int idx = compUnit.getNeoModule().addMethodToken(token);
         byte[] idxBytes = ArrayUtils.getFirstNBytes(ByteBuffer.allocate(4).order(
                 ByteOrder.LITTLE_ENDIAN).putInt(idx).array(), 2);
