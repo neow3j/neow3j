@@ -1,5 +1,24 @@
 package io.neow3j.protocol.core;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
@@ -64,25 +83,8 @@ import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsNull.nullValue;
-
 import java.math.BigInteger;
 import java.util.List;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -146,7 +148,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoBlockHash blockHash = deserialiseResponse(NeoBlockHash.class);
         assertThat(blockHash.getBlockHash(),
-                is("0x3d1e051247f246f60dd2ba4f90f799578b5d394157b1f2b012c016b29536b899"));
+                is(new Hash256("0x3d1e051247f246f60dd2ba4f90f799578b5d394157b1f2b012c016b29536b899")));
     }
 
     @Test
@@ -161,7 +163,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoBlockHash neoBestBlockHash = deserialiseResponse(NeoBlockHash.class);
         assertThat(neoBestBlockHash.getBlockHash(),
-                is("0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3"));
+                is(new Hash256("0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3")));
     }
 
     @Test
@@ -250,13 +252,13 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlock.getBlock(), is(notNullValue()));
 
         assertThat(getBlock.getBlock().getHash(),
-                is("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8"));
+                is(new Hash256("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8")));
         assertThat(getBlock.getBlock().getSize(), is(1217L));
         assertThat(getBlock.getBlock().getVersion(), is(0));
         assertThat(getBlock.getBlock().getPrevBlockHash(),
-                is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
+                is(new Hash256("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39")));
         assertThat(getBlock.getBlock().getMerkleRootHash(),
-                is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
+                is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getNextConsensus(),
@@ -287,7 +289,7 @@ public class ResponseTest extends ResponseTester {
                 getBlock.getBlock().getTransactions(),
                 containsInAnyOrder(
                         new Transaction(
-                                "0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510",
+                                new Hash256("0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510"),
                                 267L,
                                 0,
                                 565086327L,
@@ -295,21 +297,20 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                asList(
-                                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                        asList(WitnessScope.CALLED_BY_ENTRY))
+                                singletonList(new TransactionSigner(
+                                        "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                        singletonList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
-                                asList(),
+                                emptyList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                asList(
-                                        new NeoWitness(
+                                singletonList(new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                                         )
                                 )
                         ),
                         new Transaction(
-                                "0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510",
+                                new Hash256("0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510"),
                                 267L,
                                 0,
                                 565086327L,
@@ -317,13 +318,13 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                asList(
-                                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                                asList(WitnessScope.CALLED_BY_ENTRY))
+                                singletonList(new TransactionSigner(
+                                        "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                        singletonList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
-                                asList(),
+                                emptyList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                asList(
+                                singletonList(
                                         new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
@@ -335,7 +336,8 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
         assertThat(getBlock.getBlock().getNextBlockHash(),
-                is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
+                is(new Hash256(
+                        "0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643")));
     }
 
     @Test
@@ -369,13 +371,13 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlock.getBlock(), is(notNullValue()));
 
         assertThat(getBlock.getBlock().getHash(),
-                is("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8"));
+                is(new Hash256("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8")));
         assertThat(getBlock.getBlock().getSize(), is(1217L));
         assertThat(getBlock.getBlock().getVersion(), is(0));
         assertThat(getBlock.getBlock().getPrevBlockHash(),
-                is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
+                is(new Hash256("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39")));
         assertThat(getBlock.getBlock().getMerkleRootHash(),
-                is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
+                is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getNextConsensus(),
@@ -400,7 +402,7 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
         assertThat(getBlock.getBlock().getNextBlockHash(),
-                is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
+                is(new Hash256("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643")));
     }
 
     @Test
@@ -744,7 +746,7 @@ public class ResponseTest extends ResponseTester {
         ContractState c1 = nativeContracts.get(0);
         assertThat(c1.getId(), is(-4));
         assertNull(c1.getUpdateCounter());
-        assertThat(c1.getHash(), is("0x70e2301955bf1e74cbb31d18c2f96972abadb328"));
+        assertThat(c1.getHash(), is(new Hash160("0x70e2301955bf1e74cbb31d18c2f96972abadb328")));
         ContractNef nef1 = c1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
@@ -762,7 +764,7 @@ public class ResponseTest extends ResponseTester {
 
         ContractState c2 = nativeContracts.get(1);
         assertThat(c2.getId(), is(-6));
-        assertThat(c2.getHash(), is("0x597b1471bbce497b7809e2c8f10db67050008b02"));
+        assertThat(c2.getHash(), is(new Hash160("0x597b1471bbce497b7809e2c8f10db67050008b02")));
         ContractNef nef2 = c2.getNef();
         assertThat(nef2.getMagic(), is(860243278L));
         assertThat(nef2.getCompiler(), is("neo-core-v3.0"));
@@ -779,7 +781,7 @@ public class ResponseTest extends ResponseTester {
 
         ContractState c3 = nativeContracts.get(2);
         assertThat(c3.getId(), is(-7));
-        assertThat(c3.getHash(), is("0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee"));
+        assertThat(c3.getHash(), is(new Hash160("0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee")));
         ContractNef nef3 = c3.getNef();
         assertThat(nef3.getMagic(), is(860243278L));
         assertThat(nef3.getCompiler(), is("neo-core-v3.0"));
@@ -921,7 +923,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(contractState, is(notNullValue()));
         assertThat(contractState.getId(), is(-2));
         assertThat(contractState.getHash(),
-                is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
+                is(new Hash160("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc")));
         assertThat(contractState.getNef().getScript(), is("QetD9PQ="));
         assertThat(contractState.getNef().getTokens(), is(empty()));
         assertThat(contractState.getNef().getChecksum(), is(3921333105L));
@@ -1008,8 +1010,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getMemPool.getMemPoolDetails().getVerified(),
                 containsInAnyOrder(
-                        "0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e",
-                        "0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"
+                        new Hash256("0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"),
+                        new Hash256("0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7")
                 )
         );
 
@@ -1018,8 +1020,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getMemPool.getMemPoolDetails().getUnverified(),
                 containsInAnyOrder(
-                        "0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e",
-                        "0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"
+                        new Hash256("0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"),
+                        new Hash256("0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7")
                 )
         );
     }
@@ -1069,9 +1071,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getRawMemPool.getAddresses(),
                 containsInAnyOrder(
-                        "0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e",
-                        "0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7",
-                        "0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6"
+                        new Hash256("0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"),
+                        new Hash256("0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"),
+                        new Hash256("0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6")
                 )
         );
     }
@@ -1141,7 +1143,7 @@ public class ResponseTest extends ResponseTester {
         Transaction transaction = getTransaction.getTransaction();
         assertThat(transaction, is(notNullValue()));
         assertThat(transaction.getHash(),
-                is("0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89"));
+                is(new Hash256("0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89")));
         assertThat(transaction.getSize(), is(267L));
         assertThat(transaction.getVersion(), is(0));
         assertThat(transaction.getNonce(), is(1046354582L));
@@ -1180,7 +1182,7 @@ public class ResponseTest extends ResponseTester {
                         )
                 ));
         assertThat(transaction.getBlockHash(),
-                is("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299"));
+                is(new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299")));
         assertThat(transaction.getConfirmations(), is(1388));
         assertThat(transaction.getBlockTime(), is(1589019142879L));
         assertThat(transaction.getVMState(), is("HALT"));
@@ -1457,7 +1459,7 @@ public class ResponseTest extends ResponseTester {
         NeoSendRawTransaction sendRawTransaction = deserialiseResponse(NeoSendRawTransaction.class);
         assertThat(sendRawTransaction.getSendRawTransaction(), is(notNullValue()));
         assertThat(sendRawTransaction.getSendRawTransaction().getHash(),
-                is("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770"));
+                is(new Hash256("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770")));
     }
 
     @Test
@@ -1698,9 +1700,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeScript.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
         assertThat(invokeScript.getInvocationResult().getStack(),
-                hasItem(
-                        new ByteStringStackItem("Transfer".getBytes())
-                ));
+                hasItem(new ByteStringStackItem("Transfer".getBytes())));
     }
 
     @Test
@@ -2095,7 +2095,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendFrom.getSendFrom(), is(notNullValue()));
 
         assertThat(sendFrom.getSendFrom().getHash(),
-                is("0x6818f446c2e503998ac766a8a175f86d9a89885423f6b055aa123c984625833e"));
+                is(new Hash256("0x6818f446c2e503998ac766a8a175f86d9a89885423f6b055aa123c984625833e")));
         assertThat(sendFrom.getSendFrom().getSize(), is(266L));
         assertThat(sendFrom.getSendFrom().getVersion(), is(0));
         assertThat(sendFrom.getSendFrom().getNonce(), is(1762654532L));
@@ -2169,7 +2169,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany(), is(notNullValue()));
 
         assertThat(sendMany.getSendMany().getHash(),
-                is("0xf60ec3b0810fb8c17a9a05eaeb3b361ead889a38d3fd1bf2d561a6e7001bb2f5"));
+                is(new Hash256("0xf60ec3b0810fb8c17a9a05eaeb3b361ead889a38d3fd1bf2d561a6e7001bb2f5")));
         assertThat(sendMany.getSendMany().getSize(), is(352L));
         assertThat(sendMany.getSendMany().getVersion(), is(0));
         assertThat(sendMany.getSendMany().getNonce(), is(1256822346L));
@@ -2186,10 +2186,12 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
         assertThat(sendMany.getSendMany().getSigners(),
                 containsInAnyOrder(
-                        new TransactionSigner("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
-                                asList(WitnessScope.CALLED_BY_ENTRY)),
-                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                asList(WitnessScope.CALLED_BY_ENTRY))
+                        new TransactionSigner(
+                                "0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
+                                singletonList(WitnessScope.CALLED_BY_ENTRY)),
+                        new TransactionSigner(
+                                "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                singletonList(WitnessScope.CALLED_BY_ENTRY))
                 ));
 
         assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
@@ -2266,7 +2268,7 @@ public class ResponseTest extends ResponseTester {
         NeoSendToAddress sendToAddress = deserialiseResponse(NeoSendToAddress.class);
         assertThat(sendToAddress.getSendToAddress(), is(notNullValue()));
         assertThat(sendToAddress.getSendToAddress().getHash(),
-                is("0xabd78548399bbe684fac50b6a71d0ce3f689497d4e79cb26a2b4dfb211782c39"));
+                is(new Hash256("0xabd78548399bbe684fac50b6a71d0ce3f689497d4e79cb26a2b4dfb211782c39")));
         assertThat(sendToAddress.getSendToAddress().getSize(), is(375L));
         assertThat(sendToAddress.getSendToAddress().getVersion(), is(0));
         assertThat(sendToAddress.getSendToAddress().getNonce(), is(1509730265L));
@@ -2353,21 +2355,21 @@ public class ResponseTest extends ResponseTester {
                 containsInAnyOrder(
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1554283931L,
-                                "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
                                 "100000000000",
                                 368082L,
                                 0L,
-                                "240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564"
+                                new Hash256("240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564")
                         ),
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1554880287L,
-                                "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
                                 "100000000000",
                                 397769L,
                                 0L,
-                                "12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834"
+                                new Hash256("12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834")
                         )
                 ));
 
@@ -2377,19 +2379,19 @@ public class ResponseTest extends ResponseTester {
                 hasItem(
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1555651816L,
-                                "600c4f5200db36177e3e8a09e9f18e2fc7d12a0f",
+                                new Hash160("600c4f5200db36177e3e8a09e9f18e2fc7d12a0f"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
                                 "1000000",
                                 436036L,
                                 0L,
-                                "df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"
+                                new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")
                         )
                 ));
 
         // First Sent Entry
         assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTimestamp(), is(1554283931L));
         assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getAssetHash(),
-                is("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"));
+                is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
         assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTransferAddress(),
                 is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
 
@@ -2400,7 +2402,7 @@ public class ResponseTest extends ResponseTester {
         // Received Entry
         assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTransferNotifyIndex(), is(0L));
         assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTxHash(),
-                is("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"));
+                is(new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")));
     }
 
     @Test
@@ -2433,12 +2435,12 @@ public class ResponseTest extends ResponseTester {
         assertThat(getNep17Balances.getBalances().getBalances(),
                 containsInAnyOrder(
                         new NeoGetNep17Balances.Nep17Balance(
-                                "a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8",
+                                new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"),
                                 "50000000000",
                                 BigInteger.valueOf(251604L)
                         ),
                         new NeoGetNep17Balances.Nep17Balance(
-                                "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "50000000000",
                                 BigInteger.valueOf(251600L)
                         )
@@ -2446,7 +2448,7 @@ public class ResponseTest extends ResponseTester {
 
         // First Entry
         assertThat(getNep17Balances.getBalances().getBalances().get(0).getAssetHash(),
-                is("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"));
+                is(new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")));
         assertThat(getNep17Balances.getBalances().getBalances().get(0).getAmount(), is("50000000000"));
 
         // Second Entry
@@ -2533,7 +2535,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoAppLog, is(notNullValue()));
 
         assertThat(neoAppLog.getTransactionId(),
-                is("0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109"));
+                is(new Hash256("0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109")));
 
         assertThat(neoAppLog.getExecutions(), hasSize(1));
         NeoApplicationLog.Execution execution = neoAppLog.getExecutions().get(0);
@@ -2543,10 +2545,8 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(execution.getStack(), is(notNullValue()));
         assertThat(execution.getStack(), hasSize(1));
-        assertThat(execution.getStack().get(0).getType(),
-                is(StackItemType.INTEGER));
-        assertThat(execution.getStack().get(0).asInteger().getValue(),
-                is(BigInteger.valueOf(1)));
+        assertThat(execution.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(execution.getStack().get(0).asInteger().getValue(), is(BigInteger.valueOf(1)));
 
         assertThat(execution.getNotifications(), is(notNullValue()));
         assertThat(execution.getNotifications(), hasSize(2));
@@ -2554,7 +2554,8 @@ public class ResponseTest extends ResponseTester {
         // Notification 0
         NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
 
-        assertThat(notification0.getContract(), is("0x70e2301955bf1e74cbb31d18c2f96972abadb328"));
+        assertThat(notification0.getContract(),
+                is(new Hash160("0x70e2301955bf1e74cbb31d18c2f96972abadb328")));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
@@ -2571,7 +2572,8 @@ public class ResponseTest extends ResponseTester {
         // Notification 1
         NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
 
-        assertThat(notification1.getContract(), is("0xf61eebf573ea36593fd43aa150c055ad7906ab83"));
+        assertThat(notification1.getContract(),
+                is(new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83")));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 
@@ -2585,4 +2587,5 @@ public class ResponseTest extends ResponseTester {
         assertThat(from1, is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
         assertThat(amount1, is(BigInteger.valueOf(100)));
     }
+
 }
