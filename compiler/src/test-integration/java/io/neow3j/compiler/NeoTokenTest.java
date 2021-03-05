@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.NeoToken;
@@ -27,8 +28,8 @@ public class NeoTokenTest extends ContractTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         setUp(NeoTokenTestContract.class.getName());
-        String gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
-        String neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
+        Hash256 gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
+        Hash256 neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
         Await.waitUntilTransactionIsExecuted(gasTxHash, neow3j);
         Await.waitUntilTransactionIsExecuted(neoTxHash, neow3j);
     }
@@ -102,7 +103,7 @@ public class NeoTokenTest extends ContractTest {
     public void vote() throws Throwable {
         signWithDefaultAccount();
         // Add the default account as a candidate
-        String txHash = new io.neow3j.contract.NeoToken(neow3j)
+        Hash256 txHash = new io.neow3j.contract.NeoToken(neow3j)
                 .registerCandidate(defaultAccount.getECKeyPair().getPublicKey())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(defaultAccount.getScriptHash()))

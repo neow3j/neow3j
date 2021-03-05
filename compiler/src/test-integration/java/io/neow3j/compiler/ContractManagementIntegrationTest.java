@@ -10,6 +10,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.annotations.DisplayName;
@@ -62,7 +63,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
         signAsCommittee();
         // Call the method that calls the ContractManagement.deploy(...) method and pass the
         // compiled contract to it.
-        String txHash = invokeFunction(byteArray(compUnit.getNefFile().toArray()),
+        Hash256 txHash = invokeFunction(byteArray(compUnit.getNefFile().toArray()),
                 string(manifestString));
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
@@ -86,7 +87,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
         signAsCommittee();
         // Call the method that calls the ContractManagement.deploy(...) method and pass the
         // compiled contract to it.
-        String txHash = invokeFunction(byteArray(compUnit.getNefFile().toArray()),
+        Hash256 txHash = invokeFunction(byteArray(compUnit.getNefFile().toArray()),
                 string(manifestString), string("hello, world!"));
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
 
@@ -128,7 +129,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
                 .writeValueAsString(compUnit.getManifest());
 
         // Update the contract
-        String txHash = new SmartContract(contractHash, neow3j).invokeFunction("updateWithoutData",
+        Hash256 txHash = new SmartContract(contractHash, neow3j).invokeFunction("updateWithoutData",
                 byteArray(compUnit.getNefFile().toArray()), string(manifestString))
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
@@ -169,7 +170,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
                 .writeValueAsString(compUnit.getManifest());
 
         // Update the contract
-        String txHash = new SmartContract(contractHash, neow3j).invokeFunction("updateWithData",
+        Hash256 txHash = new SmartContract(contractHash, neow3j).invokeFunction("updateWithData",
                 byteArray(compUnit.getNefFile().toArray()), string(manifestString),
                 string("hello, world!"))
                 .wallet(wallet)
@@ -199,7 +200,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
         Hash160 contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         SmartContract sc = new SmartContract(contractHash, neow3j);
-        String txHash = sc.invokeFunction("destroy")
+        Hash256 txHash = sc.invokeFunction("destroy")
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
                 .sign()
@@ -305,4 +306,5 @@ public class ContractManagementIntegrationTest extends ContractTest {
             ContractManagement.destroy();
         }
     }
+
 }
