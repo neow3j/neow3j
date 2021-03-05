@@ -1,10 +1,11 @@
 package io.neow3j.protocol.core.methods.response;
 
+import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.Response;
 
-public class NeoBlockHash extends Response<String> {
+public class NeoBlockHash extends Response<Hash256> {
 
-    public String getBlockHash() {
+    public Hash256 getBlockHash() {
         return getResult();
     }
 

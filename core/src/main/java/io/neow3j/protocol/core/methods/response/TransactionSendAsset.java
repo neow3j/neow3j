@@ -2,7 +2,7 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neow3j.transaction.WitnessScope;
+
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -65,4 +65,5 @@ public class TransactionSendAsset {
                 ", address='" + address + '\'' +
                 '}';
     }
+
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.contract.Hash256;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -12,7 +14,7 @@ import java.util.Objects;
 public class NeoBlock {
 
     @JsonProperty("hash")
-    private String hash;
+    private Hash256 hash;
 
     @JsonProperty("size")
     private long size;
@@ -21,10 +23,10 @@ public class NeoBlock {
     private int version;
 
     @JsonProperty("previousblockhash")
-    private String prevBlockHash;
+    private Hash256 prevBlockHash;
 
     @JsonProperty("merkleroot")
-    private String merkleRootHash;
+    private Hash256 merkleRootHash;
 
     @JsonProperty("time")
     private long time;
@@ -52,16 +54,15 @@ public class NeoBlock {
 
     @JsonProperty("nextblockhash")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String nextBlockHash;
+    private Hash256 nextBlockHash;
 
     public NeoBlock() {
     }
 
-    public NeoBlock(String hash, long size, int version, String prevBlockHash,
-            String merkleRootHash, long time, long index, String nextConsensus,
-            List<NeoWitness> witnesses,
-            ConsensusData consensusData,
-            List<Transaction> transactions, int confirmations, String nextBlockHash) {
+    public NeoBlock(Hash256 hash, long size, int version, Hash256 prevBlockHash,
+            Hash256 merkleRootHash, long time, long index, String nextConsensus,
+            List<NeoWitness> witnesses, ConsensusData consensusData, List<Transaction> transactions,
+            int confirmations, Hash256 nextBlockHash) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -77,7 +78,7 @@ public class NeoBlock {
         this.nextBlockHash = nextBlockHash;
     }
 
-    public String getHash() {
+    public Hash256 getHash() {
         return hash;
     }
 
@@ -89,11 +90,11 @@ public class NeoBlock {
         return version;
     }
 
-    public String getPrevBlockHash() {
+    public Hash256 getPrevBlockHash() {
         return prevBlockHash;
     }
 
-    public String getMerkleRootHash() {
+    public Hash256 getMerkleRootHash() {
         return merkleRootHash;
     }
 
@@ -125,7 +126,7 @@ public class NeoBlock {
         return confirmations;
     }
 
-    public String getNextBlockHash() {
+    public Hash256 getNextBlockHash() {
         return nextBlockHash;
     }
 
@@ -155,11 +156,9 @@ public class NeoBlock {
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(getHash(), getSize(), getVersion(), getPrevBlockHash(), getMerkleRootHash(),
-                        getTime(), getIndex(), getNextConsensus(), getWitnesses(),
-                        getConsensusData(),
-                        getTransactions(), getConfirmations(), getNextBlockHash());
+        return Objects.hash(getHash(), getSize(), getVersion(), getPrevBlockHash(),
+                getMerkleRootHash(), getTime(), getIndex(), getNextConsensus(), getWitnesses(),
+                getConsensusData(), getTransactions(), getConfirmations(), getNextBlockHash());
     }
 
     @Override
@@ -180,4 +179,5 @@ public class NeoBlock {
                 ", nextBlockHash='" + nextBlockHash + '\'' +
                 '}';
     }
+
 }

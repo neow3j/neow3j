@@ -2,13 +2,15 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.contract.Hash160;
+
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractMethodToken {
 
     @JsonProperty("hash")
-    private String hash;
+    private Hash160 hash;
 
     @JsonProperty("method")
     private String method;
@@ -25,7 +27,7 @@ public class ContractMethodToken {
     public ContractMethodToken() {
     }
 
-    public String getHash() {
+    public Hash160 getHash() {
         return hash;
     }
 
@@ -76,4 +78,5 @@ public class ContractMethodToken {
                 ", callFlags='" + callFlags + '\'' +
                 '}';
     }
+
 }

@@ -2,7 +2,9 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.contract.Hash160;
 import io.neow3j.protocol.core.Response;
+
 import java.util.Objects;
 
 public class NeoGetContractState extends Response<NeoGetContractState.ContractState> {
@@ -21,7 +23,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         private Integer updateCounter;
 
         @JsonProperty("hash")
-        private String hash;
+        private Hash160 hash;
 
         @JsonProperty("nef")
         private ContractNef nef;
@@ -35,8 +37,8 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         public ContractState() {
         }
 
-        public ContractState(int id, int updateCounter, String hash, ContractNef nef,
-                             ContractManifest manifest, Integer activeBlockIndex) {
+        public ContractState(int id, int updateCounter, Hash160 hash, ContractNef nef,
+                ContractManifest manifest, Integer activeBlockIndex) {
             this.id = id;
             this.updateCounter = updateCounter;
             this.hash = hash;
@@ -53,7 +55,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             return updateCounter;
         }
 
-        public String getHash() {
+        public Hash160 getHash() {
             return hash;
         }
 
@@ -79,7 +81,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             }
             ContractState that = (ContractState) o;
             return getId() == that.getId() &&
-                    Objects.equals(getUpdateCounter(),that.getUpdateCounter()) &&
+                    Objects.equals(getUpdateCounter(), that.getUpdateCounter()) &&
                     Objects.equals(getHash(), that.getHash()) &&
                     Objects.equals(getNef(), that.getNef()) &&
                     Objects.equals(getManifest(), that.getManifest()) &&
@@ -104,4 +106,5 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     '}';
         }
     }
+
 }

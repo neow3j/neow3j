@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -48,13 +49,9 @@ public class ContractManifest {
     public ContractManifest() {
     }
 
-    public ContractManifest(String name,
-            List<ContractGroup> groups,
-            List<String> supportedStandards,
-            ContractABI abi,
-            List<ContractPermission> permissions,
-            List<String> trusts,
-            Object extra) {
+    public ContractManifest(String name, List<ContractGroup> groups,
+            List<String> supportedStandards, ContractABI abi, List<ContractPermission> permissions,
+            List<String> trusts, Object extra) {
         this.name = name;
         this.groups = groups;
         this.supportedStandards = supportedStandards;
@@ -294,7 +291,8 @@ public class ContractManifest {
 
             @Override
             public int hashCode() {
-                return Objects.hash(getName(), getParameters(), getOffset(), getReturnType(), isSafe());
+                return Objects.hash(getName(), getParameters(), getOffset(), getReturnType(),
+                        isSafe());
             }
 
             @Override
@@ -409,4 +407,5 @@ public class ContractManifest {
                     '}';
         }
     }
+
 }

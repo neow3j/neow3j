@@ -1,12 +1,13 @@
 package io.neow3j.protocol.core.methods.response;
 
+import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.Response;
 
 import java.util.List;
 
-public class NeoGetRawMemPool extends Response<List<String>> {
+public class NeoGetRawMemPool extends Response<List<Hash256>> {
 
-    public List<String> getAddresses() {
+    public List<Hash256> getAddresses() {
         return getResult();
     }
 
