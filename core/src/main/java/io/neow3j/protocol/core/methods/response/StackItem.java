@@ -89,7 +89,8 @@ public abstract class StackItem {
      * Gets this item as a boolean.
      *
      * @return the boolean value.
-     * @throws StackItemCastException if the stack item cannot be converted to a boolean.
+     * @throws StackItemCastException if the stack item cannot be converted to a boolean or if
+     *                                it's value is null.
      */
     @JsonIgnore
     public boolean getBoolean() {
@@ -101,7 +102,8 @@ public abstract class StackItem {
      * Gets this item as an integer.
      *
      * @return the integer.
-     * @throws StackItemCastException if the stack item cannot be converted to a integer.
+     * @throws StackItemCastException if the stack item cannot be converted to a integer or if
+     *                                it's value is null.
      */
     @JsonIgnore
     public BigInteger getInteger() {
@@ -113,7 +115,8 @@ public abstract class StackItem {
      * Gets this item as a Neo address.
      *
      * @return the address.
-     * @throws StackItemCastException if the stack item cannot be converted to a valid address.
+     * @throws StackItemCastException if the stack item cannot be converted to a valid address or
+     *                                if its value is null.
      */
     @JsonIgnore
     public String getAddress() {
@@ -125,7 +128,8 @@ public abstract class StackItem {
      * Gets this item as a string.
      *
      * @return the string.
-     * @throws StackItemCastException if the stack item cannot be converted to a string.
+     * @throws StackItemCastException if the stack item cannot be converted to a string or if its
+     *                                value is null.
      */
     @JsonIgnore
     public String getString() {
@@ -138,7 +142,8 @@ public abstract class StackItem {
      * is converted to its hex string representation.
      *
      * @return the hex string.
-     * @throws StackItemCastException if the stack item cannot be converted to a hex string.
+     * @throws StackItemCastException if the stack item cannot be converted to a hex string or if
+     *                                its value is null.
      */
     @JsonIgnore
     public String getHexString() {
@@ -150,7 +155,8 @@ public abstract class StackItem {
      * Gets this item as a byte array.
      *
      * @return the byte array.
-     * @throws StackItemCastException if the stack item cannot be converted to a byte array.
+     * @throws StackItemCastException if the stack item cannot be converted to a byte array
+     *                                or if its value is null.
      */
     @JsonIgnore
     public byte[] getByteArray() {
@@ -166,7 +172,7 @@ public abstract class StackItem {
      *
      * @return the list of stack items.
      * @throws StackItemCastException if the stack item cannot be converted to a list of stack
-     * items.
+     *                                items of if its value is null.
      */
     @JsonIgnore
     public List<StackItem> getList() {
@@ -180,7 +186,8 @@ public abstract class StackItem {
      * This can be used if the expected stack item type is {@link StackItemType#MAP}.
      *
      * @return the map of stack items.
-     * @throws StackItemCastException if the stack item cannot be converted to a map of stack items.
+     * @throws StackItemCastException if the stack item cannot be converted to a map of stack
+     *                                items or if its value is null.
      */
     @JsonIgnore
     public Map<StackItem, StackItem> getMap() {
@@ -193,7 +200,8 @@ public abstract class StackItem {
      * This can only be used if the expected stack item type is {@link StackItemType#POINTER}.
      *
      * @return the pointer.
-     * @throws StackItemCastException if the stack item cannot be converted to a pointer.
+     * @throws StackItemCastException if the stack item cannot be converted to a pointer or if
+     *                                its value is null.
      */
     @JsonIgnore
     public BigInteger getPointer() {
@@ -209,17 +217,16 @@ public abstract class StackItem {
      *
      * @return the pointer.
      * @throws StackItemCastException if the stack item cannot be converted to an {@code
-     * InteropInterface}.
+     *                                InteropInterface} or if its value is null.
      */
     @JsonIgnore
     public Object getInteropInterface() {
         throw new StackItemCastException(format("Cannot cast stack item %s to a neo-vm " +
-                        "interoperability interface.", toString()));
+                "interoperability interface.", toString()));
     }
 
-    protected void nullOrEmptyCheck() {
-        if (getValue() == null
-                || (getValue() instanceof byte[] && ((byte[]) getValue()).length == 0)) {
+    protected void nullCheck() {
+        if (getValue() == null) {
             throw new StackItemCastException("Cannot cast stack item because its value is null");
         }
     }

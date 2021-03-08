@@ -42,7 +42,7 @@ public abstract class ListLikeStackItem extends StackItem {
 
     @Override
     public List<StackItem> getList() {
-        nullOrEmptyCheck();
+        nullCheck();
        return value;
     }
 

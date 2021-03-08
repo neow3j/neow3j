@@ -11,11 +11,9 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.neow3j.model.types.StackItemType;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 @JsonDeserialize(using = MapStackItem.StackMapDeserializer.class)
@@ -45,7 +43,7 @@ public class MapStackItem extends StackItem {
 
     @Override
     public Map<StackItem, StackItem> getMap() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value;
     }
 

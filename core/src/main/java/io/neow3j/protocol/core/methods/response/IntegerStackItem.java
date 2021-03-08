@@ -38,7 +38,7 @@ public class IntegerStackItem extends StackItem {
 
     @Override
     public boolean getBoolean() {
-        nullOrEmptyCheck();
+        nullCheck();
         if (value.equals(BigInteger.ONE)) {
             return true;
         }
@@ -50,13 +50,13 @@ public class IntegerStackItem extends StackItem {
 
     @Override
     public BigInteger getInteger() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value;
     }
 
     @Override
     public String getString() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value.toString();
     }
 
@@ -68,13 +68,13 @@ public class IntegerStackItem extends StackItem {
      */
     @Override
     public String getHexString() {
-        nullOrEmptyCheck();
+        nullCheck();
         return Numeric.toHexStringNoPrefix(getByteArray());
     }
 
     @Override
     public byte[] getByteArray(){
-        nullOrEmptyCheck();
+        nullCheck();
         return BigIntegers.toLittleEndianByteArray(value);
     }
 

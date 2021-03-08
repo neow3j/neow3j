@@ -3,6 +3,7 @@ package io.neow3j.protocol.core.methods.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.contract.ScriptHash;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 
@@ -47,11 +48,17 @@ abstract class ByteArrayStackItem extends StackItem {
      * Treats the underlying bytes as a script hash in little-endian order.
      *
      * @return the address.
+     * @throws StackItemCastException if this stack item's value is null or it is not a valid Neo
+     *                                address.
      */
     @Override
     public String getAddress() {
-        nullOrEmptyCheck();
-        return new ScriptHash(value).toAddress();
+        nullCheck();
+        try {
+            return new ScriptHash(value).toAddress();
+        } catch (IllegalArgumentException e) {
+            throw new StackItemCastException(e);
+        }
     }
 
     /**
@@ -59,10 +66,11 @@ abstract class ByteArrayStackItem extends StackItem {
      * bytes as a UTF-8 string.
      *
      * @return the string.
+     * @throws StackItemCastException if this stack item's value is null.
      */
     @Override
     public String getString() {
-        nullOrEmptyCheck();
+        nullCheck();
         return new String(value, UTF_8);
     }
 
@@ -70,10 +78,11 @@ abstract class ByteArrayStackItem extends StackItem {
      * Gets this item's value as a hexadecimal string.
      *
      * @return the hex string.
+     * @throws StackItemCastException if this stack item's value is null.
      */
     @Override
     public String getHexString() {
-        nullOrEmptyCheck();
+        nullCheck();
         return Numeric.toHexStringNoPrefix(value);
     }
 
@@ -81,10 +90,11 @@ abstract class ByteArrayStackItem extends StackItem {
      * Gets this item's value as a byte array.
      *
      * @return the byte array;
+     * @throws StackItemCastException if this stack item's value is null.
      */
     @Override
     public byte[] getByteArray() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value;
     }
 
@@ -94,21 +104,28 @@ abstract class ByteArrayStackItem extends StackItem {
      * Treats the value as a little-endian byte array.
      *
      * @return the integer.
+     * @throws StackItemCastException if this stack item's value is null or an empty.
      */
     @Override
     public BigInteger getInteger() {
-        nullOrEmptyCheck();
-        return BigIntegers.fromLittleEndianByteArray(value);
+        nullCheck();
+        try {
+            return BigIntegers.fromLittleEndianByteArray(value);
+        } catch (NumberFormatException e) {
+            throw new StackItemCastException(e);
+        }
     }
 
     /**
      * Gets this item's value as a boolean.
      * <p>
+     *
      * @return true, if the value represents an integer bigger than 0. False otherwise.
+     * @throws StackItemCastException if this stack item's value is null or an empty.
      */
     @Override
     public boolean getBoolean() {
-        nullOrEmptyCheck();
+        nullCheck();
         return getInteger().compareTo(BigInteger.ZERO) > 0;
     }
 

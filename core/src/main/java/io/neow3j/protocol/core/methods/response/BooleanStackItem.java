@@ -29,19 +29,19 @@ public class BooleanStackItem extends StackItem {
 
     @Override
     public boolean getBoolean() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value;
     }
 
     @Override
     public BigInteger getInteger() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value ? BigInteger.ONE : BigInteger.ZERO;
     }
 
     @Override
     public String getString() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value.toString();
     }
 

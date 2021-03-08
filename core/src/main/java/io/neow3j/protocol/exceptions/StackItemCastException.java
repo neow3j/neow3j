@@ -9,4 +9,8 @@ public class StackItemCastException extends RuntimeException {
         super(message);
     }
 
+    public StackItemCastException(Exception e) {
+        super(e);
+    }
+
 }

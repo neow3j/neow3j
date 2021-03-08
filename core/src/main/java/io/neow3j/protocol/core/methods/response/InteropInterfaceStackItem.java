@@ -37,7 +37,7 @@ public class InteropInterfaceStackItem extends StackItem {
 
     @Override
     public Object getInteropInterface() {
-        nullOrEmptyCheck();
+        nullCheck();
         return value;
     }
 

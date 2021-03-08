@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Map;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.BeforeClass;
@@ -14,6 +15,7 @@ import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -138,7 +140,8 @@ public class ListIntegrationTest extends ContractTest {
         List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.get(0).getString(), is("hello, world!"));
         assertThat(list.get(1).getInteger().intValue(), is(10));
-        assertThat(list.get(2).getMap().get("hello").getString(), is("world"));
+        ByteStringStackItem key = new ByteStringStackItem("hello".getBytes(UTF_8));
+        assertThat(list.get(2).getMap().get(key).getString(), is("world"));
     }
 
     static class ListTestContract {
