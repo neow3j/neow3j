@@ -8,9 +8,11 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Map.Entry;
 import io.neow3j.devpack.Iterator;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
+import java.util.List;
+
+import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,11 +27,11 @@ public class IteratorTest extends ContractTest {
     public void createIteratorFromArrayAndIterateThrough() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(
                 array(integer(0), integer(1), integer(2)));
-        ArrayStackItem arr = response.getInvocationResult().getStack().get(0).asArray();
+        List<StackItem> arr = response.getInvocationResult().getStack().get(0).getList();
         assertThat(arr.size(), is(3));
-        assertThat(arr.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(arr.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(arr.get(2).asInteger().getValue().intValue(), is(2));
+        assertThat(arr.get(0).getInteger().intValue(), is(0));
+        assertThat(arr.get(1).getInteger().intValue(), is(1));
+        assertThat(arr.get(2).getInteger().intValue(), is(2));
     }
 
     @Test
@@ -38,13 +40,13 @@ public class IteratorTest extends ContractTest {
                 array(integer(3), integer(6), integer(9)),
                 array(integer(3), integer(4), integer(5)));
 
-        ArrayStackItem arr = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(arr.get(0).asInteger().getValue().intValue(), is(3));
-        assertThat(arr.get(1).asInteger().getValue().intValue(), is(3));
-        assertThat(arr.get(2).asInteger().getValue().intValue(), is(6));
-        assertThat(arr.get(3).asInteger().getValue().intValue(), is(4));
-        assertThat(arr.get(4).asInteger().getValue().intValue(), is(9));
-        assertThat(arr.get(5).asInteger().getValue().intValue(), is(5));
+        List<StackItem> arr = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(arr.get(0).getInteger().intValue(), is(3));
+        assertThat(arr.get(1).getInteger().intValue(), is(3));
+        assertThat(arr.get(2).getInteger().intValue(), is(6));
+        assertThat(arr.get(3).getInteger().intValue(), is(4));
+        assertThat(arr.get(4).getInteger().intValue(), is(9));
+        assertThat(arr.get(5).getInteger().intValue(), is(5));
     }
 
     static class IteratorTestContract {

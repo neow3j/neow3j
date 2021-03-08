@@ -1,13 +1,14 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.Hash160;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
 import static org.hamcrest.Matchers.is;
@@ -23,71 +24,71 @@ public class ArraysConverterIntegrationTest extends ContractTest {
     @Test
     public void createStringArrayWithTwoEntries() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(arrayStackItem.get(0).asByteString().getAsString(), is("hello"));
-        assertThat(arrayStackItem.get(1).asByteString().getAsString(), is("world"));
+        List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(arrayStackItem.get(0).getString(), is("hello"));
+        assertThat(arrayStackItem.get(1).getString(), is("world"));
     }
 
     @Test
     public void createStringArrayWithEmptySlots() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(arrayStackItem.get(0).asByteString().getValue(), is(new byte[]{}));
-        assertThat(arrayStackItem.get(1).asByteString().getValue(), is(new byte[]{}));
-        assertThat(arrayStackItem.get(2).asByteString().getValue(), is(new byte[]{}));
-        assertThat(arrayStackItem.get(3).asByteString().getValue(), is(new byte[]{}));
-        assertThat(arrayStackItem.get(4).asByteString().getValue(), is(new byte[]{}));
+        List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(arrayStackItem.get(0).getByteArray(), is(new byte[]{}));
+        assertThat(arrayStackItem.get(1).getByteArray(), is(new byte[]{}));
+        assertThat(arrayStackItem.get(2).getByteArray(), is(new byte[]{}));
+        assertThat(arrayStackItem.get(3).getByteArray(), is(new byte[]{}));
+        assertThat(arrayStackItem.get(4).getByteArray(), is(new byte[]{}));
     }
 
     @Test
     public void getEmptyStringFromCreatedArray() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(new byte[]{}));
     }
 
     @Test
     public void createArrayOfByteArrays() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(arrayStackItem.get(0).asBuffer().getValue(), is(new byte[]{0, 1, 3}));
-        assertThat(arrayStackItem.get(1).asBuffer().getValue(), is(new byte[]{0}));
+        List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(arrayStackItem.get(0).getByteArray(), is(new byte[]{0, 1, 3}));
+        assertThat(arrayStackItem.get(1).getByteArray(), is(new byte[]{0}));
     }
 
     @Test
     public void createArrayOfIntegerArrays() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        ArrayStackItem intArray = arrayStackItem.get(0).asArray();
-        assertThat(intArray.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(intArray.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(intArray.get(2).asInteger().getValue().intValue(), is(3));
+        List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
+        List<StackItem> intArray = arrayStackItem.get(0).getList();
+        assertThat(intArray.get(0).getInteger().intValue(), is(0));
+        assertThat(intArray.get(1).getInteger().intValue(), is(1));
+        assertThat(intArray.get(2).getInteger().intValue(), is(3));
 
-        intArray = arrayStackItem.get(1).asArray();
-        assertThat(intArray.get(0).asInteger().getValue().intValue(), is(0));
+        intArray = arrayStackItem.get(1).getList();
+        assertThat(intArray.get(0).getInteger().intValue(), is(0));
     }
 
     @Test
     public void createArrayOfHash160Arrays() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        ArrayStackItem hash160Array = arrayStackItem.get(0).asArray();
-        assertThat(hash160Array.get(0).asByteString().getAsHexString(),
+        List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
+        List<StackItem> hash160Array = arrayStackItem.get(0).getList();
+        assertThat(hash160Array.get(0).getHexString(),
                 is(Hash160.ZERO.toString()));
-        assertThat(hash160Array.get(1).asByteString().getAsHexString(),
+        assertThat(hash160Array.get(1).getHexString(),
                 is(Numeric.reverseHexString("0f46dc4287b70117ce8354924b5cb3a47215ad93")));
-        hash160Array = arrayStackItem.get(1).asArray();
-        assertThat(hash160Array.get(0).asByteString().getAsHexString(),
+        hash160Array = arrayStackItem.get(1).getList();
+        assertThat(hash160Array.get(0).getHexString(),
                 is(Hash160.ZERO.toString()));
     }
 
     @Test
     public void createObjectArray() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(arrayStackItem.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(arrayStackItem.get(1).asByteString().getAsString(), is("hello, world!"));
-        assertThat(arrayStackItem.get(2).asByteString().getAsHexString(),
+        List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(arrayStackItem.get(0).getInteger().intValue(), is(1));
+        assertThat(arrayStackItem.get(1).getString(), is("hello, world!"));
+        assertThat(arrayStackItem.get(2).getHexString(),
                 is(Hash160.ZERO.toString()));
     }
 
@@ -120,8 +121,8 @@ public class ArraysConverterIntegrationTest extends ContractTest {
                             io.neow3j.devpack.Hash160.zero(),
                             addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj")
                     }, new io.neow3j.devpack.Hash160[]{
-                            io.neow3j.devpack.Hash160.zero()
-                    }};
+                    io.neow3j.devpack.Hash160.zero()
+            }};
         }
 
         public static Object[] createObjectArray() {

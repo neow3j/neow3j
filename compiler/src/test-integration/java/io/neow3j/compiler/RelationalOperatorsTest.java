@@ -1,13 +1,17 @@
 package io.neow3j.compiler;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
+
+import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,13 +37,13 @@ public class RelationalOperatorsTest extends ContractTest {
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(array.get(0).getBoolean());
+        assertTrue(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertFalse(array.get(3).getBoolean());
+        assertTrue(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
@@ -49,13 +53,13 @@ public class RelationalOperatorsTest extends ContractTest {
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertTrue(array.get(3).getBoolean());
+        assertFalse(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
@@ -65,13 +69,13 @@ public class RelationalOperatorsTest extends ContractTest {
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(array.get(0).getBoolean());
+        assertTrue(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertFalse(array.get(3).getBoolean());
+        assertTrue(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
@@ -81,13 +85,13 @@ public class RelationalOperatorsTest extends ContractTest {
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertTrue(array.get(3).getBoolean());
+        assertFalse(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
@@ -97,9 +101,9 @@ public class RelationalOperatorsTest extends ContractTest {
                 ContractParameter.bool(true),
                 ContractParameter.bool(true));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     @Test
@@ -109,9 +113,9 @@ public class RelationalOperatorsTest extends ContractTest {
                 ContractParameter.bool(false),
                 ContractParameter.bool(true));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(array.get(0).getBoolean());
+        assertTrue(array.get(1).getBoolean());
     }
 
     @Test
@@ -121,9 +125,9 @@ public class RelationalOperatorsTest extends ContractTest {
                 ContractParameter.string("hello, world!"),
                 ContractParameter.string("hello, world!"));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     static class RelationalOperators {

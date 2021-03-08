@@ -10,14 +10,14 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.contracts.LedgerContract;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.protocol.core.methods.response.IntegerStackItem;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
     public void getTransactionHeight() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(hash256(deployTxHash.toString()));
         assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().longValue(),
+                response.getInvocationResult().getStack().get(0).getInteger().longValue(),
                 is(blockOfDeployTx.getIndex()));
     }
 
@@ -45,7 +45,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction("getTransactionHeight",
                 hash256("0000000000000000000000000000000000000000000000000000000000000000"));
         assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(-1));
     }
 
@@ -53,91 +53,72 @@ public class LedgerContractIntegrationTest extends ContractTest {
     public void getTransactionFromBlock() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(
                 integer(BigInteger.valueOf(blockOfDeployTx.getIndex())), integer(0));
-        ArrayStackItem tx = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(tx.get(0).asByteString().getAsHexString(),
-                is(Numeric.reverseHexString(deployTxHash.toString())));
-        assertThat(tx.get(1).asInteger().getValue().intValue(), is(0)); // version
-        assertThat(tx.get(2).asInteger().getValue().longValue(), greaterThanOrEqualTo(1L)); // nonce
-        assertThat(tx.get(3).asByteString().getAsAddress(),
-                is(committee.getAddress())); // sender
-        assertThat(tx.get(4).asInteger().getValue().intValue(),
-                greaterThanOrEqualTo(1)); // system fee
-        assertThat(tx.get(5).asInteger().getValue().intValue(),
-                greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).asInteger().getValue().intValue(),
+        List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash.toString())));
+        assertThat(tx.get(1).getInteger().intValue(), is(0)); // version
+        assertThat(tx.get(2).getInteger().longValue(), greaterThanOrEqualTo(1L)); // nonce
+        assertThat(tx.get(3).getAddress(), is(committee.getAddress())); // sender
+        assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
+        assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
+        assertThat(tx.get(6).getInteger().intValue(),
                 greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
-        assertThat(tx.get(7).asByteString().getAsHexString().length(),
-                greaterThanOrEqualTo(1)); // script
+        assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
     @Test
     public void getTransactionFromBlockWithBlockHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(hash256(blockHashOfDeployTx.toString()),
                 integer(0));
-        ArrayStackItem tx = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(tx.get(0).asByteString().getAsHexString(),
-                is(Numeric.reverseHexString(deployTxHash.toString())));
-        assertThat(tx.get(1).asInteger().getValue().intValue(), is(0)); // version
-        assertThat(tx.get(2).asInteger().getValue().longValue(), greaterThanOrEqualTo(1L)); // nonce
-        assertThat(tx.get(3).asByteString().getAsAddress(), is(committee.getAddress())); // sender
-        assertThat(tx.get(4).asInteger().getValue().intValue(),
-                greaterThanOrEqualTo(1)); // system fee
-        assertThat(tx.get(5).asInteger().getValue().intValue(),
-                greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).asInteger().getValue().intValue(),
+        List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash.toString())));
+        assertThat(tx.get(1).getInteger().intValue(), is(0)); // version
+        assertThat(tx.get(2).getInteger().longValue(), greaterThanOrEqualTo(1L)); // nonce
+        assertThat(tx.get(3).getAddress(), is(committee.getAddress())); // sender
+        assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
+        assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
+        assertThat(tx.get(6).getInteger().intValue(),
                 greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
-        assertThat(tx.get(7).asByteString().getAsHexString().length(),
-                greaterThanOrEqualTo(1)); // script
+        assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
     @Test
     public void getTransaction() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(hash256(deployTxHash.toString()));
-        ArrayStackItem tx = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(tx.get(0).asByteString().getAsHexString(),
-                is(Numeric.reverseHexString(deployTxHash.toString())));
-        assertThat(tx.get(1).asInteger().getValue().intValue(), is(0)); // version
-        assertThat(tx.get(2).asInteger().getValue().longValue(), greaterThanOrEqualTo(1L)); // nonce
-        assertThat(tx.get(3).asByteString().getAsAddress(),
-                is(committee.getAddress())); // sender
-        assertThat(tx.get(4).asInteger().getValue().intValue(),
-                greaterThanOrEqualTo(1)); // system fee
-        assertThat(tx.get(5).asInteger().getValue().intValue(),
-                greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).asInteger().getValue().intValue(),
+        List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash.toString())));
+        assertThat(tx.get(1).getInteger().intValue(), is(0)); // version
+        assertThat(tx.get(2).getInteger().longValue(), greaterThanOrEqualTo(1L)); // nonce
+        assertThat(tx.get(3).getAddress(), is(committee.getAddress())); // sender
+        assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
+        assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
+        assertThat(tx.get(6).getInteger().intValue(),
                 greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
-        assertThat(tx.get(7).asByteString().getAsHexString().length(),
-                greaterThanOrEqualTo(1)); // script
+        assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
     @Test
     public void getNonExistentTransaction() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(
                 hash256("0000000000000000000000000000000000000000000000000000000000000000"));
-        assertThat(response.getInvocationResult().getStack().get(0)
-                .asInteger().getValue().intValue(), is(1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(1));
     }
 
     @Test
     public void getBlockWithBlockHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(hash256(blockHashOfDeployTx.toString()));
 
-        ArrayStackItem block = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(block.get(0).asByteString().getAsHexString(),
+        List<StackItem> block = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(block.get(0).getHexString(),
                 is(Numeric.reverseHexString(blockHashOfDeployTx.toString())));
-        assertThat(block.get(1).asInteger().getValue().intValue(),
-                is(blockOfDeployTx.getVersion()));
-        assertThat(block.get(2).asByteString().getAsHexString(),
+        assertThat(block.get(1).getInteger().intValue(), is(blockOfDeployTx.getVersion()));
+        assertThat(block.get(2).getHexString(),
                 is(Numeric.reverseHexString(blockOfDeployTx.getPrevBlockHash().toString())));
-        assertThat(block.get(3).asByteString().getAsHexString(),
+        assertThat(block.get(3).getHexString(),
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
-        assertThat(block.get(4).asInteger().getValue().longValue(),
-                is(blockOfDeployTx.getTime()));
-        assertThat(block.get(5).asInteger().getValue().longValue(),
-                is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).asByteString().getAsAddress(),
-                is(blockOfDeployTx.getNextConsensus()));
-        assertThat(block.get(7).asInteger().getValue().intValue(),
+        assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
+        assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
+        assertThat(block.get(6).getAddress(), is(blockOfDeployTx.getNextConsensus()));
+        assertThat(block.get(7).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
     }
 
@@ -146,37 +127,33 @@ public class LedgerContractIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 integer(BigInteger.valueOf(blockOfDeployTx.getIndex())));
 
-        ArrayStackItem block = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(block.get(0).asByteString().getAsHexString(),
+        List<StackItem> block = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(block.get(0).getHexString(),
                 is(Numeric.reverseHexString(blockHashOfDeployTx.toString())));
-        assertThat(block.get(1).asInteger().getValue().intValue(),
-                is(blockOfDeployTx.getVersion()));
-        assertThat(block.get(2).asByteString().getAsHexString(),
+        assertThat(block.get(1).getInteger().intValue(), is(blockOfDeployTx.getVersion()));
+        assertThat(block.get(2).getHexString(),
                 is(Numeric.reverseHexString(blockOfDeployTx.getPrevBlockHash().toString())));
-        assertThat(block.get(3).asByteString().getAsHexString(),
+        assertThat(block.get(3).getHexString(),
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
-        assertThat(block.get(4).asInteger().getValue().longValue(),
-                is(blockOfDeployTx.getTime()));
-        assertThat(block.get(5).asInteger().getValue().longValue(),
-                is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).asByteString().getAsAddress(),
-                is(blockOfDeployTx.getNextConsensus()));
-        assertThat(block.get(7).asInteger().getValue().intValue(),
+        assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
+        assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
+        assertThat(block.get(6).getAddress(), is(blockOfDeployTx.getNextConsensus()));
+        assertThat(block.get(7).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
     }
 
     @Test
     public void currentIndex() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        IntegerStackItem height = response.getInvocationResult().getStack().get(0).asInteger();
-        assertThat(height.getValue().intValue(), greaterThanOrEqualTo(0));
+        BigInteger height = response.getInvocationResult().getStack().get(0).getInteger();
+        assertThat(height.intValue(), greaterThanOrEqualTo(0));
     }
 
     @Test
     public void currentHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        ByteStringStackItem hash = response.getInvocationResult().getStack().get(0).asByteString();
-        assertThat(hash.getValue().length, is(32));
+        byte[] hash = response.getInvocationResult().getStack().get(0).getByteArray();
+        assertThat(hash.length, is(32));
     }
 
     @Ignore("Waiting for the implementation of the LedgerContract in the contract module.")
@@ -184,7 +161,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
     public void getHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         // TODO: Get the script hash of the LedgerContract form the contract module.
-//      assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+//      assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
 //              is(io.neow3j.contract.LedgerContract.SCRIPT_HASH.toString()));
     }
 

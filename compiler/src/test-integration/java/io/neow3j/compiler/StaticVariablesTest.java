@@ -34,9 +34,9 @@ public class StaticVariablesTest extends ContractTest {
     @Test
     public void stringConcatWithSyscall() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 StringStartsWith.startsWith("The platform: "));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 StringEndsWith.endsWith("NEO"));
     }
 

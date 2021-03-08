@@ -53,11 +53,11 @@ public class RoleManagement extends SmartContract {
                         integer(role.byteValue()),
                         integer(blockIndex)));
 
-        List<StackItem> arrayOfDesignates =
-                invocation.getInvocationResult().getStack().get(0).asArray().getValue();
+        List<StackItem> arrayOfDesignates = invocation.getInvocationResult().getStack().get(0)
+                .getList();
 
         return arrayOfDesignates.stream()
-                .map(item -> new ECPublicKey(item.asByteString().getValue()))
+                .map(item -> new ECPublicKey(item.getByteArray()))
                 .collect(Collectors.toList());
     }
 

@@ -38,9 +38,9 @@ public class PolicyContractTest extends ContractTest {
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(newFee));
 
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(FEE_PER_BYTE)));
-        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(newFee)));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(FEE_PER_BYTE)));
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(newFee)));
     }
 
     @Test
@@ -49,9 +49,9 @@ public class PolicyContractTest extends ContractTest {
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(fee));
 
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(MAX_BLOCK_SYSTEM_FEE)));
-        assertThat(res.get(1).asInteger().getValue(), is(fee));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(MAX_BLOCK_SYSTEM_FEE)));
+        assertThat(res.get(1).getInteger(), is(fee));
     }
 
     @Test
@@ -59,9 +59,9 @@ public class PolicyContractTest extends ContractTest {
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(1024));
 
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(res.get(0).asInteger().getValue(), is(BigInteger.valueOf(MAX_BLOCK_SIZE)));
-        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(1024)));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(MAX_BLOCK_SIZE)));
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(1024)));
     }
 
     @Test
@@ -71,11 +71,11 @@ public class PolicyContractTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(integer(newTxPerBlock));
 
         StackItem array = response.getInvocationResult().getStack().get(0);
-        StackItem elem1 = array.asArray().get(0);
-        assertThat(elem1.asInteger().getValue(),
+        StackItem elem1 = array.getList().get(0);
+        assertThat(elem1.getInteger(),
                 is(BigInteger.valueOf(MAX_TRANSACTIONS_PER_BLOCK)));
-        StackItem elem2 = array.asArray().get(1);
-        assertThat(elem2.asInteger().getValue(), is(newTxPerBlock));
+        StackItem elem2 = array.getList().get(1);
+        assertThat(elem2.getInteger(), is(newTxPerBlock));
     }
 
     @Test
@@ -83,27 +83,27 @@ public class PolicyContractTest extends ContractTest {
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction("isBlocked",
                 hash160(defaultAccount.getScriptHash()));
-        assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
 
         // Block the account
         Hash256 txHash = invokeFunctionAndAwaitExecution("blockAccount",
                 hash160(defaultAccount.getScriptHash()));
         assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
-                .getExecutions().get(0).getStack().get(0).asBoolean().getValue());
+                .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was blocked.
         response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
-        assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
         // Unblock the account
         txHash = invokeFunctionAndAwaitExecution("unblockAccount",
                 hash160(defaultAccount.getScriptHash()));
         assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
-                .getExecutions().get(0).getStack().get(0).asBoolean().getValue());
+                .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was unblocked.
         response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
-        assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
@@ -111,10 +111,10 @@ public class PolicyContractTest extends ContractTest {
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(300));
 
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(res.get(0).asInteger().getValue(),
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(),
                 is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
-        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(300)));
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(300)));
     }
 
     @Test
@@ -122,17 +122,16 @@ public class PolicyContractTest extends ContractTest {
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction(integer(1000000));
 
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(res.get(0).asInteger().getValue(),
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(),
                 is(BigInteger.valueOf(DEFAULT_STORAGE_PRICE)));
-        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(1000000)));
-
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(1000000)));
     }
 
     @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(io.neow3j.contract.PolicyContract.SCRIPT_HASH.toString()));
     }
 

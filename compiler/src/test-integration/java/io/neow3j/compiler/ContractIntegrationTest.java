@@ -26,7 +26,7 @@ public class ContractIntegrationTest extends ContractTest {
    public void callWithoutArguments() throws IOException {
        NeoInvokeFunction resp = callInvokeFunction("call",
                hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(CallFlags.ALL));
-       assertThat(resp.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+       assertThat(resp.getInvocationResult().getStack().get(0).getString(),
                is("NEO"));
    }
 
@@ -34,14 +34,14 @@ public class ContractIntegrationTest extends ContractTest {
     public void callWithArgument() throws IOException {
         NeoInvokeFunction resp = callInvokeFunction("call", hash160(NeoToken.SCRIPT_HASH), string(
                 "balanceOf"), integer(CallFlags.ALL), hash160(committee.getScriptHash()));
-        assertThat(resp.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+        assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(100_000_000));
     }
 
    @Test
    public void getCallFlags() throws IOException {
        NeoInvokeFunction resp = callInvokeFunction();
-       assertThat(resp.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+       assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(),
                is(15)); // CallFlag ALL
    }
 

@@ -22,7 +22,7 @@ public class MapTest extends ContractTest {
     @Test
     public void putAndGetFromMap() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("world"));
     }
 
@@ -30,37 +30,33 @@ public class MapTest extends ContractTest {
     public void getMapValues() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
                 string("olleh"), string("dlrow"));
-        List<StackItem> items =
-                response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(items.get(0).asByteString().getAsString(), is("world"));
-        assertThat(items.get(1).asByteString().getAsString(), is("dlrow"));
+        List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(items.get(0).getString(), is("world"));
+        assertThat(items.get(1).getString(), is("dlrow"));
     }
 
     @Test
     public void getMapKeys() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
                 string("olleh"), string("dlrow"));
-        List<StackItem> items =
-                response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(items.get(0).asByteString().getAsString(), is("hello"));
-        assertThat(items.get(1).asByteString().getAsString(), is("olleh"));
+        List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(items.get(0).getString(), is("hello"));
+        assertThat(items.get(1).getString(), is("olleh"));
     }
 
     @Test
     public void mapContainsKey() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
                 string("olleh"), string("dlrow"));
-        assertThat(response.getInvocationResult().getStack().get(0).asBoolean().getValue(),
-                is(true));
+        assertThat(response.getInvocationResult().getStack().get(0).getBoolean(), is(true));
     }
 
     @Test
     public void removeFromMap() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
                 string("olleh"), string("dlrow"));
-        List<StackItem> items =
-                response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(items.get(0).asByteString().getAsString(), is("olleh"));
+        List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(items.get(0).getString(), is("olleh"));
     }
 
     static class MapTests {

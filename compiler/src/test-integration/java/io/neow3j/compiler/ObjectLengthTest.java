@@ -27,9 +27,7 @@ public class ObjectLengthTest extends ContractTest {
                 ContractParameter.string("one"),
                 ContractParameter.string("two"));
 
-        assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
-                is(6));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(6));
     }
 
     @Test
@@ -38,8 +36,7 @@ public class ObjectLengthTest extends ContractTest {
                 ContractParameter.byteArray(Numeric.hexStringToByteArray("01020304")),
                 ContractParameter.byteArray(new byte[100000]));
 
-        assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(100004));
     }
 
@@ -48,7 +45,7 @@ public class ObjectLengthTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(array(string("hello"), string("world")),
                 integer(2));
 
-        assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
                 is(BigInteger.ONE));
     }
 

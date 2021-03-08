@@ -4,45 +4,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.model.types.StackItemType;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class StructStackItem extends StackItem {
-
-    @JsonProperty("value")
-    private List<StackItem> value;
+public class StructStackItem extends ListLikeStackItem {
 
     public StructStackItem() {
         super(StackItemType.STRUCT);
     }
 
     public StructStackItem(List<StackItem> value) {
-        super(StackItemType.STRUCT);
-        this.value = value;
-    }
-
-    public List<StackItem> getValue() {
-        return this.value;
-    }
-
-    /**
-     * Gets the stack item at the given position in this struct stack item.
-     *
-     * @param i the position of the desired stack item in this struct
-     * @return the stack item at the given position.
-     */
-    public StackItem get(int i) {
-        return getValue().get(i);
-    }
-
-    /**
-     * Returns the number of elements that this struct stack item contains.
-     *
-     * @return the number of elements that this struct stack item contains.
-     */
-    public int size() {
-        return getValue().size();
+        super(value, StackItemType.STRUCT);
     }
 
     @Override
@@ -54,8 +28,4 @@ public class StructStackItem extends StackItem {
                 Objects.equals(getValue(), other.getValue());
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getValue());
-    }
 }

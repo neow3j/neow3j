@@ -14,7 +14,6 @@ import io.neow3j.contract.Hash256;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
@@ -155,9 +154,8 @@ public class ContractTest {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
-        ArrayStackItem arrayItem = execution.getStack().get(0).asArray();
-        Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(
-                arrayItem.get(2).asByteString().getAsHexString()));
+        String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
+        Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(scriptHashHex));
         return new SmartContract(scriptHash, neow3j);
     }
 

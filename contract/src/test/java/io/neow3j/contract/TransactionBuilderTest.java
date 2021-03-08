@@ -829,8 +829,7 @@ public class TransactionBuilderTest {
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
                 .callInvokeScript();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("NEO"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("NEO"));
     }
 
     @Test

@@ -22,14 +22,13 @@ public class ContractInterfacesTest extends ContractTest {
     @Test
     public void callSymbolMethodOfCustomNeoContractInterface() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("NEO"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("NEO"));
     }
 
     @Test
     public void getScriptHashOfCustomNeoContractInterface() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(NeoToken.SCRIPT_HASH.toString()));
     }
 

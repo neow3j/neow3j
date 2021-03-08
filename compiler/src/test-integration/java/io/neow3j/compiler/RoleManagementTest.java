@@ -12,8 +12,8 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.Role;
 import io.neow3j.devpack.contracts.RoleManagement;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +31,7 @@ public class RoleManagementTest extends ContractTest {
     @Test
     public void getHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(Numeric.hexStringToByteArray("597b1471bbce497b7809e2c8f10db67050008b02")));
     }
 
@@ -52,8 +52,8 @@ public class RoleManagementTest extends ContractTest {
         // Test if the designate can be fetched via a smart contract call.
         NeoInvokeFunction response = callInvokeFunction("getDesignatedByRole",
                 integer(Role.STATE_VALIDATOR), integer(blockIndex + 1));
-        ArrayStackItem pubKeysItem = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(pubKeysItem.get(0).asByteString().getValue(), is(pubKey));
+        List<StackItem> pubKeysItem = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(pubKeysItem.get(0).getByteArray(), is(pubKey));
     }
 
     static class RoleManagementTestContract {

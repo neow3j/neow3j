@@ -804,8 +804,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .invokeFunction(NEO_HASH, INVOKE_SYMBOL)
                 .send()
                 .getInvocationResult();
-
-        assertThat(result.getStack().get(0).asByteString().getAsString(), is("NEO"));
+        assertThat(result.getStack().get(0).getString(), is("NEO"));
     }
 
     @Test
@@ -815,7 +814,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getInvocationResult();
 
-        assertThat(result.getStack().get(0).asByteString().getAsString(), is("NEO"));
+        assertThat(result.getStack().get(0).getString(), is("NEO"));
     }
 
     @Test
@@ -1176,14 +1175,12 @@ public class Neow3jReadOnlyIntegrationTest {
         StackItem state = execution.getNotifications().get(0).getState();
         assertThat(state, is(notNullValue()));
         assertThat(state.getType(), is(StackItemType.ARRAY));
-        assertThat(state.asArray().getValue(), hasSize(3));
-        assertThat(state.asArray().getValue().get(0).getType(), is(StackItemType.ANY));
-        assertThat(state.asArray().getValue().get(1).getType(), is(StackItemType.BYTE_STRING));
-        assertThat(state.asArray().getValue().get(1).asByteString().getAsAddress(),
-                is(ACCOUNT_1_ADDRESS));
-        assertThat(state.asArray().getValue().get(2).getType(), is(StackItemType.INTEGER));
-        assertThat(state.asArray().getValue().get(2).asInteger().getValue(),
-                is(new BigInteger("100000000")));
+        assertThat(state.getList(), hasSize(3));
+        assertThat(state.getList().get(0).getType(), is(StackItemType.ANY));
+        assertThat(state.getList().get(1).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(state.getList().get(1).getAddress(), is(ACCOUNT_1_ADDRESS));
+        assertThat(state.getList().get(2).getType(), is(StackItemType.INTEGER));
+        assertThat(state.getList().get(2).getInteger(), is(new BigInteger("100000000")));
     }
 
     @Test
@@ -1217,14 +1214,13 @@ public class Neow3jReadOnlyIntegrationTest {
         StackItem state = execution.getNotifications().get(0).getState();
         assertThat(state, is(notNullValue()));
         assertThat(state.getType(), is(StackItemType.ARRAY));
-        assertThat(state.asArray().getValue(), hasSize(3));
-        assertThat(state.asArray().getValue().get(0).getType(), is(StackItemType.ANY));
-        assertThat(state.asArray().getValue().get(1).getType(), is(StackItemType.BYTE_STRING));
-        assertThat(state.asArray().getValue().get(1).asByteString().getAsAddress(),
-                is(ACCOUNT_1_ADDRESS));
-        assertThat(state.asArray().getValue().get(2).getType(), is(StackItemType.INTEGER));
-        assertThat(state.asArray().getValue().get(2).asInteger().getValue(),
-                is(new BigInteger("100000000")));
+        List<StackItem> array = state.getList();
+        assertThat(array.size(), is(3));
+        assertThat(array.get(0).getType(), is(StackItemType.ANY));
+        assertThat(array.get(1).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(array.get(1).getAddress(), is(ACCOUNT_1_ADDRESS));
+        assertThat(array.get(2).getType(), is(StackItemType.INTEGER));
+        assertThat(array.get(2).getInteger(), is(new BigInteger("100000000")));
     }
 
     @Test

@@ -2,7 +2,6 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.model.types.StackItemType;
 
 import java.math.BigInteger;
@@ -23,9 +22,26 @@ public class PointerStackItem extends StackItem {
         this.value = value;
     }
 
-    @JsonValue
+    @Override
+    protected String valueToString() {
+        return value.toString();
+    }
+
+    @Override
     public BigInteger getValue() {
-        return this.value;
+        return value;
+    }
+
+    @Override
+    public BigInteger getInteger() {
+        nullCheck();
+        return value;
+    }
+
+    @Override
+    public BigInteger getPointer() {
+        nullCheck();
+        return value;
     }
 
     @Override

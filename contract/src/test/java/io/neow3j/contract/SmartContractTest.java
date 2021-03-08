@@ -229,7 +229,7 @@ public class SmartContractTest {
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         NeoInvokeFunction response = sc.callInvokeFunction(NEP17_BALANCEOF,
                 singletonList(hash160(account1.getScriptHash())));
-        assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
                 is(BigInteger.valueOf(3)));
     }
 
@@ -240,8 +240,7 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(),
                 "symbol");
         NeoInvokeFunction i = new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("symbol");
-        assertThat(i.getResult().getStack().get(0).asByteString().getAsString(), Matchers.is("NEO"
-        ));
+        assertThat(i.getResult().getStack().get(0).getString(), Matchers.is("NEO"));
     }
 
     @Test(expected = IllegalArgumentException.class)

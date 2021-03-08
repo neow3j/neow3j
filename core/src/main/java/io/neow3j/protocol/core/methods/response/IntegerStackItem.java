@@ -2,12 +2,14 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.utils.BigIntegers;
+import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.Objects;
+
+import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IntegerStackItem extends StackItem {
@@ -24,18 +26,56 @@ public class IntegerStackItem extends StackItem {
         this.value = value;
     }
 
-    @JsonSetter("value")
-    public void setValue(BigInteger value) {
-        if (value != null) {
-            this.value = value;
-        } else {
-            this.value = BigInteger.ZERO;
-        }
-    }
-
-    @JsonValue
+    @Override
     public BigInteger getValue() {
         return this.value;
+    }
+
+    @Override
+    protected String valueToString() {
+       return value.toString();
+    }
+
+    @Override
+    public boolean getBoolean() {
+        nullCheck();
+        if (value.equals(BigInteger.ONE)) {
+            return true;
+        }
+        if (value.equals(BigInteger.ZERO)) {
+            return false;
+        }
+        return super.getBoolean();
+    }
+
+    @Override
+    public BigInteger getInteger() {
+        nullCheck();
+        return value;
+    }
+
+    @Override
+    public String getString() {
+        nullCheck();
+        return value.toString();
+    }
+
+    /**
+     * Gets this integer stack item as a hex string. I.e., the integer's bytes (in little-endian
+     * ordering) are converted to a hex string.
+     *
+     * @return the hex string.
+     */
+    @Override
+    public String getHexString() {
+        nullCheck();
+        return Numeric.toHexStringNoPrefix(getByteArray());
+    }
+
+    @Override
+    public byte[] getByteArray(){
+        nullCheck();
+        return BigIntegers.toLittleEndianByteArray(value);
     }
 
     @Override

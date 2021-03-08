@@ -12,11 +12,12 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.contract.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class HashIntegrationTest extends ContractTest {
     public void getZeroHash160() throws IOException {
         String zeroHash = "0000000000000000000000000000000000000000";
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(zeroHash));
     }
 
@@ -41,9 +42,9 @@ public class HashIntegrationTest extends ContractTest {
         Hash160 zeroHash = new Hash160("0000000000000000000000000000000000000000");
         Hash160 nonZeroHash = new Hash160("0000000000000000000000000000000000000001");
         NeoInvokeFunction response = callInvokeFunction(hash160(zeroHash), hash160(nonZeroHash));
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertTrue(array.get(0).asBoolean().getValue());
-        assertFalse(array.get(1).asBoolean().getValue());
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     @Test
@@ -52,16 +53,16 @@ public class HashIntegrationTest extends ContractTest {
         String invalidHash = "00000000000000000000000000000000000001"; // One byte short.
         NeoInvokeFunction response = callInvokeFunction(
                 byteArray(validHash), byteArray(invalidHash));
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertTrue(array.get(0).asBoolean().getValue());
-        assertFalse(array.get(1).asBoolean().getValue());
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     @Test
     public void createHash160FromValidByteArray() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b";
         NeoInvokeFunction response = callInvokeFunction(byteArray(hash));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(hash));
     }
 
@@ -76,7 +77,7 @@ public class HashIntegrationTest extends ContractTest {
     public void createHash160FromValidString() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b";
         NeoInvokeFunction response = callInvokeFunction(byteArray(hash));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(hash));
     }
 
@@ -91,7 +92,7 @@ public class HashIntegrationTest extends ContractTest {
     public void hash160ToByteArray() throws IOException {
         Hash160 hash = new Hash160("03b4af8d061b6b320cce6c63bc4ec7894dce107b");
         NeoInvokeFunction response = callInvokeFunction(hash160(hash));
-        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getAsAddress(),
+        assertThat(response.getInvocationResult().getStack().get(0).getAddress(),
                 is(hash.toAddress()));
     }
 
@@ -99,7 +100,7 @@ public class HashIntegrationTest extends ContractTest {
     public void hash160ToString() throws IOException {
         Hash160 hash = new Hash160("03b4af8d061b6b320cce6c63bc4ec7894dce107b");
         NeoInvokeFunction response = callInvokeFunction(hash160(hash));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(Numeric.reverseHexString(hash.toString())));
     }
 
@@ -107,7 +108,7 @@ public class HashIntegrationTest extends ContractTest {
     public void getZeroHash256() throws IOException {
         String zeroHash = "0000000000000000000000000000000000000000000000000000000000000000";
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(zeroHash));
     }
 
@@ -116,9 +117,9 @@ public class HashIntegrationTest extends ContractTest {
         String zeroHash = "0000000000000000000000000000000000000000000000000000000000000000";
         String nonZeroHash = "0000000000000000000000000000000000000000000000000000000000000001";
         NeoInvokeFunction response = callInvokeFunction(hash256(zeroHash), hash256(nonZeroHash));
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertTrue(array.get(0).asBoolean().getValue());
-        assertFalse(array.get(1).asBoolean().getValue());
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     @Test
@@ -127,16 +128,16 @@ public class HashIntegrationTest extends ContractTest {
         // One byte to short.
         String invalidHash = "00000000000000000000000000000000000000000000000000000000000001";
         NeoInvokeFunction response = callInvokeFunction(hash256(validHash), byteArray(invalidHash));
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertTrue(array.get(0).asBoolean().getValue());
-        assertFalse(array.get(1).asBoolean().getValue());
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     @Test
     public void createHash256FromValidByteArray() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000";
         NeoInvokeFunction response = callInvokeFunction(byteArray(hash));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(hash));
     }
 
@@ -152,7 +153,7 @@ public class HashIntegrationTest extends ContractTest {
     public void createHash256FromValidString() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000";
         NeoInvokeFunction response = callInvokeFunction(byteArray(hash));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(hash));
     }
 
@@ -168,7 +169,7 @@ public class HashIntegrationTest extends ContractTest {
     public void hash256ToByteArray() throws IOException {
         String hash256 = "03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000";
         NeoInvokeFunction response = callInvokeFunction(hash256(hash256));
-        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(Numeric.hexStringToByteArray(Numeric.reverseHexString(hash256))));
     }
 
@@ -176,21 +177,21 @@ public class HashIntegrationTest extends ContractTest {
     public void hash256ToString() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000";
         NeoInvokeFunction response = callInvokeFunction(hash256(hash));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(Numeric.reverseHexString(hash)));
     }
 
     @Test
     public void hash160FromStringLiteral() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is("03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
     }
 
     @Test
     public void hash256FromStringLiteral() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is("03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000"));
     }
 

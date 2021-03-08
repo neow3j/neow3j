@@ -1,23 +1,26 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.MAP;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static java.util.Collections.singletonList;
-
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.MapStackItem;
-import io.neow3j.protocol.core.methods.response.TokenState;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.methods.response.TokenState;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
+
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.model.types.StackItemType.MAP;
+import static io.neow3j.transaction.Signer.calledByEntry;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 
 /**
  * Represents a NEP-11 non-fungible token contract and provides methods to invoke it.
@@ -102,8 +105,8 @@ public class NonFungibleToken extends Token {
             throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
         }
         try {
-            return Hash160.fromAddress(item.asByteString().getAsAddress());
-        } catch (IllegalArgumentException e) {
+            return Hash160.fromAddress(item.getAddress());
+        } catch (StackItemCastException e) {
             throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
                     "expected format.", e);
         }
@@ -141,10 +144,11 @@ public class NonFungibleToken extends Token {
         StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
-            MapStackItem mapStackItem = item.asMap();
+            Map<StackItem, StackItem> map = item.getMap();
+
             return new TokenState(
-                    mapStackItem.get("name").asByteString().getAsString(),
-                    mapStackItem.get("description").asByteString().getAsString());
+                    map.get(new ByteStringStackItem("name".getBytes(UTF_8))).getString(),
+                    map.get(new ByteStringStackItem("description".getBytes(UTF_8))).getString());
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
     }

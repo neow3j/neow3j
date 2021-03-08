@@ -23,7 +23,7 @@ public class ByteArrayTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction();
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
-        assertThat(result.asBuffer().getValue(), is(new byte[]{}));
+        assertThat(result.getByteArray(), is(new byte[]{}));
     }
 
     @Test
@@ -31,7 +31,7 @@ public class ByteArrayTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction();
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
-        assertThat(result.asBuffer().getValue(), is(new byte[100]));
+        assertThat(result.getByteArray(), is(new byte[100]));
     }
 
     @Test
@@ -39,8 +39,8 @@ public class ByteArrayTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction();
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
-        assertThat(result.asBuffer().getValue(), is(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
-                0x06, 0x07, 0x08, 0x09}));
+        assertThat(result.getByteArray(), is(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+                0x07, 0x08, 0x09}));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class ByteArrayTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.byteArray("01020304"));
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
-        assertThat(result.asBuffer().getValue(), is(new byte[]{0x00, 0x00, 0x01, 0x00, 0x00}));
+        assertThat(result.getByteArray(), is(new byte[]{0x00, 0x00, 0x01, 0x00, 0x00}));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ByteArrayTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.integer(5));
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
-        assertThat(result.asBuffer().getValue(), is(new byte[]{0x01, 0x00, 0x00, 0x00, 0x00}));
+        assertThat(result.getByteArray(), is(new byte[]{0x01, 0x00, 0x00, 0x00, 0x00}));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ByteArrayTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.string("hello"));
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
-        assertThat(result.asBuffer().getValue(), is(new byte[]{0x01, 0x00, 0x00, 0x00, 0x00}));
+        assertThat(result.getByteArray(), is(new byte[]{0x01, 0x00, 0x00, 0x00, 0x00}));
     }
 
     static class ByteArrayTestContract {

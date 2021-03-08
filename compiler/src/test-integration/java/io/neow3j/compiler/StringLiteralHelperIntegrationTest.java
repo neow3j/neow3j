@@ -26,7 +26,7 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction();
         String littleEndianScriptHash = Numeric.reverseHexString(
                 "0f46dc4287b70117ce8354924b5cb3a47215ad93");
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(littleEndianScriptHash));
     }
 
@@ -35,7 +35,7 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction();
         String littleEndianScriptHash = Numeric.reverseHexString(
                 "0f46dc4287b70117ce8354924b5cb3a47215ad93");
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(littleEndianScriptHash));
     }
 
@@ -44,7 +44,7 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction();
         String littleEndianScriptHash = Numeric.reverseHexString(
                 "0f46dc4287b70117ce8354924b5cb3a47215ad93");
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(littleEndianScriptHash));
     }
 
@@ -52,48 +52,42 @@ public class StringLiteralHelperIntegrationTest extends ContractTest {
     public void hexStringToByteArrayInMethod() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         String expected = "010203";
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is(expected));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(expected));
     }
 
     @Test
     public void hexStringToByteArrayInStaticVariableInitialization() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         String expected = "010203";
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is(expected));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(expected));
     }
 
     @Test
     public void hexStringToByteArrayInLocalVariable() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         String expected = "010203";
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is(expected));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(expected));
     }
 
     @Test
     public void stringToIntegerInMethod() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         BigInteger expected = new BigInteger("1000000000000000000000000000000");
-            assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
-                    is(expected));
+            assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(expected));
     }
 
     @Test
     public void stringToIntegerInStaticVariableInitialization() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         BigInteger expected = new BigInteger("1000000000000000000000000000000");
-        assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
-                is(expected));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(expected));
     }
 
     @Test
     public void stringToIntegerInLocalVariable() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         BigInteger expected = new BigInteger("1000000000000000000000000000000");
-        assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
-                is(expected));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(expected));
     }
 
     static class StringLiterals {

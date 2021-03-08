@@ -1,22 +1,5 @@
 package io.neow3j.protocol;
 
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
-import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
-import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH_STRING;
-import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
-import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
-import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
-import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
@@ -30,14 +13,30 @@ import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Await;
-
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
+
+import java.io.IOException;
+
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
+import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH_STRING;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
+import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
+import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 // This test class spins up a new private net container for each test. This consumes a lot of time
 // but allows the tests to make changes without interfering with each other.
@@ -77,7 +76,8 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendRawTransaction() throws IOException {
         NeoSendRawTransaction sendRawTransaction = getNeow3j()
-                .sendRawTransaction("000b0a96844a959800000000002ac312000000000081160000017afd203255cb2972bd0a6a827e74e387ed322bec0100550b120c14dc84704b8283397326095c0b4e9662282c3a73190c147afd203255cb2972bd0a6a827e74e387ed322bec14c00c087472616e736665720c14b6720fef7e7eb73f25afb470f587997ce3e2460a41627d5b5201420c40a4ccb42bb7ed4a7217a204b836f372aa33c33e93b123e061805c064b23269bd5acadde1d10c60d83e74605def6a3f3d9a53d94e63b299ebb2388e1bbb779a1e52b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf")
+                .sendRawTransaction(
+                        "000b0a96844a959800000000002ac312000000000081160000017afd203255cb2972bd0a6a827e74e387ed322bec0100550b120c14dc84704b8283397326095c0b4e9662282c3a73190c147afd203255cb2972bd0a6a827e74e387ed322bec14c00c087472616e736665720c14b6720fef7e7eb73f25afb470f587997ce3e2460a41627d5b5201420c40a4ccb42bb7ed4a7217a204b836f372aa33c33e93b123e061805c064b23269bd5acadde1d10c60d83e74605def6a3f3d9a53d94e63b299ebb2388e1bbb779a1e52b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf")
                 .send();
 
         RawTransaction rawTx = sendRawTransaction.getSendRawTransaction();
@@ -165,10 +165,9 @@ public class Neow3jWriteIntegrationTest {
         assertThat(execution.getState(), is(VM_STATE_HALT));
 
         Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT_2);
-        assertThat(getNeow3j().invokeFunction(
-                NEO_HASH_STRING, "balanceOf", singletonList(hash160(recipient2Hash160)))
-                        .send().getInvocationResult().getStack().get(0)
-                        .asInteger().getValue().intValue(),
+        assertThat(neow3j.invokeFunction(
+                NEO_HASH, "balanceOf", asList(hash160(recipient2Hash160))).send()
+                        .getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(10));
     }
 

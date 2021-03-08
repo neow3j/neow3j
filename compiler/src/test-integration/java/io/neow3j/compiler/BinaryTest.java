@@ -28,7 +28,7 @@ public class BinaryTest extends ContractTest {
     @Test
     public void serialize() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(bool(true), integer(32069));
-        byte[] result = response.getInvocationResult().getStack().get(0).asByteString().getValue();
+        byte[] result = response.getInvocationResult().getStack().get(0).getByteArray();
         assertThat(result[0], is(StackItemType.ARRAY.byteValue()));
         assertThat(result[1], is((byte) 0x02)); // Number of elements
         // TODO: This should be a Boolean but is a Integer.
@@ -46,11 +46,11 @@ public class BinaryTest extends ContractTest {
     public void serializeAndDeserialize() throws IOException {
         int i = 32069;
         NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).asArray().getValue();
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         // TODO: This should be a Boolean but is a Integer.
         //  See https://github.com/neo-project/neo/issues/1912
-        assertThat(res.get(0).asInteger().getValue(), is(BigInteger.ONE));
-        assertThat(res.get(1).asInteger().getValue(), is(BigInteger.valueOf(i)));
+        assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
     }
 
     @Test
@@ -58,8 +58,7 @@ public class BinaryTest extends ContractTest {
         String bytes =
                 "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.byteArray(bytes));
-        String encoded = response.getInvocationResult().getStack().get(0).asByteString()
-                .getAsString();
+        String encoded = response.getInvocationResult().getStack().get(0).getString();
         String expected = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIDEzIGxhenkgZG9ncy4=";
         assertThat(encoded, is(expected));
     }
@@ -70,8 +69,7 @@ public class BinaryTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(string(encoded));
         // TODO: This should be a Buffer but is a ByteString.
         //  See https://github.com/neo-project/neo/issues/1912
-        String decoded = response.getInvocationResult().getStack().get(0).asByteString()
-                .getAsHexString();
+        String decoded = response.getInvocationResult().getStack().get(0).getHexString();
         String expected =
                 "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
         assertThat(decoded, is(expected));
@@ -81,21 +79,21 @@ public class BinaryTest extends ContractTest {
     public void itoa() throws IOException {
         // With base 10
         NeoInvokeFunction response = callInvokeFunction(integer(100), integer(10));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("100"));
 
         response = callInvokeFunction(integer(-1), integer(10));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("-1"));
 
         // With base 16
         response = callInvokeFunction(integer(105), integer(16));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("69"));
 
         // With base 16
         response = callInvokeFunction(integer(-1), integer(16));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("f"));
     }
 
@@ -104,23 +102,23 @@ public class BinaryTest extends ContractTest {
         // With base 10
         NeoInvokeFunction response = callInvokeFunction(string("100"), integer(10));
         assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(100));
 
         response = callInvokeFunction(string("-1"), integer(10));
         assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(-1));
 
         // With base 16
         response = callInvokeFunction(string("69"), integer(16));
         assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(105));
 
         response = callInvokeFunction(string("ff"), integer(16));
         assertThat(
-                response.getInvocationResult().getStack().get(0).asInteger().getValue().intValue(),
+                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(-1));
     }
 
