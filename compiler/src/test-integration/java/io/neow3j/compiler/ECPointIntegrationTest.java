@@ -24,7 +24,7 @@ public class ECPointIntegrationTest extends ContractTest {
     public void createEcPointFromValidByteArray() throws IOException {
         String publicKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         NeoInvokeFunction response = callInvokeFunction(byteArray(publicKey));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(publicKey));
     }
 
@@ -40,7 +40,7 @@ public class ECPointIntegrationTest extends ContractTest {
     public void createEcPointFromValidString() throws IOException {
         String publicKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         NeoInvokeFunction response = callInvokeFunction(byteArray(publicKey));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(publicKey));
     }
 
@@ -56,7 +56,7 @@ public class ECPointIntegrationTest extends ContractTest {
     public void ecPointToByteArray() throws IOException {
         String publicKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.publicKey(publicKey));
-        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(Numeric.hexStringToByteArray(publicKey)));
     }
 
@@ -64,7 +64,7 @@ public class ECPointIntegrationTest extends ContractTest {
     public void ecPointToString() throws IOException {
         String publicKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.publicKey(publicKey));
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(publicKey));
     }
 
@@ -72,7 +72,7 @@ public class ECPointIntegrationTest extends ContractTest {
     public void ecPointToByteArrayFromStringLiteral() throws IOException {
         String publicKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(Numeric.hexStringToByteArray(publicKey)));
     }
 

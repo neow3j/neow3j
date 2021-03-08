@@ -970,12 +970,13 @@ public class Neow3jReadOnlyIntegrationTest {
         StackItem state = execution.getNotifications().get(0).getState();
         assertThat(state, is(notNullValue()));
         assertThat(state.getType(), is(StackItemType.ARRAY));
-        assertThat(state.getArray().length, is(3));
-        assertThat(state.getArray()[0].getType(), is(StackItemType.ANY));
-        assertThat(state.getArray()[1].getType(), is(StackItemType.BYTE_STRING));
-        assertThat(state.getArray()[1].getAddress(), is(ACCOUNT_1_ADDRESS));
-        assertThat(state.getArray()[2].getType(), is(StackItemType.INTEGER));
-        assertThat(state.getArray()[2].getInteger(), is(new BigInteger("100000000")));
+        List<StackItem> array = state.getList();
+        assertThat(array.size(), is(3));
+        assertThat(array.get(0).getType(), is(StackItemType.ANY));
+        assertThat(array.get(1).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(array.get(1).getAddress(), is(ACCOUNT_1_ADDRESS));
+        assertThat(array.get(2).getType(), is(StackItemType.INTEGER));
+        assertThat(array.get(2).getInteger(), is(new BigInteger("100000000")));
     }
 
     @Test

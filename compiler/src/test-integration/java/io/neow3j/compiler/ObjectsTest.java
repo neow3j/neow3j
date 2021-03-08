@@ -25,7 +25,7 @@ public class ObjectsTest extends ContractTest {
                 ContractParameter.string("Neo"), // 0x4e656f
                 ContractParameter.integer(1));
 
-        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(new byte[]{(byte) 0x4e, (byte) 0x65, (byte) 0x6f, 0x01}));
     }
 
@@ -35,9 +35,9 @@ public class ObjectsTest extends ContractTest {
                 ContractParameter.string("Neo"), // 0x4e656f
                 ContractParameter.integer(1));
 
-        List<StackItem> obj = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(obj.get(0).asByteString().getAsString(), is("Neo"));
-        assertThat(obj.get(1).asInteger().getValue().intValue(), is(1));
+        List<StackItem> obj = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(obj.get(0).getString(), is("Neo"));
+        assertThat(obj.get(1).getInteger().intValue(), is(1));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class ObjectsTest extends ContractTest {
                 ContractParameter.string("Neo"), /* 0x4e656f*/
                 ContractParameter.integer(1)));
 
-        assertThat(response.getInvocationResult().getStack().get(0).asBuffer().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(new byte[]{(byte) 0x4e, (byte) 0x65, (byte) 0x6f, 0x01}));
     }
 

@@ -19,15 +19,17 @@ import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.Contract;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -42,15 +44,15 @@ public class ContractManagementIntegrationTest extends ContractTest {
     public void getContract() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.hash160(io.neow3j.contract.NeoToken.SCRIPT_HASH));
-        ArrayStackItem arrayStackItem = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(arrayStackItem.get(0).asInteger().getValue().intValue(), is(-3)); // ID
-        assertThat(arrayStackItem.get(1).asInteger().getValue().intValue(), is(0)); // updateCounter
-        assertThat(Numeric.reverseHexString(arrayStackItem.get(2).asByteString().getAsHexString()),
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(array.get(0).getInteger().intValue(), is(-3)); // ID
+        assertThat(array.get(1).getInteger().intValue(), is(0)); // updateCounter
+        assertThat(Numeric.reverseHexString(array.get(2).getHexString()),
                 is(NeoToken.SCRIPT_HASH.toString())); // contract hash
         // nef
-        assertThat(arrayStackItem.get(3).asByteString().getAsHexString(), not(isEmptyString()));
+        assertThat(array.get(3).getHexString(), not(isEmptyString()));
         // manifest
-        assertThat(arrayStackItem.get(4).asStruct().getValue(), notNullValue());
+        assertThat(array.get(4).getList(), notNullValue());
     }
 
     @Test
@@ -94,8 +96,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
         Notification notification = neow3j.getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getNotifications().get(0);
         assertThat(notification.getEventName(), is("onDeployWithData"));
-        assertThat(notification.getState().asArray().get(0).asByteString().getAsString(),
-                is("hello, world!"));
+        assertThat(notification.getState().getList().get(0).getString(), is("hello, world!"));
 
         ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
@@ -216,7 +217,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
     @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(io.neow3j.contract.ContractManagement.SCRIPT_HASH.toString()));
     }
 

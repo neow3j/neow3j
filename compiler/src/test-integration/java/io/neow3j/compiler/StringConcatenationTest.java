@@ -23,9 +23,7 @@ public class StringConcatenationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 ContractParameter.string("one"),
                 ContractParameter.string("two"));
-
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("onetwo"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("onetwo"));
     }
 
     @Test
@@ -35,7 +33,7 @@ public class StringConcatenationTest extends ContractTest {
                 ContractParameter.string("two"),
                 ContractParameter.byteArray("4e656f")); // byte array representation of "Neo".
 
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("onetwothreeNeoNEO"));
     }
 
@@ -43,8 +41,7 @@ public class StringConcatenationTest extends ContractTest {
     public void concatInStaticVariable() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
 
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("onetwoNEO"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("onetwoNEO"));
     }
 
     static class StringConcatenation {

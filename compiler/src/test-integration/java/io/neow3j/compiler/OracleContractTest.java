@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.protocol.core.methods.response.OracleResponseCode.TIMEOUT;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -23,7 +24,6 @@ import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.methods.response.OracleResponseCode;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.neow3j.transaction.Signer;
@@ -52,7 +52,7 @@ public class OracleContractTest extends ContractTest {
     @Test
     public void getScriptHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is("8dc0e742cbdfdeda51ff8a8b78d46829144c80ee"));
     }
 
@@ -120,12 +120,11 @@ public class OracleContractTest extends ContractTest {
                 .send().getApplicationLog().getExecutions().get(0).getNotifications();
         assertThat(notifications.get(0).getEventName(), is("OracleResponse"));
         assertThat(notifications.get(1).getEventName(), is("callbackEvent"));
-        List<StackItem> eventState = notifications.get(1).getState().asArray().getValue();
-        assertThat(eventState.get(0).asByteString().getAsString(), is(url));
-        assertThat(eventState.get(1).asByteString().getAsString(), is(userdata));
-        assertThat(eventState.get(2).asInteger().getValue().byteValue(),
-                is(OracleResponseCode.TIMEOUT.byteValue()));
-        assertThat(eventState.get(3).asByteString().getValue(), is(new byte[]{}));
+        List<StackItem> eventState = notifications.get(1).getState().getList();
+        assertThat(eventState.get(0).getString(), is(url));
+        assertThat(eventState.get(1).getString(), is(userdata));
+        assertThat(eventState.get(2).getInteger().byteValue(), is(TIMEOUT.byteValue()));
+        assertThat(eventState.get(3).getByteArray(), is(new byte[]{}));
     }
 
     static class OracleContractTestContract {

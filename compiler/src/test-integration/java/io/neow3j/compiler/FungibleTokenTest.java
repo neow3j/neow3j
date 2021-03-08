@@ -26,30 +26,28 @@ public class FungibleTokenTest extends ContractTest {
     @Test
     public void callSymbolMethodOfFungibleToken() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is(NeoToken.SYMBOL));
     }
 
     @Test
     public void callDecimalsMethodOfFungibleToken() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0)
-                        .asInteger().getValue().intValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(NeoToken.DECIMALS));
     }
 
     @Test
     public void callTotalSupplyMethodOfFungibleToken() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asInteger().getValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
                 is(NeoToken.TOTAL_SUPPLY));
     }
 
     @Test
     public void callBalanceOfMethodOfFungibleToken() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(hash160(committee.getScriptHash()));
-        assertThat(response.getInvocationResult().getStack().get(0)
-                        .asInteger().getValue().intValue(),
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 greaterThan(0));
     }
 
@@ -59,13 +57,13 @@ public class FungibleTokenTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(hash160(committee.getScriptHash()),
                 hash160(defaultAccount.getScriptHash()), integer(1));
 
-        assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
     public void getScriptHashOfFungibleToken() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(NeoToken.SCRIPT_HASH.toString()));
     }
 

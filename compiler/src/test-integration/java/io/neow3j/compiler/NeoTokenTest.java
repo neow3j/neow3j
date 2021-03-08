@@ -37,9 +37,7 @@ public class NeoTokenTest extends ContractTest {
     public void unclaimedGas() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()),
                 integer(1));
-
-        assertThat(response.getInvocationResult().getStack().get(0)
-                .asInteger().getValue().intValue(), is(0));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
     }
 
     @Test
@@ -48,9 +46,9 @@ public class NeoTokenTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 publicKey(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
 
-        List<StackItem> l = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertTrue(l.get(0).asBoolean().getValue());
-        assertTrue(l.get(1).asBoolean().getValue());
+        List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(l.get(0).getBoolean());
+        assertTrue(l.get(1).getBoolean());
     }
 
     @Test
@@ -59,9 +57,9 @@ public class NeoTokenTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 publicKey(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
 
-        List<StackItem> l = response.getInvocationResult().getStack().get(0).asArray().getValue();
+        List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
         assertThat(l, hasSize(1));
-        assertThat(l.get(0).asStruct().get(0).asByteString().getValue(),
+        assertThat(l.get(0).getList().get(0).getByteArray(),
                 is(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
     }
 
@@ -69,8 +67,8 @@ public class NeoTokenTest extends ContractTest {
     public void getNextBlockValidators() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
 
-        List<StackItem> l = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(l.get(0).asByteString().getValue(),
+        List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(l.get(0).getByteArray(),
                 is(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
     }
 
@@ -78,8 +76,8 @@ public class NeoTokenTest extends ContractTest {
     public void getCommittee() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
 
-        List<StackItem> l = response.getInvocationResult().getStack().get(0).asArray().getValue();
-        assertThat(l.get(0).asByteString().getValue(),
+        List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(l.get(0).getByteArray(),
                 is(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
     }
 
@@ -87,14 +85,13 @@ public class NeoTokenTest extends ContractTest {
     public void setAndGetGasPerBlock() throws Throwable {
         signAsCommittee();
         NeoInvokeFunction res = callInvokeFunction("getGasPerBlock");
-        int gasPerBlock = res.getInvocationResult().getStack().get(0).asInteger().getValue()
-                .intValue();
+        int gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
         assertThat(gasPerBlock, is(500_000_000));
 
         invokeFunctionAndAwaitExecution("setGasPerBlock", integer(50_000));
 
         res = callInvokeFunction("getGasPerBlock");
-        gasPerBlock = res.getInvocationResult().getStack().get(0).asInteger().getValue().intValue();
+        gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
         assertThat(gasPerBlock, is(50_000));
     }
 
@@ -115,13 +112,13 @@ public class NeoTokenTest extends ContractTest {
         NeoInvokeFunction res = callInvokeFunction(hash160(defaultAccount.getScriptHash()),
                 publicKey(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
 
-        assertTrue(res.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        assertTrue(res.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(io.neow3j.contract.NeoToken.SCRIPT_HASH.toString()));
     }
 

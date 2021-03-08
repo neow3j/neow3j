@@ -3,8 +3,6 @@ package io.neow3j.protocol.core;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.AnyStackItem;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.ConsensusData;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
@@ -1523,15 +1521,15 @@ public class ResponseTest extends ResponseTester {
 
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BYTE_STRING));
-        assertThat(stackItem0.asByteString().getAsString(), is("transfer"));
+        assertThat(stackItem0.getString(), is("transfer"));
 
         StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
         assertThat(stackItem1.getType(), is(StackItemType.MAP));
-        assertThat(stackItem1.asMap().size(), equalTo(1));
-        BigInteger value = stackItem1.asMap()
-                .get(Numeric.hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96"))
-                .asInteger()
-                .getValue();
+        assertThat(stackItem1.getMap().size(), equalTo(1));
+        BigInteger value = stackItem1.getMap()
+                .get(new ByteStringStackItem(Numeric.hexStringToByteArray(
+                        "941343239213fa0e765f1027ce742f48db779a96")))
+                .getInteger();
         assertThat(value, is(new BigInteger("1")));
     }
 
@@ -1593,28 +1591,28 @@ public class ResponseTest extends ResponseTester {
 
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
-        assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
+        assertThat(stackItem0.getString(), is("transfer"));
 
         StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
         assertThat(stackItem1.getType(), is(StackItemType.BUFFER));
-        assertThat(stackItem1.asBuffer().getAsAddress(), is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
+        assertThat(stackItem1.getAddress(), is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
 
         StackItem stackItem2 = invokeFunction.getInvocationResult().getStack().get(2);
         assertThat(stackItem2.getType(), is(StackItemType.BUFFER));
-        assertArrayEquals(Numeric.hexStringToByteArray("c16a"), stackItem2.asBuffer().getValue());
-        assertThat(stackItem2.asBuffer().getAsNumber(), is(new BigInteger("27329")));
+        assertArrayEquals(Numeric.hexStringToByteArray("c16a"), stackItem2.getByteArray());
+        assertThat(stackItem2.getInteger(), is(new BigInteger("27329")));
 
         StackItem stackItem3 = invokeFunction.getInvocationResult().getStack().get(3);
         assertThat(stackItem3.getType(), is(StackItemType.POINTER));
-        assertThat(stackItem3.asPointer().getValue(), is(new BigInteger("123")));
+        assertThat(stackItem3.getPointer(), is(new BigInteger("123")));
 
         StackItem stackItem4 = invokeFunction.getInvocationResult().getStack().get(4);
         assertThat(stackItem4.getType(), is(StackItemType.MAP));
-        assertThat(stackItem4.asMap().size(), equalTo(1));
-        BigInteger value = stackItem4.asMap()
-                .get(Numeric.hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96"))
-                .asPointer()
-                .getValue();
+        assertThat(stackItem4.getMap().size(), equalTo(1));
+        BigInteger value = stackItem4.getMap()
+                .get(new ByteStringStackItem(Numeric.hexStringToByteArray(
+                        "941343239213fa0e765f1027ce742f48db779a96")))
+                .getPointer();
         assertThat(value, is(new BigInteger("12")));
     }
 
@@ -1734,7 +1732,7 @@ public class ResponseTest extends ResponseTester {
                 "Specified argument was out of the range of valid values. (Parameter 'index')"));
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
-        assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
+        assertThat(stackItem0.getString(), is("transfer"));
     }
 
     // Utilities Methods
@@ -2545,8 +2543,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(execution.getStack(), hasSize(1));
         assertThat(execution.getStack().get(0).getType(),
                 is(StackItemType.INTEGER));
-        assertThat(execution.getStack().get(0).asInteger().getValue(),
-                is(BigInteger.valueOf(1)));
+        assertThat(execution.getStack().get(0).getInteger(), is(BigInteger.valueOf(1)));
 
         assertThat(execution.getNotifications(), is(notNullValue()));
         assertThat(execution.getNotifications(), hasSize(2));
@@ -2558,11 +2555,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
-        ArrayStackItem notification0Array = notification0.getState().asArray();
+        List<StackItem> notification0Array = notification0.getState().getList();
 
-        AnyStackItem from0 = notification0Array.get(0).asAny();
-        String to0 = notification0Array.get(1).asByteString().getAsAddress();
-        BigInteger amount0 = notification0Array.get(2).asInteger().getValue();
+        StackItem from0 = notification0Array.get(0);
+        String to0 = notification0Array.get(1).getAddress();
+        BigInteger amount0 = notification0Array.get(2).getInteger();
 
         assertNotNull(from0);
         assertThat(to0, is("NX8GreRFGFK5wpGMWetpX93HmtrezGogzk"));
@@ -2575,11 +2572,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 
-        ArrayStackItem notification1Array = notification1.getState().asArray();
+        List<StackItem> notification1Array = notification1.getState().getList();
 
-        String eventName1 = notification1Array.get(0).asByteString().getAsString();
-        String from1 = notification1Array.get(1).asByteString().getAsAddress();
-        BigInteger amount1 = notification1Array.get(2).asInteger().getValue();
+        String eventName1 = notification1Array.get(0).getString();
+        String from1 = notification1Array.get(1).getAddress();
+        BigInteger amount1 = notification1Array.get(2).getInteger();
 
         assertThat(eventName1, is("Transfer"));
         assertThat(from1, is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));

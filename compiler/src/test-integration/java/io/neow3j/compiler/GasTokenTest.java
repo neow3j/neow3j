@@ -22,7 +22,7 @@ public class GasTokenTest extends ContractTest {
     @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(io.neow3j.contract.GasToken.SCRIPT_HASH.toString()));
     }
 

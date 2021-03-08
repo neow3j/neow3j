@@ -154,7 +154,7 @@ public class ContractTest {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
-        String scriptHashHex = execution.getStack().get(0).getArray().get(2).getHexString();
+        String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
         ScriptHash scriptHash = new ScriptHash(Numeric.hexStringToByteArray(scriptHashHex));
         return new SmartContract(scriptHash, neow3j);
     }

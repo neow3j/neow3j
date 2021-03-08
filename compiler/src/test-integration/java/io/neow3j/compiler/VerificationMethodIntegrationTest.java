@@ -32,7 +32,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
                         Signer.calledByEntry(defaultAccount.getScriptHash()))
                 .send();
 
-        assertTrue(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
@@ -43,7 +43,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
                         Signer.calledByEntry(committee.getScriptHash()))
                 .send();
 
-        assertFalse(response.getInvocationResult().getStack().get(0).asBoolean().getValue());
+        assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     static class VerificationMethodIntegrationTestContract {

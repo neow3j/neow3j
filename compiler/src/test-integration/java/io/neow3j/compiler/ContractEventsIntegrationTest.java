@@ -1,21 +1,22 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.integer;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import java.util.List;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.List;
+
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.integer;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class ContractEventsIntegrationTest extends ContractTest {
 
@@ -33,21 +34,22 @@ public class ContractEventsIntegrationTest extends ContractTest {
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
-        List<NeoApplicationLog.Execution.Notification> notifications = executions.get(0).getNotifications();
+        List<NeoApplicationLog.Execution.Notification> notifications =
+                executions.get(0).getNotifications();
         assertThat(notifications, hasSize(2));
 
         assertThat(notifications.get(0).getEventName(), is("event1"));
-        ArrayStackItem state = notifications.get(0).getState().asArray();
-        assertThat(state.get(0).asByteString().getAsString(), is("event text"));
-        assertThat(state.get(1).asInteger().getValue().intValue(), is(10));
+        List<StackItem> state = notifications.get(0).getState().getList();
+        assertThat(state.get(0).getString(), is("event text"));
+        assertThat(state.get(1).getInteger().intValue(), is(10));
 
         assertThat(notifications.get(1).getEventName(), is("displayName"));
-        state = notifications.get(1).getState().asArray();
-        assertThat(state.get(0).asByteString().getAsString(), is("event text"));
-        assertThat(state.get(1).asInteger().getValue().intValue(), is(10));
-        assertThat(state.get(2).asInteger().getValue().intValue(), is(1));
-        assertThat(state.get(3).asByteString().getAsString(), is("more text"));
-        assertThat(state.get(4).asByteString().getAsString(), is("an object"));
+        state = notifications.get(1).getState().getList();
+        assertThat(state.get(0).getString(), is("event text"));
+        assertThat(state.get(1).getInteger().intValue(), is(10));
+        assertThat(state.get(2).getInteger().intValue(), is(1));
+        assertThat(state.get(3).getString(), is("more text"));
+        assertThat(state.get(4).getString(), is("an object"));
     }
 
     @Test
@@ -56,13 +58,14 @@ public class ContractEventsIntegrationTest extends ContractTest {
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
-        List<NeoApplicationLog.Execution.Notification> notifications = executions.get(0).getNotifications();
+        List<NeoApplicationLog.Execution.Notification> notifications =
+                executions.get(0).getNotifications();
         assertThat(notifications, hasSize(1));
 
         assertThat(notifications.get(0).getEventName(), is("event4"));
-        ArrayStackItem state = notifications.get(0).getState().asArray();
-        assertThat(state.get(0).asInteger().getValue().intValue(), is(FEE_PER_BYTE));
-        assertThat(state.get(1).asInteger().getValue().intValue(), is(EXEC_FEE_FACTOR));
+        List<StackItem> state = notifications.get(0).getState().getList();
+        assertThat(state.get(0).getInteger().intValue(), is(FEE_PER_BYTE));
+        assertThat(state.get(1).getInteger().intValue(), is(EXEC_FEE_FACTOR));
     }
 
     @Test
@@ -74,14 +77,13 @@ public class ContractEventsIntegrationTest extends ContractTest {
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
-        List<NeoApplicationLog.Execution.Notification> notifications = executions.get(0).getNotifications();
+        List<NeoApplicationLog.Execution.Notification> notifications =
+                executions.get(0).getNotifications();
         NeoApplicationLog.Execution.Notification event = notifications.get(0);
-        ArrayStackItem state = event.getState().asArray();
-        assertThat(state.get(0).asByteString().getAsHexString(),
-                is("0f46dc4287b70117ce8354924b5cb3a47215ad93"));
-        assertThat(state.get(1).asByteString().getAsHexString(),
-                is("d6c712eb53b1a130f59fd4e5864bdac27458a509"));
-        assertThat(state.get(2).asArray().get(0).asInteger().getValue().intValue(), is(10));
+        List<StackItem> state = event.getState().getList();
+        assertThat(state.get(0).getHexString(), is("0f46dc4287b70117ce8354924b5cb3a47215ad93"));
+        assertThat(state.get(1).getHexString(), is("d6c712eb53b1a130f59fd4e5864bdac27458a509"));
+        assertThat(state.get(2).getList().get(0).getInteger().intValue(), is(10));
     }
 
     static class ContractEvents {
