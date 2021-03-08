@@ -19,9 +19,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class Hash160Test {
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void createFromValidHash() {
@@ -32,14 +37,32 @@ public class Hash160Test {
         assertThat(hash.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void createFromHashWithInvalidLength() {
-        new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8ee");
+    @Test
+    public void createFromHashWithOddLength() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("String argument is not hexadecimal.");
+        new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8eee");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void createFromMalformedHash() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("String argument is not hexadecimal.");
         new Hash160("g3ba2703c53263e8d6e522dc32203339dcd8eee9");
+    }
+
+    @Test
+    public void createFromTooShortHash() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Script hash must be 20 bytes long but was 19 bytes.");
+        new Hash160("23ba2703c53263e8d6e522dc32203339dcd8ee");
+    }
+
+    @Test
+    public void createFromTooLongHash() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Script hash must be 20 bytes long but was 32 bytes.");
+        new Hash160("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b");
     }
 
     @Test

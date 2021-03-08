@@ -52,6 +52,13 @@ public class Hash256Test {
     }
 
     @Test
+    public void createFromHashLessThan256Bits() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Hash must be 32 bytes long but was 31 bytes.");
+        new Hash256("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a2");
+    }
+
+    @Test
     public void createFromHashMoreThan256Bits() {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("Hash must be 32 bytes long but was 33 bytes.");
