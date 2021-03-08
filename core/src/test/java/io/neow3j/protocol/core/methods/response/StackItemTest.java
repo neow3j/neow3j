@@ -1,6 +1,5 @@
 package io.neow3j.protocol.core.methods.response;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
@@ -22,13 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -40,14 +39,12 @@ public class StackItemTest extends ResponseTester {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-    private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     private final static String BYTESTRING_JSON =
             "{\"type\":\"ByteString\",\"value\":\"V29vbG9uZw==\"}";
 
     @Test
     public void throwOnCastingToMapFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -57,7 +54,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToListFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -67,7 +64,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToPointerFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -77,7 +74,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToInteropInterfaceFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -87,7 +84,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToAddressFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -97,7 +94,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToBooleanFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -107,7 +104,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToHexStringFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Boolean\",\"value\":\"true\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Boolean\",\"value\":\"true\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -117,7 +114,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToStringFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Pointer\",\"value\":\"1124\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Pointer\",\"value\":\"1124\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -127,7 +124,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToByteArrayFromIllegalType() throws IOException {
-        StackItem rawItem = OBJECT_MAPPER.readValue("{\"type\":\"Boolean\",\"value\":\"true\"}",
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Boolean\",\"value\":\"true\"}",
                 StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -137,7 +134,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToIntegerFromIllegalType() throws IOException {
-        StackItem item = OBJECT_MAPPER.readValue("{\"type\":\"InteropInterface\"," +
+        StackItem item = getObjectMapper().readValue("{\"type\":\"InteropInterface\"," +
                 "\"value\":\"0x01020304\"}", StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
@@ -148,7 +145,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnGettingValuefromNullIntegerStackItem() throws IOException {
-        StackItem item = OBJECT_MAPPER.readValue("{\"type\":\"Integer\"," +
+        StackItem item = getObjectMapper().readValue("{\"type\":\"Integer\"," +
                 "\"value\":\"\"}", StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
@@ -159,7 +156,7 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializeAnyStackItem() throws IOException {
         String json = "{\"type\":\"Any\", \"value\":null}";
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getType(), is(StackItemType.ANY));
         assertThat(item.getValue(), is(nullValue()));
 
@@ -171,7 +168,7 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializePointerStackItem() throws IOException {
         String json = "{\"type\":\"Pointer\", \"value\":\"123456\"}";
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getType(), is(StackItemType.POINTER));
         assertThat(item.getPointer(), is(new BigInteger("123456")));
 
@@ -182,7 +179,7 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void testDeserializeByteStringStackItem() throws IOException {
-        StackItem item = OBJECT_MAPPER.readValue(BYTESTRING_JSON, StackItem.class);
+        StackItem item = getObjectMapper().readValue(BYTESTRING_JSON, StackItem.class);
         assertEquals(StackItemType.BYTE_STRING, item.getType());
         assertThat(item.getHexString(), is("576f6f6c6f6e67"));
         assertThat(item.getByteArray(), is(Numeric.hexStringToByteArray("576f6f6c6f6e67")));
@@ -190,13 +187,13 @@ public class StackItemTest extends ResponseTester {
 
         String json = "{\"type\":\"ByteString\", \"value\":\"aWQ=\"}";
 
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getByteArray(), is(Numeric.hexStringToByteArray("6964")));
         assertThat(item.getInteger(), is(new BigInteger("25705")));
 
         // The script hash hex string in little-endian format
         json = "{\"type\":\"ByteString\", \"value\":\"1Cz3qTHOPEZVD9kN5IJYP8XqcBo=\"}";
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getAddress(), is("NfFrJpFaLPCVuRRPhmBYRmZqSQLJ5fPuhz"));
         assertThat(item.getHexString(), is("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
         assertThat(item.getByteArray(),
@@ -211,19 +208,19 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializeBufferStackItem() throws IOException {
         String json = "{\"type\":\"Buffer\", \"value\":\"ew==\"}";
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getInteger(), is(new BigInteger("123")));
 
         json = "{\"type\":\"Buffer\", \"value\":\"V29vbG9uZw==\"}";
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getString(), is("Woolong"));
 
         json = "{\"type\":\"Buffer\", \"value\":\"1Cz3qTHOPEZVD9kN5IJYP8XqcBo=\"}";
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getAddress(), is("NfFrJpFaLPCVuRRPhmBYRmZqSQLJ5fPuhz"));
 
         json = "{\"type\":\"Buffer\", \"value\":\"V29vbG9uZw==\"}";
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getByteArray(), is(Numeric.hexStringToByteArray("576f6f6c6f6e67")));
 
         BufferStackItem other = new BufferStackItem(Numeric.hexStringToByteArray("576f6f6c6f6e67"));
@@ -234,7 +231,7 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializeIntegerStackItem() throws IOException {
         String json = "{\"type\":\"Integer\",\"value\":\"1124\"}";
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertEquals(StackItemType.INTEGER, item.getType());
         assertEquals(new BigInteger("1124"), item.getInteger());
 
@@ -246,12 +243,12 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializeBooleanStackItem() throws IOException {
         String json = "{\"type\":\"Boolean\", \"value\":\"true\"}";
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertEquals(StackItemType.BOOLEAN, item.getType());
         assertTrue(item.getBoolean());
 
         json = "{\"type\":\"Boolean\", \"value\":false}";
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertFalse(item.getBoolean());
 
         BooleanStackItem other = new BooleanStackItem(false);
@@ -276,7 +273,7 @@ public class StackItemTest extends ResponseTester {
                 + "  ]"
                 + "}";
 
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertEquals(StackItemType.ARRAY, item.getType());
         assertEquals(2, item.getList().size());
         assertEquals(StackItemType.BOOLEAN, item.getList().get(0).getType());
@@ -290,7 +287,7 @@ public class StackItemTest extends ResponseTester {
         assertEquals(other.hashCode(), item.hashCode());
 
         json = "{\"type\":\"Array\", \"value\":[]}";
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertEquals(0, item.getList().size());
 
         other = new ArrayStackItem(new ArrayList<>());
@@ -329,7 +326,7 @@ public class StackItemTest extends ResponseTester {
                 + "  ]"
                 + "}";
 
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertEquals(StackItemType.MAP, item.getType());
         Map<StackItem, StackItem> map = item.getMap();
         assertEquals(2, map.size());
@@ -350,7 +347,7 @@ public class StackItemTest extends ResponseTester {
         assertEquals(other.hashCode(), item.hashCode());
 
         json = "{\"type\":\"Map\", \"value\":[]}";
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         assertTrue(item.getMap().isEmpty());
         other = new MapStackItem(new HashMap<>());
         assertEquals(other, item);
@@ -360,7 +357,7 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializeInteropInterfaceStackItem() throws IOException {
         String json = "{\"type\":\"InteropInterface\", \"value\":\"dGVzdGluZw==\"}";
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
         assertThat(item.getInteropInterface(), is("dGVzdGluZw=="));
 
@@ -386,7 +383,7 @@ public class StackItemTest extends ResponseTester {
                 + "  ]"
                 + "}";
 
-        StackItem item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertEquals(StackItemType.STRUCT, item.getType());
         List<StackItem> array = item.getList();
         assertEquals(2, array.size());
@@ -402,7 +399,7 @@ public class StackItemTest extends ResponseTester {
 
         json = "{\"type\":\"Struct\", \"value\":[]}";
 
-        item = OBJECT_MAPPER.readValue(json, StackItem.class);
+        item = getObjectMapper().readValue(json, StackItem.class);
         other = new StructStackItem(new ArrayList<>());
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
