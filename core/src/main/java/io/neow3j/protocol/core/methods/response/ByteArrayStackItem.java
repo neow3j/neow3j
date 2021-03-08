@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.BigIntegers;
@@ -55,7 +55,7 @@ abstract class ByteArrayStackItem extends StackItem {
     public String getAddress() {
         nullCheck();
         try {
-            return new ScriptHash(value).toAddress();
+            return new Hash160(value).toAddress();
         } catch (IllegalArgumentException e) {
             throw new StackItemCastException(e);
         }

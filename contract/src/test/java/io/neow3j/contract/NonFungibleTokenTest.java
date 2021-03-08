@@ -14,6 +14,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.core.methods.response.TokenState;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -22,6 +23,7 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -107,7 +109,8 @@ public class NonFungibleTokenTest {
     public void testOwnerOf_returnInvalidAddress() throws IOException {
         setUpWireMockForInvokeFunction("ownerOf", "response_invalid_address.json");
         exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage("did not contain script hash in expected format");
+        exceptionRule.expectMessage(new StringContains(
+                "Return type did not contain script hash in expected format."));
         nfTestToken.ownerOf(new byte[]{1});
     }
 

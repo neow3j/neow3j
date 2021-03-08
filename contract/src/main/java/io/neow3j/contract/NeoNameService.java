@@ -5,11 +5,13 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.model.types.StackItemType.MAP;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.MapStackItem;
 import io.neow3j.protocol.core.methods.response.NameState;
@@ -20,6 +22,7 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -42,6 +45,13 @@ public class NeoNameService extends NonFungibleToken {
     private static final String GET_RECORD = "getRecord";
     private static final String DELETE_RECORD = "deleteRecord";
     private static final String RESOLVE = "resolve";
+
+    private static final ByteStringStackItem NAME_PROPERTY =
+            new ByteStringStackItem("name".getBytes(UTF_8));
+    private static final ByteStringStackItem DESC_PROPERTY =
+            new ByteStringStackItem("description".getBytes(UTF_8));
+    private static final ByteStringStackItem EXPI_PROPERTY =
+            new ByteStringStackItem("expiration".getBytes(UTF_8));
 
     private static final String PROPERTIES = "properties";
 
@@ -233,7 +243,7 @@ public class NeoNameService extends NonFungibleToken {
         } else if (type.equals(RecordType.CNAME)) {
             checkRegexMatch(NAME_REGEX_PATTERN, data);
         } else if (type.equals(RecordType.TXT)) {
-            byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
+            byte[] bytes = data.getBytes(UTF_8);
             if (bytes.length > 255) {
                 throw new IllegalArgumentException("The provided data is not valid for the record" +
                         " type TXT.");
@@ -300,7 +310,7 @@ public class NeoNameService extends NonFungibleToken {
      */
     public Hash160 ownerOf(String name) throws IOException {
         checkDomainNameAvailability(name, false);
-        return ownerOf(name.getBytes(StandardCharsets.UTF_8));
+        return ownerOf(name.getBytes(UTF_8));
     }
 
     /**
@@ -311,7 +321,7 @@ public class NeoNameService extends NonFungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public NameState properties(String name) throws IOException {
-        return properties(name.getBytes(StandardCharsets.UTF_8));
+        return properties(name.getBytes(UTF_8));
     }
 
     /**
@@ -338,14 +348,11 @@ public class NeoNameService extends NonFungibleToken {
             throw new UnexpectedReturnTypeException(stackItem.getType(), MAP);
         }
 
-        MapStackItem map = stackItem.asMap();
-        StackItem name = map.get("name");
-        StackItem description = map.get("description");
-        StackItem expiration = map.get("expiration");
-
-        return new NameState(name.asByteString().getAsString(),
-                description.asByteString().getAsString(),
-                expiration.asInteger().getValue().intValue());
+        Map<StackItem, StackItem> map = stackItem.getMap();
+        String name = map.get(NAME_PROPERTY).getString();
+        String description = map.get(DESC_PROPERTY).getString();
+        BigInteger expiration = map.get(EXPI_PROPERTY).getInteger();
+        return new NameState(name, description, expiration.intValue());
     }
 
     /**
@@ -363,7 +370,7 @@ public class NeoNameService extends NonFungibleToken {
     public TransactionBuilder transfer(Wallet wallet, Hash160 to, String name)
             throws IOException {
         checkDomainNameAvailability(name, false);
-        return transfer(wallet, to, name.getBytes(StandardCharsets.UTF_8));
+        return transfer(wallet, to, name.getBytes(UTF_8));
     }
 
 }

@@ -37,7 +37,7 @@ public abstract class ListLikeStackItem extends StackItem {
         return value.stream()
                 .map(StackItem::toString)
                 .reduce("", (a, b) ->  a + ", " + b)
-                .substring(1); // remove the first comma.
+                .substring(2); // remove the first comma and space
     }
 
     @Override

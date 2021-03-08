@@ -25,8 +25,10 @@ import java.util.Set;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -579,8 +581,9 @@ public class StackItemTest extends ResponseTester {
         map.put(new ByteStringStackItem("key2".getBytes(UTF_8)),
                 new IntegerStackItem(BigInteger.ZERO));
         MapStackItem item = new MapStackItem(map);
-        assertThat(item.valueToString(), is(
-                "ByteString{value='6b657932'} -> Integer{value='0'}\n"
-                        + "ByteString{value='6b657931'} -> Integer{value='1'}"));
+        assertThat(item.valueToString(), containsString(
+                "ByteString{value='6b657932'} -> Integer{value='0'}"));
+        assertThat(item.valueToString(), containsString(
+                "ByteString{value='6b657931'} -> Integer{value='1'}"));
     }
 }

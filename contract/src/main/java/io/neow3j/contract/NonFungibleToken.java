@@ -5,6 +5,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.TokenState;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
 
@@ -105,7 +106,7 @@ public class NonFungibleToken extends Token {
         }
         try {
             return Hash160.fromAddress(item.getAddress());
-        } catch (IllegalArgumentException e) {
+        } catch (StackItemCastException e) {
             throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
                     "expected format.", e);
         }
