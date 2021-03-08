@@ -47,8 +47,8 @@ public class TransactionSigner {
                 .collect(Collectors.toList());
     }
 
-    public TransactionSigner(String account, List<WitnessScope> scopes, List<String> allowedContracts,
-            List<String> allowedGroups) {
+    public TransactionSigner(String account, List<WitnessScope> scopes,
+            List<String> allowedContracts, List<String> allowedGroups) {
         this.account = account;
         this.scopes = scopes;
         this.allowedContracts = allowedContracts;
@@ -74,7 +74,6 @@ public class TransactionSigner {
     public List<String> getAllowedGroups() {
         return allowedGroups;
     }
-
 
 
     @Override
@@ -106,4 +105,5 @@ public class TransactionSigner {
                 ", allowedGroups=" + allowedGroups +
                 '}';
     }
+
 }

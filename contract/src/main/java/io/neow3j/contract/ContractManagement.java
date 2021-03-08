@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 
@@ -15,7 +16,6 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -81,8 +81,8 @@ public class ContractManagement extends SmartContract {
         }
         int id = stackItem.asArray().get(0).asInteger().getValue().intValue();
         int updateCounter = stackItem.asArray().get(1).asInteger().getValue().intValue();
-        String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString()
-                .getAsHexString());
+        Hash160 hash = new Hash160(
+                reverseHexString(stackItem.asArray().get(2).asByteString().getAsHexString()));
 
         // TODO: 01.02.21 Guil:
         // We need to fix how we get from StackItem to a NefFile/ContractManifest

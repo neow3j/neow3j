@@ -2,12 +2,15 @@ package io.neow3j.compiler;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
@@ -26,7 +29,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -93,8 +96,8 @@ public class ContractTest {
     protected static Neow3j neow3j;
     protected static SmartContract contract;
     protected static String contractName;
-    protected static String deployTxHash;
-    protected static String blockHashOfDeployTx;
+    protected static Hash256 deployTxHash;
+    protected static Hash256 blockHashOfDeployTx;
 
     @Rule
     public TestName testName = new TestName();
@@ -109,7 +112,7 @@ public class ContractTest {
     protected static void setUp(String name) throws Throwable {
         defaultAccount = Account.fromWIF(DEFAULT_ACCOUNT_WIF);
         committee = Account.createMultiSigAccount(
-                Arrays.asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
+                singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         neow3j.setNetworkMagicNumber(769);
@@ -133,7 +136,8 @@ public class ContractTest {
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
                 .signers(Signer.calledByEntry(committee.getScriptHash()))
-                .sign().send();
+                .sign()
+                .send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
         }
@@ -182,14 +186,14 @@ public class ContractTest {
             throws IOException {
 
         if (signAsCommittee) {
-            return contract.callInvokeFunction(function, Arrays.asList(params),
+            return contract.callInvokeFunction(function, asList(params),
                     Signer.global(committee.getScriptHash()));
         }
         if (signWithDefaultAccount) {
-            return contract.callInvokeFunction(function, Arrays.asList(params),
+            return contract.callInvokeFunction(function, asList(params),
                     Signer.global(defaultAccount.getScriptHash()));
         }
-        return contract.callInvokeFunction(function, Arrays.asList(params));
+        return contract.callInvokeFunction(function, asList(params));
     }
 
     /**
@@ -215,7 +219,7 @@ public class ContractTest {
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    protected String invokeFunction(ContractParameter... params) throws Throwable {
+    protected Hash256 invokeFunction(ContractParameter... params) throws Throwable {
         return invokeFunction(getTestName(), params);
     }
 
@@ -229,7 +233,7 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static String transferGas(Hash160 to, String amount) throws Throwable {
+    protected static Hash256 transferGas(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
         return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
                 new BigDecimal(amount), committee.getScriptHash())
@@ -248,7 +252,7 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static String transferNeo(Hash160 to, String amount) throws Throwable {
+    protected static Hash256 transferNeo(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
         return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
                 new BigDecimal(amount), committee.getScriptHash())
@@ -265,7 +269,7 @@ public class ContractTest {
      * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    protected String invokeFunction(String function, ContractParameter... params)
+    protected Hash256 invokeFunction(String function, ContractParameter... params)
             throws Throwable {
 
         Signer signer;
@@ -296,8 +300,8 @@ public class ContractTest {
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected String invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
-        String txHash = invokeFunction(params);
+    protected Hash256 invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
+        Hash256 txHash = invokeFunction(params);
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
@@ -312,15 +316,15 @@ public class ContractTest {
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected String invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
+    protected Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
             throws Throwable {
 
-        String txHash = invokeFunction(function, params);
+        Hash256 txHash = invokeFunction(function, params);
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 
-    protected void assertVMExitedWithHalt(String hash) throws IOException {
+    protected void assertVMExitedWithHalt(Hash256 hash) throws IOException {
         NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
         assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
                 is(VM_STATE_HALT));

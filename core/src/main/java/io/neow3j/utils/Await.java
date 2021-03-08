@@ -5,16 +5,19 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -56,7 +59,7 @@ public class Await {
      * @param txHash The transaction hash.
      * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
      */
-    public static void waitUntilTransactionIsExecuted(String txHash, Neow3j neow3j) {
+    public static void waitUntilTransactionIsExecuted(Hash256 txHash, Neow3j neow3j) {
         waitUntil(callableGetTxHash(txHash, neow3j), notNullValue());
     }
 
@@ -65,7 +68,7 @@ public class Await {
      * or equal to {@code amount}.
      *
      * @param amount The amount to compare the balance to.
-     * @param token The token's script hash.
+     * @param token  The token's script hash.
      * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
      */
     public static void waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(String amount,
@@ -83,12 +86,11 @@ public class Await {
         return () -> {
             try {
                 NeoGetContractState response =
-                        neow3j.getContractState(contractHash160.toString()).send();
+                        neow3j.getContractState(contractHash160).send();
                 if (response.hasError()) {
                     return false;
                 }
-                return response.getContractState().getHash().equals("0x" +
-                        contractHash160.toString());
+                return response.getContractState().getHash().equals(contractHash160);
             } catch (IOException e) {
                 return false;
             }
@@ -102,7 +104,7 @@ public class Await {
                 List<Nep17Balance> balances = neow3j.getNep17Balances(address).send()
                         .getBalances().getBalances();
                 return balances.stream()
-                        .filter(b -> b.getAssetHash().equals("0x" + tokenHash160.toString()))
+                        .filter(b -> b.getAssetHash().equals(tokenHash160))
                         .findFirst()
                         .map(b -> Long.valueOf(b.getAmount()))
                         .orElse(0L);
@@ -112,7 +114,7 @@ public class Await {
         };
     }
 
-    private static Callable<Long> callableGetTxHash(String txHash, Neow3j neow3j) {
+    private static Callable<Long> callableGetTxHash(Hash256 txHash, Neow3j neow3j) {
         return () -> {
             try {
                 NeoGetTransactionHeight tx = neow3j.getTransactionHeight(txHash).send();
@@ -137,4 +139,5 @@ public class Await {
             }
         };
     }
+
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.contract.Hash256;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +15,7 @@ public class Transaction {
 
     @JsonProperty("hash")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String hash;
+    private Hash256 hash;
 
     @JsonProperty("size")
     private long size;
@@ -55,7 +57,7 @@ public class Transaction {
 
     @JsonProperty("blockhash")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private String blockHash;
+    private Hash256 blockHash;
 
     @JsonProperty("confirmations")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -72,11 +74,9 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(String hash, long size, int version, Long nonce, String sender,
-            String sysFee,
-            String netFee, Long validUntilBlock, List<TransactionSigner> signers,
-            List<TransactionAttribute> attributes, String script,
-            List<NeoWitness> witnesses) {
+    public Transaction(Hash256 hash, long size, int version, Long nonce, String sender,
+            String sysFee, String netFee, Long validUntilBlock, List<TransactionSigner> signers,
+            List<TransactionAttribute> attributes, String script, List<NeoWitness> witnesses) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -91,12 +91,10 @@ public class Transaction {
         this.witnesses = witnesses;
     }
 
-    public Transaction(String hash, long size, int version, Long nonce, String sender,
-            String sysFee,
-            String netFee, Long validUntilBlock, List<TransactionSigner> signers,
-            List<TransactionAttribute> attributes, String script,
-            List<NeoWitness> witnesses, String blockHash, int confirmations,
-            long blockTime, String vmState) {
+    public Transaction(Hash256 hash, long size, int version, Long nonce, String sender,
+            String sysFee, String netFee, Long validUntilBlock, List<TransactionSigner> signers,
+            List<TransactionAttribute> attributes, String script, List<NeoWitness> witnesses,
+            Hash256 blockHash, int confirmations, long blockTime, String vmState) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -115,7 +113,7 @@ public class Transaction {
         this.vmState = vmState;
     }
 
-    public String getHash() {
+    public Hash256 getHash() {
         return hash;
     }
 
@@ -163,7 +161,7 @@ public class Transaction {
         return witnesses;
     }
 
-    public String getBlockHash() {
+    public Hash256 getBlockHash() {
         return blockHash;
     }
 
@@ -208,11 +206,10 @@ public class Transaction {
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(getHash(), getSize(), getVersion(), getNonce(), getSender(), getSysFee(),
-                        getNetFee(), getValidUntilBlock(), getSigners(), getAttributes(),
-                        getScript(), getWitnesses(), getBlockHash(), getConfirmations(),
-                        getBlockTime(), getVMState());
+        return Objects.hash(getHash(), getSize(), getVersion(), getNonce(), getSender(),
+                getSysFee(), getNetFee(), getValidUntilBlock(), getSigners(), getAttributes(),
+                getScript(), getWitnesses(), getBlockHash(), getConfirmations(), getBlockTime(),
+                getVMState());
     }
 
     @Override
@@ -236,4 +233,5 @@ public class Transaction {
                 ", vmState=" + vmState +
                 '}';
     }
+
 }

@@ -302,7 +302,7 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Only committee members can send transactions with high " +
-                                    "priority.");
+                "priority.");
 
         new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
@@ -343,9 +343,8 @@ public class TransactionBuilderTest {
         TransactionAttribute[] attrArray = attrs.toArray(new TransactionAttribute[0]);
 
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("A transaction cannot have " +
-                                    "more than " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES +
-                                    " attributes.");
+        exceptionRule.expectMessage("A transaction cannot have more than " +
+                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
 
         new TransactionBuilder(neow).attributes(attrArray);
     }
@@ -430,7 +429,7 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("Wallet does not contain enough accounts (with decrypted " +
-                                    "private keys)");
+                "private keys)");
         b.sign();
     }
 
@@ -645,7 +644,7 @@ public class TransactionBuilderTest {
         // This is not the actual transaction id of the above built transaction but merely the
         // one used in the file `responses/sendrawtransaction.json`.
         assertThat(response.getSendRawTransaction().getHash(), is(
-                "0x830816f0c801bcabf919dfa1a90d7b9a4f867482cb4d18d0631a5aa6daefab6a"));
+                new Hash256("0x830816f0c801bcabf919dfa1a90d7b9a4f867482cb4d18d0631a5aa6daefab6a")));
     }
 
     @Test
@@ -732,8 +731,7 @@ public class TransactionBuilderTest {
 
         // The script that's in the `invokefunction_transfer_neo.json` response file.
         String scriptInResponse =
-                "CxUMFJQTQyOSE/oOdl8QJ850L0jbd5qWDBQGSl3MDxYsg0c9Aok46V" +
-                "+3dhMechTAHwwIdHJhbnNmZXIMFIOrBnmtVcBQoTrUP1k26nP16x72QWJ9W1I=";
+                "CxUMFJQTQyOSE/oOdl8QJ850L0jbd5qWDBQGSl3MDxYsg0c9Aok46V+3dhMechTAHwwIdHJhbnNmZXIMFIOrBnmtVcBQoTrUP1k26nP16x72QWJ9W1I=";
         assertThat(i.getResult().getScript(), is(scriptInResponse));
     }
 
@@ -889,7 +887,7 @@ public class TransactionBuilderTest {
                 .signers(Signer.calledByEntry(account1.getScriptHash()));
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("The vm exited due to the following exception: Value was " +
-                                    "either too large or too small for an Int32.");
+                "either too large or too small for an Int32.");
         b.buildTransaction();
     }
 
@@ -989,7 +987,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        String txHash = "efd2ef6d0a68e01c2170110aab9d621df3e129dccae14e7ffc2b7b5822563885";
+        Hash256 txHash = new Hash256("efd2ef6d0a68e01c2170110aab9d621df3e129dccae14e7ffc2b7b5822563885");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
@@ -1042,8 +1040,8 @@ public class TransactionBuilderTest {
 
     private NeoGetBlock createBlock(int number) {
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock("", 0L, 0, "", "", 123456789, number, "nonce", null, null,
-                new ArrayList<>(), 1, "next");
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, "nonce", null,
+                null, new ArrayList<>(), 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }
@@ -1052,13 +1050,13 @@ public class TransactionBuilderTest {
             io.neow3j.protocol.core.methods.response.Transaction tx) {
 
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock("", 0L, 0, "", "", 123456789, number, "nonce", null, null,
-                singletonList(tx), 1, "next");
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, "nonce", null,
+                null, singletonList(tx), 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }
 
-    private io.neow3j.protocol.core.methods.response.Transaction createTx(String txHash) {
+    private io.neow3j.protocol.core.methods.response.Transaction createTx(Hash256 txHash) {
         return new io.neow3j.protocol.core.methods.response.Transaction(txHash, 0, 0, 0L, "", "",
                 "", 0L, null, null, null, null);
     }
@@ -1081,7 +1079,7 @@ public class TransactionBuilderTest {
         tx.send();
         NeoApplicationLog applicationLog = tx.getApplicationLog();
         assertThat(applicationLog.getTransactionId(),
-                is("0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1"));
+                is(new Hash256("0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1")));
     }
 
     @Test

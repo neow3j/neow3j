@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.contract.Hash160;
 import io.neow3j.protocol.core.Response;
 
 import java.math.BigInteger;
@@ -69,7 +70,7 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Balances> 
     public static class Nep17Balance {
 
         @JsonProperty("assethash")
-        private String assetHash;
+        private Hash160 assetHash;
 
         @JsonProperty("amount")
         private String amount;
@@ -80,13 +81,13 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Balances> 
         public Nep17Balance() {
         }
 
-        public Nep17Balance(String assetHash, String amount, BigInteger lastUpdatedBlock) {
+        public Nep17Balance(Hash160 assetHash, String amount, BigInteger lastUpdatedBlock) {
             this.assetHash = assetHash;
             this.amount = amount;
             this.lastUpdatedBlock = lastUpdatedBlock;
         }
 
-        public String getAssetHash() {
+        public Hash160 getAssetHash() {
             return assetHash;
         }
 
@@ -100,8 +101,12 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Balances> 
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Nep17Balance)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Nep17Balance)) {
+                return false;
+            }
             Nep17Balance that = (Nep17Balance) o;
             return Objects.equals(assetHash, that.assetHash) &&
                     Objects.equals(amount, that.amount) &&

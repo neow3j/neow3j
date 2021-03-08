@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
@@ -230,7 +231,7 @@ public class TransactionTest {
                 new ArrayList<>());
 
         assertThat(tx.getTxId(),
-                is("5624d97a8f1c9d580399c5682d512641171b5d50d199922f6a5f033a0fac15b5"));
+                is(new Hash256("5624d97a8f1c9d580399c5682d512641171b5d50d199922f6a5f033a0fac15b5")));
     }
 
     @Test
