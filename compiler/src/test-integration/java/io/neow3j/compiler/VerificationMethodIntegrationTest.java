@@ -28,7 +28,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
     @Test
     public void callVerifyWithContractOwner() throws Throwable {
         NeoInvokeContractVerify response = neow3j
-                .invokeContractVerify(contract.getScriptHash().toString(),
+                .invokeContractVerify(contract.getScriptHash(),
                         singletonList(string("hello, world!")),
                         Signer.calledByEntry(defaultAccount.getScriptHash()))
                 .send();
@@ -39,7 +39,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
     @Test
     public void callVerifyWithContractOwner_fromString() throws Throwable {
         NeoInvokeContractVerify response = neow3j
-                .invokeContractVerify(contract.getScriptHash(),
+                .invokeContractVerify(contract.getScriptHash().toString(),
                         singletonList(string("hello, world!")),
                         Signer.calledByEntry(defaultAccount.getScriptHash()))
                 .send();

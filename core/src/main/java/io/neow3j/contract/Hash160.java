@@ -153,10 +153,10 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
         return fromScript(Numeric.hexStringToByteArray(script));
     }
 
-    private void checkAndThrowHashLength(byte[] scriptHash) {
-        if (scriptHash.length != NeoConstants.HASH160_SIZE) {
+    private void checkAndThrowHashLength(byte[] hash) {
+        if (hash.length != NeoConstants.HASH160_SIZE) {
             throw new IllegalArgumentException("Script hash must be " + NeoConstants.HASH160_SIZE +
-                    " bytes long but was " + scriptHash.length + " bytes.");
+                    " bytes long but was " + hash.length + " bytes.");
         }
     }
 
