@@ -181,12 +181,12 @@ public class NeoToken extends FungibleToken {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
         Map<ECPublicKey, Integer> validators = new HashMap<>();
-        for (StackItem valItem : arrayItem.getArray()) {
+        for (StackItem valItem : arrayItem.getList()) {
             if (!valItem.getType().equals(STRUCT)) {
                 throw new UnexpectedReturnTypeException(valItem.getType(), STRUCT);
             }
-            ECPublicKey key = extractPublicKey(valItem.getArray()[0]);
-            StackItem nrItem = valItem.getArray()[1];
+            ECPublicKey key = extractPublicKey(valItem.getList().get(0));
+            StackItem nrItem = valItem.getList().get(1);
             if (!nrItem.getType().equals(INTEGER)) {
                 throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
             }
@@ -216,7 +216,7 @@ public class NeoToken extends FungibleToken {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
         List<ECPublicKey> valKeys = new ArrayList<>();
-        for (StackItem keyItem : arrayItem.getArray()) {
+        for (StackItem keyItem : arrayItem.getList()) {
             valKeys.add(extractPublicKey(keyItem));
         }
         return valKeys;

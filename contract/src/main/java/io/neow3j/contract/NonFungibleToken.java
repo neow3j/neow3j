@@ -4,10 +4,12 @@ import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.MAP;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.MapStackItem;
 import io.neow3j.protocol.core.methods.response.TokenState;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -17,6 +19,7 @@ import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -135,10 +138,11 @@ public class NonFungibleToken extends Token {
         StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
-            Map<StackItem, StackItem> mapStackItem = item.getMap();
+            Map<StackItem, StackItem> map = item.getMap();
+
             return new TokenState(
-                    mapStackItem.get("name").getString(),
-                    mapStackItem.get("description").getString());
+                    map.get(new ByteStringStackItem("name".getBytes(UTF_8))).getString(),
+                    map.get(new ByteStringStackItem("description".getBytes(UTF_8))).getString());
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
     }
