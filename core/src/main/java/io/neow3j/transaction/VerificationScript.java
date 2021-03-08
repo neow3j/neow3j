@@ -5,8 +5,8 @@ import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCO
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.Hash160;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -103,11 +103,11 @@ public class VerificationScript extends NeoSerializable {
      *
      * @return the script hash.
      */
-    public ScriptHash getScriptHash() {
+    public Hash160 getScriptHash() {
         if (this.script.length == 0) {
             return null;
         } else {
-            return ScriptHash.fromScript(this.script);
+            return Hash160.fromScript(this.script);
         }
     }
 

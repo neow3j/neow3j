@@ -1,7 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.ScriptHash;
-import io.neow3j.devpack.Hash160;
+import io.neow3j.contract.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
@@ -75,12 +74,12 @@ public class ArraysConverterIntegrationTest extends ContractTest {
         List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
         List<StackItem> hash160Array = arrayStackItem.get(0).getList();
         assertThat(hash160Array.get(0).getHexString(),
-                is(ScriptHash.ZERO.toString()));
+                is(Hash160.ZERO.toString()));
         assertThat(hash160Array.get(1).getHexString(),
                 is(Numeric.reverseHexString("0f46dc4287b70117ce8354924b5cb3a47215ad93")));
         hash160Array = arrayStackItem.get(1).getList();
         assertThat(hash160Array.get(0).getHexString(),
-                is(ScriptHash.ZERO.toString()));
+                is(Hash160.ZERO.toString()));
     }
 
     @Test
@@ -90,7 +89,7 @@ public class ArraysConverterIntegrationTest extends ContractTest {
         assertThat(arrayStackItem.get(0).getInteger().intValue(), is(1));
         assertThat(arrayStackItem.get(1).getString(), is("hello, world!"));
         assertThat(arrayStackItem.get(2).getHexString(),
-                is(ScriptHash.ZERO.toString()));
+                is(Hash160.ZERO.toString()));
     }
 
     static class ArraysConverterIntegrationTestContract {
@@ -116,19 +115,19 @@ public class ArraysConverterIntegrationTest extends ContractTest {
             return new int[][]{new int[]{0, 1, 3}, new int[]{0}};
         }
 
-        public static Hash160[][] createArrayOfHash160Arrays() {
-            return new Hash160[][]{
-                    new Hash160[]{
-                            Hash160.zero(),
+        public static io.neow3j.devpack.Hash160[][] createArrayOfHash160Arrays() {
+            return new io.neow3j.devpack.Hash160[][]{
+                    new io.neow3j.devpack.Hash160[]{
+                            io.neow3j.devpack.Hash160.zero(),
                             addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj")
-                    }, new Hash160[]{
-                            Hash160.zero()
-                    }};
+                    }, new io.neow3j.devpack.Hash160[]{
+                    io.neow3j.devpack.Hash160.zero()
+            }};
         }
 
         public static Object[] createObjectArray() {
-            return new Object[]{1, "hello, world!", Hash160.zero()};
+            return new Object[]{1, "hello, world!", io.neow3j.devpack.Hash160.zero()};
         }
-
     }
+
 }

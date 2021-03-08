@@ -18,7 +18,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.Files;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -29,6 +29,7 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -39,16 +40,17 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Collections;
 import java.util.Map;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 public class WalletTest {
 
-    private static final ScriptHash NEO_SCRIPT_HASH = new ScriptHash(
-            "de5f57d430d3dece511cf975a8d37848cb9e0525");
-    private static final ScriptHash GAS_SCRIPT_HASH = new ScriptHash(
-            "668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
+    private static final Hash160 NEO_SCRIPT_HASH =
+            new Hash160("de5f57d430d3dece511cf975a8d37848cb9e0525");
+    private static final Hash160 GAS_SCRIPT_HASH =
+            new Hash160("668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -108,7 +110,7 @@ public class WalletTest {
         assertEquals(2, w.getAccounts().size());
         assertEquals(NEP2.DEFAULT_SCRYPT_PARAMS, w.getScryptParams());
 
-        Account a = w.getAccount(ScriptHash.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
+        Account a = w.getAccount(Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
         assertEquals("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke", a.getAddress());
         assertEquals("Account1", a.getLabel());
         assertFalse(a.isLocked());
@@ -119,7 +121,7 @@ public class WalletTest {
                 nep6Wallet.getAccounts().get(0).getContract().getScript()
         );
 
-        a = w.getAccount(ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy"));
+        a = w.getAccount(Hash160.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy"));
         assertEquals("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy", a.getAddress());
         assertEquals("Account2", a.getLabel());
         assertFalse(a.isDefault());
@@ -168,7 +170,7 @@ public class WalletTest {
 
         final String address = "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy";
         Wallet w = Wallet.create();
-        assertFalse(w.removeAccount(ScriptHash.fromAddress(address)));
+        assertFalse(w.removeAccount(Hash160.fromAddress(address)));
         Account acct1 = new Account(ECKeyPair.createEcKeyPair());
         w.addAccounts(acct1);
         Account acct2 = new Account(ECKeyPair.createEcKeyPair());
@@ -425,7 +427,8 @@ public class WalletTest {
     }
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(WireMockConfiguration.options().dynamicPort());
+    public WireMockRule wireMockRule =
+            new WireMockRule(WireMockConfiguration.options().dynamicPort());
 
     @Test
     public void getNep17Balances() throws IOException {
@@ -442,10 +445,11 @@ public class WalletTest {
                 "getnep17balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
                 "NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
         Wallet w = Wallet.withAccounts(a1, a2);
-        Map<ScriptHash, BigInteger> balances = w.getNep17TokenBalances(neow);
+        Map<Hash160, BigInteger> balances = w.getNep17TokenBalances(neow);
         assertThat(balances.keySet(), containsInAnyOrder(GAS_SCRIPT_HASH, NEO_SCRIPT_HASH));
         assertThat(balances.values(), containsInAnyOrder(
                 new BigInteger("411285799730"),
                 new BigInteger("50000000")));
     }
+
 }

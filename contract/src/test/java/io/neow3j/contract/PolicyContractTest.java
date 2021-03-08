@@ -31,13 +31,13 @@ import org.junit.Test;
 
 public class PolicyContractTest {
 
-    private static final String POLILCYCONTRACT_SCRIPTHASH =
+    private static final String POLICYCONTRACT_SCRIPTHASH =
             "79bcd398505eb779df6e67e4be6c14cded08e2f2";
 
     private Neow3j neow3j;
 
     private Account account1;
-    private ScriptHash recipient;
+    private Hash160 recipient;
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -50,7 +50,7 @@ public class PolicyContractTest {
         neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         neow3j.setNetworkMagicNumber(769);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
-        recipient = new ScriptHash("969a77db482f74ce27105f760efa139223431394");
+        recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
     }
 
     @Test
@@ -366,6 +366,7 @@ public class PolicyContractTest {
     @Test
     public void scriptHash() {
         assertThat(new PolicyContract(neow3j).getScriptHash().toString(),
-                is(POLILCYCONTRACT_SCRIPTHASH));
+                is(POLICYCONTRACT_SCRIPTHASH));
     }
+
 }

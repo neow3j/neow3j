@@ -1,5 +1,26 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.Hash160;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
+import io.neow3j.protocol.core.methods.response.NeoSendFrom;
+import io.neow3j.protocol.core.methods.response.NeoSendMany;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction.RawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
+import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.utils.Await;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.testcontainers.containers.GenericContainer;
+
+import java.io.IOException;
+import java.util.Arrays;
+
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
@@ -13,26 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import io.neow3j.contract.ScriptHash;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
-import io.neow3j.protocol.core.methods.response.NeoSendFrom;
-import io.neow3j.protocol.core.methods.response.NeoSendMany;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction.RawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
-import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
-import io.neow3j.protocol.core.methods.response.Transaction;
-import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.utils.Await;
-import java.io.IOException;
-import java.util.Arrays;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.testcontainers.containers.GenericContainer;
 
 // This test class spins up a new private net container for each test. This consumes a lot of time
 // but allows the tests to make changes without interfering with each other.
@@ -62,7 +63,7 @@ public class Neow3jWriteIntegrationTest {
         neow3j.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
         Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(
-                "1", new ScriptHash(NEO_TOKEN_HASH), neow3j);
+                "1", new Hash160(NEO_TOKEN_HASH), neow3j);
     }
 
     @Test
@@ -149,10 +150,10 @@ public class Neow3jWriteIntegrationTest {
                 .send().getApplicationLog().getExecutions().get(0);
         assertThat(execution.getState(), is(VM_STATE_HALT));
 
-        ScriptHash recipient2ScriptHash = ScriptHash.fromAddress(RECIPIENT_2);
+        Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT_2);
         assertThat(neow3j.invokeFunction(
-                NEO_HASH, "balanceOf", Arrays.asList(hash160(recipient2ScriptHash)))
-                        .send().getInvocationResult().getStack().get(0).getInteger().intValue(),
+                NEO_HASH, "balanceOf", Arrays.asList(hash160(recipient2Hash160))).send()
+                        .getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(10));
     }
 

@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class SmartContract {
 
-    protected ScriptHash scriptHash;
+    protected Hash160 scriptHash;
     protected Neow3j neow;
 
     /**
@@ -35,7 +35,7 @@ public class SmartContract {
      * @param scriptHash the smart contract's script hash.
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public SmartContract(ScriptHash scriptHash, Neow3j neow) {
+    public SmartContract(Hash160 scriptHash, Neow3j neow) {
         if (scriptHash == null) {
             throw new IllegalArgumentException("The contract script hash must not be null.");
         }
@@ -183,7 +183,7 @@ public class SmartContract {
      *
      * @return the script hash of this smart contract.
      */
-    public ScriptHash getScriptHash() {
+    public Hash160 getScriptHash() {
         return scriptHash;
     }
 
@@ -209,9 +209,9 @@ public class SmartContract {
         return getManifest().getName();
     }
 
-    protected static ScriptHash getScriptHashOfNativeContract(long nefCheckSum,
+    protected static Hash160 getScriptHashOfNativeContract(long nefCheckSum,
             String contractName) {
-        return getContractHash(ScriptHash.ZERO, nefCheckSum, contractName);
+        return getContractHash(Hash160.ZERO, nefCheckSum, contractName);
     }
 
     /**
@@ -226,10 +226,10 @@ public class SmartContract {
      * @param contractName the contract's name.
      * @return the hash of the contract.
      */
-    public static ScriptHash getContractHash(ScriptHash sender, long nefCheckSum,
+    public static Hash160 getContractHash(Hash160 sender, long nefCheckSum,
             String contractName) {
 
-        return ScriptHash.fromScript(
+        return Hash160.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)
                         .pushData(sender.toArray())

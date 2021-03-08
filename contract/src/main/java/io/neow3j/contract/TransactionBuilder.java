@@ -1,5 +1,10 @@
 package io.neow3j.contract;
 
+import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
+import static io.neow3j.constants.NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT;
+import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static java.util.Arrays.asList;
+
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
@@ -33,11 +38,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
-import static io.neow3j.constants.NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT;
-import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
-import static java.util.Arrays.asList;
 
 /**
  * Used to build a {@link Transaction}. When signing the {@code TransactionBuilder}, a transaction
@@ -158,7 +158,7 @@ public class TransactionBuilder {
      * @param sender the script hash of the signer to be set to the first index.
      * @return this transaction builder.
      */
-    public TransactionBuilder firstSigner(ScriptHash sender) {
+    public TransactionBuilder firstSigner(Hash160 sender) {
         if (signers.stream().map(Signer::getScopes)
                 .anyMatch(scopes -> scopes.contains(WitnessScope.NONE))) {
             throw new IllegalStateException("This transaction contains a signer with fee-only " +
@@ -262,9 +262,9 @@ public class TransactionBuilder {
     }
 
     private boolean containsDuplicateSigners(Signer... signers) {
-        List<ScriptHash> signerList = Stream.of(signers).map(Signer::getScriptHash)
+        List<Hash160> signerList = Stream.of(signers).map(Signer::getScriptHash)
                 .collect(Collectors.toList());
-        Set<ScriptHash> signerSet = new HashSet<>(signerList);
+        Set<Hash160> signerSet = new HashSet<>(signerList);
         return signerList.size() != signerSet.size();
     }
 
@@ -326,11 +326,11 @@ public class TransactionBuilder {
 
     // Checks if this transaction contains a signer that is a committee member.
     private boolean isAllowedForHighPriority() throws IOException {
-        List<ScriptHash> committee = neow.getCommittee().send()
+        List<Hash160> committee = neow.getCommittee().send()
                 .getCommittee()
                 .stream().map(ECPublicKey::new)
                 .map(key -> key.getEncoded(true))
-                .map(ScriptHash::fromPublicKey)
+                .map(Hash160::fromPublicKey)
                 .collect(Collectors.toList());
 
         boolean signersContainSingleSigCommitteeMember = signers.stream()
@@ -343,17 +343,17 @@ public class TransactionBuilder {
 
     // Checks if the signers contains a multi-sig account that contains a
     // committee member.
-    private boolean signersContainMultiSigWithCommitteeMember(List<ScriptHash> committee) {
-        Iterator<ScriptHash> iterator = signers.stream().map(Signer::getScriptHash).iterator();
+    private boolean signersContainMultiSigWithCommitteeMember(List<Hash160> committee) {
+        Iterator<Hash160> iterator = signers.stream().map(Signer::getScriptHash).iterator();
         while (iterator.hasNext()) {
-            ScriptHash scriptHash = iterator.next();
+            Hash160 scriptHash = iterator.next();
             try {
                 Account account = wallet.getAccount(scriptHash);
                 if (account.isMultiSig()) {
-                    Stream<ScriptHash> accountStream = account
+                    Stream<Hash160> accountStream = account
                             .getVerificationScript().getPublicKeys()
                             .stream().map(s -> s.getEncoded(true))
-                            .map(ScriptHash::fromPublicKey);
+                            .map(Hash160::fromPublicKey);
                     boolean multiSigContainsCommitteeMember = accountStream
                             .filter(sh -> wallet.holdsAccount(sh))
                             .anyMatch(committee::contains);
@@ -496,7 +496,7 @@ public class TransactionBuilder {
 
     private void signWithNormalAccount(byte[] txBytes, Account acc) {
         ECKeyPair keyPair = acc.getECKeyPair();
-        if (keyPair ==  null) {
+        if (keyPair == null) {
             throw new TransactionConfigurationException("Can't create transaction signature " +
                     "because account with script " + acc.getScriptHash() + " doesn't hold a " +
                     "private key.");
@@ -508,11 +508,11 @@ public class TransactionBuilder {
         List<SignatureData> sigs = new ArrayList<>();
         VerificationScript multiSigVerifScript = signerAcc.getVerificationScript();
         for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
-            ScriptHash accScriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
+            Hash160 accScriptHash = Hash160.fromPublicKey(pubKey.getEncoded(true));
             Account a;
             a = wallet.getAccount(accScriptHash);
             if (a == null) {
-               continue;
+                continue;
             }
             ECKeyPair ecKeyPair = a.getECKeyPair();
             if (ecKeyPair == null) {
@@ -577,7 +577,7 @@ public class TransactionBuilder {
         return new GasToken(neow).getBalanceOf(getSender());
     }
 
-    private ScriptHash getSender() {
+    private Hash160 getSender() {
         // First we look for a signer that has the fee-only scope. The signer with that scope is
         // the sender of the transaction. If there is no such signer then the order of the
         // signers defines the sender, i.e., the first signer is the sender of the transaction.

@@ -9,10 +9,9 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.Hash160;
 import io.neow3j.contract.NeoToken;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.contract.SmartContract;
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.contracts.ContractManagement;
@@ -73,7 +72,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
                 .getExecutions().get(0).getNotifications().get(0);
         assertThat(notification.getEventName(), is("onDeployWithoutData"));
 
-        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+        Hash160 contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState result = neow3j.getContractState(contractHash.toString()).send();
         assertThat(result.getContractState(), notNullValue());
@@ -98,7 +97,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
         assertThat(notification.getEventName(), is("onDeployWithData"));
         assertThat(notification.getState().getList().get(0).getString(), is("hello, world!"));
 
-        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+        Hash160 contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState result = neow3j.getContractState(contractHash.toString()).send();
         assertThat(result.getContractState(), notNullValue());
@@ -118,7 +117,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
         // Check zero updates have been performed
-        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+        Hash160 contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState contractState = neow3j.getContractState(contractHash.toString()).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
@@ -159,7 +158,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
         // Check zero updates have been performed
-        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+        Hash160 contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState contractState = neow3j.getContractState(contractHash.toString()).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
@@ -198,7 +197,7 @@ public class ContractManagementIntegrationTest extends ContractTest {
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
-        ScriptHash contractHash = SmartContract.getContractHash(committee.getScriptHash(),
+        Hash160 contractHash = SmartContract.getContractHash(committee.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         SmartContract sc = new SmartContract(contractHash, neow3j);
         String txHash = sc.invokeFunction("destroy")
@@ -223,11 +222,11 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
     static class ContractManagementIntegrationTestContract {
 
-        public static Contract getContract(Hash160 contractHash) {
+        public static Contract getContract(io.neow3j.devpack.Hash160 contractHash) {
             return ContractManagement.getContract(contractHash);
         }
 
-        public static Hash160 getHash() {
+        public static io.neow3j.devpack.Hash160 getHash() {
             return ContractManagement.getHash();
         }
 

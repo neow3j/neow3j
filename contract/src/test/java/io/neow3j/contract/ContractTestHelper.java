@@ -59,7 +59,7 @@ public class ContractTestHelper {
                         .withBody(responseBody)));
     }
 
-    public static void setUpWireMockForBalanceOf(ScriptHash account, String responseFile)
+    public static void setUpWireMockForBalanceOf(Hash160 account, String responseFile)
             throws IOException {
 
         String responseBody = loadFile("/responses/" + responseFile);
@@ -80,4 +80,5 @@ public class ContractTestHelper {
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
                 .reduce((a, b) -> a + b).get();
     }
+
 }

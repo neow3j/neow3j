@@ -1,6 +1,6 @@
 package io.neow3j.transaction;
 
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
@@ -22,7 +22,7 @@ public class Witness extends NeoSerializable {
 
     private InvocationScript invocationScript;
     private VerificationScript verificationScript;
-    private ScriptHash scriptHash;
+    private Hash160 hash160;
 
     /**
      * Constructs an empty witness with a zero-valued script hash.
@@ -30,7 +30,7 @@ public class Witness extends NeoSerializable {
     public Witness() {
         invocationScript = new InvocationScript();
         verificationScript = new VerificationScript();
-        scriptHash = ScriptHash.ZERO;
+        hash160 = Hash160.ZERO;
     }
 
     /**
@@ -55,7 +55,7 @@ public class Witness extends NeoSerializable {
      * <br>
      * <p>The verification script cannot be null because the script hash is derived from it. If you
      * don't have a verification script you can use the constructor
-     * {@link Witness#Witness(byte[], ScriptHash)} and just provide a script Hash instead of the
+     * {@link Witness#Witness(byte[], Hash160)} and just provide a script hash instead of the
      * verification script.</p>
      *
      * @param invocationScript   the invocation script
@@ -69,7 +69,7 @@ public class Witness extends NeoSerializable {
                     "The verification script must not be null because the script hash is derived " +
                     "from it.");
         }
-        this.scriptHash = verificationScript.getScriptHash();
+        this.hash160 = verificationScript.getScriptHash();
     }
 
     /**
@@ -77,12 +77,12 @@ public class Witness extends NeoSerializable {
      * script is empty.
      *
      * @param invocationScript the invocation script
-     * @param scriptHash       a script hash instead of a verification script.
+     * @param hash160          a script hash instead of a verification script.
      */
-    public Witness(byte[] invocationScript, ScriptHash scriptHash) {
+    public Witness(byte[] invocationScript, Hash160 hash160) {
         this.invocationScript = new InvocationScript(invocationScript);
         this.verificationScript = new VerificationScript();
-        this.scriptHash = scriptHash;
+        this.hash160 = hash160;
     }
 
     /**
@@ -131,8 +131,8 @@ public class Witness extends NeoSerializable {
     /**
      * @return the script hash of this script in big-endian order.
      */
-    public ScriptHash getScriptHash() {
-        return scriptHash;
+    public Hash160 getScriptHash() {
+        return hash160;
     }
 
     @Override
@@ -161,7 +161,7 @@ public class Witness extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         this.invocationScript = reader.readSerializable(InvocationScript.class);
         this.verificationScript = reader.readSerializable(VerificationScript.class);
-        this.scriptHash = verificationScript.getScriptHash();
+        this.hash160 = verificationScript.getScriptHash();
     }
 
     @Override

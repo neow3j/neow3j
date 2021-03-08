@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.utils.ClassUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class DebugInfo {
     public DebugInfo() {
     }
 
-    public DebugInfo(ScriptHash hash, List<String> documents,
+    public DebugInfo(Hash160 hash, List<String> documents,
             List<Method> methods, List<Event> events) {
         this.hash = hash.toString();
         this.documents = documents;
@@ -94,8 +94,8 @@ public class DebugInfo {
                 .map(NeoEvent::getAsDebugInfoEvent)
                 .collect(Collectors.toList());
 
-        ScriptHash scriptHash = ScriptHash.fromScript(compUnit.getNefFile().getScript());
-        return new DebugInfo(scriptHash, documents, methods, events);
+        Hash160 hash160 = Hash160.fromScript(compUnit.getNefFile().getScript());
+        return new DebugInfo(hash160, documents, methods, events);
     }
 
     private static List<String> collectSequencePoints(NeoMethod neoMethod, int documentIndex) {

@@ -8,15 +8,14 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
-import io.neow3j.contract.ScriptHash;
-import io.neow3j.devpack.Hash160;
+import io.neow3j.contract.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -40,8 +39,8 @@ public class HashIntegrationTest extends ContractTest {
 
     @Test
     public void isHash160Zero() throws IOException {
-        ScriptHash zeroHash = new ScriptHash("0000000000000000000000000000000000000000");
-        ScriptHash nonZeroHash = new ScriptHash("0000000000000000000000000000000000000001");
+        Hash160 zeroHash = new Hash160("0000000000000000000000000000000000000000");
+        Hash160 nonZeroHash = new Hash160("0000000000000000000000000000000000000001");
         NeoInvokeFunction response = callInvokeFunction(hash160(zeroHash), hash160(nonZeroHash));
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(array.get(0).getBoolean());
@@ -91,7 +90,7 @@ public class HashIntegrationTest extends ContractTest {
 
     @Test
     public void hash160ToByteArray() throws IOException {
-        ScriptHash hash = new ScriptHash("03b4af8d061b6b320cce6c63bc4ec7894dce107b");
+        Hash160 hash = new Hash160("03b4af8d061b6b320cce6c63bc4ec7894dce107b");
         NeoInvokeFunction response = callInvokeFunction(hash160(hash));
         assertThat(response.getInvocationResult().getStack().get(0).getAddress(),
                 is(hash.toAddress()));
@@ -99,7 +98,7 @@ public class HashIntegrationTest extends ContractTest {
 
     @Test
     public void hash160ToString() throws IOException {
-        ScriptHash hash = new ScriptHash("03b4af8d061b6b320cce6c63bc4ec7894dce107b");
+        Hash160 hash = new Hash160("03b4af8d061b6b320cce6c63bc4ec7894dce107b");
         NeoInvokeFunction response = callInvokeFunction(hash160(hash));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(Numeric.reverseHexString(hash.toString())));
@@ -199,45 +198,45 @@ public class HashIntegrationTest extends ContractTest {
 
     static class HashIntegrationTestContract {
 
-        public static Hash160 getZeroHash160() {
-            return Hash160.zero();
+        public static io.neow3j.devpack.Hash160 getZeroHash160() {
+            return io.neow3j.devpack.Hash160.zero();
         }
 
-        public static boolean[] isHash160Zero(Hash160 hash1, Hash160 hash2) {
+        public static boolean[] isHash160Zero(io.neow3j.devpack.Hash160 hash1, io.neow3j.devpack.Hash160 hash2) {
             boolean[] b = new boolean[2];
             b[0] = hash1.isZero();
             b[1] = hash2.isZero();
             return b;
         }
 
-        public static boolean[] isHash160Valid(Hash160 h1, Hash160 h2) {
+        public static boolean[] isHash160Valid(io.neow3j.devpack.Hash160 h1, io.neow3j.devpack.Hash160 h2) {
             boolean[] b = new boolean[2];
             b[0] = h1.isValid();
             b[1] = h2.isValid();
             return b;
         }
 
-        public static Hash160 createHash160FromValidByteArray(byte[] b) {
-            return new Hash160(b);
+        public static io.neow3j.devpack.Hash160 createHash160FromValidByteArray(byte[] b) {
+            return new io.neow3j.devpack.Hash160(b);
         }
 
-        public static Hash160 createHash160FromInvalidByteArray(byte[] b) {
-            return new Hash160(b);
+        public static io.neow3j.devpack.Hash160 createHash160FromInvalidByteArray(byte[] b) {
+            return new io.neow3j.devpack.Hash160(b);
         }
 
-        public static Hash160 createHash160FromValidString(String s) {
-            return new Hash160(s);
+        public static io.neow3j.devpack.Hash160 createHash160FromValidString(String s) {
+            return new io.neow3j.devpack.Hash160(s);
         }
 
-        public static Hash160 createHash160FromInvalidString(String s) {
-            return new Hash160(s);
+        public static io.neow3j.devpack.Hash160 createHash160FromInvalidString(String s) {
+            return new io.neow3j.devpack.Hash160(s);
         }
 
-        public static byte[] hash160ToByteArray(Hash160 hash160) {
+        public static byte[] hash160ToByteArray(io.neow3j.devpack.Hash160 hash160) {
             return hash160.toByteArray();
         }
 
-        public static String hash160ToString(Hash160 hash160) {
+        public static String hash160ToString(io.neow3j.devpack.Hash160 hash160) {
             return hash160.toString();
         }
 
@@ -283,8 +282,8 @@ public class HashIntegrationTest extends ContractTest {
             return hash256.toString();
         }
 
-        public static Hash160 hash160FromStringLiteral() {
-            return new Hash160(StringLiteralHelper.hexToBytes("03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
+        public static io.neow3j.devpack.Hash160 hash160FromStringLiteral() {
+            return new io.neow3j.devpack.Hash160(StringLiteralHelper.hexToBytes("03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
         }
 
         public static Hash256 hash256FromStringLiteral() {
@@ -292,6 +291,5 @@ public class HashIntegrationTest extends ContractTest {
                     "03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000"));
         }
     }
-
 
 }

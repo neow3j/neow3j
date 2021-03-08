@@ -1,16 +1,13 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.ContractManagement;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
@@ -155,7 +152,7 @@ public class ContractTest {
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
         String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
-        ScriptHash scriptHash = new ScriptHash(Numeric.hexStringToByteArray(scriptHashHex));
+        Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(scriptHashHex));
         return new SmartContract(scriptHash, neow3j);
     }
 
@@ -231,7 +228,7 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static String transferGas(ScriptHash to, String amount) throws Throwable {
+    protected static String transferGas(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
         return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
                 new BigDecimal(amount), committee.getScriptHash())
@@ -250,7 +247,7 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static String transferNeo(ScriptHash to, String amount) throws Throwable {
+    protected static String transferNeo(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
         return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
                 new BigDecimal(amount), committee.getScriptHash())

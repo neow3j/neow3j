@@ -24,7 +24,7 @@ public class Token extends SmartContract {
     private Integer decimals;
     private String symbol;
 
-    public Token(ScriptHash scriptHash, Neow3j neow) {
+    public Token(Hash160 scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 

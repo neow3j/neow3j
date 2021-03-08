@@ -117,7 +117,7 @@ public class ContractParameterTest {
         ContractParameter string = string("testString");
         ContractParameter byteArray = byteArray(new byte[]{5, 8});
         ContractParameter cParam =
-                hash160(new ScriptHash("0xa2b524b68dfe43a9d56af84f443c6b9843b8028c"));
+                hash160(new Hash160("0xa2b524b68dfe43a9d56af84f443c6b9843b8028c"));
 
         ArrayList<ContractParameter> paramList = new ArrayList<>();
         paramList.add(integer);
@@ -243,7 +243,7 @@ public class ContractParameterTest {
     @Test
     public void testHash160ParameterCreationFromValidScriptHash() {
         String hashString = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f";
-        ScriptHash hash = new ScriptHash(hashString);
+        Hash160 hash = new Hash160(hashString);
         ContractParameter p = hash160(hash);
 
         assertEquals(ContractParameterType.HASH160, p.getParamType());
@@ -253,7 +253,7 @@ public class ContractParameterTest {
     @Test
     public void testHash160ParameterCreationFromValidString() {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f";
-        ContractParameter p = hash160(new ScriptHash(hashValue));
+        ContractParameter p = hash160(new Hash160(hashValue));
 
         assertEquals(ContractParameterType.HASH160, p.getParamType());
         assertEquals(hashValue, p.getValue().toString());

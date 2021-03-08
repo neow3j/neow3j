@@ -108,7 +108,7 @@ public class NeoTokenTest {
                         .withBody(responseBody)));
 
         BigInteger result = new NeoToken(neow)
-                .unclaimedGas(ScriptHash.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9"), 100);
+                .unclaimedGas(Hash160.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9"), 100);
         assertThat(result, is(new BigInteger("60000000000")));
 
         result = new NeoToken(neow)
@@ -300,4 +300,5 @@ public class NeoTokenTest {
     public void scriptHash() {
         assertThat(new NeoToken(neow).getScriptHash().toString(), is(NEOTOKEN_SCRIPTHASH));
     }
+
 }

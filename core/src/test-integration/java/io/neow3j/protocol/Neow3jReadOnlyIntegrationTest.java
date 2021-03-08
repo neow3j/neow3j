@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.BlockParameterIndex;
@@ -173,7 +173,7 @@ public class Neow3jReadOnlyIntegrationTest {
         neow3j.openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
         Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(
-                "1", new ScriptHash(NEO_TOKEN_HASH), neow3j);
+                "1", new Hash160(NEO_TOKEN_HASH), neow3j);
         // make a transaction that can be used for the tests
         txHashNeoTransfer = transferNeo(TX_RECIPIENT_1, TX_AMOUNT_NEO);
         txHashGasTransfer = transferGas(TX_RECIPIENT_1, TX_AMOUNT_GAS);
@@ -427,7 +427,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetContractState() throws IOException {
         NeoGetContractState getContractState =
-                getNeow3j().getContractState(new ScriptHash(NEO_HASH)).send();
+                getNeow3j().getContractState(new Hash160(NEO_HASH)).send();
         ContractState contractState = getContractState.getContractState();
 
         assertNotNull(contractState);
@@ -700,8 +700,8 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testInvokeFunctionWithBalanceOf() throws IOException {
         List<ContractParameter> parameters = Collections.singletonList(
-                ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS)));
-        ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS));
+                ContractParameter.hash160(Hash160.fromAddress(ACCOUNT_1_ADDRESS)));
+        ContractParameter.hash160(Hash160.fromAddress(ACCOUNT_1_ADDRESS));
         NeoInvokeFunction invokeFunction = getNeow3j()
                 .invokeFunction("0x" + NEO_HASH, INVOKE_BALANCE, parameters)
                 .send();
@@ -712,14 +712,14 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testInvokeFunctionWithTransfer() throws IOException {
         List<ContractParameter> params = Arrays.asList(
-                ContractParameter.hash160(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS)),
-                ContractParameter.hash160(ScriptHash.fromAddress(RECIPIENT)),
+                ContractParameter.hash160(Hash160.fromAddress(ACCOUNT_2_ADDRESS)),
+                ContractParameter.hash160(Hash160.fromAddress(RECIPIENT)),
                 ContractParameter.integer(1),
                 ContractParameter.any(null));
         Signer signer = new Signer.Builder()
-                .account(ScriptHash.fromAddress(ACCOUNT_2_ADDRESS))
+                .account(Hash160.fromAddress(ACCOUNT_2_ADDRESS))
                 .scopes(WitnessScope.CALLED_BY_ENTRY)
-                .allowedContracts(new ScriptHash(NEO_HASH))
+                .allowedContracts(new Hash160(NEO_HASH))
                 .build();
         InvocationResult invoc = getNeow3j()
                 .invokeFunction(NEO_HASH, "transfer", params, signer)
@@ -816,8 +816,8 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testGetNewAddress() throws IOException {
         NeoGetNewAddress getNewAddress = getNeow3j().getNewAddress().send();
 
-        assertThat(ScriptHash.fromAddress(getNewAddress.getAddress()),
-                instanceOf(ScriptHash.class));
+        assertThat(Hash160.fromAddress(getNewAddress.getAddress()),
+                instanceOf(Hash160.class));
     }
 
     @Test
@@ -984,7 +984,7 @@ public class Neow3jReadOnlyIntegrationTest {
         // Script that transfers 100 NEO from NX8GreRFGFK5wpGMWetpX93HmtrezGogzk to
         // NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj.
         String script = "CwBkDBSTrRVypLNcS5JUg84XAbeHQtxGDwwUev0gMlXLKXK9CmqCfnTjh+0yK+wUwB8MCHRyYW5zZmVyDBSDqwZ5rVXAUKE61D9ZNupz9ese9kFifVtSOQ==";
-        Signer signer = Signer.calledByEntry(ScriptHash.fromAddress(ACCOUNT_1_ADDRESS));
+        Signer signer = Signer.calledByEntry(Hash160.fromAddress(ACCOUNT_1_ADDRESS));
         NeoInvokeScript invokeScript = getNeow3j().invokeScript(script, signer).send();
         InvocationResult invoc = invokeScript.getInvocationResult();
 

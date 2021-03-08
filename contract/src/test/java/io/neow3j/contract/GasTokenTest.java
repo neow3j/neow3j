@@ -1,15 +1,9 @@
 package io.neow3j.contract;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.http.HttpService;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 public class GasTokenTest {
@@ -37,4 +31,5 @@ public class GasTokenTest {
     public void scriptHash() {
         assertThat(new GasToken(neow).getScriptHash().toString(), is(GASTOKEN_SCRIPTHASH));
     }
+
 }

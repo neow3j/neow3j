@@ -7,7 +7,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
@@ -178,7 +178,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetContractState() throws Exception {
-        neow3j.getContractState(new ScriptHash("dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f")).send();
+        neow3j.getContractState(new Hash160("dc675afc61a7c0f7b3d2682bf6e1d8ed865a0e5f")).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\"," +
@@ -359,11 +359,11 @@ public class RequestTest extends RequestTester {
                 "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
                 "balanceOf",
                 singletonList(
-                        hash160(new ScriptHash(
+                        hash160(new Hash160(
                                 "91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 ),
                 new Signer.Builder()
-                        .account(new ScriptHash("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+                        .account(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
                         .scopes(WitnessScope.CALLED_BY_ENTRY)
                         .build()
         ).send();
@@ -411,7 +411,7 @@ public class RequestTest extends RequestTester {
     public void testInvokeScriptWithWitness() throws Exception {
         neow3j.invokeScript(
                 "10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52",
-                calledByEntry(new ScriptHash("0xcc45cc8987b0e35371f5685431e3c8eeea306722"))).send();
+                calledByEntry(new Hash160("0xcc45cc8987b0e35371f5685431e3c8eeea306722"))).send();
 
         verifyResult(
                 "{\"jsonrpc\":\"2.0\"," +
@@ -428,7 +428,7 @@ public class RequestTest extends RequestTester {
         neow3j.invokeContractVerify(
                 "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
                 asList(string("a string"), string("another string")),
-                calledByEntry(new ScriptHash("cadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+                calledByEntry(new Hash160("cadb3dc2faa3ef14a13b619c9a43124755aa2569"))
         ).send();
 
         verifyResult(
