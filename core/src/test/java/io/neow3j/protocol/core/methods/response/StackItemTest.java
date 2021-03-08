@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -151,12 +152,6 @@ public class StackItemTest extends ResponseTester {
         exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
                 "is null"));
         item.getInteger();
-    }
-
-    @Test
-    public void IntegerStackItemToString() {
-        IntegerStackItem item = new IntegerStackItem();
-//        item.toString()
     }
 
     @Test
@@ -505,4 +500,87 @@ public class StackItemTest extends ResponseTester {
         assertFalse(item1.getBoolean());
     }
 
+    @Test
+    public void throwExceptionOnGetAddressFromByteArrayWithIllegalAddress() {
+        ByteStringStackItem item = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
+        exceptionRule.expect(StackItemCastException.class);
+        exceptionRule.expectMessage(new StringContains(
+                IllegalArgumentException.class.getSimpleName()));
+        item.getAddress();
+    }
+
+    @Test
+    public void throwExceptionOnGetIntegerFromEmptyByteArray() {
+        ByteStringStackItem item = new ByteStringStackItem(new byte[]{});
+        exceptionRule.expect(StackItemCastException.class);
+        exceptionRule.expectMessage(new StringContains(
+                NumberFormatException.class.getSimpleName()));
+        item.getInteger();
+    }
+
+    @Test
+    public void getStringFromIntegerStackItem() {
+        IntegerStackItem item = new IntegerStackItem(new BigInteger("1000"));
+        assertThat(item.getString(), is("1000"));
+    }
+
+    @Test
+    public void throwOnGetStringFromNullIntegerStackItem() {
+        IntegerStackItem item = new IntegerStackItem(null);
+        exceptionRule.expect(StackItemCastException.class);
+        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
+                "is null"));
+        item.getString();
+    }
+
+    @Test
+    public void getHexStringFromIntegerStackItem() {
+        IntegerStackItem item = new IntegerStackItem(new BigInteger("1000"));
+        assertThat(item.getHexString(), is("e803"));
+    }
+
+    @Test
+    public void throwOnGetHexStringFromNullIntegerStackItem() {
+        IntegerStackItem item = new IntegerStackItem(null);
+        exceptionRule.expect(StackItemCastException.class);
+        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
+                "is null"));
+        item.getHexString();
+    }
+
+    @Test
+    public void getByteArrayFromIntegerStackItem() {
+        IntegerStackItem item = new IntegerStackItem(new BigInteger("1000"));
+        assertThat(item.getByteArray(), is(Numeric.hexStringToByteArray("e803")));
+    }
+
+    @Test
+    public void throwOnGetByteArrayFromNullIntegerStackItem() {
+        IntegerStackItem item = new IntegerStackItem(null);
+        exceptionRule.expect(StackItemCastException.class);
+        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
+                "is null"));
+        item.getByteArray();
+    }
+
+    @Test
+    public void listLikeStackItemValueToString() {
+        ArrayStackItem item = new ArrayStackItem(Arrays.asList(
+                new ByteStringStackItem("word".getBytes(UTF_8)),
+                new IntegerStackItem(BigInteger.ONE)));
+        assertThat(item.valueToString(), is("ByteString{value='776f7264'}, Integer{value='1'}"));
+    }
+
+    @Test
+    public void mapStackItemValueToString() {
+        Map<StackItem, StackItem> map = new HashMap<>();
+        map.put(new ByteStringStackItem("key1".getBytes(UTF_8)),
+                new IntegerStackItem(BigInteger.ONE));
+        map.put(new ByteStringStackItem("key2".getBytes(UTF_8)),
+                new IntegerStackItem(BigInteger.ZERO));
+        MapStackItem item = new MapStackItem(map);
+        assertThat(item.valueToString(), is(
+                "ByteString{value='6b657932'} -> Integer{value='0'}\n"
+                        + "ByteString{value='6b657931'} -> Integer{value='1'}"));
+    }
 }

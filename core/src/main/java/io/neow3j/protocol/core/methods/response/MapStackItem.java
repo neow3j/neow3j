@@ -38,7 +38,10 @@ public class MapStackItem extends StackItem {
 
     @Override
     protected String valueToString() {
-        return null;
+        return value.entrySet().stream()
+                .map(e -> e.getKey().toString() + " -> " + e.getValue().toString())
+                .reduce("", (a, b) ->  a + "\n" + b)
+                .substring(1); // remove the first new line.
     }
 
     @Override
