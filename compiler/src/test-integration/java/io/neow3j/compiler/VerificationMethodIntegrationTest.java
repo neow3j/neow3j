@@ -50,7 +50,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
     @Test
     public void callVerifyWithOtherSigner() throws Throwable {
         NeoInvokeContractVerify response = neow3j
-                .invokeContractVerify(contract.getScriptHash().toString(),
+                .invokeContractVerify(contract.getScriptHash(),
                         singletonList(string("hello, world!")),
                         Signer.calledByEntry(committee.getScriptHash()))
                 .send();

@@ -155,7 +155,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
     private void checkAndThrowHashLength(byte[] hash) {
         if (hash.length != NeoConstants.HASH160_SIZE) {
-            throw new IllegalArgumentException("Script hash must be " + NeoConstants.HASH160_SIZE +
+            throw new IllegalArgumentException("Hash must be " + NeoConstants.HASH160_SIZE +
                     " bytes long but was " + hash.length + " bytes.");
         }
     }
