@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.contract.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
 import io.neow3j.crypto.ECKeyPair;
@@ -59,8 +60,8 @@ public class OracleContractTest extends ContractTest {
     @Test
     public void performRequest() throws Throwable {
         // GAS and NEO needed to register a candidate.
-        String gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
-        String neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
+        Hash256 gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
+        Hash256 neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
         Await.waitUntilTransactionIsExecuted(gasTxHash, neow3j);
         Await.waitUntilTransactionIsExecuted(neoTxHash, neow3j);
 
@@ -96,7 +97,7 @@ public class OracleContractTest extends ContractTest {
         String filter = "";  // JSONPath
         String userdata = "userdata";
         int gasForResponse = 100000000;
-        String txHash = invokeFunctionAndAwaitExecution(string(url), string(filter),
+        Hash256 txHash = invokeFunctionAndAwaitExecution(string(url), string(filter),
                 string(userdata), integer(gasForResponse));
 
         // The oracle response should be available in the next block.

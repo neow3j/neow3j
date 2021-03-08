@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
@@ -155,16 +156,16 @@ public class Transaction extends NeoSerializable {
      * Gets this transactions uniquely identifying ID/hash.
      *
      * @return the transaction ID.
-     * @throws IOException if the network magic number cannot be fetched from the connected
-     *                     neo-node. The magic number is needed to calculate the transaction hash.
+     * @throws IOException if the network magic number cannot be fetched from the connected Neo
+     *                     node. The magic number is needed to calculate the transaction hash.
      */
-    public String getTxId() throws IOException {
+    public Hash256 getTxId() throws IOException {
         byte[] hash = hash256(getHashData());
-        return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
+        return new Hash256(hash);
     }
 
     /**
-     * Sends this invocation transaction to the neo-node via the `sendrawtransaction` RPC.
+     * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
      *
      * @return the Neo node's response.
      * @throws IOException                       if a problem in communicating with the Neo node
@@ -203,8 +204,7 @@ public class Transaction extends NeoSerializable {
                 neoGetBlock.getBlock().getTransactions() != null &&
                         neoGetBlock.getBlock().getTransactions().stream().anyMatch(transaction -> {
                             try {
-                                return Numeric.cleanHexPrefix(transaction.getHash())
-                                        .equals(getTxId());
+                                return transaction.getHash().equals(getTxId());
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
@@ -221,7 +221,7 @@ public class Transaction extends NeoSerializable {
      * Gets the application log of this transaction.
      * <p>
      * The application log is not cached locally. Every time this method is called, requests are
-     * send to the neo-node.
+     * send to the Neo node.
      * <p>
      * If the application log could not be fetched, {@code null} is returned.
      *
@@ -229,8 +229,8 @@ public class Transaction extends NeoSerializable {
      */
     public NeoApplicationLog getApplicationLog() {
         if (blockIndexWhenSent == null) {
-            throw new IllegalStateException("Can't get the application log before transaction " +
-                    "has been sent.");
+            throw new IllegalStateException("Can't get the application log before transaction has" +
+                    " been sent.");
         }
         NeoApplicationLog applicationLog = null;
         try {
@@ -271,9 +271,9 @@ public class Transaction extends NeoSerializable {
             throws IOException, DeserializationException {
         long nrOfAttributes = reader.readVarInt();
         if (nrOfAttributes > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-            throw new DeserializationException("A transaction can hold at most "
-                    + NeoConstants.MAX_TRANSACTION_ATTRIBUTES + ". Input data had "
-                    + nrOfAttributes + " attributes.");
+            throw new DeserializationException("A transaction can hold at most " +
+                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + ". Input data had " + nrOfAttributes +
+                    " attributes.");
         }
         for (int i = 0; i < nrOfAttributes; i++) {
             this.attributes.add(TransactionAttribute.deserializeAttribute(reader));
@@ -321,10 +321,10 @@ public class Transaction extends NeoSerializable {
      * producing the transaction ID or a transaction signature.
      * <p>
      * The returned value depends on the magic number of the used Neo network, which is retrieved
-     * from the neo-node via the {@code getversion} RPC method.
+     * from the Neo node via the {@code getversion} RPC method.
      *
      * @return the transaction data ready for hashing.
-     * @throws IOException if something goes wrong when asking the neo-node for the networks magic
+     * @throws IOException if something goes wrong when asking the Neo node for the networks magic
      *                     number.
      */
     public byte[] getHashData() throws IOException {
@@ -340,4 +340,5 @@ public class Transaction extends NeoSerializable {
     public byte[] toArray() {
         return super.toArray();
     }
+
 }

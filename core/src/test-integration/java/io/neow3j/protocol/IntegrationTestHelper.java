@@ -1,5 +1,6 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.utils.Numeric;
 import org.testcontainers.containers.BindMode;
@@ -31,8 +32,10 @@ public class IntegrationTestHelper {
     static final String NODE_WALLET_PATH = "wallet.json";
 
     // Native token hashes.
-    static final String NEO_HASH = "f61eebf573ea36593fd43aa150c055ad7906ab83";
-    static final String GAS_HASH = "70e2301955bf1e74cbb31d18c2f96972abadb328";
+    static final String NEO_HASH_STRING = "f61eebf573ea36593fd43aa150c055ad7906ab83";
+    static final Hash160 NEO_HASH = new Hash160(NEO_HASH_STRING);
+    static final String GAS_HASH_STRING = "70e2301955bf1e74cbb31d18c2f96972abadb328";
+    static final Hash160 GAS_HASH = new Hash160(GAS_HASH_STRING);
     // Total supply of NEO tokens.
     static final int NEO_TOTAL_SUPPLY = 100000000;
     // First account (multi-sig) in the node's wallet
@@ -71,4 +74,5 @@ public class IntegrationTestHelper {
                 .withExposedPorts(EXPOSED_JSONRPC_PORT)
                 .waitingFor(Wait.forListeningPort());
     }
+
 }

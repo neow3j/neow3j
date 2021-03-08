@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.devpack.events.Event2Args;
@@ -30,7 +31,7 @@ public class ContractEventsIntegrationTest extends ContractTest {
 
     @Test
     public void fireTwoEvents() throws Throwable {
-        String txHash = invokeFunctionAndAwaitExecution();
+        Hash256 txHash = invokeFunctionAndAwaitExecution();
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
@@ -54,7 +55,7 @@ public class ContractEventsIntegrationTest extends ContractTest {
 
     @Test
     public void fireEventWithMethodReturnValueAsArgument() throws Throwable {
-        String txHash = invokeFunctionAndAwaitExecution();
+        Hash256 txHash = invokeFunctionAndAwaitExecution();
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
@@ -70,7 +71,7 @@ public class ContractEventsIntegrationTest extends ContractTest {
 
     @Test
     public void fireEvent() throws Throwable {
-        String txHash = invokeFunctionAndAwaitExecution(
+        Hash256 txHash = invokeFunctionAndAwaitExecution(
                 byteArray("0f46dc4287b70117ce8354924b5cb3a47215ad93"),
                 byteArray("d6c712eb53b1a130f59fd4e5864bdac27458a509"),
                 integer(10));

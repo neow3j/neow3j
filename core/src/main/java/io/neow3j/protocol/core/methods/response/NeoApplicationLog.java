@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +14,7 @@ import java.util.Objects;
 public class NeoApplicationLog {
 
     @JsonProperty("txid")
-    private String transactionId;
+    private Hash256 transactionId;
 
     @JsonProperty("executions")
     private List<Execution> executions;
@@ -20,12 +22,12 @@ public class NeoApplicationLog {
     public NeoApplicationLog() {
     }
 
-    public NeoApplicationLog(String transactionId, List<Execution> executions) {
+    public NeoApplicationLog(Hash256 transactionId, List<Execution> executions) {
         this.transactionId = transactionId;
         this.executions = executions;
     }
 
-    public String getTransactionId() {
+    public Hash256 getTransactionId() {
         return transactionId;
     }
 
@@ -59,9 +61,8 @@ public class NeoApplicationLog {
         public Execution() {
         }
 
-        public Execution(String trigger, String state, String exception,
-                                 String gasConsumed, List<StackItem> stack,
-                                 List<Notification> notifications) {
+        public Execution(String trigger, String state, String exception, String gasConsumed,
+                List<StackItem> stack, List<Notification> notifications) {
             this.trigger = trigger;
             this.state = state;
             this.exception = exception;
@@ -98,7 +99,7 @@ public class NeoApplicationLog {
         public static class Notification {
 
             @JsonProperty("contract")
-            private String contract;
+            private Hash160 contract;
 
             @JsonProperty("eventname")
             private String eventName;
@@ -109,13 +110,13 @@ public class NeoApplicationLog {
             public Notification() {
             }
 
-            public Notification(String contract, String eventName, StackItem state) {
+            public Notification(Hash160 contract, String eventName, StackItem state) {
                 this.contract = contract;
                 this.eventName = eventName;
                 this.state = state;
             }
 
-            public String getContract() {
+            public Hash160 getContract() {
                 return contract;
             }
 
@@ -175,9 +176,8 @@ public class NeoApplicationLog {
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTrigger(), getState(), getException(),
-                            getGasConsumed(), getStack(),
-                            getNotifications());
+            return Objects.hash(getTrigger(), getState(), getException(), getGasConsumed(),
+                    getStack(), getNotifications());
         }
 
         @Override
@@ -218,4 +218,5 @@ public class NeoApplicationLog {
                 ", executions=" + executions +
                 '}';
     }
+
 }

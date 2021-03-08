@@ -1,6 +1,7 @@
 package io.neow3j.constants;
 
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -54,6 +55,11 @@ public class NeoConstants {
      * The byte size of a {@link Hash160} hash.
      */
     public static final int HASH160_SIZE = 20;
+
+    /**
+     * The byte size of a {@link Hash256} hash.
+     */
+    public static final int HASH256_SIZE = 32;
 
     /**
      * Size of a private key in bytes

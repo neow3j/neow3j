@@ -2,6 +2,7 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;
@@ -60,9 +61,13 @@ public interface Neo {
 
     Request<?, NeoBlockHash> getBlockHash(BlockParameterIndex blockIndex);
 
-    Request<?, NeoGetBlock> getBlock(String address, boolean returnFullTransactionObjects);
+    Request<?, NeoGetBlock> getBlock(Hash256 blockHash, boolean returnFullTransactionObjects);
 
-    Request<?, NeoGetRawBlock> getRawBlock(String address);
+    Request<?, NeoGetRawBlock> getRawBlock(Hash256 blockHash);
+
+    Request<?, NeoGetBlock> getBlock(String blockHash, boolean returnFullTransactionObjects);
+
+    Request<?, NeoGetRawBlock> getRawBlock(String blockHash);
 
     Request<?, NeoGetBlock> getBlock(BlockParameterIndex blockIndex,
             boolean returnFullTransactionObjects);
@@ -73,9 +78,13 @@ public interface Neo {
 
     Request<?, NeoBlockCount> getBlockCount();
 
+    Request<?, NeoGetBlock> getBlockHeader(Hash256 hash);
+
     Request<?, NeoGetBlock> getBlockHeader(String hash);
 
     Request<?, NeoGetBlock> getBlockHeader(BlockParameterIndex blockIndex);
+
+    Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 hash);
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(String hash);
 
@@ -91,11 +100,19 @@ public interface Neo {
 
     Request<?, NeoGetRawMemPool> getRawMemPool();
 
+    Request<?, NeoGetTransaction> getTransaction(Hash256 txId);
+
     Request<?, NeoGetTransaction> getTransaction(String txId);
+
+    Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txId);
 
     Request<?, NeoGetRawTransaction> getRawTransaction(String txId);
 
+    Request<?, NeoGetStorage> getStorage(Hash160 contractAddress, String keyHexString);
+
     Request<?, NeoGetStorage> getStorage(String contractAddress, String keyHexString);
+
+    Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txId);
 
     Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
 
@@ -121,13 +138,22 @@ public interface Neo {
 
     //region SmartContract Methods
 
+    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractScriptHash, String functionName,
+            Signer... signers);
+
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
             Signer... signers);
+
+    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractScriptHash, String functionName,
+            List<ContractParameter> params, Signer... signers);
 
     Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
             List<ContractParameter> params, Signer... signers);
 
     Request<?, NeoInvokeScript> invokeScript(String script, Signer... signers);
+
+    Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 contractScriptHash,
+            List<ContractParameter> methodParameters, Signer... signers);
 
     Request<?, NeoInvokeContractVerify> invokeContractVerify(String contractScriptHash,
             List<ContractParameter> methodParameters, Signer... signers);
@@ -151,6 +177,8 @@ public interface Neo {
     Request<?, NeoOpenWallet> openWallet(String walletPath, String password);
 
     Request<?, NeoDumpPrivKey> dumpPrivKey(String address);
+
+    Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 assetId);
 
     Request<?, NeoGetWalletBalance> getWalletBalance(String assetId);
 
@@ -192,6 +220,8 @@ public interface Neo {
     //endregion
 
     //region ApplicationLogs
+
+    Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txId);
 
     Request<?, NeoGetApplicationLog> getApplicationLog(String txId);
 

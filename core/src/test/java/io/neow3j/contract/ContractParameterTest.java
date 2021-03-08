@@ -361,4 +361,5 @@ public class ContractParameterTest {
         int result = contractParameter.hashCode();
         assertNotEquals(0, result);
     }
+
 }

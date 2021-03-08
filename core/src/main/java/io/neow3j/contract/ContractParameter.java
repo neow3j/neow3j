@@ -238,7 +238,7 @@ public class ContractParameter {
     /**
      * Creates a hash256 parameter from the given hex string.
      *
-     * @param hashHexString a hex string (possibly a 256-bit hash) in little-endian order.
+     * @param hashHexString a 256-bit hash in hexadecimal and little-endian order.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(String hashHexString) {
@@ -249,9 +249,19 @@ public class ContractParameter {
     }
 
     /**
+     * Creates a hash256 parameter from the given hash.
+     *
+     * @param hash a 256-bit hash.
+     * @return the contract parameter.
+     */
+    public static ContractParameter hash256(Hash256 hash) {
+        return hash256(hash.toArray());
+    }
+
+    /**
      * Creates a hash256 parameter from the given bytes.
      *
-     * @param hash bytes (possibly a 256-bit hash) in little-endian order.
+     * @param hash a 256-bit hash in little-endian order.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(byte[] hash) {

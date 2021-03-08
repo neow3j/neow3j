@@ -6,6 +6,7 @@ import static io.neow3j.contract.ContractParameter.publicKey;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.contract.Hash256;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -39,7 +40,7 @@ public class RoleManagementTest extends ContractTest {
         byte[] pubKey = defaultAccount.getECKeyPair().getPublicKey().getEncoded(true);
         signAsCommittee();
 
-        String txHash = invokeFunctionAndAwaitExecution("designateAsRole",
+        Hash256 txHash = invokeFunctionAndAwaitExecution("designateAsRole",
                 integer(Role.STATE_VALIDATOR), array(publicKey(pubKey)));
         int blockIndex = neow3j.getTransactionHeight(txHash).send().getHeight().intValue();
 
@@ -69,4 +70,5 @@ public class RoleManagementTest extends ContractTest {
             RoleManagement.designateAsRole(role, publicKeys);
         }
     }
+
 }

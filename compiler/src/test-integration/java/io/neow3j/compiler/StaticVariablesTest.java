@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageMap;
@@ -22,7 +23,7 @@ public class StaticVariablesTest extends ContractTest {
 
     @Test
     public void putToStaticStorageMap() throws Throwable {
-        String txHash = invokeFunctionAndAwaitExecution(
+        Hash256 txHash = invokeFunctionAndAwaitExecution(
                 ContractParameter.string("key"),
                 ContractParameter.string("value"));
 
@@ -53,5 +54,6 @@ public class StaticVariablesTest extends ContractTest {
         }
 
     }
+
 }
 

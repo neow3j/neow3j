@@ -127,10 +127,10 @@ public class ScriptBuilder {
                 pushInteger((BigInteger) value);
                 break;
             case HASH160:
-            case HASH256:
-                // TODO: 04.03.21 Michael: Cast to Hash256, as soon as the class Hash256 is
-                //  available.
                 pushData(((Hash160) value).toArray());
+                break;
+            case HASH256:
+                pushData(((Hash256) value).toArray());
                 break;
             case STRING:
                 pushData((String) value);
@@ -150,7 +150,6 @@ public class ScriptBuilder {
         }
         return this;
     }
-
 
     /**
      * Adds a push operation with the given integer to the script.

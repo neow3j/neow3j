@@ -7,6 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -85,7 +86,7 @@ public class PolicyContractTest extends ContractTest {
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
 
         // Block the account
-        String txHash = invokeFunctionAndAwaitExecution("blockAccount",
+        Hash256 txHash = invokeFunctionAndAwaitExecution("blockAccount",
                 hash160(defaultAccount.getScriptHash()));
         assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getBoolean());
@@ -202,5 +203,3 @@ public class PolicyContractTest extends ContractTest {
     }
 
 }
-
-

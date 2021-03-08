@@ -9,6 +9,7 @@ import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -138,7 +139,8 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     public static Hash160 fromPublicKeys(List<byte[]> encodedPublicKeys, int signingThreshold) {
-        return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKeys, signingThreshold));
+        return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKeys,
+                signingThreshold));
     }
 
     /**
@@ -151,18 +153,17 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
         return fromScript(Numeric.hexStringToByteArray(script));
     }
 
-    private void checkAndThrowHashLength(byte[] scriptHash) {
-        if (scriptHash.length != NeoConstants.HASH160_SIZE) {
-            throw new IllegalArgumentException("Script hash must be " +
-                NeoConstants.HASH160_SIZE + " bytes long but was " + scriptHash.length +
-                " bytes.");
+    private void checkAndThrowHashLength(byte[] hash) {
+        if (hash.length != NeoConstants.HASH160_SIZE) {
+            throw new IllegalArgumentException("Hash must be " + NeoConstants.HASH160_SIZE +
+                    " bytes long but was " + hash.length + " bytes.");
         }
     }
 
     @Override
     public int compareTo(Hash160 o) {
         return new BigInteger(1, ArrayUtils.reverseArray(hash))
-            .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
+                .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
     }
 
     @Override

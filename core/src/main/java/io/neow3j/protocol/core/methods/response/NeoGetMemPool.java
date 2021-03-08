@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.Response;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -22,17 +24,16 @@ public class NeoGetMemPool extends Response<NeoGetMemPool.MemPoolDetails> {
 
         @JsonProperty("verified")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<String> verified;
+        private List<Hash256> verified;
 
         @JsonProperty("unverified")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<String> unverified;
+        private List<Hash256> unverified;
 
         public MemPoolDetails() {
         }
 
-        public MemPoolDetails(Long height, List<String> verified,
-                List<String> unverified) {
+        public MemPoolDetails(Long height, List<Hash256> verified, List<Hash256> unverified) {
             this.height = height;
             this.verified = verified;
             this.unverified = unverified;
@@ -42,11 +43,11 @@ public class NeoGetMemPool extends Response<NeoGetMemPool.MemPoolDetails> {
             return height;
         }
 
-        public List<String> getVerified() {
+        public List<Hash256> getVerified() {
             return verified;
         }
 
-        public List<String> getUnverified() {
+        public List<Hash256> getUnverified() {
             return unverified;
         }
 

@@ -3,12 +3,8 @@ package io.neow3j.compiler;
 import static io.neow3j.contract.ContractParameter.hash256;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.devpack.Hash160;
@@ -38,7 +34,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
 
     @Test
     public void getTransactionHeight() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(hash256(deployTxHash));
+        NeoInvokeFunction response = callInvokeFunction(hash256(deployTxHash.toString()));
         assertThat(
                 response.getInvocationResult().getStack().get(0).getInteger().longValue(),
                 is(blockOfDeployTx.getIndex()));
@@ -58,7 +54,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
         NeoInvokeFunction response = callInvokeFunction(
                 integer(BigInteger.valueOf(blockOfDeployTx.getIndex())), integer(0));
         List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash)));
+        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash.toString())));
         assertThat(tx.get(1).getInteger().intValue(), is(0)); // version
         assertThat(tx.get(2).getInteger().longValue(), greaterThanOrEqualTo(1L)); // nonce
         assertThat(tx.get(3).getAddress(), is(committee.getAddress())); // sender
@@ -71,9 +67,10 @@ public class LedgerContractIntegrationTest extends ContractTest {
 
     @Test
     public void getTransactionFromBlockWithBlockHash() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(hash256(blockHashOfDeployTx), integer(0));
+        NeoInvokeFunction response = callInvokeFunction(hash256(blockHashOfDeployTx.toString()),
+                integer(0));
         List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash)));
+        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash.toString())));
         assertThat(tx.get(1).getInteger().intValue(), is(0)); // version
         assertThat(tx.get(2).getInteger().longValue(), greaterThanOrEqualTo(1L)); // nonce
         assertThat(tx.get(3).getAddress(), is(committee.getAddress())); // sender
@@ -86,9 +83,9 @@ public class LedgerContractIntegrationTest extends ContractTest {
 
     @Test
     public void getTransaction() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(hash256(deployTxHash));
+        NeoInvokeFunction response = callInvokeFunction(hash256(deployTxHash.toString()));
         List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash)));
+        assertThat(tx.get(0).getHexString(), is(Numeric.reverseHexString(deployTxHash.toString())));
         assertThat(tx.get(1).getInteger().intValue(), is(0)); // version
         assertThat(tx.get(2).getInteger().longValue(), greaterThanOrEqualTo(1L)); // nonce
         assertThat(tx.get(3).getAddress(), is(committee.getAddress())); // sender
@@ -108,15 +105,16 @@ public class LedgerContractIntegrationTest extends ContractTest {
 
     @Test
     public void getBlockWithBlockHash() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(hash256(blockHashOfDeployTx));
+        NeoInvokeFunction response = callInvokeFunction(hash256(blockHashOfDeployTx.toString()));
 
         List<StackItem> block = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(block.get(0).getHexString(), is(Numeric.reverseHexString(blockHashOfDeployTx)));
+        assertThat(block.get(0).getHexString(),
+                is(Numeric.reverseHexString(blockHashOfDeployTx.toString())));
         assertThat(block.get(1).getInteger().intValue(), is(blockOfDeployTx.getVersion()));
         assertThat(block.get(2).getHexString(),
-                is(Numeric.reverseHexString(blockOfDeployTx.getPrevBlockHash())));
+                is(Numeric.reverseHexString(blockOfDeployTx.getPrevBlockHash().toString())));
         assertThat(block.get(3).getHexString(),
-                is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash())));
+                is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
         assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
         assertThat(block.get(6).getAddress(), is(blockOfDeployTx.getNextConsensus()));
@@ -130,12 +128,13 @@ public class LedgerContractIntegrationTest extends ContractTest {
                 integer(BigInteger.valueOf(blockOfDeployTx.getIndex())));
 
         List<StackItem> block = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(block.get(0).getHexString(), is(Numeric.reverseHexString(blockHashOfDeployTx)));
+        assertThat(block.get(0).getHexString(),
+                is(Numeric.reverseHexString(blockHashOfDeployTx.toString())));
         assertThat(block.get(1).getInteger().intValue(), is(blockOfDeployTx.getVersion()));
         assertThat(block.get(2).getHexString(),
-                is(Numeric.reverseHexString(blockOfDeployTx.getPrevBlockHash())));
+                is(Numeric.reverseHexString(blockOfDeployTx.getPrevBlockHash().toString())));
         assertThat(block.get(3).getHexString(),
-                is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash())));
+                is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
         assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
         assertThat(block.get(6).getAddress(), is(blockOfDeployTx.getNextConsensus()));
@@ -211,4 +210,5 @@ public class LedgerContractIntegrationTest extends ContractTest {
             return LedgerContract.getHash();
         }
     }
+
 }
