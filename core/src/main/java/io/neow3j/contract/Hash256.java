@@ -30,7 +30,7 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
             new Hash256("0000000000000000000000000000000000000000000000000000000000000000");
 
     /**
-     * Constructs a new hash with 20 zero bytes.
+     * Constructs a new hash with 32 zero bytes.
      */
     public Hash256() {
         hash = new byte[NeoConstants.HASH256_SIZE];
@@ -82,9 +82,9 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * Gets the script hash as a byte array in little-endian order.
+     * Gets the hash as a byte array in little-endian order.
      *
-     * @return the script hash byte array in little-endian order.
+     * @return the hash byte array in little-endian order.
      */
     @Override
     public byte[] toArray() {
@@ -92,9 +92,9 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * Gets the script hash as a hexadecimal string in big-endian order without the '0x' prefix.
+     * Gets the hash as a hexadecimal string in big-endian order without the '0x' prefix.
      *
-     * @return the script hash as hex string in big-endian order.
+     * @return the hash as hex string in big-endian order.
      */
     public String toString() {
         return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));

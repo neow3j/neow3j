@@ -262,9 +262,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     /**
      * Gets the corresponding block header information according to the
-     * specified script hash.
+     * specified hash.
      *
-     * @param hash the block script hash.
+     * @param hash the block hash.
      * @return the request object.
      */
     @Override
@@ -278,9 +278,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     /**
      * Gets the corresponding block header information according to the
-     * specified script hash.
+     * specified hash.
      *
-     * @param hash the block script hash.
+     * @param hash the block hash.
      * @return the request object.
      */
     @Override
@@ -306,9 +306,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     /**
      * Gets the corresponding block header information according to the
-     * specified script hash in hexadecimal.
+     * specified hash in hexadecimal.
      *
-     * @param hash the block script hash.
+     * @param hash the block hash.
      * @return the request object.
      */
     @Override
@@ -322,9 +322,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     /**
      * Gets the corresponding block header information according to the
-     * specified script hash in hexadecimal.
+     * specified hash in hexadecimal.
      *
-     * @param hash the block script hash.
+     * @param hash the block hash.
      * @return the request object.
      */
     @Override
@@ -637,8 +637,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // SmartContract Methods
 
     /**
-     * Invokes a smart contract with its script hash based on the specified
-     * operation.
+     * Invokes the function with {@code functionName} of the smart contract with the given script
+     * hash.
      *
      * @param contractScriptHash the contract script hash to invoke.
      * @param functionName       the function to invoke.
@@ -652,8 +652,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Invokes a smart contract with its script hash based on the specified
-     * operation.
+     * Invokes the function with {@code functionName} of the smart contract with the given script
+     * hash.
      *
      * @param contractScriptHash the contract script hash to invoke.
      * @param functionName       the function to invoke.
@@ -667,7 +667,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Invokes a smart contract based on the specified function and parameters.
+     * Invokes the function with {@code functionName} of the smart contract with the given script
+     * hash.
      *
      * @param contractScriptHash the contract script hash to invoke.
      * @param functionName       the function to invoke.
@@ -683,7 +684,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Invokes a smart contract based on the specified function and parameters.
+     * Invokes the function with {@code functionName} of the smart contract with the given script
+     * hash.
      *
      * @param contractScriptHash the contract script hash to invoke.
      * @param functionName       the function to invoke.
@@ -1085,9 +1087,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // ApplicationLogs
 
     /**
-     * Gets the contract event information based on the specified transaction
-     * id. The contract event information is stored under the ApplicationLogs
-     * directory.
+     * Gets the application logs of the specified transaction.
      *
      * @param txId the transaction id.
      * @return the request object.
@@ -1098,9 +1098,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the contract event information based on the specified transaction
-     * id. The contract event information is stored under the ApplicationLogs
-     * directory.
+     * Gets the application logs of the specified transaction.
      *
      * @param txId the transaction id.
      * @return the request object.

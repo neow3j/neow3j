@@ -251,7 +251,7 @@ public class ContractParameter {
     /**
      * Creates a hash256 parameter from the given hash.
      *
-     * @param hash a 256-bit hash in little-endian order.
+     * @param hash a 256-bit hash.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(Hash256 hash) {
@@ -261,7 +261,7 @@ public class ContractParameter {
     /**
      * Creates a hash256 parameter from the given bytes.
      *
-     * @param hash bytes (possibly a 256-bit hash) in little-endian order.
+     * @param hash a 256-bit hash.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(byte[] hash) {
