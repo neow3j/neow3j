@@ -2,10 +2,7 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 
@@ -29,27 +26,19 @@ public class IntegerStackItem extends StackItem {
         this.value = value;
     }
 
-//    @JsonSetter("value")
-//    public void setValue(BigInteger value) {
-//        if (value != null) {
-//            this.value = value;
-//        } else {
-//            this.value = BigInteger.ZERO;
-//        }
-//    }
-
-    @JsonValue
+    @Override
     public BigInteger getValue() {
         return this.value;
     }
 
     @Override
-    public String valueToString() {
+    protected String valueToString() {
        return value.toString();
     }
 
     @Override
     public boolean getBoolean() {
+        nullOrEmptyCheck();
         if (value.equals(BigInteger.ONE)) {
             return true;
         }
@@ -61,11 +50,13 @@ public class IntegerStackItem extends StackItem {
 
     @Override
     public BigInteger getInteger() {
+        nullOrEmptyCheck();
         return value;
     }
 
     @Override
     public String getString() {
+        nullOrEmptyCheck();
         return value.toString();
     }
 
@@ -77,11 +68,13 @@ public class IntegerStackItem extends StackItem {
      */
     @Override
     public String getHexString() {
+        nullOrEmptyCheck();
         return Numeric.toHexStringNoPrefix(getByteArray());
     }
 
     @Override
     public byte[] getByteArray(){
+        nullOrEmptyCheck();
         return BigIntegers.toLittleEndianByteArray(value);
     }
 

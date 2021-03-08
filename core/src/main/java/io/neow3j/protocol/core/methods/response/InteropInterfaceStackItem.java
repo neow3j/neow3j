@@ -31,15 +31,13 @@ public class InteropInterfaceStackItem extends StackItem {
     }
 
     @Override
-    public String valueToString() {
-        if (value == null) {
-            return "null";
-        }
+    protected String valueToString() {
         return value.toString();
     }
 
     @Override
     public Object getInteropInterface() {
+        nullOrEmptyCheck();
         return value;
     }
 

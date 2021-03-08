@@ -22,27 +22,31 @@ public class BooleanStackItem extends StackItem {
         this.value = value;
     }
 
+    @Override
     public Boolean getValue() {
         return this.value;
     }
 
     @Override
     public boolean getBoolean() {
+        nullOrEmptyCheck();
         return value;
     }
 
     @Override
     public BigInteger getInteger() {
+        nullOrEmptyCheck();
         return value ? BigInteger.ONE : BigInteger.ZERO;
     }
 
     @Override
     public String getString() {
+        nullOrEmptyCheck();
         return value.toString();
     }
 
     @Override
-    public String valueToString() {
+    protected String valueToString() {
         return value.toString();
     }
 
