@@ -4,20 +4,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
-public class NameState extends TokenState {
+public class NameState extends NFTokenState {
 
     @JsonProperty(value = "expiration")
-    private Integer expiration;
+    private long expiration;
 
     public NameState() {
     }
 
-    public NameState(String name, String description, Integer expiration) {
-        super(name, description);
+    public NameState(String name, long expiration) {
+        super(name);
         this.expiration = expiration;
     }
 
-    public Integer getExpiration() {
+    public long getExpiration() {
         return expiration;
     }
 
@@ -31,21 +31,20 @@ public class NameState extends TokenState {
         }
         NameState that = (NameState) o;
         return Objects.equals(getName(), that.getName()) &&
-                Objects.equals(getDescription(), that.getDescription()) &&
-                Objects.equals(getExpiration(), that.getExpiration());
+                getExpiration() == that.getExpiration();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getDescription());
+        return Objects.hash(getName(), getExpiration());
     }
 
     @Override
     public String toString() {
         return "Properties{" +
                 "name='" + getName() + '\'' +
-                ", description='" + getDescription() + '\'' +
                 ", expiration=" + expiration +
                 "}";
     }
+
 }

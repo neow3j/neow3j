@@ -6,20 +6,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TokenState {
+public class NFTokenState {
 
     @JsonProperty(value = "name", required = true)
     private String name;
 
-    @JsonProperty(value = "description", required = true)
-    private String description;
-
-    public TokenState() {
+    public NFTokenState() {
     }
 
-    public TokenState(String name, String description) {
+    public NFTokenState(String name) {
         this.name = name;
-        this.description = description;
     }
 
     /**
@@ -31,38 +27,28 @@ public class TokenState {
         return name;
     }
 
-    /**
-     * Gets the description.
-     *
-     * @return the description.
-     */
-    public String getDescription() {
-        return description;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof TokenState)) {
+        if (!(o instanceof NFTokenState)) {
             return false;
         }
-        TokenState that = (TokenState) o;
-        return Objects.equals(getName(), that.getName()) &&
-                Objects.equals(getDescription(), that.getDescription());
+        NFTokenState that = (NFTokenState) o;
+        return Objects.equals(getName(), that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getDescription());
+        return Objects.hash(getName());
     }
 
     @Override
     public String toString() {
         return "Properties{" +
                 "name='" + name + '\'' +
-                ", description='" + description + '\'' +
                 "}";
     }
+
 }

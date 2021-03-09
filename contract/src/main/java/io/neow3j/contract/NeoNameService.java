@@ -13,7 +13,6 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
-import io.neow3j.protocol.core.methods.response.MapStackItem;
 import io.neow3j.protocol.core.methods.response.NameState;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
@@ -21,7 +20,6 @@ import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -350,9 +348,8 @@ public class NeoNameService extends NonFungibleToken {
 
         Map<StackItem, StackItem> map = stackItem.getMap();
         String name = map.get(NAME_PROPERTY).getString();
-        String description = map.get(DESC_PROPERTY).getString();
         BigInteger expiration = map.get(EXPI_PROPERTY).getInteger();
-        return new NameState(name, description, expiration.intValue());
+        return new NameState(name, expiration.longValue());
     }
 
     /**

@@ -120,8 +120,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(PROPERTIES, "nns_invokefunction_properties.json");
         NameState nameState = new NeoNameService(neow).properties("client1.neo");
         assertThat(nameState.getName(), is("client1.neo"));
-        assertThat(nameState.getDescription(), is(""));
-        assertThat(nameState.getExpiration(), is(1646214292));
+        assertThat(nameState.getExpiration(), is(1646214292L));
     }
 
     @Test
