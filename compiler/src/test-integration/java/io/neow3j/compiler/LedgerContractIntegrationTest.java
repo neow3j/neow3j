@@ -117,8 +117,9 @@ public class LedgerContractIntegrationTest extends ContractTest {
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
         assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).getAddress(), is(blockOfDeployTx.getNextConsensus()));
-        assertThat(block.get(7).getInteger().intValue(),
+        assertThat(block.get(6).getInteger(), is(blockOfDeployTx.getPrimary()));
+        assertThat(block.get(7).getAddress(), is(blockOfDeployTx.getNextConsensus()));
+        assertThat(block.get(8).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
     }
 
@@ -137,8 +138,9 @@ public class LedgerContractIntegrationTest extends ContractTest {
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
         assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).getAddress(), is(blockOfDeployTx.getNextConsensus()));
-        assertThat(block.get(7).getInteger().intValue(),
+        assertThat(block.get(6).getInteger(), is(blockOfDeployTx.getPrimary()));
+        assertThat(block.get(7).getAddress(), is(blockOfDeployTx.getNextConsensus()));
+        assertThat(block.get(8).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
     }
 

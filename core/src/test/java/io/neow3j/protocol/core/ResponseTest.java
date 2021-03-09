@@ -23,7 +23,6 @@ import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.protocol.core.methods.response.ConsensusData;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractNef;
 import io.neow3j.protocol.core.methods.response.HighPriorityAttribute;
@@ -185,10 +184,6 @@ public class ResponseTest extends ResponseTester {
                         "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ],\n" +
-                        "        \"consensusdata\": {\n" +
-                        "            \"primary\": 0,\n" +
-                        "            \"nonce\": \"45fba5f11cb04667\"\n" +
-                        "        },\n" +
                         "        \"tx\": [\n" +
                         "            {\n" +
                         "                \"hash\": \"0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510\",\n" +
@@ -273,12 +268,6 @@ public class ResponseTest extends ResponseTester {
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 )
-        );
-
-        assertThat(getBlock.getBlock().getConsensusData(), is(notNullValue()));
-        assertThat(
-                getBlock.getBlock().getConsensusData(),
-                is(new ConsensusData(0,"45fba5f11cb04667"))
         );
 
         assertThat(getBlock.getBlock().getTransactions(), hasSize(2));
@@ -393,8 +382,6 @@ public class ResponseTest extends ResponseTester {
                         )
                 )
         );
-
-        assertThat(getBlock.getBlock().getConsensusData(), is(nullValue()));
 
         assertThat(getBlock.getBlock().getTransactions(), is(nullValue()));
 
