@@ -6,6 +6,7 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.contracts.StdLib;
@@ -51,6 +52,54 @@ public class StdLibIntegrationTest extends ContractTest {
         //  See https://github.com/neo-project/neo/issues/1912
         assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
         assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
+    }
+
+    @Test
+    public void jsonSerialize() throws IOException {
+//        int i = 32069;
+//        NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
+//        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+//        // TODO: This should be a Boolean but is a Integer.
+//        //  See https://github.com/neo-project/neo/issues/1912
+//        assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
+//        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
+        fail();
+    }
+
+    @Test
+    public void jsonDeserialize() throws IOException {
+//        int i = 32069;
+//        NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
+//        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+//        // TODO: This should be a Boolean but is a Integer.
+//        //  See https://github.com/neo-project/neo/issues/1912
+//        assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
+//        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
+        fail();
+    }
+
+    @Test
+    public void base58Encode() throws IOException {
+//        int i = 32069;
+//        NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
+//        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+//        // TODO: This should be a Boolean but is a Integer.
+//        //  See https://github.com/neo-project/neo/issues/1912
+//        assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
+//        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
+        fail();
+    }
+
+    @Test
+    public void base58Decode() throws IOException {
+//        int i = 32069;
+//        NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
+//        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+//        // TODO: This should be a Boolean but is a Integer.
+//        //  See https://github.com/neo-project/neo/issues/1912
+//        assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
+//        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
+        fail();
     }
 
     @Test
@@ -133,12 +182,28 @@ public class StdLibIntegrationTest extends ContractTest {
             return StdLib.serialize(new SimpleClass(b, i));
         }
 
+        public static String jsonSerialize(boolean b, int i) {
+            return StdLib.jsonSerialize(new SimpleClass(b, i));
+        }
+
+        public static Object jsonDeserialize(String json) {
+            return StdLib.jsonDeserialize(json);
+        }
+
         public static String base64Encode(byte[] bytes) {
             return StdLib.base64Encode(bytes);
         }
 
         public static byte[] base64Decode(String encoded) {
             return StdLib.base64Decode(encoded);
+        }
+
+        public static String base58Encode(byte[] bytes) {
+            return StdLib.base58Encode(bytes);
+        }
+
+        public static byte[] base58Decode(String encoded) {
+            return StdLib.base58Decode(encoded);
         }
 
         public static String itoa(int i, int base) {
