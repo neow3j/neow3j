@@ -13,6 +13,9 @@ import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlockHeaderCount;
 import io.neow3j.protocol.core.methods.response.NeoGetCommittee;
 import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.methods.response.NeoGetProof;
+import io.neow3j.protocol.core.methods.response.NeoGetStateHeight;
+import io.neow3j.protocol.core.methods.response.NeoGetStateRoot;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -44,9 +47,11 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import io.neow3j.transaction.Signer;
 
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 
@@ -224,6 +229,19 @@ public interface Neo {
     Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txId);
 
     Request<?, NeoGetApplicationLog> getApplicationLog(String txId);
+
+    //endregion
+
+    //region StateService
+
+    Request<?, NeoGetStateRoot> getStateRoot(BlockParameterIndex blockIndex);
+
+    Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractScriptHash,
+            String storageKeyHex);
+
+    Request<?, NeoVerifyProof> verifyProof(Hash256 rootHash, String proofDataHex);
+
+    Request<?, NeoGetStateHeight> getStateHeight();
 
     //endregion
 
