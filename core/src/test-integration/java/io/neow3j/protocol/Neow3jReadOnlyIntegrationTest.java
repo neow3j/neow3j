@@ -1274,16 +1274,13 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testGetProof() throws IOException {
         Hash256 rootHash =
                 new Hash256("36a6f4060635fbf11cb10b818af97de40f57c07e6adb9d630ac96b1749f3124c");
-        Request<?, NeoGetProof> request = getNeow3j()
+        String proof = getNeow3j()
                 .getProof(
                         rootHash,
                         NEO_HASH,
-                        NEXT_VALIDATORS_PREFIX);
-        NeoGetProof response = request.send();
-        if (response.hasError()) {
-            System.out.println(response.getError().getMessage());
-        }
-        String proof = response.getProof();
+                        NEXT_VALIDATORS_PREFIX)
+                .send()
+                .getProof();
 
         assertThat(proof,
                 is("Bf3///8OBiQBAQ8DiSD4LRQpjLSmBG9kEx8VyEbiB3mtXpmi3+NEgzqtIkrSAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cBANm3bIWTKeaMdoKFQDjI76MTSFljqoyaET7umTsNpHY+gP+ZSwML/kHMEL04tRQOyc+WlHHKogYP3QDt5LF5UKHXwMaZSlO4SdloTM0CCcl5+lRZpK/CFgBN1HzM74fIv6UoAQDQu79kWizAkRdV4C6Uq4tdi9iMC/WXI8+S2YmgeZxyjYEKQEGDw8PDw8PA0k4lAP82jiEkclV5txQTVc0UZvDfYK2fpwm4bLP4yxyUgADe1HbqT3PPhuNVHtSwF80odT4QKwgXXDXPf4oquJHHRcDusxCekf3Z3r+eczbhFrf73/TfDMufI5O9be5aYpUwQYEBAQEBAQEBAQEBAQEBARyAAQDv4tMz4JaTbPBI4ie7fncq/RkCqpPLnTf1CUpXz6fYdsEBAQEBAQEBAQD4PVgiHbrhHN9HnC5kaY9pYhEUEAECRcakex+l1lhHbYEBAMoFIlFIAjAjaR2UddAyz/2eeIQDNW93YBYz18WM7Ir1QQELQIrKUABQQIoIQIWOUahM+PS4NmH+5DLAbBg7ReA8XGOLaKO3xO5Zf0rYCEAAA=="));
