@@ -379,11 +379,11 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NeoNameService.SCRIPT_HASH, SET_RECORD,
-                asList(string("client1.neo"), integer(28), string("1234:0:0:0:0:0:0:1234")))
+                asList(string("client1.neo"), integer(28), string("1234::1234")))
                 .toArray();
 
         TransactionBuilder b = new NeoNameService(neow)
-                .setRecord("client1.neo", RecordType.AAAA, "1234:0:0:0:0:0:0:1234");
+                .setRecord("client1.neo", RecordType.AAAA, "1234::1234");
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -392,7 +392,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("input does not match the required regex.");
-        new NeoNameService(neow).setRecord("client1.neo", RecordType.AAAA, "1234::1234");
+        new NeoNameService(neow).setRecord("client1.neo", RecordType.AAAA, "12345::2");
     }
 
     @Test

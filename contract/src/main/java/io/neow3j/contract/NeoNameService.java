@@ -58,9 +58,9 @@ public class NeoNameService extends NonFungibleToken {
     private static final Pattern NAME_REGEX_PATTERN = Pattern.compile(
             "^(?=.{3,255}$)([a-z0-9]{1,62}\\.)+[a-z][a-z0-9]{0,15}$");
     private static final Pattern IPV4_REGEX_PATTERN = Pattern.compile(
-            "^(2(5[0-5]|[0-4]\\d))|1?\\d{1,2}(\\.((2(5[0-5]|[0-4]\\d))|1?\\d{1,2})){3}$");
+            "^(?=\\d+\\.\\d+\\.\\d+\\.\\d+$)(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\\.?){4}$");
     private static final Pattern IPV6_REGEX_PATTERN = Pattern.compile(
-            "^([a-f0-9]{1,4}:){7}[a-f0-9]{1,4}$");
+            "(?:^)(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:))(?=$)");
 
     /**
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
