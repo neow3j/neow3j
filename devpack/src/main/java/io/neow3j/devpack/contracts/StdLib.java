@@ -1,14 +1,10 @@
-package io.neow3j.devpack;
+package io.neow3j.devpack.contracts;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.devpack.annotations.Syscall;
+import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.annotations.ContractHash;
 
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_BASE64DECODE;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_BASE64ENCODE;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_DESERIALIZE;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_BINARY_SERIALIZE;
-
-public class Binary {
+@ContractHash("0xacce6fd80d44e1796aa0c2c625e9e4e0ce39efc0")
+public class StdLib extends ContractInterface {
 
     /**
      * Attempts to serialize the given object to a byte array.
@@ -16,7 +12,6 @@ public class Binary {
      * @param source the object to serialize.
      * @return the serialized byte array.
      */
-    @Syscall(SYSTEM_BINARY_SERIALIZE)
     public static native byte[] serialize(Object source);
 
     /**
@@ -26,8 +21,23 @@ public class Binary {
      * @param source the byte array to deserialize.
      * @return the deserialized object.
      */
-    @Syscall(SYSTEM_BINARY_DESERIALIZE)
     public static native Object deserialize(byte[] source);
+
+    /**
+     * Serializes the given object to a JSON string.
+     *
+     * @param obj The object to JSON-serialize.
+     * @return the object as a JSON string.
+     */
+    public native static String jsonSerialize(Object obj);
+
+    /**
+     * Deserializes the given JSON-formatted string into an object.
+     *
+     * @param json The string to deserialize.
+     * @return The deserialized object.
+     */
+    public native static Object jsonDeserialize(String json);
 
     /**
      * Encodes the given byte array to a Base64 string.
@@ -35,7 +45,6 @@ public class Binary {
      * @param input The byte array to encode.
      * @return the encoded string.
      */
-    @Syscall(SYSTEM_BINARY_BASE64ENCODE)
     public static native String base64Encode(byte[] input);
 
     /**
@@ -44,8 +53,23 @@ public class Binary {
      * @param input The Base64-encoded string.
      * @return the decoded byte array.
      */
-    @Syscall(SYSTEM_BINARY_BASE64DECODE)
     public static native byte[] base64Decode(String input);
+
+    /**
+     * Encodes the given byte array to a Base58 string.
+     *
+     * @param input The byte array to encode.
+     * @return the encoded string.
+     */
+    public static native String base58Encode(byte[] input);
+
+    /**
+     * Decodes the given Base58-encoded string.
+     *
+     * @param input The Base58-encoded string.
+     * @return the decoded byte array.
+     */
+    public static native byte[] base58Decode(String input);
 
     /**
      * Converts the given number to its string representation.
@@ -60,7 +84,6 @@ public class Binary {
      *             (16).
      * @return the number as a string.
      */
-    @Syscall(InteropServiceCode.SYSTEM_BINARY_ITOA)
     public static native String itoa(int i, int base);
 
     /**
@@ -71,8 +94,6 @@ public class Binary {
      *             (16).
      * @return the number.
      */
-    @Syscall(InteropServiceCode.SYSTEM_BINARY_ATOI)
     public static native int atoi(String s, int base);
-
 
 }

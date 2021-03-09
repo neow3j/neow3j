@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.Binary;
+import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -18,11 +18,11 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BinaryTest extends ContractTest {
+public class StdLibIntegrationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(BinaryContract.class.getName());
+        setUp(StdLibIntegrationTestContract.class.getName());
     }
 
     @Test
@@ -122,31 +122,31 @@ public class BinaryTest extends ContractTest {
                 is(-1));
     }
 
-    static class BinaryContract {
+    static class StdLibIntegrationTestContract {
 
         public static Object serializeAndDeserialize(boolean b, int i) {
-            byte[] ser = Binary.serialize(new SimpleClass(b, i));
-            return Binary.deserialize(ser);
+            byte[] ser = StdLib.serialize(new SimpleClass(b, i));
+            return StdLib.deserialize(ser);
         }
 
         public static byte[] serialize(boolean b, int i) {
-            return Binary.serialize(new SimpleClass(b, i));
+            return StdLib.serialize(new SimpleClass(b, i));
         }
 
         public static String base64Encode(byte[] bytes) {
-            return Binary.base64Encode(bytes);
+            return StdLib.base64Encode(bytes);
         }
 
         public static byte[] base64Decode(String encoded) {
-            return Binary.base64Decode(encoded);
+            return StdLib.base64Decode(encoded);
         }
 
         public static String itoa(int i, int base) {
-            return Binary.itoa(i, base);
+            return StdLib.itoa(i, base);
         }
 
         public static int atoi(String s, int base) {
-            return Binary.atoi(s, base);
+            return StdLib.atoi(s, base);
         }
 
         static class SimpleClass {
