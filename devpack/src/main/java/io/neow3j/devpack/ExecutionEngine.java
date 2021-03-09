@@ -22,7 +22,7 @@ public class ExecutionEngine {
      * @return the script container.
      */
     @Syscall(InteropServiceCode.SYSTEM_RUNTIME_GETSCRIPTCONTAINER)
-    public static native Transaction getScriptContainer();
+    public static native Object getScriptContainer();
 
     /**
      * Gets the script hash of the currently executing contract.
