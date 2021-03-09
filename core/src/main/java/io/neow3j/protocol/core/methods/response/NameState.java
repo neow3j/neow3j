@@ -12,7 +12,7 @@ public class NameState extends NFTokenState {
     public NameState() {
     }
 
-    public NameState(String name, long expiration) {
+    public NameState(String name, Long expiration) {
         super(name);
         this.expiration = expiration;
     }
