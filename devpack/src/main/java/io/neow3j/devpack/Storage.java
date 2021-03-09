@@ -209,32 +209,6 @@ public class Storage {
     public static native void put(byte[] key, int value);
 
     /**
-     * Stores the given key-value pair using the given {@link StorageFlag}s.
-     * <p>
-     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-     *
-     * @param key         The key.
-     * @param value       The value to store.
-     * @param storageFlag The storage flags to use.
-     */
-    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-    @Syscall(SYSTEM_STORAGE_PUTEX)
-    public static native void putEx(byte[] key, byte[] value, byte storageFlag);
-
-    /**
-     * Stores the given key-value pair using the the given {@link StorageFlag}s.
-     * <p>
-     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-     *
-     * @param key         The key.
-     * @param value       The value to store.
-     * @param storageFlag The storage flags to use.
-     */
-    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-    @Syscall(SYSTEM_STORAGE_PUTEX)
-    public static native void putEx(byte[] key, int value, byte storageFlag);
-
-    /**
      * Stores the given key-value pair.
      * <p>
      * Implicitly makes a Syscall to retrieve the current contract's storage context.
@@ -247,19 +221,6 @@ public class Storage {
     public static native void put(byte[] key, String value);
 
     /**
-     * Stores the given key-value pair using the the given {@link StorageFlag}s.
-     * <p>
-     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-     *
-     * @param key         The key.
-     * @param value       The value to store.
-     * @param storageFlag The storage flags to use.
-     */
-    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-    @Syscall(SYSTEM_STORAGE_PUTEX)
-    public static native void putEx(byte[] key, String value, byte storageFlag);
-
-    /**
      * Stores the given key-value pair.
      * <p>
      * Implicitly makes a Syscall to retrieve the current contract's storage context.
@@ -270,32 +231,6 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_GETCONTEXT)
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(String key, byte[] value);
-
-    /**
-     * Stores the given key-value pair using the the given {@link StorageFlag}s.
-     * <p>
-     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-     *
-     * @param key         The key.
-     * @param value       The value to store.
-     * @param storageFlag The storage flags to use.
-     */
-    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-    @Syscall(SYSTEM_STORAGE_PUTEX)
-    public static native void putEx(String key, byte[] value, byte storageFlag);
-
-    /**
-     * Stores the given key-value pair using the the given {@link StorageFlag}s.
-     * <p>
-     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-     *
-     * @param key         The key.
-     * @param value       The value to store.
-     * @param storageFlag The storage flags to use.
-     */
-    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-    @Syscall(SYSTEM_STORAGE_PUTEX)
-    public static native void putEx(String key, int value, byte storageFlag);
 
     /**
      * Stores the given key-value pair.
@@ -320,19 +255,6 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_GETCONTEXT)
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(String key, String value);
-
-    /**
-     * Stores the given key-value pair using the the given {@link StorageFlag}s.
-     * <p>
-     * Implicitly makes a Syscall to retrieve the current contract's storage context.
-     *
-     * @param key         The key.
-     * @param value       The value to store.
-     * @param storageFlag The storage flags to use.
-     */
-    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
-    @Syscall(SYSTEM_STORAGE_PUTEX)
-    public static native void putEx(String key, String value, byte storageFlag);
 
     /**
      * Deletes the value corresponding to the given key from the storage.
