@@ -14,6 +14,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -120,8 +121,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(PROPERTIES, "nns_invokefunction_properties.json");
         NameState nameState = new NeoNameService(neow).properties("client1.neo");
         assertThat(nameState.getName(), is("client1.neo"));
-        assertThat(nameState.getDescription(), is(""));
-        assertThat(nameState.getExpiration(), is(1646214292));
+        assertThat(nameState.getExpiration(), is(1646214292L));
     }
 
     @Test
@@ -326,6 +326,39 @@ public class NeoNameServiceTest {
     }
 
     @Test
+    public void setRecord_typeA_regexMatching() throws IOException {
+        setUpWireMockForCall("invokescript", "nns_returnAny.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
+
+        NeoNameService nameService = new NeoNameService(neow);
+
+        // valid IPv6 records
+        nameService.setRecord("client1.neo", RecordType.A, "127.3.5.4");
+        nameService.setRecord("client1.neo", RecordType.A, "123.13.34.65");
+        nameService.setRecord("client1.neo", RecordType.A, "0.0.0.0");
+        nameService.setRecord("client1.neo", RecordType.A, "255.255.255.255");
+
+        // invalid IPv6 records
+        try {
+            nameService.setRecord("client1.neo", RecordType.A, "256.0.34.2");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
+        try {
+            nameService.setRecord("client1.neo", RecordType.A, "127:0:0:1");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
+        try {
+            nameService.setRecord("client1.neo", RecordType.A, "127.0.0.1.1");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
+        try {
+            nameService.setRecord("client1.neo", RecordType.A, "0.0");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
+    }
+
+    @Test
     public void setRecord_typeCNAME() throws IOException {
         setUpWireMockForCall("invokescript", "nns_returnAny.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
@@ -380,12 +413,44 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NeoNameService.SCRIPT_HASH, SET_RECORD,
-                asList(string("client1.neo"), integer(28), string("1234:0:0:0:0:0:0:1234")))
+                asList(string("client1.neo"), integer(28), string("1234::1234")))
                 .toArray();
 
         TransactionBuilder b = new NeoNameService(neow)
-                .setRecord("client1.neo", RecordType.AAAA, "1234:0:0:0:0:0:0:1234");
+                .setRecord("client1.neo", RecordType.AAAA, "1234::1234");
         assertThat(b.getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void setRecord_typeAAAA_regexMatching() throws IOException {
+        setUpWireMockForCall("invokescript", "nns_returnAny.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
+
+        NeoNameService nameService = new NeoNameService(neow);
+
+        // valid IPv6 records
+        nameService.setRecord("client1.neo", RecordType.AAAA, "1234:000:34::2");
+        nameService.setRecord("client1.neo", RecordType.AAAA, "1234:0:0:0:0:0:0:1234");
+        nameService.setRecord("client1.neo", RecordType.AAAA, "1234:0:34::");
+
+        // invalid IPv6 records
+        try {
+            nameService.setRecord("client1.neo", RecordType.AAAA, "1234:000::34::2");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
+        try {
+            nameService.setRecord("client1.neo", RecordType.AAAA, "1234:000::34::2:");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
+        try {
+            nameService.setRecord("client1.neo", RecordType.AAAA, "1234:0:0:0:0:0:0:1:1234");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
+        try {
+            nameService.setRecord("client1.neo", RecordType.AAAA, ":1234:0:0:0:0:0:1234");
+            fail();
+        } catch (IllegalArgumentException ignore) {}
     }
 
     @Test
@@ -393,7 +458,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("input does not match the required regex.");
-        new NeoNameService(neow).setRecord("client1.neo", RecordType.AAAA, "1234::1234");
+        new NeoNameService(neow).setRecord("client1.neo", RecordType.AAAA, "12345::2");
     }
 
     @Test
