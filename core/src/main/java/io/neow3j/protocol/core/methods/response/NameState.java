@@ -7,7 +7,7 @@ import java.util.Objects;
 public class NameState extends NFTokenState {
 
     @JsonProperty(value = "expiration")
-    private long expiration;
+    private Long expiration;
 
     public NameState() {
     }
@@ -17,7 +17,7 @@ public class NameState extends NFTokenState {
         this.expiration = expiration;
     }
 
-    public long getExpiration() {
+    public Long getExpiration() {
         return expiration;
     }
 
@@ -31,7 +31,7 @@ public class NameState extends NFTokenState {
         }
         NameState that = (NameState) o;
         return Objects.equals(getName(), that.getName()) &&
-                getExpiration() == that.getExpiration();
+                Objects.equals(getExpiration(), that.getExpiration());
     }
 
     @Override
