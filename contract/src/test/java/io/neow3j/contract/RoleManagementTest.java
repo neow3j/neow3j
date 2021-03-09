@@ -58,6 +58,13 @@ public class RoleManagementTest {
     }
 
     @Test
+    public void testValidateIntegerValueOfRoleByteValue() {
+        assertThat((int) Role.STATE_VALIDATOR.byteValue(), is(4));
+        assertThat((int) Role.ORACLE.byteValue(), is(8));
+        assertThat((int) Role.NEO_FS_ALPHABET_NODE.byteValue(), is(16));
+    }
+
+    @Test
     public void testGetDesignateByRole() throws IOException {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokefunction", "designation_getByRole.json",
