@@ -24,14 +24,8 @@ public enum InteropServiceCode {
     SYSTEM_CONTRACT_NATIVEONPERSIST("System.Contract.NativeOnPersist", 0),
     SYSTEM_CONTRACT_NATIVEPOSTPERSIST("System.Contract.NativePostPersist", 0),
 
-    NEO_CRYPTO_RIPEMD160("Neo.Crypto.RIPEMD160", 1 << 15),
-    NEO_CRYPTO_SHA256("Neo.Crypto.SHA256", 1 << 15),
-    NEO_CRYPTO_VERIFYWITHECDSASECP256R1("Neo.Crypto.VerifyWithECDsaSecp256r1", 1 << 15),
-    NEO_CRYPTO_VERIFYWITHECDSASECP256K1("Neo.Crypto.VerifyWithECDsaSecp256k1", 1 << 15),
-    // The price for check multisig is the price for Secp256r1.Verify times the number of signatures
-    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1("Neo.Crypto.CheckMultisigWithECDsaSecp256r1", 0),
-    // The price for check multisig is the price for Secp256k1.Verify times the number of signatures
-    NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1("Neo.Crypto.CheckMultisigWithECDsaSecp256k1", 0),
+    NEO_CRYPTO_CHECKSIG("Neo.Crypto.CheckSig", 1 << 15),
+    NEO_CRYPTO_CHECKMULTISIG("Neo.Crypto.CheckMultiSig", 0),
 
     SYSTEM_ITERATOR_CREATE("System.Iterator.Create", 1 << 4),
     SYSTEM_ITERATOR_NEXT("System.Iterator.Next", 1 << 15),
@@ -97,47 +91,16 @@ public enum InteropServiceCode {
 
     /**
      * Get the price in fractions of GAS of this interop service.
-     * <p>
-     * For some interop service the price depends on an additional parameter. In that case use
-     * {@link InteropServiceCode#getPrice(int)}.
      *
      * @return the price
      * @throws UnsupportedOperationException if this interop service has a dynamic price.
      */
     public long getPrice() {
-        switch (this) {
-            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1:
-            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1:
-                throw new UnsupportedOperationException("The price of the interop service "
-                        + this.getName() + " is not fixed but depends on the number of "
-                        + "signatures.");
-            default:
-                return this.price;
+        if (this == NEO_CRYPTO_CHECKMULTISIG) {
+            throw new UnsupportedOperationException("The price of the interop service "
+                    + this.getName() + " is not fixed but depends on the number of signatures.");
         }
-    }
-
-    /**
-     * Get the price in fractions of GAS of this interop service dependent on the given parameter.
-     * <p>
-     * If the interop service has a fixed price, the parameter is simply ignored and the fixed price
-     * is returned.
-     *
-     * @param param The parameter representing the interop service code
-     * @return the price
-     */
-    public long getPrice(int param) {
-        if (this.price != null) {
-            return this.price;
-        }
-        switch (this) {
-            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1:
-                return param * NEO_CRYPTO_VERIFYWITHECDSASECP256R1.price;
-            case NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256K1:
-                return param * NEO_CRYPTO_VERIFYWITHECDSASECP256K1.price;
-            default:
-                throw new UnsupportedOperationException("The price for " + this.toString() + " is "
-                        + "not defined.");
-        }
+        return this.price;
     }
 
     @Override
