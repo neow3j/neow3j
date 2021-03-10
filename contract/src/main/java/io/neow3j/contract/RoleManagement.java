@@ -22,8 +22,7 @@ import java.util.stream.Collectors;
 public class RoleManagement extends SmartContract {
 
     private static final String NAME = "RoleManagement";
-    public final static long NEF_CHECKSUM = 3289425910L;
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String GET_DESIGNATED_BY_ROLE = "getDesignatedByRole";
     private static final String DESIGNATE_AS_ROLE = "designateAsRole";

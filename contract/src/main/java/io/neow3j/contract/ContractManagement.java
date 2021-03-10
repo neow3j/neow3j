@@ -26,8 +26,7 @@ import java.math.BigInteger;
 public class ContractManagement extends SmartContract {
 
     private static final String NAME = "ContractManagement";
-    public final static long NEF_CHECKSUM = 3516775561L;
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";

@@ -34,7 +34,7 @@ import org.junit.rules.ExpectedException;
 public class RoleManagementTest {
 
     private static final String ROLEMANAGEMENT_SCRIPTHASH =
-            "597b1471bbce497b7809e2c8f10db67050008b02";
+            "49cf4e5378ffcd4dec034fd98a174c5491e395e2";
     private static final String DESIGNATE_AS_ROLE = "designateAsRole";
 
     private Account account1;

@@ -31,8 +31,7 @@ import java.util.regex.Pattern;
 public class NeoNameService extends NonFungibleToken {
 
     public static final String NAME = "NameService";
-    public static final long NEF_CHECKSUM = 3740064217L;
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String ADD_ROOT = "addRoot";
     private static final String SET_PRICE = "setPrice";
