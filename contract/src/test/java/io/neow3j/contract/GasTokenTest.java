@@ -10,7 +10,7 @@ public class GasTokenTest {
 
     // The tests don't need an actual connection to a node.
     private final Neow3j neow = Neow3j.build(null);
-    private final static String GASTOKEN_SCRIPTHASH = "70e2301955bf1e74cbb31d18c2f96972abadb328";
+    private final static String GASTOKEN_SCRIPTHASH = "d2a4cff31913016155e38e474a2c06d08be276cf";
 
     @Test
     public void getName() {

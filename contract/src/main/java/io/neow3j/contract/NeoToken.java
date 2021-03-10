@@ -27,8 +27,7 @@ import java.util.Map;
 public class NeoToken extends FungibleToken {
 
     public final static String NAME = "NeoToken";
-    public final static long NEF_CHECKSUM = 3921333105L;
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     public final static int DECIMALS = 0;
     public final static String SYMBOL = "NEO";

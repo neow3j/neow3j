@@ -2,7 +2,7 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee")
+@ContractHash("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")
 public class OracleContract extends ContractInterface {
 
     /**

@@ -6,7 +6,7 @@ import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0x971d69c6dd10ce88e7dfffec1dc603c6125a8764")
+@ContractHash("0xda65b600f7124ce6c79950c1772a36403104f2be")
 public class LedgerContract extends ContractInterface {
 
     /**

@@ -4,29 +4,8 @@ import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0x79bcd398505eb779df6e67e4be6c14cded08e2f2")
+@ContractHash("0xcc5e4edd9f5f8dba8bb65734541df7a1c081c67b")
 public class PolicyContract extends ContractInterface {
-
-    /**
-     * Gets the maximum allowed number of transactions per block.
-     *
-     * @return the maximum allowed number of transactions per block.
-     */
-    public static native int getMaxTransactionsPerBlock();
-
-    /**
-     * Gets the maximum block size.
-     *
-     * @return the maximum block size.
-     */
-    public static native int getMaxBlockSize();
-
-    /**
-     * Gets the maximum allowed system fee of all transactions in a block.
-     *
-     * @return the maximum system fee.
-     */
-    public static native int getMaxBlockSystemFee();
 
     /**
      * Gets the GAS cost per transaction byte, i.e. the fee per byte.

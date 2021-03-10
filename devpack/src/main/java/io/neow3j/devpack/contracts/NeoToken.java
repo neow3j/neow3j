@@ -4,7 +4,7 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83")
+@ContractHash("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")
 public class NeoToken extends FungibleToken {
 
     /**

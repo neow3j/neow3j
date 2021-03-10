@@ -32,7 +32,7 @@ import org.junit.Test;
 public class PolicyContractTest {
 
     private static final String POLICYCONTRACT_SCRIPTHASH =
-            "79bcd398505eb779df6e67e4be6c14cded08e2f2";
+            "cc5e4edd9f5f8dba8bb65734541df7a1c081c67b";
 
     private Neow3j neow3j;
 

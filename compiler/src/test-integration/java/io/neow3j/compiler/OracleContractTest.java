@@ -54,7 +54,7 @@ public class OracleContractTest extends ContractTest {
     public void getScriptHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is("8dc0e742cbdfdeda51ff8a8b78d46829144c80ee"));
+                is("fe924b7cfe89ddd271abaf7210a80a7e11178758"));
     }
 
     @Test

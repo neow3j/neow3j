@@ -46,7 +46,7 @@ public class NeoNameServiceTest {
     private Account account1;
     private Account account2;
 
-    private static final String NAMESERVICE_SCRIPTHASH = "a2b524b68dfe43a9d56af84f443c6b9843b8028c";
+    private static final String NAMESERVICE_SCRIPTHASH = "7a8fcf0392cd625647907afa8e45cc66872b596b";
 
     private static final String TOTAL_SUPPLY = "totalSupply";
     private static final String SYMBOL = "symbol";

@@ -936,13 +936,13 @@ public enum OpCode {
      * A value n is taken from top of main stack. The next n items on main stack are removed, put
      * inside n-sized array and this array is put on top of the main stack.
      */
-    PACK(0xC0, 1 << 9),
+    PACK(0xC0, 1 << 11),
 
     /**
      * An array is removed from top of the main stack. Its elements are put on top of the main stack
      * (in reverse order) and the array size is also put on main stack.
      */
-    UNPACK(0xC1, 1 << 9),
+    UNPACK(0xC1, 1 << 11),
 
     /**
      * An empty array (with size 0) is put on top of the main stack.
@@ -1054,7 +1054,7 @@ public enum OpCode {
      * Converts the top item to the specified type.
      */
     @OperandSize(size = 1)
-    CONVERT(0xDB, 1 << 11);
+    CONVERT(0xDB, 1 << 13);
 
 //endregion
 
