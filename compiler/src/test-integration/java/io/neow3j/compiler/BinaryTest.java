@@ -31,8 +31,6 @@ public class BinaryTest extends ContractTest {
         byte[] result = response.getInvocationResult().getStack().get(0).getByteArray();
         assertThat(result[0], is(StackItemType.ARRAY.byteValue()));
         assertThat(result[1], is((byte) 0x02)); // Number of elements
-        // TODO: This should be a Boolean but is a Integer.
-        //  See https://github.com/neo-project/neo/issues/1912
         assertThat(result[2], is(StackItemType.INTEGER.byteValue())); // type of first element
         assertThat(result[3], is((byte) 0x01)); // size of value
         assertThat(result[4], is((byte) 0x01)); // the value
@@ -47,8 +45,6 @@ public class BinaryTest extends ContractTest {
         int i = 32069;
         NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
-        // TODO: This should be a Boolean but is a Integer.
-        //  See https://github.com/neo-project/neo/issues/1912
         assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
         assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
     }
@@ -67,8 +63,6 @@ public class BinaryTest extends ContractTest {
     public void base64Decode() throws IOException {
         String encoded = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIDEzIGxhenkgZG9ncy4=";
         NeoInvokeFunction response = callInvokeFunction(string(encoded));
-        // TODO: This should be a Buffer but is a ByteString.
-        //  See https://github.com/neo-project/neo/issues/1912
         String decoded = response.getInvocationResult().getStack().get(0).getHexString();
         String expected =
                 "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";

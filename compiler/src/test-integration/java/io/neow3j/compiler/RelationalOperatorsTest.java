@@ -15,8 +15,6 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-// TODO: All these tests expect Integer as return type but it should be Boolean. They must be
-//  adapted once the compiler is updated accordingly.
 public class RelationalOperatorsTest extends ContractTest {
 
     // These are the names of the methods inside of the smart contract under test.
