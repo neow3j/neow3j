@@ -4,8 +4,9 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_WIF;
+import static io.neow3j.protocol.IntegrationTestHelper.CONTRACT_MANAGEMENT_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH_STRING;
+import static io.neow3j.protocol.IntegrationTestHelper.NAME_SERVICE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_TOTAL_SUPPLY;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
@@ -13,7 +14,9 @@ import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.getNodeUrl;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import static io.neow3j.protocol.TestProperties.gasTokenHash;
 import static io.neow3j.protocol.TestProperties.neoTokenHash;
+import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
@@ -94,19 +97,19 @@ public class Neow3jReadOnlyIntegrationTest {
     private static String txHashNeoTransferAsString;
     private static Hash256 txHashGasTransfer;
 
-    private static final String TX_GAS_CONSUMED = "9999540";
+    private static final String TX_GAS_CONSUMED = "9931700";
     private static final long TX_BLOCK_IDX = 2L;
     private static final int TX_HASH_LENGTH_WITH_PREFIX = 66;
     private static final int TX_VERSION = 0;
     private static final String TX_SCRIPT_NEO_TRANSFER =
-            "CwHECQwUbazId3tftsqZsILCa3hs63feRfAMFHr9IDJVyylyvQpqgn5044ftMivsFMAfDAh0cmFuc2ZlcgwUg6sGea1VwFChOtQ/WTbqc/XrHvZBYn1bUjk=";
+            "CwHECQwURVEu00/nfUbhURye/qtSvc8LywMMFAAVnSS6+aNLNge7hkhqDGs5pz9IFMAfDAh0cmFuc2ZlcgwU9WPqQLwoPU0OBcSOowWz8qBzQO9BYn1bUjk=";
     private static final String TX_SCRIPT_GAS_TRANSFER =
-            "CwMA6HZIFwAAAAwUbazId3tftsqZsILCa3hs63feRfAMFHr9IDJVyylyvQpqgn5044ftMivsFMAfDAh0cmFuc2ZlcgwUKLOtq3Jp+cIYHbPLdB6/VRkw4nBBYn1bUjk=";
+            "CwMA6HZIFwAAAAwURVEu00/nfUbhURye/qtSvc8LywMMFAAVnSS6+aNLNge7hkhqDGs5pz9IFMAfDAh0cmFuc2ZlcgwUz3bii9AGLEpHjuNVYQETGfPPpNJBYn1bUjk=";
     private static final String TX_AMOUNT_NEO = "2500";
     private static final String TX_AMOUNT_GAS = "1000";
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
-    private static final String TX_RECIPIENT_1 = "NVuspqtyaV92cDo7SQdiYDCMvPUEZ3Ys3f";
-    private static final int TX_LENGTH = 508;
+    private static final String TX_RECIPIENT_1 = "NSEV4gPHGUs5SAR2sqvCEi47XXhKuAh1J9";
+    private static final int TX_LENGTH = 504;
 
     private static final String CALC_NETWORK_FEE_TX =
             "005815ca1700c0030000000000ebc403000000000037170000017afd203255cb2972bd0a6a827e74e387ed322bec0100560c00120c14dc84704b8283397326095c0b4e9662282c3a73190c147afd203255cb2972bd0a6a827e74e387ed322bec14c00c087472616e736665720c14b6720fef7e7eb73f25afb470f587997ce3e2460a41627d5b5201420c40a969322ebce6b9a5746005453e4c657c175403399a8ce23a1e550c64997ca23b65297ea68242e3675dc7aceec135e9f0d0e80b3d2d40e1db6b7946c1f7c86c602b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf";
@@ -117,29 +120,29 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_SYMBOL = "symbol";
     protected static final String INVOKE_BALANCE = "balanceOf";
 
-    protected static final String UNCLAIMED_GAS = "99997500";
+    protected static final String UNCLAIMED_GAS = "100000000";
 
     // The address that is imported to the wallet.
     protected static final String IMPORT_ADDRESS_WIF =
             "L3ijcgFEaNvR5nYYHuMNLtCc8e5Qwerj9qe6VUHNkF74GkUZtiD8";
-    protected static final String IMPORT_ADDRESS = "NcVYTbDRzThKUFxEvjA4nPDn1nVpBK5CVH";
+    protected static final String IMPORT_ADDRESS = "Ndo1PUkCkuxgRFd3GqPCuBLZjxozBJhqhM";
     // The address from which account 2 receives GAS when sending NEO to the recipient address.
     protected static final String TX_GAS_ADDRESS = "NKuyBkoGdZZSLyPbJEetheRhMjeznFZszf";
     protected static final String TX_GAS_AMOUNT_EXPECTED = "100000000";
 
     protected static final long BLOCK_0_IDX = 0;
     protected static final String BLOCK_0_HASH_STRING =
-            "0xfd502bea5e3badbdfcedde3bf7e59330440fe1ba8b079dd1b18aaa9257848c59";
+            "0x1aa1a3fc3449e0b1bfbc54b3c3a4a55f13cc7a5fccc166091ef09d67e767830b";
     private static final Hash256 BLOCK_0_HASH = new Hash256(BLOCK_0_HASH_STRING);
     protected static final String BLOCK_0_HEADER_RAW_STRING =
-            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVWHgUp8gG/opUbVeYsix9tm7/OLPI0Hiue25Q3blOFCI6hnvVQEAAAAAAAB6/SAyVcspcr0KaoJ+dOOH7TIr7AEAAREA";
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAABWdJLr5o0s2B7uGSGoMazmnP0gBAAER";
     protected static final String BLOCK_0_RAW_STRING =
-            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVWHgUp8gG/opUbVeYsix9tm7/OLPI0Hiue25Q3blOFCI6hnvVQEAAAAAAAB6/SAyVcspcr0KaoJ+dOOH7TIr7AEAAREBAB2sK3wAAAAA";
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAABWdJLr5o0s2B7uGSGoMazmnP0gBAAERAA==";
     private static final Hash256 ROOT_HASH_0 =
-            new Hash256("0x4406f33dfdc455b61181184725446af40820f9fe7a2be88d6d4856cac6623445");
+            new Hash256("0xaf8825dfd945950067f0fc66e361fc09ffbdea4830391e224b30146e342d6bef");
 
     // wif KxwrYazXiCdK33JEddpwHbXTpAYyhXC1YyC4SXTVF6GLRPBuVBFb
-    private static final String RECIPIENT = "NhixBNjEBvgyk18RzuXJt1T3BpqgAwANSA";
+    private static final String RECIPIENT = "NcuAjK8yN5DZ8PfaghPGVQw55gsi7ichXs";
 
     protected static Neow3j neow3j;
 
@@ -154,8 +157,7 @@ public class Neow3jReadOnlyIntegrationTest {
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
-        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(
-                "1", NEO_HASH, getNeow3j());
+        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH, getNeow3j());
         // make a transaction that can be used for the tests
         txHashNeoTransfer = transferNeo(TX_RECIPIENT_1, TX_AMOUNT_NEO);
         txHashNeoTransferAsString = txHashNeoTransfer.toString();
@@ -174,7 +176,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     private static Hash256 transferGas(String toAddress, String amount) throws IOException {
         NeoSendToAddress send = getNeow3j()
-                .sendToAddress(GAS_HASH_STRING, toAddress, amount)
+                .sendToAddress(gasTokenHash(), toAddress, amount)
                 .send();
         Hash256 txHash = send.getSendToAddress().getHash();
         // ensure that the transaction is sent
@@ -356,19 +358,18 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getNativeContracts();
 
-        assertThat(nativeContracts, hasSize(8));
+        assertThat(nativeContracts, hasSize(10));
         ContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId(), is(-1));
         assertNull(contractState1.getUpdateCounter());
-        assertThat(contractState1.getHash(),
-                is(new Hash160("0xa501d7d7d10983673b61b7a2d3a813b36f9f0e43")));
+        assertThat(contractState1.getHash(), is(CONTRACT_MANAGEMENT_HASH));
 
         ContractNef nef1 = contractState1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef1.getTokens(), hasSize(0));
-        assertThat(nef1.getScript(), is("D0Ea93tn"));
-        assertThat(nef1.getChecksum(), is(3516775561L));
+        assertThat(nef1.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef1.getChecksum(), is(1110259869L));
 
         ContractManifest manifest1 = contractState1.getManifest();
         assertThat(manifest1.getName(), is("ContractManagement"));
@@ -378,10 +379,9 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractABI abi1 = manifest1.getAbi();
         assertThat(abi1.getMethods(), hasSize(8));
         assertThat(abi1.getMethods().get(7).getName(), is("update"));
-        assertThat(abi1.getMethods().get(7).getParameters(),
-                hasSize(3));
+        assertThat(abi1.getMethods().get(7).getParameters(), hasSize(3));
         assertThat(abi1.getMethods().get(7).getReturnType(), is(ContractParameterType.VOID));
-        assertThat(abi1.getMethods().get(7).getOffset(), is(0));
+        assertThat(abi1.getMethods().get(7).getOffset(), is(49));
         assertFalse(abi1.getMethods().get(7).isSafe());
         assertThat(abi1.getEvents(), hasSize(3));
         assertThat(abi1.getEvents().get(1).getName(), is("Update"));
@@ -401,8 +401,7 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractState contractState8 = nativeContracts.get(7);
         assertThat(contractState8.getId(), is(-8));
         assertNull(contractState8.getUpdateCounter());
-        assertThat(contractState8.getHash(),
-                is(new Hash160("0xa2b524b68dfe43a9d56af84f443c6b9843b8028c")));
+        assertThat(contractState8.getHash(), is(NAME_SERVICE_HASH));
 
         ContractNef nef8 = contractState8.getNef();
         assertThat(nef8.getMagic(), is(860243278L));
@@ -447,15 +446,15 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-3));
+        assertThat(contractState.getId(), is(-5));
         assertThat(contractState.getHash(), is(NEO_HASH));
         ContractNef nef = contractState.getNef();
         assertThat(nef, is(notNullValue()));
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is("AP1BGvd7Zw=="));
-        assertThat(nef.getChecksum(), is(3921333105L));
+        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQA=="));
+        assertThat(nef.getChecksum(), is(1841570703L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -466,13 +465,13 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(abi);
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(14));
-        ContractMethod method = abi.getMethods().get(6);
+        assertThat(abi.getMethods(), hasSize(16));
+        ContractMethod method = abi.getMethods().get(7);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getParamName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getParamType(),
-                is(ContractParameterType.BYTE_ARRAY));
-        assertThat(method.getOffset(), is(0));
+                is(ContractParameterType.PUBLIC_KEY));
+        assertThat(method.getOffset(), is(49));
         assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
         assertFalse(method.isSafe());
 
@@ -505,15 +504,15 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-4));
+        assertThat(contractState.getId(), is(-6));
         assertThat(contractState.getHash(), is(GAS_HASH));
         ContractNef nef = contractState.getNef();
         assertNotNull(nef);
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is("APxBGvd7Zw=="));
-        assertThat(nef.getChecksum(), is(3155977747L));
+        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef.getChecksum(), is(2663858513L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -697,7 +696,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getStorage();
 
-        assertThat(storage, is("QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA="));
+        assertThat(storage, is("QAFBAighA2z8xdBVDQSBtm9Y4lBnKA8EK0kz/AE9xJMM4qQZTJ2UIQA="));
     }
 
     @Test
@@ -707,7 +706,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getStorage();
 
-        assertThat(storage, is("QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA="));
+        assertThat(storage, is("QAFBAighA2z8xdBVDQSBtm9Y4lBnKA8EK0kz/AE9xJMM4qQZTJ2UIQA="));
     }
 
     @Test
@@ -755,7 +754,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(committee, hasSize(1));
         assertThat(committee.get(0),
-                is("02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"));
+                is("036cfcc5d0550d0481b66f58e25067280f042b4933fc013dc4930ce2a4194c9d94"));
     }
 
     // Node Methods
@@ -809,7 +808,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getUnclaimedGas();
 
         assertThat(unclaimedGas, is(notNullValue()));
-        assertThat(unclaimedGas.getUnclaimed(), is(UNCLAIMED_GAS));
+        assertThat(unclaimedGas.getUnclaimed(), greaterThanOrEqualTo(UNCLAIMED_GAS));
         assertThat(unclaimedGas.getAddress(), is(ACCOUNT_1_ADDRESS));
     }
 
@@ -914,12 +913,11 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testInvokeScript() throws IOException {
-        // Script that transfers 100 NEO from NX8GreRFGFK5wpGMWetpX93HmtrezGogzk to
-        // NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj.
+        // Script that transfers 100 NEO from NKvR5WeczCQMcVWQD9aaMqegfEoCBXGWpW to
+        // NdihqSLYTf1B1WYuzhM52MNqvCNPJKLZaz.
         String script =
-                "CwBkDBSTrRVypLNcS5JUg84XAbeHQtxGDwwUev0gMlXLKXK9CmqCfnTjh+0yK" +
-                        "+wUwB8MCHRyYW5zZmVyDBSDqwZ5rVXAUKE61D9ZNupz9ese9kFifVtSOQ==";
-        Signer signer = Signer.calledByEntry(Hash160.fromAddress(ACCOUNT_1_ADDRESS));
+                "CwBkDBSTrRVypLNcS5JUg84XAbeHQtxGDwwUev0gMlXLKXK9CmqCfnTjh+0yK+wUwB8MCHRyYW5zZmVyDBSDqwZ5rVXAUKE61D9ZNupz9ese9kFifVtSOQ==";
+        Signer signer = calledByEntry(Hash160.fromAddress(ACCOUNT_1_ADDRESS));
         InvocationResult invoc = getNeow3j()
                 .invokeScript(script, signer)
                 .send()
@@ -1073,7 +1071,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getNetworkFee();
 
-        assertThat(networkFee.getNetworkFee(), is(new BigInteger("1230610")));
+        assertThat(networkFee.getNetworkFee(), is(new BigInteger("136000")));
     }
 
     @Test
@@ -1255,7 +1253,7 @@ public class Neow3jReadOnlyIntegrationTest {
     // StateService
 
     @Test
-    public void testGetStateRoot() throws IOException {
+    public void testGetStateRoot() throws IOException{
         StateRoot stateRoot = getNeow3j()
                 .getStateRoot(new BlockParameterIndex(0))
                 .send()
@@ -1263,25 +1261,37 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
-        assertThat(stateRoot.getRootHash(),
-                is(ROOT_HASH_0));
+        assertThat(stateRoot.getRootHash(), is(ROOT_HASH_0));
         assertNull(stateRoot.getWitness());
     }
 
     @Test
     public void testGetProof() throws IOException {
-        Hash256 rootHash =
-                new Hash256("36a6f4060635fbf11cb10b818af97de40f57c07e6adb9d630ac96b1749f3124c");
-        String proof = getNeow3j()
-                .getProof(
-                        rootHash,
-                        NEO_HASH,
-                        NEXT_VALIDATORS_PREFIX)
-                .send()
-                .getProof();
+        int localRootIndex = 2;
+        String proof = null;
+        while (localRootIndex < 5) {
+            Hash256 rootHash = getNeow3j()
+                    .getStateRoot(new BlockParameterIndex(localRootIndex))
+                    .send()
+                    .getStateRoot()
+                    .getRootHash();
 
-        assertThat(proof,
-                is("Bf3///8OBiQBAQ8DiSD4LRQpjLSmBG9kEx8VyEbiB3mtXpmi3+NEgzqtIkrSAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cBANm3bIWTKeaMdoKFQDjI76MTSFljqoyaET7umTsNpHY+gP+ZSwML/kHMEL04tRQOyc+WlHHKogYP3QDt5LF5UKHXwMaZSlO4SdloTM0CCcl5+lRZpK/CFgBN1HzM74fIv6UoAQDQu79kWizAkRdV4C6Uq4tdi9iMC/WXI8+S2YmgeZxyjYEKQEGDw8PDw8PA0k4lAP82jiEkclV5txQTVc0UZvDfYK2fpwm4bLP4yxyUgADe1HbqT3PPhuNVHtSwF80odT4QKwgXXDXPf4oquJHHRcDusxCekf3Z3r+eczbhFrf73/TfDMufI5O9be5aYpUwQYEBAQEBAQEBAQEBAQEBARyAAQDv4tMz4JaTbPBI4ie7fncq/RkCqpPLnTf1CUpXz6fYdsEBAQEBAQEBAQD4PVgiHbrhHN9HnC5kaY9pYhEUEAECRcakex+l1lhHbYEBAMoFIlFIAjAjaR2UddAyz/2eeIQDNW93YBYz18WM7Ir1QQELQIrKUABQQIoIQIWOUahM+PS4NmH+5DLAbBg7ReA8XGOLaKO3xO5Zf0rYCEAAA=="));
+            proof = getNeow3j()
+                    .getProof(
+                            rootHash,
+                            NEO_HASH,
+                            NEXT_VALIDATORS_PREFIX
+                    )
+                    .send()
+                    .getProof();
+
+            if (proof == null) {
+                localRootIndex += 1;
+            } else {
+                break;
+            }
+        }
+        assertNotNull(proof);
     }
 
     @Test
