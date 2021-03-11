@@ -16,8 +16,6 @@ public class IntegrationTestHelper {
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
     static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
-    static final String PROTOCOL_FILE_SOURCE = "/node-config/protocol.json";
-    static final String PROTOCOL_FILE_DESTINATION = "/neo-cli/protocol.json";
     static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
     static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
     static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
@@ -61,8 +59,6 @@ public class IntegrationTestHelper {
         return new GenericContainer<>(
                 DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
                 .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withClasspathResourceMapping(PROTOCOL_FILE_SOURCE, PROTOCOL_FILE_DESTINATION,
                         BindMode.READ_ONLY)
                 .withCopyFileToContainer(
                         MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
