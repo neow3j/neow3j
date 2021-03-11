@@ -102,7 +102,7 @@ public class AsmHelperTest {
     }
 
     // This method is used to test annotations.
-    @Syscall(InteropServiceCode.NEO_CRYPTO_SHA256)
+    @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
     @Instruction
     private void annotatedMethod() {
 

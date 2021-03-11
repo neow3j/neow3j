@@ -124,9 +124,8 @@ public class Hash160Test {
         byte[] script = Numeric.hexStringToByteArray(""
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
-                + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash()
+                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash()
         );
 
         Hash160 hash = Hash160.fromPublicKey(Numeric.hexStringToByteArray(key));

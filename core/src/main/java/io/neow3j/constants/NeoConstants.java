@@ -96,12 +96,12 @@ public class NeoConstants {
     public static final int SERIALIZED_INVOCATION_SCRIPT_SIZE = 67;
 
     /**
-     * Size of a verification script in bytes.
+     * Size of a single signature verification script in bytes.
      * <p>
-     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 33 (public key) + 1 (PUSHNULL OpCode) + 1
-     * (SYSCALL Opcode) + 4 (InteropServiceCode) = 41
+     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 33 (public key) + 1 (SYSCALL Opcode)
+     * + 4 (InteropServiceCode) = 41
      */
-    public static final int VERIFICATION_SCRIPT_SIZE = 41;
+    public static final int VERIFICATION_SCRIPT_SIZE = 40;
 
     //endregion
 

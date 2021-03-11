@@ -1,25 +1,11 @@
 package io.neow3j.wallet;
 
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import io.neow3j.contract.Hash160;
-import io.neow3j.transaction.VerificationScript;
-
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.OpCode;
+import io.neow3j.contract.Hash160;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
@@ -31,9 +17,14 @@ import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
+import org.hamcrest.core.StringContains;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,10 +36,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.core.StringContains;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class AccountTest {
 
@@ -221,8 +218,7 @@ public class AccountTest {
         byte[] expectedScript = scriptBuilder
                 .pushData(Numeric.hexStringToByteArray(
                         "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"))
-                .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
                 .toArray();
         assertThat(a.getVerificationScript().getScript(), is(expectedScript));
     }
@@ -258,8 +254,7 @@ public class AccountTest {
         String expectedScript = Base64.encode(scriptBuilder
                 .pushData(Numeric.hexStringToByteArray(
                         "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"))
-                .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
                 .toArray());
         assertThat(nep6.getContract().getScript(), is(expectedScript));
         assertThat(nep6.getKey(), is(ACCOUNT_JSON_KEY));
@@ -282,8 +277,7 @@ public class AccountTest {
                 .pushData(Numeric.hexStringToByteArray(
                         "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"))
                 .pushInteger(1)
-                .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG)
                 .toArray());
         assertThat(nep6.getContract().getScript(), is(expectedScript));
         assertFalse(nep6.getDefault());
@@ -313,8 +307,7 @@ public class AccountTest {
         byte[] verifScript = scriptBuilder
                 .pushData(Numeric.hexStringToByteArray(
                         "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"))
-                .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
                 .toArray();
         assertThat(a.getVerificationScript().getScript(), is(verifScript));
     }

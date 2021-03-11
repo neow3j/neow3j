@@ -108,9 +108,8 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key2 // public key
                 + OpCode.PUSH2.toString() // m = 2, number of keys
-                + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getHash()
+                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash()
         );
         assertArrayEquals(expected, script);
     }
@@ -123,9 +122,8 @@ public class ScriptBuilderTest extends TestBinaryUtils {
         byte[] expected = hexStringToByteArray(""
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
-                + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash()
+                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash()
         );
         assertArrayEquals(expected, script);
     }
