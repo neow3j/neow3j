@@ -2,7 +2,7 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0x70e2301955bf1e74cbb31d18c2f96972abadb328")
+@ContractHash("0xd2a4cff31913016155e38e474a2c06d08be276cf")
 public class GasToken extends FungibleToken {
 
 }

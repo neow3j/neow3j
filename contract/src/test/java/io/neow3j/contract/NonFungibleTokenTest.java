@@ -12,9 +12,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.protocol.core.methods.response.TokenState;
+import io.neow3j.protocol.core.methods.response.NFTokenState;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -130,10 +129,9 @@ public class NonFungibleTokenTest {
     @Test
     public void testGetProperties() throws IOException {
         setUpWireMockForInvokeFunction("properties", "nft_properties.json");
-        TokenState properties = nfTestToken.properties(new byte[]{1});
+        NFTokenState properties = nfTestToken.properties(new byte[]{1});
 
         assertThat(properties.getName(), is("A name"));
-        assertThat(properties.getDescription(), is("A description"));
     }
 
     @Test

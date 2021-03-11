@@ -5,7 +5,7 @@ import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
-@ContractHash("0xa501d7d7d10983673b61b7a2d3a813b36f9f0e43")
+@ContractHash("0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
 public class ContractManagement extends ContractInterface {
 
     /**

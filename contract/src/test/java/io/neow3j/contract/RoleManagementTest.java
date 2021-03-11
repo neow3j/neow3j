@@ -34,7 +34,7 @@ import org.junit.rules.ExpectedException;
 public class RoleManagementTest {
 
     private static final String ROLEMANAGEMENT_SCRIPTHASH =
-            "597b1471bbce497b7809e2c8f10db67050008b02";
+            "49cf4e5378ffcd4dec034fd98a174c5491e395e2";
     private static final String DESIGNATE_AS_ROLE = "designateAsRole";
 
     private Account account1;
@@ -55,6 +55,13 @@ public class RoleManagementTest {
 
         account1 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
                 "0f7d2f77f3229178650b958eb286258f0e6533d0b86ec389b862c440c6511a4b")));
+    }
+
+    @Test
+    public void testValidateIntegerValueOfRoleByteValue() {
+        assertThat((int) Role.STATE_VALIDATOR.byteValue(), is(4));
+        assertThat((int) Role.ORACLE.byteValue(), is(8));
+        assertThat((int) Role.NEO_FS_ALPHABET_NODE.byteValue(), is(16));
     }
 
     @Test

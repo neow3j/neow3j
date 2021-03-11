@@ -37,6 +37,9 @@ import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.methods.response.NeoGetProof;
+import io.neow3j.protocol.core.methods.response.NeoGetStateHeight;
+import io.neow3j.protocol.core.methods.response.NeoGetStateRoot;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -69,6 +72,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
 import io.neow3j.protocol.core.methods.response.NeoWitness;
 import io.neow3j.protocol.core.methods.response.OracleResponseAttribute;
 import io.neow3j.protocol.core.methods.response.OracleResponseCode;
@@ -2584,6 +2588,87 @@ public class ResponseTest extends ResponseTester {
         assertThat(eventName1, is("Transfer"));
         assertThat(from1, is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
         assertThat(amount1, is(BigInteger.valueOf(100)));
+    }
+
+    // StateService
+
+    @Test
+    public void testGetStateRoot() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"result\": {\n" +
+                "        \"version\": 0,\n" +
+                "        \"index\": 160,\n" +
+                "        \"roothash\": \"0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7\",\n" +
+                "        \"witness\": {\n" +
+                "            \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs\",\n" +
+                "            \"verification\": \"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
+                "        }\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoGetStateRoot neoGetStateRoot = deserialiseResponse(NeoGetStateRoot.class);
+        NeoGetStateRoot.StateRoot stateRoot = neoGetStateRoot.getStateRoot();
+
+        assertThat(stateRoot.getVersion(), is(0));
+        assertThat(stateRoot.getIndex(), is(160L));
+        assertThat(stateRoot.getRootHash(),
+                is(new Hash256("0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7")));
+        assertNotNull(stateRoot.getWitness());
+        assertThat(stateRoot.getWitness().getInvocation(),
+                is("DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs"));
+        assertThat(stateRoot.getWitness().getVerification(),
+                is("EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw=="));
+    }
+
+    @Test
+    public void testGetProof() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"result\": \"Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA=\"\n" +
+                "}"
+        );
+
+        NeoGetProof neoGetProof = deserialiseResponse(NeoGetProof.class);
+
+        assertThat(neoGetProof.getProof(),
+                is("Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA="));
+    }
+
+    @Test
+    public void testVerifyProof() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA=\"\n" +
+                "}"
+        );
+
+        NeoVerifyProof proof = deserialiseResponse(NeoVerifyProof.class);
+
+        assertThat(proof.verifyProof(), is("QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA="));
+    }
+
+    @Test
+    public void testGetStateHeight() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"localrootindex\": 212,\n" +
+                "        \"validatedrootindex\": 211\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoGetStateHeight neoGetStateHeight = deserialiseResponse(NeoGetStateHeight.class);
+        NeoGetStateHeight.StateHeight stateHeight = neoGetStateHeight.getStateHeight();
+
+        assertThat(stateHeight.getLocalRootIndex(), is(212L));
+        assertThat(stateHeight.getValidatedRootIndex(), is(211L));
     }
 
 }

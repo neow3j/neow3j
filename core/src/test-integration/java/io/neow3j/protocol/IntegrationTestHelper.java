@@ -9,6 +9,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import static io.neow3j.protocol.TestProperties.neoTokenHash;
+
 public class IntegrationTestHelper {
 
     static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
@@ -16,8 +18,6 @@ public class IntegrationTestHelper {
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
     static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
-    static final String PROTOCOL_FILE_SOURCE = "/node-config/protocol.json";
-    static final String PROTOCOL_FILE_DESTINATION = "/neo-cli/protocol.json";
     static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
     static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
     static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
@@ -32,8 +32,7 @@ public class IntegrationTestHelper {
     static final String NODE_WALLET_PATH = "wallet.json";
 
     // Native token hashes.
-    static final String NEO_HASH_STRING = "f61eebf573ea36593fd43aa150c055ad7906ab83";
-    static final Hash160 NEO_HASH = new Hash160(NEO_HASH_STRING);
+    static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
     static final String GAS_HASH_STRING = "70e2301955bf1e74cbb31d18c2f96972abadb328";
     static final Hash160 GAS_HASH = new Hash160(GAS_HASH_STRING);
     // Total supply of NEO tokens.
@@ -61,8 +60,6 @@ public class IntegrationTestHelper {
         return new GenericContainer<>(
                 DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
                 .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withClasspathResourceMapping(PROTOCOL_FILE_SOURCE, PROTOCOL_FILE_DESTINATION,
                         BindMode.READ_ONLY)
                 .withCopyFileToContainer(
                         MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),

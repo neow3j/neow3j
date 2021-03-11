@@ -49,7 +49,7 @@ public class NeoTokenTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     private Account account1;
-    private static final String NEOTOKEN_SCRIPTHASH = "f61eebf573ea36593fd43aa150c055ad7906ab83";
+    private static final String NEOTOKEN_SCRIPTHASH = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5";
     private static final String VOTE = NeoToken.VOTE;
     private static final String REGISTER_CANDIDATE = NeoToken.REGISTER_CANDIDATE;
     private static final String UNREGISTER_CANDIDATE = NeoToken.UNREGISTER_CANDIDATE;

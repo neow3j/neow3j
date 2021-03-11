@@ -209,9 +209,8 @@ public class SmartContract {
         return getManifest().getName();
     }
 
-    protected static Hash160 getScriptHashOfNativeContract(long nefCheckSum,
-            String contractName) {
-        return getContractHash(Hash160.ZERO, nefCheckSum, contractName);
+    protected static Hash160 getScriptHashOfNativeContract(String contractName) {
+        return getContractHash(Hash160.ZERO, 0, contractName);
     }
 
     /**
@@ -226,9 +225,7 @@ public class SmartContract {
      * @param contractName the contract's name.
      * @return the hash of the contract.
      */
-    public static Hash160 getContractHash(Hash160 sender, long nefCheckSum,
-            String contractName) {
-
+    public static Hash160 getContractHash(Hash160 sender, long nefCheckSum, String contractName) {
         return Hash160.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)

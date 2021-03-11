@@ -23,16 +23,6 @@
           {
             "key": {
               "type": "ByteString",
-              "value": "ZGVzY3JpcHRpb24="
-            },
-            "value": {
-              "type": "ByteString",
-              "value": ""
-            }
-          },
-          {
-            "key": {
-              "type": "ByteString",
               "value": "ZXhwaXJhdGlvbg=="
             },
             "value": {

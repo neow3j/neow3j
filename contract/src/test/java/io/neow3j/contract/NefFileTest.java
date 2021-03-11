@@ -54,8 +54,10 @@ public class NefFileTest {
             "contracts/TestContractWithMethodTokens.nef";
     private static final String TESTCONTRACT_WITH_TOKENS_SCRIPT = "213701004021370000405700017840";
     private final static List<MethodToken> TESTCONTRACT_METHOD_TOKENS = asList(
-            new MethodToken(NeoToken.SCRIPT_HASH, "getGasPerBlock", 0, true, CallFlags.ALL),
-            new MethodToken(GasToken.SCRIPT_HASH, "totalSupply", 0, true, CallFlags.ALL));
+            new MethodToken(new Hash160("f61eebf573ea36593fd43aa150c055ad7906ab83"),
+                    "getGasPerBlock", 0, true, CallFlags.ALL),
+            new MethodToken(new Hash160("70e2301955bf1e74cbb31d18c2f96972abadb328"),
+                    "totalSupply", 0, true, CallFlags.ALL));
     private static final String TESTCONTRACT_WITH_TOKENS_CHECKSUM = "b559a069";
 
 

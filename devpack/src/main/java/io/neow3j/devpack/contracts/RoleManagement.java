@@ -9,7 +9,7 @@ import io.neow3j.devpack.annotations.ContractHash;
  * can have the roles defined in {@link Role}, e.g. be an oracle node or a validator node. This
  * contract provides the functionality to check the nodes assigned a particular role.
  */
-@ContractHash("0x597b1471bbce497b7809e2c8f10db67050008b02")
+@ContractHash("0x49cf4e5378ffcd4dec034fd98a174c5491e395e2")
 public class RoleManagement extends ContractInterface {
 
     /**

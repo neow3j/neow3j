@@ -4,7 +4,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.protocol.core.methods.response.TokenState;
+import io.neow3j.protocol.core.methods.response.NFTokenState;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
@@ -137,18 +137,17 @@ public class NonFungibleToken extends Token {
      * Gets the properties of the token with {@code tokenID}.
      *
      * @param tokenID the token ID.
-     * @return the properties of the token as {@link TokenState}.
+     * @return the properties of the token as {@link NFTokenState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TokenState properties(byte[] tokenID) throws IOException {
+    public NFTokenState properties(byte[] tokenID) throws IOException {
         StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
             Map<StackItem, StackItem> map = item.getMap();
 
-            return new TokenState(
-                    map.get(new ByteStringStackItem("name".getBytes(UTF_8))).getString(),
-                    map.get(new ByteStringStackItem("description".getBytes(UTF_8))).getString());
+            return new NFTokenState(
+                    map.get(new ByteStringStackItem("name".getBytes(UTF_8))).getString());
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
     }

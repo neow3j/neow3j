@@ -782,7 +782,7 @@ public class TransactionBuilderTest {
     public void throwIfSenderCannotCoverFees() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
-                "70e2301955bf1e74cbb31d18c2f96972abadb328",
+                GasToken.SCRIPT_HASH.toString(),
                 "balanceOf",
                 "721e1376b75fe93889023d47832c160fcc5d4a06");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -986,7 +986,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        Hash256 txHash = new Hash256("efd2ef6d0a68e01c2170110aab9d621df3e129dccae14e7ffc2b7b5822563885");
+        Hash256 txHash = new Hash256("f2f93874c4f405861a4496ec31966a20575b1ff012ddb05761d69b4284787362");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),

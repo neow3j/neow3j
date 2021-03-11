@@ -44,41 +44,6 @@ public class PolicyContractTest extends ContractTest {
     }
 
     @Test
-    public void setAndGetMaxBlockSystemFee() throws Throwable {
-        BigInteger fee = new BigInteger("4007601");
-        signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(integer(fee));
-
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(MAX_BLOCK_SYSTEM_FEE)));
-        assertThat(res.get(1).getInteger(), is(fee));
-    }
-
-    @Test
-    public void setAndGetMaxBlockSize() throws IOException {
-        signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(integer(1024));
-
-        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(MAX_BLOCK_SIZE)));
-        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(1024)));
-    }
-
-    @Test
-    public void setAndGetMaxTransactionsPerBlock() throws IOException {
-        BigInteger newTxPerBlock = BigInteger.ONE;
-        signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(integer(newTxPerBlock));
-
-        StackItem array = response.getInvocationResult().getStack().get(0);
-        StackItem elem1 = array.getList().get(0);
-        assertThat(elem1.getInteger(),
-                is(BigInteger.valueOf(MAX_TRANSACTIONS_PER_BLOCK)));
-        StackItem elem2 = array.getList().get(1);
-        assertThat(elem2.getInteger(), is(newTxPerBlock));
-    }
-
-    @Test
     public void blockAndUnblockAccountAndIsBlocked() throws Throwable {
         signAsCommittee();
         NeoInvokeFunction response = callInvokeFunction("isBlocked",
@@ -142,30 +107,6 @@ public class PolicyContractTest extends ContractTest {
             sizes[0] = PolicyContract.getFeePerByte();
             PolicyContract.setFeePerByte(newFee);
             sizes[1] = PolicyContract.getFeePerByte();
-            return sizes;
-        }
-
-        public static int[] setAndGetMaxBlockSystemFee(int newFee) {
-            int[] sizes = new int[2];
-            sizes[0] = PolicyContract.getMaxBlockSystemFee();
-            PolicyContract.setMaxBlockSystemFee(newFee);
-            sizes[1] = PolicyContract.getMaxBlockSystemFee();
-            return sizes;
-        }
-
-        public static int[] setAndGetMaxBlockSize(int newSize) {
-            int[] sizes = new int[2];
-            sizes[0] = PolicyContract.getMaxBlockSize();
-            PolicyContract.setMaxBlockSize(newSize);
-            sizes[1] = PolicyContract.getMaxBlockSize();
-            return sizes;
-        }
-
-        public static int[] setAndGetMaxTransactionsPerBlock(int size) {
-            int[] sizes = new int[2];
-            sizes[0] = PolicyContract.getMaxTransactionsPerBlock();
-            PolicyContract.setMaxTransactionsPerBlock(size);
-            sizes[1] = PolicyContract.getMaxTransactionsPerBlock();
             return sizes;
         }
 

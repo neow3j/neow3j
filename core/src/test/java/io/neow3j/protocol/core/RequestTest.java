@@ -15,6 +15,7 @@ import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import io.neow3j.protocol.http.HttpService;
 
+import java.io.IOException;
 import java.util.Date;
 
 import io.neow3j.transaction.Signer;
@@ -888,6 +889,62 @@ public class RequestTest extends RequestTester {
                 "\"params\":[\"420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\"]" +
                 ",\"id\":1}"
         );
+    }
+
+    // StateService
+
+    @Test
+    public void testGetStateRoot() throws Exception {
+        neow3j.getStateRoot(new BlockParameterIndex(52)).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"getstateroot\"," +
+                "\"params\": [52]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testGetProof() throws Exception {
+        neow3j.getProof(
+                new Hash256("0x7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca"),
+                new Hash160("0x79bcd398505eb779df6e67e4be6c14cded08e2f2"),
+                "616e797468696e67"
+        ).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"getproof\"," +
+                "\"params\": [" +
+                "\"7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca\"," +
+                "\"79bcd398505eb779df6e67e4be6c14cded08e2f2\"," +
+                "\"YW55dGhpbmc=\"" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testVerifyProof() throws Exception {
+        neow3j.verifyProof(
+                new Hash256("0x7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca"),
+                "05fbffffff17062401010f034736fa564770d2be67c4c069e99e67bdbc978aea4cbdf7f09b4bf919d07a8c7bf200040404040404040403b97ce0716d448e55d75b39f2f03ef02679180ac52e419460b3bdf112da31a6260393049f1d2ea67548e395d3a6850346fc2b94f0f9f6e5b2f5a22b752e13d03d9c03a470bff9771a6adcb51ccbd667be893505743828a1acfe7ac14715725d0c035f0366ddb2164ca79a31da0a1500e323be8c4d21658eaa326844fbba64ec3691d8fa03cc68bc42b5329e9c006f73fe37c50eb48433ad24ba8f7b30d69538ffdc0d9d700359dfe16748fa392c633d04260cc1ba42bcac4cf3f2313671bd99c767f2b55c90040342eefd9168b302445d5780ba52ae2d762f62302fd65c8f3e4b662681e671ca36042901060f0f0f0f0f0f0382015f7e7b15332a807d98e0fb882ef7b37f80aa4eb002bc436eece7ab628d1952000326dba0d8c4e75ffc88c482413fbbf0a844be9d0e7cefb357710a0ff4d1eb0cbe03c68a878ea900a40ce4df9623a70b16236d8ff45ef55439791c7ae0e6d56d05cd04040404040404040404040404040492000403c7d4f9d7fcff0d3a05782879e88300fbc48b03f0abcd8644dc0f1802a3b11cea03d0b35cc3e22812241e0cf634d112afbb950e4f6d31ffe9dd77f32515bed33c6d03fd0dfd6487b6ac5eb62366894a84b710d4da02950804cdb7097d89021d7bfa0d0404040394c3dccd97fec526b583eeb0afd266cea32ea72e51d6896bb21ac035da8851b804040404040404040406020402000200"
+        ).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"verifyproof\"," +
+                "\"params\": [" +
+                "\"7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca\"," +
+                "\"Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA=\"" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testGetStateHeight() throws Exception {
+        neow3j.getStateHeight().send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"getstateheight\"," +
+                "\"params\": []," +
+                "\"id\": 1}");
     }
 
 }

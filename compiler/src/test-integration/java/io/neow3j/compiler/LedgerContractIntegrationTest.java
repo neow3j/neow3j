@@ -1,11 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.hash256;
-import static io.neow3j.contract.ContractParameter.integer;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
@@ -14,13 +8,19 @@ import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import static io.neow3j.contract.ContractParameter.hash256;
+import static io.neow3j.contract.ContractParameter.integer;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class LedgerContractIntegrationTest extends ContractTest {
 
@@ -156,13 +156,11 @@ public class LedgerContractIntegrationTest extends ContractTest {
         assertThat(hash.length, is(32));
     }
 
-    @Ignore("Waiting for the implementation of the LedgerContract in the contract module.")
     @Test
     public void getHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        // TODO: Get the script hash of the LedgerContract form the contract module.
-//      assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-//              is(io.neow3j.contract.LedgerContract.SCRIPT_HASH.toString()));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is("da65b600f7124ce6c79950c1772a36403104f2be"));
     }
 
     static class LedgerContractIntegrationTestContract {

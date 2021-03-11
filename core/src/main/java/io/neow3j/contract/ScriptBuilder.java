@@ -1,12 +1,11 @@
 package io.neow3j.contract;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.model.types.CallFlags;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,6 +13,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ScriptBuilder {
 
@@ -52,22 +53,38 @@ public class ScriptBuilder {
     }
 
     /**
-     * Appends a call to the contract denoted by the given script hash.
+     * Appends a call to the contract denoted by the given script hash. Uses {@link CallFlags#ALL}
+     * for the call.
      *
      * @param hash160 The script hash of the contract to call.
-     * @param method     The method to call.
-     * @param params     The parameters that will be used in the call. Need to be in correct order.
+     * @param method  The method to call.
+     * @param params  The parameters that will be used in the call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder contractCall(Hash160 hash160, String method,
             List<ContractParameter> params) {
+
+        return contractCall(hash160, method, params, CallFlags.ALL);
+    }
+
+    /**
+     * Appends a call to the contract denoted by the given script hash.
+     *
+     * @param hash160   The script hash of the contract to call.
+     * @param method    The method to call.
+     * @param params    The parameters that will be used in the call. Need to be in correct order.
+     * @param callFlags The call flags to use for the contract call.
+     * @return this ScriptBuilder object.
+     */
+    public ScriptBuilder contractCall(Hash160 hash160, String method,
+            List<ContractParameter> params, CallFlags callFlags) {
 
         if (params.size() > 0) {
             pushParams(params);
         } else {
             opCode(OpCode.NEWARRAY0);
         }
-        pushInteger(CallFlags.ALL.getValue());
+        pushInteger(callFlags.getValue());
         pushData(method);
         pushData(hash160.toArray());
         sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL);
@@ -339,8 +356,8 @@ public class ScriptBuilder {
      * Builds a verification script for a multi signature account from the given public keys.
      *
      * @param encodedPublicKeys The public keys encoded in compressed format.
-     * @param signingThreshold The desired minimum number of signatures required when using the
-     *                         multi-sig account.
+     * @param signingThreshold  The desired minimum number of signatures required when using the
+     *                          multi-sig account.
      * @return the script.
      */
     public static byte[] buildVerificationScript(List<byte[]> encodedPublicKeys,

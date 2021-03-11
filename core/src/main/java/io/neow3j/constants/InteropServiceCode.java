@@ -21,6 +21,8 @@ public enum InteropServiceCode {
     SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 1 << 10),
     SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 1 << 10),
     SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 1 << 8),
+    SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT("System.Contract.CreateMultisigAccount", 1 << 8),
+
     SYSTEM_CONTRACT_NATIVEONPERSIST("System.Contract.NativeOnPersist", 0),
     SYSTEM_CONTRACT_NATIVEPOSTPERSIST("System.Contract.NativePostPersist", 0),
 

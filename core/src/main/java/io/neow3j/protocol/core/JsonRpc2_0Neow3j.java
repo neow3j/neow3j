@@ -29,9 +29,12 @@ import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
+import io.neow3j.protocol.core.methods.response.NeoGetProof;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.methods.response.NeoGetStateHeight;
+import io.neow3j.protocol.core.methods.response.NeoGetStateRoot;
 import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
@@ -53,6 +56,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
@@ -1179,6 +1183,72 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 asList(address, from.getTime(), until.getTime()),
                 neow3jService,
                 NeoGetNep17Transfers.class);
+    }
+
+    // StateService
+
+    /**
+     * Gets the state root by the block height.
+     *
+     * @param blockIndex the block index.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetStateRoot> getStateRoot(BlockParameterIndex blockIndex) {
+        return new Request<>(
+                "getstateroot",
+                singletonList(blockIndex.getBlockIndex()),
+                neow3jService,
+                NeoGetStateRoot.class);
+    }
+
+    /**
+     * Gets the proof based on the root hash, the contract script hash and the storage key.
+     *
+     * @param rootHash           the root hash.
+     * @param contractScriptHash the contract script hash.
+     * @param storageKeyHex      the storage key.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractScriptHash,
+            String storageKeyHex) {
+        return new Request<>(
+                "getproof",
+                asList(rootHash.toString(), contractScriptHash.toString(),
+                        Base64.encode(storageKeyHex)),
+                neow3jService,
+                NeoGetProof.class);
+    }
+
+    /**
+     * Verifies the proof data and gets the value of the storage corresponding to the key.
+     *
+     * @param rootHash     the root hash.
+     * @param proofDataHex the proof data of the state root.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoVerifyProof> verifyProof(Hash256 rootHash, String proofDataHex) {
+        return new Request<>(
+                "verifyproof",
+                asList(rootHash.toString(), Base64.encode(proofDataHex)),
+                neow3jService,
+                NeoVerifyProof.class);
+    }
+
+    /**
+     * Gets the state root height.
+     *
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetStateHeight> getStateHeight() {
+        return new Request<>(
+                "getstateheight",
+                emptyList(),
+                neow3jService,
+                NeoGetStateHeight.class);
     }
 
     // Neow3j Rx Convenience methods:
