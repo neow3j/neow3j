@@ -7,13 +7,13 @@ import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_WIF;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH_STRING;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH_STRING;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_TOTAL_SUPPLY;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.getNodeUrl;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import static io.neow3j.protocol.TestProperties.neoTokenHash;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
@@ -40,7 +40,6 @@ import io.neow3j.contract.Hash256;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.BlockParameterIndex;
-import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
@@ -58,7 +57,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers.Nep17TransferWrapper;
 import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators.Validator;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers.Peers;
-import io.neow3j.protocol.core.methods.response.NeoGetProof;
 import io.neow3j.protocol.core.methods.response.NeoGetStateHeight.StateHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetStateRoot.StateRoot;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas.GetUnclaimedGas;
@@ -166,7 +164,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     private static Hash256 transferNeo(String toAddress, String amount) throws IOException {
         NeoSendToAddress send = getNeow3j()
-                .sendToAddress(NEO_HASH_STRING, toAddress, amount)
+                .sendToAddress(neoTokenHash(), toAddress, amount)
                 .send();
         Hash256 txHash = send.getSendToAddress().getHash();
         // ensure that the transaction is sent
@@ -444,7 +442,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetContractState() throws IOException {
         ContractState contractState = getNeow3j()
-                .getContractState(new Hash160(NEO_HASH_STRING))
+                .getContractState(new Hash160(neoTokenHash()))
                 .send()
                 .getContractState();
 
@@ -705,7 +703,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetStorage_fromStringTxId() throws IOException {
         String storage = getNeow3j()
-                .getStorage(NEO_HASH_STRING, NEXT_VALIDATORS_PREFIX)
+                .getStorage(neoTokenHash(), NEXT_VALIDATORS_PREFIX)
                 .send()
                 .getStorage();
 
@@ -827,7 +825,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testInvokeFunction_empty_Params_fromString() throws IOException {
         InvocationResult result = getNeow3j()
-                .invokeFunction(NEO_HASH_STRING, INVOKE_SYMBOL)
+                .invokeFunction(neoTokenHash(), INVOKE_SYMBOL)
                 .send()
                 .getInvocationResult();
 
@@ -853,7 +851,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 singletonList(hash160(Hash160.fromAddress(ACCOUNT_1_ADDRESS)));
 
         InvocationResult invocResult = getNeow3j()
-                .invokeFunction(NEO_HASH_STRING, INVOKE_BALANCE, parameters)
+                .invokeFunction(neoTokenHash(), INVOKE_BALANCE, parameters)
                 .send()
                 .getInvocationResult();
 
@@ -901,7 +899,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .build();
 
         InvocationResult invoc = getNeow3j()
-                .invokeFunction(NEO_HASH_STRING, "transfer", params, signer)
+                .invokeFunction(neoTokenHash(), "transfer", params, signer)
                 .send()
                 .getInvocationResult();
 
@@ -1010,7 +1008,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetBalance_string() throws IOException {
         String balance = getNeow3j()
-                .getWalletBalance(NEO_HASH_STRING)
+                .getWalletBalance(neoTokenHash())
                 .send()
                 .getWalletBalance()
                 .getBalance();
@@ -1023,7 +1021,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetBalance_string_withPrefix() throws IOException {
         String balance = getNeow3j()
-                .getWalletBalance("0x" + NEO_HASH_STRING)
+                .getWalletBalance("0x" + neoTokenHash())
                 .send()
                 .getWalletBalance()
                 .getBalance();

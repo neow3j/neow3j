@@ -25,11 +25,11 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH_STRING;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
+import static io.neow3j.protocol.TestProperties.neoTokenHash;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.is;
@@ -104,7 +104,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendFrom() throws IOException {
         NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(ACCOUNT_1_ADDRESS, NEO_HASH_STRING, RECIPIENT_1, "10")
+                .sendFrom(ACCOUNT_1_ADDRESS, neoTokenHash(), RECIPIENT_1, "10")
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
@@ -117,7 +117,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendFrom_TransactionSendAsset() throws IOException {
         TransactionSendAsset txSendAsset =
-                new TransactionSendAsset(NEO_HASH_STRING, "10", RECIPIENT_1);
+                new TransactionSendAsset(neoTokenHash(), "10", RECIPIENT_1);
         NeoSendFrom sendFrom = getNeow3j()
                 .sendFrom(ACCOUNT_1_ADDRESS, txSendAsset)
                 .send();
@@ -133,8 +133,8 @@ public class Neow3jWriteIntegrationTest {
     public void testSendMany() throws IOException {
         NeoSendMany sendMany = getNeow3j()
                 .sendMany(asList(
-                        new TransactionSendAsset(NEO_HASH_STRING, "100", RECIPIENT_1),
-                        new TransactionSendAsset(NEO_HASH_STRING, "10", RECIPIENT_2)))
+                        new TransactionSendAsset(neoTokenHash(), "100", RECIPIENT_1),
+                        new TransactionSendAsset(neoTokenHash(), "10", RECIPIENT_2)))
                 .send();
 
         assertNotNull(sendMany.getSendMany());
@@ -151,8 +151,8 @@ public class Neow3jWriteIntegrationTest {
         NeoSendMany response = getNeow3j()
                 .sendMany(ACCOUNT_1_ADDRESS,
                         asList(
-                                new TransactionSendAsset(NEO_HASH_STRING, "100", RECIPIENT_1),
-                                new TransactionSendAsset(NEO_HASH_STRING, "10", RECIPIENT_2)))
+                                new TransactionSendAsset(neoTokenHash(), "100", RECIPIENT_1),
+                                new TransactionSendAsset(neoTokenHash(), "10", RECIPIENT_2)))
                 .send();
 
         assertNotNull(response.getSendMany());
@@ -186,7 +186,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendToAddress() throws IOException {
         NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(NEO_HASH_STRING, RECIPIENT_1, "10")
+                .sendToAddress(neoTokenHash(), RECIPIENT_1, "10")
                 .send();
 
         Transaction tx = sendToAddress.getSendToAddress();
@@ -196,7 +196,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendToAddress_TransactionSendAsset() throws IOException {
-        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(NEO_HASH_STRING, "10",
+        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(neoTokenHash(), "10",
                 RECIPIENT_1);
         NeoSendToAddress sendToAddress = getNeow3j()
                 .sendToAddress(transactionSendAsset)
