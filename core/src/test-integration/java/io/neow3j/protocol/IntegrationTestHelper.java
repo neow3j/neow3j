@@ -9,6 +9,8 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import static io.neow3j.protocol.TestProperties.neoTokenHash;
+
 public class IntegrationTestHelper {
 
     static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
@@ -30,8 +32,7 @@ public class IntegrationTestHelper {
     static final String NODE_WALLET_PATH = "wallet.json";
 
     // Native token hashes.
-    static final String NEO_HASH_STRING = "f61eebf573ea36593fd43aa150c055ad7906ab83";
-    static final Hash160 NEO_HASH = new Hash160(NEO_HASH_STRING);
+    static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
     static final String GAS_HASH_STRING = "70e2301955bf1e74cbb31d18c2f96972abadb328";
     static final Hash160 GAS_HASH = new Hash160(GAS_HASH_STRING);
     // Total supply of NEO tokens.
