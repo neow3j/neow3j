@@ -1039,8 +1039,8 @@ public class TransactionBuilderTest {
 
     private NeoGetBlock createBlock(int number) {
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, "nonce", null,
-                null, new ArrayList<>(), 1, null);
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, 0, "nonce", null,
+                new ArrayList<>(), 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }
@@ -1049,8 +1049,8 @@ public class TransactionBuilderTest {
             io.neow3j.protocol.core.methods.response.Transaction tx) {
 
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, "nonce", null,
-                null, singletonList(tx), 1, null);
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, 0, "nonce", null,
+                singletonList(tx), 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }

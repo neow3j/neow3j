@@ -37,6 +37,11 @@ public class Block {
     public final int index;
 
     /**
+     * The index of the primary validator for the next block.
+     */
+    public final int primaryIndex;
+
+    /**
      * The verification script hash of the validators of the next block. I.e., the script hash of
      * the multisig account made up of the validator's public keys.
      */
@@ -54,6 +59,7 @@ public class Block {
         merkleRoot = new Hash256(new byte[0]);
         timestamp = 0;
         transactionsCount = 0;
+        primaryIndex = 0;
         nextConsensus = new Hash160(new byte[0]);
         index = 0;
     }
