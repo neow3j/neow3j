@@ -26,22 +26,24 @@ import java.util.Map;
  */
 public class NeoToken extends FungibleToken {
 
-    public final static String NAME = "NeoToken";
+    public static final String NAME = "NeoToken";
     public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
-    public final static int DECIMALS = 0;
-    public final static String SYMBOL = "NEO";
-    public final static BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
+    public static final int DECIMALS = 0;
+    public static final String SYMBOL = "NEO";
+    public static final BigInteger TOTAL_SUPPLY = new BigInteger("100000000");
 
-    public static final String UNCLAIMED_GAS = "unclaimedGas";
-    public static final String REGISTER_CANDIDATE = "registerCandidate";
-    public static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
-    public static final String VOTE = "vote";
-    public static final String GET_CANDIDATES = "getCandidates";
-    public static final String GET_COMMITTEE = "getCommittee";
-    public static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
-    public static final String SET_GAS_PER_BLOCK = "setGasPerBlock";
-    public static final String GET_GAS_PER_BLOCK = "getGasPerBlock";
+    private static final String UNCLAIMED_GAS = "unclaimedGas";
+    private static final String REGISTER_CANDIDATE = "registerCandidate";
+    private static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
+    private static final String VOTE = "vote";
+    private static final String GET_CANDIDATES = "getCandidates";
+    private static final String GET_COMMITTEE = "getCommittee";
+    private static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
+    private static final String SET_GAS_PER_BLOCK = "setGasPerBlock";
+    private static final String GET_GAS_PER_BLOCK = "getGasPerBlock";
+    private static final String SET_REGISTER_PRICE = "setRegisterPrice";
+    private static final String GET_REGISTER_PRICE = "getRegisterPrice";
 
     /**
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
@@ -128,8 +130,8 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Creates a {@code TransactionBuilder} for registering a committee candidate with the given
-     * public key.
+     * Creates a transaction script for registering a committee candidate with the given
+     * public key and initializes a {@link TransactionBuilder} based on this script.
      * <p>
      * Note, that the transaction has to be signed with the account corresponding to the public key.
      *
@@ -228,14 +230,14 @@ public class NeoToken extends FungibleToken {
         try {
             return new ECPublicKey(keyItem.getByteArray());
         } catch (IllegalArgumentException e) {
-            throw new UnexpectedReturnTypeException(
-                    "Byte array return type did not contain public key in expected format.", e);
+            throw new UnexpectedReturnTypeException("Byte array return type did not contain " +
+                    "public key in expected format.", e);
         }
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and
-     * initializes a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to vote for the given validators and initializes a
+     * {@link TransactionBuilder} based on this script.
      *
      * @param voter     the account that casts the vote.
      * @param candidate the candidate to vote for.
@@ -247,8 +249,8 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and
-     * initializes a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to vote for the given validators and initializes a
+     * {@link TransactionBuilder} based on this script.
      *
      * @param voter     the account that casts the vote.
      * @param candidate the candidate to vote for.
@@ -270,8 +272,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the max GAS amount per block. This sets a cap on the accumulated GAS cost of all
-     * transactions in a block.
+     * Gets the number of GAS generated in each block.
      *
      * @return the max GAS amount per block.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -281,15 +282,39 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Creates a transaction build for setting the GAS amount per block.
+     * Creates a transaction script to set the number of GAS generated in each block and
+     * initializes a {@link TransactionBuilder} based on this script.
      * <p>
      * This contract invocation can only be successful if it is signed by the network committee.
      *
-     * @param gasPerBlock the desired maximum amount of GAS in one block.
+     * @param gasPerBlock the maximum amount of GAS in one block.
      * @return the transaction builder.
      */
-    public TransactionBuilder setGasPerBlock(int gasPerBlock) {
+    public TransactionBuilder setGasPerBlock(BigInteger gasPerBlock) {
         return invokeFunction(SET_GAS_PER_BLOCK, integer(gasPerBlock));
+    }
+
+    /**
+     * Gets the price to register as a candidate.
+     *
+     * @return the price to register as a candidate.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getRegisterPrice() throws IOException {
+        return callFuncReturningInt(GET_REGISTER_PRICE);
+    }
+
+    /**
+     * Creates a transaction script to set the price for candidate registration and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * This contract invocation can only be successful if it is signed by the network committee.
+     *
+     * @param registerPrice the price to register as a candidate.
+     * @return the transaction builder.
+     */
+    public TransactionBuilder setRegisterPrice(BigInteger registerPrice) {
+        return invokeFunction(SET_REGISTER_PRICE, integer(registerPrice));
     }
 
 }
