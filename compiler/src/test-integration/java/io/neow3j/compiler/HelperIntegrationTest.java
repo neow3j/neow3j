@@ -18,11 +18,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class HelperTest extends ContractTest {
+public class HelperIntegrationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(HelpersContract.class.getName());
+        setUp(HelperIntegrationTestContract.class.getName());
     }
 
     @Test
@@ -266,7 +266,29 @@ public class HelperTest extends ContractTest {
                 is("!dlrow ,olleh"));
     }
 
-    static class HelpersContract {
+    @Test
+    public void sqrt() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction(integer(4));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(2));
+
+        response = callInvokeFunction(integer(40401));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
+                is(201));
+
+        response = callInvokeFunction(integer(10));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(3));
+    }
+
+    @Test
+    public void pow() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction(integer(2), integer(2));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(4));
+
+        response = callInvokeFunction(integer(10), integer(4));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(1000));
+    }
+
+    static class HelperIntegrationTestContract {
 
         public static void assertTrue(boolean bool) {
             Helper.assertTrue(bool);
@@ -344,6 +366,14 @@ public class HelperTest extends ContractTest {
 
         public static String reverseByteString(String s) {
             return Helper.reverse(s);
+        }
+
+        public static int sqrt(int x) {
+            return Helper.sqrt(x);
+        }
+
+        public static int pow(int x, int y) {
+            return Helper.pow(x, y);
         }
     }
 

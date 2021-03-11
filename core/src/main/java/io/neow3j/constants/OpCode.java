@@ -854,6 +854,16 @@ public enum OpCode {
     MOD(0xA2, 1 << 3),
 
     /**
+     * The result of raising the value to the exponent power.
+     */
+    POW(0xA3,  1 << 6),
+
+    /**
+     * Returns the square root of a specified number.
+     */
+    SQRT(0xA4, 1 << 11),
+
+    /**
      * Shifts a left b bits, preserving sign.
      */
     SHL(0xA8, 1 << 3),
