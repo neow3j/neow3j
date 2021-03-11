@@ -6,9 +6,10 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.Binary;
+import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -18,11 +19,11 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BinaryTest extends ContractTest {
+public class StdLibIntegrationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(BinaryContract.class.getName());
+        setUp(StdLibIntegrationTestContract.class.getName());
     }
 
     @Test
@@ -45,8 +46,41 @@ public class BinaryTest extends ContractTest {
         int i = 32069;
         NeoInvokeFunction response = callInvokeFunction(bool(true), integer(i));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(res.get(0).getInteger(), is(BigInteger.ONE));
+        assertTrue(res.get(0).getBoolean());
         assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(i)));
+    }
+
+    @Test
+    public void jsonSerialize() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction(bool(true), integer(5));
+        String res = response.getInvocationResult().getStack().get(0).getString();
+        assertThat(res, is("{\"b\":\"true\",\"i\":\"5\"}"));
+    }
+
+    @Test
+    public void jsonDeserialize() throws IOException {
+        NeoInvokeFunction response = callInvokeFunction(string("{\"b\":\"true\",\"i\":\"5\"}"));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(res.get(0).getBoolean());
+        assertThat(res.get(1).getInteger().intValue(), is(5));
+    }
+
+    @Test
+    public void base58Encode() throws IOException {
+        String bytes = "54686520717569";
+        NeoInvokeFunction response = callInvokeFunction(ContractParameter.byteArray(bytes));
+        String encoded = response.getInvocationResult().getStack().get(0).getString();
+        String expected = "LZTS5wkouM4ohnjshEQ";
+        assertThat(encoded, is(expected));
+    }
+
+    @Test
+    public void base58Decode() throws IOException {
+        String encoded = "LZTS5wkouM4ohnjshEQ";
+        NeoInvokeFunction response = callInvokeFunction(string(encoded));
+        String decoded = response.getInvocationResult().getStack().get(0).getHexString();
+        String expected = "54686520717569";
+        assertThat(decoded, is(expected));
     }
 
     @Test
@@ -116,31 +150,47 @@ public class BinaryTest extends ContractTest {
                 is(-1));
     }
 
-    static class BinaryContract {
+    static class StdLibIntegrationTestContract {
 
         public static Object serializeAndDeserialize(boolean b, int i) {
-            byte[] ser = Binary.serialize(new SimpleClass(b, i));
-            return Binary.deserialize(ser);
+            byte[] ser = StdLib.serialize(new SimpleClass(b, i));
+            return StdLib.deserialize(ser);
         }
 
         public static byte[] serialize(boolean b, int i) {
-            return Binary.serialize(new SimpleClass(b, i));
+            return StdLib.serialize(new SimpleClass(b, i));
+        }
+
+        public static String jsonSerialize(boolean b, int i) {
+            return StdLib.jsonSerialize(new SimpleClass(b, i));
+        }
+
+        public static Object jsonDeserialize(String json) {
+            return StdLib.jsonDeserialize(json);
         }
 
         public static String base64Encode(byte[] bytes) {
-            return Binary.base64Encode(bytes);
+            return StdLib.base64Encode(bytes);
         }
 
         public static byte[] base64Decode(String encoded) {
-            return Binary.base64Decode(encoded);
+            return StdLib.base64Decode(encoded);
+        }
+
+        public static String base58Encode(byte[] bytes) {
+            return StdLib.base58Encode(bytes);
+        }
+
+        public static byte[] base58Decode(String encoded) {
+            return StdLib.base58Decode(encoded);
         }
 
         public static String itoa(int i, int base) {
-            return Binary.itoa(i, base);
+            return StdLib.itoa(i, base);
         }
 
         public static int atoi(String s, int base) {
-            return Binary.atoi(s, base);
+            return StdLib.atoi(s, base);
         }
 
         static class SimpleClass {

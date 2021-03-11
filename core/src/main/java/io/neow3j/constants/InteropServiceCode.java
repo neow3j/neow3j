@@ -7,15 +7,6 @@ import java.nio.charset.StandardCharsets;
 
 public enum InteropServiceCode {
 
-    SYSTEM_BINARY_SERIALIZE("System.Binary.Serialize", 1 << 12),
-    SYSTEM_BINARY_DESERIALIZE("System.Binary.Deserialize", 1 << 14),
-    SYSTEM_BINARY_BASE64ENCODE("System.Binary.Base64Encode", 1 << 12),
-    SYSTEM_BINARY_BASE64DECODE("System.Binary.Base64Decode", 1 << 12),
-    SYSTEM_BINARY_BASE58ENCODE("System.Binary.Base58Encode", 1 << 12),
-    SYSTEM_BINARY_BASE58DECODE("System.Binary.Base58Decode", 1 << 12),
-    SYSTEM_BINARY_ITOA("System.Binary.Itoa", 1 << 12),
-    SYSTEM_BINARY_ATOI("System.Binary.Atoi", 1 << 12),
-
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
     SYSTEM_CONTRACT_ISSTANDARD("System.Contract.IsStandard", 1 << 10),
@@ -32,9 +23,6 @@ public enum InteropServiceCode {
     SYSTEM_ITERATOR_CREATE("System.Iterator.Create", 1 << 4),
     SYSTEM_ITERATOR_NEXT("System.Iterator.Next", 1 << 15),
     SYSTEM_ITERATOR_VALUE("System.Iterator.Value", 1 << 4),
-
-    SYSTEM_JSON_SERIALIZE("System.Json.Serialize", 1 << 12),
-    SYSTEM_JSON_DESERIALIZE("System.Json.Deserialize", 1 << 14),
 
     SYSTEM_RUNTIME_PLATFORM("System.Runtime.Platform", 1 << 3),
     SYSTEM_RUNTIME_GETTRIGGER("System.Runtime.GetTrigger", 1 << 3),
