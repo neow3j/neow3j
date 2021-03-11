@@ -4,6 +4,9 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 
+/**
+ * An interface to the NEO token contract.
+ */
 @ContractHash("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")
 public class NeoToken extends FungibleToken {
 
@@ -74,10 +77,25 @@ public class NeoToken extends FungibleToken {
 
     /**
      * Sets the amount of GAS that should be minted per newly generated block.
+     * <p>
+     * Only the committee can successfully invoke this method.
      *
      * @param gasPerBlock The desired amount of GAS per block.
      */
     public static native void setGasPerBlock(int gasPerBlock);
+
+    /**
+     * Gets the GAS price for registering a new candidate.
+     */
+    public static native int getRegisterPrice();
+
+    /**
+     * Sets the GAS price for registering a new candidate.
+     * <p>
+     * Only the committee can successfully invoke this method.
+     * @param registerPrice The new price for registering a candidate.
+     */
+    public static native void setRegisterPrice(int registerPrice);
 
     /**
      * Represents a validator candidate.

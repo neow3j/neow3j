@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class NeoTokenTest extends ContractTest {
+public class NeoTokenIntegrationTest extends ContractTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -123,6 +123,20 @@ public class NeoTokenTest extends ContractTest {
                 is(io.neow3j.contract.NeoToken.SCRIPT_HASH.toString()));
     }
 
+    @Test
+    public void setAndGetRegisterPrice() throws Throwable {
+        signAsCommittee();
+        NeoInvokeFunction res = callInvokeFunction("getRegisterPrice");
+        int gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
+        assertThat(gasPerBlock, is(500_000_000));
+
+        invokeFunctionAndAwaitExecution("setRegisterPrice", integer(50_000));
+
+        res = callInvokeFunction("getRegisterPrice");
+        gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
+        assertThat(gasPerBlock, is(50_000));
+    }
+
     static class NeoTokenTestContract {
 
         public static int unclaimedGas(Hash160 scriptHash, int blockHeight) {
@@ -163,6 +177,14 @@ public class NeoTokenTest extends ContractTest {
 
         public static Hash160 getHash() {
             return NeoToken.getHash();
+        }
+
+        public static int getRegisterPrice() {
+            return NeoToken.getRegisterPrice();
+        }
+
+        public static void setRegisterPrice(int registerPrice) {
+            NeoToken.setRegisterPrice(registerPrice);
         }
 
     }
