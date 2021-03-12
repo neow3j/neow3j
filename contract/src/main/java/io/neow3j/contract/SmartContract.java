@@ -1,10 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.model.types.StackItemType.BOOLEAN;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.INTEGER;
-import static java.util.Arrays.asList;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
@@ -12,6 +7,7 @@ import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
 
@@ -19,6 +15,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.neow3j.model.types.StackItemType.BOOLEAN;
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.model.types.StackItemType.INTEGER;
+import static java.util.Arrays.asList;
 
 /**
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
@@ -143,6 +144,38 @@ public class SmartContract {
             return item.getBoolean();
         }
         throw new UnexpectedReturnTypeException(item.getType(), BOOLEAN);
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a
+     * script hash as the return type.
+     *
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the script hash returned by the contract.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as
+     *                                       script hash.
+     */
+    public Hash160 callFunctionReturningScriptHash(String function, List<ContractParameter> params)
+            throws IOException {
+
+        StackItem stackItem = callInvokeFunction(function, params)
+                .getInvocationResult().getStack().get(0);
+        return extractScriptHash(stackItem);
+    }
+
+    private Hash160 extractScriptHash(StackItem item) {
+        if (!item.getType().equals(BYTE_STRING)) {
+            throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
+        }
+        try {
+            return new Hash160(item.getHexString());
+        } catch (StackItemCastException e) {
+            throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
+                    "expected format.", e);
+        }
     }
 
     /**
