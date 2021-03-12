@@ -157,7 +157,7 @@ subprojects {
     // In addition the gradle-plugin module should be published to the Gradle Plugin
     // global repository. See "gradle-plugin/README.md" for Gradle Plugin
     // release procedures.
-    if (!project.name.startsWith(rootProject.name)) {
+    if (!project.name.startsWith(rootProject.name) && !project.name.startsWith("test-properties")) {
 
         apply plugin: 'com.jfrog.bintray'
         apply plugin: 'maven-publish'
@@ -224,6 +224,11 @@ subprojects {
                                 id = 'csmuller'
                                 name = 'Claude Müller'
                                 email = 'claude@axlabs.com'
+                            }
+                            developer {
+                                id = 'mialbu'
+                                name = 'Michael Bucher'
+                                email = 'michael@axlabs.com'
                             }
                         }
                     }

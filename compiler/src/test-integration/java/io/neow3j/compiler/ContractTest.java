@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.TestProperties.defaultAccountWIF;
-import static io.neow3j.compiler.TestProperties.neo3PrivateNetContainerImg;
+import static io.neow3j.TestProperties.defaultAccountWIF;
+import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;

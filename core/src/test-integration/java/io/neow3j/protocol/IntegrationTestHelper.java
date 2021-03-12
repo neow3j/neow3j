@@ -9,7 +9,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import static io.neow3j.protocol.TestProperties.neoTokenHash;
+import static io.neow3j.TestProperties.neoTokenHash;
 
 public class IntegrationTestHelper {
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.TestProperties;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.ScriptBuilder;
@@ -64,6 +65,7 @@ public class AccountTest {
 
     @Test
     public void testCreateGenericAccount() {
+        TestProperties.defaultAccountAddress();
         Account a = Account.create();
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());

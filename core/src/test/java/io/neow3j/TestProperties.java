@@ -1,4 +1,4 @@
-package io.neow3j.compiler;
+package io.neow3j;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -37,6 +37,10 @@ public class TestProperties {
 
     public static String committeeAccountAddress() {
         return getValue("committeeAccountAddress");
+    }
+
+    public static String neoTokenHash() {
+        return getValue("neoTokenHash");
     }
 
     public static String getValue(String key) {

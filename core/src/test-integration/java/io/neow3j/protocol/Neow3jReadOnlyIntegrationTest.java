@@ -1,5 +1,6 @@
 package io.neow3j.protocol;
 
+import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
@@ -13,7 +14,6 @@ import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.protocol.IntegrationTestHelper.getNodeUrl;
 import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
-import static io.neow3j.protocol.TestProperties.neoTokenHash;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;

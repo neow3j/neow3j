@@ -1,4 +1,4 @@
-package io.neow3j.protocol;
+package io.neow3j;
 
 import java.io.IOException;
 import java.util.Properties;
