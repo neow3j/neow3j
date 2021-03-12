@@ -31,12 +31,45 @@ public class TestProperties {
     public static String defaultAccountWIF() {
         return getValue("defaultAccountWIF");
     }
+
+    public static String defaultAccountPublicKey() {
+        return getValue("defaultAccountPublicKey");
+    }
+
+    public static String defaultAccountPrivateKey() {
+        return getValue("defaultAccountPrivateKey");
+    }
+
+    public static String defaultAccountEncryptedPrivateKey() {
+        return getValue("defaultAccountEncryptedPrivateKey");
+    }
+
+    public static String defaultAccountPassword() {
+        return getValue("defaultAccountPassword");
+    }
+
+    public static String defaultAccountScriptHash() {
+        return getValue("defaultAccountScriptHash");
+    }
+
+    public static String defaultAccountVerificationScript() {
+        return getValue("defaultAccountVerificationScript");
+    }
+
     public static String neo3PrivateNetContainerImg() {
         return getValue("neo3PrivateNetContainerImg");
     }
 
     public static String committeeAccountAddress() {
         return getValue("committeeAccountAddress");
+    }
+
+    public static String committeeAccountScriptHash() {
+        return getValue("committeeAccountScriptHash");
+    }
+
+    public static String committeeAccountVerificationScript() {
+        return getValue("committeeAccountVerificationScript");
     }
 
     public static String neoTokenHash() {
