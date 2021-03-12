@@ -784,7 +784,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
                 GasToken.SCRIPT_HASH.toString(),
                 "balanceOf",
-                "721e1376b75fe93889023d47832c160fcc5d4a06");
+                account1.getScriptHash().toString());
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
@@ -986,7 +986,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        Hash256 txHash = new Hash256("f2f93874c4f405861a4496ec31966a20575b1ff012ddb05761d69b4284787362");
+        Hash256 txHash = new Hash256("e3f115b25b3948776a47984c982c2ed8b7ce7585e40479732b2fb40aced96058");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),

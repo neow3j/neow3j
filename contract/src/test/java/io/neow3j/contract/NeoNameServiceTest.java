@@ -581,7 +581,7 @@ public class NeoNameServiceTest {
                 asList(hash160(account2.getScriptHash()), byteArray("636c69656e74312e6e656f")))
                 .toArray();
 
-        Wallet wallet = Wallet.withAccounts(account1);
+        Wallet wallet = Wallet.withAccounts(account2);
         TransactionBuilder b = new NeoNameService(neow)
                 .transfer(wallet, account2.getScriptHash() ,"client1.neo");
         assertThat(b.getScript(), is(expectedScript));

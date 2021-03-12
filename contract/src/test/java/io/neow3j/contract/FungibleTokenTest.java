@@ -358,7 +358,7 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
-        setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
+        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_4.json");
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
@@ -368,7 +368,7 @@ public class FungibleTokenTest {
                                 integer(5), // amount
                                 any(null))) // data
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
-                        hash160(account2.getScriptHash()),
+                        hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(2),
                         any(null))).toArray();
@@ -384,11 +384,12 @@ public class FungibleTokenTest {
             throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
-        setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
+        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_4.json");
 
+        // The accounts are ordered by script hash (but the default account is always first) and
+        // then used in that order to cover the amount.
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_TOKEN_SCRIPT_HASH,
                         NEP17_TRANSFER, asList(
@@ -397,7 +398,7 @@ public class FungibleTokenTest {
                                 integer(5),
                                 any(null)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
-                        hash160(account2.getScriptHash()),
+                        hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(2),
                         any(null))).toArray();
@@ -423,6 +424,8 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
+        // The accounts are ordered by script hash (but the default account is always first) and
+        // then used in that order to cover the amount.
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
@@ -430,14 +433,14 @@ public class FungibleTokenTest {
                         integer(5),
                         any(null)))
                 .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
-                        hash160(account2.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(4),
-                        any(null)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
                         hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(3),
+                        any(null)))
+                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
+                        hash160(account2.getScriptHash()),
+                        hash160(RECIPIENT_SCRIPT_HASH),
+                        integer(4),
                         any(null)))
                 .toArray();
 
