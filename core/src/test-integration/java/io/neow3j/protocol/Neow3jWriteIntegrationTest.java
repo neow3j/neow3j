@@ -32,6 +32,7 @@ import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
 import static io.neow3j.protocol.TestProperties.neoTokenHash;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -41,8 +42,6 @@ import static org.junit.Assert.assertTrue;
 // This test class spins up a new private net container for each test. This consumes a lot of time
 // but allows the tests to make changes without interfering with each other.
 public class Neow3jWriteIntegrationTest {
-
-    private static final String NEO_TOKEN_HASH = "0xf61eebf573ea36593fd43aa150c055ad7906ab83";
 
     // Before the tests 5 NEO is sent to the RECIPIENT_1 address.
     // wif KxwrYazXiCdK33JEddpwHbXTpAYyhXC1YyC4SXTVF6GLRPBuVBFb
@@ -65,7 +64,7 @@ public class Neow3jWriteIntegrationTest {
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
-        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", new Hash160(NEO_TOKEN_HASH),
+        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", new Hash160(neoTokenHash()),
                 getNeow3j());
     }
 
@@ -166,7 +165,7 @@ public class Neow3jWriteIntegrationTest {
 
         Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT_2);
         assertThat(neow3j.invokeFunction(
-                NEO_HASH, "balanceOf", asList(hash160(recipient2Hash160))).send()
+                NEO_HASH, "balanceOf", singletonList(hash160(recipient2Hash160))).send()
                         .getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(10));
     }

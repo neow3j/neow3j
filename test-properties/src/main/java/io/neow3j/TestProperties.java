@@ -43,6 +43,19 @@ public class TestProperties {
         return getValue("neoTokenHash");
     }
 
+    public static String gasTokenHash() {
+        return getValue("gasTokenHash");
+    }
+
+    public static String nameServiceHash() {
+        return getValue("nameServiceHash");
+    }
+
+    public static String contractManagementHash() {
+        return getValue("contractManagementHash");
+    }
+
+
     public static String getValue(String key) {
         return getInstance().properties.getProperty(key);
     }

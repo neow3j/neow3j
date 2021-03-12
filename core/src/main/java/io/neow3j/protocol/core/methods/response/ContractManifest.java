@@ -91,8 +91,12 @@ public class ContractManifest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ContractManifest)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ContractManifest)) {
+            return false;
+        }
         ContractManifest that = (ContractManifest) o;
         return Objects.equals(getName(), that.getName()) &&
                 Objects.equals(getGroups(), that.getGroups()) &&
@@ -156,8 +160,12 @@ public class ContractManifest {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContractGroup)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ContractGroup)) {
+                return false;
+            }
             ContractGroup that = (ContractGroup) o;
             return Objects.equals(getPubKey(), that.getPubKey()) &&
                     Objects.equals(getSignature(), that.getSignature());
@@ -206,8 +214,12 @@ public class ContractManifest {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContractABI)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ContractABI)) {
+                return false;
+            }
             ContractABI that = (ContractABI) o;
             return Objects.equals(getMethods(), that.getMethods()) &&
                     Objects.equals(getEvents(), that.getEvents());
@@ -279,8 +291,12 @@ public class ContractManifest {
 
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (!(o instanceof ContractMethod)) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (!(o instanceof ContractMethod)) {
+                    return false;
+                }
                 ContractMethod that = (ContractMethod) o;
                 return Objects.equals(getName(), that.getName()) &&
                         Objects.equals(getParameters(), that.getParameters()) &&
@@ -336,8 +352,12 @@ public class ContractManifest {
 
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (!(o instanceof ContractEvent)) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (!(o instanceof ContractEvent)) {
+                    return false;
+                }
                 ContractEvent that = (ContractEvent) o;
                 return Objects.equals(getName(), that.getName()) &&
                         Objects.equals(getParameters(), that.getParameters());
@@ -387,8 +407,12 @@ public class ContractManifest {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ContractPermission)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ContractPermission)) {
+                return false;
+            }
             ContractPermission that = (ContractPermission) o;
             return Objects.equals(getContract(), that.getContract()) &&
                     Objects.equals(getMethods(), that.getMethods());
