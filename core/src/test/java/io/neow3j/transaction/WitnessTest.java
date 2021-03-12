@@ -104,7 +104,7 @@ public class WitnessTest {
                 + Numeric.toHexStringNoPrefix(signatures.get(0).getConcatenated()) // key 1 sig
                 + PUSHDATA1.toString() + "40" // PUSHDATA 64 bytes
                 + Numeric.toHexStringNoPrefix(signatures.get(1).getConcatenated()) // key 2 sig
-                + "71" // 113 bytes follow as verification script
+                + "70" // 113 bytes follow as verification script
                 + PUSH2.toString() // signing threshold
                 + PUSHDATA1 + "21" // PUSHDATA 33 bytes
                 + Numeric.toHexStringNoPrefix(publicKeys.get(0).getEncoded(true)) // public key 1

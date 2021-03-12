@@ -172,7 +172,7 @@ public class SmartContract {
         }
         try {
             return new Hash160(item.getHexString());
-        } catch (StackItemCastException e) {
+        } catch (StackItemCastException | IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
                     "expected format.", e);
         }

@@ -110,9 +110,8 @@ public class NeoNameServiceTest {
     @Test
     public void ownerOf() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        setUpWireMockForInvokeFunction(OWNER_OF, "nft_ownerof.json");
-        assertThat(new NeoNameService(neow).ownerOf("client1.neo"),
-                is(new Hash160("12b97a2206ae4b10c7e0194b7b655c32cc912057")));
+        setUpWireMockForInvokeFunction(OWNER_OF, "nns_ownerof.json");
+        assertThat(new NeoNameService(neow).ownerOf("client1.neo"), is(account1.getScriptHash()));
     }
 
     @Test
