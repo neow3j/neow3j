@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.List;
 
 import static io.neow3j.TestProperties.neoTokenHash;
@@ -128,14 +129,13 @@ public class NeoTokenIntegrationTest extends ContractTest {
     public void setAndGetRegisterPrice() throws Throwable {
         signAsCommittee();
         NeoInvokeFunction res = callInvokeFunction("getRegisterPrice");
-        int gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
-        assertThat(gasPerBlock, is(500_000_000));
-
+        BigInteger gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger();
+        assertThat(gasPerBlock, is(new BigInteger("100000000000")));
         invokeFunctionAndAwaitExecution("setRegisterPrice", integer(50_000));
 
         res = callInvokeFunction("getRegisterPrice");
-        gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
-        assertThat(gasPerBlock, is(50_000));
+        gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger();
+        assertThat(gasPerBlock, is(new BigInteger("50000")));
     }
 
     static class NeoTokenTestContract {

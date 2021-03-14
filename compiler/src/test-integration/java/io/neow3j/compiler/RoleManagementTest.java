@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.TestProperties.roleManagementHash;
 import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.publicKey;
@@ -31,8 +32,8 @@ public class RoleManagementTest extends ContractTest {
     @Test
     public void getHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(Numeric.hexStringToByteArray("597b1471bbce497b7809e2c8f10db67050008b02")));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is(roleManagementHash()));
     }
 
     @Test

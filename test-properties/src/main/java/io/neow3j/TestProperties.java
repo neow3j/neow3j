@@ -88,6 +88,10 @@ public class TestProperties {
         return getValue("contractManagementHash");
     }
 
+    public static String roleManagementHash() {
+        return getValue("roleManagementHash");
+    }
+
 
     public static String getValue(String key) {
         return getInstance().properties.getProperty(key);
