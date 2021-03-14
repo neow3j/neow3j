@@ -161,8 +161,7 @@ public class Transaction extends NeoSerializable {
      *                     node. The magic number is needed to calculate the transaction hash.
      */
     public Hash256 getTxId() throws IOException {
-        byte[] hash = hash256(getHashData());
-        return new Hash256(hash);
+        return new Hash256(sha256(toArrayWithoutWitnesses()));
     }
 
     /**
