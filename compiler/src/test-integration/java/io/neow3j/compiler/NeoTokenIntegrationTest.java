@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
+import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.publicKey;
@@ -120,7 +121,7 @@ public class NeoTokenIntegrationTest extends ContractTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(io.neow3j.contract.NeoToken.SCRIPT_HASH.toString()));
+                is(neoTokenHash()));
     }
 
     @Test

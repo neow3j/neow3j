@@ -2,6 +2,8 @@ package io.neow3j.compiler;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
+import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -102,10 +104,9 @@ public class ContractTest {
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
-        neow3j.setNetworkMagicNumber(769);
         contractName = name;
         contract = deployContract(contractName);
-        Await.waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
+        waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
     }
 
     protected static String getResultFilePath(String testClassName, String methodName) {
@@ -131,7 +132,7 @@ public class ContractTest {
 
         // Remember the transaction and its block.
         deployTxHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(deployTxHash, neow3j);
+        waitUntilTransactionIsExecuted(deployTxHash, neow3j);
         blockHashOfDeployTx = neow3j.getTransaction(deployTxHash).send()
                 .getTransaction().getBlockHash();
         // Get the contract address from the application logs.
@@ -221,8 +222,8 @@ public class ContractTest {
      */
     protected static Hash256 transferGas(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
-        return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
-                new BigDecimal(amount), committee.getScriptHash())
+        return gasToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
+                committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -240,8 +241,8 @@ public class ContractTest {
      */
     protected static Hash256 transferNeo(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
-        return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
-                new BigDecimal(amount), committee.getScriptHash())
+        return neoToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
+                committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -288,7 +289,7 @@ public class ContractTest {
      */
     protected Hash256 invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
         Hash256 txHash = invokeFunction(params);
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 
@@ -306,7 +307,7 @@ public class ContractTest {
             throws Throwable {
 
         Hash256 txHash = invokeFunction(function, params);
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 

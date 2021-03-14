@@ -281,11 +281,11 @@ public class HelperIntegrationTest extends ContractTest {
 
     @Test
     public void pow() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(integer(2), integer(2));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(4));
+        NeoInvokeFunction resp = callInvokeFunction(integer(2), integer(2));
+        assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(), is(4));
 
-        response = callInvokeFunction(integer(10), integer(4));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(1000));
+        resp = callInvokeFunction(integer(10), integer(4));
+        assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(), is(10000));
     }
 
     static class HelperIntegrationTestContract {

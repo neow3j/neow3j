@@ -1,6 +1,8 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
@@ -42,10 +44,9 @@ public class ContractManagementIntegrationTest extends ContractTest {
 
     @Test
     public void getContract() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.hash160(io.neow3j.contract.NeoToken.SCRIPT_HASH));
+        NeoInvokeFunction response = callInvokeFunction(hash160(new Hash160(neoTokenHash())));
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(array.get(0).getInteger().intValue(), is(-3)); // ID
+        assertThat(array.get(0).getInteger().intValue(), is(-5)); // ID
         assertThat(array.get(1).getInteger().intValue(), is(0)); // updateCounter
         assertThat(Numeric.reverseHexString(array.get(2).getHexString()),
                 is(NeoToken.SCRIPT_HASH.toString())); // contract hash

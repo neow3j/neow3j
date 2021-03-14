@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.TestProperties.neoTokenHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -29,7 +30,7 @@ public class ContractInterfacesTest extends ContractTest {
     public void getScriptHashOfCustomNeoContractInterface() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(NeoToken.SCRIPT_HASH.toString()));
+                is(neoTokenHash()));
     }
 
     static class ContractInterfacesTestContract {
@@ -44,7 +45,7 @@ public class ContractInterfacesTest extends ContractTest {
 
     }
 
-    @ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83") // NEO script hash
+    @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // NEO script hash
     static class CustomNeoToken extends ContractInterface {
 
         public static native String symbol();

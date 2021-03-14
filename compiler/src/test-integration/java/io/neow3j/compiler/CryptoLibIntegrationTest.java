@@ -35,7 +35,7 @@ public class CryptoLibIntegrationTest extends ContractTest {
     public void ripemd160() throws IOException {
         NeoInvokeFunction response = callInvokeFunction(byteArray("0102030405"));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is("efc7b141e73d32fa0379a975e22a457a135fc2df"));
+                is("eb825c4b24f425077a067cc3bef457783f5ad705"));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class CryptoLibIntegrationTest extends ContractTest {
             return CryptoLib.ripemd160(value);
         }
 
-        public static boolean verifyECDsa(String message, ECPoint pubKey, String signature,
+        public static boolean verifyWithECDsa(String message, ECPoint pubKey, String signature,
                 byte curve) {
             return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
         }

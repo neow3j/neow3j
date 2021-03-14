@@ -20,8 +20,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         setUp(VerificationMethodIntegrationTestContract.class.getName());
-        // The RPC method invokecontractverify requires an open wallet on the
-        // neo-node.
+        // The RPC method invokecontractverify requires an open wallet on the neo-node.
         neow3j.openWallet("wallet.json", "neo").send();
     }
 
@@ -73,7 +72,7 @@ public class VerificationMethodIntegrationTest extends ContractTest {
 
         // default account
         static Hash160 ownerScriptHash =
-                StringLiteralHelper.addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+                StringLiteralHelper.addressToScriptHash("NUrPrFLETzoe7N2FLi2dqTvLwc9L2Em84K");
 
         @OnVerification
         public static boolean verify(String s) {

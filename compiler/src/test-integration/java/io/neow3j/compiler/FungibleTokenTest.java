@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThan;
@@ -95,7 +96,7 @@ public class FungibleTokenTest extends ContractTest {
 
     }
 
-    @ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83") // NEO script hash
+    @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // NEO script hash
     static class CustomNeoToken extends FungibleToken {
 
     }

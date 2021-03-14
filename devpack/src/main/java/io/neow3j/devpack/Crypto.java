@@ -48,7 +48,7 @@ public class Crypto {
      * @return the 160 bit long hash.
      */
     public static Hash160 hash160(String value) {
-        return new Hash160(CryptoLib.sha256(CryptoLib.sha256(value)));
+        return new Hash160(CryptoLib.ripemd160(CryptoLib.sha256(value)));
     }
 
 

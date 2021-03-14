@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.contracts.LedgerContract;
@@ -117,7 +118,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
         assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).getInteger(), is(blockOfDeployTx.getPrimary()));
+        assertThat(block.get(6).getInteger().intValue(), is(blockOfDeployTx.getPrimary()));
         assertThat(block.get(7).getAddress(), is(blockOfDeployTx.getNextConsensus()));
         assertThat(block.get(8).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
@@ -138,7 +139,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
         assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).getInteger(), is(blockOfDeployTx.getPrimary()));
+        assertThat(block.get(6).getInteger().intValue(), is(blockOfDeployTx.getPrimary()));
         assertThat(block.get(7).getAddress(), is(blockOfDeployTx.getNextConsensus()));
         assertThat(block.get(8).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
@@ -190,11 +191,11 @@ public class LedgerContractIntegrationTest extends ContractTest {
             return false;
         }
 
-        public static Object getBlockWithBlockHash(Hash256 blockHash) {
+        public static Block getBlockWithBlockHash(Hash256 blockHash) {
             return LedgerContract.getBlock(blockHash);
         }
 
-        public static Object getBlockWithBlockNumber(int blockNr) {
+        public static Block getBlockWithBlockNumber(int blockNr) {
             return LedgerContract.getBlock(blockNr);
         }
 
