@@ -986,7 +986,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        Hash256 txHash = new Hash256("e3f115b25b3948776a47984c982c2ed8b7ce7585e40479732b2fb40aced96058");
+        Hash256 txHash = new Hash256("dc188e2b94ccf6ef11a27529747de181a8026607cd2d0750ec75bc1c4bcc9e0e");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),

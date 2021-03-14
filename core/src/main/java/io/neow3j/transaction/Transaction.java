@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.hash256;
+import static io.neow3j.crypto.Hash.sha256;
 
 public class Transaction extends NeoSerializable {
 
@@ -328,7 +329,8 @@ public class Transaction extends NeoSerializable {
      *                     number.
      */
     public byte[] getHashData() throws IOException {
-        return ArrayUtils.concatenate(neow.getNetworkMagicNumber(), toArrayWithoutWitnesses());
+        return ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
+                sha256(toArrayWithoutWitnesses()));
     }
 
     /**
