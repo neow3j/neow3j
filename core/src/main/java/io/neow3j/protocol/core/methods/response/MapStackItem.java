@@ -40,8 +40,8 @@ public class MapStackItem extends StackItem {
     protected String valueToString() {
         return value.entrySet().stream()
                 .map(e -> e.getKey().toString() + " -> " + e.getValue().toString())
-                .reduce("", (a, b) ->  a + "\n" + b)
-                .substring(1); // remove the first new line.
+                .reduce("", (a, b) ->  a + ", " + b)
+                .substring(2); // remove the first comma and space.
     }
 
     @Override
