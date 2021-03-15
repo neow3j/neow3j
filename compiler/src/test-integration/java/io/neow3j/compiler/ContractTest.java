@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -104,6 +105,7 @@ public class ContractTest {
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
