@@ -23,8 +23,24 @@ public class StdLib extends ContractInterface {
      */
     public static native Object deserialize(byte[] source);
 
+
     /**
      * Serializes the given object to a JSON string.
+     * <p>
+     * Given the following class, the expected JSON string after serialization will look like
+     * this: {@code ["hello world!", 42]}. I.e., the object's field variables are serialized
+     * into a JSON array in the same order as they appear in the class definition.
+     * {@code
+     *     class MyClass {
+     *         String s;
+     *         int i;
+     *
+     *         public MyClass(String s, int i) {
+     *             this.s = s;
+     *             this.i = i;
+     *         }
+     *     }
+     * }
      *
      * @param obj The object to JSON-serialize.
      * @return the object as a JSON string.
@@ -33,7 +49,21 @@ public class StdLib extends ContractInterface {
 
     /**
      * Deserializes the given JSON-formatted string into an object.
+     * <p>
+     * Given the following class, the JSON string to deserialize into it would need to look like
+     * this: {@code ["hello world!", 42]}. I.e., a JSON array is expected in which the class
+     * field variables are given in the same order as they appear in the class definition.
+     * {@code
+     *     class MyClass {
+     *         String s;
+     *         int i;
      *
+     *         public MyClass(String s, int i) {
+     *             this.s = s;
+     *             this.i = i;
+     *         }
+     *     }
+     * }
      * @param json The string to deserialize.
      * @return The deserialized object.
      */

@@ -52,17 +52,19 @@ public class StdLibIntegrationTest extends ContractTest {
 
     @Test
     public void jsonSerialize() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(bool(true), integer(5));
+        NeoInvokeFunction response = callInvokeFunction(bool(true), integer(5),
+                string("hello, world!"));
         String res = response.getInvocationResult().getStack().get(0).getString();
-        assertThat(res, is("{\"b\":\"true\",\"i\":\"5\"}"));
+        assertThat(res, is("[1,5,\"hello, world!\"]"));
     }
 
     @Test
     public void jsonDeserialize() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(string("{\"b\":\"true\",\"i\":\"5\"}"));
+        NeoInvokeFunction response = callInvokeFunction(string("[\"true\", 5, \"hello, world!\"]"));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertThat(res.get(1).getInteger().intValue(), is(5));
+        assertThat(res.get(2).getString(), is("hello, world!"));
     }
 
     @Test
@@ -70,13 +72,13 @@ public class StdLibIntegrationTest extends ContractTest {
         String bytes = "54686520717569";
         NeoInvokeFunction response = callInvokeFunction(ContractParameter.byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).getString();
-        String expected = "LZTS5wkouM4ohnjshEQ";
+        String expected = "4CXMH7EgaC";
         assertThat(encoded, is(expected));
     }
 
     @Test
     public void base58Decode() throws IOException {
-        String encoded = "LZTS5wkouM4ohnjshEQ";
+        String encoded = "4CXMH7EgaC";
         NeoInvokeFunction response = callInvokeFunction(string(encoded));
         String decoded = response.getInvocationResult().getStack().get(0).getHexString();
         String expected = "54686520717569";
@@ -161,8 +163,8 @@ public class StdLibIntegrationTest extends ContractTest {
             return StdLib.serialize(new SimpleClass(b, i));
         }
 
-        public static String jsonSerialize(boolean b, int i) {
-            return StdLib.jsonSerialize(new SimpleClass(b, i));
+        public static String jsonSerialize(boolean b, int i, String s) {
+            return StdLib.jsonSerialize(new OtherClass(b, i, s));
         }
 
         public static Object jsonDeserialize(String json) {
@@ -195,12 +197,25 @@ public class StdLibIntegrationTest extends ContractTest {
 
         static class SimpleClass {
 
-            public boolean b;
-            public int i;
+            boolean b;
+            int i;
 
             public SimpleClass(boolean b, int i) {
                 this.b = b;
                 this.i = i;
+            }
+        }
+
+        static class OtherClass {
+
+            boolean b;
+            int i;
+            String s;
+
+            public OtherClass(boolean b, int i, String s) {
+                this.b = b;
+                this.i = i;
+                this.s = s;
             }
         }
 
