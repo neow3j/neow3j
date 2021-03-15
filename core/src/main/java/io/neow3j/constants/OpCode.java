@@ -854,7 +854,7 @@ public enum OpCode {
     MOD(0xA2, 1 << 3),
 
     /**
-     * The result of raising the value to the exponent power.
+     * Takes two elements of the stack and raises the first one to the power of the second one.
      */
     POW(0xA3,  1 << 6),
 
