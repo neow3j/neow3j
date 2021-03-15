@@ -1,12 +1,11 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.Account;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -44,6 +43,7 @@ public class AccountIntegrationTest extends ContractTest {
                 is(committeeAccountAddress()));
     }
 
+    @Ignore("See github issue https://github.com/neo-project/neo/issues/2399")
     @Test
     public void isStandard() throws Throwable {
         NeoInvokeFunction res = callInvokeFunction(
@@ -53,11 +53,11 @@ public class AccountIntegrationTest extends ContractTest {
 
     static class AccountIntegrationTestContract {
 
-        public static Hash160 createStandardAccount(ECPoint pubKey)  {
+        public static Hash160 createStandardAccount(ECPoint pubKey) {
             return Account.createStandardAccount(pubKey);
         }
 
-        public static Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys)  {
+        public static Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys) {
             return Account.createMultiSigAccount(m, pubKeys);
         }
 
