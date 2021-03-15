@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.TestProperties.oracleContractHash;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.protocol.core.methods.response.OracleResponseCode.TIMEOUT;
@@ -40,21 +41,21 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class OracleContractTest extends ContractTest {
+public class OracleContractIntegrationTest extends ContractTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(OracleContractTestContract.class.getName());
+        setUp(OracleContractIntegrationTestContract.class.getName());
     }
 
     @Test
     public void getScriptHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is("fe924b7cfe89ddd271abaf7210a80a7e11178758"));
+                is(oracleContractHash()));
     }
 
     @Test
@@ -128,7 +129,7 @@ public class OracleContractTest extends ContractTest {
         assertThat(eventState.get(3).getByteArray(), is(new byte[]{}));
     }
 
-    static class OracleContractTestContract {
+    static class OracleContractIntegrationTestContract {
 
         private static Event4Args<String, String, Integer, String> callbackEvent;
 

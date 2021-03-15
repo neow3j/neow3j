@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.TestProperties.policyContractHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
@@ -18,18 +19,15 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class PolicyContractTest extends ContractTest {
+public class PolicyContractIntegrationTest extends ContractTest {
 
-    public static final long MAX_BLOCK_SYSTEM_FEE = 9000L * 100_000_000L; // GAS fractions
-    public static final long MAX_BLOCK_SIZE = 1024 * 256;
-    public static final long MAX_TRANSACTIONS_PER_BLOCK = 512;
     public static final long FEE_PER_BYTE = 1000L; // GAS fractions
     public static final int DEFAULT_EXEC_FEE_FACTOR = 30;
     public static final int DEFAULT_STORAGE_PRICE = 100000;
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(PolicyContractTestContract.class.getName());
+        setUp(PolicyContractIntegrationTestContract.class.getName());
     }
 
     @Test
@@ -97,10 +95,10 @@ public class PolicyContractTest extends ContractTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(io.neow3j.contract.PolicyContract.SCRIPT_HASH.toString()));
+                is(policyContractHash()));
     }
 
-    static class PolicyContractTestContract {
+    static class PolicyContractIntegrationTestContract {
 
         public static int[] setAndGetFeePerByte(int newFee) {
             int[] sizes = new int[2];

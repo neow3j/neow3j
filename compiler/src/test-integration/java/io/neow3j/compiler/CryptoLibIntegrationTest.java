@@ -1,14 +1,18 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.NamedCurve;
 import io.neow3j.devpack.contracts.CryptoLib;
+import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static io.neow3j.TestProperties.cryptoLibHash;
+import static io.neow3j.TestProperties.stdLibHash;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.publicKey;
@@ -54,6 +58,13 @@ public class CryptoLibIntegrationTest extends ContractTest {
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
+    @Test
+    public void getHash() throws Throwable {
+        NeoInvokeFunction response = callInvokeFunction();
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is(cryptoLibHash()));
+    }
+
     static class CryptoLibIntegrationTestContract {
 
         public static String sha256(String value) {
@@ -69,6 +80,9 @@ public class CryptoLibIntegrationTest extends ContractTest {
             return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
         }
 
+        public static Hash160 getHash() {
+            return CryptoLib.getHash();
+        }
     }
 
 }

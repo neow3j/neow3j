@@ -92,6 +92,25 @@ public class TestProperties {
         return getValue("roleManagementHash");
     }
 
+    public static String stdLibHash() {
+        return getValue("stdLibHash");
+    }
+
+    public static String cryptoLibHash() {
+        return getValue("cryptoLibHash");
+    }
+
+    public static String ledgerContractHash() {
+        return getValue("ledgerContractHash");
+    }
+
+    public static String policyContractHash() {
+        return getValue("policyContractHash");
+    }
+
+    public static String oracleContractHash() {
+        return getValue("oracleContractHash");
+    }
 
     public static String getValue(String key) {
         return getInstance().properties.getProperty(key);

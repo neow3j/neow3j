@@ -1,23 +1,25 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.contracts.StdLib;
+import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
+
+import static io.neow3j.TestProperties.stdLibHash;
 import static io.neow3j.contract.ContractParameter.bool;
-import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.contracts.StdLib;
-import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.List;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class StdLibIntegrationTest extends ContractTest {
 
@@ -152,6 +154,13 @@ public class StdLibIntegrationTest extends ContractTest {
                 is(-1));
     }
 
+    @Test
+    public void getHash() throws Throwable {
+        NeoInvokeFunction response = callInvokeFunction();
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is(stdLibHash()));
+    }
+
     static class StdLibIntegrationTestContract {
 
         public static Object serializeAndDeserialize(boolean b, int i) {
@@ -195,6 +204,10 @@ public class StdLibIntegrationTest extends ContractTest {
             return StdLib.atoi(s, base);
         }
 
+        public static Hash160 getHash() {
+            return StdLib.getHash();
+        }
+
         static class SimpleClass {
 
             boolean b;
@@ -218,6 +231,5 @@ public class StdLibIntegrationTest extends ContractTest {
                 this.s = s;
             }
         }
-
     }
 }

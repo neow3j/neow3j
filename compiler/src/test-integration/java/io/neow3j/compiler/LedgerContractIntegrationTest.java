@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.TestProperties.ledgerContractHash;
 import static io.neow3j.contract.ContractParameter.hash256;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -163,7 +164,7 @@ public class LedgerContractIntegrationTest extends ContractTest {
     public void getHash() throws IOException {
         NeoInvokeFunction response = callInvokeFunction();
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is("da65b600f7124ce6c79950c1772a36403104f2be"));
+                is(ledgerContractHash()));
     }
 
     static class LedgerContractIntegrationTestContract {
