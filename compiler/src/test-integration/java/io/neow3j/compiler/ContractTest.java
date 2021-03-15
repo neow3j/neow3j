@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -39,6 +40,7 @@ import org.junit.rules.TestName;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -65,6 +67,7 @@ public class ContractTest {
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
             DockerImageName.parse(neo3PrivateNetContainerImg()))
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY)
             .withCopyFileToContainer(
@@ -104,6 +107,7 @@ public class ContractTest {
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);

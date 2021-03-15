@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
@@ -14,6 +15,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +43,15 @@ public class Await {
     public static void waitUntilBalancesIsGreaterThanZero(String address,
             Hash160 token, Neow3j neow3j) {
         waitUntil(callableGetBalance(address, token, neow3j), Matchers.greaterThan(0L));
+    }
+
+    /**
+     * Checks and waits until the block count (height) is greater than zero.
+     *
+     * @param neow3j  The {@code Neow3j} object to use to connect to a neo-node.
+     */
+    public static void waitUntilBlockCountIsGreaterThanZero(Neow3j neow3j) {
+        waitUntil(callableGetBlockCount(neow3j), Matchers.greaterThan(BigInteger.ZERO));
     }
 
     /**
@@ -93,6 +104,17 @@ public class Await {
                 return response.getContractState().getHash().equals(contractHash160);
             } catch (IOException e) {
                 return false;
+            }
+        };
+    }
+
+    private static Callable<BigInteger> callableGetBlockCount(Neow3j neow3j) {
+        return () -> {
+            try {
+                NeoBlockCount getBlockCount = neow3j.getBlockCount().send();
+                return getBlockCount.getBlockIndex();
+            } catch (IOException e) {
+                return BigInteger.ZERO;
             }
         };
     }

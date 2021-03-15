@@ -1,6 +1,18 @@
+
 {
   "PluginConfiguration": {
+    "Network": 5195086,
+    "Nodes": [],
+    "MaxTaskTimeout": 432000000,
     "AllowPrivateHost": true,
+    "AllowedContentTypes": [ "application/json" ],
+    "Https": {
+      "Timeout": 5000
+    },
+    "NeoFS": {
+      "EndPoint": "127.0.0.1:8080",
+      "Timeout": 15000
+    },
+    "AutoStart": false
   }
 }
-
