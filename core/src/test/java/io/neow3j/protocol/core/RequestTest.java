@@ -15,7 +15,7 @@ import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
 import io.neow3j.protocol.http.HttpService;
 
-import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Date;
 
 import io.neow3j.transaction.Signer;
@@ -45,7 +45,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetBlockHash() throws Exception {
-        neow3j.getBlockHash(new BlockParameterIndex(16293)).send();
+        neow3j.getBlockHash(new BigInteger("16293")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblockhash\"," +
@@ -55,10 +55,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetBlock_Index() throws Exception {
-        neow3j.getBlock(
-                new BlockParameterIndex(12345),
-                true
-        ).send();
+        neow3j.getBlock(new BigInteger("12345"), true).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblock\"," +
@@ -68,10 +65,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetBlock_Index_onlyHeader() throws Exception {
-        neow3j.getBlock(
-                new BlockParameterIndex(12345),
-                false
-        ).send();
+        neow3j.getBlock(new BigInteger("12345"), false).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblockheader\"," +
@@ -133,7 +127,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetRawBlock_Index() throws Exception {
-        neow3j.getRawBlock(new BlockParameterIndex(12345)).send();
+        neow3j.getRawBlock(new BigInteger("12345")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblock\"," +
@@ -195,7 +189,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetBlockHeader_Index() throws Exception {
-        neow3j.getBlockHeader(new BlockParameterIndex(12345)).send();
+        neow3j.getBlockHeader(new BigInteger("12345")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblockheader\"," +
@@ -216,7 +210,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetRawBlockHeader_Index() throws Exception {
-        neow3j.getRawBlockHeader(new BlockParameterIndex(12345)).send();
+        neow3j.getRawBlockHeader(new BigInteger("12345")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblockheader\"," +
@@ -895,7 +889,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetStateRoot() throws Exception {
-        neow3j.getStateRoot(new BlockParameterIndex(52)).send();
+        neow3j.getStateRoot(new BigInteger("52")).send();
 
         verifyResult("{\"jsonrpc\": \"2.0\"," +
                 "\"method\": \"getstateroot\"," +

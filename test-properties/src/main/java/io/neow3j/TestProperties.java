@@ -112,6 +112,10 @@ public class TestProperties {
         return getValue("oracleContractHash");
     }
 
+    public static String gasTokenName() {
+        return getValue("gasTokenName");
+    }
+
     public static String getValue(String key) {
         return getInstance().properties.getProperty(key);
     }

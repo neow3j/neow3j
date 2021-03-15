@@ -21,10 +21,10 @@ import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 
+import static io.neow3j.TestProperties.committeeAccountAddress;
+import static io.neow3j.TestProperties.defaultAccountAddress;
 import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_1_ADDRESS;
-import static io.neow3j.protocol.IntegrationTestHelper.ACCOUNT_2_ADDRESS;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
@@ -74,14 +74,21 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendRawTransaction() throws IOException {
-        NeoSendRawTransaction sendRawTransaction = getNeow3j()
-                .sendRawTransaction(
-                        "000b0a96844a959800000000002ac312000000000081160000017afd203255cb2972bd0a6a827e74e387ed322bec0100550b120c14dc84704b8283397326095c0b4e9662282c3a73190c147afd203255cb2972bd0a6a827e74e387ed322bec14c00c087472616e736665720c14b6720fef7e7eb73f25afb470f587997ce3e2460a41627d5b5201420c40a4ccb42bb7ed4a7217a204b836f372aa33c33e93b123e061805c064b23269bd5acadde1d10c60d83e74605def6a3f3d9a53d94e63b299ebb2388e1bbb779a1e52b110c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60110b41138defaf")
-                .send();
+        // Tx generated from the following code with a local neo-node running on the first few
+        // blocks:
+//        io.neow3j.transaction.Transaction tx = new GasToken(neow)
+//                .transferFromSpecificAccounts(
+//                      w, a.getAddress(), BigDecimal.TEN, committee.getScriptHash())
+//                .validUntilBlock(1000)
+//                .sign();
 
+        NeoSendRawTransaction sendRawTransaction = getNeow3j().sendRawTransaction(
+                "00ccc7576a968b970000000000acd2120000000000e80300000100159d24baf9a34b3607bb86486a0c6b39a73f4801005a0b0200ca9a3b0c14620c0e6f7f9326ab7aab5f6815e5bfb5cded36030c1400159d24baf9a34b3607bb86486a0c6b39a73f4814c01f0c087472616e736665720c14cf76e28bd0062c4a478ee35561011319f3cfa4d241627d5b5201420c40ac3c4a6ddf30373023ea6930ea4fd1952a339b2ab9dfe29b42746e27f52f4613c973cc90ae278f4a2ef21d5db0b8faba28b10a95d541e31ff729a4df1afe22b02a110c21036cfcc5d0550d0481b66f58e25067280f042b4933fc013dc4930ce2a4194c9d9411417bce6ca5")
+                .send();
         RawTransaction rawTx = sendRawTransaction.getSendRawTransaction();
         Hash256 hash = rawTx.getHash();
-        assertNotNull(hash);
+        assertThat(hash.toString(),
+                is("c7fa8aab1e5d64e5bde866826dc3362a203bd32c5617ee644651aacf57145825"));
     }
 
     @Ignore("Future work, act as a consensus to submit blocks.")
@@ -103,14 +110,14 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendFrom() throws IOException {
         NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(ACCOUNT_1_ADDRESS, neoTokenHash(), RECIPIENT_1, "10")
+                .sendFrom(committeeAccountAddress(), neoTokenHash(), RECIPIENT_1, "10")
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
 
         assertNotNull(tx);
         assertNotNull(tx.getHash());
-        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
+        assertThat(tx.getSender(), is(committeeAccountAddress()));
     }
 
     @Test
@@ -118,14 +125,14 @@ public class Neow3jWriteIntegrationTest {
         TransactionSendAsset txSendAsset =
                 new TransactionSendAsset(neoTokenHash(), "10", RECIPIENT_1);
         NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(ACCOUNT_1_ADDRESS, txSendAsset)
+                .sendFrom(committeeAccountAddress(), txSendAsset)
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
 
         assertNotNull(tx);
         assertNotNull(tx.getHash());
-        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
+        assertThat(tx.getSender(), is(committeeAccountAddress()));
     }
 
     @Test
@@ -142,13 +149,13 @@ public class Neow3jWriteIntegrationTest {
 
         assertNotNull(tx.getHash());
         assertNotNull(tx.getNonce());
-        assertThat(tx.getSender(), is(ACCOUNT_2_ADDRESS));
+        assertThat(tx.getSender(), is(defaultAccountAddress()));
     }
 
     @Test
     public void testSendManyWithFrom() throws IOException {
         NeoSendMany response = getNeow3j()
-                .sendMany(ACCOUNT_1_ADDRESS,
+                .sendMany(committeeAccountAddress(),
                         asList(
                                 new TransactionSendAsset(neoTokenHash(), "100", RECIPIENT_1),
                                 new TransactionSendAsset(neoTokenHash(), "10", RECIPIENT_2)))
@@ -156,7 +163,7 @@ public class Neow3jWriteIntegrationTest {
 
         assertNotNull(response.getSendMany());
         Transaction tx = response.getSendMany();
-        assertThat(tx.getSender(), is(ACCOUNT_1_ADDRESS));
+        assertThat(tx.getSender(), is(committeeAccountAddress()));
 
         Await.waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
         Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash())

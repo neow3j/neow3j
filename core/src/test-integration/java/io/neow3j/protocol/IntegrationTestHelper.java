@@ -36,21 +36,9 @@ public class IntegrationTestHelper {
     // Native token hashes.
     static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
     static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
-    static final Hash160 NAME_SERVICE_HASH = new Hash160(nameServiceHash());
-    static final Hash160 CONTRACT_MANAGEMENT_HASH = new Hash160(contractManagementHash());
 
     // Total supply of NEO tokens.
     static final int NEO_TOTAL_SUPPLY = 100000000;
-    // First account (multi-sig) in the node's wallet
-    static final String ACCOUNT_1_ADDRESS = "NKvR5WeczCQMcVWQD9aaMqegfEoCBXGWpW";
-    static final String ACCOUNT_1_WIF =
-            "L24Qst64zASL2aLEKdJtRLnbnTbqpcRNWkWJ3yhDh2CLUtLdwYK2";
-
-    // Second account (single-sig) in the node's wallet
-    static final String ACCOUNT_2_ADDRESS = "NUrPrFLETzoe7N2FLi2dqTvLwc9L2Em84K";
-    static final ECPublicKey ACCOUNT_2_PUBKEY = new ECPublicKey(
-            Numeric.hexStringToByteArray(
-                    "036cfcc5d0550d0481b66f58e25067280f042b4933fc013dc4930ce2a4194c9d94"));
 
     static final String VM_STATE_HALT = "HALT";
 
