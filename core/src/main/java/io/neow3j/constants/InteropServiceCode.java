@@ -3,6 +3,7 @@ package io.neow3j.constants;
 import io.neow3j.crypto.Hash;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.nio.charset.StandardCharsets;
 
 public enum InteropServiceCode {
@@ -47,10 +48,9 @@ public enum InteropServiceCode {
     SYSTEM_STORAGE_PUTEX("System.Storage.PutEx", 0),
     SYSTEM_STORAGE_DELETE("System.Storage.Delete", 0);
 
-    /* The service's name */
-    private String name;
-    /* Price in fractions of GAS for executing the service. */
-    private Long price;
+    private final String name;
+
+    private final long price;
 
     /**
      * Constructs a new interop service code.
@@ -58,13 +58,16 @@ public enum InteropServiceCode {
      * @param name  The name of the service.
      * @param price The execution GAS price of the code.
      */
-    InteropServiceCode(String name, Integer price) {
+    InteropServiceCode(String name, long price) {
         this.name = name;
-        if (price != null) {
-            this.price = (long) price;
-        }
+        this.price = price;
     }
 
+    /**
+     * Gets the name of the interop service code.
+     *
+     * @return the name.
+     */
     public String getName() {
         return this.name;
     }
@@ -80,15 +83,17 @@ public enum InteropServiceCode {
     }
 
     /**
-     * Get the price in fractions of GAS of this interop service.
+     * Price for executing the service. This is a relative price that is multiplied with the
+     * {@code execFeeFactor} for the definitive GAS price.
      *
-     * @return the price
-     * @throws UnsupportedOperationException if this interop service has a dynamic price.
+     * @return the price.
+     * @throws UnsupportedOperationException if the {@code InteropServiceCode} does not have a
+     *                                       fixed price.
      */
     public long getPrice() {
-        if (this == NEO_CRYPTO_CHECKMULTISIG) {
+        if (price == 0) {
             throw new UnsupportedOperationException("The price of the interop service "
-                    + this.getName() + " is not fixed but depends on the number of signatures.");
+                    + this.getName() + " is not fixed.");
         }
         return this.price;
     }
