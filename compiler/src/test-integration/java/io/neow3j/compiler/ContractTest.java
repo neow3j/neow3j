@@ -40,6 +40,7 @@ import org.junit.rules.TestName;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -66,6 +67,7 @@ public class ContractTest {
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
             DockerImageName.parse(neo3PrivateNetContainerImg()))
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY)
             .withCopyFileToContainer(
