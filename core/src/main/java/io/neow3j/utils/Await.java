@@ -31,7 +31,7 @@ import org.hamcrest.Matchers;
  */
 public class Await {
 
-    private final static int MAX_WAIT_TIME = 30;
+    public static int MAX_WAIT_TIME = 30;
 
     /**
      * Checks and waits until the token balance of the given address is greater than zero.

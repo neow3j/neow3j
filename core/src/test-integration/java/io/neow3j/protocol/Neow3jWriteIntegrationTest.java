@@ -59,6 +59,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Before
     public void setUp() throws IOException {
+        Await.MAX_WAIT_TIME = 120;
         neow3j = Neow3j.build(new HttpService(
                 IntegrationTestHelper.getNodeUrl(privateNetContainer)));
         // open the wallet for JSON-RPC calls
