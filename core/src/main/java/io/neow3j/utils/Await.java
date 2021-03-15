@@ -112,13 +112,8 @@ public class Await {
         return () -> {
             try {
                 NeoBlockCount getBlockCount = neow3j.getBlockCount().send();
-                if (getBlockCount.hasError()) {
-                    System.out.println("code: " + getBlockCount.getError().getCode());
-                    System.out.println("message: " + getBlockCount.getError().getMessage());
-                }
                 return getBlockCount.getBlockIndex();
             } catch (IOException e) {
-                e.printStackTrace();
                 return BigInteger.ZERO;
             }
         };
