@@ -157,10 +157,8 @@ public class Transaction extends NeoSerializable {
      * Gets this transactions uniquely identifying ID/hash.
      *
      * @return the transaction ID.
-     * @throws IOException if the network magic number cannot be fetched from the connected Neo
-     *                     node. The magic number is needed to calculate the transaction hash.
      */
-    public Hash256 getTxId() throws IOException {
+    public Hash256 getTxId() {
         return new Hash256(sha256(toArrayWithoutWitnesses()));
     }
 
@@ -202,13 +200,8 @@ public class Transaction extends NeoSerializable {
 
         Predicate<NeoGetBlock> pred = neoGetBlock ->
                 neoGetBlock.getBlock().getTransactions() != null &&
-                        neoGetBlock.getBlock().getTransactions().stream().anyMatch(transaction -> {
-                            try {
-                                return transaction.getHash().equals(getTxId());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                        neoGetBlock.getBlock().getTransactions().stream()
+                                .anyMatch(tx -> tx.getHash().equals(getTxId()));
 
         return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 new BlockParameterIndex(blockIndexWhenSent), true)
@@ -321,11 +314,10 @@ public class Transaction extends NeoSerializable {
      * producing the transaction ID or a transaction signature.
      * <p>
      * The returned value depends on the magic number of the used Neo network, which is retrieved
-     * from the Neo node via the {@code getversion} RPC method.
+     * from the Neo node via the {@code getversion} RPC method if not already available locally.
      *
      * @return the transaction data ready for hashing.
-     * @throws IOException if something goes wrong when asking the Neo node for the networks magic
-     *                     number.
+     * @throws IOException if an error occurs when fetching the network's magic number
      */
     public byte[] getHashData() throws IOException {
         return ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
