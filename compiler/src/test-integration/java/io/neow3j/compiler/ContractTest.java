@@ -102,7 +102,6 @@ public class ContractTest {
     }
 
     protected static void setUp(String name) throws Throwable {
-        Await.MAX_WAIT_TIME = 120;
         defaultAccount = Account.fromWIF(defaultAccountWIF());
         committee = Account.createMultiSigAccount(
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);

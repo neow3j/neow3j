@@ -76,7 +76,6 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
 
-import io.neow3j.utils.Await;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -155,7 +154,6 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        Await.MAX_WAIT_TIME = 120;
         neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
