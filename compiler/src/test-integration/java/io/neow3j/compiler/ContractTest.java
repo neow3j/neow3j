@@ -67,7 +67,6 @@ public class ContractTest {
     @ClassRule
     public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
             DockerImageName.parse(neo3PrivateNetContainerImg()))
-            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY)
             .withCopyFileToContainer(
