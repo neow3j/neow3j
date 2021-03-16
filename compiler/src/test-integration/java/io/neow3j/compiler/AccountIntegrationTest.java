@@ -43,14 +43,6 @@ public class AccountIntegrationTest extends ContractTest {
                 is(committeeAccountAddress()));
     }
 
-    @Ignore("See github issue https://github.com/neo-project/neo/issues/2399")
-    @Test
-    public void isStandard() throws Throwable {
-        NeoInvokeFunction res = callInvokeFunction(
-                hash160(io.neow3j.contract.Hash160.fromAddress(defaultAccountAddress())));
-        assertTrue(res.getInvocationResult().getStack().get(0).getBoolean());
-    }
-
     static class AccountIntegrationTestContract {
 
         public static Hash160 createStandardAccount(ECPoint pubKey) {
@@ -59,10 +51,6 @@ public class AccountIntegrationTest extends ContractTest {
 
         public static Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys) {
             return Account.createMultiSigAccount(m, pubKeys);
-        }
-
-        public static boolean isStandard(Hash160 hash) {
-            return Account.isStandard(hash);
         }
 
     }
