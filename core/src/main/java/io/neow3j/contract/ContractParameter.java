@@ -1,5 +1,7 @@
 package io.neow3j.contract;
 
+import static io.neow3j.model.types.ContractParameterType.BYTE_ARRAY;
+import static io.neow3j.model.types.ContractParameterType.INTEGER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,6 +36,7 @@ import java.util.Objects;
  */
 @JsonSerialize(using = ContractParameterSerializer.class)
 @JsonDeserialize(using = ContractParameterDeserializer.class)
+@SuppressWarnings("unchecked")
 public class ContractParameter {
 
     @JsonProperty("name")
@@ -129,6 +133,21 @@ public class ContractParameter {
         return new ContractParameter(ContractParameterType.ARRAY, params);
     }
 
+    public static ContractParameter map(HashMap<ContractParameter, ContractParameter> map) {
+        if (map.isEmpty()) {
+            throw new IllegalArgumentException("At least one map entry is required to create a " +
+                    "map contract parameter.");
+        }
+        for (ContractParameter contractParameter : map.keySet()) {
+            ContractParameterType type = contractParameter.getParamType();
+            if (!type.equals(INTEGER) && !type.equals(BYTE_ARRAY)) {
+                throw new IllegalArgumentException("A map entry contains an invalid key value. " +
+                        "Only keys of type integer or byte array are allowed in a map.");
+            }
+        }
+        return new ContractParameter(ContractParameterType.MAP, map);
+    }
+
     /**
      * Creates a byte array parameter from the given value.
      * <p>
@@ -149,7 +168,7 @@ public class ContractParameter {
      */
     public static ContractParameter byteArray(String hexString) {
         if (!Numeric.isValidHexString(hexString)) {
-            throw new IllegalArgumentException("Argument is not a valid hex number");
+            throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
         return byteArray(Numeric.hexStringToByteArray(hexString));
     }
@@ -173,7 +192,7 @@ public class ContractParameter {
      */
     public static ContractParameter signature(String signatureHexString) {
         if (!Numeric.isValidHexString(signatureHexString)) {
-            throw new IllegalArgumentException("Argument is not a valid hex number");
+            throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
         return signature(Numeric.hexStringToByteArray(signatureHexString));
     }
@@ -219,7 +238,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter integer(BigInteger integer) {
-        return new ContractParameter(ContractParameterType.INTEGER, integer);
+        return new ContractParameter(INTEGER, integer);
     }
 
     /**
@@ -243,7 +262,7 @@ public class ContractParameter {
      */
     public static ContractParameter hash256(String hashHexString) {
         if (!Numeric.isValidHexString(hashHexString)) {
-            throw new IllegalArgumentException("Argument is not a valid hex number");
+            throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
         return hash256(Numeric.hexStringToByteArray(hashHexString));
     }
@@ -266,8 +285,8 @@ public class ContractParameter {
      */
     public static ContractParameter hash256(byte[] hash) {
         if (hash.length != 32) {
-            throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes long but was" +
-                    " " + hash.length + " bytes long.");
+            throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes but was " +
+                    hash.length + " bytes.");
         }
         return new ContractParameter(ContractParameterType.HASH256, hash);
     }
@@ -297,7 +316,8 @@ public class ContractParameter {
     public static ContractParameter publicKey(byte[] publicKey) {
         if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
             throw new IllegalArgumentException("Public key argument must be " +
-                    NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length + " bytes");
+                    NeoConstants.PUBLIC_KEY_SIZE + " bytes but was " + publicKey.length +
+                    " bytes.");
         }
         return new ContractParameter(ContractParameterType.PUBLIC_KEY, publicKey);
     }
@@ -352,7 +372,7 @@ public class ContractParameter {
         return Objects.hash(paramName, paramType, value);
     }
 
-    protected static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
+    public static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
 
         public ContractParameterSerializer() {
             this(null);
@@ -369,7 +389,7 @@ public class ContractParameter {
             serializeParameter(value, gen);
         }
 
-        private void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
+        public void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
             gen.writeStartObject();
             if (p.getParamName() != null) {
                 gen.writeStringField("name", p.getParamName());
@@ -417,9 +437,21 @@ public class ContractParameter {
                     }
                     gen.writeEndArray();
                     break;
+                case MAP:
+                    gen.writeArrayFieldStart("value");
+                    HashMap<ContractParameter, ContractParameter> map =
+                            (HashMap<ContractParameter, ContractParameter>) p.getValue();
+                    for (final ContractParameter key : map.keySet()) {
+                        ContractParameter val = map.get(key);
+                        gen.writeObjectFieldStart("key");
+                        serializeParameter(key, gen);
+                        gen.writeObjectFieldStart("value");
+                        serializeParameter(val, gen);
+                    }
+                    break;
                 default:
-                    throw new UnsupportedOperationException("Parameter type \'" +
-                            p.getParamType().toString() + "\' not supported.");
+                    throw new UnsupportedOperationException("Parameter type '" +
+                            p.getParamType().toString() + "' not supported.");
             }
         }
 
@@ -513,9 +545,10 @@ public class ContractParameter {
                     // We assume that the interop interface parameter holds a plain string.
                     return value.asText();
                 default:
-                    throw new UnsupportedOperationException("Parameter type \'" + type +
-                            "\' not supported.");
+                    throw new UnsupportedOperationException("Parameter type '" + type +
+                            "' not supported.");
             }
         }
     }
+
 }
