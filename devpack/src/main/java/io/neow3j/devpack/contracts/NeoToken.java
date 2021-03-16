@@ -86,6 +86,8 @@ public class NeoToken extends FungibleToken {
 
     /**
      * Gets the GAS price for registering a new candidate.
+     *
+     * @return The price.
      */
     public static native int getRegisterPrice();
 
