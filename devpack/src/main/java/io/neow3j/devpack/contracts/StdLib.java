@@ -7,16 +7,46 @@ import io.neow3j.devpack.annotations.ContractHash;
 public class StdLib extends ContractInterface {
 
     /**
-     * Attempts to serialize the given object to a byte array.
+     * Serialize the given object to a byte array.
+     * <p>
+     * As an example, the following class will be serialized to the byte array below. We assume
+     * that the class was instantiated with the values {@code true} and {@code 32069}.
      *
+     * <pre>
+     * static class MyClass {
+     *     boolean b;
+     *     int i;
+     *
+     *     public MyClass(boolean b, int i) {
+     *         this.b = b;
+     *         this.i = i;
+     *     }
+     * }
+     * </pre>
+     *
+     * Serialized byte array:
+     * <pre>
+     * [0] StackItemType.ARRAY
+     * [1] 0x02 // Number of field variables on the object
+     * [2] StackItemType.BOOLEAN // type of first variable, could also be INTEGER
+     * [3] 0x01 // byte size of the variable's value
+     * [4] 0x01 // the variable's value
+     * [5] StackItemType.INTEGER // type of second variable
+     * [6] 0x02 // byte size of the variable's value
+     * [7] 0x45 // part 1 of the variable's value (little-endian)
+     * [8] 0x7D // part 2 of the variable's value (little-endian)
+     * </pre>
      * @param source the object to serialize.
      * @return the serialized byte array.
      */
     public static native byte[] serialize(Object source);
 
     /**
-     * Attempts to deserialize the given byte array. It is up to the developer to know what type to
+     * Deserializes the given byte array. It is up to the developer to know what type to
      * expect from the deserialization.
+     * <p>
+     * See {@link StdLib#serialize(Object)} for an example mapping between object and serialized
+     * byte array.
      *
      * @param source the byte array to deserialize.
      * @return the deserialized object.
@@ -30,7 +60,7 @@ public class StdLib extends ContractInterface {
      * Given the following class, the expected JSON string after serialization will look like
      * this: {@code ["hello world!", 42]}. I.e., the object's field variables are serialized
      * into a JSON array in the same order as they appear in the class definition.
-     * {@code
+     * <pre>
      *     class MyClass {
      *         String s;
      *         int i;
@@ -40,8 +70,7 @@ public class StdLib extends ContractInterface {
      *             this.i = i;
      *         }
      *     }
-     * }
-     *
+     * </pre>
      * @param obj The object to JSON-serialize.
      * @return the object as a JSON string.
      */
@@ -53,17 +82,17 @@ public class StdLib extends ContractInterface {
      * Given the following class, the JSON string to deserialize into it would need to look like
      * this: {@code ["hello world!", 42]}. I.e., a JSON array is expected in which the class
      * field variables are given in the same order as they appear in the class definition.
-     * {@code
-     *     class MyClass {
-     *         String s;
-     *         int i;
+     * <pre>
+     * class MyClass {
+     *     String s;
+     *     int i;
      *
-     *         public MyClass(String s, int i) {
-     *             this.s = s;
-     *             this.i = i;
-     *         }
+     *     public MyClass(String s, int i) {
+     *         this.s = s;
+     *         this.i = i;
      *     }
      * }
+     * </pre>
      * @param json The string to deserialize.
      * @return The deserialized object.
      */

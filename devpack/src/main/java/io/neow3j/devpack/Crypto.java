@@ -10,23 +10,29 @@ import io.neow3j.devpack.contracts.CryptoLib;
 public class Crypto {
 
     /**
-     * Checks if the {@code signature} originates from the {@code publicKey}. The corresponding
-     * message is taken from the script container that induced this call, e.g., a transaction.
+     * Checks if the {@code signature} is valid given that {@code publicKey} is the signer. The
+     * message that corresponds to the signature is the container that started the current
+     * execution of the smart contract, i.e., usually the transaction.
+     * <p>
+     * The ECC curve secp256r1 is assumed.
      *
      * @param publicKey The public key.
      * @param signature The signature.
-     * @return True if the signature originates from the public key. False otherwise.
+     * @return True if the signature is valid. False otherwise.
      */
     @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
     public static native boolean checkSig(ECPoint publicKey, String signature);
 
     /**
-     * Checks if the {@code signatures} originate from the {@code publicKeys}. The corresponding
-     * message is taken from the script container that induced this call, e.g., a transaction.
+     * Checks if the {@code signatures} are valid given that {@code publicKeys} are the signers.
+     * The message that corresponds to the signatures is the container that started the current
+     * execution of the smart contract, i.e., usually the transaction.
+     * <p>
+     * The ECC curve secp256r1 is assumed.
      *
      * @param signatures The signatures.
      * @param publicKeys The public keys.
-     * @return True if the signatures originate from the public keys. False otherwise.
+     * @return True if the signatures are valid. False otherwise.
      */
     @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG)
     public static native boolean checkMultisig(ECPoint[] publicKeys, String[] signatures);

@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.TestProperties.contractManagementHash;
+import static io.neow3j.TestProperties.defaultAccountAddress;
 import static io.neow3j.TestProperties.defaultAccountScriptHash;
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.TestProperties.gasTokenHash;
@@ -119,14 +120,6 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_SYMBOL = "symbol";
     protected static final String INVOKE_BALANCE = "balanceOf";
 
-    protected static final String UNCLAIMED_GAS = "100000000";
-
-    // The address that is imported to the wallet.
-    protected static final String IMPORT_ADDRESS_WIF =
-            "L3ijcgFEaNvR5nYYHuMNLtCc8e5Qwerj9qe6VUHNkF74GkUZtiD8";
-    protected static final String IMPORT_ADDRESS = "Ndo1PUkCkuxgRFd3GqPCuBLZjxozBJhqhM";
-    // The address from which account 2 receives GAS when sending NEO to the recipient address.
-
     protected static final BigInteger BLOCK_0_IDX = BigInteger.ZERO;
     protected static final String BLOCK_0_HASH_STRING =
             "1aa1a3fc3449e0b1bfbc54b3c3a4a55f13cc7a5fccc166091ef09d67e767830b";
@@ -134,9 +127,6 @@ public class Neow3jReadOnlyIntegrationTest {
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAABWdJLr5o0s2B7uGSGoMazmnP0gBAAER";
     protected static final String BLOCK_0_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAABWdJLr5o0s2B7uGSGoMazmnP0gBAAERAA==";
-
-    // wif KxwrYazXiCdK33JEddpwHbXTpAYyhXC1YyC4SXTVF6GLRPBuVBFb
-    private static final String RECIPIENT = "NcuAjK8yN5DZ8PfaghPGVQw55gsi7ichXs";
 
     protected static Neow3j neow3j;
 
@@ -696,7 +686,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getUnclaimedGas();
 
         assertThat(unclaimedGas, is(notNullValue()));
-        assertThat(unclaimedGas.getUnclaimed(), greaterThanOrEqualTo(UNCLAIMED_GAS));
+        assertThat(unclaimedGas.getUnclaimed(), greaterThanOrEqualTo("100000000"));
         assertThat(unclaimedGas.getAddress(), is(committeeAccountAddress()));
     }
 
@@ -727,7 +717,7 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testInvokeFunctionWithTransfer() throws IOException {
         List<ContractParameter> params = Arrays.asList(
                 hash160(new Hash160(committeeAccountScriptHash())),
-                hash160(Hash160.fromAddress(RECIPIENT)),
+                hash160(new Hash160(defaultAccountScriptHash())),
                 integer(1),
                 integer(1));
         Signer signer = new Signer.Builder()
@@ -746,7 +736,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(invoc.getState(), is(VM_STATE_HALT));
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
-        assertNotNull(invoc.getStack());
+        assertTrue(invoc.getStack().get(0).getBoolean());
         assertNotNull(invoc.getTx());
     }
 
@@ -885,11 +875,11 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testImportPrivKey() throws IOException {
         NeoAddress privKey = getNeow3j()
-                .importPrivKey(IMPORT_ADDRESS_WIF)
+                .importPrivKey(defaultAccountWIF())
                 .send()
                 .getAddresses();
 
-        assertThat(privKey.getAddress(), is(IMPORT_ADDRESS));
+        assertThat(privKey.getAddress(), is(defaultAccountAddress()));
         assertTrue(privKey.getHasKey());
         assertNull(privKey.getLabel());
         assertFalse(privKey.getWatchOnly());
