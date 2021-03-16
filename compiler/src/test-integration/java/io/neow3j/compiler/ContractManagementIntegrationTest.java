@@ -10,16 +10,16 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
+import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
-import io.neow3j.devpack.Contract;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
@@ -31,16 +31,22 @@ import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.util.List;
-
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class ContractManagementIntegrationTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(ContractManagementIntegrationTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            ContractManagementIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void getContract() throws IOException {

@@ -14,6 +14,7 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
@@ -39,19 +40,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class OracleContractIntegrationTest extends ContractTest {
 
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            OracleContractIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
+
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
-
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(OracleContractIntegrationTestContract.class.getName());
-    }
 
     @Test
     public void getScriptHash() throws IOException {

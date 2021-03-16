@@ -4,20 +4,28 @@ import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.devpack.Map;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
 import java.util.List;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class MapTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(MapTests.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            MapTests.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void putAndGetFromMap() throws IOException {

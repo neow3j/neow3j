@@ -1,5 +1,13 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.TestProperties.ledgerContractHash;
+import static io.neow3j.contract.ContractParameter.hash256;
+import static io.neow3j.contract.ContractParameter.integer;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash160;
@@ -9,28 +17,31 @@ import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
-
-import static io.neow3j.TestProperties.ledgerContractHash;
-import static io.neow3j.contract.ContractParameter.hash256;
-import static io.neow3j.contract.ContractParameter.integer;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class LedgerContractIntegrationTest extends ContractTest {
 
     private static NeoBlock blockOfDeployTx;
 
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            LedgerContractIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
+
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(LedgerContractIntegrationTestContract.class.getName());
         blockOfDeployTx = neow3j.getBlock(blockHashOfDeployTx, true).send().getBlock();
     }
 

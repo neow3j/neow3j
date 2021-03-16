@@ -3,20 +3,28 @@ package io.neow3j.compiler;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.utils.Numeric;
 import java.util.List;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class DeploymentMethodIntegrationTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(DeploymentMethodIntegrationTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            DeploymentMethodIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void deployingContractWithDeployMethod() throws Throwable {

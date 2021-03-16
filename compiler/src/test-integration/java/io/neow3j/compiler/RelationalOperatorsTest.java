@@ -1,19 +1,19 @@
 package io.neow3j.compiler;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
-
-import io.neow3j.protocol.core.methods.response.StackItem;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class RelationalOperatorsTest extends ContractTest {
 
@@ -23,10 +23,15 @@ public class RelationalOperatorsTest extends ContractTest {
     private final static String BOOLEANS_MTHD_NAME = "booleans";
     private static final String STRINGS_MTHD_NAME = "strings";
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(RelationalOperators.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            RelationalOperators.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void unequalSmallIntegers() throws IOException {

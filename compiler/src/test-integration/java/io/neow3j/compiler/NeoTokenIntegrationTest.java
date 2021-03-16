@@ -1,21 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.Hash256;
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.contracts.NeoToken;
-import io.neow3j.devpack.contracts.NeoToken.Candidate;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.transaction.Signer;
-import io.neow3j.utils.Await;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.List;
-
 import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
@@ -25,11 +9,39 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.contract.Hash256;
+import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.contracts.NeoToken;
+import io.neow3j.devpack.contracts.NeoToken.Candidate;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.transaction.Signer;
+import io.neow3j.utils.Await;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+
 public class NeoTokenIntegrationTest extends ContractTest {
+
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            NeoTokenTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(NeoTokenTestContract.class.getName());
         Hash256 gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
         Hash256 neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
         Await.waitUntilTransactionIsExecuted(gasTxHash, neow3j);

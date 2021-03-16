@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.Runtime;
@@ -11,15 +12,22 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
 import org.hamcrest.core.StringEndsWith;
 import org.hamcrest.core.StringStartsWith;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class StaticVariablesTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(StaticVariables.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            StaticVariables.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void putToStaticStorageMap() throws Throwable {

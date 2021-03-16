@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThan;
@@ -8,21 +7,29 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class FungibleTokenTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(FungibleTokenTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            FungibleTokenTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void callSymbolMethodOfFungibleToken() throws IOException {

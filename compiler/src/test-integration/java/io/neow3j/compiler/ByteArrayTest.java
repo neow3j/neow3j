@@ -3,20 +3,28 @@ package io.neow3j.compiler;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class ByteArrayTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(ByteArrayTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            ByteArrayTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void constructEmptyArray() throws IOException {

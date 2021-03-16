@@ -5,21 +5,33 @@ import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.Runtime;
 import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
 import io.neow3j.transaction.Signer;
-
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class VerificationMethodIntegrationTest extends ContractTest {
 
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            VerificationMethodIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
+
     @BeforeClass
     public static void setUp() throws Throwable {
-        setUp(VerificationMethodIntegrationTestContract.class.getName());
         // The RPC method invokecontractverify requires an open wallet on the neo-node.
         neow3j.openWallet("wallet.json", "neo").send();
     }

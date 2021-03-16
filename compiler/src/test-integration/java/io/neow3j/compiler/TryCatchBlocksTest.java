@@ -1,25 +1,32 @@
 package io.neow3j.compiler;
 
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
-
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import java.io.IOException;
+import java.util.List;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
+
 public class TryCatchBlocksTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(TryCatchBlocks.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            TryCatchBlocks.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void hitExceptionInTryCatchBlock() throws IOException {

@@ -5,23 +5,30 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Map.Entry;
-import io.neow3j.devpack.Iterator;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
 import java.util.List;
-
-import io.neow3j.protocol.core.methods.response.StackItem;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class IteratorTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(IteratorTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            IteratorTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void createIteratorFromArrayAndIterateThrough() throws IOException {

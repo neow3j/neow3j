@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
+import static io.neow3j.compiler.utils.ExtendedGenericContainer.getNodeUrl;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
@@ -12,8 +12,9 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.compiler.utils.ExtendedGenericContainer;
 import io.neow3j.contract.ContractManagement;
+import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.SmartContract;
@@ -27,59 +28,21 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
-import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigDecimal;
-
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.TestName;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.PullPolicy;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
 public class ContractTest {
-
-    static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
-    static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
-    static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
-    static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
-    static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
-    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
-    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
-    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
-    static final String ORACLECONFIG_FILE_SOURCE = "/node-config/oracle.config.json";
-    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
-            + ".json";
-
-    // This is the port of one of the .NET nodes which is exposed internally by the container.
-    static final int EXPOSED_JSONRPC_PORT = 40332;
 
     protected static final String VM_STATE_HALT = "HALT";
     protected static final String VM_STATE_FAULT = "FAULT";
 
-    @ClassRule
-    public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
-            DockerImageName.parse(neo3PrivateNetContainerImg()))
-            .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
-            .withCopyFileToContainer(
-                    MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
-                    WALLET_FILE_DESTINATION)
-            .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
-            .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
-//            .withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
-//                    BindMode.READ_ONLY)
-            .withExposedPorts(EXPOSED_JSONRPC_PORT)
-            .waitingFor(Wait.forListeningPort());
+    public static GenericContainer<?> privateNetContainer = new ExtendedGenericContainer();
 
     protected static Account defaultAccount;
     protected static Account committee;
@@ -100,25 +63,16 @@ public class ContractTest {
         return testName.getMethodName();
     }
 
-    protected static void setUp(String name) throws Throwable {
+    public static void setUp(String name, GenericContainer<?> genericContainer) throws Throwable {
         defaultAccount = Account.fromWIF(defaultAccountWIF());
         committee = Account.createMultiSigAccount(
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
+        neow3j = Neow3j.build(new HttpService(getNodeUrl(genericContainer)));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
-    }
-
-    protected static String getResultFilePath(String testClassName, String methodName) {
-        return "responses/" + testClassName + "/" + methodName + ".json";
-    }
-
-    protected static String getNodeUrl(GenericContainer<?> container) {
-        return "http://" + container.getContainerIpAddress() +
-                ":" + container.getMappedPort(EXPOSED_JSONRPC_PORT);
     }
 
     protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {

@@ -6,20 +6,28 @@ import static io.neow3j.devpack.StringLiteralHelper.stringToInt;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class StringLiteralHelperIntegrationTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(StringLiterals.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            StringLiterals.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void addressToScriptHashInMethod() throws IOException {

@@ -6,20 +6,28 @@ import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class ObjectLengthTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(Lengths.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            Lengths.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void lengthOfTwoStrings() throws IOException {

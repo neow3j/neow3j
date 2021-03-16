@@ -6,21 +6,29 @@ import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.NeoToken;
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.CallFlags;
 import io.neow3j.devpack.Contract;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import java.io.IOException;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class ContractIntegrationTest extends ContractTest {
 
-   @BeforeClass
-   public static void setUp() throws Throwable {
-      setUp(ContractIntegrationTestContract.class.getName());
-   }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            ContractIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
    @Test
    public void callWithoutArguments() throws IOException {

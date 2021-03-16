@@ -1,23 +1,28 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.GasToken;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class GasTokenTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(GasTokenTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            GasTokenTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void getHash() throws Throwable {

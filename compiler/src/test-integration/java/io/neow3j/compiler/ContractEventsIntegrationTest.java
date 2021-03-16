@@ -1,5 +1,12 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.integer;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.contracts.PolicyContract;
@@ -8,26 +15,26 @@ import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.util.List;
-
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.integer;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class ContractEventsIntegrationTest extends ContractTest {
 
     private static final int FEE_PER_BYTE = 1000;
     private static final int EXEC_FEE_FACTOR = 30;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(ContractEvents.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            ContractEvents.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void fireTwoEvents() throws Throwable {

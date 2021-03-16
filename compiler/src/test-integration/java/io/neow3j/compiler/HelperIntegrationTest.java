@@ -8,22 +8,30 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.devpack.Helper;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class HelperIntegrationTest extends ContractTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(HelperIntegrationTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            HelperIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void assertTrue() throws IOException {

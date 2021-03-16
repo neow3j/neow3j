@@ -8,6 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.PolicyContract;
@@ -16,8 +17,10 @@ import io.neow3j.protocol.core.methods.response.StackItem;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 
 public class PolicyContractIntegrationTest extends ContractTest {
 
@@ -25,10 +28,15 @@ public class PolicyContractIntegrationTest extends ContractTest {
     public static final int DEFAULT_EXEC_FEE_FACTOR = 30;
     public static final int DEFAULT_STORAGE_PRICE = 100000;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(PolicyContractIntegrationTestContract.class.getName());
-    }
+    @ClassRule
+    public static TestRule chain = RuleChain
+            .outerRule(privateNetContainer)
+            .around(
+                    new ContractCompilationTestRule(
+                            PolicyContractIntegrationTestContract.class.getName(),
+                            privateNetContainer
+                    )
+            );
 
     @Test
     public void setAndGetFeePerByte() throws IOException {
