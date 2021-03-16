@@ -1,7 +1,5 @@
 name: neow3j-integration
 
-runs-on: [self-hosted]
-
 on:
   workflow_dispatch:
     inputs:
@@ -11,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
