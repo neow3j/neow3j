@@ -1,5 +1,16 @@
 package io.neow3j.compiler;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.NamedCurve;
+import io.neow3j.devpack.contracts.CryptoLib;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import java.io.IOException;
+
 import static io.neow3j.TestProperties.cryptoLibHash;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
@@ -9,29 +20,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.NamedCurve;
-import io.neow3j.devpack.contracts.CryptoLib;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import java.io.IOException;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-
 public class CryptoLibIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            CryptoLibIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            CryptoLibIntegrationTestContract.class.getName());
 
     @Test
     public void sha256() throws IOException {

@@ -19,14 +19,8 @@ import org.junit.rules.TestRule;
 public class TryCatchBlocksTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            TryCatchBlocks.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            TryCatchBlocks.class.getName());
 
     @Test
     public void hitExceptionInTryCatchBlock() throws IOException {

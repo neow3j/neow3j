@@ -1,5 +1,18 @@
 package io.neow3j.compiler;
 
+import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.contract.Hash160;
+import io.neow3j.devpack.Hash256;
+import io.neow3j.devpack.StringLiteralHelper;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.utils.Numeric;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.hash256;
@@ -9,31 +22,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
-import io.neow3j.contract.Hash160;
-import io.neow3j.devpack.Hash256;
-import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.utils.Numeric;
-import java.io.IOException;
-import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-
 public class HashIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            HashIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            HashIntegrationTestContract.class.getName());
 
     @Test
     public void getZeroHash160() throws IOException {
@@ -208,14 +201,16 @@ public class HashIntegrationTest extends ContractTest {
             return io.neow3j.devpack.Hash160.zero();
         }
 
-        public static boolean[] isHash160Zero(io.neow3j.devpack.Hash160 hash1, io.neow3j.devpack.Hash160 hash2) {
+        public static boolean[] isHash160Zero(io.neow3j.devpack.Hash160 hash1,
+                io.neow3j.devpack.Hash160 hash2) {
             boolean[] b = new boolean[2];
             b[0] = hash1.isZero();
             b[1] = hash2.isZero();
             return b;
         }
 
-        public static boolean[] isHash160Valid(io.neow3j.devpack.Hash160 h1, io.neow3j.devpack.Hash160 h2) {
+        public static boolean[] isHash160Valid(io.neow3j.devpack.Hash160 h1,
+                io.neow3j.devpack.Hash160 h2) {
             boolean[] b = new boolean[2];
             b[0] = h1.isValid();
             b[1] = h2.isValid();
@@ -289,7 +284,8 @@ public class HashIntegrationTest extends ContractTest {
         }
 
         public static io.neow3j.devpack.Hash160 hash160FromStringLiteral() {
-            return new io.neow3j.devpack.Hash160(StringLiteralHelper.hexToBytes("03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
+            return new io.neow3j.devpack.Hash160(StringLiteralHelper.hexToBytes(
+                    "03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
         }
 
         public static Hash256 hash256FromStringLiteral() {

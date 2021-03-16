@@ -1,32 +1,25 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
-import java.io.IOException;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+
+import java.io.IOException;
+
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class ECPointIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            ECPointIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            ECPointIntegrationTestContract.class.getName());
 
     @Test
     public void createEcPointFromValidByteArray() throws IOException {

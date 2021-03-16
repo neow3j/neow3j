@@ -18,14 +18,8 @@ import org.junit.rules.TestRule;
 public class MapTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            MapTests.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            MapTests.class.getName());
 
     @Test
     public void putAndGetFromMap() throws IOException {

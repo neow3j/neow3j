@@ -24,14 +24,8 @@ import org.junit.rules.TestRule;
 public class ListIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            ListTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            ListTestContract.class.getName());
 
     @Test
     public void createStringListWithOneEntry() throws IOException {

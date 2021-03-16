@@ -20,14 +20,8 @@ import org.junit.rules.TestRule;
 public class StaticVariablesTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            StaticVariables.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            StaticVariables.class.getName());
 
     @Test
     public void putToStaticStorageMap() throws Throwable {

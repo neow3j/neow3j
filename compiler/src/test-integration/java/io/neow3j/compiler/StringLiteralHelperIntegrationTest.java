@@ -20,14 +20,8 @@ import org.junit.rules.TestRule;
 public class StringLiteralHelperIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            StringLiterals.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            StringLiterals.class.getName());
 
     @Test
     public void addressToScriptHashInMethod() throws IOException {

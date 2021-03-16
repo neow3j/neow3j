@@ -29,14 +29,8 @@ public class PolicyContractIntegrationTest extends ContractTest {
     public static final int DEFAULT_STORAGE_PRICE = 100000;
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            PolicyContractIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            PolicyContractIntegrationTestContract.class.getName());
 
     @Test
     public void setAndGetFeePerByte() throws IOException {

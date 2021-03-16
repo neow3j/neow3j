@@ -27,14 +27,8 @@ public class ContractEventsIntegrationTest extends ContractTest {
     private static final int EXEC_FEE_FACTOR = 30;
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            ContractEvents.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            ContractEvents.class.getName());
 
     @Test
     public void fireTwoEvents() throws Throwable {

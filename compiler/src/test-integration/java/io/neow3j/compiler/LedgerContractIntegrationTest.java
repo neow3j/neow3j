@@ -31,14 +31,8 @@ public class LedgerContractIntegrationTest extends ContractTest {
     private static NeoBlock blockOfDeployTx;
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            LedgerContractIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            LedgerContractIntegrationTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {

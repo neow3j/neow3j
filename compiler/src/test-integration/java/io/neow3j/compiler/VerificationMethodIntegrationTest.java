@@ -21,14 +21,8 @@ import org.junit.rules.TestRule;
 public class VerificationMethodIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            VerificationMethodIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            VerificationMethodIntegrationTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {

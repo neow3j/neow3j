@@ -12,20 +12,12 @@ import java.io.IOException;
 import java.util.List;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
 
 public class ObjectsTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            ObjectsContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            ObjectsTestContract.class.getName());
 
     @Test
     public void instantiateObject() throws IOException {
@@ -59,7 +51,7 @@ public class ObjectsTest extends ContractTest {
     }
 
 
-    static class ObjectsContract {
+    static class ObjectsTestContract {
 
         public static byte[] instantiateObject(String s, int i) {
             MyClass c = new MyClass(s, i);

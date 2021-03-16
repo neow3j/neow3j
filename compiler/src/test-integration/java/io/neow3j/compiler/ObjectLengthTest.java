@@ -20,14 +20,8 @@ import org.junit.rules.TestRule;
 public class ObjectLengthTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            Lengths.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            ObjectLengthTestContract.class.getName());
 
     @Test
     public void lengthOfTwoStrings() throws IOException {
@@ -57,7 +51,7 @@ public class ObjectLengthTest extends ContractTest {
                 is(BigInteger.ONE));
     }
 
-    static class Lengths {
+    static class ObjectLengthTestContract {
 
         public static int lengthOfTwoStrings(String s1, String s2) {
             return s1.length() + s2.length();

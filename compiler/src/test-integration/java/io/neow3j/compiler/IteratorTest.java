@@ -1,34 +1,27 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.array;
-import static io.neow3j.contract.ContractParameter.integer;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.compiler.utils.ContractCompilationTestRule;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Map.Entry;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.util.List;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+
+import java.io.IOException;
+import java.util.List;
+
+import static io.neow3j.contract.ContractParameter.array;
+import static io.neow3j.contract.ContractParameter.integer;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class IteratorTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            IteratorTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            IteratorTestContract.class.getName());
 
     @Test
     public void createIteratorFromArrayAndIterateThrough() throws IOException {
@@ -69,7 +62,8 @@ public class IteratorTest extends ContractTest {
             return values;
         }
 
-        public static int[] createIteratorFromMapAndIterateThrough(Integer[] ints1, Integer[] ints2) {
+        public static int[] createIteratorFromMapAndIterateThrough(Integer[] ints1,
+                Integer[] ints2) {
             Map<Integer, Integer> map = new Map<>();
             for (int i = 0; i < ints1.length; i++) {
                 map.put(ints1[i], ints2[i]);
@@ -83,7 +77,7 @@ public class IteratorTest extends ContractTest {
                 keysAndValues[i++] = it.getValue().value;
             }
             return keysAndValues;
-       }
+        }
 
     }
 

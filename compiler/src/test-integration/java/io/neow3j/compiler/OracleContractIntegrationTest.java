@@ -49,14 +49,8 @@ import org.junit.rules.TestRule;
 public class OracleContractIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            OracleContractIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            OracleContractIntegrationTestContract.class.getName());
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());

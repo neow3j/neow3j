@@ -31,14 +31,8 @@ import org.junit.rules.TestRule;
 public class NeoTokenIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            NeoTokenTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            NeoTokenTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {

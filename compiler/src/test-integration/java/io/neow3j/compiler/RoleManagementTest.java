@@ -26,14 +26,8 @@ import org.junit.rules.TestRule;
 public class RoleManagementTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            RoleManagementTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            RoleManagementTestContract.class.getName());
 
     @Test
     public void getHash() throws IOException {

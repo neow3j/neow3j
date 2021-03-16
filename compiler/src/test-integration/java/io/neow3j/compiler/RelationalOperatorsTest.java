@@ -24,14 +24,8 @@ public class RelationalOperatorsTest extends ContractTest {
     private static final String STRINGS_MTHD_NAME = "strings";
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            RelationalOperators.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            RelationalOperators.class.getName());
 
     @Test
     public void unequalSmallIntegers() throws IOException {

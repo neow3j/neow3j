@@ -1,7 +1,6 @@
 package io.neow3j.compiler;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.compiler.utils.ExtendedGenericContainer.getNodeUrl;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -62,46 +61,6 @@ public class ContractTest {
         return testName.getMethodName();
     }
 
-    public static void setUp(String name, GenericContainer<?> genericContainer) throws Throwable {
-        defaultAccount = Account.fromWIF(defaultAccountWIF());
-        committee = Account.createMultiSigAccount(
-                singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
-        wallet = Wallet.withAccounts(defaultAccount, committee);
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(genericContainer)));
-        contractName = name;
-        contract = deployContract(contractName);
-        waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
-    }
-
-    protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
-        CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
-        NeoSendRawTransaction response = new ContractManagement(neow3j)
-                .deploy(res.getNefFile(), res.getManifest())
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(committee.getScriptHash()))
-                .sign()
-                .send();
-        if (response.hasError()) {
-            throw new RuntimeException(response.getError().getMessage());
-        }
-
-        // Remember the transaction and its block.
-        deployTxHash = response.getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(deployTxHash, neow3j);
-        blockHashOfDeployTx = neow3j.getTransaction(deployTxHash).send()
-                .getTransaction().getBlockHash();
-        // Get the contract address from the application logs.
-        NeoApplicationLog appLog = neow3j.getApplicationLog(
-                response.getSendRawTransaction().getHash()).send().getApplicationLog();
-        Execution execution = appLog.getExecutions().get(0);
-        if (execution.getState().equals(VM_STATE_FAULT)) {
-            throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
-                    + "message was: '%s'", fullyQualifiedName, execution.getException()));
-        }
-        String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
-        Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(scriptHashHex));
-        return new SmartContract(scriptHash, neow3j);
-    }
 
     /**
      * Does an {@code invokefunction} JSON-RPC to the setup contract, the function with the current

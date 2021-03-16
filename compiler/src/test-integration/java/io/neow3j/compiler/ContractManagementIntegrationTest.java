@@ -39,14 +39,8 @@ import org.junit.rules.TestRule;
 public class ContractManagementIntegrationTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            ContractManagementIntegrationTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            ContractManagementIntegrationTestContract.class.getName());
 
     @Test
     public void getContract() throws IOException {

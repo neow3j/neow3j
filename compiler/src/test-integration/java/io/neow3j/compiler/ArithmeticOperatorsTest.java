@@ -17,14 +17,8 @@ import org.junit.rules.TestRule;
 public class ArithmeticOperatorsTest extends ContractTest {
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            ArithmeticOperatorsTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+            ArithmeticOperatorsTestContract.class.getName());
 
     @Test
     public void allOperators() throws IOException {
