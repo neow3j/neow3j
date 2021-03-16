@@ -1,5 +1,7 @@
 name: neow3j-integration
 
+runs-on: [self-hosted]
+
 on:
   workflow_dispatch:
     inputs:
