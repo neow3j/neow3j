@@ -12,14 +12,12 @@ import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -88,8 +86,29 @@ public class Await {
         waitUntil(callableGetBalance(token, neow3j), greaterThanOrEqualTo(new BigDecimal(amount)));
     }
 
-    private static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
-        await().timeout(MAX_WAIT_TIME, TimeUnit.SECONDS).until(callable, matcher);
+    /**
+     * Waits until the {@code callable} function returns a condition that is satisfied by the
+     * {@code matcher}. Uses the default {@link Await#MAX_WAIT_TIME} and {@link TimeUnit#SECONDS}.
+     *
+     * @param callable The function to be called.
+     * @param matcher  The condition to be evaluated.
+     */
+    public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
+        waitUntil(callable, matcher, MAX_WAIT_TIME, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Waits until the {@code callable} function returns a condition that is satisfied by the
+     * {@code matcher}.
+     *
+     * @param callable      The function to be called.
+     * @param matcher       The condition to be evaluated.
+     * @param maxWaitTime   The maximum amount of time to wait.
+     * @param unit          The time unit for the {@code maxWaitTime} param.
+     */
+    public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher,
+            int maxWaitTime, TimeUnit unit) {
+        await().timeout(maxWaitTime, unit).until(callable, matcher);
     }
 
     private static Callable<Boolean> callableGetContractState(Hash160 contractHash160,

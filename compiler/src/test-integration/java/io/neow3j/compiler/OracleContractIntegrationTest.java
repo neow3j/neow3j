@@ -9,6 +9,7 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.protocol.core.methods.response.OracleResponseCode.TIMEOUT;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -80,8 +82,6 @@ public class OracleContractIntegrationTest extends ContractTest {
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
 
-        // TODO: Remove this when https://github.com/neo-project/neo-modules/issues/523
-        // gets implemented.
         // Start the oracle service on the neo-node
         privateNetContainer.execInContainer("screen", "-X", "stuff", "start oracle \\015");
 
@@ -113,9 +113,13 @@ public class OracleContractIntegrationTest extends ContractTest {
             }
         });
 
-        while (tx.get() == null) {
-            Thread.sleep(1000);
-        }
+        Await.waitUntil(
+                () -> tx.get() != null ? tx : null,
+                notNullValue(),
+                60,
+                TimeUnit.SECONDS
+        );
+
         assertThat(tx.get().getAttributes().get(0).getType(),
                 is(TransactionAttributeType.ORACLE_RESPONSE));
         List<Notification> notifications = neow3j.getApplicationLog(tx.get().getHash())
