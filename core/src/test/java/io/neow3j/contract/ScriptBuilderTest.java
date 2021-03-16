@@ -1,7 +1,13 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ContractParameter.bool;
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.map;
+import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.copyOfRange;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
@@ -9,8 +15,12 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.io.TestBinaryUtils;
+
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+
+import io.neow3j.utils.Numeric;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -73,19 +83,22 @@ public class ScriptBuilderTest extends TestBinaryUtils {
     @Test
     public void pushInteger_0() {
         builder.pushInteger(0);
-        assertThat(copyOfRange(builder.toArray(), 0, 1), is(hexStringToByteArray(OpCode.PUSH0.toString())));
+        assertThat(copyOfRange(builder.toArray(), 0, 1),
+                is(hexStringToByteArray(OpCode.PUSH0.toString())));
     }
 
     @Test
     public void pushInteger_1() {
         builder.pushInteger(1);
-        assertThat(copyOfRange(builder.toArray(), 0, 1), is(hexStringToByteArray(OpCode.PUSH1.toString())));
+        assertThat(copyOfRange(builder.toArray(), 0, 1),
+                is(hexStringToByteArray(OpCode.PUSH1.toString())));
     }
 
     @Test
     public void pushInteger_16() {
         builder.pushInteger(16);
-        assertThat(copyOfRange(builder.toArray(), 0, 1), is(hexStringToByteArray(OpCode.PUSH16.toString())));
+        assertThat(copyOfRange(builder.toArray(), 0, 1),
+                is(hexStringToByteArray(OpCode.PUSH16.toString())));
     }
 
     @Test
@@ -126,6 +139,102 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash()
         );
         assertArrayEquals(expected, script);
+    }
+
+    @Test
+    public void testMap() {
+        HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
+        map.put(integer(1), string("first"));
+        map.put(byteArray("7365636f6e64"), bool(true));
+        String possibleExpected1 = Numeric.toHexString(
+                new ScriptBuilder()
+                        .opCode(OpCode.NEWMAP)
+                        .opCode(OpCode.DUP)
+                        .pushInteger(1)
+                        .pushData("first")
+                        .opCode(OpCode.SETITEM)
+                        .opCode(OpCode.DUP)
+                        .pushData(hexStringToByteArray("7365636f6e64"))
+                        .pushBoolean(true)
+                        .opCode(OpCode.SETITEM)
+                        .toArray()
+        );
+
+        String possibleExpected2 = Numeric.toHexString(
+                new ScriptBuilder()
+                        .opCode(OpCode.NEWMAP)
+                        .opCode(OpCode.DUP)
+                        .pushData(hexStringToByteArray("7365636f6e64"))
+                        .pushBoolean(true)
+                        .opCode(OpCode.SETITEM)
+                        .opCode(OpCode.DUP)
+                        .pushInteger(1)
+                        .pushData("first")
+                        .opCode(OpCode.SETITEM)
+                        .toArray()
+        );
+
+        String actual = Numeric.toHexString(new ScriptBuilder().pushMap(map).toArray());
+
+        assertThat(actual, isOneOf(possibleExpected1, possibleExpected2));
+    }
+
+    @Test
+    public void testMap_nested() {
+        HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
+        map.put(integer(1), string("first"));
+
+        HashMap<ContractParameter, ContractParameter> nestedMap = new HashMap<>();
+        nestedMap.put(integer(10), string("nestedFirst"));
+
+        map.put(byteArray("6e6573746564"), map(nestedMap));
+
+        String possibleExpected1 = Numeric.toHexString(
+                new ScriptBuilder()
+                        .opCode(OpCode.NEWMAP)
+                        // first param start
+                        .opCode(OpCode.DUP)
+                        .pushInteger(1)
+                        .pushData("first")
+                        .opCode(OpCode.SETITEM)
+                        .opCode(OpCode.DUP)
+                        // second param start
+                        .pushData("nested")
+                        // second param value start
+                        .opCode(OpCode.NEWMAP)
+                        .opCode(OpCode.DUP)
+                        .pushInteger(10)
+                        .pushData("nestedFirst")
+                        .opCode(OpCode.SETITEM)
+                        // second param value end
+                        .opCode(OpCode.SETITEM)
+                        .toArray()
+        );
+
+        String possibleExpected2 = Numeric.toHexString(
+                new ScriptBuilder()
+                        .opCode(OpCode.NEWMAP)
+                        .opCode(OpCode.DUP)
+                        // first param start
+                        .pushData("nested")
+                        // second param value start
+                        .opCode(OpCode.NEWMAP)
+                        .opCode(OpCode.DUP)
+                        .pushInteger(10)
+                        .pushData("nestedFirst")
+                        .opCode(OpCode.SETITEM)
+                        // second param value end
+                        .opCode(OpCode.SETITEM)
+                        .opCode(OpCode.DUP)
+                        .pushInteger(1)
+                        .pushData("first")
+                        .opCode(OpCode.SETITEM)
+                        .toArray()
+        );
+
+        String actual = Numeric.toHexString(new ScriptBuilder().pushMap(map).toArray());
+
+        assertThat(actual, isOneOf(possibleExpected1, possibleExpected2));
     }
 
 }
