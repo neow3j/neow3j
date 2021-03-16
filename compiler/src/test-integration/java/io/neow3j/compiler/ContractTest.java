@@ -117,7 +117,7 @@ public class ContractTest {
         return "responses/" + testClassName + "/" + methodName + ".json";
     }
 
-    protected static String getNodeUrl(GenericContainer container) {
+    protected static String getNodeUrl(GenericContainer<?> container) {
         return "http://" + container.getContainerIpAddress() +
                 ":" + container.getMappedPort(EXPOSED_JSONRPC_PORT);
     }
