@@ -76,8 +76,8 @@ public class ContractTest {
                     BindMode.READ_ONLY)
             .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY)
-            .withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
+//            .withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
+//                    BindMode.READ_ONLY)
             .withExposedPorts(EXPOSED_JSONRPC_PORT)
             .waitingFor(Wait.forListeningPort());
 
