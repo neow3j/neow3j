@@ -7,18 +7,29 @@ on:
 
 env:
   GRADLE_USER_HOME: "/tmp/.gradle"
+  M2_HOME: "/tmp/.m2"
 
 jobs:
   build:
     runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Cache local Gradle dir
+        uses: actions/cache@v2
         with:
-          path: ${GRADLE_USER_HOME}
+          path: |
+            ${{ env.GRADLE_USER_HOME }}/caches
+            ${{ env.GRADLE_USER_HOME }}/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.M2_HOME }}/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
