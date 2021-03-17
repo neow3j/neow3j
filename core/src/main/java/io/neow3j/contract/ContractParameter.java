@@ -1,10 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.model.types.ContractParameterType.ARRAY;
-import static io.neow3j.model.types.ContractParameterType.INTEGER;
-import static io.neow3j.model.types.ContractParameterType.MAP;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -31,6 +26,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static io.neow3j.model.types.ContractParameterType.ARRAY;
+import static io.neow3j.model.types.ContractParameterType.INTEGER;
+import static io.neow3j.model.types.ContractParameterType.MAP;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Contract parameters are used for example in contract invocations and represent an input
@@ -82,42 +82,32 @@ public class ContractParameter {
      * entries of different contract parameter types first need to be instantiated as a
      * {@code ContractParameter} and can then be passed as a parameter as well.
      *
-     * @param value the array entries.
+     * @param entries the array entries.
      * @return the contract parameter.
      */
-    public static ContractParameter array(Object... value) {
-        List<ContractParameter> params = new ArrayList<>();
-        Arrays.stream(value).forEach(o -> params.add(castToContractParameter(o)));
-        return array(params);
-    }
-
-    /**
-     * Creates an array parameter from the given values.
-     *
-     * @param params the array entries.
-     * @return the contract parameter.
-     */
-    public static ContractParameter array(List<ContractParameter> params) {
-        return array(params.toArray(new ContractParameter[0]));
-    }
-
-    /**
-     * Creates an array parameter from the given values.
-     *
-     * @param params the array entries.
-     * @return the contract parameter.
-     */
-    public static ContractParameter array(ContractParameter... params) {
-        if (params.length == 0) {
+    public static ContractParameter array(Object... entries) {
+        if (entries.length == 0) {
             throw new IllegalArgumentException("At least one parameter is required to create an " +
                     "array contract parameter.");
         }
-        boolean anyNull = Arrays.stream(params).anyMatch(Objects::isNull);
-        if (anyNull) {
+        if (Arrays.stream(entries).anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException("Cannot add a null object to an array contract " +
                     "parameter.");
         }
+        ContractParameter[] params = Arrays.stream(entries)
+                .map(ContractParameter::castToContractParameter)
+                .toArray(ContractParameter[]::new);
         return new ContractParameter(ContractParameterType.ARRAY, params);
+    }
+
+    /**
+     * Creates an array parameter from the given entries.
+     *
+     * @param entries the array entries in a list.
+     * @return the contract parameter.
+     */
+    public static ContractParameter array(List<?> entries) {
+        return array(entries.toArray());
     }
 
     public static ContractParameter map(Map<?, ?> map) {

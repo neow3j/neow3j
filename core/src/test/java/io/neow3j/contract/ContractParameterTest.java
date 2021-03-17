@@ -147,15 +147,14 @@ public class ContractParameterTest {
     }
 
     @Test
-    public void testArrayParamCreationFromObjects_Null() {
+    public void testArrayParam_NullObject() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                "provided object could not be casted into a supported contract");
+        expectedException.expectMessage("Cannot add a null object to an array contract parameter");
         array((Object) null);
     }
 
     @Test
-    public void testArrayParam_Null() {
+    public void testArrayParam_NullContractParameter() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("Cannot add a null object to an array contract parameter");
         array((ContractParameter) null);
