@@ -1,11 +1,9 @@
 name: neow3j-integration
 
 on:
-  workflow_dispatch:
-    inputs:
-      push:
   pull_request:
     types: [assigned, review_requested, ready_for_review]
+  workflow_dispatch:
 
 jobs:
   build:
