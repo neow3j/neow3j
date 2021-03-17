@@ -6,7 +6,7 @@ import java.util.Properties;
 public class TestProperties {
 
     private static TestProperties instance = null;
-    private Properties properties;
+    private final Properties properties;
 
     protected TestProperties() throws IOException {
         properties = new Properties();
