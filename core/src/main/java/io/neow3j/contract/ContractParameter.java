@@ -1,7 +1,8 @@
 package io.neow3j.contract;
 
-import static io.neow3j.model.types.ContractParameterType.BYTE_ARRAY;
+import static io.neow3j.model.types.ContractParameterType.ARRAY;
 import static io.neow3j.model.types.ContractParameterType.INTEGER;
+import static io.neow3j.model.types.ContractParameterType.MAP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -85,22 +87,7 @@ public class ContractParameter {
      */
     public static ContractParameter array(Object... value) {
         List<ContractParameter> params = new ArrayList<>();
-        Arrays.stream(value).forEach(o -> {
-            if (o instanceof ContractParameter) {
-                params.add((ContractParameter) o);
-            } else if (o instanceof Boolean) {
-                params.add(bool((Boolean) o));
-            } else if (o instanceof Integer) {
-                params.add(integer((Integer) o));
-            } else if (o instanceof byte[]) {
-                params.add(byteArray((byte[]) o));
-            } else if (o instanceof String) {
-                params.add(string((String) o));
-            } else {
-                throw new IllegalArgumentException("The provided object could not be casted into " +
-                        "a supported contract parameter type.");
-            }
-        });
+        Arrays.stream(value).forEach(o -> params.add(castToContractParameter(o)));
         return array(params);
     }
 
@@ -133,19 +120,40 @@ public class ContractParameter {
         return new ContractParameter(ContractParameterType.ARRAY, params);
     }
 
-    public static ContractParameter map(HashMap<ContractParameter, ContractParameter> map) {
+    public static ContractParameter map(Map<?, ?> map) {
         if (map.isEmpty()) {
             throw new IllegalArgumentException("At least one map entry is required to create a " +
                     "map contract parameter.");
         }
-        for (ContractParameter contractParameter : map.keySet()) {
-            ContractParameterType type = contractParameter.getParamType();
-            if (!type.equals(INTEGER) && !type.equals(BYTE_ARRAY)) {
-                throw new IllegalArgumentException("A map entry contains an invalid key value. " +
-                        "Only keys of type integer or byte array are allowed in a map.");
+
+        Map<ContractParameter, ContractParameter> paramMap = new HashMap<>();
+        map.forEach((k, v) -> {
+            ContractParameter key = castToContractParameter(k);
+            ContractParameter value = castToContractParameter(v);
+            if (key.getParamType().equals(ARRAY) || key.getParamType().equals(MAP)) {
+                throw new IllegalArgumentException("The provided map contains an invalid key. The" +
+                        " keys cannot be of type array or map.");
             }
+            paramMap.put(key, value);
+        });
+        return new ContractParameter(ContractParameterType.MAP, paramMap);
+    }
+
+    private static ContractParameter castToContractParameter(Object o) {
+        if (o instanceof ContractParameter) {
+            return (ContractParameter) o;
+        } else if (o instanceof Boolean) {
+            return bool((Boolean) o);
+        } else if (o instanceof Integer) {
+            return integer((Integer) o);
+        } else if (o instanceof byte[]) {
+            return byteArray((byte[]) o);
+        } else if (o instanceof String) {
+            return string((String) o);
+        } else {
+            throw new IllegalArgumentException("The provided object could not be casted into " +
+                    "a supported contract parameter type.");
         }
-        return new ContractParameter(ContractParameterType.MAP, map);
     }
 
     /**
@@ -372,7 +380,7 @@ public class ContractParameter {
         return Objects.hash(paramName, paramType, value);
     }
 
-    public static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
+    protected static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
 
         public ContractParameterSerializer() {
             this(null);
@@ -389,7 +397,7 @@ public class ContractParameter {
             serializeParameter(value, gen);
         }
 
-        public void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
+        private void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
             gen.writeStartObject();
             if (p.getParamName() != null) {
                 gen.writeStringField("name", p.getParamName());
