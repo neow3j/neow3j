@@ -11,6 +11,8 @@ import static io.neow3j.contract.ContractParameter.map;
 import static io.neow3j.contract.ContractParameter.publicKey;
 import static io.neow3j.contract.ContractParameter.signature;
 import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -67,7 +69,7 @@ public class ContractParameterTest {
 
     @Test
     public void testByteArrayParam_equals() {
-        ContractParameter fromHex = byteArray("0x796573");
+        ContractParameter fromHex = byteArray(Numeric.hexStringToByteArray("0x796573"));
         ContractParameter fromByteArray = byteArray(new byte[]{0x79, 0x65, 0x73});
         assertThat(fromHex, is(fromByteArray));
     }
@@ -272,6 +274,17 @@ public class ContractParameterTest {
     }
 
     @Test
+    public void testHash256() {
+        Hash256 hash =
+                new Hash256("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf");
+        ContractParameter p = hash256(hash);
+
+        assertThat(p.getParamType(), is(ContractParameterType.HASH256));
+        assertThat(reverseHexString(toHexStringNoPrefix((byte[]) p.getValue())),
+                is(hash.toString()));
+    }
+
+    @Test
     public void testHash160_null() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("The script hash argument must not be null");
@@ -284,7 +297,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(hashValue);
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[]) (p.getValue())));
+        assertEquals(hashValue, toHexStringNoPrefix((byte[]) (p.getValue())));
     }
 
     @Test
@@ -293,7 +306,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(Numeric.hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, Numeric.toHexStringNoPrefix((byte[]) (p.getValue())));
+        assertEquals(hashValue, toHexStringNoPrefix((byte[]) (p.getValue())));
     }
 
     @Test
@@ -363,6 +376,26 @@ public class ContractParameterTest {
         map.put(integer(2), string("second"));
         ContractParameter param = map(map);
         assertThat(param.getValue(), is(map));
+    }
+
+    @Test
+    public void testMap_invalidKeyType() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("The provided map contains an invalid key.");
+
+        HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
+        map.put(array(integer(1), string("test")), string("first"));
+        map(map);
+    }
+
+    @Test
+    public void testMap_empty() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("At least one map entry is required to create a map " +
+                "contract parameter.");
+
+        HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
+        map(map);
     }
 
     @Test
