@@ -1,27 +1,32 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.io.IOException;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class StringConcatenationTest extends ContractTest {
+public class StringConcatenationTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             StringConcatenation.class.getName());
 
     @Test
     public void concatTwoStrings() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.string("one"),
                 ContractParameter.string("two"));
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("onetwo"));
@@ -29,7 +34,7 @@ public class StringConcatenationTest extends ContractTest {
 
     @Test
     public void concatStringsFromMixedSources() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.string("one"),
                 ContractParameter.string("two"),
                 ContractParameter.byteArray("4e656f")); // byte array representation of "Neo".
@@ -40,7 +45,7 @@ public class StringConcatenationTest extends ContractTest {
 
     @Test
     public void concatInStaticVariable() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
 
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("onetwoNEO"));
     }

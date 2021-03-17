@@ -19,16 +19,17 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.compiler.utils.ExtendedGenericContainer.getNodeUrl;
+import static io.neow3j.compiler.utils.NeoTestContainer.getNodeUrl;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -38,14 +39,13 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class ContractCompilationTestRule implements TestRule {
+public class ContractTestRule implements TestRule {
 
-    protected static final String VM_STATE_HALT = "HALT";
-    protected static final String VM_STATE_FAULT = "FAULT";
+    public static final String VM_STATE_HALT = "HALT";
+    public static final String VM_STATE_FAULT = "FAULT";
 
+    private NeoTestContainer neoTestContainer;
     private final String fullyQualifiedClassName;
-    private GenericContainer<?> genericContainer;
-
     private Account defaultAccount;
     private Account committee;
     private Wallet wallet;
@@ -58,7 +58,7 @@ public class ContractCompilationTestRule implements TestRule {
     private boolean signAsCommittee = false;
     private boolean signWithDefaultAccount = false;
 
-    public ContractCompilationTestRule(String fullyQualifiedName) {
+    public ContractTestRule(String fullyQualifiedName) {
         this.fullyQualifiedClassName = fullyQualifiedName;
     }
 
@@ -67,13 +67,13 @@ public class ContractCompilationTestRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                ExtendedGenericContainer container = new ExtendedGenericContainer();
+                neoTestContainer = new NeoTestContainer();
                 try {
-                    container.start();
-                    setUp(fullyQualifiedClassName, getNodeUrl(container));
+                    neoTestContainer.start();
+                    setUp(fullyQualifiedClassName, getNodeUrl(neoTestContainer));
                     base.evaluate();
                 } finally {
-                    genericContainer.stop();
+                    neoTestContainer.stop();
                 }
             }
         };
@@ -84,10 +84,10 @@ public class ContractCompilationTestRule implements TestRule {
         committee = Account.createMultiSigAccount(
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
-        neow3j = Neow3j.build(new HttpService(containerURL));
+        neow3j = neow3j.build(new HttpService(containerURL));
         contractName = name;
         contract = deployContract(contractName);
-        waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
+        waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
     }
 
     protected SmartContract deployContract(String fullyQualifiedName) throws Throwable {
@@ -160,9 +160,9 @@ public class ContractCompilationTestRule implements TestRule {
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public NeoInvokeFunction callInvokeFunction(ContractParameter... params) throws IOException {
-//        return callInvokeFunction(getTestName(), params);
-        return callInvokeFunction("someName", params);
+    public NeoInvokeFunction callInvokeFunction(TestName testName, ContractParameter... params)
+            throws IOException {
+        return callInvokeFunction(testName.getMethodName(), params);
     }
 
     /**
@@ -197,7 +197,7 @@ public class ContractCompilationTestRule implements TestRule {
      * @param expectedValue The expected value.
      */
     public void assertStorageContains(String key, String expectedValue) throws IOException {
-        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(),
+        NeoGetStorage response = neow3j.getStorage(getContract().getScriptHash().toString(),
                 Numeric.toHexStringNoPrefix(key.getBytes(UTF_8))).send();
         String value = new String(Base64.decode(response.getStorage()), UTF_8);
 
@@ -211,9 +211,8 @@ public class ContractCompilationTestRule implements TestRule {
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    public Hash256 invokeFunction(ContractParameter... params) throws Throwable {
-//        return invokeFunction(getTestName(), params);
-        return invokeFunction("someName", params);
+    public Hash256 invokeFunction(TestName testName, ContractParameter... params) throws Throwable {
+        return invokeFunction(testName.getMethodName(), params);
     }
 
     /**
@@ -288,23 +287,22 @@ public class ContractCompilationTestRule implements TestRule {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractCompilationTestRule#getCommittee()} is used to sign
+     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
      * the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    public Hash256 invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
-        Hash256 txHash = invokeFunction(params);
-        waitUntilTransactionIsExecuted(txHash, neow3j);
-        return txHash;
+    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, ContractParameter... params)
+            throws Throwable {
+        return invokeFunctionAndAwaitExecution(testName.getMethodName(), params);
     }
 
     /**
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractCompilationTestRule#getCommittee()} is used to sign
+     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
      * the transaction.
      *
      * @param function The function to call.
@@ -331,5 +329,9 @@ public class ContractCompilationTestRule implements TestRule {
 
     public void signWithDefaultAccount() {
         signWithDefaultAccount = true;
+    }
+
+    public ContainerState getNeoTestContainer() {
+        return neoTestContainer;
     }
 }

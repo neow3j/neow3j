@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.Crypto;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -8,7 +8,9 @@ import io.neow3j.devpack.Hash256;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,24 +23,27 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-public class CryptoIntegrationTest extends ContractTest {
+public class CryptoIntegrationTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             CryptoIntegrationTestContract.class.getName());
 
     @Test
     public void checkSig() throws Throwable {
-        signWithDefaultAccount();
+        ct.signWithDefaultAccount();
         String pubKey = defaultAccountPublicKey();
         // Some signature, but not the correct one that is going to be on the transaction.
         // Therefore, the checkSig will return false.
         String signature =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
-        io.neow3j.contract.Hash256 res =
-                invokeFunctionAndAwaitExecution(publicKey(pubKey), byteArray(signature));
+        io.neow3j.contract.Hash256 res = ct.invokeFunctionAndAwaitExecution(testName,
+                publicKey(pubKey), byteArray(signature));
         List<NeoApplicationLog.Execution> executions =
-                neow3j.getApplicationLog(res).send().getApplicationLog().getExecutions();
+                ct.getNeow3j().getApplicationLog(res).send().getApplicationLog().getExecutions();
         assertFalse(executions.get(0).getStack().get(0).getBoolean());
     }
 
@@ -52,24 +57,24 @@ public class CryptoIntegrationTest extends ContractTest {
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
         String signature2 =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
-        io.neow3j.contract.Hash256 res = invokeFunctionAndAwaitExecution(
+        io.neow3j.contract.Hash256 res = ct.invokeFunctionAndAwaitExecution(testName,
                 array(publicKey(pubKey1), publicKey(pubKey2)),
                 array(byteArray(signature1), byteArray(signature2)));
         List<NeoApplicationLog.Execution> executions =
-                neow3j.getApplicationLog(res).send().getApplicationLog().getExecutions();
+                ct.getNeow3j().getApplicationLog(res).send().getApplicationLog().getExecutions();
         assertFalse(executions.get(0).getStack().get(0).getBoolean());
     }
 
     @Test
     public void hash256() throws IOException {
-        NeoInvokeFunction res = callInvokeFunction(byteArray("0102030405"));
+        NeoInvokeFunction res = ct.callInvokeFunction(testName, byteArray("0102030405"));
         assertThat(res.getInvocationResult().getStack().get(0).getHexString(),
                 is("a26baf5a9a07d9eb7ba10f43924dcdf3f75f0abf066cd9f0c76f983121302e01"));
     }
 
     @Test
     public void hash160() throws IOException {
-        NeoInvokeFunction res = callInvokeFunction(byteArray("0102030405"));
+        NeoInvokeFunction res = ct.callInvokeFunction(testName, byteArray("0102030405"));
         assertThat(res.getInvocationResult().getStack().get(0).getHexString(),
                 is("1fcc83c91e862661592480531afa87c3e2f59332"));
     }

@@ -1,27 +1,33 @@
 package io.neow3j.compiler;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Helper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import java.io.IOException;
 import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
 
-public class ObjectsTest extends ContractTest {
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+public class ObjectsTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             ObjectsTestContract.class.getName());
 
     @Test
     public void instantiateObject() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.string("Neo"), // 0x4e656f
                 ContractParameter.integer(1));
 
@@ -31,7 +37,7 @@ public class ObjectsTest extends ContractTest {
 
     @Test
     public void returnObject() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.string("Neo"), // 0x4e656f
                 ContractParameter.integer(1));
 
@@ -42,7 +48,7 @@ public class ObjectsTest extends ContractTest {
 
     @Test
     public void passObjectAsArgument() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(ContractParameter.array(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, ContractParameter.array(
                 ContractParameter.string("Neo"), /* 0x4e656f*/
                 ContractParameter.integer(1)));
 

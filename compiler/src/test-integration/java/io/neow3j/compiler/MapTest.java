@@ -1,37 +1,43 @@
 package io.neow3j.compiler;
 
+import io.neow3j.compiler.utils.ContractTestRule;
+import io.neow3j.devpack.Map;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
+import java.io.IOException;
+import java.util.List;
+
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
-import io.neow3j.devpack.Map;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+public class MapTest {
 
-public class MapTest extends ContractTest {
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             MapTests.class.getName());
 
     @Test
     public void putAndGetFromMap() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, string("hello"), string("world"));
         assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("world"));
     }
 
     @Test
     public void getMapValues() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
-                string("olleh"), string("dlrow"));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, string("hello"), string("world"),
+                        string("olleh"), string("dlrow"));
         List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
         assertThat(items.get(0).getString(), is("world"));
         assertThat(items.get(1).getString(), is("dlrow"));
@@ -39,8 +45,9 @@ public class MapTest extends ContractTest {
 
     @Test
     public void getMapKeys() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
-                string("olleh"), string("dlrow"));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, string("hello"), string("world"),
+                        string("olleh"), string("dlrow"));
         List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
         assertThat(items.get(0).getString(), is("hello"));
         assertThat(items.get(1).getString(), is("olleh"));
@@ -48,15 +55,17 @@ public class MapTest extends ContractTest {
 
     @Test
     public void mapContainsKey() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
-                string("olleh"), string("dlrow"));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, string("hello"), string("world"),
+                        string("olleh"), string("dlrow"));
         assertThat(response.getInvocationResult().getStack().get(0).getBoolean(), is(true));
     }
 
     @Test
     public void removeFromMap() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(string("hello"), string("world"),
-                string("olleh"), string("dlrow"));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, string("hello"), string("world"),
+                        string("olleh"), string("dlrow"));
         List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
         assertThat(items.get(0).getString(), is("olleh"));
     }

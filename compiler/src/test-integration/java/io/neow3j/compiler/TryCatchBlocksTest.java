@@ -1,30 +1,35 @@
 package io.neow3j.compiler;
 
+import io.neow3j.compiler.utils.ContractTestRule;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
+import java.io.IOException;
+import java.util.List;
+
+import static io.neow3j.compiler.utils.ContractTestRule.VM_STATE_FAULT;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+public class TryCatchBlocksTest {
 
-public class TryCatchBlocksTest extends ContractTest {
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             TryCatchBlocks.class.getName());
 
     @Test
     public void hitExceptionInTryCatchBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchBlock", integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchBlock", integer(1));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertFalse(res.get(1).getBoolean());
@@ -33,7 +38,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void dontHitExceptionInTryCatchBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchBlock", integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchBlock", integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -42,13 +47,13 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitExceptionInTryFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryFinallyBlock", integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryFinallyBlock", integer(1));
         assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
     }
 
     @Test
     public void dontHitExceptionInTryFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryFinallyBlock", integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryFinallyBlock", integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -57,7 +62,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitExceptionInTryCatchFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchFinallyBlock", integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchFinallyBlock", integer(1));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertFalse(res.get(1).getBoolean());
@@ -67,7 +72,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void dontHitExceptionInTryCatchFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchFinallyBlock", integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchFinallyBlock", integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -77,7 +82,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitFirstExceptionInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("multipleTryCatchFinallyBlocks",
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(1), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
@@ -91,14 +96,14 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitSecondExceptionInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("multipleTryCatchFinallyBlocks",
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(0), integer(1));
         assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
     }
 
     @Test
     public void dontHitAnyExceptionsInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("multipleTryCatchFinallyBlocks",
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(0), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
@@ -112,8 +117,9 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitFirstExceptionInNestedTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(1),
-                integer(0));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(1),
+                        integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertFalse(res.get(1).getBoolean());
@@ -128,8 +134,9 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitSecondExceptionInNestedTryCatchBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
-                integer(1));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
+                        integer(1));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -144,8 +151,9 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitNoExceptionsInNestedTryCatchBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
-                integer(0));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
+                        integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -160,7 +168,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitExceptionsInMethodThrowingException() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("catchExceptionFromMethod", integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("catchExceptionFromMethod", integer(1));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -169,7 +177,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void dontHitExceptionsInMethodThrowingException() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("catchExceptionFromMethod", integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("catchExceptionFromMethod", integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertFalse(res.get(1).getBoolean());
@@ -178,7 +186,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void hitExceptionInNestedBlockInCatch() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedBlockInCatch",
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch",
                 integer(1), integer(1));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
@@ -190,7 +198,7 @@ public class TryCatchBlocksTest extends ContractTest {
 
     @Test
     public void dontHitExceptionsInNestedBlockInCatch() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedBlockInCatch",
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch",
                 integer(1), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());

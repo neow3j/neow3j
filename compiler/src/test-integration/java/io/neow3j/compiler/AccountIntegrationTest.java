@@ -1,16 +1,12 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
-import io.neow3j.compiler.utils.ExtendedGenericContainer;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.Account;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 
@@ -26,12 +22,12 @@ import static org.junit.Assert.assertThat;
 public class AccountIntegrationTest {
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             AccountIntegrationTestContract.class.getName());
 
     @Test
     public void createStandardAccount() throws IOException {
-        NeoInvokeFunction res = c.callInvokeFunction("createStandardAccount",
+        NeoInvokeFunction res = ct.callInvokeFunction("createStandardAccount",
                 publicKey(defaultAccountPublicKey()));
         assertThat(res.getInvocationResult().getStack().get(0).getAddress(),
                 is(defaultAccountAddress()));
@@ -39,7 +35,7 @@ public class AccountIntegrationTest {
 
     @Test
     public void createMultiSigAccount() throws IOException {
-        NeoInvokeFunction res = c.callInvokeFunction("createMultiSigAccount",
+        NeoInvokeFunction res = ct.callInvokeFunction("createMultiSigAccount",
                 integer(1), array(publicKey(defaultAccountPublicKey())));
         assertThat(res.getInvocationResult().getStack().get(0).getAddress(),
                 is(committeeAccountAddress()));

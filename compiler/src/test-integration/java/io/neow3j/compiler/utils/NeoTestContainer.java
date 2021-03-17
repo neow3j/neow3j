@@ -8,7 +8,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-public class ExtendedGenericContainer extends GenericContainer<ExtendedGenericContainer> {
+public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
     static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
@@ -25,7 +25,7 @@ public class ExtendedGenericContainer extends GenericContainer<ExtendedGenericCo
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
 
-    public ExtendedGenericContainer() {
+    public NeoTestContainer() {
         super(DockerImageName.parse(neo3PrivateNetContainerImg()));
         this.withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
                 BindMode.READ_ONLY)

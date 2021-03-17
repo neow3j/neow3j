@@ -1,21 +1,25 @@
 package io.neow3j.compiler;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
 
-public class RelationalOperatorsTest extends ContractTest {
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class RelationalOperatorsTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     // These are the names of the methods inside of the smart contract under test.
     private final static String INTEGERS_MTHD_NAME = "integers";
@@ -24,12 +28,12 @@ public class RelationalOperatorsTest extends ContractTest {
     private static final String STRINGS_MTHD_NAME = "strings";
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             RelationalOperators.class.getName());
 
     @Test
     public void unequalSmallIntegers() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
@@ -45,7 +49,7 @@ public class RelationalOperatorsTest extends ContractTest {
 
     @Test
     public void equalLargeIntegers() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
@@ -61,7 +65,7 @@ public class RelationalOperatorsTest extends ContractTest {
 
     @Test
     public void unequalSmallLongs() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
@@ -77,7 +81,7 @@ public class RelationalOperatorsTest extends ContractTest {
 
     @Test
     public void equalLargeLongs() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
@@ -93,7 +97,7 @@ public class RelationalOperatorsTest extends ContractTest {
 
     @Test
     public void equalBooleans() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(true),
                 ContractParameter.bool(true));
@@ -105,7 +109,7 @@ public class RelationalOperatorsTest extends ContractTest {
 
     @Test
     public void unequalBooleans() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(false),
                 ContractParameter.bool(true));
@@ -117,7 +121,7 @@ public class RelationalOperatorsTest extends ContractTest {
 
     @Test
     public void equalStrings() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 STRINGS_MTHD_NAME,
                 ContractParameter.string("hello, world!"),
                 ContractParameter.string("hello, world!"));

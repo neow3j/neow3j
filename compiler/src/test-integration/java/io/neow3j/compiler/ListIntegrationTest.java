@@ -1,5 +1,20 @@
 package io.neow3j.compiler;
 
+import io.neow3j.compiler.utils.ContractTestRule;
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.devpack.Map;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
+import java.io.IOException;
+import java.util.List;
+
+import static io.neow3j.compiler.utils.ContractTestRule.VM_STATE_FAULT;
 import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
@@ -8,28 +23,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.devpack.Map;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+public class ListIntegrationTest {
 
-public class ListIntegrationTest extends ContractTest {
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             ListTestContract.class.getName());
 
     @Test
     public void createStringListWithOneEntry() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         java.util.List<StackItem> list =
                 response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.size(), is(1));
@@ -38,15 +43,17 @@ public class ListIntegrationTest extends ContractTest {
 
     @Test
     public void getSizeOfStringList() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(array(string("hello"), string("world")));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, array(string("hello"), string("world")));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(2));
     }
 
     @Test
     public void removeFirstItemOfStringList() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(array(string("hello"), string("world")),
-                integer(0));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, array(string("hello"), string("world")),
+                        integer(0));
         java.util.List<StackItem> list =
                 response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.size(), is(1));
@@ -55,7 +62,8 @@ public class ListIntegrationTest extends ContractTest {
 
     @Test
     public void clearStringList() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(array(string("hello"), string("world")));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, array(string("hello"), string("world")));
         java.util.List<StackItem> list =
                 response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.size(), is(0));
@@ -65,7 +73,7 @@ public class ListIntegrationTest extends ContractTest {
     public void receiveByteArrayListAsParameter() throws IOException {
         byte[] bytes = new byte[]{0x00, 0x01, 0x02, 0x03};
         ContractParameter param = byteArray(bytes);
-        NeoInvokeFunction response = callInvokeFunction(array(param, param, param));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, array(param, param, param));
         List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.size(), is(3));
         assertThat(list.get(0).getByteArray(), is(bytes));
@@ -75,7 +83,7 @@ public class ListIntegrationTest extends ContractTest {
 
     @Test
     public void createListFromIntegerArray() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 array(integer(1), integer(2), integer(3), integer(4)));
         List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.size(), is(4));
@@ -89,7 +97,8 @@ public class ListIntegrationTest extends ContractTest {
     public void getItemFromByteArrayList() throws IOException {
         byte[] bytes = new byte[]{0x00, 0x01, 0x02, 0x03};
         ContractParameter param = byteArray(bytes);
-        NeoInvokeFunction response = callInvokeFunction(array(param, param, param), integer(2));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, array(param, param, param), integer(2));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(bytes));
     }
@@ -98,8 +107,9 @@ public class ListIntegrationTest extends ContractTest {
     @Test
     public void overwriteItemInIntegerList() throws IOException {
         ContractParameter param = integer(1);
-        NeoInvokeFunction response = callInvokeFunction(array(param, param, param), integer(1),
-                integer(0));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, array(param, param, param), integer(1),
+                        integer(0));
         List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.size(), is(3));
         assertThat(list.get(0).getInteger().intValue(), is(1));
@@ -110,15 +120,16 @@ public class ListIntegrationTest extends ContractTest {
     @Test
     public void setItemOutOfRangeInIntegerList() throws IOException {
         ContractParameter param = integer(1);
-        NeoInvokeFunction response = callInvokeFunction("overwriteItemInIntegerList", array(param,
-                param, param), integer(3));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction("overwriteItemInIntegerList", array(param,
+                        param, param), integer(3));
         assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
     }
 
     @Test
     public void cloneIntegerList() throws IOException {
         ContractParameter param = integer(1);
-        NeoInvokeFunction response = callInvokeFunction(array(param, param, param));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, array(param, param, param));
         List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.get(0).getInteger().intValue(), is(1));
         assertThat(list.get(1).getInteger().intValue(), is(1));
@@ -128,7 +139,7 @@ public class ListIntegrationTest extends ContractTest {
     @Test
     public void integerListToArray() throws IOException {
         ContractParameter param = integer(1);
-        NeoInvokeFunction response = callInvokeFunction(array(param, param, param));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, array(param, param, param));
         List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.get(0).getInteger().intValue(), is(1));
         assertThat(list.get(1).getInteger().intValue(), is(1));
@@ -137,7 +148,7 @@ public class ListIntegrationTest extends ContractTest {
 
     @Test
     public void createAndFillObjectList() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
         assertThat(list.get(0).getString(), is("hello, world!"));
         assertThat(list.get(1).getInteger().intValue(), is(10));

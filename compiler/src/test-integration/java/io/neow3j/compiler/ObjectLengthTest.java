@@ -1,31 +1,35 @@
 package io.neow3j.compiler;
 
+import io.neow3j.compiler.utils.ContractTestRule;
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.utils.Numeric;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
+import java.io.IOException;
+import java.math.BigInteger;
+
 import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.utils.Numeric;
-import java.io.IOException;
-import java.math.BigInteger;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+public class ObjectLengthTest {
 
-public class ObjectLengthTest extends ContractTest {
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             ObjectLengthTestContract.class.getName());
 
     @Test
     public void lengthOfTwoStrings() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.string("one"),
                 ContractParameter.string("two"));
 
@@ -34,7 +38,7 @@ public class ObjectLengthTest extends ContractTest {
 
     @Test
     public void lengthOfTwoArrays() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.byteArray(Numeric.hexStringToByteArray("01020304")),
                 ContractParameter.byteArray(new byte[100000]));
 
@@ -44,8 +48,8 @@ public class ObjectLengthTest extends ContractTest {
 
     @Test
     public void lengthComparison() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(array(string("hello"), string("world")),
-                integer(2));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, array(string("hello"),
+                string("world")), integer(2));
 
         assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
                 is(BigInteger.ONE));

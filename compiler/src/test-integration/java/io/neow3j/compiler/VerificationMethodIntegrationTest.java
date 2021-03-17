@@ -1,11 +1,6 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.string;
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
@@ -14,28 +9,36 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
 import io.neow3j.transaction.Signer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+import org.junit.rules.TestName;
 
-public class VerificationMethodIntegrationTest extends ContractTest {
+import static io.neow3j.contract.ContractParameter.string;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class VerificationMethodIntegrationTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             VerificationMethodIntegrationTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
         // The RPC method invokecontractverify requires an open wallet on the neo-node.
-        neow3j.openWallet("wallet.json", "neo").send();
+        ct.getNeow3j().openWallet("wallet.json", "neo").send();
     }
 
     @Test
     public void callVerifyWithContractOwner() throws Throwable {
-        NeoInvokeContractVerify response = neow3j
-                .invokeContractVerify(contract.getScriptHash(),
+        NeoInvokeContractVerify response = ct.getNeow3j()
+                .invokeContractVerify(ct.getContract().getScriptHash(),
                         singletonList(string("hello, world!")),
-                        Signer.calledByEntry(defaultAccount.getScriptHash()))
+                        Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
                 .send();
 
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
@@ -43,10 +46,10 @@ public class VerificationMethodIntegrationTest extends ContractTest {
 
     @Test
     public void callVerifyWithContractOwner_fromString() throws Throwable {
-        NeoInvokeContractVerify response = neow3j
-                .invokeContractVerify(contract.getScriptHash().toString(),
+        NeoInvokeContractVerify response = ct.getNeow3j()
+                .invokeContractVerify(ct.getContract().getScriptHash().toString(),
                         singletonList(string("hello, world!")),
-                        Signer.calledByEntry(defaultAccount.getScriptHash()))
+                        Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
                 .send();
 
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
@@ -54,10 +57,10 @@ public class VerificationMethodIntegrationTest extends ContractTest {
 
     @Test
     public void callVerifyWithOtherSigner() throws Throwable {
-        NeoInvokeContractVerify response = neow3j
-                .invokeContractVerify(contract.getScriptHash(),
-                        singletonList(string("hello, world!")),
-                        Signer.calledByEntry(committee.getScriptHash()))
+        NeoInvokeContractVerify response = ct.getNeow3j().invokeContractVerify(
+                ct.getContract().getScriptHash(),
+                singletonList(string("hello, world!")),
+                Signer.calledByEntry(ct.getCommittee().getScriptHash()))
                 .send();
 
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
@@ -65,10 +68,10 @@ public class VerificationMethodIntegrationTest extends ContractTest {
 
     @Test
     public void callVerifyWithOtherSigner_fromString() throws Throwable {
-        NeoInvokeContractVerify response = neow3j
-                .invokeContractVerify(contract.getScriptHash().toString(),
+        NeoInvokeContractVerify response = ct.getNeow3j()
+                .invokeContractVerify(ct.getContract().getScriptHash().toString(),
                         singletonList(string("hello, world!")),
-                        Signer.calledByEntry(committee.getScriptHash()))
+                        Signer.calledByEntry(ct.getCommittee().getScriptHash()))
                 .send();
 
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());

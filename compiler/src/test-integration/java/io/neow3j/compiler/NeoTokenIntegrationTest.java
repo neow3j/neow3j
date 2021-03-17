@@ -1,15 +1,6 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.TestProperties.neoTokenHash;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -19,41 +10,54 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Await;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
 
-public class NeoTokenIntegrationTest extends ContractTest {
+import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.publicKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+public class NeoTokenIntegrationTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             NeoTokenTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        Hash256 gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
-        Hash256 neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
-        Await.waitUntilTransactionIsExecuted(gasTxHash, neow3j);
-        Await.waitUntilTransactionIsExecuted(neoTxHash, neow3j);
+        Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(), "10000");
+        Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), "10000");
+        Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
+        Await.waitUntilTransactionIsExecuted(neoTxHash, ct.getNeow3j());
     }
 
     @Test
     public void unclaimedGas() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(hash160(defaultAccount.getScriptHash()),
-                integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                hash160(ct.getDefaultAccount().getScriptHash()), integer(1));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
     }
 
     @Test
     public void registerAndUnregisterCandidate() throws IOException {
-        signWithDefaultAccount();
-        NeoInvokeFunction response = callInvokeFunction(
-                publicKey(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
+        ct.signWithDefaultAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                publicKey(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
 
         List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(l.get(0).getBoolean());
@@ -62,84 +66,85 @@ public class NeoTokenIntegrationTest extends ContractTest {
 
     @Test
     public void registerAndGetCandidates() throws IOException {
-        signWithDefaultAccount();
-        NeoInvokeFunction response = callInvokeFunction(
-                publicKey(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
+        ct.signWithDefaultAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                publicKey(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
 
         List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
         assertThat(l, hasSize(1));
         assertThat(l.get(0).getList().get(0).getByteArray(),
-                is(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
+                is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
     }
 
     @Test
     public void getNextBlockValidators() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
 
         List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
         assertThat(l.get(0).getByteArray(),
-                is(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
+                is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
     }
 
     @Test
     public void getCommittee() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
 
         List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
         assertThat(l.get(0).getByteArray(),
-                is(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
+                is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
     }
 
     @Test
     public void setAndGetGasPerBlock() throws Throwable {
-        signAsCommittee();
-        NeoInvokeFunction res = callInvokeFunction("getGasPerBlock");
+        ct.signAsCommittee();
+        NeoInvokeFunction res = ct.callInvokeFunction("getGasPerBlock");
         int gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
         assertThat(gasPerBlock, is(500_000_000));
 
-        invokeFunctionAndAwaitExecution("setGasPerBlock", integer(50_000));
+        ct.invokeFunctionAndAwaitExecution("setGasPerBlock", integer(50_000));
 
-        res = callInvokeFunction("getGasPerBlock");
+        res = ct.callInvokeFunction("getGasPerBlock");
         gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
         assertThat(gasPerBlock, is(50_000));
     }
 
     @Test
     public void vote() throws Throwable {
-        signWithDefaultAccount();
+        ct.signWithDefaultAccount();
         // Add the default account as a candidate
-        Hash256 txHash = new io.neow3j.contract.NeoToken(neow3j)
-                .registerCandidate(defaultAccount.getECKeyPair().getPublicKey())
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(defaultAccount.getScriptHash()))
+        Hash256 txHash = new io.neow3j.contract.NeoToken(ct.getNeow3j())
+                .registerCandidate(ct.getDefaultAccount().getECKeyPair().getPublicKey())
+                .wallet(ct.getWallet())
+                .signers(Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
-        signWithDefaultAccount();
-        NeoInvokeFunction res = callInvokeFunction(hash160(defaultAccount.getScriptHash()),
-                publicKey(defaultAccount.getECKeyPair().getPublicKey().getEncoded(true)));
+        ct.signWithDefaultAccount();
+        NeoInvokeFunction res = ct.callInvokeFunction(testName,
+                hash160(ct.getDefaultAccount().getScriptHash()),
+                publicKey(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
 
         assertTrue(res.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
     public void getHash() throws Throwable {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(neoTokenHash()));
     }
 
     @Test
     public void setAndGetRegisterPrice() throws Throwable {
-        signAsCommittee();
-        NeoInvokeFunction res = callInvokeFunction("getRegisterPrice");
+        ct.signAsCommittee();
+        NeoInvokeFunction res = ct.callInvokeFunction("getRegisterPrice");
         BigInteger gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger();
         assertThat(gasPerBlock, is(new BigInteger("100000000000")));
-        invokeFunctionAndAwaitExecution("setRegisterPrice", integer(50_000));
+        ct.invokeFunctionAndAwaitExecution("setRegisterPrice", integer(50_000));
 
-        res = callInvokeFunction("getRegisterPrice");
+        res = ct.callInvokeFunction("getRegisterPrice");
         gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger();
         assertThat(gasPerBlock, is(new BigInteger("50000")));
     }

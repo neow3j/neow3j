@@ -1,13 +1,15 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Map.Entry;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,16 +19,19 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class IteratorTest extends ContractTest {
+public class IteratorTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractCompilationTestRule c = new ContractCompilationTestRule(
+    public static ContractTestRule ct = new ContractTestRule(
             IteratorTestContract.class.getName());
 
     @Test
     public void createIteratorFromArrayAndIterateThrough() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
-                array(integer(0), integer(1), integer(2)));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, array(integer(0), integer(1),
+                integer(2)));
         List<StackItem> arr = response.getInvocationResult().getStack().get(0).getList();
         assertThat(arr.size(), is(3));
         assertThat(arr.get(0).getInteger().intValue(), is(0));
@@ -36,7 +41,7 @@ public class IteratorTest extends ContractTest {
 
     @Test
     public void createIteratorFromMapAndIterateThrough() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 array(integer(3), integer(6), integer(9)),
                 array(integer(3), integer(4), integer(5)));
 

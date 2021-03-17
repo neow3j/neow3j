@@ -1,41 +1,39 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.TestProperties.neoTokenHash;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import io.neow3j.compiler.utils.ContractCompilationTestRule;
+import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import java.io.IOException;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+import org.junit.rules.TestName;
 
-public class ContractInterfacesTest extends ContractTest {
+import java.io.IOException;
+
+import static io.neow3j.TestProperties.neoTokenHash;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+public class ContractInterfacesTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
-    public static TestRule chain = RuleChain
-            .outerRule(privateNetContainer)
-            .around(
-                    new ContractCompilationTestRule(
-                            ContractInterfacesTestContract.class.getName(),
-                            privateNetContainer
-                    )
-            );
+    public static ContractTestRule ct = new ContractTestRule(
+            ContractInterfacesTestContract.class.getName());
 
     @Test
     public void callSymbolMethodOfCustomNeoContractInterface() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("NEO"));
     }
 
     @Test
     public void getScriptHashOfCustomNeoContractInterface() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(neoTokenHash()));
     }
