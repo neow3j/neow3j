@@ -13,11 +13,13 @@ import static io.neow3j.contract.ContractParameter.signature;
 import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
@@ -26,7 +28,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -370,11 +375,22 @@ public class ContractParameterTest {
 
     @Test
     public void testMap() {
-        HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
+        Map<ContractParameter, ContractParameter> map = new HashMap<>();
         map.put(integer(1), string("first"));
         map.put(integer(2), string("second"));
         ContractParameter param = map(map);
         assertThat(param.getValue(), is(map));
+    }
+
+    @Test
+    public void testMap_withObjects() {
+        Map<Object, Object> map = new HashMap<>();
+        map.put("one", "first");
+        map.put("two", 2);
+        ContractParameter param = map(map);
+        Map<?,?> value = (Map<?,?>) param.getValue();
+        assertThat(value.keySet(), containsInAnyOrder(string("one"), string("two")));
+        assertThat(value.values(), containsInAnyOrder(string("first"), integer(2)));
     }
 
     @Test

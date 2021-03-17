@@ -110,6 +110,32 @@ public class ContractParameter {
         return array(entries.toArray());
     }
 
+    /**
+     * Creates a map contract parameter.
+     * <p>
+     * The {@code Map} argument can hold any types that can be cast to one of the available
+     * {@link ContractParameterType}s. The types {@link ContractParameterType#ARRAY} and
+     * {@link ContractParameterType#MAP} are not supported as map keys.
+     *
+     * The first example below uses regular Java types that can automatically be wrapped into a
+     * {@code ContractParameter}.
+     * <pre>
+     * Map map = new HashMap<>();
+     * map.put("one", "first");
+     * map.put("two", 2);
+     * ContractParameter param = map(map);
+     * </pre>
+     * The second example leads to the same result but uses {@code ContractParameter} before
+     * adding elements.
+     * <pre>
+     * Map map = new HashMap<>();
+     * map.put(ContractParameter.string("one"), ContractParameter.string("first"));
+     * map.put(ContractParameter.integer("two"), ContractParameter.integer(2));
+     * ContractParameter param = map(map);
+     * </pre>
+     * @param map
+     * @return
+     */
     public static ContractParameter map(Map<?, ?> map) {
         if (map.isEmpty()) {
             throw new IllegalArgumentException("At least one map entry is required to create a " +
