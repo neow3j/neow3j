@@ -5,6 +5,9 @@ on:
     types: [assigned, review_requested, ready_for_review]
   workflow_dispatch:
 
+env:
+  GRADLE_USER_HOME: "/tmp/.gradle"
+
 jobs:
   build:
     runs-on: [self-hosted]
@@ -12,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
-          path: ~/.gradle/caches
+          path: ${GRADLE_USER_HOME}
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
