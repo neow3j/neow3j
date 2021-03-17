@@ -932,7 +932,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
         assertThat(transfer.getAssetHash(), is(GAS_HASH));
         assertNull(transfer.getTransferAddress());
-        assertThat(transfer.getAmount(), is("50000000"));
+        assertThat(transfer.getAmount(), is("150000000"));
         assertThat(transfer.getBlockIndex(), greaterThanOrEqualTo(1L));
         assertThat(transfer.getTransferNotifyIndex(), is(0L));
         assertThat(transfer.getTxHash(), instanceOf(Hash256.class));
@@ -1029,7 +1029,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(state.getList().get(1).getType(), is(StackItemType.BYTE_STRING));
         assertThat(state.getList().get(1).getAddress(), is(committeeAccountAddress()));
         assertThat(state.getList().get(2).getType(), is(StackItemType.INTEGER));
-        assertThat(state.getList().get(2).getInteger(), is(new BigInteger("50000000")));
+        assertThat(state.getList().get(2).getInteger(), is(new BigInteger("150000000")));
     }
 
     // StateService
@@ -1059,12 +1059,7 @@ public class Neow3jReadOnlyIntegrationTest {
                     .getStateRoot()
                     .getRootHash();
 
-            proof = getNeow3j()
-                    .getProof(
-                            rootHash,
-                            NEO_HASH,
-                            NEXT_VALIDATORS_PREFIX
-                    )
+            proof = getNeow3j().getProof(rootHash, NEO_HASH, NEXT_VALIDATORS_PREFIX)
                     .send()
                     .getProof();
 

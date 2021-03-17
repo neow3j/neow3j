@@ -41,7 +41,8 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
             withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY);
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            System.out.println("OracleService config file not found at "
+                    + ORACLECONFIG_FILE_SOURCE);
         }
     }
 

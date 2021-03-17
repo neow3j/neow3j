@@ -126,6 +126,7 @@ public class OracleContractIntegrationTest {
                 60,
                 TimeUnit.SECONDS
         );
+        subscribe.dispose();
 
         assertThat(tx.get().getAttributes().get(0).getType(),
                 is(TransactionAttributeType.ORACLE_RESPONSE));
