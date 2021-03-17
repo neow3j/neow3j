@@ -152,6 +152,7 @@ public class NeoNameService extends NonFungibleToken {
      * @param name  the domain name.
      * @param owner the address of the domain owner.
      * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder register(String name, Hash160 owner) throws IOException {
         checkDomainNameAvailability(name, true);
@@ -197,6 +198,7 @@ public class NeoNameService extends NonFungibleToken {
      *
      * @param name the domain name.
      * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder renew(String name) throws IOException {
         checkDomainNameAvailability(name, false);
@@ -212,6 +214,7 @@ public class NeoNameService extends NonFungibleToken {
      * @param name  the domain name.
      * @param admin the script hash of the admin address.
      * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder setAdmin(String name, Hash160 admin) throws IOException {
         checkDomainNameAvailability(name, false);
@@ -226,6 +229,7 @@ public class NeoNameService extends NonFungibleToken {
      * @param type the record type.
      * @param data the corresponding data.
      * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder setRecord(String name, RecordType type, String data)
             throws IOException {

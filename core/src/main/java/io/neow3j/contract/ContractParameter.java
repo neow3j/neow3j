@@ -120,7 +120,7 @@ public class ContractParameter {
      * The first example below uses regular Java types that can automatically be wrapped into a
      * {@code ContractParameter}.
      * <pre>
-     * Map map = new HashMap<>();
+     * Map map = new HashMap{@literal <>}();
      * map.put("one", "first");
      * map.put("two", 2);
      * ContractParameter param = map(map);
@@ -128,13 +128,13 @@ public class ContractParameter {
      * The second example leads to the same result but uses {@code ContractParameter} before
      * adding elements.
      * <pre>
-     * Map map = new HashMap<>();
+     * Map map = new HashMap{@literal <>}();
      * map.put(ContractParameter.string("one"), ContractParameter.string("first"));
      * map.put(ContractParameter.integer("two"), ContractParameter.integer(2));
      * ContractParameter param = map(map);
      * </pre>
-     * @param map
-     * @return
+     * @param map The map entries.
+     * @return the contract parameter.
      */
     public static ContractParameter map(Map<?, ?> map) {
         if (map.isEmpty()) {

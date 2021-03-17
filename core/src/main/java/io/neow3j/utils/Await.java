@@ -92,6 +92,7 @@ public class Await {
      *
      * @param callable The function to be called.
      * @param matcher  The condition to be evaluated.
+     * @param <T>      The type that the callable function and condition should be compatible with.
      */
     public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
         waitUntil(callable, matcher, MAX_WAIT_TIME, TimeUnit.SECONDS);
@@ -105,6 +106,8 @@ public class Await {
      * @param matcher       The condition to be evaluated.
      * @param maxWaitTime   The maximum amount of time to wait.
      * @param unit          The time unit for the {@code maxWaitTime} param.
+     * @param <T>           The type that the callable function and condition should be
+     *                      compatible with.
      */
     public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher,
             int maxWaitTime, TimeUnit unit) {

@@ -71,6 +71,7 @@ allprojects { thisproject ->
 
     // We don't want any compiler warnings
     compileJava {
+        options.encoding = 'UTF-8'
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
     compileTestJava {
@@ -88,6 +89,7 @@ allprojects { thisproject ->
     jacocoTestReport {
         reports {
             xml.enabled true
+            html.enabled true
         }
     }
 
