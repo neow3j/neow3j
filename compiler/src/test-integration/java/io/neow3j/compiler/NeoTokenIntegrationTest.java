@@ -95,7 +95,7 @@ public class NeoTokenIntegrationTest {
 
     @Test
     public void setAndGetGasPerBlock() throws Throwable {
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         NeoInvokeFunction res = ct.callInvokeFunction("getGasPerBlock");
         int gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger().intValue();
         assertThat(gasPerBlock, is(500_000_000));
@@ -137,7 +137,7 @@ public class NeoTokenIntegrationTest {
 
     @Test
     public void setAndGetRegisterPrice() throws Throwable {
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         NeoInvokeFunction res = ct.callInvokeFunction("getRegisterPrice");
         BigInteger gasPerBlock = res.getInvocationResult().getStack().get(0).getInteger();
         assertThat(gasPerBlock, is(new BigInteger("100000000000")));

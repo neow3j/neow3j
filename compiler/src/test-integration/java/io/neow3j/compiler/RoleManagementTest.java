@@ -42,7 +42,7 @@ public class RoleManagementTest {
     @Test
     public void setAndGetDesignateAsRole() throws Throwable {
         byte[] pubKey = ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true);
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
 
         Hash256 txHash = ct.invokeFunctionAndAwaitExecution("designateAsRole",
                 integer(Role.STATE_VALIDATOR), array(publicKey(pubKey)));

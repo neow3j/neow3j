@@ -59,7 +59,7 @@ public class FungibleTokenTest {
 
     @Test
     public void callTransferMethodOfFungibleToken() throws IOException {
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 hash160(ct.getCommittee().getScriptHash()),
                 hash160(ct.getDefaultAccount().getScriptHash()), integer(1));

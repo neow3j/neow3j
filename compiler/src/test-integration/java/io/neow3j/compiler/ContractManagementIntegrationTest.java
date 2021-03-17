@@ -67,7 +67,7 @@ public class ContractManagementIntegrationTest {
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
 
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         // Call the method that calls the ContractManagement.deploy(...) method and pass the
         // compiled contract to it.
         Hash256 txHash = ct.invokeFunction(testName, byteArray(compUnit.getNefFile().toArray()),
@@ -93,7 +93,7 @@ public class ContractManagementIntegrationTest {
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
 
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         // Call the method that calls the ContractManagement.deploy(...) method and pass the
         // compiled contract to it.
         Hash256 txHash = ct.invokeFunction(testName, byteArray(compUnit.getNefFile().toArray()),

@@ -38,7 +38,7 @@ public class PolicyContractIntegrationTest {
     @Test
     public void setAndGetFeePerByte() throws IOException {
         int newFee = 1;
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(newFee));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
@@ -48,7 +48,7 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void blockAndUnblockAccountAndIsBlocked() throws Throwable {
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         NeoInvokeFunction response = ct.callInvokeFunction("isBlocked",
                 hash160(ct.getDefaultAccount().getScriptHash()));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
@@ -78,7 +78,7 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void setAndGetExecFeeFactor() throws IOException {
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(300));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
@@ -89,7 +89,7 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void setAndGetStoragePrice() throws IOException {
-        ct.signAsCommittee();
+        ct.signWithCommitteeAccount();
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1000000));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();

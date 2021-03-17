@@ -322,11 +322,13 @@ public class ContractTestRule implements TestRule {
                 is(VM_STATE_HALT));
     }
 
-    public void signAsCommittee() {
+    public void signWithCommitteeAccount() {
+        signWithDefaultAccount = false;
         signAsCommittee = true;
     }
 
     public void signWithDefaultAccount() {
+        signAsCommittee = false;
         signWithDefaultAccount = true;
     }
 
