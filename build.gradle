@@ -82,7 +82,7 @@ allprojects { thisproject ->
     }
 
     jacoco {
-        toolVersion = '0.8.4' // See http://www.eclemma.org/jacoco/.
+        toolVersion = '0.8.6' // See http://www.eclemma.org/jacoco/.
     }
 
     jacocoTestReport {
