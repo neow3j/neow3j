@@ -300,11 +300,19 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
 
     reports {
         xml.enabled = true
+        html.enabled = true
     }
 
     afterEvaluate {
         getClassDirectories().from(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [])
+            fileTree(
+                    dir: it,
+                    // here we specify which path/modules should be
+                    // excluded from the jacoco reports
+                    exclude: [
+                            'test-properties/**'
+                    ]
+            )
         }))
     }
 }
