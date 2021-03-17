@@ -1,12 +1,12 @@
-package io.neow3j.compiler.utils;
-
-import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
+package io.neow3j;
 
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+
+import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
 
 public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 
@@ -27,27 +27,29 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 
     public NeoTestContainer() {
         super(DockerImageName.parse(neo3PrivateNetContainerImg()));
-        this.withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
-                BindMode.READ_ONLY)
-                .withCopyFileToContainer(
-                        MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
-                        WALLET_FILE_DESTINATION)
-                .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE,
-                        ORACLECONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withExposedPorts(EXPOSED_JSONRPC_PORT)
-                .waitingFor(Wait.forListeningPort());
+        withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
+        withCopyFileToContainer(MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
+                WALLET_FILE_DESTINATION);
+        withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
+        withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
+        withExposedPorts(EXPOSED_JSONRPC_PORT);
+        waitingFor(Wait.forListeningPort());
+        try {
+            withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     public static String getResultFilePath(String testClassName, String methodName) {
         return "responses/" + testClassName + "/" + methodName + ".json";
     }
 
-    public static String getNodeUrl(GenericContainer<?> container) {
+    public static String getNodeUrl(NeoTestContainer container) {
         return "http://" + container.getContainerIpAddress() +
                 ":" + container.getMappedPort(EXPOSED_JSONRPC_PORT);
     }

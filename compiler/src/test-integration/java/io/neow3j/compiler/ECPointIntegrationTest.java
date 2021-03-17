@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.StringLiteralHelper;
@@ -13,7 +12,7 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.compiler.utils.ContractTestRule.VM_STATE_FAULT;
+import static io.neow3j.compiler.ContractTestRule.VM_STATE_FAULT;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

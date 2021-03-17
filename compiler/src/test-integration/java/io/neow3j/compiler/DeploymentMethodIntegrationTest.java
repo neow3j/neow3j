@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;

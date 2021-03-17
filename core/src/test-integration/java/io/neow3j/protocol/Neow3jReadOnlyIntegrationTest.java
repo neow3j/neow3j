@@ -1,5 +1,6 @@
 package io.neow3j.protocol;
 
+import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.TestProperties.contractManagementHash;
@@ -15,12 +16,9 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NEO_TOTAL_SUPPLY;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
-import static io.neow3j.protocol.IntegrationTestHelper.getNodeUrl;
-import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
@@ -45,6 +43,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.NeoTestContainer;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
@@ -92,7 +91,6 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.testcontainers.containers.GenericContainer;
 
 // This test class uses a static container which is started once for the whole class and reused in
 // every test. Therefore only tests that don't need a new and clean blockchain should be added here.
@@ -128,16 +126,19 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String BLOCK_0_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAABWdJLr5o0s2B7uGSGoMazmnP0gBAAERAA==";
 
+    // Total supply of NEO tokens.
+    static final int NEO_TOTAL_SUPPLY = 100000000;
+
     protected static Neow3j neow3j;
 
     @ClassRule
-    public static GenericContainer<?> privateNetContainer = setupPrivateNetContainer();
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
     @BeforeClass
     public static void setUp() throws Exception {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
+        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests

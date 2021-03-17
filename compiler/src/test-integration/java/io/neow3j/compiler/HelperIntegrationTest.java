@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.Helper;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -14,8 +13,8 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.compiler.utils.ContractTestRule.VM_STATE_FAULT;
-import static io.neow3j.compiler.utils.ContractTestRule.VM_STATE_HALT;
+import static io.neow3j.compiler.ContractTestRule.VM_STATE_FAULT;
+import static io.neow3j.compiler.ContractTestRule.VM_STATE_HALT;
 import static io.neow3j.contract.ContractParameter.bool;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;

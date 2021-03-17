@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.ClassRule;
@@ -11,7 +10,7 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.compiler.utils.ContractTestRule.VM_STATE_FAULT;
+import static io.neow3j.compiler.ContractTestRule.VM_STATE_FAULT;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;

@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.PolicyContract;

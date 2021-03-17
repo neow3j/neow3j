@@ -2,7 +2,6 @@ package io.neow3j.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;

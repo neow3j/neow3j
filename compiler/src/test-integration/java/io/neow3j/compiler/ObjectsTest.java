@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Helper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;

@@ -1,7 +1,6 @@
-package io.neow3j.compiler.utils;
+package io.neow3j.compiler;
 
-import io.neow3j.compiler.CompilationUnit;
-import io.neow3j.compiler.Compiler;
+import io.neow3j.NeoTestContainer;
 import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash160;
@@ -29,7 +28,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.compiler.utils.NeoTestContainer.getNodeUrl;
+import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;

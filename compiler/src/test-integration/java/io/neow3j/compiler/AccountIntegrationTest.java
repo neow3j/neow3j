@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.Account;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;

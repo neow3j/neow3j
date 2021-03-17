@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.compiler.utils.ContractTestRule;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Map.Entry;

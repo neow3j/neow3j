@@ -1,5 +1,6 @@
 package io.neow3j.protocol;
 
+import io.neow3j.NeoTestContainer;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
@@ -17,10 +18,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 
+import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.defaultAccountAddress;
 import static io.neow3j.TestProperties.neoTokenHash;
@@ -29,7 +30,6 @@ import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
-import static io.neow3j.protocol.IntegrationTestHelper.setupPrivateNetContainer;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -52,12 +52,11 @@ public class Neow3jWriteIntegrationTest {
     private static Neow3j neow3j;
 
     @Rule
-    public GenericContainer<?> privateNetContainer = setupPrivateNetContainer();
+    public NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @Before
     public void setUp() throws IOException {
-        neow3j = Neow3j.build(new HttpService(
-                IntegrationTestHelper.getNodeUrl(privateNetContainer)));
+        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
