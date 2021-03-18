@@ -20,15 +20,15 @@ Neow3j is an open-source project developed by the community and maintained by [A
 
 The neow3j development toolkit is composed of:
 
-- neow3j SDK
-- neow3j devpack
-- neow3j compiler
+- **neow3j SDK**
+- **neow3j devpack**
+- **neow3j compiler**
 
 Visit [neow3j.io](https://neow3j.io) for more information on neow3j and the technical documentation.
 
 ## Using the *neow3j SDK*
 
-To get all *neow3j SDK* features, add the `io.neow3j:contract` project to your dependencies. Since neow3j is split into multiple project modules, you can also depend on a subset of the functionality, e.g., if you only require certain utility methods. Check out the concept and structure of the library [here](https://neow3j.io/#/overview/concepts_and_structure).
+To get all **neow3j SDK** features, add the `io.neow3j:contract` project to your dependencies.
 
 ### Neo2
 
@@ -67,7 +67,8 @@ __Maven__
 
 ## Using the *neow3j devpack* and *compiler*
 
-The devpack offers all the necessary tools to write Neo smart contracts in Java. To try it out, add the following dependency to your project.
+The **neow3j devpack** module offer all the necessary tools to write Neo smart contracts in Java.
+To try it out, add the following dependency to your project.
 
 Gradle:
 ```groovy
@@ -83,10 +84,10 @@ Maven:
 </dependency>
 ```
 
-For help on how to compile a contract, check out the documentation about the neow3j compiler at [neow3j.io](https://neow3j.io/#/neo3_guides/compiler_devpack/compilation?id=compilation).
+For help on how to compile a contract, check out the documentation about the neow3j compiler
+at [neow3j.io](https://neow3j.io/#/neo3_guides/compiler_devpack/compilation?id=compilation).
 
-
-## Donate
+## Donate :moneybag:
 
 Help the development of neow3j by donating to the following addresses:
 
@@ -97,9 +98,9 @@ Help the development of neow3j by donating to the following addresses:
 | BTC      | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
 
 
-## Thanks and Credits
+## Thanks and Credits :pray:
 
 * [NEO Foundation](https://neo.org/contributors) & [NEO Global Development (NGD)](https://neo.org/contributors)
 * This project was strongly based on [web3j](https://web3j.io),
 a library originally developed by [Conor Svensson](http://conorsvensson.com), latest on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254).
-We are really thankful for it. :-)
+We are really thankful for it. :smiley:
