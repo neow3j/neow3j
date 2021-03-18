@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -84,6 +85,7 @@ public class ContractTestRule implements TestRule {
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = neow3j.build(new HttpService(containerURL));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractName = name;
         contract = deployContract(contractName);
         waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
