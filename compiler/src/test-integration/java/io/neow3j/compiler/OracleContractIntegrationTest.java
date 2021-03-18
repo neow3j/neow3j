@@ -1,15 +1,5 @@
 package io.neow3j.compiler;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
-import static io.neow3j.protocol.core.methods.response.OracleResponseCode.TIMEOUT;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.Hash256;
@@ -31,58 +21,76 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Await;
 import io.reactivex.disposables.Disposable;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
 
-public class OracleContractTest extends ContractTest {
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.TestProperties.oracleContractHash;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.protocol.core.methods.response.OracleResponseCode.TIMEOUT;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+public class OracleContractIntegrationTest {
+
+    @Rule
+    public TestName testName = new TestName();
+
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            OracleContractIntegrationTestContract.class.getName());
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(OracleContractTestContract.class.getName());
-    }
-
     @Test
     public void getScriptHash() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is("fe924b7cfe89ddd271abaf7210a80a7e11178758"));
+                is(oracleContractHash()));
     }
 
     @Test
     public void performRequest() throws Throwable {
         // GAS and NEO needed to register a candidate.
-        Hash256 gasTxHash = transferGas(defaultAccount.getScriptHash(), "10000");
-        Hash256 neoTxHash = transferNeo(defaultAccount.getScriptHash(), "10000");
-        Await.waitUntilTransactionIsExecuted(gasTxHash, neow3j);
-        Await.waitUntilTransactionIsExecuted(neoTxHash, neow3j);
+        Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(), "10000");
+        Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), "10000");
+        Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
+        Await.waitUntilTransactionIsExecuted(neoTxHash, ct.getNeow3j());
 
         // Register candidate
-        ECKeyPair.ECPublicKey publicKey = defaultAccount.getECKeyPair().getPublicKey();
-        NeoSendRawTransaction response = new NeoToken(neow3j).registerCandidate(publicKey)
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(defaultAccount.getScriptHash()))
+        ECKeyPair.ECPublicKey publicKey = ct.getDefaultAccount().getECKeyPair().getPublicKey();
+        NeoSendRawTransaction response = new NeoToken(ct.getNeow3j()).registerCandidate(publicKey)
+                .wallet(ct.getWallet())
+                .signers(Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
                 .sign().send();
-        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
+        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
+                ct.getNeow3j());
         // Designate as oracle.
-        response = new RoleManagement(neow3j).designateAsRole(Role.ORACLE, Arrays.asList(publicKey))
-                .wallet(wallet)
-                .signers(Signer.calledByEntry(committee.getScriptHash()))
+        response = new RoleManagement(ct.getNeow3j()).designateAsRole(Role.ORACLE,
+                Arrays.asList(publicKey))
+                .wallet(ct.getWallet())
+                .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
                 .sign().send();
-        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), neow3j);
+        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
+                ct.getNeow3j());
 
-        // TODO: Remove this when https://github.com/neo-project/neo-modules/issues/523
-        // gets implemented.
         // Start the oracle service on the neo-node
-        privateNetContainer.execInContainer("screen", "-X", "stuff", "start oracle \\015");
+        ct.getNeoTestContainer().execInContainer("screen", "-X", "stuff", "start oracle \\015");
 
         // Setup WireMock
         String json = "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"result\": 1000 }";
@@ -97,13 +105,13 @@ public class OracleContractTest extends ContractTest {
         String filter = "";  // JSONPath
         String userdata = "userdata";
         int gasForResponse = 100000000;
-        Hash256 txHash = invokeFunctionAndAwaitExecution(string(url), string(filter),
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName, string(url), string(filter),
                 string(userdata), integer(gasForResponse));
 
         // The oracle response should be available in the next block.
-        BigInteger height = neow3j.getTransactionHeight(txHash).send().getHeight();
+        BigInteger height = ct.getNeow3j().getTransactionHeight(txHash).send().getHeight();
         AtomicReference<Transaction> tx = new AtomicReference<>();
-        Disposable subscribe = neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(
+        Disposable subscribe = ct.getNeow3j().catchUpToLatestAndSubscribeToNewBlocksObservable(
                 BlockParameter.valueOf(height), true).subscribe(b -> {
             List<Transaction> transactions = b.getBlock().getTransactions();
             if (!transactions.isEmpty() && transactions.get(0).getAttributes().stream()
@@ -112,12 +120,17 @@ public class OracleContractTest extends ContractTest {
             }
         });
 
-        while (tx.get() == null) {
-            Thread.sleep(1000);
-        }
+        Await.waitUntil(
+                () -> tx.get() != null ? tx : null,
+                notNullValue(),
+                60,
+                TimeUnit.SECONDS
+        );
+        subscribe.dispose();
+
         assertThat(tx.get().getAttributes().get(0).getType(),
                 is(TransactionAttributeType.ORACLE_RESPONSE));
-        List<Notification> notifications = neow3j.getApplicationLog(tx.get().getHash())
+        List<Notification> notifications = ct.getNeow3j().getApplicationLog(tx.get().getHash())
                 .send().getApplicationLog().getExecutions().get(0).getNotifications();
         assertThat(notifications.get(0).getEventName(), is("OracleResponse"));
         assertThat(notifications.get(1).getEventName(), is("callbackEvent"));
@@ -128,7 +141,7 @@ public class OracleContractTest extends ContractTest {
         assertThat(eventState.get(3).getByteArray(), is(new byte[]{}));
     }
 
-    static class OracleContractTestContract {
+    static class OracleContractIntegrationTestContract {
 
         private static Event4Args<String, String, Integer, String> callbackEvent;
 

@@ -269,4 +269,23 @@ public class Helper {
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public static native String reverse(String source);
 
+    /**
+     * Returns the square root of the given number.
+     *
+     * @param x the number to get the root for.
+     * @return the square root.
+     */
+    @Instruction(opcode = OpCode.SQRT)
+    public static native int sqrt(int x);
+
+    /**
+     * Returns the {@code base} to the power of the {@code exponent}.
+     *
+     * @param base     the base.
+     * @param exponent the exponent.
+     * @return the exponentiation.
+     */
+    @Instruction(opcode = OpCode.POW)
+    public static native int pow(int base, int exponent);
+
 }

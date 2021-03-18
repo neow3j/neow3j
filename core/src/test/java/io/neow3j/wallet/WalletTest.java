@@ -1,5 +1,9 @@
 package io.neow3j.wallet;
 
+import static io.neow3j.TestProperties.committeeAccountAddress;
+import static io.neow3j.TestProperties.defaultAccountAddress;
+import static io.neow3j.TestProperties.gasTokenHash;
+import static io.neow3j.TestProperties.neoTokenHash;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,11 +50,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 public class WalletTest {
-
-    private static final Hash160 NEO_SCRIPT_HASH =
-            new Hash160("de5f57d430d3dece511cf975a8d37848cb9e0525");
-    private static final Hash160 GAS_SCRIPT_HASH =
-            new Hash160("668e0c1f9d7b70a99dd9e06eadd4c784d641afbc");
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -436,17 +435,17 @@ public class WalletTest {
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
-        Account a1 = Account.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
-        Account a2 = Account.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
+        Account a1 = Account.fromAddress(committeeAccountAddress());
+        Account a2 = Account.fromAddress(defaultAccountAddress());
         WalletTestHelper.setUpWireMockForCall("getnep17balances",
-                "getnep17balances_NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy.json",
-                "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
+                "getnep17balances_ofCommitteeAccount.json", committeeAccountAddress());
         WalletTestHelper.setUpWireMockForCall("getnep17balances",
-                "getnep17balances_NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke.json",
-                "NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
+                "getnep17balances_ofDefaultAccount.json", defaultAccountAddress());
         Wallet w = Wallet.withAccounts(a1, a2);
         Map<Hash160, BigInteger> balances = w.getNep17TokenBalances(neow);
-        assertThat(balances.keySet(), containsInAnyOrder(GAS_SCRIPT_HASH, NEO_SCRIPT_HASH));
+        assertThat(balances.keySet(), containsInAnyOrder(
+                new Hash160(gasTokenHash()),
+                new Hash160(neoTokenHash())));
         assertThat(balances.values(), containsInAnyOrder(
                 new BigInteger("411285799730"),
                 new BigInteger("50000000")));

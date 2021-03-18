@@ -4,7 +4,6 @@ import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_ISSTANDARD;
 
 /**
  * Offers several account-related methods for use in smart contracts.
@@ -30,22 +29,11 @@ public class Account {
      * More precisely, a verification script is produced from the public keys and the signing
      * threshold, and the hash of that script is returned.
      *
-     * @param m The signing threshold.
+     * @param m       The signing threshold.
      * @param pubKeys The public key to get the script hash for.
      * @return the script hash.
      */
     @Syscall(SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT)
     public static native Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys);
-
-    /**
-     * Checks if the account with the given script hash is a standard account, i.e., a single- or
-     * multi-sig account.
-     *
-     * @param scriptHash The script hash to check.
-     * @return true if it is a standard account. False otherwise.
-     *
-     */
-    @Syscall(SYSTEM_CONTRACT_ISSTANDARD)
-    public static native boolean isStandard(Hash160 scriptHash);
 
 }

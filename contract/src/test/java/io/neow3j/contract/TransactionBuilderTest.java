@@ -784,7 +784,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
                 GasToken.SCRIPT_HASH.toString(),
                 "balanceOf",
-                "721e1376b75fe93889023d47832c160fcc5d4a06");
+                account1.getScriptHash().toString());
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
@@ -986,7 +986,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        Hash256 txHash = new Hash256("f2f93874c4f405861a4496ec31966a20575b1ff012ddb05761d69b4284787362");
+        Hash256 txHash = new Hash256("0570dc3a7dcca42d295d75caeef084c2452e69fd9e663f4d63ce4d970b49836a");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
@@ -1039,8 +1039,8 @@ public class TransactionBuilderTest {
 
     private NeoGetBlock createBlock(int number) {
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, "nonce", null,
-                null, new ArrayList<>(), 1, null);
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, 0, "nonce", null,
+                new ArrayList<>(), 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }
@@ -1049,8 +1049,8 @@ public class TransactionBuilderTest {
             io.neow3j.protocol.core.methods.response.Transaction tx) {
 
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, "nonce", null,
-                null, singletonList(tx), 1, null);
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, 0, "nonce", null,
+                singletonList(tx), 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }

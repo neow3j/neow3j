@@ -1,5 +1,6 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.crypto.Hash.sha256;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -207,16 +208,10 @@ public class TransactionTest {
 
     @Test
     public void getTxId() throws IOException {
-        neow.setNetworkMagicNumber(769);
+        neow.setNetworkMagicNumber(5195086);
 
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
-
-        List<Witness> witnesses = new ArrayList<>();
-        witnesses.add(new Witness(Numeric.hexStringToByteArray(
-                "0c407ffa520060cc7c6d89c073963ed80d94af1dd27fdbd8a1a7c56104b394e1719e2469dfb5534460c15a40216f3b74f6e384cfd2a49905698fa5861d0d491cc917"),
-                Numeric.hexStringToByteArray(
-                        "0c21030ba3f5cb0676ef4eadc89f4da74a6eade644b87aed9a123a117f144ff247052c0b4195440d78")));
 
         Transaction tx = new Transaction(neow,
                 (byte) 0,
@@ -231,7 +226,7 @@ public class TransactionTest {
                 new ArrayList<>());
 
         assertThat(tx.getTxId(),
-                is(new Hash256("5624d97a8f1c9d580399c5682d512641171b5d50d199922f6a5f033a0fac15b5")));
+                is(new Hash256("22ffa2d8680cea4928e2e74ceee560eedfa6e35f199640a7fe725c1f9da0b19e")));
     }
 
     @Test
@@ -275,7 +270,7 @@ public class TransactionTest {
         byte[] txHexWithoutWitness = Numeric.hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
         byte[] expectedData = ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
-                txHexWithoutWitness);
+                sha256(txHexWithoutWitness));
         assertThat(tx.getHashData(), is(expectedData));
     }
 

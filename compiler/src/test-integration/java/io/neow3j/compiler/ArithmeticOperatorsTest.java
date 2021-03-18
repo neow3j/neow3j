@@ -1,30 +1,32 @@
 package io.neow3j.compiler;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import java.io.IOException;
 import java.util.List;
 
-import io.neow3j.protocol.core.methods.response.StackItem;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static io.neow3j.contract.ContractParameter.integer;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
-public class ArithmeticOperatorsTest extends ContractTest {
+public class ArithmeticOperatorsTest {
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(ArithmeticOperatorsTestContract.class.getName());
-    }
+    @Rule
+    public TestName testName = new TestName();
+
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            ArithmeticOperatorsTestContract.class.getName());
 
     @Test
     public void allOperators() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.integer(-100),
-                ContractParameter.integer(30));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-100),
+                integer(30));
 
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(-70));
@@ -36,7 +38,7 @@ public class ArithmeticOperatorsTest extends ContractTest {
 
     @Test
     public void allAssignmentOperators() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(ContractParameter.integer(-100));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-100));
 
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(-90));
@@ -48,9 +50,8 @@ public class ArithmeticOperatorsTest extends ContractTest {
 
     @Test
     public void addAndIncrement() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.integer(-100),
-                ContractParameter.integer(100));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-100),
+                integer(100));
 
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(0));
@@ -60,9 +61,8 @@ public class ArithmeticOperatorsTest extends ContractTest {
 
     @Test
     public void incrementAndAdd() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.integer(-100),
-                ContractParameter.integer(100));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-100),
+                integer(100));
 
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(1));
@@ -72,9 +72,8 @@ public class ArithmeticOperatorsTest extends ContractTest {
 
     @Test
     public void subtractAndDecrement() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.integer(-100),
-                ContractParameter.integer(100));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-100),
+                integer(100));
 
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(-200));
@@ -84,9 +83,8 @@ public class ArithmeticOperatorsTest extends ContractTest {
 
     @Test
     public void decrementAndSubtract() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
-                ContractParameter.integer(-100),
-                ContractParameter.integer(100));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-100),
+                integer(100));
 
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(-201));

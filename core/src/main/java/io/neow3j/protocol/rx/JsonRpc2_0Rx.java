@@ -79,10 +79,10 @@ public class JsonRpc2_0Rx {
 
         if (ascending) {
             return Observables.range(startBlockNumber, endBlockNumber)
-                    .flatMap(i -> neow3j.getBlock(new BlockParameterIndex(i), fullTransactionObjects).observable());
+                    .flatMap(i -> neow3j.getBlock(i, fullTransactionObjects).observable());
         } else {
             return Observables.range(startBlockNumber, endBlockNumber, false)
-                    .flatMap(i -> neow3j.getBlock(new BlockParameterIndex(i), fullTransactionObjects).observable());
+                    .flatMap(i -> neow3j.getBlock(i, fullTransactionObjects).observable());
         }
     }
 
@@ -149,7 +149,7 @@ public class JsonRpc2_0Rx {
     public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects, long pollingInterval) {
         return neoBlockObservable(pollingInterval)
                 .flatMap(blockIndex ->
-                        neow3j.getBlock(new BlockParameterIndex(blockIndex), fullTransactionObjects).observable());
+                        neow3j.getBlock(blockIndex, fullTransactionObjects).observable());
     }
 
     private static List<Transaction> toTransactions(NeoGetBlock neoGetBlock) {

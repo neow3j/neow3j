@@ -1,5 +1,20 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.Hash256;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.contracts.PolicyContract;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
+
+import static io.neow3j.TestProperties.policyContractHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
@@ -7,36 +22,24 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.contract.Hash256;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.contracts.PolicyContract;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.List;
-import org.junit.BeforeClass;
-import org.junit.Test;
+public class PolicyContractIntegrationTest {
 
-public class PolicyContractTest extends ContractTest {
+    @Rule
+    public TestName testName = new TestName();
 
-    public static final long MAX_BLOCK_SYSTEM_FEE = 9000L * 100_000_000L; // GAS fractions
-    public static final long MAX_BLOCK_SIZE = 1024 * 256;
-    public static final long MAX_TRANSACTIONS_PER_BLOCK = 512;
     public static final long FEE_PER_BYTE = 1000L; // GAS fractions
     public static final int DEFAULT_EXEC_FEE_FACTOR = 30;
     public static final int DEFAULT_STORAGE_PRICE = 100000;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(PolicyContractTestContract.class.getName());
-    }
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            PolicyContractIntegrationTestContract.class.getName());
 
     @Test
     public void setAndGetFeePerByte() throws IOException {
         int newFee = 1;
-        signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(integer(newFee));
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(newFee));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(FEE_PER_BYTE)));
@@ -45,36 +48,38 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void blockAndUnblockAccountAndIsBlocked() throws Throwable {
-        signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction("isBlocked",
-                hash160(defaultAccount.getScriptHash()));
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction("isBlocked",
+                hash160(ct.getDefaultAccount().getScriptHash()));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
 
         // Block the account
-        Hash256 txHash = invokeFunctionAndAwaitExecution("blockAccount",
-                hash160(defaultAccount.getScriptHash()));
-        assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution("blockAccount",
+                hash160(ct.getDefaultAccount().getScriptHash()));
+        assertTrue(ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was blocked.
-        response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
+        response = ct.callInvokeFunction("isBlocked",
+                hash160(ct.getDefaultAccount().getScriptHash()));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
         // Unblock the account
-        txHash = invokeFunctionAndAwaitExecution("unblockAccount",
-                hash160(defaultAccount.getScriptHash()));
-        assertTrue(neow3j.getApplicationLog(txHash).send().getApplicationLog()
+        txHash = ct.invokeFunctionAndAwaitExecution("unblockAccount",
+                hash160(ct.getDefaultAccount().getScriptHash()));
+        assertTrue(ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was unblocked.
-        response = callInvokeFunction("isBlocked", hash160(defaultAccount.getScriptHash()));
+        response = ct.callInvokeFunction("isBlocked",
+                hash160(ct.getDefaultAccount().getScriptHash()));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
     public void setAndGetExecFeeFactor() throws IOException {
-        signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(integer(300));
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(300));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(),
@@ -84,8 +89,8 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void setAndGetStoragePrice() throws IOException {
-        signAsCommittee();
-        NeoInvokeFunction response = callInvokeFunction(integer(1000000));
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1000000));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(),
@@ -95,12 +100,12 @@ public class PolicyContractTest extends ContractTest {
 
     @Test
     public void getHash() throws Throwable {
-        NeoInvokeFunction response = callInvokeFunction();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(io.neow3j.contract.PolicyContract.SCRIPT_HASH.toString()));
+                is(policyContractHash()));
     }
 
-    static class PolicyContractTestContract {
+    static class PolicyContractIntegrationTestContract {
 
         public static int[] setAndGetFeePerByte(int newFee) {
             int[] sizes = new int[2];

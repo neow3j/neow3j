@@ -66,6 +66,7 @@ import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -123,10 +124,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoBlockHash> getBlockHash(BlockParameterIndex blockIndex) {
+    public Request<?, NeoBlockHash> getBlockHash(BigInteger blockIndex) {
         return new Request<>(
                 "getblockhash",
-                singletonList(blockIndex.getBlockIndex()),
+                singletonList(blockIndex),
                 neow3jService,
                 NeoBlockHash.class);
     }
@@ -207,12 +208,12 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetBlock> getBlock(BlockParameterIndex blockIndex,
+    public Request<?, NeoGetBlock> getBlock(BigInteger blockIndex,
             boolean returnFullTransactionObjects) {
         if (returnFullTransactionObjects) {
             return new Request<>(
                     "getblock",
-                    asList(blockIndex.getBlockIndex(), 1),
+                    asList(blockIndex, 1),
                     neow3jService,
                     NeoGetBlock.class);
         } else {
@@ -228,10 +229,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetRawBlock> getRawBlock(BlockParameterIndex blockIndex) {
+    public Request<?, NeoGetRawBlock> getRawBlock(BigInteger blockIndex) {
         return new Request<>(
                 "getblock",
-                asList(blockIndex.getBlockIndex(), 0),
+                asList(blockIndex, 0),
                 neow3jService,
                 NeoGetRawBlock.class);
     }
@@ -300,10 +301,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetBlock> getBlockHeader(BlockParameterIndex blockIndex) {
+    public Request<?, NeoGetBlock> getBlockHeader(BigInteger blockIndex) {
         return new Request<>(
                 "getblockheader",
-                asList(blockIndex.getBlockIndex(), 1),
+                asList(blockIndex, 1),
                 neow3jService,
                 NeoGetBlock.class);
     }
@@ -344,10 +345,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex) {
+    public Request<?, NeoGetRawBlock> getRawBlockHeader(BigInteger blockIndex) {
         return new Request<>(
                 "getblockheader",
-                asList(blockIndex.getBlockIndex(), 0),
+                asList(blockIndex, 0),
                 neow3jService,
                 NeoGetRawBlock.class);
     }
@@ -1194,10 +1195,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetStateRoot> getStateRoot(BlockParameterIndex blockIndex) {
+    public Request<?, NeoGetStateRoot> getStateRoot(BigInteger blockIndex) {
         return new Request<>(
                 "getstateroot",
-                singletonList(blockIndex.getBlockIndex()),
+                singletonList(blockIndex),
                 neow3jService,
                 NeoGetStateRoot.class);
     }

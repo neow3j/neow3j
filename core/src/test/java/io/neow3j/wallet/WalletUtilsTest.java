@@ -1,5 +1,8 @@
 package io.neow3j.wallet;
 
+import static io.neow3j.TestProperties.defaultAccountAddress;
+import static io.neow3j.TestProperties.defaultAccountPassword;
+import static io.neow3j.TestProperties.defaultAccountPrivateKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -40,25 +43,14 @@ public class WalletUtilsTest {
 
     @Test
     public void testGenerateWalletFile() throws Exception {
-        // Used neo-core with address version 0x17 to generate test data.
-        String expectedAdr = "NbT3sj3nWX3NUMbxVrphzGkS5yX5BHgRAb";
-        byte[] sk = Numeric.hexStringToByteArray(
-                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
-        // Get a copy of the private key for the assertion below, because it will be erased when
-        // the wallet is encrypted.
-        byte[] skCopy = new byte[sk.length];
-        System.arraycopy(sk, 0, skCopy, 0, sk.length);
-        ECKeyPair pair = ECKeyPair.create(sk);
-        String pw = "password";
-        String fileName = WalletUtils.generateWalletFile(pw, pair, this.tempDir);
+        ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(defaultAccountPrivateKey()));
+        String fileName = WalletUtils.generateWalletFile(defaultAccountPassword(), pair, this.tempDir);
         Path p = Paths.get(this.tempDir.getPath(), fileName);
         Wallet loadedWallet = Wallet.fromNEP6Wallet(p.toFile());
-        loadedWallet.decryptAllAccounts(pw);
-        assertThat(loadedWallet.getAccounts().get(0).getAddress(), is(expectedAdr));
-        // After calling generateWalletFile the wallet got encrypted and the private key erased.
-        // Thus, for comparing the loaded wallet, the ECKeyPair has to be re-instantiated from the
-        // private key.
-        assertThat(loadedWallet.getAccounts().get(0).getECKeyPair(), is(ECKeyPair.create(skCopy)));
+        loadedWallet.decryptAllAccounts(defaultAccountPassword());
+        assertThat(loadedWallet.getAccounts().get(0).getAddress(), is(defaultAccountAddress()));
+        assertThat(loadedWallet.getAccounts().get(0).getECKeyPair(),
+                is(ECKeyPair.create(Numeric.hexStringToByteArray(defaultAccountPrivateKey()))));
     }
 
     @Test

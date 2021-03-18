@@ -1,27 +1,32 @@
 package io.neow3j.compiler;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Helper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import java.io.IOException;
 import java.util.List;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
-public class ObjectsTest extends ContractTest {
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(ObjectsContract.class.getName());
-    }
+public class ObjectsTest {
+
+    @Rule
+    public TestName testName = new TestName();
+
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            ObjectsTestContract.class.getName());
 
     @Test
     public void instantiateObject() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.string("Neo"), // 0x4e656f
                 ContractParameter.integer(1));
 
@@ -31,7 +36,7 @@ public class ObjectsTest extends ContractTest {
 
     @Test
     public void returnObject() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.string("Neo"), // 0x4e656f
                 ContractParameter.integer(1));
 
@@ -42,7 +47,7 @@ public class ObjectsTest extends ContractTest {
 
     @Test
     public void passObjectAsArgument() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(ContractParameter.array(
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, ContractParameter.array(
                 ContractParameter.string("Neo"), /* 0x4e656f*/
                 ContractParameter.integer(1)));
 
@@ -51,7 +56,7 @@ public class ObjectsTest extends ContractTest {
     }
 
 
-    static class ObjectsContract {
+    static class ObjectsTestContract {
 
         public static byte[] instantiateObject(String s, int i) {
             MyClass c = new MyClass(s, i);
@@ -59,8 +64,8 @@ public class ObjectsTest extends ContractTest {
         }
 
         public static MyClass returnObject(String s, int i) {
-                MyClass c = new MyClass(s, i);
-                return c;
+            MyClass c = new MyClass(s, i);
+            return c;
         }
 
         public static byte[] passObjectAsArgument(MyClass c) {

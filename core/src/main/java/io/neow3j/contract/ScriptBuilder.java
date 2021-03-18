@@ -12,10 +12,13 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+@SuppressWarnings("unchecked")
 public class ScriptBuilder {
 
     private DataOutputStream stream;
@@ -155,7 +158,9 @@ public class ScriptBuilder {
             case ARRAY:
                 pushArray((ContractParameter[]) value);
                 break;
-            // TODO: Add a case for type MAP.
+            case MAP:
+                pushMap((HashMap<ContractParameter, ContractParameter>) value);
+                break;
             case ANY:
                 if (value == null) {
                     opCode(OpCode.PUSHNULL);
@@ -287,9 +292,23 @@ public class ScriptBuilder {
             pushParam(params[i]);
         }
         pushInteger(params.length);
-        opCode(OpCode.PACK);
+        pack();
         return this;
     }
+
+    public ScriptBuilder pushMap(HashMap<ContractParameter, ContractParameter> map) {
+        opCode(OpCode.NEWMAP);
+        if (map != null) {
+            for (Map.Entry<ContractParameter, ContractParameter> entry : map.entrySet()) {
+                opCode(OpCode.DUP);
+                pushParam(entry.getKey());
+                pushParam(entry.getValue());
+                opCode(OpCode.SETITEM);
+            }
+        }
+        return this;
+    }
+
 
     public ScriptBuilder pack() {
         opCode(OpCode.PACK);
@@ -348,8 +367,7 @@ public class ScriptBuilder {
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
-                .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
                 .toArray();
     }
 
@@ -367,8 +385,8 @@ public class ScriptBuilder {
         encodedPublicKeys.forEach(builder::pushData);
         return builder
                 .pushInteger(encodedPublicKeys.size())
-                .opCode(OpCode.PUSHNULL)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1)
+                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG)
                 .toArray();
     }
+
 }

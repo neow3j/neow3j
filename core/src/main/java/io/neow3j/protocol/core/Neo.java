@@ -64,7 +64,7 @@ public interface Neo {
 
     Request<?, NeoBlockHash> getBestBlockHash();
 
-    Request<?, NeoBlockHash> getBlockHash(BlockParameterIndex blockIndex);
+    Request<?, NeoBlockHash> getBlockHash(BigInteger blockIndex);
 
     Request<?, NeoGetBlock> getBlock(Hash256 blockHash, boolean returnFullTransactionObjects);
 
@@ -74,10 +74,9 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlock(String blockHash);
 
-    Request<?, NeoGetBlock> getBlock(BlockParameterIndex blockIndex,
-            boolean returnFullTransactionObjects);
+    Request<?, NeoGetBlock> getBlock(BigInteger blockIndex, boolean returnFullTransactionObjects);
 
-    Request<?, NeoGetRawBlock> getRawBlock(BlockParameterIndex blockIndex);
+    Request<?, NeoGetRawBlock> getRawBlock(BigInteger blockIndex);
 
     Request<?, NeoBlockHeaderCount> getBlockHeaderCount();
 
@@ -87,13 +86,13 @@ public interface Neo {
 
     Request<?, NeoGetBlock> getBlockHeader(String hash);
 
-    Request<?, NeoGetBlock> getBlockHeader(BlockParameterIndex blockIndex);
+    Request<?, NeoGetBlock> getBlockHeader(BigInteger blockIndex);
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 hash);
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(String hash);
 
-    Request<?, NeoGetRawBlock> getRawBlockHeader(BlockParameterIndex blockIndex);
+    Request<?, NeoGetRawBlock> getRawBlockHeader(BigInteger blockIndex);
 
     Request<?, NeoGetNativeContracts> getNativeContracts();
 
@@ -234,7 +233,7 @@ public interface Neo {
 
     //region StateService
 
-    Request<?, NeoGetStateRoot> getStateRoot(BlockParameterIndex blockIndex);
+    Request<?, NeoGetStateRoot> getStateRoot(BigInteger blockIndex);
 
     Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractScriptHash,
             String storageKeyHex);

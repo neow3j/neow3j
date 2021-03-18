@@ -8,8 +8,10 @@ import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.util.List;
 
@@ -19,20 +21,21 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class ContractEventsIntegrationTest extends ContractTest {
+public class ContractEventsIntegrationTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     private static final int FEE_PER_BYTE = 1000;
     private static final int EXEC_FEE_FACTOR = 30;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(ContractEvents.class.getName());
-    }
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(ContractEvents.class.getName());
 
     @Test
     public void fireTwoEvents() throws Throwable {
-        Hash256 txHash = invokeFunctionAndAwaitExecution();
-        NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName);
+        NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
         List<NeoApplicationLog.Execution.Notification> notifications =
@@ -55,8 +58,8 @@ public class ContractEventsIntegrationTest extends ContractTest {
 
     @Test
     public void fireEventWithMethodReturnValueAsArgument() throws Throwable {
-        Hash256 txHash = invokeFunctionAndAwaitExecution();
-        NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName);
+        NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
         List<NeoApplicationLog.Execution.Notification> notifications =
@@ -71,11 +74,11 @@ public class ContractEventsIntegrationTest extends ContractTest {
 
     @Test
     public void fireEvent() throws Throwable {
-        Hash256 txHash = invokeFunctionAndAwaitExecution(
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName,
                 byteArray("0f46dc4287b70117ce8354924b5cb3a47215ad93"),
                 byteArray("d6c712eb53b1a130f59fd4e5864bdac27458a509"),
                 integer(10));
-        NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
+        NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
         List<NeoApplicationLog.Execution.Notification> notifications =

@@ -7,17 +7,17 @@ import static org.hamcrest.Matchers.notNullValue;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
-
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -41,6 +41,15 @@ public class Await {
     public static void waitUntilBalancesIsGreaterThanZero(String address,
             Hash160 token, Neow3j neow3j) {
         waitUntil(callableGetBalance(address, token, neow3j), Matchers.greaterThan(0L));
+    }
+
+    /**
+     * Checks and waits until the block count (height) is greater than zero.
+     *
+     * @param neow3j  The {@code Neow3j} object to use to connect to a neo-node.
+     */
+    public static void waitUntilBlockCountIsGreaterThanZero(Neow3j neow3j) {
+        waitUntil(callableGetBlockCount(neow3j), Matchers.greaterThan(BigInteger.ZERO));
     }
 
     /**
@@ -77,8 +86,32 @@ public class Await {
         waitUntil(callableGetBalance(token, neow3j), greaterThanOrEqualTo(new BigDecimal(amount)));
     }
 
-    private static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
-        await().timeout(MAX_WAIT_TIME, TimeUnit.SECONDS).until(callable, matcher);
+    /**
+     * Waits until the {@code callable} function returns a condition that is satisfied by the
+     * {@code matcher}. Uses the default {@link Await#MAX_WAIT_TIME} and {@link TimeUnit#SECONDS}.
+     *
+     * @param callable The function to be called.
+     * @param matcher  The condition to be evaluated.
+     * @param <T>      The type that the callable function and condition should be compatible with.
+     */
+    public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
+        waitUntil(callable, matcher, MAX_WAIT_TIME, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Waits until the {@code callable} function returns a condition that is satisfied by the
+     * {@code matcher}.
+     *
+     * @param callable      The function to be called.
+     * @param matcher       The condition to be evaluated.
+     * @param maxWaitTime   The maximum amount of time to wait.
+     * @param unit          The time unit for the {@code maxWaitTime} param.
+     * @param <T>           The type that the callable function and condition should be
+     *                      compatible with.
+     */
+    public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher,
+            int maxWaitTime, TimeUnit unit) {
+        await().timeout(maxWaitTime, unit).until(callable, matcher);
     }
 
     private static Callable<Boolean> callableGetContractState(Hash160 contractHash160,
@@ -93,6 +126,17 @@ public class Await {
                 return response.getContractState().getHash().equals(contractHash160);
             } catch (IOException e) {
                 return false;
+            }
+        };
+    }
+
+    private static Callable<BigInteger> callableGetBlockCount(Neow3j neow3j) {
+        return () -> {
+            try {
+                NeoBlockCount getBlockCount = neow3j.getBlockCount().send();
+                return getBlockCount.getBlockIndex();
+            } catch (IOException e) {
+                return BigInteger.ZERO;
             }
         };
     }

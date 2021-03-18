@@ -34,15 +34,15 @@ public class NeoBlock {
     @JsonProperty("index")
     private long index;
 
+    @JsonProperty("primary")
+    private int primary;
+
     @JsonProperty("nextconsensus")
     private String nextConsensus;
 
     @JsonProperty("witnesses")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<NeoWitness> witnesses;
-
-    @JsonProperty("consensusdata")
-    private ConsensusData consensusData;
 
     @JsonProperty("tx")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -60,9 +60,9 @@ public class NeoBlock {
     }
 
     public NeoBlock(Hash256 hash, long size, int version, Hash256 prevBlockHash,
-            Hash256 merkleRootHash, long time, long index, String nextConsensus,
-            List<NeoWitness> witnesses, ConsensusData consensusData, List<Transaction> transactions,
-            int confirmations, Hash256 nextBlockHash) {
+            Hash256 merkleRootHash, long time, long index, int primary, String nextConsensus,
+            List<NeoWitness> witnesses, List<Transaction> transactions, int confirmations,
+            Hash256 nextBlockHash) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -70,9 +70,9 @@ public class NeoBlock {
         this.merkleRootHash = merkleRootHash;
         this.time = time;
         this.index = index;
+        this.primary = primary;
         this.nextConsensus = nextConsensus;
         this.witnesses = witnesses;
-        this.consensusData = consensusData;
         this.transactions = transactions;
         this.confirmations = confirmations;
         this.nextBlockHash = nextBlockHash;
@@ -106,16 +106,16 @@ public class NeoBlock {
         return index;
     }
 
+    public int getPrimary() {
+        return primary;
+    }
+
     public String getNextConsensus() {
         return nextConsensus;
     }
 
     public List<NeoWitness> getWitnesses() {
         return witnesses;
-    }
-
-    public ConsensusData getConsensusData() {
-        return consensusData;
     }
 
     public List<Transaction> getTransactions() {
@@ -144,12 +144,12 @@ public class NeoBlock {
                 getTime() == neoBlock.getTime() &&
                 getIndex() == neoBlock.getIndex() &&
                 getConfirmations() == neoBlock.getConfirmations() &&
+                getPrimary() == neoBlock.getPrimary() &&
                 Objects.equals(getHash(), neoBlock.getHash()) &&
                 Objects.equals(getPrevBlockHash(), neoBlock.getPrevBlockHash()) &&
                 Objects.equals(getMerkleRootHash(), neoBlock.getMerkleRootHash()) &&
                 Objects.equals(getNextConsensus(), neoBlock.getNextConsensus()) &&
                 Objects.equals(getWitnesses(), neoBlock.getWitnesses()) &&
-                Objects.equals(getConsensusData(), neoBlock.getConsensusData()) &&
                 Objects.equals(getTransactions(), neoBlock.getTransactions()) &&
                 Objects.equals(getNextBlockHash(), neoBlock.getNextBlockHash());
     }
@@ -157,8 +157,9 @@ public class NeoBlock {
     @Override
     public int hashCode() {
         return Objects.hash(getHash(), getSize(), getVersion(), getPrevBlockHash(),
-                getMerkleRootHash(), getTime(), getIndex(), getNextConsensus(), getWitnesses(),
-                getConsensusData(), getTransactions(), getConfirmations(), getNextBlockHash());
+                getMerkleRootHash(), getTime(), getIndex(), getPrimary(), getNextConsensus(),
+                getWitnesses(), getTransactions(), getConfirmations(),
+                getNextBlockHash());
     }
 
     @Override
@@ -171,9 +172,9 @@ public class NeoBlock {
                 ", merkleRootHash='" + merkleRootHash + '\'' +
                 ", time=" + time +
                 ", index=" + index +
+                ", primary=" + primary +
                 ", nextConsensus='" + nextConsensus + '\'' +
                 ", witnesses=" + witnesses +
-                ", consensusData=" + consensusData +
                 ", transactions=" + transactions +
                 ", confirmations=" + confirmations +
                 ", nextBlockHash='" + nextBlockHash + '\'' +

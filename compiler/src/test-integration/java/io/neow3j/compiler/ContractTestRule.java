@@ -1,7 +1,37 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.TestProperties.defaultAccountWIF;
-import static io.neow3j.compiler.TestProperties.neo3PrivateNetContainerImg;
+import io.neow3j.NeoTestContainer;
+import io.neow3j.contract.ContractManagement;
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
+import io.neow3j.contract.SmartContract;
+import io.neow3j.crypto.Base64;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoGetStorage;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Signer;
+import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.Account;
+import io.neow3j.wallet.Wallet;
+import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import org.testcontainers.containers.ContainerState;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+
+import static io.neow3j.TestProperties.defaultAccountWIF;
+import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
+import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -9,115 +39,59 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.ContractManagement;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
-import io.neow3j.contract.SmartContract;
-import io.neow3j.crypto.Base64;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
-import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetStorage;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Signer;
-import io.neow3j.utils.Await;
-import io.neow3j.utils.Numeric;
-import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
-import java.io.IOException;
-import java.math.BigDecimal;
+public class ContractTestRule implements TestRule {
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
+    public static final String VM_STATE_HALT = "HALT";
+    public static final String VM_STATE_FAULT = "FAULT";
 
-public class ContractTest {
-
-    static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
-    static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
-    static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
-    static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
-    static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
-    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
-    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
-    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
-    static final String ORACLECONFIG_FILE_SOURCE = "/node-config/oracle.config.json";
-    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
-            + ".json";
-
-    // This is the port of one of the .NET nodes which is exposed internally by the container.
-    static final int EXPOSED_JSONRPC_PORT = 40332;
-
-    protected static final String VM_STATE_HALT = "HALT";
-    protected static final String VM_STATE_FAULT = "FAULT";
-
-    @ClassRule
-    public static GenericContainer<?> privateNetContainer = new GenericContainer<>(
-            DockerImageName.parse(neo3PrivateNetContainerImg()))
-            .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
-            .withCopyFileToContainer(
-                    MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
-                    WALLET_FILE_DESTINATION)
-            .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
-            .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
-            .withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY)
-            .withExposedPorts(EXPOSED_JSONRPC_PORT)
-            .waitingFor(Wait.forListeningPort());
-
-    protected static Account defaultAccount;
-    protected static Account committee;
-    protected static Wallet wallet;
-    protected static Neow3j neow3j;
-    protected static SmartContract contract;
-    protected static String contractName;
-    protected static Hash256 deployTxHash;
-    protected static Hash256 blockHashOfDeployTx;
-
-    @Rule
-    public TestName testName = new TestName();
+    private NeoTestContainer neoTestContainer;
+    private final String fullyQualifiedClassName;
+    private Account defaultAccount;
+    private Account committee;
+    private Wallet wallet;
+    private Neow3j neow3j;
+    private SmartContract contract;
+    private String contractName;
+    private Hash256 deployTxHash;
+    private Hash256 blockHashOfDeployTx;
 
     private boolean signAsCommittee = false;
     private boolean signWithDefaultAccount = false;
 
-    protected String getTestName() {
-        return testName.getMethodName();
+    public ContractTestRule(String fullyQualifiedName) {
+        this.fullyQualifiedClassName = fullyQualifiedName;
     }
 
-    protected static void setUp(String name) throws Throwable {
+    @Override
+    public Statement apply(Statement base, Description description) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                neoTestContainer = new NeoTestContainer();
+                try {
+                    neoTestContainer.start();
+                    setUp(fullyQualifiedClassName, getNodeUrl(neoTestContainer));
+                    base.evaluate();
+                } finally {
+                    neoTestContainer.stop();
+                }
+            }
+        };
+    }
+
+    public void setUp(String name, String containerURL) throws Throwable {
         defaultAccount = Account.fromWIF(defaultAccountWIF());
         committee = Account.createMultiSigAccount(
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         wallet = Wallet.withAccounts(defaultAccount, committee);
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(privateNetContainer)));
-        neow3j.setNetworkMagicNumber(769);
+        neow3j = neow3j.build(new HttpService(containerURL));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractName = name;
         contract = deployContract(contractName);
-        Await.waitUntilContractIsDeployed(contract.getScriptHash(), neow3j);
+        waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
     }
 
-    protected static String getResultFilePath(String testClassName, String methodName) {
-        return "responses/" + testClassName + "/" + methodName + ".json";
-    }
-
-    protected static String getNodeUrl(GenericContainer container) {
-        return "http://" + container.getContainerIpAddress() +
-                ":" + container.getMappedPort(EXPOSED_JSONRPC_PORT);
-    }
-
-    protected static SmartContract deployContract(String fullyQualifiedName) throws Throwable {
+    protected SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
         NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
@@ -131,13 +105,13 @@ public class ContractTest {
 
         // Remember the transaction and its block.
         deployTxHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(deployTxHash, neow3j);
+        waitUntilTransactionIsExecuted(deployTxHash, neow3j);
         blockHashOfDeployTx = neow3j.getTransaction(deployTxHash).send()
                 .getTransaction().getBlockHash();
         // Get the contract address from the application logs.
         NeoApplicationLog appLog = neow3j.getApplicationLog(
                 response.getSendRawTransaction().getHash()).send().getApplicationLog();
-        Execution execution = appLog.getExecutions().get(0);
+        NeoApplicationLog.Execution execution = appLog.getExecutions().get(0);
         if (execution.getState().equals(VM_STATE_FAULT)) {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
@@ -145,6 +119,38 @@ public class ContractTest {
         String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
         Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(scriptHashHex));
         return new SmartContract(scriptHash, neow3j);
+    }
+
+    public Account getDefaultAccount() {
+        return defaultAccount;
+    }
+
+    public Account getCommittee() {
+        return committee;
+    }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public Neow3j getNeow3j() {
+        return neow3j;
+    }
+
+    public SmartContract getContract() {
+        return contract;
+    }
+
+    public String getContractName() {
+        return contractName;
+    }
+
+    public Hash256 getDeployTxHash() {
+        return deployTxHash;
+    }
+
+    public Hash256 getBlockHashOfDeployTx() {
+        return blockHashOfDeployTx;
     }
 
     /**
@@ -155,8 +161,9 @@ public class ContractTest {
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    protected NeoInvokeFunction callInvokeFunction(ContractParameter... params) throws IOException {
-        return callInvokeFunction(getTestName(), params);
+    public NeoInvokeFunction callInvokeFunction(TestName testName, ContractParameter... params)
+            throws IOException {
+        return callInvokeFunction(testName.getMethodName(), params);
     }
 
     /**
@@ -168,7 +175,7 @@ public class ContractTest {
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    protected NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
+    public NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
             throws IOException {
 
         if (signAsCommittee) {
@@ -190,9 +197,9 @@ public class ContractTest {
      * @param key           The key to check.
      * @param expectedValue The expected value.
      */
-    protected void assertStorageContains(String key, String expectedValue) throws IOException {
-        NeoGetStorage response = neow3j.getStorage(contract.getScriptHash().toString(),
-                        Numeric.toHexStringNoPrefix(key.getBytes(UTF_8))).send();
+    public void assertStorageContains(String key, String expectedValue) throws IOException {
+        NeoGetStorage response = neow3j.getStorage(getContract().getScriptHash().toString(),
+                Numeric.toHexStringNoPrefix(key.getBytes(UTF_8))).send();
         String value = new String(Base64.decode(response.getStorage()), UTF_8);
 
         assertThat(value, is(expectedValue));
@@ -205,8 +212,8 @@ public class ContractTest {
      * @param params The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    protected Hash256 invokeFunction(ContractParameter... params) throws Throwable {
-        return invokeFunction(getTestName(), params);
+    public Hash256 invokeFunction(TestName testName, ContractParameter... params) throws Throwable {
+        return invokeFunction(testName.getMethodName(), params);
     }
 
     /**
@@ -219,10 +226,10 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static Hash256 transferGas(Hash160 to, String amount) throws Throwable {
+    public Hash256 transferGas(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
-        return gasToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
-                new BigDecimal(amount), committee.getScriptHash())
+        return gasToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
+                committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -238,10 +245,10 @@ public class ContractTest {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    protected static Hash256 transferNeo(Hash160 to, String amount) throws Throwable {
+    public Hash256 transferNeo(Hash160 to, String amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
-        return neoToken.transferFromSpecificAccounts(wallet, defaultAccount.getScriptHash(),
-                new BigDecimal(amount), committee.getScriptHash())
+        return neoToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
+                committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -255,7 +262,7 @@ public class ContractTest {
      * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    protected Hash256 invokeFunction(String function, ContractParameter... params)
+    public Hash256 invokeFunction(String function, ContractParameter... params)
             throws Throwable {
 
         Signer signer;
@@ -281,47 +288,53 @@ public class ContractTest {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
+     * the transaction.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected Hash256 invokeFunctionAndAwaitExecution(ContractParameter... params) throws Throwable {
-        Hash256 txHash = invokeFunction(params);
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
-        return txHash;
+    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, ContractParameter... params)
+            throws Throwable {
+        return invokeFunctionAndAwaitExecution(testName.getMethodName(), params);
     }
 
     /**
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTest#committee} is used to sign the transaction.
+     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
+     * the transaction.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    protected Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
+    public Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
             throws Throwable {
 
         Hash256 txHash = invokeFunction(function, params);
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }
 
-    protected void assertVMExitedWithHalt(Hash256 hash) throws IOException {
+    public void assertVMExitedWithHalt(Hash256 hash) throws IOException {
         NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
         assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
                 is(VM_STATE_HALT));
     }
 
-    protected void signAsCommittee() {
+    public void signWithCommitteeAccount() {
+        signWithDefaultAccount = false;
         signAsCommittee = true;
     }
 
-    protected void signWithDefaultAccount() {
+    public void signWithDefaultAccount() {
+        signAsCommittee = false;
         signWithDefaultAccount = true;
     }
 
+    public ContainerState getNeoTestContainer() {
+        return neoTestContainer;
+    }
 }

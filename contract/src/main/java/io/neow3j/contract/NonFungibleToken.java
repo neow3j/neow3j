@@ -92,26 +92,6 @@ public class NonFungibleToken extends Token {
         return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenId)));
     }
 
-    private Hash160 callFunctionReturningScriptHash(String function,
-            List<ContractParameter> params) throws IOException {
-
-        StackItem stackItem = callInvokeFunction(function, params)
-                .getInvocationResult().getStack().get(0);
-        return extractScriptHash(stackItem);
-    }
-
-    private Hash160 extractScriptHash(StackItem item) {
-        if (!item.getType().equals(BYTE_STRING)) {
-            throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
-        }
-        try {
-            return Hash160.fromAddress(item.getAddress());
-        } catch (StackItemCastException e) {
-            throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
-                    "expected format.", e);
-        }
-    }
-
     /**
      * Gets the balance of the token with {@code tokenID} for the given account.
      * <p>

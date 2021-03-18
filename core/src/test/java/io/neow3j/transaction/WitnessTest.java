@@ -1,13 +1,5 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.constants.OpCode.PUSH2;
-import static io.neow3j.constants.OpCode.PUSHDATA1;
-import static io.neow3j.constants.OpCode.PUSHNULL;
-import static io.neow3j.constants.OpCode.SYSCALL;
-import static io.neow3j.utils.ArrayUtils.concatenate;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.Hash160;
@@ -19,6 +11,7 @@ import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
+import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -28,7 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import static io.neow3j.constants.OpCode.PUSH2;
+import static io.neow3j.constants.OpCode.PUSHDATA1;
+import static io.neow3j.constants.OpCode.SYSCALL;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class WitnessTest {
 
@@ -55,9 +53,8 @@ public class WitnessTest {
         expected = "" +
                 PUSHDATA1.toString() + "21" + // 33 bytes of public key
                 Numeric.toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) + // pubKey
-                PUSHNULL.toString() +
                 SYSCALL.toString() + // syscall to...
-                InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash(); // ...signature verification
+                InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         assertArrayEquals(
                 Numeric.hexStringToByteArray(expected),
@@ -107,7 +104,7 @@ public class WitnessTest {
                 + Numeric.toHexStringNoPrefix(signatures.get(0).getConcatenated()) // key 1 sig
                 + PUSHDATA1.toString() + "40" // PUSHDATA 64 bytes
                 + Numeric.toHexStringNoPrefix(signatures.get(1).getConcatenated()) // key 2 sig
-                + "71" // 113 bytes follow as verification script
+                + "70" // 113 bytes follow as verification script
                 + PUSH2.toString() // signing threshold
                 + PUSHDATA1 + "21" // PUSHDATA 33 bytes
                 + Numeric.toHexStringNoPrefix(publicKeys.get(0).getEncoded(true)) // public key 1
@@ -116,9 +113,8 @@ public class WitnessTest {
                 + PUSHDATA1 + "21" // PUSHDATA 33 bytes
                 + Numeric.toHexStringNoPrefix(publicKeys.get(2).getEncoded(true)) // public key 3
                 + OpCode.PUSH3.toString() // m = 3, number of keys
-                + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getHash();
+                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash();
 
         // Test create from BigIntegers
         Witness script = Witness.createMultiSigWitness(signingThreshold, signatures, publicKeys);
@@ -158,7 +154,7 @@ public class WitnessTest {
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + Numeric.toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) // pubKey
                 + SYSCALL.toString() // syscall to...
-                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash(); // ...signature verification
+                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         String serializedWitness = ""
                 + "42" // VarInt 66 bytes for invocation script
@@ -189,9 +185,8 @@ public class WitnessTest {
         String expectedVerificationScript = ""
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + pk // public key
-                + PUSHNULL.toString()
                 + SYSCALL.toString() // syscall to...
-                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash(); // ...signature verification
+                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         byte[] expectedHash = Hash.sha256AndThenRipemd160(
                 Numeric.hexStringToByteArray(expectedVerificationScript));

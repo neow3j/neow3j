@@ -1,26 +1,31 @@
 package io.neow3j.compiler;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.utils.Numeric;
-import java.util.List;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
-public class DeploymentMethodIntegrationTest extends ContractTest {
+import java.util.List;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(DeploymentMethodIntegrationTestContract.class.getName());
-    }
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+public class DeploymentMethodIntegrationTest {
+
+    @Rule
+    public TestName testName = new TestName();
+
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            DeploymentMethodIntegrationTestContract.class.getName());
 
     @Test
     public void deployingContractWithDeployMethod() throws Throwable {
-        List<Execution> executions = neow3j.getApplicationLog(deployTxHash).send()
+        List<Execution> executions = ct.getNeow3j().getApplicationLog(ct.getDeployTxHash()).send()
                 .getApplicationLog().getExecutions();
 
         assertThat(executions.get(0).getNotifications().get(0).getEventName(), is("onDeploy"));
@@ -31,7 +36,8 @@ public class DeploymentMethodIntegrationTest extends ContractTest {
         assertThat(executions.get(0).getNotifications().get(1).getEventName(), is("Deploy"));
         String message = executions.get(0).getNotifications().get(1).getState().getList().get(0)
                 .getHexString();
-        assertThat(Numeric.reverseHexString(message), is(contract.getScriptHash().toString()));
+        assertThat(Numeric.reverseHexString(message),
+                is(ct.getContract().getScriptHash().toString()));
     }
 
     static class DeploymentMethodIntegrationTestContract {

@@ -1,5 +1,9 @@
 package io.neow3j.contract;
 
+import static io.neow3j.TestProperties.committeeAccountScriptHash;
+import static io.neow3j.TestProperties.defaultAccountAddress;
+import static io.neow3j.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.TestProperties.defaultAccountScriptHash;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
@@ -124,9 +128,8 @@ public class Hash160Test {
         byte[] script = Numeric.hexStringToByteArray(""
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
-                + OpCode.PUSHNULL.toString()
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash()
+                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash()
         );
 
         Hash160 hash = Hash160.fromPublicKey(Numeric.hexStringToByteArray(key));
@@ -135,13 +138,9 @@ public class Hash160Test {
 
     @Test
     public void fromPublicKeyByteArrays() {
-        final String key1 = "02249425a06b5a1f8e6133fc79afa2c2b8430bf9327297f176761df79e8d8929c5";
-        final String key2 = "031ccaaa46df7c494f442698c8c17c09311e3615c2dc042cbd3afeaba60fa40740";
-        String expectedScriptHash = "aaf6f842f8450c4226bfaee5da2fab983cfa07e6";
-        List<byte[]> keys = Arrays.asList(
-                Numeric.hexStringToByteArray(key1), Numeric.hexStringToByteArray(key2));
-        Hash160 hash = Hash160.fromPublicKeys(keys, 2);
-        assertThat(hash.toString(), is(expectedScriptHash));
+        Hash160 hash = Hash160.fromPublicKeys(
+                Arrays.asList(Numeric.hexStringToByteArray(defaultAccountPublicKey())), 1);
+        assertThat(hash.toString(), is(committeeAccountScriptHash()));
     }
 
     @Test
@@ -159,9 +158,8 @@ public class Hash160Test {
     public void toAddress() {
         final String key = "031ccaaa46df7c494f442698c8c17c09311e3615c2dc042cbd3afeaba60fa40740";
         // Address generated from the above key, with address version 0x35.
-        final String expectedAddress = "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy";
-        Hash160 sh = Hash160.fromPublicKey(Numeric.hexStringToByteArray(key));
-        assertThat(sh.toAddress(), is(expectedAddress));
+        Hash160 sh = Hash160.fromPublicKey(Numeric.hexStringToByteArray(defaultAccountPublicKey()));
+        assertThat(sh.toAddress(), is(defaultAccountAddress()));
     }
 
     @Test
