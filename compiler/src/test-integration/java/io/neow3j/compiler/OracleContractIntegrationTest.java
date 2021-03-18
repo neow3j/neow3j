@@ -10,7 +10,6 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.OracleContract;
 import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.protocol.core.BlockParameter;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -112,7 +111,7 @@ public class OracleContractIntegrationTest {
         BigInteger height = ct.getNeow3j().getTransactionHeight(txHash).send().getHeight();
         AtomicReference<Transaction> tx = new AtomicReference<>();
         Disposable subscribe = ct.getNeow3j().catchUpToLatestAndSubscribeToNewBlocksObservable(
-                BlockParameter.valueOf(height), true).subscribe(b -> {
+                height, true).subscribe(b -> {
             List<Transaction> transactions = b.getBlock().getTransactions();
             if (!transactions.isEmpty() && transactions.get(0).getAttributes().stream()
                     .anyMatch(a -> a.getType().equals(TransactionAttributeType.ORACLE_RESPONSE))) {

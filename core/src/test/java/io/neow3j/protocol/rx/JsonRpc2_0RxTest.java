@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
-import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
@@ -56,9 +55,7 @@ public class JsonRpc2_0RxTest {
         }
 
         Observable<NeoGetBlock> observable = neow3j.replayBlocksObservable(
-            new BlockParameterIndex(BigInteger.ZERO),
-            new BlockParameterIndex(BigInteger.valueOf(2)),
-            false);
+                BigInteger.ZERO, BigInteger.valueOf(2), false);
 
         CountDownLatch transactionLatch = new CountDownLatch(neoGetBlocks.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
@@ -96,10 +93,7 @@ public class JsonRpc2_0RxTest {
         }
 
         Observable<NeoGetBlock> observable = neow3j.replayBlocksObservable(
-            new BlockParameterIndex(BigInteger.ZERO),
-            new BlockParameterIndex(BigInteger.valueOf(2)),
-            false,
-            false);
+            BigInteger.ZERO, BigInteger.valueOf(2), false, false);
 
         CountDownLatch transactionLatch = new CountDownLatch(neoGetBlocks.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
@@ -154,9 +148,7 @@ public class JsonRpc2_0RxTest {
         stubbingNeoBlockCount.thenReturn(neoBlockCount);
 
         Observable<NeoGetBlock> observable = neow3j
-            .catchUpToLatestAndSubscribeToNewBlocksObservable(
-                new BlockParameterIndex(BigInteger.ZERO),
-                false);
+            .catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger.ZERO, false);
 
         CountDownLatch transactionLatch = new CountDownLatch(expected.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
@@ -240,9 +232,7 @@ public class JsonRpc2_0RxTest {
         stubbingNeoBlockCount.thenReturn(neoBlockCount);
 
         Observable<NeoGetBlock> observable = neow3j
-            .catchUpToLatestAndSubscribeToNewBlocksObservable(
-                new BlockParameterIndex(BigInteger.ZERO),
-                false);
+            .catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger.ZERO, false);
 
         CountDownLatch transactionLatch = new CountDownLatch(expected.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
