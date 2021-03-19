@@ -9,7 +9,6 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
@@ -25,7 +24,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.crypto.Hash.sha256;
 
 public class Transaction extends NeoSerializable {
@@ -203,8 +201,7 @@ public class Transaction extends NeoSerializable {
                         neoGetBlock.getBlock().getTransactions().stream()
                                 .anyMatch(tx -> tx.getHash().equals(getTxId()));
 
-        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(
-                new BlockParameterIndex(blockIndexWhenSent), true)
+        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(blockIndexWhenSent, true)
                 .takeUntil(pred)
                 .filter(pred)
                 .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());

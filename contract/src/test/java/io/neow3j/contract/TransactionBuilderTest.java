@@ -27,7 +27,6 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.WIF;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -988,7 +987,7 @@ public class TransactionBuilderTest {
         Neow3j neowSpy = Mockito.spy(neow);
         Hash256 txHash = new Hash256("0570dc3a7dcca42d295d75caeef084c2452e69fd9e663f4d63ce4d970b49836a");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
-                Mockito.any(BlockParameterIndex.class), Mockito.any(boolean.class)))
+                new BigInteger("1000"), true))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
                         createBlock(1002, createTx(txHash)))).getMock();
         Transaction tx = new NeoToken(neowSpy)

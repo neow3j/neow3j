@@ -1261,14 +1261,14 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     @Override
     public Observable<NeoGetBlock> replayBlocksObservable(
-            BlockParameter startBlock, BlockParameter endBlock,
+            BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects) {
         return neow3jRx.replayBlocksObservable(startBlock, endBlock, fullTransactionObjects);
     }
 
     @Override
     public Observable<NeoGetBlock> replayBlocksObservable(
-            BlockParameter startBlock, BlockParameter endBlock,
+            BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects, boolean ascending) {
         return neow3jRx.replayBlocksObservable(startBlock, endBlock,
                 fullTransactionObjects, ascending);
@@ -1276,7 +1276,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     @Override
     public Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BlockParameter startBlock, boolean fullTransactionObjects,
+            BigInteger startBlock, boolean fullTransactionObjects,
             Observable<NeoGetBlock> onCompleteObservable) {
         return neow3jRx.catchUpToLatestBlockObservable(
                 startBlock, fullTransactionObjects, onCompleteObservable);
@@ -1284,13 +1284,13 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     @Override
     public Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BlockParameter startBlock, boolean fullTransactionObjects) {
+            BigInteger startBlock, boolean fullTransactionObjects) {
         return neow3jRx.catchUpToLatestBlockObservable(startBlock, fullTransactionObjects);
     }
 
     @Override
     public Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(
-            BlockParameter startBlock, boolean fullTransactionObjects) {
+            BigInteger startBlock, boolean fullTransactionObjects) {
         return neow3jRx.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 startBlock, fullTransactionObjects, blockTime);
     }

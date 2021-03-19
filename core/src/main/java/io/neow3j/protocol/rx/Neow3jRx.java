@@ -1,10 +1,11 @@
 package io.neow3j.protocol.rx;
 
-import io.neow3j.protocol.core.BlockParameter;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.reactivex.Observable;
+
+import java.math.BigInteger;
 
 /**
  * The Observables JSON-RPC client event API.
@@ -31,7 +32,7 @@ public interface Neow3jRx {
      * @return Observable to emit these blocks
      */
     Observable<NeoGetBlock> replayBlocksObservable(
-            BlockParameter startBlock, BlockParameter endBlock,
+            BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects);
 
     /**
@@ -47,7 +48,7 @@ public interface Neow3jRx {
      * @return Observable to emit these blocks
      */
     Observable<NeoGetBlock> replayBlocksObservable(
-            BlockParameter startBlock, BlockParameter endBlock,
+            BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects, boolean ascending);
 
     /**
@@ -66,7 +67,7 @@ public interface Neow3jRx {
      * @return Observable to emit all requested blocks
      */
     Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BlockParameter startBlock, boolean fullTransactionObjects,
+            BigInteger startBlock, boolean fullTransactionObjects,
             Observable<NeoGetBlock> onCompleteObservable);
 
     /**
@@ -79,7 +80,7 @@ public interface Neow3jRx {
      * @return Observable to emit all requested blocks
      */
     Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BlockParameter startBlock, boolean fullTransactionObjects);
+            BigInteger startBlock, boolean fullTransactionObjects);
 
     /**
      * Creates an Observable that emits all blocks from the requested block number to the most
@@ -92,6 +93,6 @@ public interface Neow3jRx {
      * @return Observable to emit all requested blocks and future
      */
     Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(
-            BlockParameter startBlock, boolean fullTransactionObjects);
+            BigInteger startBlock, boolean fullTransactionObjects);
 
 }
