@@ -49,7 +49,7 @@ public class DeploymentMethodIntegrationTest {
             if (update) {
                 return;
             }
-            onDeploy.notify("Deployed contract.", data);
+            onDeploy.fire("Deployed contract.", data);
         }
     }
 }

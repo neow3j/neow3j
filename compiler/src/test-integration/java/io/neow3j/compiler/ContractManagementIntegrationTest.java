@@ -280,7 +280,7 @@ public class ContractManagementIntegrationTest {
 
         @OnDeployment
         public static void deploy(Object data, boolean update) {
-            onUpdate.notify(data);
+            onUpdate.fire(data);
         }
 
     }
@@ -293,7 +293,7 @@ public class ContractManagementIntegrationTest {
 
         @OnDeployment
         public static void deploy(Object data, boolean update) {
-            onUpdate.notify(data);
+            onUpdate.fire(data);
         }
 
     }
@@ -304,7 +304,7 @@ public class ContractManagementIntegrationTest {
 
         @OnDeployment
         public static void deploy(Object data, boolean update) {
-            onDeployWithoutData.notify("Deploy without data.");
+            onDeployWithoutData.fire("Deploy without data.");
         }
     }
 
@@ -314,7 +314,7 @@ public class ContractManagementIntegrationTest {
 
         @OnDeployment
         public static void deploy(Object data, boolean update) {
-            onDeployWithData.notify(data);
+            onDeployWithData.fire(data);
         }
     }
 
