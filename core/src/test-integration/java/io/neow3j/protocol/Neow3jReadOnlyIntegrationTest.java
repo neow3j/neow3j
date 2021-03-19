@@ -98,7 +98,6 @@ public class Neow3jReadOnlyIntegrationTest {
 
     // Hashes of the transactions that are sent before all tests.
     private static Hash256 txHashNeoTransfer;
-    private static Hash256 txHashGasTransfer;
 
     private static final int TX_VERSION = 0;
     private static final String TX_SCRIPT_NEO_TRANSFER =
@@ -132,7 +131,8 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static Neow3j neow3j;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
+    public static NeoTestContainer neoTestContainer =
+            new NeoTestContainer("/node-config/configReadTests.json");
 
     private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
@@ -145,7 +145,7 @@ public class Neow3jReadOnlyIntegrationTest {
         waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH, getNeow3j());
         // make a transaction that can be used for the tests
         txHashNeoTransfer = transferNeo(TX_RECIPIENT_1, TX_AMOUNT_NEO);
-        txHashGasTransfer = transferGas(TX_RECIPIENT_1, TX_AMOUNT_GAS);
+        transferGas(TX_RECIPIENT_1, TX_AMOUNT_GAS);
     }
 
     private static Hash256 transferNeo(String toAddress, String amount) throws IOException {
@@ -932,7 +932,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
         assertThat(transfer.getAssetHash(), is(GAS_HASH));
         assertNull(transfer.getTransferAddress());
-        assertThat(transfer.getAmount(), is("150000000"));
+        assertThat(new BigInteger(transfer.getAmount()),
+                greaterThanOrEqualTo(new BigInteger("50000000")));
         assertThat(transfer.getBlockIndex(), greaterThanOrEqualTo(1L));
         assertThat(transfer.getTransferNotifyIndex(), is(0L));
         assertThat(transfer.getTxHash(), instanceOf(Hash256.class));
@@ -1029,7 +1030,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(state.getList().get(1).getType(), is(StackItemType.BYTE_STRING));
         assertThat(state.getList().get(1).getAddress(), is(committeeAccountAddress()));
         assertThat(state.getList().get(2).getType(), is(StackItemType.INTEGER));
-        assertThat(state.getList().get(2).getInteger(), is(new BigInteger("150000000")));
+        assertThat(state.getList().get(2).getInteger(),
+                greaterThanOrEqualTo(new BigInteger("50000000")));
     }
 
     // StateService
