@@ -26,8 +26,12 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     static final int EXPOSED_JSONRPC_PORT = 40332;
 
     public NeoTestContainer() {
+        this(CONFIG_FILE_SOURCE);
+    }
+
+    public NeoTestContainer(String configFileSource) {
         super(DockerImageName.parse(neo3PrivateNetContainerImg()));
-        withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
+        withClasspathResourceMapping(configFileSource, CONFIG_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         withCopyFileToContainer(MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
                 WALLET_FILE_DESTINATION);
