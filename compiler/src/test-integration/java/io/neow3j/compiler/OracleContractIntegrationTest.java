@@ -156,7 +156,7 @@ public class OracleContractIntegrationTest {
         }
 
         public static void callback(String url, String userdata, int code, String result) {
-            callbackEvent.notify(url, userdata, code, result);
+            callbackEvent.fire(url, userdata, code, result);
         }
     }
 

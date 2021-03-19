@@ -102,17 +102,17 @@ public class ContractEventsIntegrationTest {
         private static Event2Args<Integer, Integer> event4;
 
         public static boolean fireTwoEvents() {
-            event1.notify("event text", 10);
-            event2.notify("event text", 10, true, "more text", "an object");
+            event1.fire("event text", 10);
+            event2.fire("event text", 10, true, "more text", "an object");
             return true;
         }
 
         public static void fireEventWithMethodReturnValueAsArgument() {
-            event4.notify(PolicyContract.getFeePerByte(), PolicyContract.getExecFeeFactor());
+            event4.fire(PolicyContract.getFeePerByte(), PolicyContract.getExecFeeFactor());
         }
 
         public static void fireEvent(byte[] from, byte[] to, int i) {
-            event3.notify(from, to, new int[]{i});
+            event3.fire(from, to, new int[]{i});
         }
     }
 

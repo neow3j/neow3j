@@ -218,8 +218,8 @@ public class CompilerExceptionsTest {
         private static Event1Arg<String> event2;
 
         public static boolean method() throws Exception {
-            event1.notify("notification");
-            event2.notify("notification");
+            event1.fire("notification");
+            event2.fire("notification");
             return true;
         }
     }
