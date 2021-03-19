@@ -6,7 +6,6 @@ import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.objectweb.asm.Type.getInternalName;
 
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
@@ -23,7 +22,7 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
-import io.neow3j.devpack.events.Event;
+import io.neow3j.devpack.events.EventInterface;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
@@ -689,7 +688,7 @@ public class Compiler {
             return false;
         }
         return clazz.getInterfaces() != null && clazz.getInterfaces().length == 1
-                && clazz.getInterfaces()[0].equals(Event.class);
+                && clazz.getInterfaces()[0].equals(EventInterface.class);
     }
 
 }

@@ -1,5 +1,7 @@
 package io.neow3j.devpack.events;
 
-public interface Event {
+public class Event implements EventInterface {
+
+    public native void trigger();
 
 }

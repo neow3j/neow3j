@@ -45,6 +45,7 @@ import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableIns
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static org.objectweb.asm.Type.getInternalName;
 
 public class ObjectsConverter implements Converter {
@@ -57,7 +58,7 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
-        switch (opcode) {
+        switch (requireNonNull(opcode)) {
             case PUTSTATIC:
                 addStoreStaticField(insn, neoMethod);
                 break;
