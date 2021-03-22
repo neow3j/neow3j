@@ -5,6 +5,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.Transaction;
 import io.reactivex.Observable;
 
+import java.io.IOException;
 import java.math.BigInteger;
 
 /**
@@ -43,7 +44,8 @@ public interface Neow3jRx {
      * @param endBlock               block number to finish with
      * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise
      *                               transaction hashes
-     * @param ascending              if true, emits blocks in ascending order between range, otherwise
+     * @param ascending              if true, emits blocks in ascending order between range,
+     *                               otherwise
      *                               in descending order
      * @return Observable to emit these blocks
      */
@@ -57,7 +59,7 @@ public interface Neow3jRx {
      * Observable is invoked.</p>
      * <br>
      * <p>To automatically subscribe to new blocks, use
-     * {@link #catchUpToLatestAndSubscribeToNewBlocksObservable(BlockParameter, boolean)}.</p>
+     * {@link #catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger, boolean)}.</p>
      *
      * @param startBlock             the block number we wish to request from
      * @param fullTransactionObjects if we require full {@link Transaction} objects to be provided
@@ -95,4 +97,16 @@ public interface Neow3jRx {
     Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(
             BigInteger startBlock, boolean fullTransactionObjects);
 
+
+    /**
+     * Creates an Observable that emits new blocks as they are created on the blockchain
+     * (starting from the latest block).
+     *
+     * @param fullTransactionObjects if we require full {@link Transaction} objects to be provided
+     *                               in the {@link NeoBlock} responses
+     * @return Observable to emit all requested blocks and future
+     * @throws IOException if the latest block number cannot be fetched.
+     */
+    Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects)
+            throws IOException;
 }

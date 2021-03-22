@@ -1296,6 +1296,13 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     @Override
+    public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects)
+            throws IOException {
+
+        return neow3jRx.subscribeToNewBlocksObservable(fullTransactionObjects, blockTime);
+    }
+
+    @Override
     public void shutdown() {
         scheduledExecutorService.shutdown();
         try {
