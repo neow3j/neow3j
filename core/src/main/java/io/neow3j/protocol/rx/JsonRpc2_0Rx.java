@@ -12,6 +12,7 @@ import io.reactivex.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -137,8 +138,16 @@ public class JsonRpc2_0Rx {
                         neow3j.getBlock(blockIndex, fullTransactionObjects).observable());
     }
 
+    public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects,
+            long pollingInterval) throws IOException {
+
+        return catchUpToLatestAndSubscribeToNewBlocksObservable(
+                getLatestBlockNumber(), fullTransactionObjects, pollingInterval);
+
+    }
+
     private static List<Transaction> toTransactions(NeoGetBlock neoGetBlock) {
-        return neoGetBlock.getBlock().getTransactions().stream().collect(Collectors.toList());
+        return new ArrayList<>(neoGetBlock.getBlock().getTransactions());
     }
 
     private BigInteger getLatestBlockNumber() throws IOException {
