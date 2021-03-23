@@ -1,13 +1,35 @@
 package io.neow3j.protocol.core;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.AnyStackItem;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.protocol.core.methods.response.ConsensusData;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
 import io.neow3j.protocol.core.methods.response.ContractNef;
 import io.neow3j.protocol.core.methods.response.HighPriorityAttribute;
 import io.neow3j.protocol.core.methods.response.NeoAddress;
@@ -20,6 +42,9 @@ import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
 import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.methods.response.NeoGetProof;
+import io.neow3j.protocol.core.methods.response.NeoGetStateHeight;
+import io.neow3j.protocol.core.methods.response.NeoGetStateRoot;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
@@ -52,6 +77,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
+import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
 import io.neow3j.protocol.core.methods.response.NeoWitness;
 import io.neow3j.protocol.core.methods.response.OracleResponseAttribute;
 import io.neow3j.protocol.core.methods.response.OracleResponseCode;
@@ -64,25 +90,8 @@ import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsNull.nullValue;
-
 import java.math.BigInteger;
 import java.util.List;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -146,7 +155,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoBlockHash blockHash = deserialiseResponse(NeoBlockHash.class);
         assertThat(blockHash.getBlockHash(),
-                is("0x3d1e051247f246f60dd2ba4f90f799578b5d394157b1f2b012c016b29536b899"));
+                is(new Hash256("0x3d1e051247f246f60dd2ba4f90f799578b5d394157b1f2b012c016b29536b899")));
     }
 
     @Test
@@ -161,7 +170,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoBlockHash neoBestBlockHash = deserialiseResponse(NeoBlockHash.class);
         assertThat(neoBestBlockHash.getBlockHash(),
-                is("0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3"));
+                is(new Hash256("0x147ad6a26f1d5a9bb2bea3f0b2ca9fab3824873beaf8887e87d08c8fd98a81b3")));
     }
 
     @Test
@@ -185,10 +194,6 @@ public class ResponseTest extends ResponseTester {
                         "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ],\n" +
-                        "        \"consensusdata\": {\n" +
-                        "            \"primary\": 0,\n" +
-                        "            \"nonce\": \"45fba5f11cb04667\"\n" +
-                        "        },\n" +
                         "        \"tx\": [\n" +
                         "            {\n" +
                         "                \"hash\": \"0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510\",\n" +
@@ -250,13 +255,13 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlock.getBlock(), is(notNullValue()));
 
         assertThat(getBlock.getBlock().getHash(),
-                is("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8"));
+                is(new Hash256("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8")));
         assertThat(getBlock.getBlock().getSize(), is(1217L));
         assertThat(getBlock.getBlock().getVersion(), is(0));
         assertThat(getBlock.getBlock().getPrevBlockHash(),
-                is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
+                is(new Hash256("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39")));
         assertThat(getBlock.getBlock().getMerkleRootHash(),
-                is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
+                is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getNextConsensus(),
@@ -275,19 +280,13 @@ public class ResponseTest extends ResponseTester {
                 )
         );
 
-        assertThat(getBlock.getBlock().getConsensusData(), is(notNullValue()));
-        assertThat(
-                getBlock.getBlock().getConsensusData(),
-                is(new ConsensusData(0,"45fba5f11cb04667"))
-        );
-
         assertThat(getBlock.getBlock().getTransactions(), hasSize(2));
 
         assertThat(
                 getBlock.getBlock().getTransactions(),
                 containsInAnyOrder(
                         new Transaction(
-                                "0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510",
+                                new Hash256("0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510"),
                                 267L,
                                 0,
                                 565086327L,
@@ -295,21 +294,20 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                asList(
-                                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                        asList(WitnessScope.CALLED_BY_ENTRY))
+                                singletonList(new TransactionSigner(
+                                        "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                        singletonList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
-                                asList(),
+                                emptyList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                asList(
-                                        new NeoWitness(
+                                singletonList(new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                                         )
                                 )
                         ),
                         new Transaction(
-                                "0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510",
+                                new Hash256("0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510"),
                                 267L,
                                 0,
                                 565086327L,
@@ -317,13 +315,13 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                asList(
-                                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                                asList(WitnessScope.CALLED_BY_ENTRY))
+                                singletonList(new TransactionSigner(
+                                        "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                        singletonList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
-                                asList(),
+                                emptyList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                asList(
+                                singletonList(
                                         new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
@@ -335,7 +333,8 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
         assertThat(getBlock.getBlock().getNextBlockHash(),
-                is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
+                is(new Hash256(
+                        "0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643")));
     }
 
     @Test
@@ -369,13 +368,13 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlock.getBlock(), is(notNullValue()));
 
         assertThat(getBlock.getBlock().getHash(),
-                is("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8"));
+                is(new Hash256("0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8")));
         assertThat(getBlock.getBlock().getSize(), is(1217L));
         assertThat(getBlock.getBlock().getVersion(), is(0));
         assertThat(getBlock.getBlock().getPrevBlockHash(),
-                is("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39"));
+                is(new Hash256("0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39")));
         assertThat(getBlock.getBlock().getMerkleRootHash(),
-                is("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7"));
+                is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getNextConsensus(),
@@ -394,13 +393,11 @@ public class ResponseTest extends ResponseTester {
                 )
         );
 
-        assertThat(getBlock.getBlock().getConsensusData(), is(nullValue()));
-
         assertThat(getBlock.getBlock().getTransactions(), is(nullValue()));
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
         assertThat(getBlock.getBlock().getNextBlockHash(),
-                is("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643"));
+                is(new Hash256("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643")));
     }
 
     @Test
@@ -455,302 +452,327 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetNativeContracts() {
         buildResponse("{\n" +
-                "    \"jsonrpc\": \"2.0\",\n" +
-                "    \"id\": 1,\n" +
-                "    \"result\": [\n" +
-                "        {\n" +
-                "            \"id\": -4,\n" +
-                "            \"hash\": \"0x70e2301955bf1e74cbb31d18c2f96972abadb328\",\n" +
-                "            \"nef\": {\n" +
-                "                \"magic\": 860243278,\n" +
-                "                \"compiler\": \"neo-core-v3.0\",\n" +
-                "                \"tokens\": [],\n" +
-                "                \"script\": \"APxBGvd7Zw==\",\n" +
-                "                \"checksum\": 3155977747\n" +
-                "            },\n" +
-                "            \"manifest\": {\n" +
-                "                \"name\": \"GasToken\",\n" +
-                "                \"groups\": [],\n" +
-                "                \"supportedstandards\": [\n" +
-                "                    \"NEP-17\"\n" +
-                "                ],\n" +
-                "                \"abi\": {\n" +
-                "                    \"methods\": [\n" +
-                "                        {\n" +
-                "                            \"name\": \"balanceOf\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"account\",\n" +
-                "                                    \"type\": \"Hash160\"\n" +
-                "                                }\n" +
-                "                            ],\n" +
-                "                            \"returntype\": \"Integer\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": true\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"decimals\",\n" +
-                "                            \"parameters\": [],\n" +
-                "                            \"returntype\": \"Integer\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": true\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"symbol\",\n" +
-                "                            \"parameters\": [],\n" +
-                "                            \"returntype\": \"String\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": true\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"totalSupply\",\n" +
-                "                            \"parameters\": [],\n" +
-                "                            \"returntype\": \"Integer\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": true\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"transfer\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"from\",\n" +
-                "                                    \"type\": \"Hash160\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"to\",\n" +
-                "                                    \"type\": \"Hash160\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"amount\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"data\",\n" +
-                "                                    \"type\": \"Any\"\n" +
-                "                                }\n" +
-                "                            ],\n" +
-                "                            \"returntype\": \"Boolean\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": false\n" +
-                "                        }\n" +
-                "                    ],\n" +
-                "                    \"events\": [\n" +
-                "                        {\n" +
-                "                            \"name\": \"Transfer\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"from\",\n" +
-                "                                    \"type\": \"Hash160\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"to\",\n" +
-                "                                    \"type\": \"Hash160\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"amount\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                }\n" +
-                "                            ]\n" +
-                "                        }\n" +
-                "                    ]\n" +
-                "                },\n" +
-                "                \"permissions\": [\n" +
-                "                    {\n" +
-                "                        \"contract\": \"*\",\n" +
-                "                        \"methods\": \"*\"\n" +
-                "                    }\n" +
-                "                ],\n" +
-                "                \"trusts\": [],\n" +
-                "                \"extra\": null\n" +
-                "            },\n" +
-                "            \"activeblockindex\": 0\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"id\": -6,\n" +
-                "            \"hash\": \"0x597b1471bbce497b7809e2c8f10db67050008b02\",\n" +
-                "            \"nef\": {\n" +
-                "                \"magic\": 860243278,\n" +
-                "                \"compiler\": \"neo-core-v3.0\",\n" +
-                "                \"tokens\": [],\n" +
-                "                \"script\": \"APpBGvd7Zw==\",\n" +
-                "                \"checksum\": 3289425910\n" +
-                "            },\n" +
-                "            \"manifest\": {\n" +
-                "                \"name\": \"RoleManagement\",\n" +
-                "                \"groups\": [],\n" +
-                "                \"supportedstandards\": [],\n" +
-                "                \"abi\": {\n" +
-                "                    \"methods\": [\n" +
-                "                        {\n" +
-                "                            \"name\": \"designateAsRole\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"role\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"nodes\",\n" +
-                "                                    \"type\": \"Array\"\n" +
-                "                                }\n" +
-                "                            ],\n" +
-                "                            \"returntype\": \"Void\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": false\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"getDesignatedByRole\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"role\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"index\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                }\n" +
-                "                            ],\n" +
-                "                            \"returntype\": \"Array\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": true\n" +
-                "                        }\n" +
-                "                    ],\n" +
-                "                    \"events\": []\n" +
-                "                },\n" +
-                "                \"permissions\": [\n" +
-                "                    {\n" +
-                "                        \"contract\": \"*\",\n" +
-                "                        \"methods\": \"*\"\n" +
-                "                    }\n" +
-                "                ],\n" +
-                "                \"trusts\": [],\n" +
-                "                \"extra\": null\n" +
-                "            },\n" +
-                "            \"activeblockindex\": 0\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"id\": -7,\n" +
-                "            \"hash\": \"0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee\",\n" +
-                "            \"nef\": {\n" +
-                "                \"magic\": 860243278,\n" +
-                "                \"compiler\": \"neo-core-v3.0\",\n" +
-                "                \"tokens\": [],\n" +
-                "                \"script\": \"APlBGvd7Zw==\",\n" +
-                "                \"checksum\": 3902663397\n" +
-                "            },\n" +
-                "            \"manifest\": {\n" +
-                "                \"name\": \"OracleContract\",\n" +
-                "                \"groups\": [],\n" +
-                "                \"supportedstandards\": [],\n" +
-                "                \"abi\": {\n" +
-                "                    \"methods\": [\n" +
-                "                        {\n" +
-                "                            \"name\": \"finish\",\n" +
-                "                            \"parameters\": [],\n" +
-                "                            \"returntype\": \"Void\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": false\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"request\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"url\",\n" +
-                "                                    \"type\": \"String\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"filter\",\n" +
-                "                                    \"type\": \"String\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"callback\",\n" +
-                "                                    \"type\": \"String\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"userData\",\n" +
-                "                                    \"type\": \"Any\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"gasForResponse\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                }\n" +
-                "                            ],\n" +
-                "                            \"returntype\": \"Void\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": false\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"verify\",\n" +
-                "                            \"parameters\": [],\n" +
-                "                            \"returntype\": \"Boolean\",\n" +
-                "                            \"offset\": 0,\n" +
-                "                            \"safe\": true\n" +
-                "                        }\n" +
-                "                    ],\n" +
-                "                    \"events\": [\n" +
-                "                        {\n" +
-                "                            \"name\": \"OracleRequest\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"Id\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"RequestContract\",\n" +
-                "                                    \"type\": \"Hash160\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"Url\",\n" +
-                "                                    \"type\": \"String\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"Filter\",\n" +
-                "                                    \"type\": \"String\"\n" +
-                "                                }\n" +
-                "                            ]\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"name\": \"OracleResponse\",\n" +
-                "                            \"parameters\": [\n" +
-                "                                {\n" +
-                "                                    \"name\": \"Id\",\n" +
-                "                                    \"type\": \"Integer\"\n" +
-                "                                },\n" +
-                "                                {\n" +
-                "                                    \"name\": \"OriginalTx\",\n" +
-                "                                    \"type\": \"Hash256\"\n" +
-                "                                }\n" +
-                "                            ]\n" +
-                "                        }\n" +
-                "                    ]\n" +
-                "                },\n" +
-                "                \"permissions\": [\n" +
-                "                    {\n" +
-                "                        \"contract\": \"*\",\n" +
-                "                        \"methods\": \"*\"\n" +
-                "                    }\n" +
-                "                ],\n" +
-                "                \"trusts\": [],\n" +
-                "                \"extra\": null\n" +
-                "            },\n" +
-                "            \"activeblockindex\": 43\n" +
-                "        }\n" +
-                "    ]\n" +
-                "}");
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": [\n" +
+                        "        {\n" +
+                        "            \"id\": -6,\n" +
+                        "            \"hash\": \"0xd2a4cff31913016155e38e474a2c06d08be276cf\",\n" +
+                        "            \"nef\": {\n" +
+                        "                \"magic\": 860243278,\n" +
+                        "                \"compiler\": \"neo-core-v3.0\",\n" +
+                        "                \"tokens\": [],\n" +
+                        "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
+                        "                \"checksum\": 2663858513\n" +
+                        "            },\n" +
+                        "            \"manifest\": {\n" +
+                        "                \"name\": \"GasToken\",\n" +
+                        "                \"groups\": [],\n" +
+                        "                \"supportedstandards\": [\n" +
+                        "                    \"NEP-17\"\n" +
+                        "                ],\n" +
+                        "                \"abi\": {\n" +
+                        "                    \"methods\": [\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"balanceOf\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"account\",\n" +
+                        "                                    \"type\": \"Hash160\"\n" +
+                        "                                }\n" +
+                        "                            ],\n" +
+                        "                            \"returntype\": \"Integer\",\n" +
+                        "                            \"offset\": 0,\n" +
+                        "                            \"safe\": true\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"decimals\",\n" +
+                        "                            \"parameters\": [],\n" +
+                        "                            \"returntype\": \"Integer\",\n" +
+                        "                            \"offset\": 7,\n" +
+                        "                            \"safe\": true\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"symbol\",\n" +
+                        "                            \"parameters\": [],\n" +
+                        "                            \"returntype\": \"String\",\n" +
+                        "                            \"offset\": 14,\n" +
+                        "                            \"safe\": true\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"totalSupply\",\n" +
+                        "                            \"parameters\": [],\n" +
+                        "                            \"returntype\": \"Integer\",\n" +
+                        "                            \"offset\": 21,\n" +
+                        "                            \"safe\": true\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"transfer\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"from\",\n" +
+                        "                                    \"type\": \"Hash160\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"to\",\n" +
+                        "                                    \"type\": \"Hash160\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"amount\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"data\",\n" +
+                        "                                    \"type\": \"Any\"\n" +
+                        "                                }\n" +
+                        "                            ],\n" +
+                        "                            \"returntype\": \"Boolean\",\n" +
+                        "                            \"offset\": 28,\n" +
+                        "                            \"safe\": false\n" +
+                        "                        }\n" +
+                        "                    ],\n" +
+                        "                    \"events\": [\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"Transfer\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"from\",\n" +
+                        "                                    \"type\": \"Hash160\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"to\",\n" +
+                        "                                    \"type\": \"Hash160\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"amount\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                }\n" +
+                        "                            ]\n" +
+                        "                        }\n" +
+                        "                    ]\n" +
+                        "                },\n" +
+                        "                \"permissions\": [\n" +
+                        "                    {\n" +
+                        "                        \"contract\": \"*\",\n" +
+                        "                        \"methods\": \"*\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"trusts\": [],\n" +
+                        "                \"extra\": null\n" +
+                        "            },\n" +
+                        "            \"updatehistory\": [\n" +
+                        "                0\n" +
+                        "            ]\n" +
+                        "        },\n" +
+                        "        {\n" +
+                        "            \"id\": -8,\n" +
+                        "            \"hash\": \"0x49cf4e5378ffcd4dec034fd98a174c5491e395e2\",\n" +
+                        "            \"nef\": {\n" +
+                        "                \"magic\": 860243278,\n" +
+                        "                \"compiler\": \"neo-core-v3.0\",\n" +
+                        "                \"tokens\": [],\n" +
+                        "                \"script\": \"EEEa93tnQBBBGvd7Z0A=\",\n" +
+                        "                \"checksum\": 983638438\n" +
+                        "            },\n" +
+                        "            \"manifest\": {\n" +
+                        "                \"name\": \"RoleManagement\",\n" +
+                        "                \"groups\": [],\n" +
+                        "                \"supportedstandards\": [],\n" +
+                        "                \"abi\": {\n" +
+                        "                    \"methods\": [\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"designateAsRole\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"role\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"nodes\",\n" +
+                        "                                    \"type\": \"Array\"\n" +
+                        "                                }\n" +
+                        "                            ],\n" +
+                        "                            \"returntype\": \"Void\",\n" +
+                        "                            \"offset\": 0,\n" +
+                        "                            \"safe\": false\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"getDesignatedByRole\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"role\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"index\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                }\n" +
+                        "                            ],\n" +
+                        "                            \"returntype\": \"Array\",\n" +
+                        "                            \"offset\": 7,\n" +
+                        "                            \"safe\": true\n" +
+                        "                        }\n" +
+                        "                    ],\n" +
+                        "                    \"events\": []\n" +
+                        "                },\n" +
+                        "                \"permissions\": [\n" +
+                        "                    {\n" +
+                        "                        \"contract\": \"*\",\n" +
+                        "                        \"methods\": \"*\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"trusts\": [],\n" +
+                        "                \"extra\": null\n" +
+                        "            },\n" +
+                        "            \"updatehistory\": [\n" +
+                        "                0\n" +
+                        "            ]\n" +
+                        "        },\n" +
+                        "        {\n" +
+                        "            \"id\": -9,\n" +
+                        "            \"hash\": \"0xfe924b7cfe89ddd271abaf7210a80a7e11178758\",\n" +
+                        "            \"nef\": {\n" +
+                        "                \"magic\": 860243278,\n" +
+                        "                \"compiler\": \"neo-core-v3.0\",\n" +
+                        "                \"tokens\": [],\n" +
+                        "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
+                        "                \"checksum\": 2663858513\n" +
+                        "            },\n" +
+                        "            \"manifest\": {\n" +
+                        "                \"name\": \"OracleContract\",\n" +
+                        "                \"groups\": [],\n" +
+                        "                \"supportedstandards\": [],\n" +
+                        "                \"abi\": {\n" +
+                        "                    \"methods\": [\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"finish\",\n" +
+                        "                            \"parameters\": [],\n" +
+                        "                            \"returntype\": \"Void\",\n" +
+                        "                            \"offset\": 0,\n" +
+                        "                            \"safe\": false\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"getPrice\",\n" +
+                        "                            \"parameters\": [],\n" +
+                        "                            \"returntype\": \"Integer\",\n" +
+                        "                            \"offset\": 7,\n" +
+                        "                            \"safe\": true\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"request\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"url\",\n" +
+                        "                                    \"type\": \"String\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"filter\",\n" +
+                        "                                    \"type\": \"String\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"callback\",\n" +
+                        "                                    \"type\": \"String\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"userData\",\n" +
+                        "                                    \"type\": \"Any\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"gasForResponse\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                }\n" +
+                        "                            ],\n" +
+                        "                            \"returntype\": \"Void\",\n" +
+                        "                            \"offset\": 14,\n" +
+                        "                            \"safe\": false\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"setPrice\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"price\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                }\n" +
+                        "                            ],\n" +
+                        "                            \"returntype\": \"Void\",\n" +
+                        "                            \"offset\": 21,\n" +
+                        "                            \"safe\": false\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"verify\",\n" +
+                        "                            \"parameters\": [],\n" +
+                        "                            \"returntype\": \"Boolean\",\n" +
+                        "                            \"offset\": 28,\n" +
+                        "                            \"safe\": true\n" +
+                        "                        }\n" +
+                        "                    ],\n" +
+                        "                    \"events\": [\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"OracleRequest\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"Id\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"RequestContract\",\n" +
+                        "                                    \"type\": \"Hash160\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"Url\",\n" +
+                        "                                    \"type\": \"String\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"Filter\",\n" +
+                        "                                    \"type\": \"String\"\n" +
+                        "                                }\n" +
+                        "                            ]\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"name\": \"OracleResponse\",\n" +
+                        "                            \"parameters\": [\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"Id\",\n" +
+                        "                                    \"type\": \"Integer\"\n" +
+                        "                                },\n" +
+                        "                                {\n" +
+                        "                                    \"name\": \"OriginalTx\",\n" +
+                        "                                    \"type\": \"Hash256\"\n" +
+                        "                                }\n" +
+                        "                            ]\n" +
+                        "                        }\n" +
+                        "                    ]\n" +
+                        "                },\n" +
+                        "                \"permissions\": [\n" +
+                        "                    {\n" +
+                        "                        \"contract\": \"*\",\n" +
+                        "                        \"methods\": \"*\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"trusts\": [],\n" +
+                        "                \"extra\": null\n" +
+                        "            },\n" +
+                        "            \"updatehistory\": [\n" +
+                        "                0\n" +
+                        "            ]\n" +
+                        "        }\n" +
+                        "    ]\n" +
+                        "}"
+        );
 
         NeoGetNativeContracts getNativeContracts = deserialiseResponse(NeoGetNativeContracts.class);
-        List<ContractState> nativeContracts =
-                getNativeContracts.getNativeContracts();
+        List<ContractState> nativeContracts = getNativeContracts.getNativeContracts();
         assertThat(nativeContracts, hasSize(3));
         ContractState c1 = nativeContracts.get(0);
-        assertThat(c1.getId(), is(-4));
+        assertThat(c1.getId(), is(-6));
         assertNull(c1.getUpdateCounter());
-        assertThat(c1.getHash(), is("0x70e2301955bf1e74cbb31d18c2f96972abadb328"));
+        assertThat(c1.getHash(), is(new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")));
         ContractNef nef1 = c1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef1.getTokens(), hasSize(0));
-        assertThat(nef1.getScript(), is("APxBGvd7Zw=="));
-        assertThat(nef1.getChecksum(), is(3155977747L));
+        assertThat(nef1.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef1.getChecksum(), is(2663858513L));
         ContractManifest manifest1 = c1.getManifest();
         assertThat(manifest1.getName(), is("GasToken"));
         assertThat(manifest1.getGroups(), hasSize(0));
@@ -758,224 +780,175 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest1.getSupportedStandards().get(0), is("NEP-17"));
         assertThat(manifest1.getAbi().getMethods(), hasSize(5));
         assertThat(manifest1.getAbi().getEvents(), hasSize(1));
-        assertThat(c1.getActiveBlockIndex(), is(0));
+        assertThat(c1.getUpdateHistory(), hasSize(1));
+        assertThat(c1.getUpdateHistory(), contains(0));
 
         ContractState c2 = nativeContracts.get(1);
-        assertThat(c2.getId(), is(-6));
-        assertThat(c2.getHash(), is("0x597b1471bbce497b7809e2c8f10db67050008b02"));
+        assertThat(c2.getId(), is(-8));
+        assertThat(c2.getHash(), is(new Hash160("0x49cf4e5378ffcd4dec034fd98a174c5491e395e2")));
         ContractNef nef2 = c2.getNef();
         assertThat(nef2.getMagic(), is(860243278L));
         assertThat(nef2.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef2.getTokens(), hasSize(0));
-        assertThat(nef2.getScript(), is("APpBGvd7Zw=="));
-        assertThat(nef2.getChecksum(), is(3289425910L));
+        assertThat(nef2.getScript(), is("EEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef2.getChecksum(), is(983638438L));
         ContractManifest manifest2 = c2.getManifest();
         assertThat(manifest2.getName(), is("RoleManagement"));
         assertThat(manifest2.getGroups(), hasSize(0));
         assertThat(manifest2.getSupportedStandards(), hasSize(0));
         assertThat(manifest2.getAbi().getMethods(), hasSize(2));
         assertThat(manifest2.getAbi().getEvents(), hasSize(0));
-        assertThat(c2.getActiveBlockIndex(), is(0));
+        assertThat(c2.getUpdateHistory(), contains(0));
 
         ContractState c3 = nativeContracts.get(2);
-        assertThat(c3.getId(), is(-7));
-        assertThat(c3.getHash(), is("0x8dc0e742cbdfdeda51ff8a8b78d46829144c80ee"));
+        assertThat(c3.getId(), is(-9));
+        assertThat(c3.getHash(), is(new Hash160("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")));
         ContractNef nef3 = c3.getNef();
         assertThat(nef3.getMagic(), is(860243278L));
         assertThat(nef3.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef3.getTokens(), hasSize(0));
-        assertThat(nef3.getScript(), is("APlBGvd7Zw=="));
-        assertThat(nef3.getChecksum(), is(3902663397L));
+        assertThat(nef3.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef3.getChecksum(), is(2663858513L));
         ContractManifest manifest3 = c3.getManifest();
         assertThat(manifest3.getName(), is("OracleContract"));
         assertThat(manifest3.getGroups(), hasSize(0));
         assertThat(manifest3.getSupportedStandards(), hasSize(0));
-        assertThat(manifest3.getAbi().getMethods(), hasSize(3));
+        assertThat(manifest3.getAbi().getMethods(), hasSize(5));
         assertThat(manifest3.getAbi().getEvents(), hasSize(2));
-        assertThat(c3.getActiveBlockIndex(), is(43));
+        assertThat(c3.getUpdateHistory(), contains(0));
     }
 
     @Test
     public void testGetContractState() {
-        buildResponse(
-                "{\n" +
-                        "    \"jsonrpc\": \"2.0\",\n" +
-                        "    \"id\": 1,\n" +
-                        "    \"result\": {\n" +
-                        "        \"id\": -2,\n" +
-                        "        \"updatecounter\": 2,\n" +
-                        "        \"hash\": \"0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc\",\n" +
-                        "        \"nef\": {\n" +
-                        "            \"magic\": 860243278,\n" +
-                        "            \"compiler\": \"neo-core-v3.0\",\n" +
-                        "            \"tokens\": [],\n" +
-                        "            \"script\": \"QetD9PQ=\",\n" +
-                        "            \"checksum\": 3921333105\n" +
-                        "        },\n" +
-                        "        \"manifest\": {\n" +
-                        "            \"name\": \"GasToken\"," +
-                        "            \"groups\": [\n" +
-                        "                {\n" +
-                        "                    \"pubkey\": \"03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c\",\n" +
-                        "                    \"signature\": \"41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141\"\n" +
-                        "                }\n" +
-                        "            ],\n" +
-                        "            \"supportedstandards\": [" +
-                        "                \"NEP-17\"" +
-                        "            ],\n" +
-                        "            \"abi\": {\n" +
-                        "                \"methods\": [\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"name\",\n" +
-                        "                        \"parameters\": [],\n" +
-                        "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"String\",\n" +
-                        "                        \"safe\": true\n" +
-                        "                    },\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"symbol\",\n" +
-                        "                        \"parameters\": [],\n" +
-                        "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"String\",\n" +
-                        "                        \"safe\": true\n" +
-                        "                    },\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"decimals\",\n" +
-                        "                        \"parameters\": [],\n" +
-                        "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\",\n" +
-                        "                        \"safe\": true\n" +
-                        "                    },\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"totalSupply\",\n" +
-                        "                        \"parameters\": [],\n" +
-                        "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\",\n" +
-                        "                        \"safe\": true\n" +
-                        "                    },\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"balanceOf\",\n" +
-                        "                        \"parameters\": [\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"account\",\n" +
-                        "                                \"type\": \"ByteArray\"\n" +
-                        "                            }\n" +
-                        "                        ],\n" +
-                        "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Integer\",\n" +
-                        "                        \"safe\": true\n" +
-                        "                    },\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"setGasPerBlock\",\n" +
-                        "                        \"parameters\": [\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"gasPerBlock\",\n" +
-                        "                                \"type\": \"Integer\"\n" +
-                        "                            }\n" +
-                        "                        ],\n" +
-                        "                        \"offset\": 0,\n" +
-                        "                        \"returntype\": \"Boolean\",\n" +
-                        "                        \"safe\": false\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"events\": [\n" +
-                        "                    {\n" +
-                        "                        \"name\": \"Transfer\",\n" +
-                        "                        \"parameters\": [\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"from\",\n" +
-                        "                                \"type\": \"Hash160\"\n" +
-                        "                            },\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"to\",\n" +
-                        "                                \"type\": \"Hash160\"\n" +
-                        "                            },\n" +
-                        "                            {\n" +
-                        "                                \"name\": \"amount\",\n" +
-                        "                                \"type\": \"Integer\"\n" +
-                        "                            }\n" +
-                        "                        ]\n" +
-                        "                    }\n" +
-                        "                ]\n" +
-                        "            },\n" +
-                        "            \"permissions\": [\n" +
-                        "                {\n" +
-                        "                    \"contract\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\n" +
-                        "                    \"methods\": [\n" +
-                        "                        \"name\",\n" +
-                        "                        \"transfer\"\n" +
-                        "                    ]\n" +
-                        "                }\n" +
-                        "            ],\n" +
-                        "            \"trusts\": [" +
-                        "                \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"\n" +
-                        "            ],\n" +
-                        "            \"extra\": null\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}"
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"id\": -4,\n" +
+                "        \"updatecounter\": 0,\n" +
+                "        \"hash\": \"0xda65b600f7124ce6c79950c1772a36403104f2be\",\n" +
+                "        \"nef\": {\n" +
+                "            \"magic\": 860243278,\n" +
+                "            \"compiler\": \"neo-core-v3.0\",\n" +
+                "            \"tokens\": [],\n" +
+                "            \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA\",\n" +
+                "            \"checksum\": 529571427\n" +
+                "        },\n" +
+                "        \"manifest\": {\n" +
+                "            \"name\": \"LedgerContract\",\n" +
+                "            \"groups\": [],\n" +
+                "            \"supportedstandards\": [],\n" +
+                "            \"abi\": {\n" +
+                "                \"methods\": [\n" +
+                "                    {\n" +
+                "                        \"name\": \"currentHash\",\n" +
+                "                        \"parameters\": [],\n" +
+                "                        \"returntype\": \"Hash256\",\n" +
+                "                        \"offset\": 0,\n" +
+                "                        \"safe\": true\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"name\": \"getTransactionHeight\",\n" +
+                "                        \"parameters\": [\n" +
+                "                            {\n" +
+                "                                \"name\": \"hash\",\n" +
+                "                                \"type\": \"Hash256\"\n" +
+                "                            }\n" +
+                "                        ],\n" +
+                "                        \"returntype\": \"Integer\",\n" +
+                "                        \"offset\": 35,\n" +
+                "                        \"safe\": true\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"events\": []\n" +
+                "            },\n" +
+                "            \"permissions\": [\n" +
+                "                {\n" +
+                "                    \"contract\": \"*\",\n" +
+                "                    \"methods\": \"*\"\n" +
+                "                }\n" +
+                "            ],\n" +
+                "            \"trusts\": [],\n" +
+                "            \"extra\": null\n" +
+                "        }\n" +
+                "    }\n" +
+                "}"
         );
 
         NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
         ContractState contractState = getContractState.getContractState();
         assertThat(contractState, is(notNullValue()));
-        assertThat(contractState.getId(), is(-2));
+        assertThat(contractState.getId(), is(-4));
         assertThat(contractState.getHash(),
-                is("0x668e0c1f9d7b70a99dd9e06eadd4c784d641afbc"));
-        assertThat(contractState.getNef().getScript(), is("QetD9PQ="));
-        assertThat(contractState.getNef().getTokens(), is(empty()));
-        assertThat(contractState.getNef().getChecksum(), is(3921333105L));
+                is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
+        assertThat(contractState.getNef().getMagic(), is(860243278L));
         assertThat(contractState.getNef().getCompiler(), is("neo-core-v3.0"));
+        assertThat(contractState.getNef().getScript(),
+                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(contractState.getNef().getTokens(), is(empty()));
+        assertThat(contractState.getNef().getChecksum(), is(529571427L));
 
         ContractManifest manifest = contractState.getManifest();
         assertThat(manifest, is(notNullValue()));
-        assertThat(manifest.getName(), is("GasToken"));
+        assertThat(manifest.getName(), is("LedgerContract"));
         assertThat(manifest.getGroups(), is(notNullValue()));
-        assertThat(manifest.getGroups(), hasSize(1));
-        assertThat(manifest.getGroups().get(0).getPubKey(),
-                is("03b209fd4f53a7170ea4444e0cb0a6bb6a53c2bd016926989cf85f9b0fba17a70c"));
-        assertThat(manifest.getGroups().get(0).getSignature(),
-                is("41414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141"));
-
-        assertThat(manifest.getSupportedStandards(), hasSize(1));
-        assertThat(manifest.getSupportedStandards().get(0), is("NEP-17"));
+        assertThat(manifest.getGroups(), hasSize(0));
+        assertThat(manifest.getSupportedStandards(), hasSize(0));
 
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertThat(abi, is(notNullValue()));
 
         assertThat(abi.getMethods(), is(notNullValue()));
-        assertThat(abi.getMethods(), hasSize(6));
-        assertThat(abi.getMethods().get(1).getName(), is("symbol"));
+        assertThat(abi.getMethods(), hasSize(2));
+        assertThat(abi.getMethods().get(0).getName(), is("currentHash"));
+        assertThat(abi.getMethods().get(0).getParameters(), is(notNullValue()));
+        assertThat(abi.getMethods().get(0).getParameters(), hasSize(0));
+        assertThat(abi.getMethods().get(1).getName(), is("getTransactionHeight"));
         assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
-        assertThat(abi.getMethods().get(1).getParameters(), hasSize(0));
-        assertThat(abi.getMethods().get(4).getName(), is("balanceOf"));
-        assertThat(abi.getMethods().get(4).getParameters(), is(notNullValue()));
-        assertThat(abi.getMethods().get(4).getParameters(), hasSize(1));
-        assertThat(abi.getMethods().get(4).getReturnType(), is(ContractParameterType.INTEGER));
+        assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
+        assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(),
+                is("hash"));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamType(),
+                is(ContractParameterType.HASH256));
+        assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.INTEGER));
 
         assertThat(abi.getEvents(), is(notNullValue()));
-        assertThat(abi.getEvents(), hasSize(1));
-        assertThat(abi.getEvents().get(0).getName(), is("Transfer"));
-        assertThat(abi.getEvents().get(0).getParameters(), is(notNullValue()));
-        assertThat(abi.getEvents().get(0).getParameters(), hasSize(3));
-        assertThat(abi.getEvents().get(0).getParameters().get(2).getParamName(), is("amount"));
-        assertThat(abi.getEvents().get(0).getParameters().get(2).getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(abi.getEvents(), hasSize(0));
 
         assertThat(manifest.getPermissions(), is(notNullValue()));
         assertThat(manifest.getPermissions(), hasSize(1));
-        assertThat(manifest.getPermissions().get(0).getContract(),
-                is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
+        assertThat(manifest.getPermissions().get(0).getContract(), is("*"));
         assertThat(manifest.getPermissions().get(0).getMethods(), is(notNullValue()));
-        assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(2));
-        assertThat(manifest.getPermissions().get(0).getMethods().get(1), is("transfer"));
+        assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(1));
+        assertThat(manifest.getPermissions().get(0).getMethods().get(0), is("*"));
 
         assertThat(manifest.getTrusts(), is(notNullValue()));
-        assertThat(manifest.getTrusts(), hasSize(1));
-        assertThat(manifest.getTrusts().get(0), is("0xde5f57d430d3dece511cf975a8d37848cb9e0525"));
+        assertThat(manifest.getTrusts(), hasSize(0));
 
         assertThat(manifest.getExtra(), is(nullValue()));
 
-        assertNull(contractState.getActiveBlockIndex());
+        int id = -4;
+        int updateCounter = 0;
+        Hash160 hash = new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be");
+        ContractNef nef = new ContractNef(860243278L, "neo-core-v3.0", emptyList(),
+                        "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA", 529571427L);
+        ContractMethod method1 =
+                new ContractMethod("currentHash", emptyList(), 0,
+                        ContractParameterType.HASH256, true);
+        ContractMethod method2 =
+                new ContractMethod("getTransactionHeight",
+                        singletonList(
+                                new ContractParameter("hash", ContractParameterType.HASH256, null)
+                        ), 35, ContractParameterType.INTEGER, true);
+        ContractABI contractABI = new ContractABI(asList(method1, method2), emptyList());
+        ContractPermission permission = new ContractPermission("*", singletonList("*"));
+        ContractManifest contractManifest =
+                new ContractManifest("LedgerContract", emptyList(), emptyList(), contractABI,
+                        singletonList(permission), emptyList(), null);
+        ContractState expectedEqual =
+                new ContractState(id, updateCounter, hash, nef, contractManifest, null);
+        assertThat(contractState, is(expectedEqual));
     }
 
     @Test
@@ -1008,8 +981,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getMemPool.getMemPoolDetails().getVerified(),
                 containsInAnyOrder(
-                        "0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e",
-                        "0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"
+                        new Hash256("0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"),
+                        new Hash256("0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7")
                 )
         );
 
@@ -1018,8 +991,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getMemPool.getMemPoolDetails().getUnverified(),
                 containsInAnyOrder(
-                        "0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e",
-                        "0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"
+                        new Hash256("0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"),
+                        new Hash256("0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7")
                 )
         );
     }
@@ -1069,9 +1042,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(
                 getRawMemPool.getAddresses(),
                 containsInAnyOrder(
-                        "0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e",
-                        "0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7",
-                        "0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6"
+                        new Hash256("0x9786cce0dddb524c40ddbdd5e31a41ed1f6b5c8a683c122f627ca4a007a7cf4e"),
+                        new Hash256("0xb488ad25eb474f89d5ca3f985cc047ca96bc7373a6d3da8c0f192722896c1cd7"),
+                        new Hash256("0xf86f6f2c08fbf766ebe59dc84bc3b8829f1053f0a01deb26bf7960d99fa86cd6")
                 )
         );
     }
@@ -1141,7 +1114,7 @@ public class ResponseTest extends ResponseTester {
         Transaction transaction = getTransaction.getTransaction();
         assertThat(transaction, is(notNullValue()));
         assertThat(transaction.getHash(),
-                is("0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89"));
+                is(new Hash256("0x8b8b222ba4ae17eaf37d444210920690d0981b02c368f4f1973c8fd662438d89")));
         assertThat(transaction.getSize(), is(267L));
         assertThat(transaction.getVersion(), is(0));
         assertThat(transaction.getNonce(), is(1046354582L));
@@ -1180,7 +1153,7 @@ public class ResponseTest extends ResponseTester {
                         )
                 ));
         assertThat(transaction.getBlockHash(),
-                is("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299"));
+                is(new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299")));
         assertThat(transaction.getConfirmations(), is(1388));
         assertThat(transaction.getBlockTime(), is(1589019142879L));
         assertThat(transaction.getVMState(), is("HALT"));
@@ -1457,7 +1430,7 @@ public class ResponseTest extends ResponseTester {
         NeoSendRawTransaction sendRawTransaction = deserialiseResponse(NeoSendRawTransaction.class);
         assertThat(sendRawTransaction.getSendRawTransaction(), is(notNullValue()));
         assertThat(sendRawTransaction.getSendRawTransaction().getHash(),
-                is("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770"));
+                is(new Hash256("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770")));
     }
 
     @Test
@@ -1523,15 +1496,15 @@ public class ResponseTest extends ResponseTester {
 
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BYTE_STRING));
-        assertThat(stackItem0.asByteString().getAsString(), is("transfer"));
+        assertThat(stackItem0.getString(), is("transfer"));
 
         StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
         assertThat(stackItem1.getType(), is(StackItemType.MAP));
-        assertThat(stackItem1.asMap().size(), equalTo(1));
-        BigInteger value = stackItem1.asMap()
-                .get(Numeric.hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96"))
-                .asInteger()
-                .getValue();
+        assertThat(stackItem1.getMap().size(), equalTo(1));
+        BigInteger value = stackItem1.getMap()
+                .get(new ByteStringStackItem(Numeric.hexStringToByteArray(
+                        "941343239213fa0e765f1027ce742f48db779a96")))
+                .getInteger();
         assertThat(value, is(new BigInteger("1")));
     }
 
@@ -1593,28 +1566,28 @@ public class ResponseTest extends ResponseTester {
 
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
-        assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
+        assertThat(stackItem0.getString(), is("transfer"));
 
         StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
         assertThat(stackItem1.getType(), is(StackItemType.BUFFER));
-        assertThat(stackItem1.asBuffer().getAsAddress(), is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
+        assertThat(stackItem1.getAddress(), is("NZQvGWfSupuUAYtCH6pje72hdkWJH1jAZP"));
 
         StackItem stackItem2 = invokeFunction.getInvocationResult().getStack().get(2);
         assertThat(stackItem2.getType(), is(StackItemType.BUFFER));
-        assertArrayEquals(Numeric.hexStringToByteArray("c16a"), stackItem2.asBuffer().getValue());
-        assertThat(stackItem2.asBuffer().getAsNumber(), is(new BigInteger("27329")));
+        assertArrayEquals(Numeric.hexStringToByteArray("c16a"), stackItem2.getByteArray());
+        assertThat(stackItem2.getInteger(), is(new BigInteger("27329")));
 
         StackItem stackItem3 = invokeFunction.getInvocationResult().getStack().get(3);
         assertThat(stackItem3.getType(), is(StackItemType.POINTER));
-        assertThat(stackItem3.asPointer().getValue(), is(new BigInteger("123")));
+        assertThat(stackItem3.getPointer(), is(new BigInteger("123")));
 
         StackItem stackItem4 = invokeFunction.getInvocationResult().getStack().get(4);
         assertThat(stackItem4.getType(), is(StackItemType.MAP));
-        assertThat(stackItem4.asMap().size(), equalTo(1));
-        BigInteger value = stackItem4.asMap()
-                .get(Numeric.hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96"))
-                .asPointer()
-                .getValue();
+        assertThat(stackItem4.getMap().size(), equalTo(1));
+        BigInteger value = stackItem4.getMap()
+                .get(new ByteStringStackItem(Numeric.hexStringToByteArray(
+                        "941343239213fa0e765f1027ce742f48db779a96")))
+                .getPointer();
         assertThat(value, is(new BigInteger("12")));
     }
 
@@ -1698,9 +1671,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeScript.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
         assertThat(invokeScript.getInvocationResult().getStack(),
-                hasItem(
-                        new ByteStringStackItem("Transfer".getBytes())
-                ));
+                hasItem(new ByteStringStackItem("Transfer".getBytes())));
     }
 
     @Test
@@ -1734,7 +1705,7 @@ public class ResponseTest extends ResponseTester {
                 "Specified argument was out of the range of valid values. (Parameter 'index')"));
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
-        assertThat(stackItem0.asBuffer().getAsString(), is("transfer"));
+        assertThat(stackItem0.getString(), is("transfer"));
     }
 
     // Utilities Methods
@@ -2095,7 +2066,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendFrom.getSendFrom(), is(notNullValue()));
 
         assertThat(sendFrom.getSendFrom().getHash(),
-                is("0x6818f446c2e503998ac766a8a175f86d9a89885423f6b055aa123c984625833e"));
+                is(new Hash256("0x6818f446c2e503998ac766a8a175f86d9a89885423f6b055aa123c984625833e")));
         assertThat(sendFrom.getSendFrom().getSize(), is(266L));
         assertThat(sendFrom.getSendFrom().getVersion(), is(0));
         assertThat(sendFrom.getSendFrom().getNonce(), is(1762654532L));
@@ -2169,7 +2140,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany(), is(notNullValue()));
 
         assertThat(sendMany.getSendMany().getHash(),
-                is("0xf60ec3b0810fb8c17a9a05eaeb3b361ead889a38d3fd1bf2d561a6e7001bb2f5"));
+                is(new Hash256("0xf60ec3b0810fb8c17a9a05eaeb3b361ead889a38d3fd1bf2d561a6e7001bb2f5")));
         assertThat(sendMany.getSendMany().getSize(), is(352L));
         assertThat(sendMany.getSendMany().getVersion(), is(0));
         assertThat(sendMany.getSendMany().getNonce(), is(1256822346L));
@@ -2186,10 +2157,12 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
         assertThat(sendMany.getSendMany().getSigners(),
                 containsInAnyOrder(
-                        new TransactionSigner("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
-                                asList(WitnessScope.CALLED_BY_ENTRY)),
-                        new TransactionSigner("0xf68f181731a47036a99f04dad90043a744edec0f",
-                                asList(WitnessScope.CALLED_BY_ENTRY))
+                        new TransactionSigner(
+                                "0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
+                                singletonList(WitnessScope.CALLED_BY_ENTRY)),
+                        new TransactionSigner(
+                                "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                singletonList(WitnessScope.CALLED_BY_ENTRY))
                 ));
 
         assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
@@ -2266,7 +2239,7 @@ public class ResponseTest extends ResponseTester {
         NeoSendToAddress sendToAddress = deserialiseResponse(NeoSendToAddress.class);
         assertThat(sendToAddress.getSendToAddress(), is(notNullValue()));
         assertThat(sendToAddress.getSendToAddress().getHash(),
-                is("0xabd78548399bbe684fac50b6a71d0ce3f689497d4e79cb26a2b4dfb211782c39"));
+                is(new Hash256("0xabd78548399bbe684fac50b6a71d0ce3f689497d4e79cb26a2b4dfb211782c39")));
         assertThat(sendToAddress.getSendToAddress().getSize(), is(375L));
         assertThat(sendToAddress.getSendToAddress().getVersion(), is(0));
         assertThat(sendToAddress.getSendToAddress().getNonce(), is(1509730265L));
@@ -2353,21 +2326,21 @@ public class ResponseTest extends ResponseTester {
                 containsInAnyOrder(
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1554283931L,
-                                "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
                                 "100000000000",
                                 368082L,
                                 0L,
-                                "240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564"
+                                new Hash256("240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564")
                         ),
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1554880287L,
-                                "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
                                 "100000000000",
                                 397769L,
                                 0L,
-                                "12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834"
+                                new Hash256("12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834")
                         )
                 ));
 
@@ -2377,19 +2350,19 @@ public class ResponseTest extends ResponseTester {
                 hasItem(
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1555651816L,
-                                "600c4f5200db36177e3e8a09e9f18e2fc7d12a0f",
+                                new Hash160("600c4f5200db36177e3e8a09e9f18e2fc7d12a0f"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
                                 "1000000",
                                 436036L,
                                 0L,
-                                "df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"
+                                new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")
                         )
                 ));
 
         // First Sent Entry
         assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTimestamp(), is(1554283931L));
         assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getAssetHash(),
-                is("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"));
+                is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
         assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTransferAddress(),
                 is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
 
@@ -2400,7 +2373,7 @@ public class ResponseTest extends ResponseTester {
         // Received Entry
         assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTransferNotifyIndex(), is(0L));
         assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTxHash(),
-                is("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"));
+                is(new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")));
     }
 
     @Test
@@ -2433,12 +2406,12 @@ public class ResponseTest extends ResponseTester {
         assertThat(getNep17Balances.getBalances().getBalances(),
                 containsInAnyOrder(
                         new NeoGetNep17Balances.Nep17Balance(
-                                "a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8",
+                                new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"),
                                 "50000000000",
                                 BigInteger.valueOf(251604L)
                         ),
                         new NeoGetNep17Balances.Nep17Balance(
-                                "1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3",
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "50000000000",
                                 BigInteger.valueOf(251600L)
                         )
@@ -2446,7 +2419,7 @@ public class ResponseTest extends ResponseTester {
 
         // First Entry
         assertThat(getNep17Balances.getBalances().getBalances().get(0).getAssetHash(),
-                is("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"));
+                is(new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")));
         assertThat(getNep17Balances.getBalances().getBalances().get(0).getAmount(), is("50000000000"));
 
         // Second Entry
@@ -2533,7 +2506,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoAppLog, is(notNullValue()));
 
         assertThat(neoAppLog.getTransactionId(),
-                is("0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109"));
+                is(new Hash256("0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109")));
 
         assertThat(neoAppLog.getExecutions(), hasSize(1));
         NeoApplicationLog.Execution execution = neoAppLog.getExecutions().get(0);
@@ -2543,10 +2516,8 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(execution.getStack(), is(notNullValue()));
         assertThat(execution.getStack(), hasSize(1));
-        assertThat(execution.getStack().get(0).getType(),
-                is(StackItemType.INTEGER));
-        assertThat(execution.getStack().get(0).asInteger().getValue(),
-                is(BigInteger.valueOf(1)));
+        assertThat(execution.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(execution.getStack().get(0).getInteger(), is(BigInteger.valueOf(1)));
 
         assertThat(execution.getNotifications(), is(notNullValue()));
         assertThat(execution.getNotifications(), hasSize(2));
@@ -2554,15 +2525,16 @@ public class ResponseTest extends ResponseTester {
         // Notification 0
         NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
 
-        assertThat(notification0.getContract(), is("0x70e2301955bf1e74cbb31d18c2f96972abadb328"));
+        assertThat(notification0.getContract(),
+                is(new Hash160("0x70e2301955bf1e74cbb31d18c2f96972abadb328")));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
-        ArrayStackItem notification0Array = notification0.getState().asArray();
+        List<StackItem> notification0Array = notification0.getState().getList();
 
-        AnyStackItem from0 = notification0Array.get(0).asAny();
-        String to0 = notification0Array.get(1).asByteString().getAsAddress();
-        BigInteger amount0 = notification0Array.get(2).asInteger().getValue();
+        StackItem from0 = notification0Array.get(0);
+        String to0 = notification0Array.get(1).getAddress();
+        BigInteger amount0 = notification0Array.get(2).getInteger();
 
         assertNotNull(from0);
         assertThat(to0, is("NX8GreRFGFK5wpGMWetpX93HmtrezGogzk"));
@@ -2571,18 +2543,101 @@ public class ResponseTest extends ResponseTester {
         // Notification 1
         NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
 
-        assertThat(notification1.getContract(), is("0xf61eebf573ea36593fd43aa150c055ad7906ab83"));
+        assertThat(notification1.getContract(),
+                is(new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83")));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 
-        ArrayStackItem notification1Array = notification1.getState().asArray();
+        List<StackItem> notification1Array = notification1.getState().getList();
 
-        String eventName1 = notification1Array.get(0).asByteString().getAsString();
-        String from1 = notification1Array.get(1).asByteString().getAsAddress();
-        BigInteger amount1 = notification1Array.get(2).asInteger().getValue();
+        String eventName1 = notification1Array.get(0).getString();
+        String from1 = notification1Array.get(1).getAddress();
+        BigInteger amount1 = notification1Array.get(2).getInteger();
 
         assertThat(eventName1, is("Transfer"));
         assertThat(from1, is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
         assertThat(amount1, is(BigInteger.valueOf(100)));
     }
+
+    // StateService
+
+    @Test
+    public void testGetStateRoot() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"result\": {\n" +
+                "        \"version\": 0,\n" +
+                "        \"index\": 160,\n" +
+                "        \"roothash\": \"0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7\",\n" +
+                "        \"witness\": {\n" +
+                "            \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs\",\n" +
+                "            \"verification\": \"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
+                "        }\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoGetStateRoot neoGetStateRoot = deserialiseResponse(NeoGetStateRoot.class);
+        NeoGetStateRoot.StateRoot stateRoot = neoGetStateRoot.getStateRoot();
+
+        assertThat(stateRoot.getVersion(), is(0));
+        assertThat(stateRoot.getIndex(), is(160L));
+        assertThat(stateRoot.getRootHash(),
+                is(new Hash256("0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7")));
+        assertNotNull(stateRoot.getWitness());
+        assertThat(stateRoot.getWitness().getInvocation(),
+                is("DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs"));
+        assertThat(stateRoot.getWitness().getVerification(),
+                is("EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw=="));
+    }
+
+    @Test
+    public void testGetProof() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": \"1\",\n" +
+                "    \"result\": \"Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA=\"\n" +
+                "}"
+        );
+
+        NeoGetProof neoGetProof = deserialiseResponse(NeoGetProof.class);
+
+        assertThat(neoGetProof.getProof(),
+                is("Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA="));
+    }
+
+    @Test
+    public void testVerifyProof() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA=\"\n" +
+                "}"
+        );
+
+        NeoVerifyProof proof = deserialiseResponse(NeoVerifyProof.class);
+
+        assertThat(proof.verifyProof(), is("QAFBAighAhY5RqEz49Lg2Yf7kMsBsGDtF4DxcY4too7fE7ll/StgIQA="));
+    }
+
+    @Test
+    public void testGetStateHeight() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"localrootindex\": 212,\n" +
+                "        \"validatedrootindex\": 211\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoGetStateHeight neoGetStateHeight = deserialiseResponse(NeoGetStateHeight.class);
+        NeoGetStateHeight.StateHeight stateHeight = neoGetStateHeight.getStateHeight();
+
+        assertThat(stateHeight.getLocalRootIndex(), is(212L));
+        assertThat(stateHeight.getValidatedRootIndex(), is(211L));
+    }
+
 }

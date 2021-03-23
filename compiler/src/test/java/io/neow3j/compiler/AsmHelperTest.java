@@ -43,7 +43,7 @@ public class AsmHelperTest {
 
     @Test
     public void gettingMethodShouldReturnCorrectMethodNode() throws IOException {
-        String desc = "(Ljava/lang/String;)[B";
+        String desc = "(Lio/neow3j/devpack/StorageContext;Ljava/lang/String;)[B";
         String name = "get";
         MethodInsnNode insn = new MethodInsnNode(JVMOpcode.INVOKESTATIC.getOpcode(),
                 "io/neow3j/devpack/neo/Storage", "get", desc);
@@ -102,7 +102,7 @@ public class AsmHelperTest {
     }
 
     // This method is used to test annotations.
-    @Syscall(InteropServiceCode.NEO_CRYPTO_SHA256)
+    @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
     @Instruction
     private void annotatedMethod() {
 

@@ -45,7 +45,7 @@ import org.junit.Test;
 public class ContractManagementTest {
 
     private static final String CONTRACTMANAGEMENT_SCRIPTHASH =
-            "a501d7d7d10983673b61b7a2d3a813b36f9f0e43";
+            "fffdc93764dbaddd97c48f252a53ea4643faa3fd";
 
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get("/contracts", "TestContract.nef");
     private final static Path TESTCONTRACT_MANIFEST_FILE =
@@ -215,4 +215,5 @@ public class ContractManagementTest {
 
         assertThat(tx.getScript(), is(expectedScript));
     }
+
 }

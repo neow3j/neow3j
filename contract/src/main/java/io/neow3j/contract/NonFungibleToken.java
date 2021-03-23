@@ -1,23 +1,26 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.MAP;
-import static java.util.Collections.singletonList;
-
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.MapStackItem;
-import io.neow3j.protocol.core.methods.response.TokenState;
+import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.transaction.Signer;
+import io.neow3j.protocol.core.methods.response.NFTokenState;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
+
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.model.types.StackItemType.MAP;
+import static io.neow3j.transaction.Signer.calledByEntry;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 
 /**
  * Represents a NEP-11 non-fungible token contract and provides methods to invoke it.
@@ -36,17 +39,25 @@ public class NonFungibleToken extends Token {
      * @param scriptHash the token contract's script hash.
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public NonFungibleToken(ScriptHash scriptHash, Neow3j neow) {
+    public NonFungibleToken(Hash160 scriptHash, Neow3j neow) {
         super(scriptHash, neow);
     }
 
+    /**
+     * Returns the decimals of non-fungible tokens.
+     *
+     * @return the decimals.
+     */
     @Override
     public int getDecimals() {
         return 0;
     }
 
     /**
-     * Transfers the token with {@code tokenID} to the account {@code to}.
+     * Creates a transaction script to transfer a non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The returned transaction builder is ready to be signed and sent.
      *
      * @param wallet  the wallet that holds the account of the token owner.
      * @param to      the receiver of the token.
@@ -54,52 +65,31 @@ public class NonFungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, ScriptHash to,
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to,
             byte[] tokenID) throws IOException {
-        ScriptHash tokenOwner = ownerOf(tokenID);
+        Hash160 tokenOwner = ownerOf(tokenID);
         if (!wallet.holdsAccount(tokenOwner)) {
-            throw new IllegalArgumentException(
-                    "The provided wallet does not contain the account that owns the token with ID" +
-                    " " + Numeric.toHexString(tokenID) + ". The address of the owner of this " +
-                    "token is " + tokenOwner.toAddress() + ".");
+            throw new IllegalArgumentException("The provided wallet does not contain the account " +
+                    "that owns the token with ID " + Numeric.toHexString(tokenID) + ". The " +
+                    "address of the owner of this token is " + tokenOwner.toAddress() + ".");
         }
 
         return invokeFunction(TRANSFER,
                 hash160(to),
                 byteArray(tokenID))
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(tokenOwner));
+                .signers(calledByEntry(tokenOwner));
     }
 
     /**
-     * Gets the owner of the token with {@code tokenID}.
+     * Gets the owner of the token with {@code tokenId}.
      *
-     * @param tokenID the token ID.
+     * @param tokenId the token ID.
      * @return a list of owners of the token.
-     * @throws IOException if an error occurs when interacting with the Neo node.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public ScriptHash ownerOf(byte[] tokenID) throws IOException {
-        return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenID)));
-    }
-
-    private ScriptHash callFunctionReturningScriptHash(String function,
-            List<ContractParameter> params) throws IOException {
-
-        StackItem stackItem = callInvokeFunction(function, params)
-                .getInvocationResult().getStack().get(0);
-        return extractScriptHash(stackItem);
-    }
-
-    private ScriptHash extractScriptHash(StackItem item) {
-        if (!item.getType().equals(BYTE_STRING)) {
-            throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
-        }
-        try {
-            return ScriptHash.fromAddress(item.asByteString().getAsAddress());
-        } catch (IllegalArgumentException e) {
-            throw new UnexpectedReturnTypeException(
-                    "Return type did not contain script hash in expected format.", e);
-        }
+    public Hash160 ownerOf(byte[] tokenId) throws IOException {
+        return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenId)));
     }
 
     /**
@@ -118,7 +108,7 @@ public class NonFungibleToken extends Token {
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something
      *                                       interpretable as a number.
      */
-    public BigInteger balanceOf(ScriptHash owner)
+    public BigInteger balanceOf(Hash160 owner)
             throws IOException {
         return callFuncReturningInt(BALANCE_OF, hash160(owner));
     }
@@ -127,17 +117,17 @@ public class NonFungibleToken extends Token {
      * Gets the properties of the token with {@code tokenID}.
      *
      * @param tokenID the token ID.
-     * @return the properties of the token.
-     * @throws IOException if an error occurs when interacting with the Neo node.
+     * @return the properties of the token as {@link NFTokenState}.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TokenState properties(byte[] tokenID) throws IOException {
+    public NFTokenState properties(byte[] tokenID) throws IOException {
         StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
-            MapStackItem mapStackItem = item.asMap();
-            return new TokenState(
-                    mapStackItem.get("name").asByteString().getAsString(),
-                    mapStackItem.get("description").asByteString().getAsString());
+            Map<StackItem, StackItem> map = item.getMap();
+
+            return new NFTokenState(
+                    map.get(new ByteStringStackItem("name".getBytes(UTF_8))).getString());
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
     }

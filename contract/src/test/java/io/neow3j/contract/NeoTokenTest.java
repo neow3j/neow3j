@@ -10,6 +10,7 @@ import static io.neow3j.contract.ContractParameter.publicKey;
 import static io.neow3j.contract.ContractTestHelper.loadFile;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,12 +50,14 @@ public class NeoTokenTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     private Account account1;
-    private static final String NEOTOKEN_SCRIPTHASH = "f61eebf573ea36593fd43aa150c055ad7906ab83";
-    private static final String VOTE = NeoToken.VOTE;
-    private static final String REGISTER_CANDIDATE = NeoToken.REGISTER_CANDIDATE;
-    private static final String UNREGISTER_CANDIDATE = NeoToken.UNREGISTER_CANDIDATE;
-    private static final String GET_GAS_PER_BLOCK = NeoToken.GET_GAS_PER_BLOCK;
-    private static final String SET_GAS_PER_BLOCK = NeoToken.SET_GAS_PER_BLOCK;
+    private static final String NEOTOKEN_SCRIPTHASH = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5";
+    private static final String VOTE = "vote";
+    private static final String REGISTER_CANDIDATE = "registerCandidate";
+    private static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
+    private static final String GET_GAS_PER_BLOCK = "getGasPerBlock";
+    private static final String SET_GAS_PER_BLOCK = "setGasPerBlock";
+    private static final String GET_REGISTER_PRICE = "getRegisterPrice";
+    private static final String SET_REGISTER_PRICE = "setRegisterPrice";
 
     private Neow3j neow;
 
@@ -108,7 +111,7 @@ public class NeoTokenTest {
                         .withBody(responseBody)));
 
         BigInteger result = new NeoToken(neow)
-                .unclaimedGas(ScriptHash.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9"), 100);
+                .unclaimedGas(Hash160.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9"), 100);
         assertThat(result, is(new BigInteger("60000000000")));
 
         result = new NeoToken(neow)
@@ -283,11 +286,12 @@ public class NeoTokenTest {
         setUpWireMockForCall("invokescript", "invokescript_vote.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        int gasPerBlock = 10000;
+        BigInteger gasPerBlock = new BigInteger("10000");
         Wallet w = Wallet.withAccounts(account1);
-        TransactionBuilder txBuilder = new NeoToken(neow).setGasPerBlock(gasPerBlock)
+        TransactionBuilder txBuilder = new NeoToken(neow)
+                .setGasPerBlock(gasPerBlock)
                 .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1.getScriptHash()));
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NeoToken.SCRIPT_HASH,
                 SET_GAS_PER_BLOCK, singletonList(integer(gasPerBlock)))
@@ -297,7 +301,38 @@ public class NeoTokenTest {
     }
 
     @Test
+    public void getRegisterPriceInvokesCorrectFunctionAndHandlesReturnValueCorrectly()
+            throws IOException {
+
+        setUpWireMockForInvokeFunction(GET_REGISTER_PRICE, "invokefunction_getRegisterPrice.json");
+        BigInteger res = new NeoToken(neow).getRegisterPrice();
+        assertThat(res, is(new BigInteger("100000000000")));
+    }
+
+    @Test
+    public void setRegisterPriceProducesCorrectScript()
+            throws IOException {
+
+        setUpWireMockForCall("invokescript", "invokescript_vote.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        BigInteger registerPrice = new BigInteger("50000000000");
+        Wallet w = Wallet.withAccounts(account1);
+        TransactionBuilder txBuilder = new NeoToken(neow)
+                .setRegisterPrice(registerPrice)
+                .wallet(w)
+                .signers(calledByEntry(account1.getScriptHash()));
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(NeoToken.SCRIPT_HASH,
+                SET_REGISTER_PRICE, singletonList(integer(registerPrice)))
+                .toArray();
+
+        assertThat(txBuilder.getScript(), is(expectedScript));
+    }
+
+    @Test
     public void scriptHash() {
         assertThat(new NeoToken(neow).getScriptHash().toString(), is(NEOTOKEN_SCRIPTHASH));
     }
+
 }

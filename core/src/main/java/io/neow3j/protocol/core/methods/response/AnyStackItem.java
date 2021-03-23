@@ -6,6 +6,10 @@ import io.neow3j.model.types.StackItemType;
 
 import java.util.Objects;
 
+/**
+ * This stack item can represent any of the other stack items and can also appear if the
+ * item's value is null.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AnyStackItem extends StackItem {
 
@@ -21,16 +25,14 @@ public class AnyStackItem extends StackItem {
         this.value = value;
     }
 
+    @Override
     public Object getValue() {
         return this.value;
     }
 
     @Override
-    public String toString() {
-        return "AnyStackItem{" +
-                "type=" + type +
-                ", value=" + value +
-                '}';
+    protected String valueToString() {
+        return value.toString();
     }
 
     @Override
@@ -39,7 +41,7 @@ public class AnyStackItem extends StackItem {
         if (!(o instanceof AnyStackItem)) return false;
         AnyStackItem other = (AnyStackItem) o;
         return getType() == other.getType() &&
-                getValue().equals(other.getValue());
+                (getValue() == other.getValue() || getValue().equals(other.getValue()));
     }
 
     @Override

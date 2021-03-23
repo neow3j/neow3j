@@ -1,19 +1,24 @@
 package io.neow3j.compiler;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 import java.io.IOException;
 import java.math.BigInteger;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.util.List;
 
-// TODO: All these tests expect Integer as return type but it should be Boolean. They must be
-//  adapted once the compiler is updated accordingly.
-public class RelationalOperatorsTest extends ContractTest {
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+public class RelationalOperatorsTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     // These are the names of the methods inside of the smart contract under test.
     private final static String INTEGERS_MTHD_NAME = "integers";
@@ -21,109 +26,108 @@ public class RelationalOperatorsTest extends ContractTest {
     private final static String BOOLEANS_MTHD_NAME = "booleans";
     private static final String STRINGS_MTHD_NAME = "strings";
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(RelationalOperators.class.getName());
-    }
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            RelationalOperators.class.getName());
 
     @Test
     public void unequalSmallIntegers() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(array.get(0).getBoolean());
+        assertTrue(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertFalse(array.get(3).getBoolean());
+        assertTrue(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
     public void equalLargeIntegers() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 INTEGERS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertTrue(array.get(3).getBoolean());
+        assertFalse(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
     public void unequalSmallLongs() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(1),
                 ContractParameter.integer(0));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(array.get(0).getBoolean());
+        assertTrue(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertFalse(array.get(3).getBoolean());
+        assertTrue(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
     public void equalLargeLongs() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 LONGS_MTHD_NAME,
                 ContractParameter.integer(new BigInteger("100000000000000000000")),
                 ContractParameter.integer(new BigInteger("100000000000000000000")));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(2).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(4).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(5).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertTrue(array.get(3).getBoolean());
+        assertFalse(array.get(4).getBoolean());
+        assertTrue(array.get(5).getBoolean());
     }
 
     @Test
     public void equalBooleans() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(true),
                 ContractParameter.bool(true));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     @Test
     public void unequalBooleans() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 BOOLEANS_MTHD_NAME,
                 ContractParameter.bool(false),
                 ContractParameter.bool(true));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(0));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(1));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(array.get(0).getBoolean());
+        assertTrue(array.get(1).getBoolean());
     }
 
     @Test
     public void equalStrings() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction(
+        NeoInvokeFunction response = ct.callInvokeFunction(
                 STRINGS_MTHD_NAME,
                 ContractParameter.string("hello, world!"),
                 ContractParameter.string("hello, world!"));
 
-        ArrayStackItem array = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(array.get(0).asInteger().getValue().intValue(), is(1));
-        assertThat(array.get(1).asInteger().getValue().intValue(), is(0));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertFalse(array.get(1).getBoolean());
     }
 
     static class RelationalOperators {

@@ -1,5 +1,6 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.crypto.Hash.sha256;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -7,34 +8,37 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
 public class TransactionTest {
 
-    private ScriptHash account1;
-    private ScriptHash account2;
-    private ScriptHash account3;
+    private Hash160 account1;
+    private Hash160 account2;
+    private Hash160 account3;
 
     private Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
 
     @Before
     public void setUp() {
-        account1 = ScriptHash.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
-        account2 = ScriptHash.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
-        account3 = ScriptHash.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
+        account1 = Hash160.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+        account2 = Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
+        account3 = Hash160.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
     }
 
     @Test
@@ -129,14 +133,14 @@ public class TransactionTest {
         Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
         assertThat(tx.getVersion(), is((byte) 0));
         assertThat(tx.getNonce(), is(246070626L));
-        assertThat(tx.getSender(), is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSender(), is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
         assertThat(tx.getAttributes(), hasSize(0));
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(),
-                is(new ScriptHash("969a77db482f74ce27105f760efa139223431394")));
+                is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
         assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
@@ -204,16 +208,10 @@ public class TransactionTest {
 
     @Test
     public void getTxId() throws IOException {
-        neow.setNetworkMagicNumber(769);
+        neow.setNetworkMagicNumber(5195086);
 
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
-
-        List<Witness> witnesses = new ArrayList<>();
-        witnesses.add(new Witness(Numeric.hexStringToByteArray(
-                "0c407ffa520060cc7c6d89c073963ed80d94af1dd27fdbd8a1a7c56104b394e1719e2469dfb5534460c15a40216f3b74f6e384cfd2a49905698fa5861d0d491cc917"),
-                Numeric.hexStringToByteArray(
-                        "0c21030ba3f5cb0676ef4eadc89f4da74a6eade644b87aed9a123a117f144ff247052c0b4195440d78")));
 
         Transaction tx = new Transaction(neow,
                 (byte) 0,
@@ -228,7 +226,7 @@ public class TransactionTest {
                 new ArrayList<>());
 
         assertThat(tx.getTxId(),
-                is("5624d97a8f1c9d580399c5682d512641171b5d50d199922f6a5f033a0fac15b5"));
+                is(new Hash256("22ffa2d8680cea4928e2e74ceee560eedfa6e35f199640a7fe725c1f9da0b19e")));
     }
 
     @Test
@@ -272,7 +270,8 @@ public class TransactionTest {
         byte[] txHexWithoutWitness = Numeric.hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
         byte[] expectedData = ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
-                txHexWithoutWitness);
+                sha256(txHexWithoutWitness));
         assertThat(tx.getHashData(), is(expectedData));
     }
+
 }

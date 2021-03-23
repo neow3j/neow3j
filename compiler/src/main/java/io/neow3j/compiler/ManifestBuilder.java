@@ -5,7 +5,7 @@ import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static java.util.Optional.ofNullable;
 
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.devpack.annotations.DisplayName;
@@ -211,7 +211,7 @@ public class ManifestBuilder {
 
     private static void throwIfNotValidContractHash(String contractHash) {
         try {
-            new ScriptHash(contractHash);
+            new Hash160(contractHash);
         } catch (Exception e) {
             throw new CompilerException(
                     String.format("Invalid contract hash: %s", contractHash)

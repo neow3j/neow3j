@@ -12,7 +12,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.protocol.core.methods.response.TokenState;
+import io.neow3j.protocol.core.methods.response.NFTokenState;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.utils.Numeric;
@@ -22,6 +22,7 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,8 +38,8 @@ public class NonFungibleTokenTest {
 
     private Account account1;
     private Account account2;
-    private static final ScriptHash NF_TOKEN_SCRIPT_HASH =
-            ScriptHash.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
+    private static final Hash160 NF_TOKEN_SCRIPT_HASH =
+            Hash160.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
     private static final byte[] TOKEN_ID = new byte[]{1, 2, 3};
     private static final String TRANSFER = "transfer";
     private static NonFungibleToken nfTestToken;
@@ -90,7 +91,7 @@ public class NonFungibleTokenTest {
     @Test
     public void testOwnerOf() throws IOException {
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-        ScriptHash owner = nfTestToken.ownerOf(TOKEN_ID);
+        Hash160 owner = nfTestToken.ownerOf(TOKEN_ID);
 
         assertThat(owner, is(account1.getScriptHash()));
     }
@@ -107,7 +108,8 @@ public class NonFungibleTokenTest {
     public void testOwnerOf_returnInvalidAddress() throws IOException {
         setUpWireMockForInvokeFunction("ownerOf", "response_invalid_address.json");
         exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage("did not contain script hash in expected format");
+        exceptionRule.expectMessage(new StringContains(
+                "Return type did not contain script hash in expected format."));
         nfTestToken.ownerOf(new byte[]{1});
     }
 
@@ -127,10 +129,9 @@ public class NonFungibleTokenTest {
     @Test
     public void testGetProperties() throws IOException {
         setUpWireMockForInvokeFunction("properties", "nft_properties.json");
-        TokenState properties = nfTestToken.properties(new byte[]{1});
+        NFTokenState properties = nfTestToken.properties(new byte[]{1});
 
         assertThat(properties.getName(), is("A name"));
-        assertThat(properties.getDescription(), is("A description"));
     }
 
     @Test
@@ -140,4 +141,5 @@ public class NonFungibleTokenTest {
         exceptionRule.expectMessage("but expected Map");
         nfTestToken.properties(new byte[]{1});
     }
+
 }

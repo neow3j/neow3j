@@ -5,3 +5,5 @@ include 'contract'
 include 'core'
 include 'devpack'
 include 'gradle-plugin'
+include 'test-properties'
+

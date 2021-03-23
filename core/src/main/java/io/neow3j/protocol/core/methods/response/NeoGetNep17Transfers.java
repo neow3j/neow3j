@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.Response;
 
 import java.util.List;
@@ -32,7 +34,8 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
         public Nep17TransferWrapper() {
         }
 
-        public Nep17TransferWrapper(List<Nep17Transfer> sent, List<Nep17Transfer> received, String transferAddress) {
+        public Nep17TransferWrapper(List<Nep17Transfer> sent, List<Nep17Transfer> received,
+                String transferAddress) {
             this.sent = sent;
             this.received = received;
             this.transferAddress = transferAddress;
@@ -52,10 +55,15 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Nep17TransferWrapper)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Nep17TransferWrapper)) {
+                return false;
+            }
             Nep17TransferWrapper that = (Nep17TransferWrapper) o;
-            return Objects.equals(getSent(), that.getSent()) && Objects.equals(getReceived(), that.getReceived()) && Objects
+            return Objects.equals(getSent(), that.getSent()) &&
+                    Objects.equals(getReceived(), that.getReceived()) && Objects
                     .equals(getTransferAddress(), that.getTransferAddress());
         }
 
@@ -66,7 +74,10 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
 
         @Override
         public String toString() {
-            return "Nep17TransferWrapper{" + "sent=" + sent + ", received=" + received + ", transferAddress='" + transferAddress + '\'' + '}';
+            return "Nep17TransferWrapper{" +
+                    "sent=" + sent +
+                    ", received=" + received +
+                    ", transferAddress='" + transferAddress + '\'' + '}';
         }
     }
 
@@ -77,7 +88,7 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
         private long timestamp;
 
         @JsonProperty("assethash")
-        private String assetHash;
+        private Hash160 assetHash;
 
         @JsonProperty("transferaddress")
         private String transferAddress;
@@ -92,12 +103,13 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
         private long transferNotifyIndex;
 
         @JsonProperty("txhash")
-        private String txHash;
+        private Hash256 txHash;
 
         public Nep17Transfer() {
         }
 
-        public Nep17Transfer(long timestamp, String assetHash, String transferAddress, String amount, long blockIndex, long transferNotifyIndex, String txHash) {
+        public Nep17Transfer(long timestamp, Hash160 assetHash, String transferAddress,
+                String amount, long blockIndex, long transferNotifyIndex, Hash256 txHash) {
             this.timestamp = timestamp;
             this.assetHash = assetHash;
             this.transferAddress = transferAddress;
@@ -111,7 +123,7 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
             return timestamp;
         }
 
-        public String getAssetHash() {
+        public Hash160 getAssetHash() {
             return assetHash;
         }
 
@@ -131,29 +143,45 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
             return transferNotifyIndex;
         }
 
-        public String getTxHash() {
+        public Hash256 getTxHash() {
             return txHash;
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Nep17Transfer)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Nep17Transfer)) {
+                return false;
+            }
             Nep17Transfer that = (Nep17Transfer) o;
-            return getTimestamp() == that.getTimestamp() && getBlockIndex() == that.getBlockIndex() && getTransferNotifyIndex() == that
-                    .getTransferNotifyIndex() && Objects.equals(getAssetHash(), that.getAssetHash()) && Objects.equals(getTransferAddress(), that
-                    .getTransferAddress()) && Objects.equals(getAmount(), that.getAmount()) && Objects.equals(getTxHash(), that
-                    .getTxHash());
+            return getTimestamp() == that.getTimestamp() &&
+                    getBlockIndex() == that.getBlockIndex() &&
+                    getTransferNotifyIndex() == that.getTransferNotifyIndex() &&
+                    Objects.equals(getAssetHash(), that.getAssetHash()) &&
+                    Objects.equals(getTransferAddress(), that.getTransferAddress()) &&
+                    Objects.equals(getAmount(), that.getAmount()) &&
+                    Objects.equals(getTxHash(), that.getTxHash());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTimestamp(), getAssetHash(), getTransferAddress(), getAmount(), getBlockIndex(), getTransferNotifyIndex(), getTxHash());
+            return Objects.hash(getTimestamp(), getAssetHash(), getTransferAddress(), getAmount(),
+                    getBlockIndex(), getTransferNotifyIndex(), getTxHash());
         }
 
         @Override
         public String toString() {
-            return "Nep17Transfer{" + "timestamp=" + timestamp + ", assetHash='" + assetHash + '\'' + ", transferAddress='" + transferAddress + '\'' + ", amount='" + amount + '\'' + ", blockIndex=" + blockIndex + ", transferNotifyIndex=" + transferNotifyIndex + ", txHash='" + txHash + '\'' + '}';
+            return "Nep17Transfer{" +
+                    "timestamp=" + timestamp +
+                    ", assetHash='" + assetHash + '\'' +
+                    ", transferAddress='" + transferAddress + '\'' +
+                    ", amount='" + amount + '\'' +
+                    ", blockIndex=" + blockIndex +
+                    ", transferNotifyIndex=" + transferNotifyIndex +
+                    ", txHash='" + txHash + '\'' +
+                    '}';
         }
     }
 

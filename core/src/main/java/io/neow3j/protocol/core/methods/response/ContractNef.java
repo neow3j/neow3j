@@ -91,4 +91,5 @@ public class ContractNef {
                 ", checksum=" + checksum +
                 '}';
     }
+
 }

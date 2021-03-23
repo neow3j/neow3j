@@ -3,19 +3,21 @@ package io.neow3j.devpack.gradle;
 import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
 import static io.neow3j.contract.ContractUtils.writeNefFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
+import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_DEFAULT_OUTPUT_DIR;
 import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsFilesURL;
 import static java.nio.file.Files.createDirectories;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.gradle.api.Action;
@@ -25,17 +27,26 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
     @Override
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
-        String canonicalClassName = neow3jPluginCompile.getOptions().getClassName();
-        Boolean debugSymbols = neow3jPluginCompile.getOptions().getDebug();
+        String canonicalClassName = ofNullable(neow3jPluginCompile.getClassName().getOrNull())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("The parameter "
+                                + "'" + CLASSNAME_NAME + "' needs to be set in the "
+                                + "'" + NEOW3J_COMPILER_OPTIONS_NAME + "' "
+                                + "declaration in your build.gradle file.")
+                );
 
-        ofNullable(canonicalClassName).orElseThrow(() ->
-                new IllegalArgumentException("The parameter "
-                        + "'" + CLASSNAME_NAME + "' needs to be set in the "
-                        + "'" + NEOW3J_COMPILER_OPTIONS_NAME + "' "
-                        + "declaration in your build.gradle file."));
+        // default value is 'true' for generating debug symbols if not specified
+        Boolean debugSymbols = neow3jPluginCompile.getDebug().getOrElse(true);
 
-        Path outputDir = ofNullable(neow3jPluginCompile.getOptions().getOutputDir())
-                .orElse(neow3jPluginCompile.getCompilerDefaultOutputDir());
+        File projectBuildDir = ofNullable(
+                neow3jPluginCompile.getProjectBuildDir()
+                        .map(Path::toFile).getOrNull())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("The project build directory needs "
+                                + "to be set to the task."));
+
+        Path outputDir = neow3jPluginCompile.getOutputDir().getOrElse(
+                Paths.get(projectBuildDir.getAbsolutePath(), NEOW3J_DEFAULT_OUTPUT_DIR));
 
         List<URL> clDirs = new ArrayList<>();
 
@@ -44,7 +55,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         clDirs.addAll(sourceSetDirsURL);
 
         // adding the build dir of the project
-        URL buildDirsURL = getBuildDirURL(neow3jPluginCompile.getProjectBuildDir());
+        URL buildDirsURL = getBuildDirURL(projectBuildDir);
         clDirs.add(buildDirsURL);
 
         URL[] clDirsArray = clDirs.stream().toArray(URL[]::new);
@@ -70,7 +81,6 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             } else {
                 compilationUnit = n.compileClass(canonicalClassName);
             }
-            byte[] nefBytes = compilationUnit.getNefFile().toArray();
 
             Path outDir = createDirectories(outputDir);
             String contractName = compilationUnit.getManifest().getName();

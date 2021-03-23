@@ -31,16 +31,16 @@ public class SupportedStandardsTest {
     @SupportedStandards({"NEP17", "NEP10"})
     static class MultiStandardContract {
 
-        public static boolean main(Hash160 scriptHash) {
-            return Account.isStandard(scriptHash);
+        public static boolean method() {
+            return true;
         }
     }
 
     @SupportedStandards("NEP17")
     static class SingleStandardContract {
 
-        public static boolean main(Hash160 scriptHash) {
-            return Account.isStandard(scriptHash);
+        public static boolean method() {
+            return true;
         }
     }
 

@@ -1,11 +1,11 @@
 {
-  "address": "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj",
+  "address": "NUrPrFLETzoe7N2FLi2dqTvLwc9L2Em84K",
   "label": null,
   "isDefault": false,
   "lock": false,
-  "key": "6PYNxavNrrWiCNgLtd5WJjerGUwJD7LPp5Pzt85azUo4nLHL9dUkJaYtAo",
+  "key": "6PYRSp9YqwcNpUz4bgvFi74CNQBGRkx3snsy2og53a7NLrRwtYTXpBFfye",
   "contract": {
-    "script": "DCECFjlGoTPj0uDZh/uQywGwYO0XgPFxji2ijt8TuWX9K2ALQZVEDXg=",
+    "script": "DCEDbPzF0FUNBIG2b1jiUGcoDwQrSTP8AT3EkwzipBlMnZRBdHR2qg==",
     "parameters": [
       {
         "name": "signature",

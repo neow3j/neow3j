@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jService;
-import io.neow3j.protocol.core.BlockParameterIndex;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
@@ -56,9 +55,7 @@ public class JsonRpc2_0RxTest {
         }
 
         Observable<NeoGetBlock> observable = neow3j.replayBlocksObservable(
-            new BlockParameterIndex(BigInteger.ZERO),
-            new BlockParameterIndex(BigInteger.valueOf(2)),
-            false);
+                BigInteger.ZERO, BigInteger.valueOf(2), false);
 
         CountDownLatch transactionLatch = new CountDownLatch(neoGetBlocks.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
@@ -96,10 +93,7 @@ public class JsonRpc2_0RxTest {
         }
 
         Observable<NeoGetBlock> observable = neow3j.replayBlocksObservable(
-            new BlockParameterIndex(BigInteger.ZERO),
-            new BlockParameterIndex(BigInteger.valueOf(2)),
-            false,
-            false);
+            BigInteger.ZERO, BigInteger.valueOf(2), false, false);
 
         CountDownLatch transactionLatch = new CountDownLatch(neoGetBlocks.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
@@ -127,26 +121,26 @@ public class JsonRpc2_0RxTest {
     public void testCatchUpToLatestAndSubscribeToNewBlockObservable() throws Exception {
 
         List<NeoGetBlock> expected = Arrays.asList(
-            // past blocks:
-            createBlock(0),
-            createBlock(1),
-            createBlock(2),
-            createBlock(3),
-            // later blocks:
-            createBlock(4),
-            createBlock(5),
-            createBlock(6)
+                // past blocks:
+                createBlock(0),
+                createBlock(1),
+                createBlock(2),
+                createBlock(3),
+                // later blocks:
+                createBlock(4),
+                createBlock(5),
+                createBlock(6)
         );
 
         OngoingStubbing<NeoGetBlock> stubbingNeoGetBlock =
-            when(neow3jService.send(any(Request.class), eq(NeoGetBlock.class)));
+                when(neow3jService.send(any(Request.class), eq(NeoGetBlock.class)));
 
         for (int i = 0; i < 7; i++) {
             stubbingNeoGetBlock = stubbingNeoGetBlock.thenReturn(expected.get(i));
         }
 
         OngoingStubbing<NeoBlockCount> stubbingNeoBlockCount =
-            when(neow3jService.send(any(Request.class), eq(NeoBlockCount.class)));
+                when(neow3jService.send(any(Request.class), eq(NeoBlockCount.class)));
 
         NeoBlockCount neoBlockCount = new NeoBlockCount();
         BigInteger currentBlock = BigInteger.valueOf(4);
@@ -154,9 +148,68 @@ public class JsonRpc2_0RxTest {
         stubbingNeoBlockCount.thenReturn(neoBlockCount);
 
         Observable<NeoGetBlock> observable = neow3j
-            .catchUpToLatestAndSubscribeToNewBlocksObservable(
-                new BlockParameterIndex(BigInteger.ZERO),
-                false);
+                .catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger.ZERO, false);
+
+        CountDownLatch transactionLatch = new CountDownLatch(expected.size());
+        CountDownLatch completedLatch = new CountDownLatch(1);
+
+        List<NeoGetBlock> results = new ArrayList<>(expected.size());
+
+        Disposable disposable = observable.subscribe(
+                result -> {
+                    results.add(result);
+                    transactionLatch.countDown();
+                    System.out.println("TransactionLatch countDown");
+                    System.out.println(result.getBlock());
+                },
+                throwable -> fail(throwable.getMessage()),
+                () -> {
+                    System.out.println("Completed");
+                    completedLatch.countDown();
+                });
+
+        for (int i = 4; i < 7; i++) {
+            Thread.sleep(2000);
+            BigInteger added = neoBlockCount.getBlockIndex().add(BigInteger.ONE);
+            neoBlockCount.setResult(added);
+            stubbingNeoBlockCount = stubbingNeoBlockCount.thenReturn(neoBlockCount);
+        }
+
+        completedLatch.await(15250, TimeUnit.MILLISECONDS);
+        assertThat(results.size(), equalTo(expected.size()));
+        assertThat(results, equalTo(expected));
+
+        disposable.dispose();
+
+        assertTrue(disposable.isDisposed());
+        assertThat(transactionLatch.getCount(), is(0L));
+    }
+
+    @Test
+    public void testSubscribeToNewBlockObservable() throws Exception {
+
+        List<NeoGetBlock> expected = Arrays.asList(
+            createBlock(0),
+            createBlock(1),
+            createBlock(2),
+            createBlock(3)
+        );
+
+        OngoingStubbing<NeoGetBlock> stubbingNeoGetBlock =
+            when(neow3jService.send(any(Request.class), eq(NeoGetBlock.class)));
+
+        for (int i = 0; i < 4; i++) {
+            stubbingNeoGetBlock = stubbingNeoGetBlock.thenReturn(expected.get(i));
+        }
+
+        NeoBlockCount neoBlockCount = new NeoBlockCount();
+        BigInteger currentBlock = BigInteger.valueOf(0);
+        neoBlockCount.setResult(currentBlock);
+        OngoingStubbing<NeoBlockCount> stubbingNeoBlockCount =
+            when(neow3jService.send(any(Request.class), eq(NeoBlockCount.class)))
+                    .thenReturn(neoBlockCount);
+
+        Observable<NeoGetBlock> observable = neow3j.subscribeToNewBlocksObservable(false);
 
         CountDownLatch transactionLatch = new CountDownLatch(expected.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
@@ -176,7 +229,7 @@ public class JsonRpc2_0RxTest {
                 completedLatch.countDown();
             });
 
-        for (int i = 4; i < 7; i++) {
+        for (int i = 0; i < 4; i++) {
             Thread.sleep(2000);
             BigInteger added = neoBlockCount.getBlockIndex().add(BigInteger.ONE);
             neoBlockCount.setResult(added);
@@ -240,9 +293,7 @@ public class JsonRpc2_0RxTest {
         stubbingNeoBlockCount.thenReturn(neoBlockCount);
 
         Observable<NeoGetBlock> observable = neow3j
-            .catchUpToLatestAndSubscribeToNewBlocksObservable(
-                new BlockParameterIndex(BigInteger.ZERO),
-                false);
+            .catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger.ZERO, false);
 
         CountDownLatch transactionLatch = new CountDownLatch(expected.size());
         CountDownLatch completedLatch = new CountDownLatch(1);
@@ -262,7 +313,7 @@ public class JsonRpc2_0RxTest {
                 completedLatch.countDown();
             });
 
-        for (int i = 4; i < 7; i++) {
+        for (int i = 0; i < 4; i++) {
             Thread.sleep(2000);
             BigInteger added = BigInteger.valueOf(neoGetBlocks.get(i).getBlock().getIndex());
             neoBlockCount.setResult(added);
@@ -283,10 +334,10 @@ public class JsonRpc2_0RxTest {
 
     private NeoGetBlock createBlock(int number) {
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock("", 0L, 0, "",
-            "", 123456789, number, "nonce",
-            null, null, null, 1, "next");
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, 0, "nonce", null,
+                null, 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }
+
 }

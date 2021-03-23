@@ -1,10 +1,10 @@
 package io.neow3j.wallet;
 
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -41,9 +41,9 @@ public class Wallet {
 
     private String name;
     private String version;
-    private Map<ScriptHash, Account> accounts = new HashMap<>();
+    private Map<Hash160, Account> accounts = new HashMap<>();
     private ScryptParams scryptParams;
-    private ScriptHash defaultAccount;
+    private Hash160 defaultAccount;
 
     static {
         addBouncyCastle();
@@ -73,18 +73,18 @@ public class Wallet {
     /**
      * Sets the account with the given script hash to the default account of this wallet.
      *
-     * @param accountScriptHash The new default account.
+     * @param accountHash160 The new default account.
      * @throws IllegalArgumentException if the given account is not in this wallet.
      * @return the Wallet
      */
-    public Wallet defaultAccount(ScriptHash accountScriptHash) {
-        if (accountScriptHash == null) throw new IllegalArgumentException("No account provided to set default.");
-        if (!this.accounts.containsKey(accountScriptHash)) {
+    public Wallet defaultAccount(Hash160 accountHash160) {
+        if (accountHash160 == null) throw new IllegalArgumentException("No account provided to set default.");
+        if (!this.accounts.containsKey(accountHash160)) {
             throw new IllegalArgumentException("Can't set default account on wallet. Wallet does "
                     + "not contain the account with script hash "
-                    + accountScriptHash.toString() + ".");
+                    + accountHash160.toString() + ".");
         }
-        this.defaultAccount = accountScriptHash;
+        this.defaultAccount = accountHash160;
         return this;
     }
 
@@ -114,11 +114,11 @@ public class Wallet {
     /**
      * Checks whether an account is the default account in the wallet.
      *
-     * @param accountScriptHash the account to be checked.
+     * @param accountHash160 the account to be checked.
      * @return Whether the given account is the default account in this wallet.
      */
-    public Boolean isDefault(ScriptHash accountScriptHash) {
-        return getDefaultAccount().getScriptHash().equals(accountScriptHash);
+    public Boolean isDefault(Hash160 accountHash160) {
+        return getDefaultAccount().getScriptHash().equals(accountHash160);
     }
 
     public Wallet name(String name) {
@@ -174,41 +174,41 @@ public class Wallet {
      * Removes the account with the given script hash (address) from this wallet.
      * If there is only one account in the wallet left, this account can not be removed.
      *
-     * @param scriptHash The {@link ScriptHash} of the account to be removed.
+     * @param hash160 The {@link Hash160} of the account to be removed.
      * @return true if an account was removed, false if no account with the given address was found.
      */
-    public boolean removeAccount(ScriptHash scriptHash) {
-        if (!this.accounts.containsKey(scriptHash)) {
+    public boolean removeAccount(Hash160 hash160) {
+        if (!this.accounts.containsKey(hash160)) {
             return false;
         }
         // The wallet must have at least one account at all times.
         if (this.accounts.size() == 1) {
-            throw new IllegalArgumentException("The account " + scriptHash.toAddress() +
+            throw new IllegalArgumentException("The account " + hash160.toAddress() +
                     " is the only account in the wallet. It cannot be removed.");
         }
         // Remove the link to this wallet in the account instance.
-        this.accounts.get(scriptHash).setWallet(null);
+        this.accounts.get(hash160).setWallet(null);
 
         // If the removed account was the default account in this wallet, set a new default account.
-        if (scriptHash.equals(this.getDefaultAccount().getScriptHash())) {
-            ScriptHash newDefaultAccountScriptHash = this.accounts.entrySet().stream()
-                    .filter(e -> !e.getKey().equals(scriptHash))
+        if (hash160.equals(this.getDefaultAccount().getScriptHash())) {
+            Hash160 newDefaultAccountHash160 = this.accounts.entrySet().stream()
+                    .filter(e -> !e.getKey().equals(hash160))
                     .iterator().next().getKey();
-            this.defaultAccount(newDefaultAccountScriptHash);
+            this.defaultAccount(newDefaultAccountHash160);
         }
-        return accounts.remove(scriptHash) != null;
+        return accounts.remove(hash160) != null;
     }
 
     public void decryptAllAccounts(String password)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
-        for (Entry<ScriptHash, Account> e : accounts.entrySet()) {
+        for (Entry<Hash160, Account> e : accounts.entrySet()) {
             e.getValue().decryptPrivateKey(password, scryptParams);
         }
     }
 
     public void encryptAllAccounts(String password) throws CipherException {
-        for (Entry<ScriptHash, Account> e : accounts.entrySet()) {
+        for (Entry<Hash160, Account> e : accounts.entrySet()) {
             e.getValue().encryptPrivateKey(password, scryptParams);
         }
     }
@@ -249,13 +249,13 @@ public class Wallet {
                 .findFirst();
 
         if (defaultAccount.isPresent()) {
-            ScriptHash defaultAccountScriptHash = Account.fromNEP6Account(defaultAccount.get()).getScriptHash();
+            Hash160 defaultAccountHash160 = Account.fromNEP6Account(defaultAccount.get()).getScriptHash();
             return new Wallet()
                     .name(nep6Wallet.getName())
                     .version(nep6Wallet.getVersion())
                     .scryptParams(nep6Wallet.getScrypt())
                     .addAccounts(accs)
-                    .defaultAccount(defaultAccountScriptHash);
+                    .defaultAccount(defaultAccountHash160);
         } else {
             throw new IllegalArgumentException("The Nep-6 wallet does not contain any default account.");
         }
@@ -295,10 +295,10 @@ public class Wallet {
      * @return the map of token script hashes to token amounts.
      * @throws IOException If something goes wrong when communicating with the neo-node.
      */
-    public Map<ScriptHash, BigInteger> getNep17TokenBalances(Neow3j neow3j) throws IOException {
-        Map<ScriptHash, BigInteger> balances = new HashMap<>();
+    public Map<Hash160, BigInteger> getNep17TokenBalances(Neow3j neow3j) throws IOException {
+        Map<Hash160, BigInteger> balances = new HashMap<>();
         for (Account a : this.accounts.values()) {
-            for (Entry<ScriptHash, BigInteger> e : a.getNep17Balances(neow3j).entrySet()) {
+            for (Entry<Hash160, BigInteger> e : a.getNep17Balances(neow3j).entrySet()) {
                 balances.merge(e.getKey(), e.getValue(), BigInteger::add);
             }
         }
@@ -363,17 +363,17 @@ public class Wallet {
                 .defaultAccount(accounts[0].getScriptHash());
     }
 
-    public boolean holdsAccount(ScriptHash scriptHash) {
-        return this.accounts.containsKey(scriptHash);
+    public boolean holdsAccount(Hash160 hash160) {
+        return this.accounts.containsKey(hash160);
     }
 
     /**
      * Gets the account with the given script hash if it is in this wallet.
-     * @param scriptHash The script hash of the account.
+     * @param hash160 The script hash of the account.
      * @return the account if it is in this wallet. Null, otherwise.
      */
-    public Account getAccount(ScriptHash scriptHash) {
-        return this.accounts.get(scriptHash);
+    public Account getAccount(Hash160 hash160) {
+        return this.accounts.get(hash160);
     }
 
     /**
@@ -386,9 +386,9 @@ public class Wallet {
         int signers = 0;
         Account account;
         for (ECKeyPair.ECPublicKey pubKey : multiSigVerificationScript.getPublicKeys()) {
-            ScriptHash scriptHash = ScriptHash.fromPublicKey(pubKey.getEncoded(true));
-            if (holdsAccount(scriptHash)) {
-                account = getAccount(scriptHash);
+            Hash160 hash160 = Hash160.fromPublicKey(pubKey.getEncoded(true));
+            if (holdsAccount(hash160)) {
+                account = getAccount(hash160);
                 if (account != null && account.getECKeyPair() != null) {
                     signers += 1;
                 }

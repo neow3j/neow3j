@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.TestProperties.gasTokenHash;
+import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
@@ -50,11 +52,9 @@ public class FungibleTokenTest {
     private Account account2;
     private Account account3;
     private Account multiSigAccount;
-    private static final ScriptHash RECIPIENT_SCRIPT_HASH =
-            new ScriptHash("969a77db482f74ce27105f760efa139223431394");
+    private static final Hash160 RECIPIENT_SCRIPT_HASH =
+            new Hash160("969a77db482f74ce27105f760efa139223431394");
 
-    private static final ScriptHash NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
-    private static final ScriptHash GAS_TOKEN_SCRIPT_HASH = GasToken.SCRIPT_HASH;
     private static final String NEP17_TRANSFER = "transfer";
 
     @Before
@@ -64,8 +64,8 @@ public class FungibleTokenTest {
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
-        neoToken = new FungibleToken(NEO_TOKEN_SCRIPT_HASH, neow);
-        gasToken = new FungibleToken(GAS_TOKEN_SCRIPT_HASH, neow);
+        neoToken = new FungibleToken(new Hash160(neoTokenHash()), neow);
+        gasToken = new FungibleToken(new Hash160(gasTokenHash()), neow);
 
         account1 = new Account(ECKeyPair.create(
                 Numeric.hexStringToByteArray(
@@ -130,7 +130,7 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(GAS_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -156,7 +156,7 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(GAS_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -181,7 +181,7 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(GAS_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -206,7 +206,7 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(GAS_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -358,17 +358,16 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("decimals",
                 "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
-        setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
+        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_4.json");
 
-        byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                         NEP17_TRANSFER, asList(
                                 hash160(account1.getScriptHash()), // from
                                 hash160(RECIPIENT_SCRIPT_HASH), // to
                                 integer(5), // amount
                                 any(null))) // data
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
-                        hash160(account2.getScriptHash()),
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
+                        hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(2),
                         any(null))).toArray();
@@ -384,20 +383,20 @@ public class FungibleTokenTest {
             throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
-        setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
+        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_4.json");
 
-        byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH,
+        // The accounts are ordered by script hash (but the default account is always first) and
+        // then used in that order to cover the amount.
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                         NEP17_TRANSFER, asList(
                                 hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(5),
                                 any(null)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
-                        hash160(account2.getScriptHash()),
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
+                        hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(2),
                         any(null))).toArray();
@@ -423,21 +422,23 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
+        // The accounts are ordered by script hash (but the default account is always first) and
+        // then used in that order to cover the amount.
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(5),
                         any(null)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
-                        hash160(account2.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(4),
-                        any(null)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
                         hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(3),
+                        any(null)))
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
+                        hash160(account2.getScriptHash()),
+                        hash160(RECIPIENT_SCRIPT_HASH),
+                        integer(4),
                         any(null)))
                 .toArray();
 
@@ -459,7 +460,7 @@ public class FungibleTokenTest {
                 "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -480,7 +481,7 @@ public class FungibleTokenTest {
                 "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -509,7 +510,7 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -541,13 +542,13 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_4.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH,
+                .contractCall(new Hash160(neoTokenHash()),
                         NEP17_TRANSFER, asList(
                                 hash160(multiSigAccount.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(3),
                                 any(null)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH,
+                .contractCall(new Hash160(neoTokenHash()),
                         NEP17_TRANSFER, asList(
                                 hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
@@ -578,7 +579,7 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -647,13 +648,13 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH,
+                .contractCall(new Hash160(neoTokenHash()),
                         NEP17_TRANSFER, asList(
                                 hash160(account3.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(3),
                                 any(null)))
-                .contractCall(NEO_TOKEN_SCRIPT_HASH,
+                .contractCall(new Hash160(neoTokenHash()),
                         NEP17_TRANSFER, asList(
                                 hash160(account2.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
@@ -679,7 +680,7 @@ public class FungibleTokenTest {
                 "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account2.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -709,7 +710,7 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
                         hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(1),
@@ -731,7 +732,7 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
+        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
                 NEP17_TRANSFER, asList(
                         hash160(account3.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
@@ -807,4 +808,5 @@ public class FungibleTokenTest {
         neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("-2"), account1.getScriptHash());
     }
+
 }

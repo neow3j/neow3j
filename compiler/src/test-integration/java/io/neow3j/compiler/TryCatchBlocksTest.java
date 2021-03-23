@@ -1,200 +1,210 @@
 package io.neow3j.compiler;
 
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
+import java.io.IOException;
+import java.util.List;
+
+import static io.neow3j.compiler.ContractTestRule.VM_STATE_FAULT;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import io.neow3j.protocol.core.methods.response.ArrayStackItem;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import java.io.IOException;
-import org.junit.BeforeClass;
-import org.junit.Test;
+public class TryCatchBlocksTest {
 
-public class TryCatchBlocksTest extends ContractTest {
+    @Rule
+    public TestName testName = new TestName();
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(TryCatchBlocks.class.getName());
-    }
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            TryCatchBlocks.class.getName());
 
     @Test
     public void hitExceptionInTryCatchBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchBlock", integer(1));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(1).asBoolean().getValue());
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchBlock", integer(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(res.get(0).getBoolean());
+        assertFalse(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
     }
 
     @Test
     public void dontHitExceptionInTryCatchBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchBlock", integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(2).asBoolean().getValue());
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchBlock", integer(0));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertFalse(res.get(2).getBoolean());
     }
 
     @Test
     public void hitExceptionInTryFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryFinallyBlock", integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryFinallyBlock", integer(1));
         assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
     }
 
     @Test
     public void dontHitExceptionInTryFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryFinallyBlock", integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryFinallyBlock", integer(0));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
     }
 
     @Test
     public void hitExceptionInTryCatchFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchFinallyBlock", integer(1));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(1).asBoolean().getValue());
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchFinallyBlock", integer(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(res.get(0).getBoolean());
+        assertFalse(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
+        assertTrue(res.get(3).getBoolean());
     }
 
     @Test
     public void dontHitExceptionInTryCatchFinallyBlock() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("tryCatchFinallyBlock", integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(2).asBoolean().getValue());
-        assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("tryCatchFinallyBlock", integer(0));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertFalse(res.get(2).getBoolean());
+        assertTrue(res.get(3).getBoolean());
     }
 
     @Test
     public void hitFirstExceptionInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("multipleTryCatchFinallyBlocks",
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(1), integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(1).asBoolean().getValue());
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(4).asBoolean().getValue());
-        assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(res.get(0).getBoolean());
+        assertFalse(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
+        assertTrue(res.get(3).getBoolean());
+        assertFalse(res.get(4).getBoolean());
+        assertTrue(res.get(5).getBoolean());
+        assertTrue(res.get(6).getBoolean());
     }
 
     @Test
     public void hitSecondExceptionInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("multipleTryCatchFinallyBlocks",
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(0), integer(1));
         assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
     }
 
     @Test
     public void dontHitAnyExceptionsInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("multipleTryCatchFinallyBlocks",
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(0), integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(2).asBoolean().getValue());
-        assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(4).asBoolean().getValue());
-        assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertFalse(res.get(2).getBoolean());
+        assertTrue(res.get(3).getBoolean());
+        assertFalse(res.get(4).getBoolean());
+        assertTrue(res.get(5).getBoolean());
+        assertTrue(res.get(6).getBoolean());
     }
 
     @Test
     public void hitFirstExceptionInNestedTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(1),
-                integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(1).asBoolean().getValue());
-        assertFalse(res.get(2).asBoolean().getValue());
-        assertFalse(res.get(3).asBoolean().getValue());
-        assertFalse(res.get(4).asBoolean().getValue());
-        assertFalse(res.get(5).asBoolean().getValue());
-        assertFalse(res.get(6).asBoolean().getValue());
-        assertThat(res.get(7).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(8).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(1),
+                        integer(0));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(res.get(0).getBoolean());
+        assertFalse(res.get(1).getBoolean());
+        assertFalse(res.get(2).getBoolean());
+        assertFalse(res.get(3).getBoolean());
+        assertFalse(res.get(4).getBoolean());
+        assertFalse(res.get(5).getBoolean());
+        assertFalse(res.get(6).getBoolean());
+        assertTrue(res.get(7).getBoolean());
+        assertTrue(res.get(8).getBoolean());
     }
 
     @Test
     public void hitSecondExceptionInNestedTryCatchBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
-                integer(1));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(3).asBoolean().getValue());
-        assertThat(res.get(4).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(7).asBoolean().getValue());
-        assertThat(res.get(8).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
+                        integer(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
+        assertFalse(res.get(3).getBoolean());
+        assertTrue(res.get(4).getBoolean());
+        assertTrue(res.get(5).getBoolean());
+        assertTrue(res.get(6).getBoolean());
+        assertFalse(res.get(7).getBoolean());
+        assertTrue(res.get(8).getBoolean());
     }
 
     @Test
     public void hitNoExceptionsInNestedTryCatchBlocks() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
-                integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(2).asBoolean().getValue());
-        assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(4).asBoolean().getValue());
-        assertThat(res.get(5).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(6).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(7).asBoolean().getValue());
-        assertThat(res.get(8).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response =
+                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
+                        integer(0));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertFalse(res.get(2).getBoolean());
+        assertTrue(res.get(3).getBoolean());
+        assertFalse(res.get(4).getBoolean());
+        assertTrue(res.get(5).getBoolean());
+        assertTrue(res.get(6).getBoolean());
+        assertFalse(res.get(7).getBoolean());
+        assertTrue(res.get(8).getBoolean());
     }
 
     @Test
     public void hitExceptionsInMethodThrowingException() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("catchExceptionFromMethod", integer(1));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("catchExceptionFromMethod", integer(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
     }
 
     @Test
     public void dontHitExceptionsInMethodThrowingException() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("catchExceptionFromMethod", integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(1).asBoolean().getValue());
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("catchExceptionFromMethod", integer(0));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(res.get(0).getBoolean());
+        assertFalse(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
     }
 
     @Test
     public void hitExceptionInNestedBlockInCatch() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedBlockInCatch",
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch",
                 integer(1), integer(1));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertFalse(res.get(0).asBoolean().getValue());
-        assertThat(res.get(1).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(4).asInteger().getValue().intValue(), is(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertFalse(res.get(0).getBoolean());
+        assertTrue(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
+        assertTrue(res.get(3).getBoolean());
+        assertTrue(res.get(4).getBoolean());
     }
 
     @Test
     public void dontHitExceptionsInNestedBlockInCatch() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction("nestedBlockInCatch",
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch",
                 integer(1), integer(0));
-        ArrayStackItem res = response.getInvocationResult().getStack().get(0).asArray();
-        assertThat(res.get(0).asInteger().getValue().intValue(), is(1));
-        assertFalse(res.get(1).asBoolean().getValue());
-        assertThat(res.get(2).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(3).asInteger().getValue().intValue(), is(1));
-        assertThat(res.get(4).asInteger().getValue().intValue(), is(1));
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(res.get(0).getBoolean());
+        assertFalse(res.get(1).getBoolean());
+        assertTrue(res.get(2).getBoolean());
+        assertTrue(res.get(3).getBoolean());
+        assertTrue(res.get(4).getBoolean());
     }
 
     static class TryCatchBlocks {

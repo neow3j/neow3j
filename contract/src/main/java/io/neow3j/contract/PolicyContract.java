@@ -14,20 +14,12 @@ import java.math.BigInteger;
 public class PolicyContract extends SmartContract {
 
     private static final String NAME = "PolicyContract";
-    public final static long NEF_CHECKSUM = 1136340263L;
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
-
-    private static final String GET_MAX_TRANSACTIONS_PER_BLOCK = "getMaxTransactionsPerBlock";
-    private static final String GET_MAX_BLOCK_SIZE = "getMaxBlockSize";
-    private static final String GET_MAX_BLOCK_SYSTEM_FEE = "getMaxBlockSystemFee";
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
     private static final String GET_EXEC_FEE_FACTOR = "getExecFeeFactor";
     private static final String GET_STORAGE_PRICE = "getStoragePrice";
     private static final String IS_BLOCKED = "isBlocked";
-    private static final String SET_MAX_BLOCK_SIZE = "setMaxBlockSize";
-    private static final String SET_MAX_TX_PER_BLOCK = "setMaxTransactionsPerBlock";
-    private static final String SET_MAX_BLOCK_SYSTEM_FEE = "setMaxBlockSystemFee";
     private static final String SET_FEE_PER_BYTE = "setFeePerByte";
     private static final String SET_EXEC_FEE_FACTOR = "setExecFeeFactor";
     private static final String SET_STORAGE_PRICE = "setStoragePrice";
@@ -42,36 +34,6 @@ public class PolicyContract extends SmartContract {
      */
     public PolicyContract(Neow3j neow) {
         super(SCRIPT_HASH, neow);
-    }
-
-    /**
-     * Returns the maximal amount of transactions allowed per block.
-     *
-     * @return the maximal amount of transactions allowed per block.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public Integer getMaxTransactionsPerBlock() throws IOException {
-        return callFuncReturningInt(GET_MAX_TRANSACTIONS_PER_BLOCK).intValue();
-    }
-
-    /**
-     * Returns the maximal size allowed for a block.
-     *
-     * @return the maximal size allowed for a block.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public Integer getMaxBlockSize() throws IOException {
-        return callFuncReturningInt(GET_MAX_BLOCK_SIZE).intValue();
-    }
-
-    /**
-     * Returns the maximal summed up system fee allowed for a block.
-     *
-     * @return the maximal summed up system fee allowed for a block.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public BigInteger getMaxBlockSystemFee() throws IOException {
-        return callFuncReturningInt(GET_MAX_BLOCK_SYSTEM_FEE);
     }
 
     /**
@@ -111,43 +73,8 @@ public class PolicyContract extends SmartContract {
      * @return true if the account is blocked. False, otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public boolean isBlocked(ScriptHash scriptHash) throws IOException {
+    public boolean isBlocked(Hash160 scriptHash) throws IOException {
         return callFuncReturningBool(IS_BLOCKED, hash160(scriptHash));
-    }
-
-    /**
-     * Creates a transaction script to set the maximal size of a block and initializes
-     * a {@link TransactionBuilder} based on this script.
-     *
-     * @param maxBlockSize the maximal size of a block.
-     * @return a {@link TransactionBuilder}.
-     */
-    public TransactionBuilder setMaxBlockSize(Integer maxBlockSize) {
-        return invokeFunction(SET_MAX_BLOCK_SIZE, integer(maxBlockSize));
-    }
-
-    /**
-     * Creates a transaction script to set the maximal amount of transactions per block and
-     * initializes
-     * a {@link TransactionBuilder} based on this script.
-     *
-     * @param maxTxPerBlock the maximal allowed number of transactions per block.
-     * @return a {@link TransactionBuilder}.
-     */
-    public TransactionBuilder setMaxTransactionsPerBlock(Integer maxTxPerBlock) {
-        return invokeFunction(SET_MAX_TX_PER_BLOCK, integer(maxTxPerBlock));
-    }
-
-    /**
-     * Creates a transaction script to set the maximal system fee per block and initializes a
-     * {@link TransactionBuilder} based on this script.
-     *
-     * @param maxBlockSystemFee the maximal system fee per block.
-     * @return a {@link TransactionBuilder}.
-     */
-    public TransactionBuilder setMaxBlockSystemFee(BigInteger maxBlockSystemFee) {
-        return invokeFunction(SET_MAX_BLOCK_SYSTEM_FEE,
-                integer(maxBlockSystemFee));
     }
 
     /**
@@ -191,7 +118,7 @@ public class PolicyContract extends SmartContract {
      * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder blockAccount(String addressToBlock) {
-        return invokeFunction(BLOCK_ACCOUNT, hash160(ScriptHash.fromAddress(addressToBlock)));
+        return invokeFunction(BLOCK_ACCOUNT, hash160(Hash160.fromAddress(addressToBlock)));
     }
 
     /**
@@ -201,7 +128,7 @@ public class PolicyContract extends SmartContract {
      * @param accountToBlock the account to block.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder blockAccount(ScriptHash accountToBlock) {
+    public TransactionBuilder blockAccount(Hash160 accountToBlock) {
         return invokeFunction(BLOCK_ACCOUNT, hash160(accountToBlock));
     }
 
@@ -213,7 +140,7 @@ public class PolicyContract extends SmartContract {
      * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder unblockAccount(String addressToBlock) {
-        return invokeFunction(UNBLOCK_ACCOUNT, hash160(ScriptHash.fromAddress(addressToBlock)));
+        return invokeFunction(UNBLOCK_ACCOUNT, hash160(Hash160.fromAddress(addressToBlock)));
     }
 
     /**
@@ -223,7 +150,7 @@ public class PolicyContract extends SmartContract {
      * @param accountToUnblock the account to unblock.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder unblockAccount(ScriptHash accountToUnblock) {
+    public TransactionBuilder unblockAccount(Hash160 accountToUnblock) {
         return invokeFunction(UNBLOCK_ACCOUNT, hash160(accountToUnblock));
     }
 

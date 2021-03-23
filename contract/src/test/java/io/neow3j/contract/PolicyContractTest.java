@@ -31,13 +31,12 @@ import org.junit.Test;
 
 public class PolicyContractTest {
 
-    private static final String POLILCYCONTRACT_SCRIPTHASH =
-            "79bcd398505eb779df6e67e4be6c14cded08e2f2";
+    private static final String POLICYCONTRACT_SCRIPTHASH =
+            "cc5e4edd9f5f8dba8bb65734541df7a1c081c67b";
 
     private Neow3j neow3j;
-
     private Account account1;
-    private ScriptHash recipient;
+    private Hash160 recipient;
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -50,34 +49,7 @@ public class PolicyContractTest {
         neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         neow3j.setNetworkMagicNumber(769);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
-        recipient = new ScriptHash("969a77db482f74ce27105f760efa139223431394");
-    }
-
-    @Test
-    public void testGetMaxTransactionsPerBlock() throws IOException {
-        setUpWireMockForInvokeFunction("getMaxTransactionsPerBlock",
-                "policy_getMaxTxPerBlock.json");
-
-        PolicyContract policyContract = new PolicyContract(neow3j);
-        assertThat(policyContract.getMaxTransactionsPerBlock(), is(512));
-    }
-
-    @Test
-    public void testGetMaxBlockSize() throws IOException {
-        setUpWireMockForInvokeFunction("getMaxBlockSize",
-                "policy_getMaxBlockSize.json");
-
-        PolicyContract policyContract = new PolicyContract(neow3j);
-        assertThat(policyContract.getMaxBlockSize(), is(262144));
-    }
-
-    @Test
-    public void testGetMaxBlockSystemFee() throws IOException {
-        setUpWireMockForInvokeFunction("getMaxBlockSystemFee",
-                "policy_getMaxBlockSystemFee.json");
-
-        PolicyContract policyContract = new PolicyContract(neow3j);
-        assertThat(policyContract.getMaxBlockSystemFee(), is(new BigInteger("900000000000")));
+        recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
     }
 
     @Test
@@ -114,83 +86,6 @@ public class PolicyContractTest {
 
         PolicyContract policyContract = new PolicyContract(neow3j);
         assertFalse(policyContract.isBlocked(account1.getScriptHash()));
-    }
-
-    @Test
-    public void testSetMaxBlockSize_producesCorrectTransaction() throws Throwable {
-        setUpWireMockForCall("invokescript", "policy_setMaxBlockSize.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
-        byte[] expectedScript = new ScriptBuilder()
-                .contractCall(PolicyContract.SCRIPT_HASH, "setMaxBlockSize",
-                        singletonList(integer(200000)))
-                .toArray();
-
-        Wallet w = Wallet.withAccounts(account1);
-        Transaction tx = new PolicyContract(neow3j)
-                .setMaxBlockSize(200000)
-                .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
-                .sign();
-
-        assertThat(tx.getSigners(), hasSize(1));
-        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(tx.getScript(), is(expectedScript));
-        assertThat(tx.getWitnesses(), hasSize(1));
-        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
-                is(account1.getVerificationScript().getScript()));
-    }
-
-    @Test
-    public void testSetMaxTxPerBlock_ProducesCorrectTransaction() throws Throwable {
-        setUpWireMockForCall("invokescript", "policy_setMaxTransactionsPerBlock.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
-        byte[] expectedScript = new ScriptBuilder().contractCall(PolicyContract.SCRIPT_HASH,
-                "setMaxTransactionsPerBlock", singletonList(integer(500)))
-                .toArray();
-
-        Wallet w = Wallet.withAccounts(account1);
-        Transaction tx = new PolicyContract(neow3j)
-                .setMaxTransactionsPerBlock(500)
-                .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
-                .sign();
-
-        assertThat(tx.getSigners(), hasSize(1));
-        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(tx.getScript(), is(expectedScript));
-        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
-                is(account1.getVerificationScript().getScript()));
-    }
-
-    @Test
-    public void testSetMaxBlockSystemFee() throws Throwable {
-        setUpWireMockForCall("invokescript", "policy_setMaxBlockSystemFee.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
-        byte[] expectedScript = new ScriptBuilder().contractCall(PolicyContract.SCRIPT_HASH,
-                "setMaxBlockSystemFee",
-                singletonList(integer(new BigInteger("880000000000")))).toArray();
-
-        Wallet w = Wallet.withAccounts(account1);
-        Transaction tx = new PolicyContract(neow3j)
-                .setMaxBlockSystemFee(new BigInteger("880000000000"))
-                .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
-                .sign();
-
-        assertThat(tx.getSigners(), hasSize(1));
-        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(tx.getScript(), is(expectedScript));
-        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
-                is(account1.getVerificationScript().getScript()));
     }
 
     @Test
@@ -366,6 +261,7 @@ public class PolicyContractTest {
     @Test
     public void scriptHash() {
         assertThat(new PolicyContract(neow3j).getScriptHash().toString(),
-                is(POLILCYCONTRACT_SCRIPTHASH));
+                is(POLICYCONTRACT_SCRIPTHASH));
     }
+
 }

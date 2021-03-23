@@ -1,10 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.model.types.StackItemType.BOOLEAN;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.INTEGER;
-import static java.util.Arrays.asList;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
@@ -12,6 +7,7 @@ import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
 
@@ -20,12 +16,17 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.neow3j.model.types.StackItemType.BOOLEAN;
+import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.model.types.StackItemType.INTEGER;
+import static java.util.Arrays.asList;
+
 /**
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
  */
 public class SmartContract {
 
-    protected ScriptHash scriptHash;
+    protected Hash160 scriptHash;
     protected Neow3j neow;
 
     /**
@@ -35,7 +36,7 @@ public class SmartContract {
      * @param scriptHash the smart contract's script hash.
      * @param neow       the {@link Neow3j} instance to use for invocations.
      */
-    public SmartContract(ScriptHash scriptHash, Neow3j neow) {
+    public SmartContract(Hash160 scriptHash, Neow3j neow) {
         if (scriptHash == null) {
             throw new IllegalArgumentException("The contract script hash must not be null.");
         }
@@ -84,7 +85,7 @@ public class SmartContract {
         StackItem item = callInvokeFunction(function, asList(params))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(BYTE_STRING)) {
-            return item.asByteString().getAsString();
+            return item.getString();
         }
         throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
     }
@@ -112,7 +113,7 @@ public class SmartContract {
                     .getInvocationResult().getStack().get(0);
         }
         if (item.getType().equals(INTEGER)) {
-            return item.asInteger().getValue();
+            return item.getInteger();
         }
         throw new UnexpectedReturnTypeException(item.getType(), INTEGER);
     }
@@ -140,9 +141,41 @@ public class SmartContract {
                     .getInvocationResult().getStack().get(0);
         }
         if (item.getType().equals(BOOLEAN)) {
-            return item.asBoolean().getValue();
+            return item.getBoolean();
         }
         throw new UnexpectedReturnTypeException(item.getType(), BOOLEAN);
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a
+     * script hash as the return type.
+     *
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the script hash returned by the contract.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as
+     *                                       script hash.
+     */
+    public Hash160 callFunctionReturningScriptHash(String function, List<ContractParameter> params)
+            throws IOException {
+
+        StackItem stackItem = callInvokeFunction(function, params)
+                .getInvocationResult().getStack().get(0);
+        return extractScriptHash(stackItem);
+    }
+
+    private Hash160 extractScriptHash(StackItem item) {
+        if (!item.getType().equals(BYTE_STRING)) {
+            throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
+        }
+        try {
+            return new Hash160(item.getHexString());
+        } catch (StackItemCastException | IllegalArgumentException e) {
+            throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
+                    "expected format.", e);
+        }
     }
 
     /**
@@ -183,7 +216,7 @@ public class SmartContract {
      *
      * @return the script hash of this smart contract.
      */
-    public ScriptHash getScriptHash() {
+    public Hash160 getScriptHash() {
         return scriptHash;
     }
 
@@ -209,9 +242,8 @@ public class SmartContract {
         return getManifest().getName();
     }
 
-    protected static ScriptHash getScriptHashOfNativeContract(long nefCheckSum,
-            String contractName) {
-        return getContractHash(ScriptHash.ZERO, nefCheckSum, contractName);
+    protected static Hash160 getScriptHashOfNativeContract(String contractName) {
+        return getContractHash(Hash160.ZERO, 0, contractName);
     }
 
     /**
@@ -226,10 +258,8 @@ public class SmartContract {
      * @param contractName the contract's name.
      * @return the hash of the contract.
      */
-    public static ScriptHash getContractHash(ScriptHash sender, long nefCheckSum,
-            String contractName) {
-
-        return ScriptHash.fromScript(
+    public static Hash160 getContractHash(Hash160 sender, long nefCheckSum, String contractName) {
+        return Hash160.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)
                         .pushData(sender.toArray())

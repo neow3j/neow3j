@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 
@@ -15,7 +16,6 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -26,8 +26,7 @@ import java.math.BigInteger;
 public class ContractManagement extends SmartContract {
 
     private static final String NAME = "ContractManagement";
-    public final static long NEF_CHECKSUM = 3516775561L;
-    public static final ScriptHash SCRIPT_HASH = getScriptHashOfNativeContract(NEF_CHECKSUM, NAME);
+    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
@@ -72,24 +71,23 @@ public class ContractManagement extends SmartContract {
      * @return the state of the smart contract.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public ContractState getContract(ScriptHash scriptHash) throws IOException {
+    public ContractState getContract(Hash160 scriptHash) throws IOException {
         StackItem stackItem = callInvokeFunction(GET_CONTRACT,
                 singletonList(hash160(scriptHash)))
                 .getInvocationResult().getStack().get(0);
         if (!stackItem.getType().equals(StackItemType.ARRAY)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.ARRAY);
         }
-        int id = stackItem.asArray().get(0).asInteger().getValue().intValue();
-        int updateCounter = stackItem.asArray().get(1).asInteger().getValue().intValue();
-        String hash = Numeric.reverseHexString(stackItem.asArray().get(2).asByteString()
-                .getAsHexString());
+        int id = stackItem.getList().get(0).getInteger().intValue();
+        int updateCounter = stackItem.getList().get(1).getInteger().intValue();
+        Hash160 hash = new Hash160(reverseHexString(stackItem.getList().get(2).getHexString()));
 
         // TODO: 01.02.21 Guil:
         // We need to fix how we get from StackItem to a NefFile/ContractManifest
         // Implementing a method called `.fromStackItem()` in each of the classes is an option.
-//        String script = Numeric.toHexStringNoPrefix(stackItem.asArray().get(3).asByteString()
+//        String script = Numeric.toHexStringNoPrefix(stackItem.getArray().get(3).asByteString()
 //                .getValue());
-//        ContractManifest manifest = stackItem.asArray().get(4).asByteString().getAsJson(
+//        ContractManifest manifest = stackItem.getArray().get(4).asByteString().getAsJson(
 //                ContractManifest.class);
 
         return new ContractState(id, updateCounter, hash, null, null, null);
@@ -111,10 +109,9 @@ public class ContractManagement extends SmartContract {
         }
         byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
         if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
-            throw new IllegalArgumentException(
-                    format("The given contract manifest is too long. Manifest was %d bytes big, " +
-                           "but a max of %d bytes is allowed.",
-                            manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
+            throw new IllegalArgumentException(format("The given contract manifest is too long. " +
+                            "Manifest was %d bytes big, but a max of %d bytes is allowed.",
+                    manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
         }
         if (data == null) {
             return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));

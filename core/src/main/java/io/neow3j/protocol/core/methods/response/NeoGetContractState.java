@@ -2,7 +2,10 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.contract.Hash160;
 import io.neow3j.protocol.core.Response;
+
+import java.util.List;
 import java.util.Objects;
 
 public class NeoGetContractState extends Response<NeoGetContractState.ContractState> {
@@ -21,7 +24,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         private Integer updateCounter;
 
         @JsonProperty("hash")
-        private String hash;
+        private Hash160 hash;
 
         @JsonProperty("nef")
         private ContractNef nef;
@@ -29,20 +32,20 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
         @JsonProperty("manifest")
         private ContractManifest manifest;
 
-        @JsonProperty("activeblockindex")
-        private Integer activeBlockIndex;
+        @JsonProperty("updatehistory")
+        private List<Integer> updateHistory;
 
         public ContractState() {
         }
 
-        public ContractState(int id, int updateCounter, String hash, ContractNef nef,
-                             ContractManifest manifest, Integer activeBlockIndex) {
+        public ContractState(int id, int updateCounter, Hash160 hash, ContractNef nef,
+                ContractManifest manifest, List<Integer> updateHistory) {
             this.id = id;
             this.updateCounter = updateCounter;
             this.hash = hash;
             this.nef = nef;
             this.manifest = manifest;
-            this.activeBlockIndex = activeBlockIndex;
+            this.updateHistory = updateHistory;
         }
 
         public int getId() {
@@ -53,7 +56,7 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             return updateCounter;
         }
 
-        public String getHash() {
+        public Hash160 getHash() {
             return hash;
         }
 
@@ -65,8 +68,8 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             return manifest;
         }
 
-        public Integer getActiveBlockIndex() {
-            return activeBlockIndex;
+        public List<Integer> getUpdateHistory() {
+            return updateHistory;
         }
 
         @Override
@@ -79,17 +82,17 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
             }
             ContractState that = (ContractState) o;
             return getId() == that.getId() &&
-                    Objects.equals(getUpdateCounter(),that.getUpdateCounter()) &&
+                    Objects.equals(getUpdateCounter(), that.getUpdateCounter()) &&
                     Objects.equals(getHash(), that.getHash()) &&
                     Objects.equals(getNef(), that.getNef()) &&
                     Objects.equals(getManifest(), that.getManifest()) &&
-                    Objects.equals(getActiveBlockIndex(), that.getActiveBlockIndex());
+                    Objects.equals(getUpdateHistory(), that.getUpdateHistory());
         }
 
         @Override
         public int hashCode() {
             return Objects.hash(getId(), getUpdateCounter(), getHash(), getNef(), getManifest(),
-                    getActiveBlockIndex());
+                    getUpdateCounter());
         }
 
         @Override
@@ -100,8 +103,9 @@ public class NeoGetContractState extends Response<NeoGetContractState.ContractSt
                     ", hash='" + hash + '\'' +
                     ", nef=" + nef +
                     ", manifest=" + manifest +
-                    ", activeBlockIndex=" + activeBlockIndex +
+                    ", updateHistory=" + updateHistory +
                     '}';
         }
     }
+
 }

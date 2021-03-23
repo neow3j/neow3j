@@ -3,6 +3,7 @@ package io.neow3j.protocol.core.methods.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.Response;
 
 public class NeoSendRawTransaction extends Response<NeoSendRawTransaction.RawTransaction> {
@@ -16,16 +17,16 @@ public class NeoSendRawTransaction extends Response<NeoSendRawTransaction.RawTra
 
         @JsonProperty("hash")
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        private String hash;
+        private Hash256 hash;
 
         public RawTransaction() {
         }
 
-        public RawTransaction(String hash) {
+        public RawTransaction(Hash256 hash) {
             this.hash = hash;
         }
 
-        public String getHash() {
+        public Hash256 getHash() {
             return hash;
         }
 
@@ -36,4 +37,5 @@ public class NeoSendRawTransaction extends Response<NeoSendRawTransaction.RawTra
                     '}';
         }
     }
+
 }

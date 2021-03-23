@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DAtjbGllbnQxLm5lMRHAHwwLaXNBdmFpbGFibGUMFIwCuEOYazxET/hq1alD/o22JLWiQWJ9W1I=",
+    "state": "FAULT",
+    "gasconsumed": "1999210",
+    "exception": "Operation is not valid due to the current state of the object.",
+    "stack": []
+  }
+}

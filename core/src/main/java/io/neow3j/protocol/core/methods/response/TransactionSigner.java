@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
@@ -40,15 +40,15 @@ public class TransactionSigner {
         this.account = signer.getScriptHash().toString();
         this.scopes = signer.getScopes();
         this.allowedContracts = signer.getAllowedContracts().stream()
-                .map(ScriptHash::toString)
+                .map(Hash160::toString)
                 .collect(Collectors.toList());
         this.allowedGroups = signer.getAllowedGroups().stream()
                 .map(s -> Numeric.toHexStringNoPrefix(s.getEncoded(true)))
                 .collect(Collectors.toList());
     }
 
-    public TransactionSigner(String account, List<WitnessScope> scopes, List<String> allowedContracts,
-            List<String> allowedGroups) {
+    public TransactionSigner(String account, List<WitnessScope> scopes,
+            List<String> allowedContracts, List<String> allowedGroups) {
         this.account = account;
         this.scopes = scopes;
         this.allowedContracts = allowedContracts;
@@ -74,7 +74,6 @@ public class TransactionSigner {
     public List<String> getAllowedGroups() {
         return allowedGroups;
     }
-
 
 
     @Override
@@ -106,4 +105,5 @@ public class TransactionSigner {
                 ", allowedGroups=" + allowedGroups +
                 '}';
     }
+
 }

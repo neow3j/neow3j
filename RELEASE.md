@@ -77,6 +77,11 @@ sure that the synchronization with Maven Central worked
 3. Merge the changes into the master branch of the neow3j-docs repository. That will automatically 
    update the neow3j.io website.
 
+## neow3j-boilerplate
+
+Update the boilerplate [repo's](https://github.com/neow3j/neow3j-boilerplate) gradle.build file 
+and possibly the example contract if major changes happened.
+
 ## Github release
 
 1. Update the README.md in all neow3j repositories if necessary.

@@ -5,8 +5,8 @@ import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCO
 import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
+import io.neow3j.contract.Hash160;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.contract.ScriptHash;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -103,11 +103,11 @@ public class VerificationScript extends NeoSerializable {
      *
      * @return the script hash.
      */
-    public ScriptHash getScriptHash() {
+    public Hash160 getScriptHash() {
         if (this.script.length == 0) {
             return null;
         } else {
-            return ScriptHash.fromScript(this.script);
+            return Hash160.fromScript(this.script);
         }
     }
 
@@ -154,16 +154,15 @@ public class VerificationScript extends NeoSerializable {
      * @return true if this script is from a single signature account. False, otherwise.
      */
     public boolean isSingleSigScript() {
-        if (script.length != 41) {
+        if (script.length != 40) {
             return false;
         }
         String interopService = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(script, 4));
         return script[0] == OpCode.PUSHDATA1.getCode()
                 && script[1] == 33 // 33 bytes of public key
-                && script[35] == OpCode.PUSHNULL.getCode()
-                && script[36] == OpCode.SYSCALL.getCode()
+                && script[35] == OpCode.SYSCALL.getCode()
                 && interopService.equals(
-                        InteropServiceCode.NEO_CRYPTO_VERIFYWITHECDSASECP256R1.getHash());
+                        InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash());
     }
 
     /**
@@ -172,7 +171,7 @@ public class VerificationScript extends NeoSerializable {
      * @return true if this script is from a multi signature account. False, otherwise.
      */
     public boolean isMultiSigScript() {
-        if (script.length < 43) {
+        if (script.length < 42) {
             return false;
         }
         try {
@@ -208,16 +207,13 @@ public class VerificationScript extends NeoSerializable {
             if (m != alsoM) {
                 return false;
             }
-            if (reader.readByte() != OpCode.PUSHNULL.getCode()) {
-                return false;
-            }
             if (reader.readByte() != OpCode.SYSCALL.getCode()) {
                 return false;
             }
             byte[] interopServiceCode = new byte[4];
             reader.read(interopServiceCode, 0, 4);
             if (!Numeric.toHexStringNoPrefix(interopServiceCode)
-                    .equals(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIGWITHECDSASECP256R1.getHash())) {
+                    .equals(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash())) {
                 return false;
             }
         } catch (DeserializationException | IOException e) {

@@ -1,58 +1,24 @@
 package io.neow3j.devpack.gradle;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.options.Option;
 
-public class Neow3jPluginOptions {
+abstract public class Neow3jPluginOptions {
 
     public static final String CLASSNAME_NAME = "className";
+    public static final String DEBUG_NAME = "debug";
+    public static final String OUTPUTDIR_NAME = "outputDir";
 
-    private String className;
+    @Option(option = CLASSNAME_NAME, description = "Sets the smart contract class name (fully "
+            + "qualified name) to be compiled.")
+    abstract public Property<String> getClassName();
 
-    // Default behavior: generate debug symbols
-    private Boolean debug = true;
+    @Option(option = DEBUG_NAME, description = "Sets whether the neow3j compiler should generate "
+            + "debugging symbols.")
+    abstract public Property<Boolean> getDebug();
 
-    private String outputDir;
+    @Option(option = OUTPUTDIR_NAME, description = "Sets the output directory for the compiled "
+            + "smart contract.")
+    abstract public Property<String> getOutputDir();
 
-    public Neow3jPluginOptions() {
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public void className(String className) {
-        this.className = className;
-    }
-
-    public Boolean getDebug() {
-        return debug;
-    }
-
-    public void setDebug(Boolean debug) {
-        this.debug = debug;
-    }
-
-    public void debug(Boolean debug) {
-        setDebug(debug);
-    }
-
-    public Path getOutputDir() {
-        if (this.outputDir != null) {
-            return Paths.get(outputDir);
-        }
-        return null;
-    }
-
-    public void setOutputDir(String outputDir) {
-        this.outputDir = outputDir;
-    }
-
-    public void outputDir(String outputDir) {
-        setOutputDir(outputDir);
-    }
 }

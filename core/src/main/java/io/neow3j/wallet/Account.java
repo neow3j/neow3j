@@ -1,6 +1,6 @@
 package io.neow3j.wallet;
 
-import io.neow3j.contract.ScriptHash;
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -20,6 +20,7 @@ import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Contract;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -56,8 +57,8 @@ public class Account {
         return address;
     }
 
-    public ScriptHash getScriptHash() {
-        return ScriptHash.fromAddress(address);
+    public Hash160 getScriptHash() {
+        return Hash160.fromAddress(address);
     }
 
     /**
@@ -220,13 +221,13 @@ public class Account {
      * @return the map of token script hashes to token amounts.
      * @throws IOException If something goes wrong when communicating with the neo-node.
      */
-    public Map<ScriptHash, BigInteger> getNep17Balances(Neow3j neow3j)
+    public Map<Hash160, BigInteger> getNep17Balances(Neow3j neow3j)
             throws IOException {
 
         NeoGetNep17Balances result = neow3j.getNep17Balances(getAddress()).send();
-        Map<ScriptHash, BigInteger> balances = new HashMap<>();
+        Map<Hash160, BigInteger> balances = new HashMap<>();
         result.getBalances().getBalances().forEach(b ->
-                balances.put(new ScriptHash(b.getAssetHash()), new BigInteger(b.getAmount())));
+                balances.put(b.getAssetHash(), new BigInteger(b.getAmount())));
         return balances;
     }
 
@@ -259,7 +260,7 @@ public class Account {
      * @return the account with a verification script.
      */
     public static Account fromVerificationScript(VerificationScript script) {
-        String address = ScriptHash.fromScript(script.getScript()).toAddress();
+        String address = Hash160.fromScript(script.getScript()).toAddress();
         Account account = new Account();
         account.address = address;
         account.label = address;
@@ -278,7 +279,7 @@ public class Account {
      */
     public static Account fromPublicKey(ECPublicKey publicKey) {
         VerificationScript script = new VerificationScript(publicKey);
-        String address = ScriptHash.fromScript(script.getScript()).toAddress();
+        String address = Hash160.fromScript(script.getScript()).toAddress();
         Account account = new Account();
         account.address = address;
         account.label = address;
@@ -295,9 +296,10 @@ public class Account {
      *                           transactions.
      * @return the multi-sig account.
      */
-    public static Account createMultiSigAccount(List<ECPublicKey> publicKeys, int signatureThreshold) {
+    public static Account createMultiSigAccount(List<ECPublicKey> publicKeys,
+            int signatureThreshold) {
         VerificationScript script = new VerificationScript(publicKeys, signatureThreshold);
-        String address = ScriptHash.fromScript(script.getScript()).toAddress();
+        String address = Hash160.fromScript(script.getScript()).toAddress();
         Account account = new Account();
         account.address = address;
         account.label = address;
@@ -339,7 +341,9 @@ public class Account {
     }
 
     public static Account fromAddress(String address) {
-        if (!AddressUtils.isValidAddress(address)) throw new IllegalArgumentException("Invalid address.");
+        if (!AddressUtils.isValidAddress(address)) {
+            throw new IllegalArgumentException("Invalid address.");
+        }
         Account account = new Account();
         account.address = address;
         account.label = address;
@@ -354,4 +358,5 @@ public class Account {
     public static Account create() {
         return fromNewECKeyPair();
     }
+
 }

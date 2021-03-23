@@ -1,74 +1,32 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.utils.Numeric;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import static io.neow3j.TestProperties.contractManagementHash;
+import static io.neow3j.TestProperties.gasTokenHash;
+import static io.neow3j.TestProperties.nameServiceHash;
+import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
+import static io.neow3j.TestProperties.neoTokenHash;
+
 public class IntegrationTestHelper {
 
-    static final String NEO3_PRIVATENET_CONTAINER_IMG = "ghcr.io" +
-            "/axlabs/neo3-privatenet-docker/neo-cli-with-plugins:master-latest";
-
-    static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
-    static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
-    static final String PROTOCOL_FILE_SOURCE = "/node-config/protocol.json";
-    static final String PROTOCOL_FILE_DESTINATION = "/neo-cli/protocol.json";
-    static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
-    static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
-    static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
-    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
-    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
-    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
-    // This is the port of one of the .NET nodes which is exposed internally by the container.
-    static final int EXPOSED_JSONRPC_PORT = 40332;
     // Wallet password for the node's wallnet at node-config/wallet.json.
     static final String NODE_WALLET_PASSWORD = "neo";
     // The path to the wallet from the directory of the node process.
     static final String NODE_WALLET_PATH = "wallet.json";
 
     // Native token hashes.
-    static final String NEO_HASH = "f61eebf573ea36593fd43aa150c055ad7906ab83";
-    static final String GAS_HASH = "70e2301955bf1e74cbb31d18c2f96972abadb328";
-    // Total supply of NEO tokens.
-    static final int NEO_TOTAL_SUPPLY = 100000000;
-    // First account (multi-sig) in the node's wallet
-    static final String ACCOUNT_1_ADDRESS = "NX8GreRFGFK5wpGMWetpX93HmtrezGogzk";
-    static final String ACCOUNT_1_WIF =
-            "L3kCZj6QbFPwbsVhxnB8nUERDy4mhCSrWJew4u5Qh5QmGMfnCTda";
-
-    // Second account (single-sig) in the node's wallet
-    static final String ACCOUNT_2_ADDRESS = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
-    static final ECPublicKey ACCOUNT_2_PUBKEY = new ECPublicKey(
-            Numeric.hexStringToByteArray(
-                    "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60"));
+    static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
+    static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
 
     static final String VM_STATE_HALT = "HALT";
 
-
-    static String getNodeUrl(GenericContainer<?> container) {
-        return "http://" + container.getContainerIpAddress() +
-                ":" + container.getMappedPort(EXPOSED_JSONRPC_PORT);
-    }
-
-    static GenericContainer<?> setupPrivateNetContainer() {
-        return new GenericContainer<>(
-                DockerImageName.parse(NEO3_PRIVATENET_CONTAINER_IMG))
-                .withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withClasspathResourceMapping(PROTOCOL_FILE_SOURCE, PROTOCOL_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withCopyFileToContainer(
-                        MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
-                        WALLET_FILE_DESTINATION)
-                .withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
-                        BindMode.READ_ONLY)
-                .withExposedPorts(EXPOSED_JSONRPC_PORT)
-                .waitingFor(Wait.forListeningPort());
-    }
 }

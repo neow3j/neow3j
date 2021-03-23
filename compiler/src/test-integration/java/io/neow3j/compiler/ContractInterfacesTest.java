@@ -1,36 +1,40 @@
 package io.neow3j.compiler;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import java.io.IOException;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
-public class ContractInterfacesTest extends ContractTest {
+import java.io.IOException;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-        setUp(ContractInterfacesTestContract.class.getName());
-    }
+import static io.neow3j.TestProperties.neoTokenHash;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+public class ContractInterfacesTest {
+
+    @Rule
+    public TestName testName = new TestName();
+
+    @ClassRule
+    public static ContractTestRule ct = new ContractTestRule(
+            ContractInterfacesTestContract.class.getName());
 
     @Test
     public void callSymbolMethodOfCustomNeoContractInterface() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsString(),
-                is("NEO"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("NEO"));
     }
 
     @Test
     public void getScriptHashOfCustomNeoContractInterface() throws IOException {
-        NeoInvokeFunction response = callInvokeFunction();
-        assertThat(response.getInvocationResult().getStack().get(0).asByteString().getAsHexString(),
-                is(NeoToken.SCRIPT_HASH.toString()));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is(neoTokenHash()));
     }
 
     static class ContractInterfacesTestContract {
@@ -45,7 +49,7 @@ public class ContractInterfacesTest extends ContractTest {
 
     }
 
-    @ContractHash("0xf61eebf573ea36593fd43aa150c055ad7906ab83") // NEO script hash
+    @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // NEO script hash
     static class CustomNeoToken extends ContractInterface {
 
         public static native String symbol();
