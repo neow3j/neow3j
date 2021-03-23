@@ -313,6 +313,13 @@ subprojects {
     }
 }
 
+task allJars {
+    // Adds as dependency all tasks in sub-projects that
+    // has the type "Jar". This includes, for example, the
+    // integration tests.
+    dependsOn subprojects.collect { it.tasks.withType(Jar) }
+}
+
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     dependsOn = subprojects.test
     getAdditionalSourceDirs().from(subprojects.sourceSets.main.allSource.srcDirs)
