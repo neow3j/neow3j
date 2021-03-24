@@ -290,7 +290,34 @@ subprojects {
             }
         }
 
+        task bundleJar(type: Jar) {
+            dependsOn publishToMavenLocal
+
+            manifest.from jar.manifest
+            archiveClassifier = 'all'
+
+            from (javadocsJar, sourcesJar, javadocsJar, testsJar, jar)
+
+            from("${buildDir}/libs") {
+                include '*.jar.asc'
+            }
+
+            from("${buildDir}/publications/mavenJava") {
+                include 'pom-default.xml.asc'
+                include 'pom-default.xml'
+                rename 'pom-default.xml.asc', "${project.name}-${project.version}.pom.asc"
+                rename 'pom-default.xml', "${project.name}-${project.version}.pom"
+            }
+        }
+
     }
+}
+
+task allJars {
+    // Adds as dependency all tasks in sub-projects that
+    // has the type "Jar". This includes, for example, the
+    // integration tests.
+    dependsOn subprojects.collect { it.tasks.withType(Jar) }
 }
 
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
