@@ -26,9 +26,6 @@ changes that shouldn't be in the release
 Make sure you have a `gradle.properties` file with the following:
 
 ```
-jfrogUsername=XXXXXXXXX
-jfrogPassword=XXXXXXXXX
-
 signing.keyId=E76D91F5
 signing.password=XXXXXXXXX
 signing.secretKeyRingFile=/path/to/neow3j-info_at_neow3j.io.gpg
@@ -39,8 +36,6 @@ gradle.publish.secret=XXXXXXXXX
 
 Where:
 
-- `jfrogUsername`: is the Bintray username
-- `jfrogPassword`: is the Bintray API key
 - `signing.keyId`: is the key ID for the GPG file
 - `signing.password`: is the password for the GPG file
 - `signing.secretKeyRingFile`: is the path where the GPG file is located
@@ -54,13 +49,19 @@ Where:
 3. Is the current commit tagged with the release version? (i.e., the one to be released)
 4. Run `./gradlew clean` to make sure no old artifacts are present in the file structure
 5. Run `./gradlew build` to build the whole project
-6. Run `./gradlew signMavenJavaPublication` to sign the artifacts
-7. Run `./gradlew bintrayUpload` to upload the files to Bintray
-8. Go to [https://bintray.com/neow3j/maven/neow3j](https://bintray.com/neow3j/maven/neow3j), click
-on the Maven Central tab and Sync the repositories (providing the necessary SonaType API tokens)
-9. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/) and search for `io.neow3j` to make
-sure that the synchronization with Maven Central worked
-10. Run `./gradlew :gradle-plugin:publishPlugin`
+6. Run `./gradlew bundleJar` to sign the artifacts. For each module, this will produce a bundle 
+   Jar (e.g., ./core/build/libs/core-3.8.0-all.jar) of all the artifacts that need to be released 
+   for that module.
+7. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/), log in and go to the *Staging 
+   Upload* section.
+8. Choose *Artifact Bundle* as the *Upload Mode* and upload the bundle jars for each module. A 
+   confirmation for a successful upload should be displayed in the GUI. 
+9. All uploaded bunldes should show up in the *Staging Repositories* section as separate 
+   repositories. Once they reach the Status *closed* the *Release* button becomes available. Press 
+   it for all the repositories.
+9. Search for `io.neow3j` in the *Artifact Search* section to make sure that the process worked.
+10. Finally, run `./gradlew :gradle-plugin:publishPlugin` to publish the compiler Gradle plugin 
+    to the Gradle Plugins Repository.
 
 ## neow3j-examples and Smoke Tests
 
