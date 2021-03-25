@@ -12,80 +12,73 @@
 <img src="./images/neow3j-neo3-with-balloon.png" alt="Bongo Cat Neow3j" width="400" height="291" />
 </p>
 
-Neow3j is a development toolkit that provides easy and reliable tools to build Neo dApps and Smart Contracts using Java platforms -- supporting Java, Kotlin, and Android.
+Neow3j is a development toolkit that provides easy and reliable tools to build Neo dApps and Smart
+Contracts using the Java platform (Java, Kotlin, Android).
 
-By using neow3j, you will happily play with Neo and end up neow'ing around like [Bongo Cat](https://knowyourmeme.com/memes/bongo-cat).
+The toolkit can be divided into the neow3j SDK, which is used for dApp development, and the
+neow3j devpack, which is used for smart contract development. We use the term dApp development
+for activities around the blockchain, e.g., building a web page that interacts with the
+blockchain, but exclude the implementation of smart contracts. Of course, smart contracts will
+naturally be part of a running dApp.
 
-Neow3j is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
-
-The neow3j development toolkit is composed of:
-
-- **neow3j SDK**
-- **neow3j devpack**
-- **neow3j compiler**
+Neow3j is an open-source project developed by the community and maintained by
+[AxLabs](https://axlabs.com).
 
 Visit [neow3j.io](https://neow3j.io) for more information on neow3j and the technical documentation.
 
-## Using the *neow3j SDK*
+# Getting started
 
-To get all **neow3j SDK** features, add the `io.neow3j:contract` project to your dependencies.
+## SDK
 
-### Neo2
+To make use of all neow3j SDK features, add `io.neow3j:contract` project to your dependencies.
+Neow3j is split into tow modules, so you can also depend on just the core functionality by adding
+`io.neow3j.core` to your project.
 
 __Gradle__
 
 ```groovy
-compile 'io.neow3j:contract:2.+'
+compile 'io.neow3j:contract:3.8.+'
 ```
+
 __Maven__
 
 ```xml
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>[2.0.0,3.0.0)</version>
+    <version>[3.8.0,)</version>
 </dependency>
 ```
 
-### Neo3
+Releases are available for Neo Legacy and Neo N3. The example above shows the newest release of neow3j for
+Neo N3. To use the latest release for Neo Legacy, use the version `2.4.0`.
+
+## Smart Contract Development
+
+For smart contract development you require the `io.neow3j:devpack`. It provides all the Neo-related
+utilities that are needed in a smart contracts. If you want to play around with the devpack add the
+following dependency to your project.
 
 __Gradle__
 
 ```groovy
-compile 'io.neow3j:contract:3.+'
+implementation 'io.neow3j:devpack:3.8.+'
 ```
+
 __Maven__
 
 ```xml
 <dependency>
     <groupId>io.neow3j</groupId>
-    <artifactId>contract</artifactId>
-    <version>[3.0.0,4.0.0)</version>
+    <artifactId>compiler</artifactId>
+    <version>[3.8.0,)</version>
 </dependency>
 ```
 
+> **Note:** The devpack and compiler are only available for Neo N3. Thus, Java cannot be used to
+compile smart contracts that are compatible with Neo Legacy.
 
-## Using the *neow3j devpack* and *compiler*
-
-The **neow3j devpack** module offer all the necessary tools to write Neo smart contracts in Java.
-To try it out, add the following dependency to your project.
-
-Gradle:
-```groovy
-implementation 'io.neow3j:devpack:3.+',
-```
-
-Maven:
-```xml
-<dependency>
-    <groupId>io.neow3j</groupId>
-    <artifactId>devpack</artifactId>
-    <version>[3.0.0,4.0.0)</version>
-</dependency>
-```
-
-For help on how to compile a contract, check out the documentation about the neow3j compiler
-at [neow3j.io](https://neow3j.io/#/neo3_guides/compiler_devpack/compilation?id=compilation).
+For help on how to compile a smart contract, check out the documentation about the neow3j compiler on [neow3j.io](https://neow3j.io/#/smart_contract_development/compilation?id=compilation).
 
 ## Donate :moneybag:
 
