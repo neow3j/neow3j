@@ -37,7 +37,7 @@ Neow3j is split into tow modules, so you can also depend on just the core functi
 __Gradle__
 
 ```groovy
-compile 'io.neow3j:contract:3.8.+'
+implementation 'io.neow3j:contract:3.8.+'
 ```
 
 __Maven__
