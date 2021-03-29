@@ -34,7 +34,7 @@ public class StringLiteralHelper {
      * @param hex The hex string to convert to bytes.
      * @return the byte array.
      */
-    public static native byte[] hexToBytes(String hex);
+    public static native ByteString hexToBytes(String hex);
 
     /**
      * Converts the given number string to an integer.

@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.model.types.ContractParameterType;
 import java.io.IOException;
@@ -31,8 +32,8 @@ public class ECPointTest {
     static class ECPointTestContract {
 
         public static ECPoint methodReturningECPoint() {
-            return new ECPoint(
-                    "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816");
+            return new ECPoint(new ByteString(
+                    "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816"));
         }
     }
 }

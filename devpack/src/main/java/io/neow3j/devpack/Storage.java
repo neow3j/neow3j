@@ -40,7 +40,7 @@ public class Storage {
      * @return the value corresponding to the given key.
      */
     @Syscall(SYSTEM_STORAGE_GET)
-    public static native byte[] get(StorageContext context, byte[] key);
+    public static native ByteString get(StorageContext context, byte[] key);
 
     /**
      * Returns the value corresponding to the given key.
@@ -50,7 +50,7 @@ public class Storage {
      * @return the value corresponding to the given key.
      */
     @Syscall(SYSTEM_STORAGE_GET)
-    public static native byte[] get(StorageContext context, String key);
+    public static native ByteString get(StorageContext context, ByteString key);
 
     /**
      * Stores the given key-value pair.
@@ -80,7 +80,7 @@ public class Storage {
      * @param value   The value to store.
      */
     @Syscall(SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, byte[] key, String value);
+    public static native void put(StorageContext context, byte[] key, ByteString value);
 
     /**
      * Stores the given key-value pair.
@@ -90,7 +90,7 @@ public class Storage {
      * @param value   The value to store.
      */
     @Syscall(SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, String key, byte[] value);
+    public static native void put(StorageContext context, ByteString key, byte[] value);
 
     /**
      * Stores the given key-value pair.
@@ -100,7 +100,7 @@ public class Storage {
      * @param value   The value to store.
      */
     @Syscall(SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, String key, int value);
+    public static native void put(StorageContext context, ByteString key, int value);
 
     /**
      * Stores the given key-value pair.
@@ -110,7 +110,7 @@ public class Storage {
      * @param value   The value to store.
      */
     @Syscall(SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, String key, String value);
+    public static native void put(StorageContext context, ByteString key, ByteString value);
 
     /**
      * Deletes the value corresponding to the given key from the storage.
@@ -128,7 +128,7 @@ public class Storage {
      * @param key     The key to delete.
      */
     @Syscall(SYSTEM_STORAGE_DELETE)
-    public static native void delete(StorageContext context, String key);
+    public static native void delete(StorageContext context, ByteString key);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
@@ -149,7 +149,7 @@ public class Storage {
      * @return an iterator over key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<Entry<String, byte[]>> find(StorageContext context,
-            String prefix);
+    public static native Iterator<Entry<byte[], byte[]>> find(StorageContext context,
+            ByteString prefix);
 
 }

@@ -28,8 +28,8 @@ public class StorageContext implements ApiInterface {
      * @param prefix The prefix.
      * @return the {@link StorageMap}
      */
-    public StorageMap createMap(String prefix) {
-        return new StorageMap(this, toByteArray(prefix));
+    public StorageMap createMap(ByteString prefix) {
+        return new StorageMap(this, prefix.toByteArray());
     }
 
     /**

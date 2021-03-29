@@ -81,6 +81,45 @@ public class ByteStringIntegrationTest {
         assertThat(res.getStack().get(0).getString(), is("hello, world!"));
     }
 
+    @Test
+    public void concatenateByteStrings() throws IOException {
+        ContractParameter s1 = string("hello, ");
+        ContractParameter s2 = string("world!");
+        InvocationResult res = ct.callInvokeFunction(testName, s1, s2).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is("hello, world!"));
+    }
+
+    @Test
+    public void concatenateWithByteArray() throws IOException {
+        ContractParameter s = byteArray("00010203");
+        InvocationResult res = ct.callInvokeFunction(testName, s).getInvocationResult();
+        assertThat(res.getStack().get(0).getHexString(), is("00010203040506"));
+    }
+
+    @Test
+    public void getRangeOfByteString() throws IOException {
+        ContractParameter s = byteArray("0001020304");
+        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2), integer(3))
+                .getInvocationResult();
+        assertThat(res.getStack().get(0).getHexString(), is("020304"));
+    }
+
+    @Test
+    public void takeNFirstBytesOfByteString() throws IOException {
+        ContractParameter s = byteArray("0001020304");
+        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2))
+                .getInvocationResult();
+        assertThat(res.getStack().get(0).getHexString(), is("0001"));
+    }
+
+    @Test
+    public void takeNLastBytesOfByteString() throws IOException {
+        ContractParameter s = byteArray("0001020304");
+        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2))
+                .getInvocationResult();
+        assertThat(res.getStack().get(0).getHexString(), is("0304"));
+    }
+
     static class ByteStringIntegrationTestContract {
 
         public static ByteString createByteStringFromString() {
@@ -109,6 +148,27 @@ public class ByteStringIntegrationTest {
 
         public static int byteStringToInteger(ByteString s) {
             return s.toInteger();
+        }
+
+        public static ByteString concatenateByteStrings(ByteString s1, ByteString s2) {
+            return s1.concat(s2);
+        }
+
+        public static ByteString concatenateWithByteArray(ByteString s) {
+            byte[] bs = new byte[]{0x04, 0x05, 0x06};
+            return s.concat(bs);
+        }
+
+        public static ByteString getRangeOfByteString(ByteString s, int start, int n) {
+            return s.range(start, n);
+        }
+
+        public static ByteString takeNFirstBytesOfByteString(ByteString s, int n) {
+            return s.take(n);
+        }
+
+        public static ByteString takeNLastBytesOfByteString(ByteString s, int n) {
+            return s.last(n);
         }
 
     }

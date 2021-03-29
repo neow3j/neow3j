@@ -149,7 +149,7 @@ public class HelperIntegrationTest {
     }
 
     @Test
-    public void toByteString() throws IOException {
+    public void byteArrayToString() throws IOException {
         NeoInvokeFunction response =
                 ct.callInvokeFunction(testName, byteArray("68656c6c6f2c20776f726c6421"));
         assertThat(
@@ -178,16 +178,6 @@ public class HelperIntegrationTest {
                 is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(Numeric.hexStringToByteArray("01020304")));
-    }
-
-    @Test
-    public void concatByteString() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello"), string(", world!"));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BYTE_STRING));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("hello, world!"));
     }
 
     @Test
@@ -276,15 +266,6 @@ public class HelperIntegrationTest {
     }
 
     @Test
-    public void reverseByteString() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello, world!"));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BYTE_STRING));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("!dlrow ,olleh"));
-    }
-
-    @Test
     public void sqrt() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(4));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(2));
@@ -338,8 +319,8 @@ public class HelperIntegrationTest {
             return Helper.toInt(bytes);
         }
 
-        public static String toByteString(byte[] bytes) {
-            return Helper.toByteString(bytes);
+        public static String byteArrayToString(byte[] bytes) {
+            return Helper.toString(bytes);
         }
 
         public static boolean within(int i1, int i2, int i3) {
@@ -348,10 +329,6 @@ public class HelperIntegrationTest {
 
         public static byte[] concatByteArray(byte[] b1, byte[] b2) {
             return Helper.concat(b1, b2);
-        }
-
-        public static String concatByteString(String s1, String s2) {
-            return Helper.concat(s1, s2);
         }
 
         public static byte[] rangeOfByteArray(byte[] b, int i1, int i2) {
@@ -380,10 +357,6 @@ public class HelperIntegrationTest {
 
         public static byte[] reverseByteArray(byte[] b) {
             return Helper.reverse(b);
-        }
-
-        public static String reverseByteString(String s) {
-            return Helper.reverse(s);
         }
 
         public static int sqrt(int x) {

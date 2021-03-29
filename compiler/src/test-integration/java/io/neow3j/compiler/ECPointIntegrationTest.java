@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -68,7 +69,7 @@ public class ECPointIntegrationTest {
     }
 
     @Test
-    public void ecPointToString() throws IOException {
+    public void ecPointAsByteString() throws IOException {
         String publicKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.publicKey(publicKey));
@@ -94,11 +95,11 @@ public class ECPointIntegrationTest {
             return new ECPoint(b);
         }
 
-        public static ECPoint createEcPointFromValidString(String s) {
+        public static ECPoint createEcPointFromValidString(ByteString s) {
             return new ECPoint(s);
         }
 
-        public static ECPoint createEcPointFromInvalidString(String s) {
+        public static ECPoint createEcPointFromInvalidString(ByteString s) {
             return new ECPoint(s);
         }
 
@@ -112,8 +113,8 @@ public class ECPointIntegrationTest {
             return ecPoint.toByteArray();
         }
 
-        public static String ecPointToString(ECPoint ecPoint) {
-            return ecPoint.toString();
+        public static ByteString ecPointAsByteString(ECPoint ecPoint) {
+            return ecPoint.asByteString();
         }
     }
 

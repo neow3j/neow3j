@@ -5,8 +5,8 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.model.types.StackItemType;
 
 /**
- * Represents a hash with length of 32 bytes/256 bit. Use this class when working with script
- * hashes.
+ * Represents a hash with length of 256 bit that was created by applying SHA-256 twice. Use this
+ * class when working with transaction and block hashes.
  */
 public class Hash256 {
 
@@ -60,8 +60,7 @@ public class Hash256 {
     }
 
     /**
-     * Creates a {@code Hash256} from the given string. Checks if it is valid and fails if it is
-     * not.
+     * Creates a {@code Hash256} from the given bytes. Checks if it is valid and fails if it is not.
      *
      * @param value The hash string.
      */
@@ -70,7 +69,7 @@ public class Hash256 {
     @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
     @Instruction(opcode = OpCode.NUMEQUAL)
     @Instruction(opcode = OpCode.ASSERT)
-    public Hash256(String value) {
+    public Hash256(ByteString value) {
     }
 
     /**
@@ -82,11 +81,12 @@ public class Hash256 {
     public native byte[] toByteArray();
 
     /**
-     * Returns this {@code Hash256} as a string.
+     * Returns this {@code Hash256} as a {@code ByteString}. No GAS costs accrue for this
+     * conversion.
      *
-     * @return the string.
+     * @return the byte string.
      */
     @Instruction
-    public native String toString();
+    public native ByteString asByteString();
 
 }

@@ -84,4 +84,56 @@ public class ByteString {
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
     public native int toInteger();
 
+    /**
+     * Concatenates this and the given byte string. The returned value is a new byte string
+     * instance.
+     *
+     * @param other The byte string to append.
+     * @return the concatenated byte string.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native ByteString concat(ByteString other);
+
+    /**
+     * Concatenates this and the given byte string. The returned value is a new byte string
+     * instance.
+     *
+     * @param other The byte string to append.
+     * @return the concatenated byte string.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native ByteString concat(byte[] other);
+
+    /**
+     * Returns n consecutive characters of this byte string starting at the given index.
+     *
+     * @param index The start index of the range (inclusive).
+     * @param n     The size of the range, i.e. number of characters to take.
+     * @return the defined range of the given string.
+     */
+    @Instruction(opcode = OpCode.SUBSTR)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native ByteString range(int index, int n);
+
+    /**
+     * Returns the first n bytes from this byte string. Faults if {@code n} &lt; 0.
+     *
+     * @param n The number of bytes to return.
+     * @return the first n bytes.
+     */
+    @Instruction(opcode = OpCode.LEFT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native ByteString take(int n);
+
+    /**
+     * Returns the last n bytes of this byte string. Faults if {@code n} &lt; 0.
+     *
+     * @param n The number bytes to return.
+     * @return the last n bytes.
+     */
+    @Instruction(opcode = OpCode.RIGHT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native ByteString last(int n);
 }

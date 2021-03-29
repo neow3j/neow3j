@@ -115,7 +115,7 @@ public class NeoToken extends FungibleToken {
         public final int votes;
 
         private Candidate() {
-            publicKey = new ECPoint("");
+            publicKey = null;
             votes = 0;
         }
     }

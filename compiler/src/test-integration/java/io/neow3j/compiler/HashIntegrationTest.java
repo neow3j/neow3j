@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.Hash160;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -233,11 +234,11 @@ public class HashIntegrationTest {
             return new io.neow3j.devpack.Hash160(b);
         }
 
-        public static io.neow3j.devpack.Hash160 createHash160FromValidString(String s) {
+        public static io.neow3j.devpack.Hash160 createHash160FromValidString(ByteString s) {
             return new io.neow3j.devpack.Hash160(s);
         }
 
-        public static io.neow3j.devpack.Hash160 createHash160FromInvalidString(String s) {
+        public static io.neow3j.devpack.Hash160 createHash160FromInvalidString(ByteString s) {
             return new io.neow3j.devpack.Hash160(s);
         }
 
@@ -275,11 +276,11 @@ public class HashIntegrationTest {
             return new Hash256(b);
         }
 
-        public static Hash256 createHash256FromValidString(String s) {
+        public static Hash256 createHash256FromValidString(ByteString s) {
             return new Hash256(s);
         }
 
-        public static Hash256 createHash256FromInvalidString(String s) {
+        public static Hash256 createHash256FromInvalidString(ByteString s) {
             return new Hash256(s);
         }
 

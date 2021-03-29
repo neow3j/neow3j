@@ -29,7 +29,7 @@ public class Contract {
     /**
      * The contract's NEF.
      */
-    public final byte[] nef;
+    public final ByteString nef;
 
     /**
      * The contract's manifest in JSON format.
@@ -40,7 +40,7 @@ public class Contract {
         id = 0;
         updateCounter = 0;
         hash = new Hash160(new byte[0]);
-        nef = new byte[0];
+        nef = null;
         manifest = null;
     }
 

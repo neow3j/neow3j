@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.Runtime;
@@ -59,9 +60,9 @@ public class StringLiteralHelperTest {
 
     static class InvalidHexStringVariable {
 
-        private static final byte[] bytes = StringLiteralHelper.hexToBytes("0x0h02");
+        private static final ByteString bytes = StringLiteralHelper.hexToBytes("0x0h02");
 
-        public static byte[] main() {
+        public static ByteString main() {
             return bytes;
         }
     }
@@ -78,9 +79,9 @@ public class StringLiteralHelperTest {
 
     static class IllegalInputConverterMethod {
 
-        private static final byte[] bytes = StringLiteralHelper.hexToBytes(Runtime.getPlatform());
+        private static final ByteString bytes = StringLiteralHelper.hexToBytes(Runtime.getPlatform());
 
-        public static byte[] main() {
+        public static ByteString main() {
             return bytes;
         }
 

@@ -58,7 +58,7 @@ public class StringConcatenationTest {
         }
 
         public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
-            return s1 + s2 + "three" + Helper.toByteString(s3) + NeoToken.symbol();
+            return s1 + s2 + "three" + Helper.toString(s3) + NeoToken.symbol();
         }
 
         public static String concatInStaticVariable() {
