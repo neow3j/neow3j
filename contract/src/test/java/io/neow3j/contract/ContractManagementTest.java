@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.constants.NeoConstants.MAX_MANIFEST_SIZE;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
@@ -11,19 +12,15 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
@@ -34,13 +31,14 @@ import io.neow3j.wallet.Wallet;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class ContractManagementTest {
 
@@ -57,6 +55,9 @@ public class ContractManagementTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -100,51 +101,6 @@ public class ContractManagementTest {
         assertThat(tx.getScript(), is(expectedScript));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
                 is(account1.getVerificationScript().getScript()));
-    }
-
-    // TODO: 01.02.21 Guil:
-    // Update the `ContractManagement` class
-    @Ignore("The ContractManagement.getContract() method should be updated before.")
-    @Test
-    public void getContract() throws IOException {
-        setUpWireMockForInvokeFunction("getContract",
-                "management_getContract.json");
-
-        ContractManagement contractManagement = new ContractManagement(neow3j);
-        NeoGetContractState.ContractState state = contractManagement.getContract(
-                NeoToken.SCRIPT_HASH);
-        assertNotNull(state);
-        assertThat(state.getId(), is(-3));
-        assertThat(state.getUpdateCounter(), is(0));
-        assertThat(state.getHash(), is(NeoToken.SCRIPT_HASH.toString()));
-
-        assertThat(state.getNef().getMagic(), is(860243278L));
-        assertThat(state.getNef().getCompiler(), is("neo-core-v3.0"));
-        assertThat(state.getNef().getScript(), is(nullValue()));
-        assertThat(state.getNef().getChecksum(), is(3921333105L));
-
-        assertThat(state.getManifest().getName(), is(NeoToken.NAME));
-        assertThat(state.getManifest().getAbi().getMethods(), hasSize(14));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getName(), is("vote"));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters(), hasSize(2));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1)
-                .getParamName(), is("voteTo"));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getParameters().get(1)
-                .getParamType(), is(ContractParameterType.BYTE_ARRAY));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getOffset(), is(0));
-        assertThat(state.getManifest().getAbi().getMethods().get(6).getReturnType(),
-                is(ContractParameterType.BOOLEAN));
-        assertFalse(state.getManifest().getAbi().getMethods().get(6).isSafe());
-
-        assertThat(state.getManifest().getAbi().getEvents(), hasSize(1));
-        assertThat(state.getManifest().getAbi().getEvents().get(0).getName(), is("Transfer"));
-        assertThat(state.getManifest().getAbi().getEvents().get(0).getParameters().get(2)
-                .getParamName(), is("amount"));
-        assertThat(state.getManifest().getPermissions().get(0).getContract(), is("*"));
-        assertThat(state.getManifest().getPermissions().get(0).getMethods(), hasSize(1));
-        assertThat(state.getManifest().getPermissions().get(0).getMethods().get(0), is("*"));
-        assertThat(state.getManifest().getTrusts(), hasSize(0));
-        assertNull(state.getManifest().getExtra());
     }
 
     @Test
@@ -214,6 +170,53 @@ public class ContractManagementTest {
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void deploy_NefNull() throws JsonProcessingException {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The NEF file cannot be null.");
+        new ContractManagement(neow3j)
+                .deploy(null, null, null);
+    }
+
+    @Test
+    public void deploy_manifestNull() throws IOException, DeserializationException,
+            URISyntaxException {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The manifest cannot be null.");
+        File nefFile = new File(
+                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        NefFile nef = NefFile.readFromFile(nefFile);
+        new ContractManagement(neow3j)
+                .deploy(nef, null, null);
+    }
+
+    @Test
+    public void deploy_manifestTooLong() throws IOException, URISyntaxException,
+            DeserializationException {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The given contract manifest is too long.");
+
+        File nefFile = new File(
+                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        NefFile nef = NefFile.readFromFile(nefFile);
+
+        ContractManifest tooBigManifest = getTooBigManifest();
+
+        new ContractManagement(neow3j).deploy(nef, tooBigManifest);
+    }
+
+    // Creates a ContractManifest that is one byte to long for deployment
+    private ContractManifest getTooBigManifest() {
+        String partialName = "a"; // 1 bytes
+        StringBuilder stringBuilder = new StringBuilder();
+        // manifest with all null values is of size 108 bytes itself
+        for (int i = 0; i < MAX_MANIFEST_SIZE - 107; i++) {
+            stringBuilder.append(partialName);
+        }
+        String namePlaceholder = stringBuilder.toString();
+        return new ContractManifest(namePlaceholder, null, null, null, null, null, null);
     }
 
 }
