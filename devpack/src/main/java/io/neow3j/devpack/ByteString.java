@@ -14,8 +14,11 @@ import io.neow3j.model.types.StackItemType;
 public class ByteString {
 
     /**
-     * Constructs a new {@code ByteString} from the given string. This does not incur any extra GAS
-     * costs.
+     * Constructs a new {@code ByteString} from the given string. The given string is interpreted as
+     * a UTF-8 encoded byte array, not as a hexadecimal string. If you need to create a {@code
+     * ByteString} from a hex string, use {@link StringLiteralHelper#hexToBytes(String)}.
+     * <p>
+     * This constructor does not incur any GAS costs.
      *
      * @param str The string.
      */
