@@ -1,6 +1,6 @@
 package io.neow3j.devpack;
 
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.devpack.annotations.Syscall;
 
 /**
@@ -21,7 +21,7 @@ public class ExecutionEngine {
      *
      * @return the script container.
      */
-    @Syscall(InteropServiceCode.SYSTEM_RUNTIME_GETSCRIPTCONTAINER)
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETSCRIPTCONTAINER)
     public static native Object getScriptContainer();
 
     /**
@@ -29,7 +29,7 @@ public class ExecutionEngine {
      *
      * @return the script hash of the executing contract.
      */
-    @Syscall(InteropServiceCode.SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH)
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH)
     public static native Hash160 getExecutingScriptHash();
 
     /**
@@ -37,7 +37,7 @@ public class ExecutionEngine {
      *
      * @return the caller's script hash.
      */
-    @Syscall(InteropServiceCode.SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH)
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH)
     public static native Hash160 getCallingScriptHash();
 
     /**
@@ -46,7 +46,7 @@ public class ExecutionEngine {
      * @return the script hash.
      */
     // TODO: Clarify what this method does. Docs are just copied from docs.neo.org.
-    @Syscall(InteropServiceCode.SYSTEM_RUNTIME_GETENTRYSCRIPTHASH)
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETENTRYSCRIPTHASH)
     public static native Hash160 getEntryScriptHash();
 
 }

@@ -2,7 +2,7 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Syscall;
 
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_ASREADONLY;
+import static io.neow3j.constants.InteropService.SYSTEM_STORAGE_ASREADONLY;
 import static io.neow3j.devpack.Helper.toByteArray;
 
 /**

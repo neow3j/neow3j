@@ -1,6 +1,6 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.constants.OpCode;
 import io.neow3j.constants.OperandSize;
 import io.neow3j.io.BinaryReader;
@@ -19,9 +19,9 @@ public class ScriptReader {
      * @param hash The hash of the InteropServiceCode.
      * @return The InteropServiceCode matching the hash.
      */
-    public static InteropServiceCode getInteropServiceCode(String hash) {
-        HashMap<String, InteropServiceCode> interopServiceCodeMap = new HashMap<>();
-        for (InteropServiceCode code : InteropServiceCode.values()) {
+    public static InteropService getInteropServiceCode(String hash) {
+        HashMap<String, InteropService> interopServiceCodeMap = new HashMap<>();
+        for (InteropService code : InteropService.values()) {
             interopServiceCodeMap.put(code.getHash(), code);
         }
         if (interopServiceCodeMap.containsKey(hash)) {

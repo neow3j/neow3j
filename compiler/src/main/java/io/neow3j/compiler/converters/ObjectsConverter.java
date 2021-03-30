@@ -7,7 +7,7 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
@@ -337,7 +337,7 @@ public class ObjectsConverter implements Converter {
         neoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
         neoMethod.addInstruction(buildPushDataInsn(event.getDisplayName()));
         byte[] syscallHash = Numeric.hexStringToByteArray(
-                InteropServiceCode.SYSTEM_RUNTIME_NOTIFY.getHash());
+                InteropService.SYSTEM_RUNTIME_NOTIFY.getHash());
         neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, syscallHash));
         return insn;
     }

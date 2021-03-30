@@ -2,8 +2,8 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Syscall;
 
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_GETCALLFLAGS;
+import static io.neow3j.constants.InteropService.SYSTEM_CONTRACT_CALL;
+import static io.neow3j.constants.InteropService.SYSTEM_CONTRACT_GETCALLFLAGS;
 
 /**
  * Represents a Neo smart contract and provides several contract-related methods for use in smart

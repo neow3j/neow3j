@@ -6,7 +6,12 @@ import io.neow3j.utils.Numeric;
 
 import java.nio.charset.StandardCharsets;
 
-public enum InteropServiceCode {
+/**
+ * Enumerates all the interoperability services that a neo-node should provide to the neo-vm
+ * execution environment. These services can be used in smart contract code via the
+ * {@link OpCode#SYSCALL} instruction.
+ */
+public enum InteropService {
 
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
@@ -57,7 +62,7 @@ public enum InteropServiceCode {
      * @param name  The name of the service.
      * @param price The execution GAS price of the code.
      */
-    InteropServiceCode(String name, long price) {
+    InteropService(String name, long price) {
         this.name = name;
         this.price = price;
     }
