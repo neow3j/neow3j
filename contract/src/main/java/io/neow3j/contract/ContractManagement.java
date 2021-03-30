@@ -1,21 +1,14 @@
 package io.neow3j.contract;
 
 import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
-import static java.util.Collections.singletonList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
-import io.neow3j.protocol.core.methods.response.StackItem;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -30,7 +23,6 @@ public class ContractManagement extends SmartContract {
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
-    private static final String GET_CONTRACT = "getContract";
     private static final String DEPLOY = "deploy";
 
     /**
@@ -62,35 +54,6 @@ public class ContractManagement extends SmartContract {
      */
     public TransactionBuilder setMinimumDeploymentFee(BigInteger minimumFee) {
         return invokeFunction(SET_MINIMUM_DEPLOYMENT_FEE, integer(minimumFee));
-    }
-
-    /**
-     * Returns the state of a smart contract.
-     *
-     * @param scriptHash the script hash of the smart contract.
-     * @return the state of the smart contract.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public ContractState getContract(Hash160 scriptHash) throws IOException {
-        StackItem stackItem = callInvokeFunction(GET_CONTRACT,
-                singletonList(hash160(scriptHash)))
-                .getInvocationResult().getStack().get(0);
-        if (!stackItem.getType().equals(StackItemType.ARRAY)) {
-            throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.ARRAY);
-        }
-        int id = stackItem.getList().get(0).getInteger().intValue();
-        int updateCounter = stackItem.getList().get(1).getInteger().intValue();
-        Hash160 hash = new Hash160(reverseHexString(stackItem.getList().get(2).getHexString()));
-
-        // TODO: 01.02.21 Guil:
-        // We need to fix how we get from StackItem to a NefFile/ContractManifest
-        // Implementing a method called `.fromStackItem()` in each of the classes is an option.
-//        String script = Numeric.toHexStringNoPrefix(stackItem.getArray().get(3).asByteString()
-//                .getValue());
-//        ContractManifest manifest = stackItem.getArray().get(4).asByteString().getAsJson(
-//                ContractManifest.class);
-
-        return new ContractState(id, updateCounter, hash, null, null, null);
     }
 
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)
