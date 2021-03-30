@@ -10,6 +10,7 @@ import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -125,6 +126,7 @@ public class StorageIntegrationTest {
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
     }
 
+    @Ignore("Depends on https://github.com/neow3j/neow3j/issues/488")
     @Test
     public void findByByteStringKey() throws IOException {
         ContractParameter key = byteArray(KEY);
@@ -134,6 +136,7 @@ public class StorageIntegrationTest {
         assertThat(entry.get(1), is(DATA));
     }
 
+    @Ignore("Depends on https://github.com/neow3j/neow3j/issues/488")
     @Test
     public void findByByteArrayPrefix() throws IOException {
         ContractParameter key = byteArray(KEY);
