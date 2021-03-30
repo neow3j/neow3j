@@ -54,7 +54,7 @@ public class WitnessTest {
                 PUSHDATA1.toString() + "21" + // 33 bytes of public key
                 Numeric.toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) + // pubKey
                 SYSCALL.toString() + // syscall to...
-                InteropService.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         assertArrayEquals(
                 Numeric.hexStringToByteArray(expected),
@@ -114,7 +114,7 @@ public class WitnessTest {
                 + Numeric.toHexStringNoPrefix(publicKeys.get(2).getEncoded(true)) // public key 3
                 + OpCode.PUSH3.toString() // m = 3, number of keys
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash();
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash();
 
         // Test create from BigIntegers
         Witness script = Witness.createMultiSigWitness(signingThreshold, signatures, publicKeys);
@@ -154,7 +154,7 @@ public class WitnessTest {
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + Numeric.toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) // pubKey
                 + SYSCALL.toString() // syscall to...
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         String serializedWitness = ""
                 + "42" // VarInt 66 bytes for invocation script
@@ -186,7 +186,7 @@ public class WitnessTest {
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + pk // public key
                 + SYSCALL.toString() // syscall to...
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         byte[] expectedHash = Hash.sha256AndThenRipemd160(
                 Numeric.hexStringToByteArray(expectedVerificationScript));

@@ -162,7 +162,7 @@ public class VerificationScript extends NeoSerializable {
                 && script[1] == 33 // 33 bytes of public key
                 && script[35] == OpCode.SYSCALL.getCode()
                 && interopService.equals(
-                        InteropService.NEO_CRYPTO_CHECKSIG.getHash());
+                        InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
     }
 
     /**
@@ -213,7 +213,7 @@ public class VerificationScript extends NeoSerializable {
             byte[] interopServiceCode = new byte[4];
             reader.read(interopServiceCode, 0, 4);
             if (!Numeric.toHexStringNoPrefix(interopServiceCode)
-                    .equals(InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash())) {
+                    .equals(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash())) {
                 return false;
             }
         } catch (DeserializationException | IOException e) {

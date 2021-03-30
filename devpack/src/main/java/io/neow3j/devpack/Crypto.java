@@ -20,7 +20,7 @@ public class Crypto {
      * @param signature The signature.
      * @return True if the signature is valid. False otherwise.
      */
-    @Syscall(InteropService.NEO_CRYPTO_CHECKSIG)
+    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
     public static native boolean checkSig(ECPoint publicKey, String signature);
 
     /**
@@ -34,7 +34,7 @@ public class Crypto {
      * @param publicKeys The public keys.
      * @return True if the signatures are valid. False otherwise.
      */
-    @Syscall(InteropService.NEO_CRYPTO_CHECKMULTISIG)
+    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
     public static native boolean checkMultisig(ECPoint[] publicKeys, String[] signatures);
 
     /**

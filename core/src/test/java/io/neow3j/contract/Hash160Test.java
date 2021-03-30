@@ -127,7 +127,7 @@ public class Hash160Test {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
 
         Hash160 hash = Hash160.fromPublicKey(Numeric.hexStringToByteArray(key));

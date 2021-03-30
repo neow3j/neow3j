@@ -122,7 +122,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + key2 // public key
                 + OpCode.PUSH2.toString() // m = 2, number of keys
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash()
         );
         assertArrayEquals(expected, script);
     }
@@ -136,7 +136,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
         assertArrayEquals(expected, script);
     }

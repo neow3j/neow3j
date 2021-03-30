@@ -33,7 +33,7 @@ public class VerificationScriptTest {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
         assertArrayEquals(expected, script.getScript());
     }
@@ -56,7 +56,7 @@ public class VerificationScriptTest {
                 + key2 // public key
                 + OpCode.PUSH2.toString() // m = 2, number of keys
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash()
         );
         assertArrayEquals(expected, script.getScript());
     }
@@ -72,7 +72,7 @@ public class VerificationScriptTest {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
         assertArrayEquals(expected, script.toArray());
     }
@@ -84,7 +84,7 @@ public class VerificationScriptTest {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash();
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash();
 
         byte[] serialized = Numeric.hexStringToByteArray(""
                 + Numeric.toHexStringNoPrefix((byte) VERIFICATION_SCRIPT_SIZE) // Var Int
@@ -107,7 +107,7 @@ public class VerificationScriptTest {
         IntStream.range(0, 3).forEach(i -> sb.append(key));
         sb.append(OpCode.PUSH3.toString()); // number of public keys
         sb.append(OpCode.SYSCALL.toString());
-        sb.append(InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash());
+        sb.append(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash());
         byte[] script = Numeric.hexStringToByteArray(sb.toString());
         assertEquals(2, new VerificationScript(script).getSigningThreshold());
 
@@ -119,7 +119,7 @@ public class VerificationScriptTest {
         sb2.append(OpCode.PUSHINT8.toString()); // signing threshold
         sb2.append("7f"); // number of public keys
         sb2.append(OpCode.SYSCALL.toString());
-        sb2.append(InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash());
+        sb2.append(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash());
         script = Numeric.hexStringToByteArray(sb2.toString());
         assertEquals(127, new VerificationScript(script).getSigningThreshold());
     }
@@ -161,7 +161,7 @@ public class VerificationScriptTest {
                 + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
                 + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash());
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
         VerificationScript s = new VerificationScript(scriptBytes);
         assertTrue(s.isSingleSigScript());
     }
@@ -178,7 +178,7 @@ public class VerificationScriptTest {
                 + "03f0f9b358dfed564e74ffe242713f8bc866414226649f59859b140a130818898b" // key
                 + OpCode.PUSH3.toString() // number of public keys
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash());
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash());
         VerificationScript s = new VerificationScript(scriptBytes);
         assertTrue(s.isMultiSigScript());
     }
@@ -311,7 +311,7 @@ public class VerificationScriptTest {
                 + OpCode.PUSHDATA1.toString() + "21"// PUSHDATA1 and 33 bytes of key
                 + "02028a99826edc0c97d18e22b6932373d908d323aa7f92656a77ec26e8861699ef" // key
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKSIG.getHash());
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
         VerificationScript s = new VerificationScript(scriptBytes);
         List<ECPublicKey> pubKeys = s.getPublicKeys();
         assertThat(pubKeys, hasSize(1));
@@ -331,7 +331,7 @@ public class VerificationScriptTest {
                 + "03f0f9b358dfed564e74ffe242713f8bc866414226649f59859b140a130818898b" // key
                 + OpCode.PUSH3.toString() // number of public keys
                 + OpCode.SYSCALL.toString()
-                + InteropService.NEO_CRYPTO_CHECKMULTISIG.getHash());
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash());
         VerificationScript s = new VerificationScript(scriptBytes);
         List<ECPublicKey> pubKeys = s.getPublicKeys();
         assertThat(pubKeys, hasSize(3));

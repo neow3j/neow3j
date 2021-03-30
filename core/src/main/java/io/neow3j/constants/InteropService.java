@@ -22,8 +22,8 @@ public enum InteropService {
     SYSTEM_CONTRACT_NATIVEONPERSIST("System.Contract.NativeOnPersist", 0),
     SYSTEM_CONTRACT_NATIVEPOSTPERSIST("System.Contract.NativePostPersist", 0),
 
-    NEO_CRYPTO_CHECKSIG("Neo.Crypto.CheckSig", 1 << 15),
-    NEO_CRYPTO_CHECKMULTISIG("Neo.Crypto.CheckMultisig", 0),
+    SYSTEM_CRYPTO_CHECKSIG("System.Crypto.CheckSig", 1 << 15),
+    SYSTEM_CRYPTO_CHECKMULTISIG("System.Crypto.CheckMultisig", 0),
 
     SYSTEM_ITERATOR_CREATE("System.Iterator.Create", 1 << 4),
     SYSTEM_ITERATOR_NEXT("System.Iterator.Next", 1 << 15),

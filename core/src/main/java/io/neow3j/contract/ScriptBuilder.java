@@ -367,7 +367,7 @@ public class ScriptBuilder {
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
-                .sysCall(InteropService.NEO_CRYPTO_CHECKSIG)
+                .sysCall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
                 .toArray();
     }
 
@@ -385,7 +385,7 @@ public class ScriptBuilder {
         encodedPublicKeys.forEach(builder::pushData);
         return builder
                 .pushInteger(encodedPublicKeys.size())
-                .sysCall(InteropService.NEO_CRYPTO_CHECKMULTISIG)
+                .sysCall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
                 .toArray();
     }
 
