@@ -4,6 +4,7 @@ import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnDeployment;
@@ -247,18 +248,18 @@ public class ContractManagementIntegrationTest {
             return ContractManagement.getHash();
         }
 
-        public static Contract deployWithoutData(byte[] nefFile, String manifest) {
+        public static Contract deployWithoutData(ByteString nefFile, String manifest) {
             return ContractManagement.deploy(nefFile, manifest);
         }
 
-        public static Contract deployWithData(byte[] nefFile, String manifest, Object data) {
+        public static Contract deployWithData(ByteString nefFile, String manifest, Object data) {
             return ContractManagement.deploy(nefFile, manifest, data);
         }
     }
 
     static class ContractManagementIntegrationTestContractToUpdateWithData {
 
-        public static void updateWithData(byte[] nefFile, String manifest, Object data) {
+        public static void updateWithData(ByteString nefFile, String manifest, Object data) {
             ContractManagement.update(nefFile, manifest, data);
         }
 
@@ -266,7 +267,7 @@ public class ContractManagementIntegrationTest {
 
     static class ContractManagementIntegrationTestContractToUpdateWithoutData {
 
-        public static void updateWithoutData(byte[] nefFile, String manifest) {
+        public static void updateWithoutData(ByteString nefFile, String manifest) {
             ContractManagement.update(nefFile, manifest);
         }
 

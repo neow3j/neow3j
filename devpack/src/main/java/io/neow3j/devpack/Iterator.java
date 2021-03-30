@@ -12,7 +12,6 @@ import static io.neow3j.constants.InteropService.SYSTEM_ITERATOR_VALUE;
  */
 public class Iterator<V> implements ApiInterface {
 
-
     /**
      * Creates an {@code Iterator} over the entries of the given array.
      *

@@ -1,5 +1,6 @@
 package io.neow3j.devpack.contracts;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.annotations.ContractHash;
 
@@ -7,9 +8,9 @@ import io.neow3j.devpack.annotations.ContractHash;
 public class StdLib extends ContractInterface {
 
     /**
-     * Serialize the given object to a byte array.
+     * Serialize the given object to a byte string.
      * <p>
-     * As an example, the following class will be serialized to the byte array below. We assume
+     * As an example, the following class will be serialized to the byte string below. We assume
      * that the class was instantiated with the values {@code true} and {@code 32069}.
      *
      * <pre>
@@ -24,7 +25,7 @@ public class StdLib extends ContractInterface {
      * }
      * </pre>
      *
-     * Serialized byte array:
+     * Serialized bytes:
      * <pre>
      * [0] StackItemType.ARRAY
      * [1] 0x02 // Number of field variables on the object
@@ -37,21 +38,21 @@ public class StdLib extends ContractInterface {
      * [8] 0x7D // part 2 of the variable's value (little-endian)
      * </pre>
      * @param source the object to serialize.
-     * @return the serialized byte array.
+     * @return the serialized bytes.
      */
-    public static native byte[] serialize(Object source);
+    public static native ByteString serialize(Object source);
 
     /**
-     * Deserializes the given byte array. It is up to the developer to know what type to
+     * Deserializes the given bytes. It is up to the developer to know what type to
      * expect from the deserialization.
      * <p>
      * See {@link StdLib#serialize(Object)} for an example mapping between object and serialized
      * byte array.
      *
-     * @param source the byte array to deserialize.
+     * @param source the bytes to deserialize.
      * @return the deserialized object.
      */
-    public static native Object deserialize(byte[] source);
+    public static native Object deserialize(ByteString source);
 
 
     /**
@@ -99,36 +100,36 @@ public class StdLib extends ContractInterface {
     public native static Object jsonDeserialize(String json);
 
     /**
-     * Encodes the given byte array to a Base64 string.
+     * Encodes the given bytes to a Base64 string.
      *
-     * @param input The byte array to encode.
+     * @param input The bytes to encode.
      * @return the encoded string.
      */
-    public static native String base64Encode(byte[] input);
+    public static native String base64Encode(ByteString input);
 
     /**
      * Decodes the given Base64-encoded string.
      *
      * @param input The Base64-encoded string.
-     * @return the decoded byte array.
+     * @return the decoded byte string.
      */
-    public static native byte[] base64Decode(String input);
+    public static native ByteString base64Decode(String input);
 
     /**
-     * Encodes the given byte array to a Base58 string.
+     * Encodes the given byte string to a Base58 string.
      *
-     * @param input The byte array to encode.
+     * @param input The bytes to encode.
      * @return the encoded string.
      */
-    public static native String base58Encode(byte[] input);
+    public static native String base58Encode(ByteString input);
 
     /**
      * Decodes the given Base58-encoded string.
      *
      * @param input The Base58-encoded string.
-     * @return the decoded byte array.
+     * @return the decoded bytes.
      */
-    public static native byte[] base58Decode(String input);
+    public static native ByteString base58Decode(String input);
 
     /**
      * Converts the given number to its string representation.

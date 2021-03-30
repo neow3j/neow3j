@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.model.types.StackItemType;
@@ -171,11 +172,11 @@ public class StdLibIntegrationTest {
     static class StdLibIntegrationTestContract {
 
         public static Object serializeAndDeserialize(boolean b, int i) {
-            byte[] ser = StdLib.serialize(new SimpleClass(b, i));
+            ByteString ser = StdLib.serialize(new SimpleClass(b, i));
             return StdLib.deserialize(ser);
         }
 
-        public static byte[] serialize(boolean b, int i) {
+        public static ByteString serialize(boolean b, int i) {
             return StdLib.serialize(new SimpleClass(b, i));
         }
 
@@ -187,19 +188,19 @@ public class StdLibIntegrationTest {
             return StdLib.jsonDeserialize(json);
         }
 
-        public static String base64Encode(byte[] bytes) {
+        public static String base64Encode(ByteString bytes) {
             return StdLib.base64Encode(bytes);
         }
 
-        public static byte[] base64Decode(String encoded) {
+        public static ByteString base64Decode(String encoded) {
             return StdLib.base64Decode(encoded);
         }
 
-        public static String base58Encode(byte[] bytes) {
+        public static String base58Encode(ByteString bytes) {
             return StdLib.base58Encode(bytes);
         }
 
-        public static byte[] base58Decode(String encoded) {
+        public static ByteString base58Decode(String encoded) {
             return StdLib.base58Decode(encoded);
         }
 

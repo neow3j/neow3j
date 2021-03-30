@@ -48,11 +48,11 @@ public class Transaction implements ApiInterface {
     /**
      * The script contained in this transaction.
      */
-    public final byte[] script;
+    public final ByteString script;
 
     private Transaction() {
         hash = new Hash256(new byte[0]);
-        script = new byte[0];
+        script = null;
         systemFee = 0;
         version = 0;
         nonce = 0;
