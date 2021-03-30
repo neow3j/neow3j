@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash256;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageMap;
@@ -47,10 +48,11 @@ public class StaticVariablesTest {
 
     static class StaticVariables {
 
-        private static final StorageMap map = Storage.getStorageContext().createMap("data");
+        private static final StorageMap map = Storage.getStorageContext().createMap(new ByteString(
+                "data"));
         private static final String platform = "The platform: " + Runtime.getPlatform();
 
-        public static void putToStaticStorageMap(String key, String value) {
+        public static void putToStaticStorageMap(ByteString key, ByteString value) {
             map.put(key, value);
         }
 

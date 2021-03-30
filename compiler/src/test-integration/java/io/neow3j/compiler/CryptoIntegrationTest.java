@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Crypto;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -80,19 +81,19 @@ public class CryptoIntegrationTest {
 
     static class CryptoIntegrationTestContract {
 
-        public static boolean checkSig(ECPoint pubKey, String signature) {
+        public static boolean checkSig(ECPoint pubKey, ByteString signature) {
             return Crypto.checkSig(pubKey, signature);
         }
 
-        public static boolean checkMultiSig(ECPoint[] pubKeys, String[] signatures) {
+        public static boolean checkMultiSig(ECPoint[] pubKeys, ByteString[] signatures) {
             return Crypto.checkMultisig(pubKeys, signatures);
         }
 
-        public static Hash256 hash256(String value) {
+        public static Hash256 hash256(ByteString value) {
             return Crypto.hash256(value);
         }
 
-        public static Hash160 hash160(String value) {
+        public static Hash160 hash160(ByteString value) {
             return Crypto.hash160(value);
         }
     }

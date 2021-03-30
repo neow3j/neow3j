@@ -146,7 +146,7 @@ public class Helper {
      * @return the string.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    public native static String toByteString(byte[] source);
+    public native static String toString(byte[] source);
 
     /**
      * Checks if the value of x is in the range [a, b).
@@ -172,15 +172,26 @@ public class Helper {
     public static native byte[] concat(byte[] first, byte[] second);
 
     /**
-     * Concatenates the two given strings.
+     * Concatenates two byte arrays.
      *
-     * @param first  The first string.
-     * @param second The second string.
+     * @param first  The first byte array.
+     * @param second The second byte array.
      * @return the concatenation.
      */
     @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    public static native String concat(String first, String second);
+    public static native byte[] concat(byte[] first, ByteString second);
+
+    /**
+     * Concatenates the given byte array with the string.
+     * <p>
+     * Remember that the string is represented as a UTF-8 encoded byte array.
+     *
+     * @param first  The first byte array.
+     * @param second The string to append.
+     * @return the concatenation.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    public static native byte[] concat(byte[] first, String second);
 
     /**
      * Returns n consecutive characters from the given string starting at the given index.
@@ -256,18 +267,6 @@ public class Helper {
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.REVERSEITEMS)
     public static native byte[] reverse(byte[] source);
-
-    /**
-     * Returns a reversed copy of the given string.
-     *
-     * @param source The string to reverse.
-     * @return The reversed string.
-     */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.REVERSEITEMS)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    public static native String reverse(String source);
 
     /**
      * Returns the square root of the given number.

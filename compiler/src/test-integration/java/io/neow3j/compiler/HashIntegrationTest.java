@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.Hash160;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
@@ -233,11 +234,11 @@ public class HashIntegrationTest {
             return new io.neow3j.devpack.Hash160(b);
         }
 
-        public static io.neow3j.devpack.Hash160 createHash160FromValidString(String s) {
+        public static io.neow3j.devpack.Hash160 createHash160FromValidString(ByteString s) {
             return new io.neow3j.devpack.Hash160(s);
         }
 
-        public static io.neow3j.devpack.Hash160 createHash160FromInvalidString(String s) {
+        public static io.neow3j.devpack.Hash160 createHash160FromInvalidString(ByteString s) {
             return new io.neow3j.devpack.Hash160(s);
         }
 
@@ -245,8 +246,8 @@ public class HashIntegrationTest {
             return hash160.toByteArray();
         }
 
-        public static String hash160ToString(io.neow3j.devpack.Hash160 hash160) {
-            return hash160.toString();
+        public static ByteString hash160ToString(io.neow3j.devpack.Hash160 hash160) {
+            return hash160.asByteString();
         }
 
         public static Hash256 getZeroHash256() {
@@ -275,11 +276,11 @@ public class HashIntegrationTest {
             return new Hash256(b);
         }
 
-        public static Hash256 createHash256FromValidString(String s) {
+        public static Hash256 createHash256FromValidString(ByteString s) {
             return new Hash256(s);
         }
 
-        public static Hash256 createHash256FromInvalidString(String s) {
+        public static Hash256 createHash256FromInvalidString(ByteString s) {
             return new Hash256(s);
         }
 
@@ -287,8 +288,8 @@ public class HashIntegrationTest {
             return hash256.toByteArray();
         }
 
-        public static String hash256ToString(Hash256 hash256) {
-            return hash256.toString();
+        public static ByteString hash256ToString(Hash256 hash256) {
+            return hash256.asByteString();
         }
 
         public static io.neow3j.devpack.Hash160 hash160FromStringLiteral() {

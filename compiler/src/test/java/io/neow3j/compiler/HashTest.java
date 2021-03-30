@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.model.types.ContractParameterType;
@@ -52,11 +53,11 @@ public class HashTest {
     static class HashTestContract {
 
         public static Hash160 methodReturningHash160() {
-            return new Hash160("03b4af8d061b6b320cce6c63bc4ec7894dce107b");
+            return new Hash160(new ByteString("03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
         }
 
         public static Hash256 methodReturningHash256() {
-            return new Hash256("03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63");
+            return new Hash256(new ByteString("03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63"));
         }
     }
 }

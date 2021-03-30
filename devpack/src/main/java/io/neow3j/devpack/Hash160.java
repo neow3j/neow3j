@@ -5,8 +5,8 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.model.types.StackItemType;
 
 /**
- * Represents a hash with length of 20 bytes/160 bit. Use this class when working with hashes of
- * transactions and blocks.
+ * Represents a hash with 160 bit length that was produced by first applying SHA-256 and then
+ * RIPEMD-160. Use this class when working with script hashes, i.e., accounts and contracts.
  */
 public class Hash160 {
 
@@ -60,8 +60,7 @@ public class Hash160 {
     }
 
     /**
-     * Creates a {@code Hash160} from the given string. Checks if it is valid and fails if it is
-     * not.
+     * Creates a {@code Hash160} from the given bytes. Checks if it is valid and fails if it is not.
      *
      * @param value The hash string.
      */
@@ -70,7 +69,7 @@ public class Hash160 {
     @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 20 bytes expected array size
     @Instruction(opcode = OpCode.NUMEQUAL)
     @Instruction(opcode = OpCode.ASSERT)
-    public Hash160(String value) {
+    public Hash160(ByteString value) {
     }
 
     /**
@@ -82,11 +81,11 @@ public class Hash160 {
     public native byte[] toByteArray();
 
     /**
-     * Returns this {@code Hash160} as a string.
+     * Returns this {@code Hash160} as a byte string. This does not incur any GAS costs.
      *
-     * @return the string.
+     * @return the byte string.
      */
     @Instruction
-    public native String toString();
+    public native ByteString asByteString();
 
 }
