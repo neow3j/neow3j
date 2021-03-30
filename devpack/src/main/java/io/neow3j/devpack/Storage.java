@@ -50,6 +50,16 @@ public class Storage {
      * @return the value corresponding to the given key.
      */
     @Syscall(SYSTEM_STORAGE_GET)
+    public static native ByteString get(StorageContext context, String key);
+
+    /**
+     * Returns the value corresponding to the given key.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key.
+     */
+    @Syscall(SYSTEM_STORAGE_GET)
     public static native ByteString get(StorageContext context, ByteString key);
 
     /**
@@ -90,6 +100,16 @@ public class Storage {
      * @param value   The value to store.
      */
     @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, byte[] key, String value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context The storage context to store the value in.
+     * @param key     The key.
+     * @param value   The value to store.
+     */
+    @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, byte[] value);
 
     /**
@@ -110,7 +130,57 @@ public class Storage {
      * @param value   The value to store.
      */
     @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, ByteString key, String value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context The storage context to store the value in.
+     * @param key     The key.
+     * @param value   The value to store.
+     */
+    @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, ByteString value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context The storage context to store the value in.
+     * @param key     The key.
+     * @param value   The value to store.
+     */
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, String key, byte[] value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context The storage context to store the value in.
+     * @param key     The key.
+     * @param value   The value to store.
+     */
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, String key, int value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context The storage context to store the value in.
+     * @param key     The key.
+     * @param value   The value to store.
+     */
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, String key, String value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context The storage context to store the value in.
+     * @param key     The key.
+     * @param value   The value to store.
+     */
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, String key, ByteString value);
 
     /**
      * Deletes the value corresponding to the given key from the storage.
@@ -129,6 +199,15 @@ public class Storage {
      */
     @Syscall(SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, ByteString key);
+
+    /**
+     * Deletes the value corresponding to the given key from the storage.
+     *
+     * @param context The storage context to delete from.
+     * @param key     The key to delete.
+     */
+    @Syscall(SYSTEM_STORAGE_DELETE)
+    public static native void delete(StorageContext context, String key);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
@@ -151,5 +230,16 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_FIND)
     public static native Iterator<Entry<byte[], byte[]>> find(StorageContext context,
             ByteString prefix);
+
+    /**
+     * Returns an iterator over the values found under the given key prefix.
+     *
+     * @param context The storage context to get the values from.
+     * @param prefix  The key prefix.
+     * @return an iterator over key-value pairs found under the given prefix.
+     */
+    @Syscall(SYSTEM_STORAGE_FIND)
+    public static native Iterator<Entry<byte[], byte[]>> find(StorageContext context,
+            String prefix);
 
 }

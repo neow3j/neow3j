@@ -110,6 +110,19 @@ public class ByteString {
     public native ByteString concat(byte[] other);
 
     /**
+     * Concatenates this byte string and the given string. The returned value is a new byte string
+     * instance.
+     * <p>
+     * Remember that the string is represented as a UTF-8 encoded byte array.
+     *
+     * @param other The string to append.
+     * @return the concatenated byte string.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native ByteString concat(String other);
+
+    /**
      * Returns n consecutive characters of this byte string starting at the given index.
      *
      * @param index The start index of the range (inclusive).

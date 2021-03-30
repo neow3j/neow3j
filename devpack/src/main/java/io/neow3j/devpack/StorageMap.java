@@ -43,6 +43,16 @@ public class StorageMap {
     }
 
     /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
+     * context.
+     *
+     * @param key The key to delete.
+     */
+    public void delete(String key) {
+        Storage.delete(this.context, concat(this.prefix, key));
+    }
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context.
      *
      * @param key The key of the value to retrieve.
@@ -59,6 +69,16 @@ public class StorageMap {
      * @return the value corresponding to the given key.
      */
     public ByteString get(ByteString key) {
+        return Storage.get(this.context, concat(this.prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    public ByteString get(String key) {
         return Storage.get(this.context, concat(this.prefix, key));
     }
 
@@ -102,6 +122,17 @@ public class StorageMap {
      * @param key   The key of the entry.
      * @param value The value of the entry.
      */
+    public void put(byte[] key, String value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
     public void put(ByteString key, byte[] value) {
         Storage.put(this.context, concat(this.prefix, key), value);
 
@@ -126,6 +157,62 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, ByteString value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(ByteString key, String value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(String key, String value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(String key, byte[] value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(String key, int value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(String key, ByteString value) {
         Storage.put(this.context, concat(this.prefix, key), value);
     }
 }

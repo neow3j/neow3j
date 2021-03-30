@@ -182,6 +182,18 @@ public class Helper {
     public static native byte[] concat(byte[] first, ByteString second);
 
     /**
+     * Concatenates the given byte array with the string.
+     * <p>
+     * Remember that the string is represented as a UTF-8 encoded byte array.
+     *
+     * @param first  The first byte array.
+     * @param second The string to append.
+     * @return the concatenation.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    public static native byte[] concat(byte[] first, String second);
+
+    /**
      * Returns n consecutive characters from the given string starting at the given index.
      *
      * @param source The string to take the bytes from.
