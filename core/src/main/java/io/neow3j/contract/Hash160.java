@@ -9,6 +9,7 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.isValidHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
@@ -113,6 +114,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      *
      * @return the script hash as hex string in big-endian order.
      */
+    @JsonValue
     public String toString() {
         return toHexStringNoPrefix(hash);
     }

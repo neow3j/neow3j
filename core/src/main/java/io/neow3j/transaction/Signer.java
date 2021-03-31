@@ -158,22 +158,22 @@ public class Signer extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            this.account = reader.readSerializable(Hash160.class);
-            this.scopes = WitnessScope.extractCombinedScopes(reader.readByte());
-            if (this.scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
-                this.allowedContracts = reader.readSerializableList(Hash160.class);
-                if (this.allowedContracts.size() > NeoConstants.MAX_SIGNER_SUBITEMS) {
+            account = reader.readSerializable(Hash160.class);
+            scopes = WitnessScope.extractCombinedScopes(reader.readByte());
+            if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
+                allowedContracts = reader.readSerializableList(Hash160.class);
+                if (allowedContracts.size() > NeoConstants.MAX_SIGNER_SUBITEMS) {
                     throw new DeserializationException("A signer's scope can only contain "
                             + NeoConstants.MAX_SIGNER_SUBITEMS + " contracts. The input data "
-                            + "contained " + this.allowedContracts.size() + " contracts.");
+                            + "contained " + allowedContracts.size() + " contracts.");
                 }
             }
-            if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
-                this.allowedGroups = reader.readSerializableList(ECKeyPair.ECPublicKey.class);
-                if (this.allowedGroups.size() > NeoConstants.MAX_SIGNER_SUBITEMS) {
+            if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
+                allowedGroups = reader.readSerializableList(ECKeyPair.ECPublicKey.class);
+                if (allowedGroups.size() > NeoConstants.MAX_SIGNER_SUBITEMS) {
                     throw new DeserializationException("A signer's scope can only contain "
                             + NeoConstants.MAX_SIGNER_SUBITEMS + " groups. The input data "
-                            + "contained " + this.allowedGroups.size() + " groups.");
+                            + "contained " + allowedGroups.size() + " groups.");
                 }
             }
         } catch (IOException e) {
@@ -183,13 +183,13 @@ public class Signer extends NeoSerializable {
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        writer.writeSerializableFixed(this.account);
-        writer.writeByte(WitnessScope.combineScopes(this.scopes));
+        writer.writeSerializableFixed(account);
+        writer.writeByte(WitnessScope.combineScopes(scopes));
         if (scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
-            writer.writeSerializableVariable(this.allowedContracts);
+            writer.writeSerializableVariable(allowedContracts);
         }
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
-            writer.writeSerializableVariable(this.allowedGroups);
+            writer.writeSerializableVariable(allowedGroups);
         }
     }
 
