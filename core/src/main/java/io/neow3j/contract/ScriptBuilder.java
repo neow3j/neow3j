@@ -150,7 +150,7 @@ public class ScriptBuilder {
                 pushData(((Hash160) value).toLittleEndianArray());
                 break;
             case HASH256:
-                pushData(((Hash256) value).toArray());
+                pushData(((Hash256) value).toLittleEndianArray());
                 break;
             case STRING:
                 pushData((String) value);

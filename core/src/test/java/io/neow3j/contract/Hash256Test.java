@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
@@ -10,8 +12,6 @@ import static org.junit.Assert.assertNotEquals;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -67,8 +67,8 @@ public class Hash256Test {
 
     @Test
     public void hashFromByteArray() {
-        byte[] b = Numeric.hexStringToByteArray(Numeric.reverseHexString(
-                "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+        byte[] b = hexStringToByteArray(
+                "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
         Hash256 hash = new Hash256(b);
         assertThat(hash.toString(),
                 is("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
@@ -78,9 +78,9 @@ public class Hash256Test {
     public void toArray() {
         Hash256 hash =
                 new Hash256("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
-        byte[] expected = reverseArray(Numeric.hexStringToByteArray(
+        byte[] expected = reverseArray(hexStringToByteArray(
                 "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
-        assertArrayEquals(expected, hash.toArray());
+        assertArrayEquals(expected, hash.toLittleEndianArray());
     }
 
     @Test
@@ -90,14 +90,14 @@ public class Hash256Test {
         new Hash256("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a")
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
-        byte[] expected = reverseArray(Numeric.hexStringToByteArray(
+        byte[] expected = reverseArray(hexStringToByteArray(
                 "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
         assertArrayEquals(expected, actual);
     }
 
     @Test
     public void deserialize() throws DeserializationException {
-        byte[] data = reverseArray(Numeric.hexStringToByteArray(
+        byte[] data = reverseArray(hexStringToByteArray(
                 "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
         Hash256 hash = NeoSerializableInterface.from(data, Hash256.class);
         assertThat(hash.toString(),
@@ -108,14 +108,12 @@ public class Hash256Test {
     public void equals() {
         // first message has script hash 159759880646822985762674987218710759559479736571 (as
         // integer)
-        byte[] bytes1 = Numeric
-                .hexStringToByteArray(
-                        "1aa274391ab7127ca6d6b917d413919000ebee2b14974e67b49ac62082a904b8");
+        byte[] bytes1 = reverseArray(hexStringToByteArray(
+                "1aa274391ab7127ca6d6b917d413919000ebee2b14974e67b49ac62082a904b8"));
         // first message has script hash 776468865644545852461964229176363821261390671687 (as
         // integer)
-        byte[] bytes2 =
-                Numeric.hexStringToByteArray(
-                        "b43034ab680d646f8b6ca71647aa6ba167b2eb0b3757e545f6c2715787b13272");
+        byte[] bytes2 = reverseArray(hexStringToByteArray(
+                "b43034ab680d646f8b6ca71647aa6ba167b2eb0b3757e545f6c2715787b13272"));
         Hash256 hash1 = new Hash256(bytes1);
         Hash256 hash2 = new Hash256(bytes2);
         Hash256 hash3 =
@@ -129,12 +127,10 @@ public class Hash256Test {
 
     @Test
     public void compareTo() {
-        byte[] bytes1 = Numeric
-                .hexStringToByteArray(
-                        "1aa274391ab7127ca6d6b917d413919000ebee2b14974e67b49ac62082a904b8");
-        byte[] bytes2 =
-                Numeric.hexStringToByteArray(
-                        "b43034ab680d646f8b6ca71647aa6ba167b2eb0b3757e545f6c2715787b13272");
+        byte[] bytes1 = reverseArray(hexStringToByteArray(
+                "1aa274391ab7127ca6d6b917d413919000ebee2b14974e67b49ac62082a904b8"));
+        byte[] bytes2 = reverseArray(hexStringToByteArray(
+                "b43034ab680d646f8b6ca71647aa6ba167b2eb0b3757e545f6c2715787b13272"));
         Hash256 hash1 = new Hash256(bytes1);
         Hash256 hash2 = new Hash256(bytes2);
         Hash256 hash3 =
