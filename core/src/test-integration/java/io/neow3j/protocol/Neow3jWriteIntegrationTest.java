@@ -24,7 +24,6 @@ import java.io.IOException;
 import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.defaultAccountAddress;
-import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
@@ -60,7 +59,7 @@ public class Neow3jWriteIntegrationTest {
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
-        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", new Hash160(neoTokenHash()),
+        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH,
                 getNeow3j());
     }
 
@@ -106,7 +105,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendFrom() throws IOException {
         NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(committeeAccountAddress(), neoTokenHash(), defaultAccountAddress(), "10")
+                .sendFrom(committeeAccountAddress(), NEO_HASH, defaultAccountAddress(), "10")
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
@@ -119,7 +118,8 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendFrom_TransactionSendAsset() throws IOException {
         TransactionSendAsset txSendAsset =
-                new TransactionSendAsset(neoTokenHash(), "10", defaultAccountAddress());
+                new TransactionSendAsset(NEO_HASH, "10",
+                        defaultAccountAddress());
         NeoSendFrom sendFrom = getNeow3j()
                 .sendFrom(committeeAccountAddress(), txSendAsset)
                 .send();
@@ -135,8 +135,8 @@ public class Neow3jWriteIntegrationTest {
     public void testSendMany() throws IOException {
         NeoSendMany sendMany = getNeow3j()
                 .sendMany(asList(
-                        new TransactionSendAsset(neoTokenHash(), "100", defaultAccountAddress()),
-                        new TransactionSendAsset(neoTokenHash(), "10", RECIPIENT)))
+                        new TransactionSendAsset(NEO_HASH, "100", defaultAccountAddress()),
+                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT)))
                 .send();
 
         assertNotNull(sendMany.getSendMany());
@@ -152,8 +152,8 @@ public class Neow3jWriteIntegrationTest {
     public void testSendManyWithFrom() throws IOException {
         NeoSendMany response = getNeow3j()
                 .sendMany(committeeAccountAddress(), asList(
-                        new TransactionSendAsset(neoTokenHash(), "100", defaultAccountAddress()),
-                        new TransactionSendAsset(neoTokenHash(), "10", RECIPIENT)))
+                        new TransactionSendAsset(NEO_HASH, "100", defaultAccountAddress()),
+                        new TransactionSendAsset(NEO_HASH, "10", RECIPIENT)))
                 .send();
 
         assertNotNull(response.getSendMany());
@@ -187,7 +187,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendToAddress() throws IOException {
         NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(neoTokenHash(), defaultAccountAddress(), "10")
+                .sendToAddress(NEO_HASH, defaultAccountAddress(), "10")
                 .send();
 
         Transaction tx = sendToAddress.getSendToAddress();
@@ -197,7 +197,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendToAddress_TransactionSendAsset() throws IOException {
-        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(neoTokenHash(), "10",
+        TransactionSendAsset transactionSendAsset = new TransactionSendAsset(NEO_HASH, "10",
                 defaultAccountAddress());
         NeoSendToAddress sendToAddress = getNeow3j()
                 .sendToAddress(transactionSendAsset)

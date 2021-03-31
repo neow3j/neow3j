@@ -199,6 +199,9 @@ public interface Neo {
     Request<?, NeoSendFrom> sendFrom(String fromAddress, String assetId, String toAddress,
             String value);
 
+    Request<?, NeoSendFrom> sendFrom(String fromAddress, Hash160 assetId, String toAddress,
+            String value);
+
     Request<?, NeoSendFrom> sendFrom(String fromAddress, TransactionSendAsset txSendAsset);
 
     Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
@@ -206,6 +209,8 @@ public interface Neo {
     Request<?, NeoSendMany> sendMany(String fromAddress, List<TransactionSendAsset> txSendAsset);
 
     Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
+
+    Request<?, NeoSendToAddress> sendToAddress(Hash160 assetId, String toAddress, String value);
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
 

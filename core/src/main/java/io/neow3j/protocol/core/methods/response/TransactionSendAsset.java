@@ -2,6 +2,7 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.contract.Hash160;
 
 import java.util.Objects;
 
@@ -9,7 +10,7 @@ import java.util.Objects;
 public class TransactionSendAsset {
 
     @JsonProperty("asset")
-    private String asset;
+    private Hash160 asset;
 
     @JsonProperty("value")
     private String value;
@@ -20,13 +21,13 @@ public class TransactionSendAsset {
     public TransactionSendAsset() {
     }
 
-    public TransactionSendAsset(String asset, String value, String address) {
+    public TransactionSendAsset(Hash160 asset, String value, String address) {
         this.asset = asset;
         this.value = value;
         this.address = address;
     }
 
-    public String getAsset() {
+    public Hash160 getAsset() {
         return asset;
     }
 
