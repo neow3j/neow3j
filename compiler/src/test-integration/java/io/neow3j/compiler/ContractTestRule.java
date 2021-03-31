@@ -29,9 +29,11 @@ import java.math.BigDecimal;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -117,7 +119,7 @@ public class ContractTestRule implements TestRule {
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
         String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
-        Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(scriptHashHex));
+        Hash160 scriptHash = new Hash160(reverseArray(hexStringToByteArray(scriptHashHex)));
         return new SmartContract(scriptHash, neow3j);
     }
 

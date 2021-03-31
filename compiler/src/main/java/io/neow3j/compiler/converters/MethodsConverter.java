@@ -353,7 +353,7 @@ public class MethodsConverter implements Converter {
         // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
         if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
             callingNeoMethod.addInstruction(
-                    buildPushDataInsn(ArrayUtils.reverseArray(scriptHash.toArray())));
+                    buildPushDataInsn(scriptHash.toArray()));
             return;
         }
 
