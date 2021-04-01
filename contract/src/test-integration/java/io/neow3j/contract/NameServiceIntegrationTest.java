@@ -1,9 +1,6 @@
 package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.contract.IntegrationTestHelper.NODE_WALLET_PASSWORD;
-import static io.neow3j.contract.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.contract.IntegrationTestHelper.client1;
 import static io.neow3j.contract.IntegrationTestHelper.client2;
 import static io.neow3j.contract.IntegrationTestHelper.committee;
@@ -11,7 +8,6 @@ import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.walletClients12;
 import static io.neow3j.transaction.Signer.calledByEntry;
-import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -60,10 +56,6 @@ public class NameServiceIntegrationTest {
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         nameService = new NeoNameService(getNeow3j());
-        // open the wallet for JSON-RPC calls
-        getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
-        // ensure that the wallet with NEO/GAS is initialized for the tests
-        waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH, getNeow3j());
         // make a transaction that can be used for the tests
         fundAccountsWithGas(neow3j, client1, client2);
         addRoot();
