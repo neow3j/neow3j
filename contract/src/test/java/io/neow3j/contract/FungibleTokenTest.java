@@ -490,7 +490,7 @@ public class FungibleTokenTest {
                         byteArray(new byte[]{0x42}))).toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2),
-                scriptHashToAddress(RECIPIENT_SCRIPT_HASH.toLittleEndianArray()),
+                RECIPIENT_SCRIPT_HASH.toAddress(),
                 new BigDecimal("4"), byteArray(new byte[]{0x42}));
 
         assertThat(b.getScript(), is(expectedScript));
