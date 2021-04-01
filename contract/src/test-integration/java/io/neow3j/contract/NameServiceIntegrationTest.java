@@ -4,10 +4,14 @@ import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.contract.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.contract.IntegrationTestHelper.NODE_WALLET_PATH;
+import static io.neow3j.contract.IntegrationTestHelper.client1;
+import static io.neow3j.contract.IntegrationTestHelper.client2;
+import static io.neow3j.contract.IntegrationTestHelper.committee;
+import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
+import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
+import static io.neow3j.contract.IntegrationTestHelper.walletClients12;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
-import static io.neow3j.wallet.Account.fromWIF;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -30,7 +34,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -48,18 +51,6 @@ public class NameServiceIntegrationTest {
     private static final long ONE_YEAR_IN_SECONDS = 365 * 24 * 3600;
     private static final long BUFFER_SECONDS = 3600;
 
-    private static final Account singleSigCommitteeMember =
-            fromWIF("L24Qst64zASL2aLEKdJtRLnbnTbqpcRNWkWJ3yhDh2CLUtLdwYK2");
-    private static final Account committee = Account.createMultiSigAccount(
-            singletonList(singleSigCommitteeMember.getECKeyPair().getPublicKey()), 1);
-    private static final Wallet committeeWallet =
-            Wallet.withAccounts(singleSigCommitteeMember, committee);
-    private static final Account client1 =
-            fromWIF("L3gSLs2CSRYss1zoTmSB9hYAxqimn7Br5yDomH8FDb6NDsupeRVK");
-    private static final Account client2 =
-            fromWIF("L4oDbG4m9f7cnHyawQ4HWJJSrcVDZ8k3E4YxL7Ran89FL2t31hya");
-    private static final Wallet walletClients12 = Wallet.withAccounts(client1, client2);
-
     @ClassRule
     public static NeoTestContainer neoTestContainer =
             new NeoTestContainer("/node-config/config.json");
@@ -73,7 +64,7 @@ public class NameServiceIntegrationTest {
         // ensure that the wallet with NEO/GAS is initialized for the tests
         waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH, getNeow3j());
         // make a transaction that can be used for the tests
-        fundAccountsWithGas(client1, client2);
+        fundAccountsWithGas(neow3j, client1, client2);
         addRoot();
         registerDomainFromCommittee(DOMAIN);
         setRecordFromCommittee(DOMAIN, RecordType.A, A_RECORD);
@@ -81,24 +72,6 @@ public class NameServiceIntegrationTest {
 
     private static Neow3j getNeow3j() {
         return neow3j;
-    }
-
-    private static void fundAccountsWithGas(Account... accounts) throws Throwable {
-        for (Account account : accounts) {
-            transferGasFromGenesisToAccount(account);
-        }
-    }
-
-    private static void transferGasFromGenesisToAccount(Account a) throws Throwable {
-        Hash256 txHash = new GasToken(neow3j)
-                .transfer(committeeWallet, a.getScriptHash(), new BigDecimal("100000"))
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
     private static void addRoot() throws Throwable {
