@@ -9,16 +9,10 @@ import java.math.BigDecimal;
 
 import static io.neow3j.TestProperties.gasTokenHash;
 import static io.neow3j.TestProperties.neoTokenHash;
-import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.wallet.Account.fromWIF;
 import static java.util.Collections.singletonList;
 
 public class IntegrationTestHelper {
-
-    // Wallet password for the node's wallet at node-config/wallet.json.
-    static final String NODE_WALLET_PASSWORD = "neo";
-    // The path to the wallet from the directory of the node process.
-    static final String NODE_WALLET_PATH = "wallet.json";
 
     // Native token hashes.
     static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
@@ -45,8 +39,6 @@ public class IntegrationTestHelper {
     static void transferGasFromGenesisToAccount(Neow3j neow3j, Account a) throws Throwable {
         Hash256 txHash = new GasToken(neow3j)
                 .transfer(committeeWallet, a.getScriptHash(), new BigDecimal("100000"))
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
