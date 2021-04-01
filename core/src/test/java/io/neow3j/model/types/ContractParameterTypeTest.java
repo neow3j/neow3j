@@ -1,6 +1,5 @@
-package io.neow3j.types;
+package io.neow3j.model.types;
 
-import io.neow3j.model.types.ContractParameterType;
 import org.junit.Before;
 import org.junit.Test;
 
