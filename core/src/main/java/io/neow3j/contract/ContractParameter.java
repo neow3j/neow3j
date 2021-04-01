@@ -298,7 +298,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter hash256(Hash256 hash) {
-        return hash256(hash.toArray());
+        return hash256(hash.toLittleEndianArray());
     }
 
     /**

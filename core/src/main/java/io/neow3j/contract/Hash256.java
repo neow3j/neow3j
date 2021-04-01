@@ -1,12 +1,16 @@
 package io.neow3j.contract;
 
+import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -19,7 +23,7 @@ import java.util.Arrays;
 public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
 
     /**
-     * The hash is stored as an unsigned integer in little-endian order.
+     * The hash is stored as an unsigned integer in big-endian order.
      */
     private byte[] hash;
 
@@ -37,10 +41,10 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * Constructs a new hash from the given byte array. The byte array must be in little-endian
+     * Constructs a new hash from the given byte array. The byte array must be in big-endian
      * order and 256 bits long.
      *
-     * @param hash the hash in little-endian order.
+     * @param hash the hash in big-endian order.
      */
     public Hash256(byte[] hash) {
         checkAndThrowHashLength(hash);
@@ -54,8 +58,8 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
      * @param hash the hash in big-endian order.
      */
     public Hash256(String hash) {
-        if (Numeric.isValidHexString(hash)) {
-            this.hash = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(hash));
+        if (isValidHexString(hash)) {
+            this.hash = hexStringToByteArray(hash);
             checkAndThrowHashLength(this.hash);
         } else {
             throw new IllegalArgumentException("String argument is not hexadecimal.");
@@ -65,7 +69,7 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            hash = reader.readBytes(NeoConstants.HASH256_SIZE);
+            hash = reverseArray(reader.readBytes(NeoConstants.HASH256_SIZE));
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
@@ -73,7 +77,7 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        writer.write(hash);
+        writer.write(reverseArray(hash));
     }
 
     @Override
@@ -82,13 +86,22 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
+     * Gets the hash as a byte array in big-endian order.
+     *
+     * @return the hash byte array in big-endian order.
+     */
+    @Override
+    public byte[] toArray() {
+        return hash;
+    }
+
+    /**
      * Gets the hash as a byte array in little-endian order.
      *
      * @return the hash byte array in little-endian order.
      */
-    @Override
-    public byte[] toArray() {
-        return super.toArray();
+    public byte[] toLittleEndianArray() {
+        return reverseArray(hash);
     }
 
     /**
@@ -96,8 +109,9 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
      *
      * @return the hash as hex string in big-endian order.
      */
+    @JsonValue
     public String toString() {
-        return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
+        return toHexStringNoPrefix(hash);
     }
 
     private void checkAndThrowHashLength(byte[] hash) {
@@ -109,8 +123,8 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
 
     @Override
     public int compareTo(Hash256 o) {
-        return new BigInteger(1, ArrayUtils.reverseArray(hash))
-                .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
+        return new BigInteger(1, hash)
+                .compareTo(new BigInteger(1, o.toArray()));
     }
 
     @Override

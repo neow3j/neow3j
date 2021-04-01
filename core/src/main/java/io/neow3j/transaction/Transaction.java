@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 
 public class Transaction extends NeoSerializable {
 
@@ -157,7 +158,7 @@ public class Transaction extends NeoSerializable {
      * @return the transaction ID.
      */
     public Hash256 getTxId() {
-        return new Hash256(sha256(toArrayWithoutWitnesses()));
+        return new Hash256(reverseArray(sha256(toArrayWithoutWitnesses())));
     }
 
     /**

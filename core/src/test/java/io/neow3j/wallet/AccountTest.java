@@ -16,7 +16,6 @@ import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.VerificationScript;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import org.hamcrest.core.StringContains;
@@ -31,7 +30,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Map;
 
 import static io.neow3j.TestProperties.committeeAccountAddress;
@@ -46,10 +44,14 @@ import static io.neow3j.TestProperties.defaultAccountVerificationScript;
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.TestProperties.gasTokenHash;
 import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.wallet.Account.createMultiSigAccount;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -94,26 +96,26 @@ public class AccountTest {
 
     @Test
     public void testBuildAccountFromExistingKeyPair() {
-        ECKeyPair pair = ECKeyPair.create(Numeric.hexStringToByteArray(defaultAccountPrivateKey()));
+        ECKeyPair pair = ECKeyPair.create(hexStringToByteArray(defaultAccountPrivateKey()));
         Account a = new Account(pair);
         assertThat(a.isMultiSig(), is(false));
         assertThat(a.getECKeyPair(), is(pair));
         assertThat(a.getAddress(), is(defaultAccountAddress()));
         assertThat(a.getLabel(), is(defaultAccountAddress()));
         assertThat(a.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray(defaultAccountVerificationScript())));
+                is(hexStringToByteArray(defaultAccountVerificationScript())));
     }
 
     @Test
     public void testFromVerificationScript() {
         Account account = Account.fromVerificationScript(
                 new VerificationScript(
-                        Numeric.hexStringToByteArray(
+                        hexStringToByteArray(
                                 "0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
 
         assertThat(account.getAddress(), is("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj"));
         assertThat(account.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray(
+                is(hexStringToByteArray(
                         "0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
     }
 
@@ -124,24 +126,24 @@ public class AccountTest {
 
         assertThat(account.getAddress(), is(defaultAccountAddress()));
         assertThat(account.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray(defaultAccountVerificationScript())));
+                is(hexStringToByteArray(defaultAccountVerificationScript())));
     }
 
     @Test
     public void testFromMultiSigKeys() {
         ECPublicKey pubKey = new ECPublicKey(defaultAccountPublicKey());
-        Account a = Account.createMultiSigAccount(Arrays.asList(pubKey), 1);
+        Account a = createMultiSigAccount(singletonList(pubKey), 1);
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
         assertThat(a.getLabel(), is(committeeAccountAddress()));
         assertThat(a.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray(committeeAccountVerificationScript())));
+                is(hexStringToByteArray(committeeAccountVerificationScript())));
     }
 
     @Test
     public void testEncryptPrivateKey() throws CipherException {
         ECKeyPair keyPair = ECKeyPair.create(
-                Numeric.hexStringToByteArray(defaultAccountPrivateKey()));
+                hexStringToByteArray(defaultAccountPrivateKey()));
         Account a = new Account(keyPair);
         a.encryptPrivateKey(defaultAccountPassword());
         assertThat(a.getEncryptedPrivateKey(), is(defaultAccountEncryptedPrivateKey()));
@@ -159,7 +161,7 @@ public class AccountTest {
             NEP2InvalidPassphrase {
 
         final ECPrivateKey privateKey =
-                new ECPrivateKey(Numeric.hexStringToByteArray(defaultAccountPrivateKey()));
+                new ECPrivateKey(hexStringToByteArray(defaultAccountPrivateKey()));
         NEP6Account nep6Acct = new NEP6Account("", "", true, false,
                 defaultAccountEncryptedPrivateKey(), null, null);
         Account a = Account.fromNEP6Account(nep6Acct);
@@ -190,7 +192,7 @@ public class AccountTest {
         assertThat(a.getAddress(), is(defaultAccountAddress()));
         assertThat(a.getEncryptedPrivateKey(), is(defaultAccountEncryptedPrivateKey()));
         assertThat(a.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray(defaultAccountVerificationScript())));
+                is(hexStringToByteArray(defaultAccountVerificationScript())));
     }
 
     @Test
@@ -231,8 +233,8 @@ public class AccountTest {
 
     @Test
     public void toNep6AccountWithMultiSigAccount() {
-        ECPublicKey key = new ECPublicKey(Numeric.hexStringToByteArray(defaultAccountPublicKey()));
-        Account a = Account.createMultiSigAccount(Arrays.asList(key), 1);
+        ECPublicKey key = new ECPublicKey(hexStringToByteArray(defaultAccountPublicKey()));
+        Account a = createMultiSigAccount(singletonList(key), 1);
         NEP6Account nep6 = a.toNEP6Account();
 
         assertThat(nep6.getContract().getScript(),
@@ -250,7 +252,7 @@ public class AccountTest {
     @Test
     public void createAccountFromWIF() {
         Account a = Account.fromWIF(defaultAccountWIF());
-        byte[] expectedPrivKey = Numeric.hexStringToByteArray(defaultAccountPrivateKey());
+        byte[] expectedPrivKey = hexStringToByteArray(defaultAccountPrivateKey());
         ECKeyPair expectedKeyPair = ECKeyPair.create(expectedPrivKey);
         assertThat(a.getECKeyPair(), is(expectedKeyPair));
         assertThat(a.getAddress(), is(defaultAccountAddress()));
@@ -260,7 +262,7 @@ public class AccountTest {
         assertThat(a.isDefault(), is(false));
         assertThat(a.isLocked(), is(false));
         assertThat(a.getVerificationScript().getScript(),
-                is(Numeric.hexStringToByteArray(defaultAccountVerificationScript())));
+                is(hexStringToByteArray(defaultAccountVerificationScript())));
     }
 
     @Test
@@ -280,16 +282,16 @@ public class AccountTest {
 
     @Test
     public void getNep17Balances() throws IOException {
-        int port = this.wireMockRule.port();
+        int port = wireMockRule.port();
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         Account a = Account.fromAddress(defaultAccountAddress());
         WalletTestHelper.setUpWireMockForCall("getnep17balances", "getnep17balances_ofDefaultAccount.json",
                 defaultAccountAddress());
         Map<Hash160, BigInteger> balances = a.getNep17Balances(neow);
-        assertThat(balances.keySet(), contains(
+        assertThat(balances.keySet(), containsInAnyOrder(
                 new Hash160(gasTokenHash()), new Hash160(neoTokenHash())));
-        assertThat(balances.values(), contains(
+        assertThat(balances.values(), containsInAnyOrder(
                 new BigInteger("300000000"),
                 new BigInteger("5")));
     }
@@ -298,7 +300,7 @@ public class AccountTest {
     public void isMultiSigShouldThrowIfVerificationScriptIsNotAvailable() {
         Account a = Account.fromAddress(defaultAccountAddress());
         exceptionRule.expect(AccountStateException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 defaultAccountScriptHash(), "verification script")));
         a.isMultiSig();
     }
