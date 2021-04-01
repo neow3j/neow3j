@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.ByteString;
+import io.neow3j.devpack.FindOptions;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Storage;
@@ -22,6 +23,7 @@ import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.byteArrayFromString;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -210,7 +212,7 @@ public class StorageIntegrationTest {
 
     @Ignore("Depends on https://github.com/neow3j/neow3j/issues/488")
     @Test
-    public void findByByteStringKey() throws IOException {
+    public void findByByteStringPrefix() throws IOException {
         ContractParameter key = byteArray(KEY1);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         List<StackItem> entry = res.getStack().get(0).getList();
@@ -228,7 +230,7 @@ public class StorageIntegrationTest {
         assertThat(entry.get(1), is(DATA1));
     }
 
-    @Ignore("Depends on https://github.com/neow3j/neow3j/issues/488")
+//    @Ignore("Depends on https://github.com/neow3j/neow3j/issues/488")
     @Test
     public void findByStringPrefix() throws IOException {
         ContractParameter key = string(KEY2);
@@ -333,26 +335,35 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
-        public static Map.Entry<byte[], byte[]> findByByteStringPrefix(ByteString prefix) {
-            Iterator<Map.Entry<byte[], byte[]>> it = Storage.find(ctx, prefix);
+        public static Map.Entry<ByteString, ByteString> findByByteStringPrefix(ByteString prefix) {
+            Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+                    FindOptions.None);
             it.next();
-            Map.Entry<byte[], byte[]> entry = it.getValue();
-            return entry;
+            return it.getValue();
         }
 
-        public static Map.Entry<byte[], byte[]> findByByteArrayPrefix(byte[] prefix) {
-            Iterator<Map.Entry<byte[], byte[]>> it = Storage.find(ctx, prefix);
+        public static Map.Entry<ByteString, ByteString> findByByteArrayPrefix(byte[] prefix) {
+            Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+                    FindOptions.None);
             it.next();
-            Map.Entry<byte[], byte[]> entry = it.getValue();
-            return entry;
+            return it.getValue();
         }
 
-        public static Map.Entry<byte[], byte[]> findByStringPrefix(String prefix) {
-            Iterator<Map.Entry<byte[], byte[]>> it = Storage.find(ctx, prefix);
+        public static Map.Entry<ByteString, ByteString> findByStringPrefix(String prefix) {
+            Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+                    FindOptions.None);
             it.next();
-            Map.Entry<byte[], byte[]> entry = it.getValue();
-            return entry;
+            return it.getValue();
         }
+
+//        public static ByteString findWithFindOptions() {
+//            Storage.put(ctx, hexToBytes("0102"), hexToBytes("102030"));
+//            Iterator<ByteString> it = Storage.find(ctx, hexToBytes("01"),
+//                    (byte) (FindOptions.DeserializeValues | FindOptions.ValuesOnly));
+//            it.next();
+//            ByteString entry = it.getValue();
+//            return entry;
+//        }
 
     }
 }
