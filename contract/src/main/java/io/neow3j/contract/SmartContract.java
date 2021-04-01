@@ -19,6 +19,7 @@ import java.util.List;
 import static io.neow3j.model.types.StackItemType.BOOLEAN;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.INTEGER;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
 
 /**
@@ -171,7 +172,7 @@ public class SmartContract {
             throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
         }
         try {
-            return new Hash160(item.getHexString());
+            return new Hash160(reverseHexString(item.getHexString()));
         } catch (StackItemCastException | IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
                     "expected format.", e);
