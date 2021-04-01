@@ -13,6 +13,7 @@ import static io.neow3j.contract.IntegrationTestHelper.walletClients12;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertFalse;
@@ -137,6 +138,12 @@ public class NameServiceIntegrationTest {
     public void testOwnerOf() throws IOException {
         Hash160 owner = nameService.ownerOf(DOMAIN);
         assertThat(owner, is(committee.getScriptHash()));
+    }
+
+    @Test
+    public void testBalanceOf() throws IOException {
+        BigInteger bigInteger = nameService.balanceOf(committee.getScriptHash());
+        assertThat(bigInteger, greaterThanOrEqualTo(BigInteger.ONE));
     }
 
     @Test
