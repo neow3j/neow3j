@@ -33,7 +33,6 @@ public class FindOptions {
 
     /**
      * Indicates that values should be deserialized before return.
-     * TODO: What Iterator types does this lead to?
      */
     public static final byte DeserializeValues = 1 << 3;
 
