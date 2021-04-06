@@ -828,7 +828,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Transfers an amount of a token from an address to another address.
+     * Transfers an amount of a token from an account to another account.
      *
      * @param from        the transferring account's script hash.
      * @param txSendAsset a {@link TransactionSendAsset} object containing the token hash, the
@@ -842,10 +842,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Initiates multiple transfers to multiple addresses from the open wallet in a transaction.
+     * Initiates multiple transfers to multiple accounts from the open wallet in a transaction.
      *
      * @param txSendAsset a list of {@link TransactionSendAsset} objects, that each contains the
-     *                    token asset, destination address and transfer amount.
+     *                    token hash, the recipient and the transfer amount.
      * @return the request object.
      */
     @Override
@@ -863,18 +863,16 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Initiates multiple transfers to multiple addresses from one specific address in a
      * transaction.
      *
-     * @param fromAddress the transferring address.
+     * @param from        the transferring account's script hash.
      * @param txSendAsset a list of {@link TransactionSendAsset} objects, that each contains the
-     *                    token asset, destination address and transfer amount.
+     *                    token hash, the recipient and the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendMany> sendMany(String fromAddress,
-            List<TransactionSendAsset> txSendAsset) {
-
+    public Request<?, NeoSendMany> sendMany(Hash160 from, List<TransactionSendAsset> txSendAsset) {
         return new Request<>(
                 "sendmany",
-                asList(fromAddress,
+                asList(from.toAddress(),
                         txSendAsset.stream().filter(Objects::nonNull).collect(Collectors.toList())),
                 neow3jService,
                 NeoSendMany.class);

@@ -176,7 +176,7 @@ public interface Neo {
 
     Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
 
-    Request<?, NeoSendMany> sendMany(String fromAddress, List<TransactionSendAsset> txSendAsset);
+    Request<?, NeoSendMany> sendMany(Hash160 from, List<TransactionSendAsset> txSendAsset);
 
     Request<?, NeoSendToAddress> sendToAddress(Hash160 assetId, Hash160 to, BigInteger amount);
 

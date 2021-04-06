@@ -624,7 +624,7 @@ public class RequestTest extends RequestTester {
     @Test
     public void testSendManyWithFrom() throws Exception {
         neow3j.sendMany(
-                "NiVNRW6cBXwkvrZnetZToaHPGSSGgV1HmA",
+                new Hash160("NiVNRW6cBXwkvrZnetZToaHPGSSGgV1HmA"),
                 asList(
                         new TransactionSendAsset(
                                 new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),

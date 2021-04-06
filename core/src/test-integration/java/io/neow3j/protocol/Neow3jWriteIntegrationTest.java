@@ -154,7 +154,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendManyWithFrom() throws IOException {
         NeoSendMany response = getNeow3j()
-                .sendMany(committeeAccountAddress(), asList(
+                .sendMany(COMMITTEE_HASH, asList(
                         new TransactionSendAsset(NEO_HASH, "100", defaultAccountAddress()),
                         new TransactionSendAsset(NEO_HASH, "10", RECIPIENT)))
                 .send();
