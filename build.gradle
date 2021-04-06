@@ -26,10 +26,11 @@ buildscript {
 }
 
 plugins {
-    id 'com.jfrog.bintray' version '1.8.5'
+    id 'com.jfrog.bintray' version '1.8.5' apply true
     id 'org.unbroken-dome.test-sets' version '3.0.1' apply false
-    id "de.marcphilipp.nexus-publish" version '0.4.0' apply false
+    id 'io.github.gradle-nexus.publish-plugin' version '1.0.0' apply true
     id 'com.gradle.plugin-publish' version '0.12.0' apply false
+    id 'jacoco' apply true
 }
 
 description 'neow3j Project'
@@ -43,7 +44,23 @@ ext {
     publishJFrogPassword = project.hasProperty('jfrogPassword') ? project.property('jfrogPassword') : ''
 }
 
-apply plugin: 'jacoco'
+nexusPublishing {
+    repositories {
+        sonatype {
+            def sonatypeReleasesRepoUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            def sonatypeSnapshotsRepoUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            nexusUrl = project.hasProperty('snapshot') ? sonatypeSnapshotsRepoUrl : sonatypeReleasesRepoUrl
+            username = publishSonaTypeUsername
+            password = publishSonaTypePassword
+        }
+        github {
+            def githubRepoUrl = uri("https://maven.pkg.github.com/neow3j/neow3j/")
+            nexusUrl = githubRepoUrl
+            username = publishGitHubUsername
+            password = publishGitHubPassword
+        }
+    }
+}
 
 allprojects { thisproject ->
 
@@ -163,30 +180,8 @@ subprojects {
 
         apply plugin: 'com.jfrog.bintray'
         apply plugin: 'maven-publish'
-        apply plugin: "de.marcphilipp.nexus-publish"
 
         publishing {
-            repositories {
-                maven {
-                    def sonatypeReleasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    def sonatypeSnapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                    def githubRepoUrl = "https://maven.pkg.github.com/neow3j/neow3j/"
-                    if (project.hasProperty('sonatype')) {
-                        url = project.hasProperty('snapshot') ? sonatypeSnapshotsRepoUrl : sonatypeReleasesRepoUrl
-                        credentials {
-                            username publishSonaTypeUsername
-                            password publishSonaTypePassword
-                        }
-                    }
-                    if (project.hasProperty('github')) {
-                        url = githubRepoUrl
-                        credentials {
-                            username publishGitHubUsername
-                            password publishGitHubPassword
-                        }
-                    }
-                }
-            }
             publications {
                 mavenJava(MavenPublication) {
 
