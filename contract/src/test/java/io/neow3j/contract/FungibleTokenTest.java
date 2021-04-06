@@ -11,6 +11,8 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.utils.AddressUtils.scriptHashToAddress;
+import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -23,7 +25,6 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
-import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -76,10 +77,11 @@ public class FungibleTokenTest {
         account3 = new Account(ECKeyPair.create(
                 Numeric.hexStringToByteArray(
                         "3a100280baf46ea7db17bc01b53365891876b4a2db11028dbc1ccb8c782725f8")));
-        multiSigAccount = Account.createMultiSigAccount(asList(
-                account1.getECKeyPair().getPublicKey(),
-                account2.getECKeyPair().getPublicKey(),
-                account3.getECKeyPair().getPublicKey()), 2);
+        multiSigAccount = createMultiSigAccount(
+                asList(account1.getECKeyPair().getPublicKey(),
+                        account2.getECKeyPair().getPublicKey(),
+                        account3.getECKeyPair().getPublicKey()
+                ), 2);
     }
 
     @Test
@@ -89,11 +91,10 @@ public class FungibleTokenTest {
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
 
-        Transaction tx = gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
-                RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
+        Transaction tx = gasToken.transferFromDefaultAccount(
+                Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
                 .buildTransaction();
 
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
@@ -106,13 +107,12 @@ public class FungibleTokenTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
 
-        Transaction tx = gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
-                RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE)
+        Transaction tx = gasToken.transferFromDefaultAccount(
+                Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE)
                 .buildTransaction();
 
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
@@ -125,22 +125,20 @@ public class FungibleTokenTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
-        setUpWireMockForInvokeFunction("balanceOf",
-                "invokefunction_balanceOf_300000000.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("balanceOf", "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account1.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(100000000),
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(100000000),
+                                any(null)))
+                .toArray();
 
-        Transaction tx =
-                gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1, account2),
-                        RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
-                        .buildTransaction();
+        Transaction tx = gasToken.transferFromDefaultAccount(
+                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
+                .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
     }
@@ -151,22 +149,21 @@ public class FungibleTokenTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
-        setUpWireMockForInvokeFunction("balanceOf",
-                "invokefunction_balanceOf_300000000.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("balanceOf", "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account1.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(100000000),
-                        integer(42))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(100000000),
+                                integer(42)))
+                .toArray();
 
-        Transaction tx =
-                gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1, account2),
-                        RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE, integer(42))
-                        .buildTransaction();
+        Transaction tx = gasToken.transferFromDefaultAccount(
+                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
+                BigDecimal.ONE, integer(42))
+                .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
     }
@@ -181,17 +178,18 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("balanceOf",
                 "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account1.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(100000000), // 1 GAS
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(100000000), // 1 GAS
+                                any(null)))
+                .toArray();
 
-        Transaction tx =
-                gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1, account2),
-                        RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE, account1.getScriptHash())
-                        .buildTransaction();
+        Transaction tx = gasToken.transferFromSpecificAccounts(
+                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
+                BigDecimal.ONE, account1.getScriptHash())
+                .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
     }
@@ -201,23 +199,21 @@ public class FungibleTokenTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
-        setUpWireMockForInvokeFunction("balanceOf",
-                "invokefunction_balanceOf_300000000.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("balanceOf", "invokefunction_balanceOf_300000000.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(gasTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account1.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(100000000), // 1 GAS
-                        hash160(account1.getScriptHash()))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(100000000), // 1 GAS
+                                hash160(account1.getScriptHash())))
+                .toArray();
 
-        Transaction tx =
-                gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1, account2),
-                        RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE,
-                        hash160(account1.getScriptHash()), account1.getAddress())
-                        .buildTransaction();
+        Transaction tx = gasToken.transferFromSpecificAccounts(
+                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
+                BigDecimal.ONE, hash160(account1.getScriptHash()), account1.getAddress())
+                .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
     }
@@ -234,16 +230,14 @@ public class FungibleTokenTest {
     public void testGetBalanceOfAccount_address() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
-        assertThat(gasToken.getBalanceOf(account1.getAddress()),
-                is(new BigInteger("300000000")));
+        assertThat(gasToken.getBalanceOf(account1.getAddress()), is(new BigInteger("300000000")));
     }
 
     @Test
     public void testGetBalanceOfAccount_account() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
-        assertThat(gasToken.getBalanceOf(account1),
-                is(new BigInteger("300000000")));
+        assertThat(gasToken.getBalanceOf(account1), is(new BigInteger("300000000")));
     }
 
     @Test
@@ -261,8 +255,7 @@ public class FungibleTokenTest {
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
 
         exceptionRule.expect(InsufficientFundsException.class);
@@ -281,21 +274,19 @@ public class FungibleTokenTest {
 
     @Test
     public void testTransferInvalidDecimalsInAmount() throws Throwable {
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                                    "handle");
-        neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("0.1"));
+                "handle");
+        neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("0.1"));
     }
 
     @Test
     public void testTransferInvalidDecimalsInAmount_trailingZeros() throws IOException {
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
 
         try {
             // Trailing zeros should be ignored - this code should not produce any exception.
@@ -308,33 +299,30 @@ public class FungibleTokenTest {
 
     @Test
     public void testInvalidDecimals_TransferFromDefaultAccount() throws IOException {
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                                    "handle");
-        neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("1.1"));
+                "handle");
+        neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("1.1"));
     }
 
     @Test
     public void testInvalidDecimals_TransferFromSpecificAccounts() throws IOException {
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                                    "handle");
+                "handle");
         gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("0.0000000002"), account1.getScriptHash());
     }
 
     @Test
     public void testInvalidDecimals_Transfer() throws IOException {
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                                    "handle");
+                "handle");
         neoToken.transfer(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
                 new BigDecimal("0.2"));
     }
@@ -355,22 +343,22 @@ public class FungibleTokenTest {
     public void testTransferWithTheFirstTwoAccountsNeededToCoverAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_4.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                        NEP17_TRANSFER, asList(
-                                hash160(account1.getScriptHash()), // from
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()), // from
                                 hash160(RECIPIENT_SCRIPT_HASH), // to
                                 integer(5), // amount
                                 any(null))) // data
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
-                        hash160(account3.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(2),
-                        any(null))).toArray();
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account3.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(2),
+                                any(null)))
+                .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("7"));
@@ -389,20 +377,21 @@ public class FungibleTokenTest {
 
         // The accounts are ordered by script hash (but the default account is always first) and
         // then used in that order to cover the amount.
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                        NEP17_TRANSFER, asList(
-                                hash160(account1.getScriptHash()),
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(5),
                                 any(null)))
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
-                        hash160(account3.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(2),
-                        any(null))).toArray();
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account3.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(2),
+                                any(null)))
+                .toArray();
 
-        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH.toAddress(), new BigDecimal("7"));
+        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2, account3),
+                RECIPIENT_SCRIPT_HASH.toAddress(), new BigDecimal("7"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -416,8 +405,7 @@ public class FungibleTokenTest {
     public void testTransfer_allAccountsNeededToCoverAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
@@ -442,8 +430,8 @@ public class FungibleTokenTest {
                         any(null)))
                 .toArray();
 
-        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("12"));
+        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2, account3),
+                RECIPIENT_SCRIPT_HASH, new BigDecimal("12"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -456,19 +444,19 @@ public class FungibleTokenTest {
     public void testTransfer_defaultAccountCoversAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account1.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(4),
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(4),
+                                any(null)))
+                .toArray();
 
-        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
-                account2), RECIPIENT_SCRIPT_HASH, new BigDecimal("4"));
+        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2),
+                RECIPIENT_SCRIPT_HASH, new BigDecimal("4"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -477,20 +465,20 @@ public class FungibleTokenTest {
     public void testTransfer_defaultAccountCoversAmount_dataParam() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account1.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(4),
-                        byteArray(new byte[]{0x42}))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(4),
+                                byteArray(new byte[]{0x42})))
+                .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2),
-                AddressUtils.scriptHashToAddress(RECIPIENT_SCRIPT_HASH.toArray()),
-                new BigDecimal("4"), byteArray(new byte[]{0x42}));
+                scriptHashToAddress(RECIPIENT_SCRIPT_HASH.toArray()), new BigDecimal("4"),
+                byteArray(new byte[]{0x42}));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -504,18 +492,18 @@ public class FungibleTokenTest {
     public void testTransfer_defaultAccountHasNoBalance() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account3.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(1),
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account3.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(1),
+                                any(null)))
+                .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("1"));
@@ -535,25 +523,23 @@ public class FungibleTokenTest {
     public void testTransfer_MultiSig() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_4.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(neoTokenHash()),
-                        NEP17_TRANSFER, asList(
-                                hash160(multiSigAccount.getScriptHash()),
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(multiSigAccount.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(3),
                                 any(null)))
-                .contractCall(new Hash160(neoTokenHash()),
-                        NEP17_TRANSFER, asList(
-                                hash160(account1.getScriptHash()),
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(2),
-                                any(null))).toArray();
+                                any(null)))
+                .toArray();
 
         Wallet w = Wallet.withAccounts(multiSigAccount, account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -579,15 +565,16 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account1.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(2),
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(2),
+                                any(null)))
+                .toArray();
 
-        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(multiSigAccount,
-                account1), RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
+        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(multiSigAccount, account1),
+                RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -600,10 +587,8 @@ public class FungibleTokenTest {
             throws IOException {
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
-        setUpWireMockForInvokeFunction("symbol",
-                "invokefunction_symbol_neo.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol_neo.json");
         Wallet wallet = Wallet.withAccounts(multiSigAccount);
 
         exceptionRule.expect(InsufficientFundsException.class);
@@ -648,18 +633,17 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(neoTokenHash()),
-                        NEP17_TRANSFER, asList(
-                                hash160(account3.getScriptHash()),
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account3.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(3),
                                 any(null)))
-                .contractCall(new Hash160(neoTokenHash()),
-                        NEP17_TRANSFER, asList(
-                                hash160(account2.getScriptHash()),
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account2.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(2),
-                                any(null))).toArray();
+                                any(null)))
+                .toArray();
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -676,16 +660,16 @@ public class FungibleTokenTest {
     public void testTransferFromSpecificAccounts_firstAccountCoversAmount() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account2.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(4),
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account2.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(4),
+                                any(null)))
+                .toArray();
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -704,40 +688,17 @@ public class FungibleTokenTest {
             throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
-                        hash160(account3.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(1),
-                        any(null))).toArray();
-
-        Wallet w = Wallet.withAccounts(account1, account2, account3);
-        TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("1"), asList(account2, account3), null);
-
-        assertThat(b.getScript(), is(expectedScript));
-    }
-
-    @Test
-    public void testTransferFromSpecificAccounts_firstAccountHasNoBalance() throws IOException {
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
-        setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_0.json");
-        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
-
-        byte[] expectedScript = new ScriptBuilder().contractCall(new Hash160(neoTokenHash()),
-                NEP17_TRANSFER, asList(
-                        hash160(account3.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(1),
-                        any(null))).toArray();
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                        asList(hash160(account3.getScriptHash()),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(1),
+                                any(null)))
+                .toArray();
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
@@ -756,15 +717,13 @@ public class FungibleTokenTest {
             throws IOException {
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
                 "invokefunction_balanceOf_3.json");
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         Wallet wallet = Wallet.withAccounts(multiSigAccount);
 
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("does not have the corresponding private keys in the " +
-                                    "wallet");
-        neoToken.transferFromSpecificAccounts(wallet, RECIPIENT_SCRIPT_HASH, new BigDecimal(
-                        "2"),
+                "wallet");
+        neoToken.transferFromSpecificAccounts(wallet, RECIPIENT_SCRIPT_HASH, new BigDecimal("2"),
                 multiSigAccount.getScriptHash());
     }
 
@@ -776,14 +735,10 @@ public class FungibleTokenTest {
     public void testTransferFromSpecificAccounts_insufficientBalance() throws IOException {
         // Required for fetching the block height used for setting the validUntilBlock.
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash(),
-                "invokefunction_balanceOf_5.json");
-        setUpWireMockForBalanceOf(account3.getScriptHash(),
-                "invokefunction_balanceOf_3.json");
-        setUpWireMockForInvokeFunction("symbol",
-                "invokefunction_symbol_neo.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+        setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
+        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
+        setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol_neo.json");
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
 
