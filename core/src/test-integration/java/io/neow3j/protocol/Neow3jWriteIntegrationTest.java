@@ -108,7 +108,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendFrom() throws IOException {
         NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(committeeAccountAddress(), NEO_HASH, defaultAccountAddress(), "10")
+                .sendFrom(NEO_HASH, COMMITTEE_HASH, DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
@@ -124,7 +124,7 @@ public class Neow3jWriteIntegrationTest {
                 new TransactionSendAsset(NEO_HASH, "10",
                         defaultAccountAddress());
         NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(committeeAccountAddress(), txSendAsset)
+                .sendFrom(COMMITTEE_HASH, txSendAsset)
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();

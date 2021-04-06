@@ -169,13 +169,10 @@ public interface Neo {
 
     Request<?, NeoListAddress> listAddress();
 
-    Request<?, NeoSendFrom> sendFrom(String fromAddress, String assetId, String toAddress,
-            String value);
+    Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to,
+            BigInteger amount);
 
-    Request<?, NeoSendFrom> sendFrom(String fromAddress, Hash160 assetId, String toAddress,
-            String value);
-
-    Request<?, NeoSendFrom> sendFrom(String fromAddress, TransactionSendAsset txSendAsset);
+    Request<?, NeoSendFrom> sendFrom(Hash160 from, TransactionSendAsset txSendAsset);
 
     Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
 
