@@ -224,17 +224,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetRawTransaction_string() throws Exception {
-        neow3j.getRawTransaction("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getrawtransaction\"," +
-                "\"params\":[\"1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",0]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetStorage() throws Exception {
         String key = "616e797468696e67";
         neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", key).send();

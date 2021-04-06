@@ -582,7 +582,7 @@ public class Neow3jReadOnlyIntegrationTest {
         waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
 
         String rawTransaction = getNeow3j()
-                .getRawTransaction(txHashNeoTransfer.toString())
+                .getRawTransaction(txHashNeoTransfer)
                 .send()
                 .getRawTransaction();
 

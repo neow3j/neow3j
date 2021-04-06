@@ -100,8 +100,6 @@ public interface Neo {
 
     Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txId);
 
-    Request<?, NeoGetRawTransaction> getRawTransaction(String txId);
-
     Request<?, NeoGetStorage> getStorage(Hash160 contractAddress, String keyHexString);
 
     Request<?, NeoGetStorage> getStorage(String contractAddress, String keyHexString);
