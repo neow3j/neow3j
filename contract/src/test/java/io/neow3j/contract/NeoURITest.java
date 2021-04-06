@@ -5,6 +5,7 @@ import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
@@ -19,7 +20,6 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.WitnessScope;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 
@@ -96,6 +96,13 @@ public class NeoURITest {
     }
 
     @Test
+    public void fromURI_invalidQuery() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("uri contains invalid queries.");
+        NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset==neo");
+    }
+
+    @Test
     public void fromURI_invalidSeparator() {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("does not conform to the NEP-9 standard");
@@ -110,17 +117,37 @@ public class NeoURITest {
     }
 
     @Test
+    public void fromURI_invalidScale_neo() throws IOException {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The Neo token does not support any decimal places.");
+        NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1.1")
+                .neow3j(neow3j)
+                .wallet(wallet)
+                .buildTransfer();
+    }
+
+    @Test
+    public void fromURI_invalidScale_gas() throws IOException {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The Gas token does not support more than 8 decimal places.");
+        NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas&amount=0.000000001")
+                .neow3j(neow3j)
+                .wallet(wallet)
+                .buildTransfer();
+    }
+
+    @Test
     public void fromURI_multipleAssetsAndAmounts() {
-        URI uri =
-                NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS).buildURI().getURI();
+        URI uri = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS)
+                .buildURI()
+                .getURI();
         assertThat(uri, is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
     }
 
     @Test
     public void fromURI_nonNativeToken() {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_NON_NATIVE);
-        assertThat(neoURI.getAsset(), is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"
-        )));
+        assertThat(neoURI.getAsset(), is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
     }
 
     @Test
@@ -201,15 +228,14 @@ public class NeoURITest {
     public void buildURI_asset_fromByteArray() {
         NeoURI neoURI = new NeoURI()
                 .to(RECIPIENT_ADDRESS)
-                .asset(
-                        Numeric.hexStringToByteArray("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"))
+                .asset(hexStringToByteArray("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"))
                 .buildURI();
 
-        String BEGIN_TX_ASSET =
+        String beginTxAsset =
                 "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset" +
-                "=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
-        assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_ASSET)));
-        assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_ASSET));
+                        "=b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c";
+        assertThat("getURI()", neoURI.getURI(), is(URI.create(beginTxAsset)));
+        assertThat("getURIAsString()", neoURI.getURIAsString(), is(beginTxAsset));
     }
 
     @Test
@@ -219,9 +245,9 @@ public class NeoURITest {
                 .amount(AMOUNT)
                 .buildURI();
 
-        String BEGIN_TX_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=1";
-        assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_AMOUNT)));
-        assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_AMOUNT));
+        String beginTxAmount = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=1";
+        assertThat("getURI()", neoURI.getURI(), is(URI.create(beginTxAmount)));
+        assertThat("getURIAsString()", neoURI.getURIAsString(), is(beginTxAmount));
     }
 
     @Test
@@ -243,9 +269,9 @@ public class NeoURITest {
                 .amount(15)
                 .buildURI();
 
-        String BEGIN_TX_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=15";
-        assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_AMOUNT)));
-        assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_AMOUNT));
+        String beginTxAmount = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=15";
+        assertThat("getURI()", neoURI.getURI(), is(URI.create(beginTxAmount)));
+        assertThat("getURIAsString()", neoURI.getURIAsString(), is(beginTxAmount));
     }
 
     @Test
@@ -255,9 +281,9 @@ public class NeoURITest {
                 .amount(new BigInteger("12"))
                 .buildURI();
 
-        String BEGIN_TX_AMOUNT = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=12";
-        assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_AMOUNT)));
-        assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_AMOUNT));
+        String beginTxAmount = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=12";
+        assertThat("getURI()", neoURI.getURI(), is(URI.create(beginTxAmount)));
+        assertThat("getURIAsString()", neoURI.getURIAsString(), is(beginTxAmount));
     }
 
     @Test
@@ -288,12 +314,13 @@ public class NeoURITest {
 
     @Test
     public void buildTransfer() throws IOException {
-        byte[] expectedScript = new ScriptBuilder().contractCall(NeoToken.SCRIPT_HASH,
-                "transfer", asList(
-                        hash160(SENDER),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(1),
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(NeoToken.SCRIPT_HASH, "transfer",
+                        asList(hash160(SENDER),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(1),
+                                any(null)))
+                .toArray();
 
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
@@ -310,12 +337,13 @@ public class NeoURITest {
 
     @Test
     public void buildTransfer_Gas() throws IOException {
-        byte[] expectedScript = new ScriptBuilder().contractCall(GasToken.SCRIPT_HASH,
-                "transfer", asList(
-                        hash160(SENDER),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(200000000),
-                        any(null))).toArray();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(GasToken.SCRIPT_HASH, "transfer",
+                        asList(hash160(SENDER),
+                                hash160(RECIPIENT_SCRIPT_HASH),
+                                integer(200000000),
+                                any(null)))
+                .toArray();
 
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
@@ -374,12 +402,27 @@ public class NeoURITest {
     @Test
     public void buildTransfer_nonNativeAsset() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json");
-        assertThat(new NeoURI(neow3j)
+        TransactionBuilder b = new NeoURI(neow3j)
                 .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .wallet(wallet)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
-                .buildTransfer(), is(instanceOf(TransactionBuilder.class)));
+                .buildTransfer();
+        assertThat(b, instanceOf(TransactionBuilder.class));
+    }
+
+    @Test
+    public void buildTransfer_nonNativeAsset_invalidAmountDecimals() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The token 'b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c' does " +
+                "not support more than 2 decimal places.");
+        new NeoURI(neow3j)
+                .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                .wallet(wallet)
+                .to(RECIPIENT_ADDRESS)
+                .amount(new BigDecimal("0.001"))
+                .buildTransfer();
     }
 
     @Test

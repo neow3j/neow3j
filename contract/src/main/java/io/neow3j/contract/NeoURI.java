@@ -78,7 +78,7 @@ public class NeoURI {
             String[] query = baseAndQuery[1].split("&");
             for (String singleQuery : query) {
                 String[] singleQueryParts = singleQuery
-                        .split("=", 2);
+                        .split("=");
                 if (singleQueryParts.length != 2) {
                     throw new IllegalArgumentException("This uri contains invalid queries.");
                 }
@@ -127,10 +127,18 @@ public class NeoURI {
 
         BigInteger fractions;
         BigDecimal factor;
+        int amountScale = amount.stripTrailingZeros().scale();
         if (isNeoToken(asset)) {
-            factor = BigDecimal.TEN.pow(NeoToken.DECIMALS);
-            fractions = amount.multiply(factor).toBigInteger();
+            if (amountScale > 0) {
+                throw new IllegalArgumentException("The Neo token does not support any decimal " +
+                        "places.");
+            }
+            fractions = amount.toBigInteger();
         } else if (isGasToken(asset)) {
+            if (amountScale > GasToken.DECIMALS) {
+                throw new IllegalArgumentException("The Gas token does not support more " +
+                        "than " + GasToken.DECIMALS + " decimal places.");
+            }
             factor = BigDecimal.TEN.pow(GasToken.DECIMALS);
             fractions = amount.multiply(factor).toBigInteger();
         } else {
@@ -160,6 +168,10 @@ public class NeoURI {
             throws IOException {
 
         int decimals = new FungibleToken(asset, neow3j).getDecimals();
+        if (amount.stripTrailingZeros().scale() > decimals) {
+            throw new IllegalArgumentException("The token '" + asset + "' does not support " +
+                    "more than " + decimals + " decimal places.");
+        }
         BigDecimal factor = BigDecimal.TEN.pow(decimals);
         return amount.multiply(factor).toBigInteger();
     }
