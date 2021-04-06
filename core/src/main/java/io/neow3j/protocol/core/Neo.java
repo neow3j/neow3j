@@ -84,8 +84,6 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 hash);
 
-    Request<?, NeoGetRawBlock> getRawBlockHeader(String hash);
-
     Request<?, NeoGetRawBlock> getRawBlockHeader(BigInteger blockIndex);
 
     Request<?, NeoGetNativeContracts> getNativeContracts();

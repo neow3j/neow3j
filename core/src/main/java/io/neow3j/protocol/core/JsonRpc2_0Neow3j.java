@@ -114,7 +114,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the block hash of the corresponding block based on the specified index.
+     * Gets the block hash of the corresponding block based on the specified block index.
      *
      * @param blockIndex the block index.
      * @return the request object.
@@ -129,7 +129,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified hash.
+     * Gets the corresponding block information according to the specified block hash.
      *
      * @param blockHash                    the block hash.
      * @param returnFullTransactionObjects whether to get block information with all transaction
@@ -151,7 +151,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information for the given block hash.
+     * Gets the corresponding block information for the specified block hash.
      *
      * @param blockHash the block hash.
      * @return the request object.
@@ -166,7 +166,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified index.
+     * Gets the corresponding block information according to the specified block index.
      *
      * @param blockIndex                   the block index.
      * @param returnFullTransactionObjects whether to get block information with all transaction
@@ -188,7 +188,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified hash in hexadecimal.
+     * Gets the corresponding block information according to the specified block index.
      *
      * @param blockIndex the block index.
      * @return the request object.
@@ -261,8 +261,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block header information according to the specified block hash in
-     * hexadecimal.
+     * Gets the corresponding block header information according to the specified block hash.
      *
      * @param blockHash the block hash.
      * @return the request object.
@@ -274,18 +273,6 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 asList(blockHash, 0),
                 neow3jService,
                 NeoGetRawBlock.class);
-    }
-
-    /**
-     * Gets the corresponding block header information according to the specified block hash in
-     * hexadecimal.
-     *
-     * @param blockHash the block hash.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetRawBlock> getRawBlockHeader(String blockHash) {
-        return getRawBlockHeader(new Hash256(blockHash));
     }
 
     /**
@@ -1177,9 +1164,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets the proof based on the root hash, the contract hash and the storage key.
      *
-     * @param rootHash           the root hash.
-     * @param contractHash the contract hash.
-     * @param storageKeyHex      the storage key.
+     * @param rootHash      the root hash.
+     * @param contractHash  the contract hash.
+     * @param storageKeyHex the storage key.
      * @return the request object.
      */
     @Override
