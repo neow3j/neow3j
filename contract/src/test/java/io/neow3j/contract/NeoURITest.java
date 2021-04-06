@@ -341,7 +341,7 @@ public class NeoURITest {
     @Test
     public void buildTransfer_Gas() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json", "decimals");
-        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json", 
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
                 "balanceOf");
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(GasToken.SCRIPT_HASH, "transfer",
