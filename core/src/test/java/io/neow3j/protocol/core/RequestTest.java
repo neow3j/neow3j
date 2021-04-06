@@ -678,28 +678,11 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testSendToAddress_assetIdAsString() throws Exception {
-        neow3j.sendToAddress(
-                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
-                "10.0"
-        ).send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"sendtoaddress\"," +
-                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
-                "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
-                "\"10.0\"" +
-                "]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testSendToAddress() throws Exception {
         neow3j.sendToAddress(
                 new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
-                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
-                "10.0"
+                new Hash160("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
+                BigInteger.TEN
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +

@@ -21,11 +21,14 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.defaultAccountAddress;
 import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.DEFAULT_ACCOUNT_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
@@ -187,7 +190,7 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendToAddress() throws IOException {
         NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(NEO_HASH, defaultAccountAddress(), "10")
+                .sendToAddress(NEO_HASH, DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
                 .send();
 
         Transaction tx = sendToAddress.getSendToAddress();

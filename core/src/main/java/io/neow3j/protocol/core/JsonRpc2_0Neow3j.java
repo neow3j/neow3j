@@ -898,31 +898,17 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Transfers an amount of a token asset to another address.
      *
-     * @param tokenHash the token hash of the NEP17 contract.
-     * @param toAddress the destination address.
-     * @param value     the transfer amount.
+     * @param tokenHash the token hash of the NEP-17 contract.
+     * @param to        the recipient.
+     * @param amount    the transfer amount in token fractions.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendToAddress> sendToAddress(String tokenHash, String toAddress,
-            String value) {
-        return sendToAddress(new Hash160(tokenHash), toAddress, value);
-    }
-
-    /**
-     * Transfers an amount of a token asset to another address.
-     *
-     * @param tokenHash the token hash of the NEP17 contract.
-     * @param toAddress the destination address.
-     * @param value     the transfer amount.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoSendToAddress> sendToAddress(Hash160 tokenHash, String toAddress,
-            String value) {
+    public Request<?, NeoSendToAddress> sendToAddress(Hash160 tokenHash, Hash160 to,
+            BigInteger amount) {
         return new Request<>(
                 "sendtoaddress",
-                Stream.of(tokenHash, toAddress, value)
+                Stream.of(tokenHash, to, amount)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()),
                 neow3jService,
@@ -932,14 +918,14 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Transfers an amount of a token asset to another address.
      *
-     * @param txSendAsset a {@link TransactionSendAsset} object containing the token asset, the
-     *                    destination address and the transfer amount.
+     * @param txSendAsset a {@link TransactionSendAsset} object containing the token hash, the
+     *                    recipient and the transfer amount.
      * @return the request object.
      */
     @Override
     public Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset) {
-        return sendToAddress(txSendAsset.getAsset(), txSendAsset.getAddress(),
-                txSendAsset.getValue());
+        return sendToAddress(txSendAsset.getAsset(), Hash160.fromAddress(txSendAsset.getAddress()),
+                new BigInteger(txSendAsset.getValue()));
     }
 
     // ApplicationLogs

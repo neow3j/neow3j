@@ -102,10 +102,10 @@ public class Neow3jReadOnlyIntegrationTest {
     private static final int TX_VERSION = 0;
     private static final String TX_SCRIPT_NEO_TRANSFER =
             "CwHECQwURVEu00/nfUbhURye/qtSvc8LywMMFAAVnSS6+aNLNge7hkhqDGs5pz9IFMAfDAh0cmFuc2ZlcgwU9WPqQLwoPU0OBcSOowWz8qBzQO9BYn1bUjk=";
-    private static final String TX_AMOUNT_NEO = "2500";
-    private static final String TX_AMOUNT_GAS = "1000";
+    private static final BigInteger TX_AMOUNT_NEO = new BigInteger("2500");
+    private static final BigInteger TX_AMOUNT_GAS = new BigInteger("1000");
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
-    private static final String TX_RECIPIENT_1 = "NSEV4gPHGUs5SAR2sqvCEi47XXhKuAh1J9";
+    private static final Hash160 TX_RECIPIENT_1 = new Hash160("NSEV4gPHGUs5SAR2sqvCEi47XXhKuAh1J9");
     private static final int TX_LENGTH = 504;
 
     private static final String CALC_NETWORK_FEE_TX =
@@ -148,9 +148,9 @@ public class Neow3jReadOnlyIntegrationTest {
         transferGas(TX_RECIPIENT_1, TX_AMOUNT_GAS);
     }
 
-    private static Hash256 transferNeo(String toAddress, String amount) throws IOException {
+    private static Hash256 transferNeo(Hash160 to, BigInteger amount) throws IOException {
         NeoSendToAddress send = getNeow3j()
-                .sendToAddress(NEO_HASH, toAddress, amount)
+                .sendToAddress(NEO_HASH, to, amount)
                 .send();
         Hash256 txHash = send.getSendToAddress().getHash();
         // ensure that the transaction is sent
@@ -158,9 +158,9 @@ public class Neow3jReadOnlyIntegrationTest {
         return txHash;
     }
 
-    private static Hash256 transferGas(String toAddress, String amount) throws IOException {
+    private static Hash256 transferGas(Hash160 to, BigInteger amount) throws IOException {
         NeoSendToAddress send = getNeow3j()
-                .sendToAddress(GAS_HASH, toAddress, amount)
+                .sendToAddress(GAS_HASH, to, amount)
                 .send();
         Hash256 txHash = send.getSendToAddress().getHash();
         // ensure that the transaction is sent
