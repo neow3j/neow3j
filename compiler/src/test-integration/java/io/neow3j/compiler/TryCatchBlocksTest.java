@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.ClassRule;
@@ -10,7 +11,6 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.compiler.ContractTestRule.VM_STATE_FAULT;
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
@@ -47,7 +47,7 @@ public class TryCatchBlocksTest {
     @Test
     public void hitExceptionInTryFinallyBlock() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction("tryFinallyBlock", integer(1));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class TryCatchBlocksTest {
     public void hitSecondExceptionInMultipleTryCatchFinallyBlocks() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
                 integer(0), integer(1));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test

@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Map;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -13,7 +14,6 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.compiler.ContractTestRule.VM_STATE_FAULT;
 import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
@@ -122,7 +122,7 @@ public class ListIntegrationTest {
         NeoInvokeFunction response =
                 ct.callInvokeFunction("overwriteItemInIntegerList", array(param,
                         param, param), integer(3));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test

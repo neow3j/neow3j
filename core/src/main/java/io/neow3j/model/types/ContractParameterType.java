@@ -26,8 +26,8 @@ public enum ContractParameterType {
 
     VOID("Void", 0xff);
 
-    private String jsonValue;
-    private byte byteValue;
+    private final String jsonValue;
+    private final byte byteValue;
 
     ContractParameterType(String jsonValue, int v) {
         this.jsonValue = jsonValue;

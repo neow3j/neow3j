@@ -7,6 +7,7 @@ import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
@@ -42,9 +43,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class ContractTestRule implements TestRule {
-
-    public static final String VM_STATE_HALT = "HALT";
-    public static final String VM_STATE_FAULT = "FAULT";
 
     private NeoTestContainer neoTestContainer;
     private final String fullyQualifiedClassName;
@@ -114,7 +112,7 @@ public class ContractTestRule implements TestRule {
         NeoApplicationLog appLog = neow3j.getApplicationLog(
                 response.getSendRawTransaction().getHash()).send().getApplicationLog();
         NeoApplicationLog.Execution execution = appLog.getExecutions().get(0);
-        if (execution.getState().equals(VM_STATE_FAULT)) {
+        if (execution.getState().equals(NeoVMStateType.FAULT)) {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
@@ -323,7 +321,7 @@ public class ContractTestRule implements TestRule {
     public void assertVMExitedWithHalt(Hash256 hash) throws IOException {
         NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
         assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
-                is(VM_STATE_HALT));
+                is(NeoVMStateType.HALT));
     }
 
     public void signWithCommitteeAccount() {
