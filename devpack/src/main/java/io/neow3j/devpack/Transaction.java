@@ -4,7 +4,7 @@ package io.neow3j.devpack;
  * Represents a transaction and provides transaction-related information. It is returned for example
  * when calling {@link io.neow3j.devpack.contracts.LedgerContract#getTransaction(Hash256)} .
  */
-public class Transaction implements ApiInterface {
+public class Transaction {
 
     /**
      * The hash of the transaction.

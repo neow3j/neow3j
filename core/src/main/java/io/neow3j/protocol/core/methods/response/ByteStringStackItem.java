@@ -2,6 +2,7 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.utils.Numeric;
 
 import java.util.Arrays;
 
@@ -14,6 +15,10 @@ public class ByteStringStackItem extends ByteArrayStackItem {
 
     public ByteStringStackItem(byte[] value) {
         super(value, StackItemType.BYTE_STRING);
+    }
+
+    public ByteStringStackItem(String value) {
+        this(Numeric.hexStringToByteArray(value));
     }
 
     @Override

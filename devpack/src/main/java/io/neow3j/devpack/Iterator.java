@@ -9,8 +9,20 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_VALUE;
 
 /**
  * A NeoVM-specific iterator used to iterate over a set of elements.
+ * <p>
+ * If you invoke a method that returns an iterator via an RPC call (e.g., {@code invokefunction}),
+ * the returned value will always be empty. To access the iterator's entries in this way, you
+ * would have to first put them into a {@link List} or a {@link Map} as shown in the following
+ * example:
+ * <pre>
+ * ...
+ * List<ByteString> list = new io.neow3j.devpack.List<>();
+ * iterator.next();
+ * list.add(iterator.getValue());
+ * ...
+ * </pre>
  */
-public class Iterator<V> implements ApiInterface {
+public class Iterator<V> implements InteropInterface {
 
     /**
      * Creates an {@code Iterator} over the entries of the given array.
