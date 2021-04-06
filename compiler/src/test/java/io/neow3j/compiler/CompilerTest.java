@@ -76,8 +76,8 @@ public class CompilerTest {
         assertClassIsMappedToType(Hash256.class, ContractParameterType.HASH256);
 
         // Others
-        assertClassIsMappedToType(Transaction.class, ContractParameterType.INTEROP_INTERFACE);
         assertClassIsMappedToType(Iterator.class, ContractParameterType.INTEROP_INTERFACE);
+        assertClassIsMappedToType(Transaction.class, ContractParameterType.ANY);
         assertClassIsMappedToType(Object.class, ContractParameterType.ANY);
         assertClassIsMappedToType(CompilerTest.class, ContractParameterType.ANY);
     }
