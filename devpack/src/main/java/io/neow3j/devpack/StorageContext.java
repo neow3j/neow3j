@@ -10,7 +10,7 @@ import static io.neow3j.devpack.Helper.toByteArray;
  * contracts as an argument, allowing them to perform read/write operations on the persistent store
  * of the current contract. It is required in all {@link Storage} methods.
  */
-public class StorageContext implements ApiInterface {
+public class StorageContext implements InteropInterface {
 
     /**
      * Gets this <tt>StorageContext</tt> in read-only mode, meaning that after calling this method,

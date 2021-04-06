@@ -13,7 +13,7 @@ import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.ApiInterface;
+import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Hash160;
@@ -121,7 +121,7 @@ public class Compiler {
         try {
             typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
             Class<?> clazz = Class.forName(typeName);
-            if (Arrays.asList(clazz.getInterfaces()).contains(ApiInterface.class)) {
+            if (Arrays.asList(clazz.getInterfaces()).contains(InteropInterface.class)) {
                 return ContractParameterType.INTEROP_INTERFACE;
             }
         } catch (ClassNotFoundException ignore) {

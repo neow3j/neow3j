@@ -5,7 +5,7 @@ package io.neow3j.devpack;
  * and content itself called 'state'. The state can be of any type (e.g. number, string, array).
  * Thus, it is up to the developer to perform the correct casts on the state object.
  */
-public class Notification implements ApiInterface {
+public class Notification implements InteropInterface {
 
     /**
      * Sender script hash.
