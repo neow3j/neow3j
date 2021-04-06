@@ -3,6 +3,7 @@ package io.neow3j.protocol.core.methods.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.neow3j.model.types.NeoVMStateType;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ public class InvocationResult {
     private String script;
 
     @JsonProperty("state")
-    private String state;
+    private NeoVMStateType state;
 
     @JsonProperty("gasconsumed")
     private String gasConsumed;
@@ -30,7 +31,7 @@ public class InvocationResult {
     public InvocationResult() {
     }
 
-    public InvocationResult(String script, String state, String gasConsumed,
+    public InvocationResult(String script, NeoVMStateType state, String gasConsumed,
                             String exception, List<StackItem> stack,
                             String tx) {
         this.script = script;
@@ -45,12 +46,12 @@ public class InvocationResult {
         return script;
     }
 
-    public String getState() {
+    public NeoVMStateType getState() {
         return state;
     }
 
     public boolean hasStateFault() {
-        return state.equals("FAULT");
+        return state == NeoVMStateType.FAULT;
     }
 
     public String getGasConsumed() {

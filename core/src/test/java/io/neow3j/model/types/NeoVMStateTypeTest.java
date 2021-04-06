@@ -29,4 +29,14 @@ public class NeoVMStateTypeTest {
     public void testFromJsonValue_NotFound() {
         assertThat(NeoVMStateType.fromJsonValue("Anything"), is(NeoVMStateType.HALT));
     }
+
+    @Test
+    public void testFromJsonValue_Empty() {
+        assertThat(NeoVMStateType.fromJsonValue(""), is(NeoVMStateType.NONE));
+    }
+
+    @Test
+    public void testToString() {
+        assertThat(this.neoVMStateType.jsonValue(), is(NeoVMStateType.HALT.toString()));
+    }
 }

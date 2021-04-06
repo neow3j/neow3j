@@ -23,6 +23,7 @@ import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.model.types.NodePluginType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
@@ -1157,7 +1158,7 @@ public class ResponseTest extends ResponseTester {
                 is(new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299")));
         assertThat(transaction.getConfirmations(), is(1388));
         assertThat(transaction.getBlockTime(), is(1589019142879L));
-        assertThat(transaction.getVMState(), is("HALT"));
+        assertThat(transaction.getVMState(), is(NeoVMStateType.HALT));
     }
 
     @Test
@@ -1489,7 +1490,7 @@ public class ResponseTest extends ResponseTester {
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
         assertThat(invokeFunction.getInvocationResult().getScript(),
                 is("0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
-        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.HALT));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
@@ -1559,7 +1560,7 @@ public class ResponseTest extends ResponseTester {
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
         assertThat(invokeFunction.getInvocationResult().getScript(),
                 is("0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
-        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.HALT));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
@@ -1600,7 +1601,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
-                        "        \"state\": \"HALT, BREAK\",\n" +
+                        "        \"state\": \"HALT\",\n" +
                         "        \"gasconsumed\": \"2.489\",\n" +
                         "        \"stack\": []\n" +
                         "    }\n" +
@@ -1611,7 +1612,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getScript(),
                 is("00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc"));
-        assertThat(invokeFunction.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.HALT));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2.489"));
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
@@ -1637,7 +1638,32 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getScript(),
                 is("10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
-        assertThat(invokeFunction.getInvocationResult().getState(), is("FAULT"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
+        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007390"));
+        assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
+    }
+
+    @Test
+    public void testInvokeFunction_emptyState() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"state\": \"\",\n" +
+                        "        \"gasconsumed\": \"2007390\",\n" +
+                        "        \"stack\": []\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
+        assertThat(invokeFunction.getInvocationResult().getScript(),
+                is("10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.NONE));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007390"));
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
@@ -1651,7 +1677,7 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 3,\n" +
                         "    \"result\": {\n" +
                         "        \"script\": \"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\",\n" +
-                        "        \"state\": \"HALT, BREAK\",\n" +
+                        "        \"state\": \"HALT\",\n" +
                         "        \"gasconsumed\": \"0.161\",\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
@@ -1667,7 +1693,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeScript.getInvocationResult(), is(notNullValue()));
         assertThat(invokeScript.getInvocationResult().getScript(),
                 is("10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52"));
-        assertThat(invokeScript.getInvocationResult().getState(), is("HALT, BREAK"));
+        assertThat(invokeScript.getInvocationResult().getState(), is(NeoVMStateType.HALT));
         assertThat(invokeScript.getInvocationResult().getGasConsumed(), is("0.161"));
         assertThat(invokeScript.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
@@ -1700,7 +1726,7 @@ public class ResponseTest extends ResponseTester {
         NeoInvokeContractVerify invokeFunction = deserialiseResponse(NeoInvokeContractVerify.class);
         assertThat(invokeFunction.getInvocationResult().getScript(),
                 is("VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA"));
-        assertThat(invokeFunction.getInvocationResult().getState(), is("FAULT"));
+        assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("0.0103542"));
         assertThat(invokeFunction.getInvocationResult().getException(), is(
                 "Specified argument was out of the range of valid values. (Parameter 'index')"));
@@ -2512,7 +2538,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoAppLog.getExecutions(), hasSize(1));
         NeoApplicationLog.Execution execution = neoAppLog.getExecutions().get(0);
         assertThat(execution.getTrigger(), is("Application"));
-        assertThat(execution.getState(), is("HALT"));
+        assertThat(execution.getState(), is(NeoVMStateType.HALT));
         assertThat(execution.getGasConsumed(), is("9007810"));
 
         assertThat(execution.getStack(), is(notNullValue()));

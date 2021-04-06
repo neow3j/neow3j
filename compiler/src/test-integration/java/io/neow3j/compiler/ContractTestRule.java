@@ -7,6 +7,7 @@ import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
@@ -43,8 +44,8 @@ import static org.junit.Assert.assertThat;
 
 public class ContractTestRule implements TestRule {
 
-    public static final String VM_STATE_HALT = "HALT";
-    public static final String VM_STATE_FAULT = "FAULT";
+    public static final String VM_STATE_HALT = NeoVMStateType.HALT.jsonValue();
+    public static final String VM_STATE_FAULT = NeoVMStateType.FAULT.jsonValue();
 
     private NeoTestContainer neoTestContainer;
     private final String fullyQualifiedClassName;

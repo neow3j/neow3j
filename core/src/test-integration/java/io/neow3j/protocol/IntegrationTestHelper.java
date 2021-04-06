@@ -2,6 +2,7 @@ package io.neow3j.protocol;
 
 import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.utils.Numeric;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -27,6 +28,6 @@ public class IntegrationTestHelper {
     static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
     static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
 
-    static final String VM_STATE_HALT = "HALT";
+    static final String VM_STATE_HALT = NeoVMStateType.HALT.jsonValue();
 
 }
