@@ -191,13 +191,13 @@ public interface Neo {
 
     //region RpcNep17Tracker
 
-    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address);
+    Request<?, NeoGetNep17Balances> getNep17Balances(Hash160 scriptHash);
 
-    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date until);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash);
 
-    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from, Date to);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date until);
 
-    Request<?, NeoGetNep17Balances> getNep17Balances(String address);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date from, Date to);
 
     //endregion
 

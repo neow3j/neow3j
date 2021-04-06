@@ -733,47 +733,48 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetNep17Transfers() throws Exception {
-        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
+        neow3j.getNep17Transfers(new Hash160("04457ce4219e462146ac00b09793f81bc5bca2ce")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17transfers\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"]," +
+                "\"params\":[\"NekZLTu93WgrdFHxzBEJUYgLTQMAT85GLi\"]," +
                 "\"id\":1}"
         );
     }
 
     @Test
     public void testGetNep17Transfers_Date() throws Exception {
-        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb", new Date(1553105830L)).send();
+        neow3j.getNep17Transfers(new Hash160("8bed27d0e88266807a6339270f0593510967cb45"),
+                new Date(1553105830L)).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17transfers\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830]," +
+                "\"params\":[\"NSH1UeM96PKhjuzVBKcyWeNNuQkT3sHGmA\",1553105830]," +
                 "\"id\":1}"
         );
     }
 
     @Test
     public void testGetNep17Transfers_DateFromTo() throws Exception {
-        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+        neow3j.getNep17Transfers(new Hash160("2eeda865e7824c71b3fe14bed35d04d0f2f0e9d6"),
                 new Date(1553105830),
                 new Date(1557305830)
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17transfers\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830,1557305830]," +
+                "\"params\":[\"NfWL3Kx7qtZzXrajmggAD4b6r2kGzajbaJ\",1553105830,1557305830]," +
                 "\"id\":1}"
         );
     }
 
     @Test
     public void testGetNep17Balances() throws Exception {
-        neow3j.getNep17Balances("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
+        neow3j.getNep17Balances(new Hash160("5d75775015b024970bfeacf7c6ab1b0ade974886")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17balances\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"]," +
+                "\"params\":[\"NY9zhKwcmht5cQJ3oRqjJGo3QuVLwXwTzL\"]," +
                 "\"id\":1}"
         );
     }

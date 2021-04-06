@@ -812,7 +812,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Transfers an amount of a token from an address to another address.
      *
      * @param fromAddress the transferring address.
-     * @param tokenHash   the token hash of the NEP17 contract.
+     * @param tokenHash   the token hash of the NEP-17 contract.
      * @param toAddress   the destination address.
      * @param value       the transfer amount.
      * @return the request object.
@@ -827,7 +827,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Transfers an amount of an asset from an address to another address.
      *
      * @param fromAddress the transferring address.
-     * @param tokenHash   the token hash of the NEP17 contract.
+     * @param tokenHash   the token hash of the NEP-17 contract.
      * @param toAddress   the destination address.
      * @param value       the transfer amount.
      * @return the request object.
@@ -962,67 +962,67 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // RpcNep17Tracker
 
     /**
-     * Gets the balance of all NEP17 token assets in the specified address.
+     * Gets the balance of all NEP-17 token assets in the specified script hash.
      *
-     * @param address the address.
+     * @param scriptHash the account's script hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetNep17Balances> getNep17Balances(String address) {
+    public Request<?, NeoGetNep17Balances> getNep17Balances(Hash160 scriptHash) {
         return new Request<>(
                 "getnep17balances",
-                singletonList(address),
+                singletonList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetNep17Balances.class);
     }
 
     /**
-     * Gets all the NEP17 transaction information occurred in the specified address.
+     * Gets all the NEP-17 transaction information occurred in the specified script hash.
      *
-     * @param address the address.
+     * @param scriptHash the account's script hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash) {
         return new Request<>(
                 "getnep17transfers",
-                singletonList(address),
+                singletonList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetNep17Transfers.class);
     }
 
     /**
-     * Gets all the NEP17 transaction information occurred in the specified address since the
+     * Gets all the NEP17 transaction information occurred in the specified script hash since the
      * specified time.
      *
-     * @param address the address.
-     * @param from    the timestamp transactions occurred since.
+     * @param scriptHash the account's script hash.
+     * @param from       the timestamp transactions occurred since.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from) {
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date from) {
         return new Request<>(
                 "getnep17transfers",
-                asList(address, from.getTime()),
+                asList(scriptHash.toAddress(), from.getTime()),
                 neow3jService,
                 NeoGetNep17Transfers.class);
     }
 
     /**
-     * Gets all the NEP17 transaction information occurred in the specified address in the
+     * Gets all the NEP17 transaction information occurred in the specified script hash in the
      * specified time range.
      *
-     * @param address the address.
-     * @param from    the start timestamp.
-     * @param until   the end timestamp.
+     * @param scriptHash the account's script hash.
+     * @param from       the start timestamp.
+     * @param until      the end timestamp.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from,
+    public Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date from,
             Date until) {
         return new Request<>(
                 "getnep17transfers",
-                asList(address, from.getTime(), until.getTime()),
+                asList(scriptHash.toAddress(), from.getTime(), until.getTime()),
                 neow3jService,
                 NeoGetNep17Transfers.class);
     }

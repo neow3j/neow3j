@@ -886,7 +886,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetNep17Transfers() throws IOException {
         Nep17TransferWrapper nep17TransferWrapper = getNeow3j()
-                .getNep17Transfers(committeeAccountAddress())
+                .getNep17Transfers(COMMITTEE_HASH)
                 .send()
                 .getNep17Transfer();
 
@@ -919,7 +919,7 @@ public class Neow3jReadOnlyIntegrationTest {
         calendar.add(Calendar.HOUR_OF_DAY, -1);
 
         Nep17TransferWrapper nep17TransferWrapper = getNeow3j()
-                .getNep17Transfers(committeeAccountAddress(), calendar.getTime())
+                .getNep17Transfers(COMMITTEE_HASH, calendar.getTime())
                 .send()
                 .getNep17Transfer();
 
@@ -937,7 +937,7 @@ public class Neow3jReadOnlyIntegrationTest {
         to.add(Calendar.HOUR_OF_DAY, 1);
 
         Nep17TransferWrapper nep17TransferWrapper = getNeow3j()
-                .getNep17Transfers(committeeAccountAddress(), from.getTime(), to.getTime())
+                .getNep17Transfers(COMMITTEE_HASH, from.getTime(), to.getTime())
                 .send()
                 .getNep17Transfer();
 
@@ -950,7 +950,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetNep17Balances() throws IOException {
         Balances balances = getNeow3j()
-                .getNep17Balances(committeeAccountAddress())
+                .getNep17Balances(COMMITTEE_HASH)
                 .send()
                 .getBalances();
 

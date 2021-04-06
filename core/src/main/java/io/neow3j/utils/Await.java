@@ -32,15 +32,15 @@ public class Await {
     private final static int MAX_WAIT_TIME = 30;
 
     /**
-     * Checks and waits until the token balance of the given address is greater than zero.
+     * Checks and waits until the token balance of the given script hash is greater than zero.
      *
-     * @param address The account's address.
+     * @param scriptHash The account's script hash.
      * @param token   The script hash of the token to check the balance for.
      * @param neow3j  The {@code Neow3j} object to use to connect to a neo-node.
      */
-    public static void waitUntilBalancesIsGreaterThanZero(String address,
-            Hash160 token, Neow3j neow3j) {
-        waitUntil(callableGetBalance(address, token, neow3j), Matchers.greaterThan(0L));
+    public static void waitUntilBalancesIsGreaterThanZero(Hash160 scriptHash, Hash160 token,
+            Neow3j neow3j) {
+        waitUntil(callableGetBalance(scriptHash, token, neow3j), Matchers.greaterThan(0L));
     }
 
     /**
@@ -141,11 +141,11 @@ public class Await {
         };
     }
 
-    private static Callable<Long> callableGetBalance(String address, Hash160 tokenHash160,
+    private static Callable<Long> callableGetBalance(Hash160 scriptHash, Hash160 tokenHash160,
             Neow3j neow3j) {
         return () -> {
             try {
-                List<Nep17Balance> balances = neow3j.getNep17Balances(address).send()
+                List<Nep17Balance> balances = neow3j.getNep17Balances(scriptHash).send()
                         .getBalances().getBalances();
                 return balances.stream()
                         .filter(b -> b.getAssetHash().equals(tokenHash160))
