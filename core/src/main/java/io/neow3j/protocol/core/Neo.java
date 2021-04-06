@@ -72,8 +72,6 @@ public interface Neo {
 
     Request<?, NeoGetRawBlock> getRawBlock(Hash256 blockHash);
 
-    Request<?, NeoGetRawBlock> getRawBlock(String blockHash);
-
     Request<?, NeoGetRawBlock> getRawBlock(BigInteger blockIndex);
 
     Request<?, NeoBlockHeaderCount> getBlockHeaderCount();

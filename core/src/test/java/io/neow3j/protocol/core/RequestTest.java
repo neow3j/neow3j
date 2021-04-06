@@ -110,17 +110,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetRawBlock_Hash() throws Exception {
-        neow3j.getRawBlock("0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblock\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",0]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetBlockHeaderCount() throws Exception {
         neow3j.getBlockHeaderCount().send();
 

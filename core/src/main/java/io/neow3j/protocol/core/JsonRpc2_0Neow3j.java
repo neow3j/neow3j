@@ -151,7 +151,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified hash in hexadecimal.
+     * Gets the corresponding block information for the given block hash.
      *
      * @param blockHash the block hash.
      * @return the request object.
@@ -163,17 +163,6 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 asList(blockHash, 0),
                 neow3jService,
                 NeoGetRawBlock.class);
-    }
-
-    /**
-     * Gets the corresponding block information according to the specified hash in hexadecimal.
-     *
-     * @param blockHash the block hash.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetRawBlock> getRawBlock(String blockHash) {
-        return getRawBlock(new Hash256(blockHash));
     }
 
     /**
