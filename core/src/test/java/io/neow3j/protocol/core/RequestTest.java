@@ -226,7 +226,7 @@ public class RequestTest extends RequestTester {
     @Test
     public void testGetStorage() throws Exception {
         String key = "616e797468696e67";
-        neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", key).send();
+        neow3j.getStorage(new Hash160("03febccf81ac85e3d795bc5cbd4e84e907812aa3"), key).send();
 
         String keyBase64 = Base64.encode("616e797468696e67");
         verifyResult("{\"jsonrpc\":\"2.0\"," +

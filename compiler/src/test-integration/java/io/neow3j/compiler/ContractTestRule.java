@@ -200,7 +200,7 @@ public class ContractTestRule implements TestRule {
      * @param expectedValue The expected value.
      */
     public void assertStorageContains(String key, String expectedValue) throws IOException {
-        NeoGetStorage response = neow3j.getStorage(getContract().getScriptHash().toString(),
+        NeoGetStorage response = neow3j.getStorage(getContract().getScriptHash(),
                 Numeric.toHexStringNoPrefix(key.getBytes(UTF_8))).send();
         String value = new String(Base64.decode(response.getStorage()), UTF_8);
 

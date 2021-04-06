@@ -592,7 +592,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetStorage() throws IOException {
         String storage = getNeow3j()
-                .getStorage(neoTokenHash(), NEXT_VALIDATORS_PREFIX)
+                .getStorage(NEO_HASH, NEXT_VALIDATORS_PREFIX)
                 .send()
                 .getStorage();
 

@@ -396,19 +396,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the stored value according to the contract script hash and the key.
-     *
-     * @param contractHash the contract hash.
-     * @param keyHexString the key to look up in storage as a hexadecimal string.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetStorage> getStorage(String contractHash, String keyHexString) {
-        return getStorage(new Hash160(contractHash), keyHexString);
-    }
-
-    /**
-     * Gets the stored value according to the contract script hash and the key.
+     * Gets the stored value according to the contract hash and the key.
      *
      * @param contractHash the contract hash.
      * @param keyHexString the key to look up in storage as a hexadecimal string.
