@@ -469,11 +469,11 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testDumpPrivKey() throws Exception {
-        neow3j.dumpPrivKey("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4").send();
+        neow3j.dumpPrivKey(new Hash160("c11d816956b6682c3406bb99b7ec8a3e93f005c1")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"dumpprivkey\"," +
-                "\"params\":[\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"]," +
+                "\"params\":[\"NdWaiUoBWbPxGsm5wXPjXYJxCyuY1Zw8uW\"]," +
                 "\"id\":1}");
     }
 

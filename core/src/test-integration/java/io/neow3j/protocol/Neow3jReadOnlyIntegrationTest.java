@@ -804,7 +804,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testDumpPrivKey() throws IOException {
         String dumpPrivKey = getNeow3j()
-                .dumpPrivKey(committeeAccountAddress())
+                .dumpPrivKey(COMMITTEE_HASH)
                 .send()
                 .getDumpPrivKey();
 

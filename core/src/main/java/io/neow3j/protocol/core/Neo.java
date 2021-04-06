@@ -155,7 +155,7 @@ public interface Neo {
 
     Request<?, NeoOpenWallet> openWallet(String walletPath, String password);
 
-    Request<?, NeoDumpPrivKey> dumpPrivKey(String address);
+    Request<?, NeoDumpPrivKey> dumpPrivKey(Hash160 scriptHash);
 
     Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 assetId);
 

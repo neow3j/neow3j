@@ -691,16 +691,16 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Exports the private key of the specified address.
+     * Exports the private key of the specified script hash.
      *
-     * @param address the address.
+     * @param scriptHash the account's script hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoDumpPrivKey> dumpPrivKey(String address) {
+    public Request<?, NeoDumpPrivKey> dumpPrivKey(Hash160 scriptHash) {
         return new Request<>(
                 "dumpprivkey",
-                singletonList(address),
+                singletonList(scriptHash.toAddress()),
                 neow3jService,
                 NeoDumpPrivKey.class);
     }
