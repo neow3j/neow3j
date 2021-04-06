@@ -32,17 +32,26 @@ public class IntegrationTestHelper {
 
     static void fundAccountsWithGas(Neow3j neow3j, Account... accounts) throws Throwable {
         for (Account account : accounts) {
-            transferGasFromGenesisToAccount(neow3j, account);
+            transferFromGenesisToAccount(neow3j, new GasToken(neow3j), new BigDecimal("100000"),
+                    account);
         }
     }
 
-    static void transferGasFromGenesisToAccount(Neow3j neow3j, Account a) throws Throwable {
-        Hash256 txHash = new GasToken(neow3j)
-                .transfer(committeeWallet, a.getScriptHash(), new BigDecimal("100000"))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+    static void fundAccountsWithNeo(Neow3j neow3j, BigDecimal amount, Account... accounts)
+            throws Throwable {
+        for (Account account : accounts) {
+            transferFromGenesisToAccount(neow3j, new NeoToken(neow3j), amount, account);
+        }
+    }
+
+    static void transferFromGenesisToAccount(Neow3j neow3j, FungibleToken token,
+            BigDecimal amount, Account a) throws Throwable {
+        Hash256 txHash =
+                token.transfer(committeeWallet, a.getScriptHash(), amount)
+                        .sign()
+                        .send()
+                        .getSendRawTransaction()
+                        .getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
     }
 
