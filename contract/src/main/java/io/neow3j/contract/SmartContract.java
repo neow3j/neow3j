@@ -148,8 +148,8 @@ public class SmartContract {
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting a
-     * script hash as the return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a script
+     * hash as the return type.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
@@ -159,10 +159,10 @@ public class SmartContract {
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as
      *                                       script hash.
      */
-    public Hash160 callFunctionReturningScriptHash(String function, List<ContractParameter> params)
+    public Hash160 callFunctionReturningScriptHash(String function, ContractParameter... params)
             throws IOException {
 
-        StackItem stackItem = callInvokeFunction(function, params)
+        StackItem stackItem = callInvokeFunction(function, asList(params))
                 .getInvocationResult().getStack().get(0);
         return extractScriptHash(stackItem);
     }
