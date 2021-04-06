@@ -137,10 +137,7 @@ public interface Neo {
     Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 contractScriptHash,
             List<ContractParameter> methodParameters, Signer... signers);
 
-    Request<?, NeoInvokeContractVerify> invokeContractVerify(String contractScriptHash,
-            List<ContractParameter> methodParameters, Signer... signers);
-
-    Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address);
+    Request<?, NeoGetUnclaimedGas> getUnclaimedGas(Hash160 address);
 
     //endregion
 

@@ -394,7 +394,7 @@ public class RequestTest extends RequestTester {
     @Test
     public void testInvokeContractVerify() throws Exception {
         neow3j.invokeContractVerify(
-                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
+                new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 asList(string("a string"), string("another string")),
                 calledByEntry(new Hash160("cadb3dc2faa3ef14a13b619c9a43124755aa2569"))
         ).send();
@@ -412,7 +412,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeContractVerifyNoParamsNoSigners() throws Exception {
-        neow3j.invokeContractVerify("af7c7328eee5a275a3bcaee2bf0cf662b5e739be", null)
+        neow3j.invokeContractVerify(new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"), null)
                 .send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
@@ -519,11 +519,11 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetUnclaimedGas() throws Exception {
-        neow3j.getUnclaimedGas("AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN").send();
+        neow3j.getUnclaimedGas(new Hash160("ffa6adbb5f82ad2a1aafa22ce6aaf05dad5de39e")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getunclaimedgas\"," +
-                "\"params\":[\"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"]," +
+                "\"params\":[\"NaQ6Kj6qYinh1frv1wrn53wbPFe5BH5T7g\"]," +
                 "\"id\":1}");
     }
 

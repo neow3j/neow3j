@@ -13,6 +13,7 @@ import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
@@ -668,7 +669,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetUnclaimedGas() throws IOException {
         GetUnclaimedGas unclaimedGas = getNeow3j()
-                .getUnclaimedGas(committeeAccountAddress())
+                .getUnclaimedGas(COMMITTEE_HASH)
                 .send()
                 .getUnclaimedGas();
 

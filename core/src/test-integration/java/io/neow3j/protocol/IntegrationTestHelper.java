@@ -2,6 +2,7 @@ package io.neow3j.protocol;
 
 import io.neow3j.contract.Hash160;
 
+import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.gasTokenHash;
 import static io.neow3j.TestProperties.neoTokenHash;
 
@@ -11,6 +12,8 @@ public class IntegrationTestHelper {
     static final String NODE_WALLET_PASSWORD = "neo";
     // The path to the wallet from the directory of the node process.
     static final String NODE_WALLET_PATH = "wallet.json";
+
+    static final Hash160 COMMITTEE_HASH = Hash160.fromAddress(committeeAccountAddress());
 
     // Native token hashes.
     static final Hash160 NEO_HASH = new Hash160(neoTokenHash());

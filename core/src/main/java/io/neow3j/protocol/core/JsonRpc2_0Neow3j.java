@@ -531,8 +531,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // SmartContract Methods
 
     /**
-     * Invokes the function with {@code functionName} of the smart contract with the given script
-     * hash.
+     * Invokes the function with {@code functionName} of the smart contract with the specified
+     * contract hash.
      *
      * @param contractHash the contract hash to invoke.
      * @param functionName the function to invoke.
@@ -546,8 +546,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Invokes the function with {@code functionName} of the smart contract with the given hash
-     * value.
+     * Invokes the function with {@code functionName} of the smart contract with the specified
+     * contract hash.
      *
      * @param contractHash   the contract hash to invoke.
      * @param functionName   the function to invoke.
@@ -612,22 +612,6 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeContractVerify> invokeContractVerify(String contractHash,
-            List<ContractParameter> methodParams, Signer... signers) {
-        return invokeContractVerify(new Hash160(contractHash), methodParams, signers);
-    }
-
-    /**
-     * Invokes a contract in verification mode.
-     * <p>
-     * Requires an open wallet on the Neo node that contains the accounts for the signers.
-     *
-     * @param contractHash the contract hash.
-     * @param methodParams a list of parameters of the verify function.
-     * @param signers      the signers.
-     * @return the request object.
-     */
-    @Override
     public Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 contractHash,
             List<ContractParameter> methodParams, Signer... signers) {
 
@@ -645,16 +629,16 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the unclaimed GAS of the specified address.
+     * Gets the unclaimed GAS of the account with the specified script hash.
      *
-     * @param address the address.
+     * @param scriptHash the account's script hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address) {
+    public Request<?, NeoGetUnclaimedGas> getUnclaimedGas(Hash160 scriptHash) {
         return new Request<>(
                 "getunclaimedgas",
-                singletonList(address),
+                singletonList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetUnclaimedGas.class);
     }
