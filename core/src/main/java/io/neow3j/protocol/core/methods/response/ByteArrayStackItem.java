@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -55,7 +56,7 @@ abstract class ByteArrayStackItem extends StackItem {
     public String getAddress() {
         nullCheck();
         try {
-            return new Hash160(value).toAddress();
+            return new Hash160(reverseArray(value)).toAddress();
         } catch (IllegalArgumentException e) {
             throw new StackItemCastException(e);
         }

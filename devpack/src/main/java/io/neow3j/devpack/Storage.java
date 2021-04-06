@@ -1,6 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.Map.Entry;
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_DELETE;
@@ -211,35 +213,47 @@ public class Storage {
 
     /**
      * Returns an iterator over the values found under the given key prefix.
+     * <p>
+     * The types that the {@code Iterator} contains are dependent on the find options used. They
+     * are documented in {@link FindOptions}.
      *
-     * @param context The storage context to get the values from.
-     * @param prefix  The key prefix.
-     * @return an iterator over key-value pairs found under the given prefix.
+     * @param context     The storage context to get the values from.
+     * @param prefix      The key prefix.
+     * @param findOptions Controls the kind of iterator to return. Use the values of
+     *                    {@link FindOptions}.
+     * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<Entry<byte[], byte[]>> find(StorageContext context,
-            byte[] prefix);
+    public static native Iterator find(StorageContext context, byte[] prefix, byte findOptions);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
+     * <p>
+     * The types that the {@code Iterator} contains are dependent on the find options used. They
+     * are documented in {@link FindOptions}.
      *
-     * @param context The storage context to get the values from.
-     * @param prefix  The key prefix.
-     * @return an iterator over key-value pairs found under the given prefix.
+     * @param context     The storage context to get the values from.
+     * @param prefix      The key prefix.
+     * @param findOptions Controls the kind of iterator to return. Use the values of
+     *                    {@link FindOptions}.
+     * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<Entry<byte[], byte[]>> find(StorageContext context,
-            ByteString prefix);
+    public static native Iterator find(StorageContext context, ByteString prefix, byte findOptions);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
+     * <p>
+     * The types that the {@code Iterator} contains are dependent on the find options used. They
+     * are documented in {@link FindOptions}.
      *
-     * @param context The storage context to get the values from.
-     * @param prefix  The key prefix.
-     * @return an iterator over key-value pairs found under the given prefix.
+     * @param context     The storage context to get the values from.
+     * @param prefix      The key prefix.
+     * @param findOptions Controls the kind of iterator to return. Use the values of
+     *                    {@link FindOptions}.
+     * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_FIND)
-    public static native Iterator<Entry<byte[], byte[]>> find(StorageContext context,
-            String prefix);
+    public static native Iterator find(StorageContext context, String prefix, byte findOptions);
 
 }

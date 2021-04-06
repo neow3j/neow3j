@@ -263,7 +263,7 @@ public class SmartContract {
         return Hash160.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)
-                        .pushData(sender.toArray())
+                        .pushData(sender.toLittleEndianArray())
                         .pushInteger(nefCheckSum)
                         .pushData(contractName).toArray());
     }

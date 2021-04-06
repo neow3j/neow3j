@@ -295,7 +295,7 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 2107425L,
                                 singletonList(new TransactionSigner(
-                                        "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                        new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f"),
                                         singletonList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
                                 emptyList(),
@@ -316,7 +316,7 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 2107425L,
                                 singletonList(new TransactionSigner(
-                                        "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                        new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f"),
                                         singletonList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
                                 emptyList(),
@@ -1126,7 +1126,8 @@ public class ResponseTest extends ResponseTester {
         List<TransactionSigner> signers = transaction.getSigners();
         assertThat(signers, is(notNullValue()));
         assertThat(signers, hasSize(1));
-        assertThat(signers.get(0).getAccount(), is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+        assertThat(signers.get(0).getAccount(),
+                is(new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f")));
         assertThat(signers.get(0).getScopes(), hasSize(1));
         assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 
@@ -2078,7 +2079,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendFrom.getSendFrom().getSigners(), is(notNullValue()));
         assertThat(sendFrom.getSendFrom().getSigners(), hasSize(1));
         assertThat(sendFrom.getSendFrom().getSigners().get(0).getAccount(),
-                is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+                is(new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f")));
         assertThat(sendFrom.getSendFrom().getSigners().get(0).getScopes(), hasSize(1));
         assertThat(sendFrom.getSendFrom().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 
@@ -2152,16 +2153,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany().getSigners(), is(notNullValue()));
         assertThat(sendMany.getSendMany().getSigners(), hasSize(2));
         assertThat(sendMany.getSendMany().getSigners().get(0).getAccount(),
-                is("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24"));
+                is(new Hash160("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24")));
         assertThat(sendMany.getSendMany().getSigners().get(0).getScopes(), hasSize(1));
         assertThat(sendMany.getSendMany().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
         assertThat(sendMany.getSendMany().getSigners(),
                 containsInAnyOrder(
                         new TransactionSigner(
-                                "0xbe175fb771d5782282b7598b56c26a2f5ebf2d24",
+                                new Hash160("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24"),
                                 singletonList(WitnessScope.CALLED_BY_ENTRY)),
                         new TransactionSigner(
-                                "0xf68f181731a47036a99f04dad90043a744edec0f",
+                                new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f"),
                                 singletonList(WitnessScope.CALLED_BY_ENTRY))
                 ));
 
@@ -2251,7 +2252,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendToAddress.getSendToAddress().getSigners(), is(notNullValue()));
         assertThat(sendToAddress.getSendToAddress().getSigners(), hasSize(1));
         assertThat(sendToAddress.getSendToAddress().getSigners().get(0).getAccount(),
-                is("0xf68f181731a47036a99f04dad90043a744edec0f"));
+                is(new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f")));
         assertThat(sendToAddress.getSendToAddress().getSigners().get(0).getScopes(), hasSize(1));
         assertThat(sendToAddress.getSendToAddress().getSigners().get(0).getScopes().get(0),
                 is(WitnessScope.CALLED_BY_ENTRY));

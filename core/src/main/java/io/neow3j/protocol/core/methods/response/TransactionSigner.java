@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class TransactionSigner {
 
     @JsonProperty(value = "account", required = true)
-    private String account;
+    private Hash160 account;
 
     @JsonProperty(value = "scopes", required = true)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -37,7 +37,7 @@ public class TransactionSigner {
     }
 
     public TransactionSigner(Signer signer) {
-        this.account = signer.getScriptHash().toString();
+        this.account = signer.getScriptHash();
         this.scopes = signer.getScopes();
         this.allowedContracts = signer.getAllowedContracts().stream()
                 .map(Hash160::toString)
@@ -47,7 +47,7 @@ public class TransactionSigner {
                 .collect(Collectors.toList());
     }
 
-    public TransactionSigner(String account, List<WitnessScope> scopes,
+    public TransactionSigner(Hash160 account, List<WitnessScope> scopes,
             List<String> allowedContracts, List<String> allowedGroups) {
         this.account = account;
         this.scopes = scopes;
@@ -55,11 +55,11 @@ public class TransactionSigner {
         this.allowedGroups = allowedGroups;
     }
 
-    public TransactionSigner(String account, List<WitnessScope> scopes) {
+    public TransactionSigner(Hash160 account, List<WitnessScope> scopes) {
         this(account, scopes, new ArrayList<>(), new ArrayList<>());
     }
 
-    public String getAccount() {
+    public Hash160 getAccount() {
         return account;
     }
 

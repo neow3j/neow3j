@@ -10,55 +10,9 @@ public class HashTest {
 
     @Test
     public void testSha3() {
-        byte[] input = new byte[]{
-                Numeric.asByte(0x6, 0x8),
-                Numeric.asByte(0x6, 0x5),
-                Numeric.asByte(0x6, 0xc),
-                Numeric.asByte(0x6, 0xc),
-                Numeric.asByte(0x6, 0xf),
-                Numeric.asByte(0x2, 0x0),
-                Numeric.asByte(0x7, 0x7),
-                Numeric.asByte(0x6, 0xf),
-                Numeric.asByte(0x7, 0x2),
-                Numeric.asByte(0x6, 0xc),
-                Numeric.asByte(0x6, 0x4)
-        };
-
-        byte[] expected = new byte[]{
-                Numeric.asByte(0x4, 0x7),
-                Numeric.asByte(0x1, 0x7),
-                Numeric.asByte(0x3, 0x2),
-                Numeric.asByte(0x8, 0x5),
-                Numeric.asByte(0xa, 0x8),
-                Numeric.asByte(0xd, 0x7),
-                Numeric.asByte(0x3, 0x4),
-                Numeric.asByte(0x1, 0xe),
-                Numeric.asByte(0x5, 0xe),
-                Numeric.asByte(0x9, 0x7),
-                Numeric.asByte(0x2, 0xf),
-                Numeric.asByte(0xc, 0x6),
-                Numeric.asByte(0x7, 0x7),
-                Numeric.asByte(0x2, 0x8),
-                Numeric.asByte(0x6, 0x3),
-                Numeric.asByte(0x8, 0x4),
-                Numeric.asByte(0xf, 0x8),
-                Numeric.asByte(0x0, 0x2),
-                Numeric.asByte(0xf, 0x8),
-                Numeric.asByte(0xe, 0xf),
-                Numeric.asByte(0x4, 0x2),
-                Numeric.asByte(0xa, 0x5),
-                Numeric.asByte(0xe, 0xc),
-                Numeric.asByte(0x5, 0xf),
-                Numeric.asByte(0x0, 0x3),
-                Numeric.asByte(0xb, 0xb),
-                Numeric.asByte(0xf, 0xa),
-                Numeric.asByte(0x2, 0x5),
-                Numeric.asByte(0x4, 0xc),
-                Numeric.asByte(0xb, 0x0),
-                Numeric.asByte(0x1, 0xf),
-                Numeric.asByte(0xa, 0xd)
-        };
-
+        byte[] input = Numeric.hexStringToByteArray("68656c6c6f20776f726c64");
+        byte[] expected = Numeric.hexStringToByteArray(
+                        "47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad");
         byte[] result = Hash.sha3(input);
         assertThat(result, is(expected));
     }
