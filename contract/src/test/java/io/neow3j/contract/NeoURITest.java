@@ -35,9 +35,6 @@ import org.junit.rules.ExpectedException;
 
 public class NeoURITest {
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
     private static final String BEGIN_TX = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
     private static final String BEGIN_TX_ASSET_AMOUNT =
             "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1";
@@ -47,13 +44,17 @@ public class NeoURITest {
             "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1&asset=gas&amount=80";
 
     private static Neow3j neow3j;
-    private static Wallet wallet;
 
-    private static final Hash160 SENDER =
-            Hash160.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
+    private static final Account SENDER =
+            Account.fromWIF("L2jLP9VXA23Hbzo7PmvLfjwkbUaaz887w3aGaeAz5xWyzjizpu9C");
+    private static final Hash160 SENDER_SCRIPT_HASH = SENDER.getScriptHash();
+    private static final Wallet WALLET = Wallet.withAccounts(SENDER);
     private static final String RECIPIENT_ADDRESS = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
     private static final Hash160 RECIPIENT_SCRIPT_HASH = Hash160.fromAddress(RECIPIENT_ADDRESS);
     private static final BigDecimal AMOUNT = new BigDecimal(1);
+
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -61,10 +62,9 @@ public class NeoURITest {
     @Before
     public void setUp() {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
-        int port = wireMockRule.port();
+        int port = this.wireMockRule.port();
         WireMock.configureFor(port);
         neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        wallet = Wallet.withAccounts(Account.fromAddress(SENDER.toAddress()));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("The Neo token does not support any decimal places.");
         NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1.1")
                 .neow3j(neow3j)
-                .wallet(wallet)
+                .wallet(WALLET)
                 .buildTransfer();
     }
 
@@ -132,7 +132,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("The Gas token does not support more than 8 decimal places.");
         NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas&amount=0.000000001")
                 .neow3j(neow3j)
-                .wallet(wallet)
+                .wallet(WALLET)
                 .buildTransfer();
     }
 
@@ -314,47 +314,53 @@ public class NeoURITest {
 
     @Test
     public void buildTransfer() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json", "decimals");
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
+                "balanceOf");
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NeoToken.SCRIPT_HASH, "transfer",
-                        asList(hash160(SENDER),
+                        asList(hash160(SENDER_SCRIPT_HASH),
                                 hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(1),
+                                integer(100),
                                 any(null)))
                 .toArray();
 
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
                 .asset(NeoToken.SCRIPT_HASH)
-                .wallet(wallet)
+                .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer();
 
         assertThat(b.getScript(), is(expectedScript));
-        assertThat(b.getSigners().get(0).getScriptHash(), is(SENDER));
+        assertThat(b.getSigners().get(0).getScriptHash(), is(SENDER_SCRIPT_HASH));
         assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
     }
 
     @Test
     public void buildTransfer_Gas() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json", "decimals");
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json", 
+                "balanceOf");
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(GasToken.SCRIPT_HASH, "transfer",
-                        asList(hash160(SENDER),
+                        asList(hash160(SENDER_SCRIPT_HASH),
                                 hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(200000000),
+                                integer(200),
                                 any(null)))
                 .toArray();
 
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
                 .asset(GasToken.SCRIPT_HASH)
-                .wallet(wallet)
+                .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(2)
                 .buildTransfer();
 
         assertThat(b.getScript(), is(expectedScript));
-        assertThat(b.getSigners().get(0).getScriptHash(), is(SENDER));
+        assertThat(b.getSigners().get(0).getScriptHash(), is(SENDER_SCRIPT_HASH));
     }
 
     @Test
@@ -372,7 +378,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("Recipient is not set.");
         new NeoURI(neow3j)
                 .asset(NeoToken.SCRIPT_HASH)
-                .wallet(wallet)
+                .wallet(WALLET)
                 .amount(AMOUNT)
                 .buildTransfer();
     }
@@ -394,17 +400,19 @@ public class NeoURITest {
         exceptionRule.expectMessage("Amount is not set.");
         new NeoURI(neow3j)
                 .asset(NeoToken.SCRIPT_HASH)
-                .wallet(wallet)
+                .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .buildTransfer();
     }
 
     @Test
     public void buildTransfer_nonNativeAsset() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json");
+        setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json", "decimals");
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
+                "balanceOf");
         TransactionBuilder b = new NeoURI(neow3j)
                 .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .wallet(wallet)
+                .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer();
@@ -419,7 +427,7 @@ public class NeoURITest {
                 "not support more than 2 decimal places.");
         new NeoURI(neow3j)
                 .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .wallet(wallet)
+                .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(new BigDecimal("0.001"))
                 .buildTransfer();
@@ -432,7 +440,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("Got stack item of type Boolean but expected Integer.");
         new NeoURI(neow3j)
                 .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .wallet(wallet)
+                .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer();
