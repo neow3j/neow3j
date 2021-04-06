@@ -1,6 +1,7 @@
 package io.neow3j.utils;
 
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -12,12 +13,14 @@ import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -40,16 +43,25 @@ public class Await {
      */
     public static void waitUntilBalancesIsGreaterThanZero(String address,
             Hash160 token, Neow3j neow3j) {
-        waitUntil(callableGetBalance(address, token, neow3j), Matchers.greaterThan(0L));
+        waitUntil(callableGetBalance(address, token, neow3j), greaterThan(0L));
+    }
+
+    /**
+     * Checks and waits until the block count (height) is greater than {@code blockCount}.
+     *
+     * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
+     */
+    public static void waitUntilBlockCountIsGreaterThan(Neow3j neow3j, BigInteger blockCount) {
+        waitUntil(callableGetBlockCount(neow3j), greaterThan(blockCount));
     }
 
     /**
      * Checks and waits until the block count (height) is greater than zero.
      *
-     * @param neow3j  The {@code Neow3j} object to use to connect to a neo-node.
+     * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
      */
     public static void waitUntilBlockCountIsGreaterThanZero(Neow3j neow3j) {
-        waitUntil(callableGetBlockCount(neow3j), Matchers.greaterThan(BigInteger.ZERO));
+        waitUntilBlockCountIsGreaterThan(neow3j, BigInteger.ZERO);
     }
 
     /**
@@ -102,12 +114,12 @@ public class Await {
      * Waits until the {@code callable} function returns a condition that is satisfied by the
      * {@code matcher}.
      *
-     * @param callable      The function to be called.
-     * @param matcher       The condition to be evaluated.
-     * @param maxWaitTime   The maximum amount of time to wait.
-     * @param unit          The time unit for the {@code maxWaitTime} param.
-     * @param <T>           The type that the callable function and condition should be
-     *                      compatible with.
+     * @param callable    The function to be called.
+     * @param matcher     The condition to be evaluated.
+     * @param maxWaitTime The maximum amount of time to wait.
+     * @param unit        The time unit for the {@code maxWaitTime} param.
+     * @param <T>         The type that the callable function and condition should be
+     *                    compatible with.
      */
     public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher,
             int maxWaitTime, TimeUnit unit) {
