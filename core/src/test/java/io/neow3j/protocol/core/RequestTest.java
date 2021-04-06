@@ -140,17 +140,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetBlockHeader_Hash() throws Exception {
-        neow3j.getBlockHeader(
-                "0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d").send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblockheader\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetBlockHeader_Index() throws Exception {
         neow3j.getBlockHeader(new BigInteger("12345")).send();
 

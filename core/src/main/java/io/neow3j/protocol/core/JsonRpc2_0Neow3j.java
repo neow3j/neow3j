@@ -246,17 +246,6 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block header information according to the specified block hash.
-     *
-     * @param blockHash the block hash.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetBlock> getBlockHeader(String blockHash) {
-        return getBlockHeader(new Hash256(blockHash));
-    }
-
-    /**
      * Gets the corresponding block header information according to the specified index.
      *
      * @param blockIndex the block index.

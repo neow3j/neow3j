@@ -80,8 +80,6 @@ public interface Neo {
 
     Request<?, NeoGetBlock> getBlockHeader(Hash256 hash);
 
-    Request<?, NeoGetBlock> getBlockHeader(String hash);
-
     Request<?, NeoGetBlock> getBlockHeader(BigInteger blockIndex);
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 hash);
