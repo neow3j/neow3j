@@ -87,35 +87,9 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetBlock_Hash_fromString() throws Exception {
-        neow3j.getBlock(
-                "0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d",
-                true
-        ).send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblock\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetBlock_notFullTxObjects() throws Exception {
         neow3j.getBlock(
                 new Hash256("0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d"),
-                false
-        ).send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblockheader\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
-    public void testGetBlock_notFullTxObjects_fromString() throws Exception {
-        neow3j.getBlock(
-                "0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d",
                 false
         ).send();
 

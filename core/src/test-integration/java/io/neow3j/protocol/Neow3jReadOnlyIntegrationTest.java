@@ -118,8 +118,8 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_BALANCE = "balanceOf";
 
     protected static final BigInteger BLOCK_0_IDX = BigInteger.ZERO;
-    protected static final String BLOCK_0_HASH_STRING =
-            "1aa1a3fc3449e0b1bfbc54b3c3a4a55f13cc7a5fccc166091ef09d67e767830b";
+    private static final Hash256 BLOCK_0_HASH =
+            new Hash256("1aa1a3fc3449e0b1bfbc54b3c3a4a55f13cc7a5fccc166091ef09d67e767830b");
     protected static final String BLOCK_0_HEADER_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAABWdJLr5o0s2B7uGSGoMazmnP0gBAAER";
     protected static final String BLOCK_0_RAW_STRING =
@@ -211,7 +211,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetBlock_Hash_fullTransactionObjects() throws IOException {
         NeoBlock block = getNeow3j()
-                .getBlock(BLOCK_0_HASH_STRING, true)
+                .getBlock(BLOCK_0_HASH, true)
                 .send()
                 .getBlock();
 
@@ -234,7 +234,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetRawBlock_Hash() throws IOException {
         String rawBlock = getNeow3j()
-                .getRawBlock(BLOCK_0_HASH_STRING)
+                .getRawBlock(BLOCK_0_HASH)
                 .send()
                 .getRawBlock();
 
@@ -277,14 +277,14 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetBlockHeader_Hash() throws IOException {
         NeoBlock block = getNeow3j()
-                .getBlockHeader(BLOCK_0_HASH_STRING)
+                .getBlockHeader(BLOCK_0_HASH)
                 .send()
                 .getBlock();
 
         assertNotNull(block);
         assertNull(block.getTransactions());
         assertThat(block.getIndex(), is(BLOCK_0_IDX.longValue()));
-        assertThat(block.getHash().toString(), is(BLOCK_0_HASH_STRING));
+        assertThat(block.getHash(), is(BLOCK_0_HASH));
     }
 
     @Test
@@ -297,13 +297,13 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(block);
         assertNull(block.getTransactions());
         assertThat(block.getIndex(), is(BLOCK_0_IDX.longValue()));
-        assertThat(block.getHash().toString(), is(BLOCK_0_HASH_STRING));
+        assertThat(block.getHash().toString(), is(BLOCK_0_HASH));
     }
 
     @Test
     public void testGetRawBlockHeader_Hash() throws IOException {
         String rawBlock = getNeow3j()
-                .getRawBlockHeader(BLOCK_0_HASH_STRING)
+                .getRawBlockHeader(BLOCK_0_HASH)
                 .send()
                 .getRawBlock();
 

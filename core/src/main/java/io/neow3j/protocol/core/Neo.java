@@ -68,13 +68,11 @@ public interface Neo {
 
     Request<?, NeoGetBlock> getBlock(Hash256 blockHash, boolean returnFullTransactionObjects);
 
+    Request<?, NeoGetBlock> getBlock(BigInteger blockIndex, boolean returnFullTransactionObjects);
+
     Request<?, NeoGetRawBlock> getRawBlock(Hash256 blockHash);
 
-    Request<?, NeoGetBlock> getBlock(String blockHash, boolean returnFullTransactionObjects);
-
     Request<?, NeoGetRawBlock> getRawBlock(String blockHash);
-
-    Request<?, NeoGetBlock> getBlock(BigInteger blockIndex, boolean returnFullTransactionObjects);
 
     Request<?, NeoGetRawBlock> getRawBlock(BigInteger blockIndex);
 

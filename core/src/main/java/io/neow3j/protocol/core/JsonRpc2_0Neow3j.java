@@ -61,7 +61,6 @@ import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Async;
-import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
 
 import java.io.IOException;
@@ -90,8 +89,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         this(neow3jService, DEFAULT_BLOCK_TIME, Async.defaultExecutorService());
     }
 
-    public JsonRpc2_0Neow3j(
-            Neow3jService neow3jService, long pollingInterval,
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, long pollingInterval,
             ScheduledExecutorService scheduledExecutorService) {
         this.neow3jService = neow3jService;
         this.neow3jRx = new JsonRpc2_0Rx(this, scheduledExecutorService);
@@ -116,8 +114,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the block hash of the corresponding block based on the specified
-     * index.
+     * Gets the block hash of the corresponding block based on the specified index.
      *
      * @param blockIndex the block index.
      * @return the request object.
@@ -132,23 +129,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified hash
-     * or index.
-     *
-     * @param blockHash                    the block hash.
-     * @param returnFullTransactionObjects whether to get block information with all transaction
-     *                                     objects or just the block header.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetBlock> getBlock(String blockHash,
-            boolean returnFullTransactionObjects) {
-        return getBlock(new Hash256(blockHash), returnFullTransactionObjects);
-    }
-
-    /**
-     * Gets the corresponding block information according to the specified hash
-     * or index.
+     * Gets the corresponding block information according to the specified hash.
      *
      * @param blockHash                    the block hash.
      * @param returnFullTransactionObjects whether to get block information with all transaction
@@ -170,8 +151,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified hash
-     * in hexadecimal.
+     * Gets the corresponding block information according to the specified hash in hexadecimal.
      *
      * @param blockHash the block hash.
      * @return the request object.
@@ -186,8 +166,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified hash
-     * in hexadecimal.
+     * Gets the corresponding block information according to the specified hash in hexadecimal.
      *
      * @param blockHash the block hash.
      * @return the request object.
@@ -198,8 +177,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified
-     * index.
+     * Gets the corresponding block information according to the specified index.
      *
      * @param blockIndex                   the block index.
      * @param returnFullTransactionObjects whether to get block information with all transaction
@@ -221,8 +199,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block information according to the specified hash
-     * in hexadecimal.
+     * Gets the corresponding block information according to the specified hash in hexadecimal.
      *
      * @param blockIndex the block index.
      * @return the request object.
@@ -265,36 +242,33 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block header information according to the
-     * specified hash.
+     * Gets the corresponding block header information according to the specified block hash.
      *
-     * @param hash the block hash.
+     * @param blockHash the block hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetBlock> getBlockHeader(Hash256 hash) {
+    public Request<?, NeoGetBlock> getBlockHeader(Hash256 blockHash) {
         return new Request<>(
                 "getblockheader",
-                asList(hash, 1),
+                asList(blockHash, 1),
                 neow3jService,
                 NeoGetBlock.class);
     }
 
     /**
-     * Gets the corresponding block header information according to the
-     * specified hash.
+     * Gets the corresponding block header information according to the specified block hash.
      *
-     * @param hash the block hash.
+     * @param blockHash the block hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetBlock> getBlockHeader(String hash) {
-        return getBlockHeader(new Hash256(hash));
+    public Request<?, NeoGetBlock> getBlockHeader(String blockHash) {
+        return getBlockHeader(new Hash256(blockHash));
     }
 
     /**
-     * Gets the corresponding block header information according to the
-     * specified index.
+     * Gets the corresponding block header information according to the specified index.
      *
      * @param blockIndex the block index.
      * @return the request object.
@@ -309,36 +283,35 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding block header information according to the
-     * specified hash in hexadecimal.
+     * Gets the corresponding block header information according to the specified block hash in
+     * hexadecimal.
      *
-     * @param hash the block hash.
+     * @param blockHash the block hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 hash) {
+    public Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 blockHash) {
         return new Request<>(
                 "getblockheader",
-                asList(hash, 0),
+                asList(blockHash, 0),
                 neow3jService,
                 NeoGetRawBlock.class);
     }
 
     /**
-     * Gets the corresponding block header information according to the
-     * specified hash in hexadecimal.
+     * Gets the corresponding block header information according to the specified block hash in
+     * hexadecimal.
      *
-     * @param hash the block hash.
+     * @param blockHash the block hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetRawBlock> getRawBlockHeader(String hash) {
-        return getRawBlockHeader(new Hash256(hash));
+    public Request<?, NeoGetRawBlock> getRawBlockHeader(String blockHash) {
+        return getRawBlockHeader(new Hash256(blockHash));
     }
 
     /**
-     * Gets the corresponding block header information according to the
-     * specified script hash in hexadecimal.
+     * Gets the corresponding block header information according to the specified block index.
      *
      * @param blockIndex the block index.
      * @return the request object.
@@ -354,7 +327,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     /**
      * Gets the native contracts list, which includes the basic information of native contracts
-     * and the contract descriptive file manifest.json.
+     * and the contract descriptive file {@code manifest.json}.
      *
      * @return the request object.
      */
@@ -370,20 +343,22 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets the contract information.
      *
-     * @param hash160 the contract script hash.
+     * @param contractHash the contract script hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetContractState> getContractState(Hash160 hash160) {
+    public Request<?, NeoGetContractState> getContractState(Hash160 contractHash) {
         return new Request<>(
                 "getcontractstate",
-                singletonList(hash160),
+                singletonList(contractHash),
                 neow3jService,
                 NeoGetContractState.class);
     }
 
     /**
-     * Gets the contract information.
+     * Gets the contract information by the contract's name.
+     * <p>
+     * This RPC call only works for native contracts.
      *
      * @param contractName the name of the contract or its script hash as a String.
      * @return the request object.
@@ -426,57 +401,55 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding transaction information based on the specified
-     * hash value.
+     * Gets the corresponding transaction information based on the specified hash value.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetTransaction> getTransaction(String txId) {
-        return getTransaction(new Hash256(txId));
+    public Request<?, NeoGetTransaction> getTransaction(String txHash) {
+        return getTransaction(new Hash256(txHash));
     }
 
     /**
-     * Gets the corresponding transaction information based on the specified
-     * hash value.
+     * Gets the corresponding transaction information based on the specified hash value.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetTransaction> getTransaction(Hash256 txId) {
+    public Request<?, NeoGetTransaction> getTransaction(Hash256 txHash) {
         return new Request<>(
                 "getrawtransaction",
-                asList(txId, 1),
+                asList(txHash, 1),
                 neow3jService,
                 NeoGetTransaction.class);
     }
 
     /**
-     * Gets the corresponding transaction information based on the specified
-     * hash value in hexadecimal.
+     * Gets the corresponding transaction information based on the specified hash value in
+     * hexadecimal.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetRawTransaction> getRawTransaction(String txId) {
-        return getRawTransaction(new Hash256(txId));
+    public Request<?, NeoGetRawTransaction> getRawTransaction(String txHash) {
+        return getRawTransaction(new Hash256(txHash));
     }
 
     /**
-     * Gets the corresponding transaction information based on the specified
-     * hash value in hexadecimal.
+     * Gets the corresponding transaction information based on the specified hash value in
+     * hexadecimal.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txId) {
+    public Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txHash) {
         return new Request<>(
                 "getrawtransaction",
-                asList(txId, 0),
+                asList(txHash, 0),
                 neow3jService,
                 NeoGetRawTransaction.class);
     }
@@ -484,27 +457,27 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets the stored value according to the contract script hash and the key.
      *
-     * @param contractAddress the contract hash.
-     * @param keyHexString    the key to look up in storage as a hexadecimal string.
+     * @param contractHash the contract hash.
+     * @param keyHexString the key to look up in storage as a hexadecimal string.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetStorage> getStorage(String contractAddress, String keyHexString) {
-        return getStorage(new Hash160(contractAddress), keyHexString);
+    public Request<?, NeoGetStorage> getStorage(String contractHash, String keyHexString) {
+        return getStorage(new Hash160(contractHash), keyHexString);
     }
 
     /**
      * Gets the stored value according to the contract script hash and the key.
      *
-     * @param contractScriptHash the contract hash.
-     * @param keyHexString       the key to look up in storage as a hexadecimal string.
+     * @param contractHash the contract hash.
+     * @param keyHexString the key to look up in storage as a hexadecimal string.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetStorage> getStorage(Hash160 contractScriptHash, String keyHexString) {
+    public Request<?, NeoGetStorage> getStorage(Hash160 contractHash, String keyHexString) {
         return new Request<>(
                 "getstorage",
-                asList(contractScriptHash, Base64.encode(keyHexString)),
+                asList(contractHash, Base64.encode(keyHexString)),
                 neow3jService,
                 NeoGetStorage.class);
     }
@@ -512,25 +485,25 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets the transaction height with the specified transaction hash.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId) {
-        return getTransactionHeight(new Hash256(txId));
+    public Request<?, NeoGetTransactionHeight> getTransactionHeight(String txHash) {
+        return getTransactionHeight(new Hash256(txHash));
     }
 
     /**
      * Gets the transaction height with the specified transaction hash.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txId) {
+    public Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txHash) {
         return new Request<>(
                 "gettransactionheight",
-                singletonList(txId),
+                singletonList(txHash),
                 neow3jService,
                 NeoGetTransactionHeight.class);
     }
@@ -580,8 +553,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets a list of nodes that the node is currently connected or
-     * disconnected from.
+     * Gets a list of nodes that the node is currently connected or disconnected from.
      *
      * @return the request object.
      */
@@ -618,7 +590,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex) {
         return new Request<>(
                 "sendrawtransaction",
-                singletonList(Base64.encode(Numeric.hexStringToByteArray(rawTransactionHex))),
+                singletonList(Base64.encode(rawTransactionHex)),
                 neow3jService,
                 NeoSendRawTransaction.class);
     }
@@ -644,62 +616,62 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Invokes the function with {@code functionName} of the smart contract with the given script
      * hash.
      *
-     * @param contractScriptHash the contract script hash to invoke.
-     * @param functionName       the function to invoke.
-     * @param signers            the signers.
+     * @param contractHash the contract script hash to invoke.
+     * @param functionName the function to invoke.
+     * @param signers      the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
+    public Request<?, NeoInvokeFunction> invokeFunction(String contractHash,
             String functionName, Signer... signers) {
-        return invokeFunction(new Hash160(contractScriptHash), functionName, null, signers);
+        return invokeFunction(new Hash160(contractHash), functionName, null, signers);
     }
 
     /**
      * Invokes the function with {@code functionName} of the smart contract with the given script
      * hash.
      *
-     * @param contractScriptHash the contract script hash to invoke.
-     * @param functionName       the function to invoke.
-     * @param signers            the signers.
+     * @param contractHash the contract hash to invoke.
+     * @param functionName the function to invoke.
+     * @param signers      the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractScriptHash,
+    public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash,
             String functionName, Signer... signers) {
-        return invokeFunction(contractScriptHash, functionName, null, signers);
+        return invokeFunction(contractHash, functionName, null, signers);
     }
 
     /**
-     * Invokes the function with {@code functionName} of the smart contract with the given script
-     * hash.
+     * Invokes the function with {@code functionName} of the smart contract with the given hash
+     * value.
      *
-     * @param contractScriptHash the contract script hash to invoke.
-     * @param functionName       the function to invoke.
-     * @param contractParams     the parameters of the function.
-     * @param signers            the signers.
+     * @param contractHash   the contract hash to invoke.
+     * @param functionName   the function to invoke.
+     * @param contractParams the parameters of the function.
+     * @param signers        the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash,
-            String functionName, List<ContractParameter> contractParams, Signer... signers) {
-        return invokeFunction(new Hash160(contractScriptHash), functionName, contractParams,
+    public Request<?, NeoInvokeFunction> invokeFunction(String contractHash, String functionName,
+            List<ContractParameter> contractParams, Signer... signers) {
+        return invokeFunction(new Hash160(contractHash), functionName, contractParams,
                 signers);
     }
 
     /**
-     * Invokes the function with {@code functionName} of the smart contract with the given script
-     * hash.
+     * Invokes the function with {@code functionName} of the smart contract with the given hash
+     * value.
      *
-     * @param contractScriptHash the contract script hash to invoke.
-     * @param functionName       the function to invoke.
-     * @param contractParams     the parameters of the function.
-     * @param signers            the signers.
+     * @param contractHash   the contract hash to invoke.
+     * @param functionName   the function to invoke.
+     * @param contractParams the parameters of the function.
+     * @param signers        the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractScriptHash,
-            String functionName, List<ContractParameter> contractParams, Signer... signers) {
+    public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
+            List<ContractParameter> contractParams, Signer... signers) {
 
         if (contractParams == null) {
             contractParams = new ArrayList<>();
@@ -708,9 +680,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 .collect(Collectors.toList());
         List<?> params;
         if (txSigners.size() > 0) {
-            params = asList(contractScriptHash, functionName, contractParams, txSigners);
+            params = asList(contractHash, functionName, contractParams, txSigners);
         } else {
-            params = asList(contractScriptHash, functionName, contractParams);
+            params = asList(contractHash, functionName, contractParams);
         }
         return new Request<>(
                 "invokefunction",
@@ -746,33 +718,31 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Invokes a contract in verification mode.
      * <p>
-     * Requires an open wallet on the neo-node that contains the accounts for
-     * the signers.
+     * Requires an open wallet on the Neo node that contains the accounts for the signers.
      *
-     * @param scriptHash   the contract script hash.
+     * @param contractHash the contract hash.
      * @param methodParams a list of parameters of the verify function.
      * @param signers      the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeContractVerify> invokeContractVerify(String scriptHash,
+    public Request<?, NeoInvokeContractVerify> invokeContractVerify(String contractHash,
             List<ContractParameter> methodParams, Signer... signers) {
-        return invokeContractVerify(new Hash160(scriptHash), methodParams, signers);
+        return invokeContractVerify(new Hash160(contractHash), methodParams, signers);
     }
 
     /**
      * Invokes a contract in verification mode.
      * <p>
-     * Requires an open wallet on the neo-node that contains the accounts for
-     * the signers.
+     * Requires an open wallet on the Neo node that contains the accounts for the signers.
      *
-     * @param scriptHash   the contract script hash.
+     * @param contractHash the contract hash.
      * @param methodParams a list of parameters of the verify function.
      * @param signers      the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 scriptHash,
+    public Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 contractHash,
             List<ContractParameter> methodParams, Signer... signers) {
 
         if (methodParams == null) {
@@ -780,7 +750,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         }
         List<TransactionSigner> txSigners = stream(signers)
                 .map(TransactionSigner::new).collect(Collectors.toList());
-        List<?> params = asList(scriptHash, methodParams, txSigners);
+        List<?> params = asList(contractHash, methodParams, txSigners);
         return new Request<>(
                 "invokecontractverify",
                 params.stream().filter(Objects::nonNull).collect(Collectors.toList()),
@@ -866,27 +836,27 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the balance of the corresponding asset in the wallet.
+     * Gets the balance of the corresponding token in the wallet.
      *
-     * @param assetId the asset id.
+     * @param tokenHash the token hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetWalletBalance> getWalletBalance(String assetId) {
-        return getWalletBalance(new Hash160(assetId));
+    public Request<?, NeoGetWalletBalance> getWalletBalance(String tokenHash) {
+        return getWalletBalance(new Hash160(tokenHash));
     }
 
     /**
-     * Gets the balance of the corresponding asset in the wallet.
+     * Gets the balance of the corresponding token in the wallet.
      *
-     * @param assetId the asset id.
+     * @param tokenHash the token hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 assetId) {
+    public Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 tokenHash) {
         return new Request<>(
                 "getwalletbalance",
-                singletonList(assetId),
+                singletonList(tokenHash),
                 neow3jService,
                 NeoGetWalletBalance.class);
     }
@@ -944,7 +914,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String txHex) {
         return new Request<>(
                 "calculatenetworkfee",
-                singletonList(Base64.encode(Numeric.hexStringToByteArray(txHex))),
+                singletonList(Base64.encode(txHex)),
                 neow3jService,
                 NeoCalculateNetworkFee.class);
     }
@@ -980,46 +950,45 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Transfers an amount of an asset from an address to another address.
+     * Transfers an amount of a token from an address to another address.
      *
      * @param fromAddress the transferring address.
-     * @param assetId     the script hash of the NEP17 contract.
+     * @param tokenHash   the token hash of the NEP17 contract.
      * @param toAddress   the destination address.
      * @param value       the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendFrom> sendFrom(String fromAddress, String assetId,
-            String toAddress, String value) {
-        return sendFrom(fromAddress, new Hash160(assetId), toAddress, value);
+    public Request<?, NeoSendFrom> sendFrom(String fromAddress, String tokenHash, String toAddress,
+            String value) {
+        return sendFrom(fromAddress, new Hash160(tokenHash), toAddress, value);
     }
 
     /**
      * Transfers an amount of an asset from an address to another address.
      *
      * @param fromAddress the transferring address.
-     * @param assetId     the script hash of the NEP17 contract.
+     * @param tokenHash   the token hash of the NEP17 contract.
      * @param toAddress   the destination address.
      * @param value       the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendFrom> sendFrom(String fromAddress, Hash160 assetId,
-            String toAddress, String value) {
+    public Request<?, NeoSendFrom> sendFrom(String fromAddress, Hash160 tokenHash, String toAddress,
+            String value) {
         return new Request<>(
                 "sendfrom",
-                asList(assetId, fromAddress, toAddress, value),
+                asList(tokenHash, fromAddress, toAddress, value),
                 neow3jService,
                 NeoSendFrom.class);
     }
 
     /**
-     * Transfers an amount of an asset from an address to another address.
+     * Transfers an amount of a token from an address to another address.
      *
      * @param fromAddress the transferring address.
-     * @param txSendAsset a {@code TransactionSendAsset} object containing the
-     *                    asset, the destination address and the transfer
-     *                    amount.
+     * @param txSendAsset a {@link TransactionSendAsset} object containing the token asset, the
+     *                    destination address and the transfer amount.
      * @return the request object.
      */
     @Override
@@ -1029,12 +998,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Initiates multiple transfers to multiple addresses from the open wallet
-     * in a transaction.
+     * Initiates multiple transfers to multiple addresses from the open wallet in a transaction.
      *
-     * @param txSendAsset a list of {@code TransactoinSendAsset} objects, that
-     *                    each contains the asset, destination address and
-     *                    transfer amount.
+     * @param txSendAsset a list of {@link TransactionSendAsset} objects, that each contains the
+     *                    token asset, destination address and transfer amount.
      * @return the request object.
      */
     @Override
@@ -1049,13 +1016,12 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Initiates multiple transfers to multiple addresses from one specific
-     * address in a transaction.
+     * Initiates multiple transfers to multiple addresses from one specific address in a
+     * transaction.
      *
      * @param fromAddress the transferring address.
-     * @param txSendAsset a list of {@code TransactionSendAsset} objects, that
-     *                    each contains the asset, destination address and
-     *                    transfer amount.
+     * @param txSendAsset a list of {@link TransactionSendAsset} objects, that each contains the
+     *                    token asset, destination address and transfer amount.
      * @return the request object.
      */
     @Override
@@ -1064,40 +1030,40 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
         return new Request<>(
                 "sendmany",
-                asList(fromAddress, txSendAsset.stream().filter(Objects::nonNull)
-                        .collect(Collectors.toList())),
+                asList(fromAddress,
+                        txSendAsset.stream().filter(Objects::nonNull).collect(Collectors.toList())),
                 neow3jService,
                 NeoSendMany.class);
     }
 
     /**
-     * Transfers an amount of an asset to another address.
+     * Transfers an amount of a token asset to another address.
      *
-     * @param assetId   the script hash of the NEP17 contract.
+     * @param tokenHash the token hash of the NEP17 contract.
      * @param toAddress the destination address.
      * @param value     the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress,
+    public Request<?, NeoSendToAddress> sendToAddress(String tokenHash, String toAddress,
             String value) {
-        return sendToAddress(new Hash160(assetId), toAddress, value);
+        return sendToAddress(new Hash160(tokenHash), toAddress, value);
     }
 
     /**
-     * Transfers an amount of an asset to another address.
+     * Transfers an amount of a token asset to another address.
      *
-     * @param assetId   the script hash of the NEP17 contract.
+     * @param tokenHash the token hash of the NEP17 contract.
      * @param toAddress the destination address.
      * @param value     the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendToAddress> sendToAddress(Hash160 assetId, String toAddress,
+    public Request<?, NeoSendToAddress> sendToAddress(Hash160 tokenHash, String toAddress,
             String value) {
         return new Request<>(
                 "sendtoaddress",
-                Stream.of(assetId, toAddress, value)
+                Stream.of(tokenHash, toAddress, value)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()),
                 neow3jService,
@@ -1105,11 +1071,10 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Transfers an amount of an asset to another address.
+     * Transfers an amount of a token asset to another address.
      *
-     * @param txSendAsset a {@code TransactionSendAsset} object containing the
-     *                    asset, the destination address and the transfer
-     *                    amount.
+     * @param txSendAsset a {@link TransactionSendAsset} object containing the token asset, the
+     *                    destination address and the transfer amount.
      * @return the request object.
      */
     @Override
@@ -1123,25 +1088,25 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets the application logs of the specified transaction.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetApplicationLog> getApplicationLog(String txId) {
-        return getApplicationLog(new Hash256(txId));
+    public Request<?, NeoGetApplicationLog> getApplicationLog(String txHash) {
+        return getApplicationLog(new Hash256(txHash));
     }
 
     /**
      * Gets the application logs of the specified transaction.
      *
-     * @param txId the transaction id.
+     * @param txHash the transaction hash.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txId) {
+    public Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txHash) {
         return new Request<>(
                 "getapplicationlog",
-                singletonList(txId),
+                singletonList(txHash),
                 neow3jService,
                 NeoGetApplicationLog.class);
     }
@@ -1149,7 +1114,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // RpcNep17Tracker
 
     /**
-     * Gets the balance of all NEP17 assets in the specified address.
+     * Gets the balance of all NEP17 token assets in the specified address.
      *
      * @param address the address.
      * @return the request object.
@@ -1164,8 +1129,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets all the NEP17 transaction information occurred in the specified
-     * address.
+     * Gets all the NEP17 transaction information occurred in the specified address.
      *
      * @param address the address.
      * @return the request object.
@@ -1180,8 +1144,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets all the NEP17 transaction information occurred in the specified
-     * address since the specified time.
+     * Gets all the NEP17 transaction information occurred in the specified address since the
+     * specified time.
      *
      * @param address the address.
      * @param from    the timestamp transactions occurred since.
@@ -1197,8 +1161,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets all the NEP17 transaction information occurred in the specified
-     * address in the specified time range.
+     * Gets all the NEP17 transaction information occurred in the specified address in the
+     * specified time range.
      *
      * @param address the address.
      * @param from    the start timestamp.
@@ -1233,20 +1197,19 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the proof based on the root hash, the contract script hash and the storage key.
+     * Gets the proof based on the root hash, the contract hash and the storage key.
      *
      * @param rootHash           the root hash.
-     * @param contractScriptHash the contract script hash.
+     * @param contractHash the contract hash.
      * @param storageKeyHex      the storage key.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractScriptHash,
+    public Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractHash,
             String storageKeyHex) {
         return new Request<>(
                 "getproof",
-                asList(rootHash, contractScriptHash,
-                        Base64.encode(storageKeyHex)),
+                asList(rootHash, contractHash, Base64.encode(storageKeyHex)),
                 neow3jService,
                 NeoGetProof.class);
     }
