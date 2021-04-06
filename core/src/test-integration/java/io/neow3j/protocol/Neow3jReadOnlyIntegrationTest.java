@@ -7,7 +7,6 @@ import static io.neow3j.TestProperties.contractManagementHash;
 import static io.neow3j.TestProperties.defaultAccountAddress;
 import static io.neow3j.TestProperties.defaultAccountScriptHash;
 import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.TestProperties.gasTokenHash;
 import static io.neow3j.TestProperties.gasTokenName;
 import static io.neow3j.TestProperties.nameServiceHash;
 import static io.neow3j.TestProperties.neoTokenHash;
