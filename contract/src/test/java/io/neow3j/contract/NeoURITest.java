@@ -51,8 +51,8 @@ public class NeoURITest {
 
     private static final Hash160 SENDER =
             Hash160.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
-    private static final String RECIPIENT = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
-    private static final Hash160 RECIPIENT_SCRIPT_HASH = Hash160.fromAddress(RECIPIENT);
+    private static final String RECIPIENT_ADDRESS = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
+    private static final Hash160 RECIPIENT_SCRIPT_HASH = Hash160.fromAddress(RECIPIENT_ADDRESS);
     private static final BigDecimal AMOUNT = new BigDecimal(1);
 
     @Rule
@@ -127,7 +127,7 @@ public class NeoURITest {
     public void fromURI_Getter() {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT).buildURI();
 
-        assertThat("getAddress()", neoURI.getToAddress(), is(RECIPIENT));
+        assertThat("getAddress()", neoURI.getRecipient(), is(RECIPIENT_ADDRESS));
         assertThat("getAddressAsScriptHash()", neoURI.getAddressAsScriptHash(),
                 is(RECIPIENT_SCRIPT_HASH));
         assertThat("getAsset()", neoURI.getAssetAsString(),
@@ -154,7 +154,7 @@ public class NeoURITest {
     @Test
     public void buildURI() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .buildURI();
 
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX)));
@@ -164,7 +164,7 @@ public class NeoURITest {
     @Test
     public void buildURI_address_ScriptHash() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT_SCRIPT_HASH)
+                .to(RECIPIENT_SCRIPT_HASH)
                 .buildURI();
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX));
@@ -175,7 +175,7 @@ public class NeoURITest {
         String invalidAddress = "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp";
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("Invalid address");
-        new NeoURI().toAddress(invalidAddress);
+        new NeoURI().to(invalidAddress);
     }
 
     @Test
@@ -188,7 +188,7 @@ public class NeoURITest {
     @Test
     public void buildURI_asset() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .asset("neo")
                 .buildURI();
 
@@ -200,7 +200,7 @@ public class NeoURITest {
     @Test
     public void buildURI_asset_fromByteArray() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .asset(
                         Numeric.hexStringToByteArray("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"))
                 .buildURI();
@@ -215,7 +215,7 @@ public class NeoURITest {
     @Test
     public void buildURI_amount() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildURI();
 
@@ -227,7 +227,7 @@ public class NeoURITest {
     @Test
     public void buildURI_amount_String() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount("1.0")
                 .buildURI();
 
@@ -239,7 +239,7 @@ public class NeoURITest {
     @Test
     public void buildURI_amount_Integer() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(15)
                 .buildURI();
 
@@ -251,7 +251,7 @@ public class NeoURITest {
     @Test
     public void buildURI_amount_BigInteger() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(new BigInteger("12"))
                 .buildURI();
 
@@ -263,7 +263,7 @@ public class NeoURITest {
     @Test
     public void buildURI_asset_amount() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .asset("neo")
                 .amount(AMOUNT)
                 .buildURI();
@@ -275,7 +275,7 @@ public class NeoURITest {
     @Test
     public void buildURI_asset_amount_addMultipleTimes() {
         NeoURI neoURI = new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .asset("gas")
                 .asset("neo")
                 .amount("90")
@@ -299,7 +299,7 @@ public class NeoURITest {
                 .neow3j(neow3j)
                 .asset(NeoToken.SCRIPT_HASH)
                 .wallet(wallet)
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer();
 
@@ -321,7 +321,7 @@ public class NeoURITest {
                 .neow3j(neow3j)
                 .asset(GasToken.SCRIPT_HASH)
                 .wallet(wallet)
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(2)
                 .buildTransfer();
 
@@ -334,14 +334,14 @@ public class NeoURITest {
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Neow3j instance is not set.");
         new NeoURI()
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .buildTransfer();
     }
 
     @Test
     public void buildTransfer_noAddress() throws IOException {
         exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Recipient address is not set.");
+        exceptionRule.expectMessage("Recipient is not set.");
         new NeoURI(neow3j)
                 .asset(NeoToken.SCRIPT_HASH)
                 .wallet(wallet)
@@ -355,7 +355,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("Wallet is not set.");
         new NeoURI(neow3j)
                 .asset(NeoToken.SCRIPT_HASH)
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer();
     }
@@ -367,7 +367,7 @@ public class NeoURITest {
         new NeoURI(neow3j)
                 .asset(NeoToken.SCRIPT_HASH)
                 .wallet(wallet)
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .buildTransfer();
     }
 
@@ -377,7 +377,7 @@ public class NeoURITest {
         assertThat(new NeoURI(neow3j)
                 .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .wallet(wallet)
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer(), is(instanceOf(TransactionBuilder.class)));
     }
@@ -390,7 +390,7 @@ public class NeoURITest {
         new NeoURI(neow3j)
                 .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .wallet(wallet)
-                .toAddress(RECIPIENT)
+                .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer();
     }

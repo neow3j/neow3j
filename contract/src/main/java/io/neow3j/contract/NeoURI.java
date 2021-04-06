@@ -4,9 +4,9 @@ import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.AddressUtils.isValidAddress;
 
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Strings;
 import io.neow3j.wallet.Wallet;
@@ -28,7 +28,7 @@ public class NeoURI {
 
     private Neow3j neow3j;
     private Wallet wallet;
-    private Hash160 toAddress;
+    private Hash160 recipient;
     private Hash160 asset;
     private BigDecimal amount;
 
@@ -71,7 +71,7 @@ public class NeoURI {
         NeoURI neoURI = new NeoURI();
 
         // Add the address
-        neoURI.toAddress(beginTx[1]);
+        neoURI.to(beginTx[1]);
 
         // Add the optional parts of the uri - asset and amount.
         if (baseAndQuery.length == 2) {
@@ -115,8 +115,8 @@ public class NeoURI {
         if (neow3j == null) {
             throw new IllegalStateException("Neow3j instance is not set.");
         }
-        if (toAddress == null) {
-            throw new IllegalStateException("Recipient address is not set.");
+        if (recipient == null) {
+            throw new IllegalStateException("Recipient is not set.");
         }
         if (wallet == null) {
             throw new IllegalStateException("Wallet is not set.");
@@ -141,7 +141,7 @@ public class NeoURI {
         return new SmartContract(asset, neow3j)
                 .invokeFunction(TRANSFER_FUNCTION,
                         hash160(sender),
-                        hash160(toAddress),
+                        hash160(recipient),
                         integer(fractions),
                         any(null))
                 .wallet(wallet)
@@ -165,28 +165,28 @@ public class NeoURI {
     }
 
     /**
-     * Sets the recipient address.
+     * Sets the recipient's address.
      *
-     * @param address the recipient address.
+     * @param recipientAddress the recipient's address.
      * @return this NeoURI object.
      */
-    public NeoURI toAddress(String address) {
-        if (!AddressUtils.isValidAddress(address)) {
+    public NeoURI to(String recipientAddress) {
+        if (!isValidAddress(recipientAddress)) {
             throw new IllegalArgumentException("Invalid address used.");
         }
 
-        toAddress = Hash160.fromAddress(address);
+        recipient = Hash160.fromAddress(recipientAddress);
         return this;
     }
 
     /**
-     * Sets the recipient address.
+     * Sets the recipient's script hash.
      *
-     * @param address the recipient address.
+     * @param recipient the recipient's script hash.
      * @return this NeoURI object.
      */
-    public NeoURI toAddress(Hash160 address) {
-        toAddress = address;
+    public NeoURI to(Hash160 recipient) {
+        this.recipient = recipient;
         return this;
     }
 
@@ -319,11 +319,11 @@ public class NeoURI {
      * @return this NeoURI object.
      */
     public NeoURI buildURI() {
-        if (toAddress == null) {
+        if (recipient == null) {
             throw new IllegalStateException(
                     "Could not create a NEP-9 URI without a recipient address.");
         }
-        String basePart = NEO_SCHEME + ":" + toAddress.toAddress();
+        String basePart = NEO_SCHEME + ":" + recipient.toAddress();
         String queryPart = buildQueryPart();
 
         String uri;
@@ -360,8 +360,8 @@ public class NeoURI {
      *
      * @return the recipient address.
      */
-    public String getToAddress() {
-        return toAddress.toAddress();
+    public String getRecipient() {
+        return recipient.toAddress();
     }
 
     /**
@@ -370,7 +370,7 @@ public class NeoURI {
      * @return the script hash of the recipient address.
      */
     public Hash160 getAddressAsScriptHash() {
-        return toAddress;
+        return recipient;
     }
 
     /**
