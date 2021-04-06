@@ -27,7 +27,7 @@ public class NeoVMStateTypeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testFromJsonValue_NotFound() {
-        assertThat(NeoVMStateType.fromJsonValue("Anything"), is(NeoVMStateType.HALT));
+        NeoVMStateType.fromJsonValue("Anything");
     }
 
     @Test
@@ -39,4 +39,5 @@ public class NeoVMStateTypeTest {
     public void testToString() {
         assertThat(this.neoVMStateType.jsonValue(), is(NeoVMStateType.HALT.toString()));
     }
+
 }
