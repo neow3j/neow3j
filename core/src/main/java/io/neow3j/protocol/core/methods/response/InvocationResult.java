@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.neow3j.model.types.NeoVMStateType;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -32,8 +33,7 @@ public class InvocationResult {
     }
 
     public InvocationResult(String script, NeoVMStateType state, String gasConsumed,
-                            String exception, List<StackItem> stack,
-                            String tx) {
+            String exception, List<StackItem> stack, String tx) {
         this.script = script;
         this.state = state;
         this.gasConsumed = gasConsumed;
@@ -72,8 +72,12 @@ public class InvocationResult {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof InvocationResult)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof InvocationResult)) {
+            return false;
+        }
         InvocationResult that = (InvocationResult) o;
         return Objects.equals(getScript(), that.getScript()) &&
                 Objects.equals(getState(), that.getState()) &&
@@ -93,8 +97,8 @@ public class InvocationResult {
     public String toString() {
         return "InvocationResult{" +
                 "script='" + script + '\'' +
-                ", state='" + state + '\'' +
-                ", gasconsumed='" + gasConsumed + '\'' +
+                ", state=" + state +
+                ", gasconsumed=" + gasConsumed +
                 ", exception='" + exception + '\'' +
                 ", stack=" + stack +
                 ", tx='" + tx + '\'' +

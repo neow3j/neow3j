@@ -7,9 +7,24 @@ import com.fasterxml.jackson.annotation.JsonValue;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public enum NeoVMStateType {
 
+    /**
+     * Indicates that the execution is in progress or has not yet begun.
+     */
     NONE("NONE"),
+
+    /**
+     * Indicates that the execution has been completed successfully.
+     */
     HALT("HALT"),
+
+    /**
+     * Indicates that the execution has ended, and an exception that cannot be caught is thrown.
+     */
     FAULT("FAULT"),
+
+    /**
+     * Indicates that a breakpoint is currently being hit.
+     */
     BREAK("BREAK");
 
     private final String jsonValue;
@@ -20,7 +35,7 @@ public enum NeoVMStateType {
 
     @JsonValue
     public String jsonValue() {
-        return this.jsonValue;
+        return jsonValue;
     }
 
     @JsonCreator
@@ -34,6 +49,11 @@ public enum NeoVMStateType {
             }
         }
         throw new IllegalArgumentException();
+    }
+
+    @Override
+    public String toString() {
+        return jsonValue;
     }
 
 }
