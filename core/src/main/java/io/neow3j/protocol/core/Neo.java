@@ -106,8 +106,6 @@ public interface Neo {
 
     Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txId);
 
-    Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
-
     Request<?, NeoGetNextBlockValidators> getNextBlockValidators();
 
     Request<?, NeoGetCommittee> getCommittee();

@@ -600,19 +600,6 @@ public class Neow3jReadOnlyIntegrationTest {
     }
 
     @Test
-    public void testGetTransactionHeight() throws IOException {
-        waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
-
-        String txId = txHashNeoTransfer.toString();
-        BigInteger height = getNeow3j()
-                .getTransactionHeight(txId)
-                .send()
-                .getHeight();
-
-        assertThat(height.intValue(), is(greaterThanOrEqualTo(1)));
-    }
-
-    @Test
     public void testGetNextBlockValidators() throws IOException {
         List<Validator> validators = getNeow3j()
                 .getNextBlockValidators()

@@ -430,17 +430,6 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetTransactionHeight> getTransactionHeight(String txHash) {
-        return getTransactionHeight(new Hash256(txHash));
-    }
-
-    /**
-     * Gets the transaction height with the specified transaction hash.
-     *
-     * @param txHash the transaction hash.
-     * @return the request object.
-     */
-    @Override
     public Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txHash) {
         return new Request<>(
                 "gettransactionheight",

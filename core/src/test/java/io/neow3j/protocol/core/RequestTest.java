@@ -248,17 +248,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetTransactionHeight_fromString() throws Exception {
-        neow3j.getTransactionHeight("0x793f560ae7058a50c672890e69c9292391dd159ce963a33462059d03b9573d6a")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"gettransactionheight\"," +
-                "\"params\":[\"793f560ae7058a50c672890e69c9292391dd159ce963a33462059d03b9573d6a\"]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetNextBlockValidators() throws Exception {
         neow3j.getNextBlockValidators().send();
 
