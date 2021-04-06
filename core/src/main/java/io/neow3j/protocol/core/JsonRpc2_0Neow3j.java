@@ -366,18 +366,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the corresponding transaction information based on the specified hash value.
-     *
-     * @param txHash the transaction hash.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetTransaction> getTransaction(String txHash) {
-        return getTransaction(new Hash256(txHash));
-    }
-
-    /**
-     * Gets the corresponding transaction information based on the specified hash value.
+     * Gets the corresponding transaction information based on the specified transaction hash.
      *
      * @param txHash the transaction hash.
      * @return the request object.

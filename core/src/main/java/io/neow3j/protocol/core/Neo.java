@@ -98,8 +98,6 @@ public interface Neo {
 
     Request<?, NeoGetTransaction> getTransaction(Hash256 txId);
 
-    Request<?, NeoGetTransaction> getTransaction(String txId);
-
     Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txId);
 
     Request<?, NeoGetRawTransaction> getRawTransaction(String txId);

@@ -554,7 +554,7 @@ public class Neow3jReadOnlyIntegrationTest {
         waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
 
         Transaction tx = getNeow3j()
-                .getTransaction(txHashNeoTransfer.toString())
+                .getTransaction(txHashNeoTransfer)
                 .send()
                 .getTransaction();
 

@@ -213,17 +213,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetTransaction_string() throws Exception {
-        neow3j.getTransaction("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getrawtransaction\"," +
-                "\"params\":[\"1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetRawTransaction() throws Exception {
         Hash256 hash = new Hash256("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6");
         neow3j.getRawTransaction(hash).send();
