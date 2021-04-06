@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.Hash256;
 
+import io.neow3j.model.types.NeoVMStateType;
 import java.util.List;
 import java.util.Objects;
 
@@ -69,7 +70,7 @@ public class Transaction {
 
     @JsonProperty("vmstate")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private String vmState;
+    private NeoVMStateType vmState;
 
     public Transaction() {
     }
@@ -94,7 +95,7 @@ public class Transaction {
     public Transaction(Hash256 hash, long size, int version, Long nonce, String sender,
             String sysFee, String netFee, Long validUntilBlock, List<TransactionSigner> signers,
             List<TransactionAttribute> attributes, String script, List<NeoWitness> witnesses,
-            Hash256 blockHash, int confirmations, long blockTime, String vmState) {
+            Hash256 blockHash, int confirmations, long blockTime, NeoVMStateType vmState) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -173,7 +174,7 @@ public class Transaction {
         return blockTime;
     }
 
-    public String getVMState() {
+    public NeoVMStateType getVMState() {
         return vmState;
     }
 

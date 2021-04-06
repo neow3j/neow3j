@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.Helper;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
@@ -13,8 +14,6 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.compiler.ContractTestRule.VM_STATE_FAULT;
-import static io.neow3j.compiler.ContractTestRule.VM_STATE_HALT;
 import static io.neow3j.contract.ContractParameter.bool;
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
@@ -35,19 +34,19 @@ public class HelperIntegrationTest {
     @Test
     public void assertTrue() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(true));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_HALT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
 
         response = ct.callInvokeFunction(testName, bool(false));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
     public void abort() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(false));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_HALT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
 
         response = ct.callInvokeFunction(testName, bool(true));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -71,22 +70,22 @@ public class HelperIntegrationTest {
     @Test
     public void asByte() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-128));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_HALT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
         assertThat(
                 response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(-128));
 
         response = ct.callInvokeFunction(testName, integer(127));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_HALT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
         assertThat(
                 response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(127));
 
         response = ct.callInvokeFunction(testName, integer(128));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
 
         response = ct.callInvokeFunction(testName, integer(-129));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -112,10 +111,10 @@ public class HelperIntegrationTest {
                 is(0));
 
         response = ct.callInvokeFunction(testName, integer(-1));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
 
         response = ct.callInvokeFunction(testName, integer(256));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -211,7 +210,7 @@ public class HelperIntegrationTest {
                 is(new byte[]{0x01, 0x02}));
 
         response = ct.callInvokeFunction(testName, byteArray("010203040506"), integer(-1));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -224,7 +223,7 @@ public class HelperIntegrationTest {
                 is("hello, "));
 
         response = ct.callInvokeFunction(testName, string("hello, world!"), integer(-1));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -237,7 +236,7 @@ public class HelperIntegrationTest {
                 is(new byte[]{0x05, 0x06}));
 
         response = ct.callInvokeFunction(testName, byteArray("010203040506"), integer(-1));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -250,7 +249,7 @@ public class HelperIntegrationTest {
                 is(" world!"));
 
         response = ct.callInvokeFunction(testName, string("hello, world!"), integer(-1));
-        assertThat(response.getInvocationResult().getState(), is(VM_STATE_FAULT));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test

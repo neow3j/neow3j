@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 
+import io.neow3j.model.types.NeoVMStateType;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,7 +43,7 @@ public class NeoApplicationLog {
         private String trigger;
 
         @JsonProperty("vmstate")
-        private String state;
+        private NeoVMStateType state;
 
         @JsonProperty("exception")
         private String exception;
@@ -61,7 +62,7 @@ public class NeoApplicationLog {
         public Execution() {
         }
 
-        public Execution(String trigger, String state, String exception, String gasConsumed,
+        public Execution(String trigger, NeoVMStateType state, String exception, String gasConsumed,
                 List<StackItem> stack, List<Notification> notifications) {
             this.trigger = trigger;
             this.state = state;
@@ -75,7 +76,7 @@ public class NeoApplicationLog {
             return trigger;
         }
 
-        public String getState() {
+        public NeoVMStateType getState() {
             return state;
         }
 
