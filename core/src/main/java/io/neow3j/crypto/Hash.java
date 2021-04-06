@@ -1,9 +1,11 @@
 package io.neow3j.crypto;
 
 import io.neow3j.utils.Numeric;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -174,7 +176,7 @@ public class Hash {
      * <p>
      * Neo uses the name {@code hash256} for hashes created in this way.
      *
-     * @param input The input to hash.
+     * @param input  The input to hash.
      * @param offset The offset at which the slice starts.
      * @param length The length of the slice to hash.
      * @return the hash value.

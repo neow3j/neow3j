@@ -197,7 +197,7 @@ public class NeoURI {
      * @return this NeoURI object.
      */
     public NeoURI asset(byte[] asset) {
-        this.asset = new Hash160(ArrayUtils.reverseArray(asset));
+        this.asset = new Hash160(asset);
         return this;
     }
 

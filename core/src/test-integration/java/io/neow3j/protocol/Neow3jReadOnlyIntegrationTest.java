@@ -150,7 +150,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     private static Hash256 transferNeo(String toAddress, String amount) throws IOException {
         NeoSendToAddress send = getNeow3j()
-                .sendToAddress(neoTokenHash(), toAddress, amount)
+                .sendToAddress(NEO_HASH, toAddress, amount)
                 .send();
         Hash256 txHash = send.getSendToAddress().getHash();
         // ensure that the transaction is sent
@@ -160,7 +160,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     private static Hash256 transferGas(String toAddress, String amount) throws IOException {
         NeoSendToAddress send = getNeow3j()
-                .sendToAddress(gasTokenHash(), toAddress, amount)
+                .sendToAddress(GAS_HASH, toAddress, amount)
                 .send();
         Hash256 txHash = send.getSendToAddress().getHash();
         // ensure that the transaction is sent

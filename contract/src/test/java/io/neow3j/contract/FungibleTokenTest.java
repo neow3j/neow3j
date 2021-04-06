@@ -11,6 +11,7 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.utils.AddressUtils.scriptHashToAddress;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -489,7 +490,7 @@ public class FungibleTokenTest {
                         byteArray(new byte[]{0x42}))).toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2),
-                AddressUtils.scriptHashToAddress(RECIPIENT_SCRIPT_HASH.toArray()),
+                RECIPIENT_SCRIPT_HASH.toAddress(),
                 new BigDecimal("4"), byteArray(new byte[]{0x42}));
 
         assertThat(b.getScript(), is(expectedScript));

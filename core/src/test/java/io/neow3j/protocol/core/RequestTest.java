@@ -664,7 +664,7 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testSendFrom() throws Exception {
+    public void testSendFrom_assetIdAsString() throws Exception {
         neow3j.sendFrom(
                 "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4",
                 "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
@@ -674,7 +674,26 @@ public class RequestTest extends RequestTester {
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendfrom\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"," +
+                "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
+                "\"10.0\"" +
+                "]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testSendFrom() throws Exception {
+        neow3j.sendFrom(
+                "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4",
+                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+                "10.0"
+        ).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"sendfrom\"," +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
                 "\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"," +
                 "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
                 "\"10.0\"" +
@@ -687,7 +706,7 @@ public class RequestTest extends RequestTester {
         neow3j.sendFrom(
                 "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4",
                 new TransactionSendAsset(
-                        "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
+                        new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
                         "10.0",
                         "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"
                 )
@@ -695,7 +714,7 @@ public class RequestTest extends RequestTester {
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendfrom\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
                 "\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"," +
                 "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
                 "\"10.0\"" +
@@ -708,11 +727,11 @@ public class RequestTest extends RequestTester {
         neow3j.sendMany(
                 asList(
                         new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
                                 "100",
                                 "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
                         new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
                                 "10",
                                 "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4")
                 )
@@ -721,8 +740,8 @@ public class RequestTest extends RequestTester {
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendmany\"," +
                 "\"params\":[" +
-                "[{\"asset\":\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"100\",\"address\":\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"}," +
-                "{\"asset\":\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"10\",\"address\":\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"}]" +
+                "[{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"100\",\"address\":\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"}," +
+                "{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"10\",\"address\":\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"}]" +
                 "]," +
                 "\"id\":1}");
     }
@@ -743,11 +762,11 @@ public class RequestTest extends RequestTester {
                 "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN",
                 asList(
                         new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
                                 "100",
                                 "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
                         new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
                                 "10",
                                 "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
                 )
@@ -760,12 +779,12 @@ public class RequestTest extends RequestTester {
                      "  \"params\": [\"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"," +
                      "  [" +
                      "     {" +
-                     "         \"asset\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\", " +
+                     "         \"asset\": \"de5f57d430d3dece511cf975a8d37848cb9e0525\", " +
                      "         \"value\": \"100\"," +
                      "         \"address\": \"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"" +
                      "     }," +
                      "     {" +
-                     "         \"asset\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\", " +
+                     "         \"asset\": \"de5f57d430d3dece511cf975a8d37848cb9e0525\", " +
                      "         \"value\": \"10\"," +
                      "         \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"}" +
                      "     ]" +
@@ -775,7 +794,7 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testSendToAddress() throws Exception {
+    public void testSendToAddress_assetIdAsString() throws Exception {
         neow3j.sendToAddress(
                 "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
                 "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
@@ -784,7 +803,24 @@ public class RequestTest extends RequestTester {
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendtoaddress\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
+                "\"10.0\"" +
+                "]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testSendToAddress() throws Exception {
+        neow3j.sendToAddress(
+                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+                "10.0"
+        ).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"sendtoaddress\"," +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
                 "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
                 "\"10.0\"" +
                 "]," +
@@ -795,14 +831,14 @@ public class RequestTest extends RequestTester {
     public void testSendToAddress_TransactionSendAsset() throws Exception {
         neow3j.sendToAddress(
                 new TransactionSendAsset(
-                        "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
+                        new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
                         "10.0",
                         "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb")
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendtoaddress\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
                 "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
                 "\"10.0\"" +
                 "]," +
