@@ -175,7 +175,7 @@ public class Await {
     private static Callable<BigDecimal> callableGetBalance(Hash160 token, Neow3j neow3j) {
         return () -> {
             try {
-                NeoGetWalletBalance response = neow3j.getWalletBalance(token.toString()).send();
+                NeoGetWalletBalance response = neow3j.getWalletBalance(token).send();
                 String balance = response.getWalletBalance().getBalance();
                 return new BigDecimal(balance);
             } catch (IOException e) {

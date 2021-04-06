@@ -815,20 +815,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetBalance() throws IOException {
         String balance = getNeow3j()
-                .getWalletBalance(neoTokenHash())
-                .send()
-                .getWalletBalance()
-                .getBalance();
-
-        assertNotNull(balance);
-        assertThat(Integer.parseInt(balance), is(greaterThanOrEqualTo(0)));
-        assertThat(Integer.parseInt(balance), is(lessThanOrEqualTo(NEO_TOTAL_SUPPLY)));
-    }
-
-    @Test
-    public void testGetBalance_withPrefix() throws IOException {
-        String balance = getNeow3j()
-                .getWalletBalance("0x" + neoTokenHash())
+                .getWalletBalance(NEO_HASH)
                 .send()
                 .getWalletBalance()
                 .getBalance();

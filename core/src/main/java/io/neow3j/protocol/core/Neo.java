@@ -159,8 +159,6 @@ public interface Neo {
 
     Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 assetId);
 
-    Request<?, NeoGetWalletBalance> getWalletBalance(String assetId);
-
     Request<?, NeoGetNewAddress> getNewAddress();
 
     Request<?, NeoGetWalletUnclaimedGas> getWalletUnclaimedGas();

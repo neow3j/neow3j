@@ -706,18 +706,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the balance of the corresponding token in the wallet.
-     *
-     * @param tokenHash the token hash.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetWalletBalance> getWalletBalance(String tokenHash) {
-        return getWalletBalance(new Hash160(tokenHash));
-    }
-
-    /**
-     * Gets the balance of the corresponding token in the wallet.
+     * Gets the wallet balance of the corresponding token.
      *
      * @param tokenHash the token hash.
      * @return the request object.

@@ -479,17 +479,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetWalletBalance() throws Exception {
-        neow3j.getWalletBalance("de5f57d430d3dece511cf975a8d37848cb9e0525").send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getwalletbalance\"," +
-                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"]," +
-                "\"id\":1}");
-    }
-
-    @Test
-    public void testGetWalletBalance_with_Prefix() throws Exception {
-        neow3j.getWalletBalance("0xde5f57d430d3dece511cf975a8d37848cb9e0525").send();
+        neow3j.getWalletBalance(new Hash160("de5f57d430d3dece511cf975a8d37848cb9e0525")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getwalletbalance\"," +
