@@ -8,6 +8,7 @@ import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.walletClients12;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -23,7 +24,6 @@ import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.methods.response.NameState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import org.junit.BeforeClass;
@@ -75,7 +75,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
     private static void registerDomainFromCommittee(String domain) throws Throwable {
@@ -90,7 +90,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
     private static void setRecordFromCommittee(String domain, RecordType type, String data)
@@ -107,7 +107,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
     private static long getNowInSeconds() {
@@ -169,7 +169,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         boolean rootExists = false;
         try {
@@ -191,7 +191,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         BigInteger actualPrice = nameService.getPrice();
         assertThat(actualPrice, is(newPrice));
@@ -210,7 +210,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         boolean availableAfter = nameService.isAvailable(domain);
         assertFalse(availableAfter);
@@ -233,7 +233,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         NameState propertiesAfter = nameService.properties(domain);
         long inTwoYears = getNowInSeconds() + 2 * ONE_YEAR_IN_SECONDS;
@@ -262,7 +262,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         // Now as admin, client2 should be able to set a record.
         setRecord(domain, RecordType.A, A_RECORD, walletClients12, client2);
@@ -313,7 +313,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         try {
             nameService.getRecord(domain, RecordType.TXT);
@@ -336,7 +336,7 @@ public class NameServiceIntegrationTest {
                         .send()
                         .getSendRawTransaction()
                         .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         Hash160 ownerAfter = nameService.ownerOf(domainForTransfer);
         assertThat(ownerAfter, is(client1.getScriptHash()));

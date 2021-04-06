@@ -6,6 +6,7 @@ import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
 import static io.neow3j.contract.SmartContract.getContractHash;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -15,7 +16,6 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.utils.Await;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class ContractManagementIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         minimumDeploymentFee = contractManagement.getMinimumDeploymentFee();
         assertThat(minimumDeploymentFee, is(newDeploymentFee));
@@ -83,7 +83,7 @@ public class ContractManagementIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
         Hash160 contractHash = getContractHash(
                 committee.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
         NeoGetContractState.ContractState contractState =

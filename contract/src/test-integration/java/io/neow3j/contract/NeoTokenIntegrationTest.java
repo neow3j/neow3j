@@ -9,6 +9,7 @@ import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.singleSigCommitteeMember;
 import static io.neow3j.contract.IntegrationTestHelper.walletClients12;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -18,7 +19,6 @@ import io.neow3j.NeoTestContainer;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.utils.Await;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class NeoTokenIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         candidates = neoToken.getCandidates();
         assertThat(candidates.entrySet(), hasSize(1));
@@ -76,7 +76,7 @@ public class NeoTokenIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         candidates = neoToken.getCandidates();
         assertThat(candidates.entrySet(), hasSize(0));
@@ -91,7 +91,7 @@ public class NeoTokenIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         txHash = neoToken.vote(client2, client1.getECKeyPair().getPublicKey())
                 .wallet(walletClients12)
@@ -100,7 +100,7 @@ public class NeoTokenIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         txHash = neoToken.unregisterCandidate(client1.getECKeyPair().getPublicKey())
                 .wallet(walletClients12)
@@ -109,7 +109,7 @@ public class NeoTokenIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class NeoTokenIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         gasPerBlock = neoToken.getGasPerBlock();
         assertThat(gasPerBlock, is(expectedNewGasPerBlock));
@@ -164,7 +164,7 @@ public class NeoTokenIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         registerPrice = neoToken.getRegisterPrice();
         assertThat(registerPrice, is(expectedNewRegisterPrice));

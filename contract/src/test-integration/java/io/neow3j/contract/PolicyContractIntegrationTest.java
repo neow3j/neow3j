@@ -7,6 +7,7 @@ import static io.neow3j.contract.IntegrationTestHelper.committee;
 import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -15,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 import io.neow3j.NeoTestContainer;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -55,7 +55,7 @@ public class PolicyContractIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         BigInteger newFeePerByte = policyContract.getFeePerByte();
         assertThat(newFeePerByte, is(expectedNewFeePerByte));
@@ -76,7 +76,7 @@ public class PolicyContractIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         BigInteger newExecFeeFactor = policyContract.getExecFeeFactor();
         assertThat(newExecFeeFactor, is(expectedNewExecFeeFactor));
@@ -97,7 +97,7 @@ public class PolicyContractIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         BigInteger newFeePerByte = policyContract.getStoragePrice();
         assertThat(newFeePerByte, is(expectedNewStoragePrice));
@@ -118,7 +118,7 @@ public class PolicyContractIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertTrue(isBlocked);
@@ -130,7 +130,7 @@ public class PolicyContractIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertFalse(isBlocked);
@@ -151,7 +151,7 @@ public class PolicyContractIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertTrue(isBlocked);
@@ -163,7 +163,7 @@ public class PolicyContractIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertFalse(isBlocked);

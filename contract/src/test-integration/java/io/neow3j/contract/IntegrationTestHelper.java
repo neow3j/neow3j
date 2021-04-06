@@ -1,16 +1,16 @@
 package io.neow3j.contract;
 
+import static io.neow3j.TestProperties.gasTokenHash;
+import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static io.neow3j.wallet.Account.fromWIF;
+import static java.util.Collections.singletonList;
+
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 
 import java.math.BigDecimal;
-
-import static io.neow3j.TestProperties.gasTokenHash;
-import static io.neow3j.TestProperties.neoTokenHash;
-import static io.neow3j.wallet.Account.fromWIF;
-import static java.util.Collections.singletonList;
 
 public class IntegrationTestHelper {
 
@@ -52,7 +52,7 @@ public class IntegrationTestHelper {
                         .send()
                         .getSendRawTransaction()
                         .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
     }
 
 }
