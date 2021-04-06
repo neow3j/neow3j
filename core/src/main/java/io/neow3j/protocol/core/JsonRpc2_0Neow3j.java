@@ -956,18 +956,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // ApplicationLogs
 
     /**
-     * Gets the application logs of the specified transaction.
-     *
-     * @param txHash the transaction hash.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoGetApplicationLog> getApplicationLog(String txHash) {
-        return getApplicationLog(new Hash256(txHash));
-    }
-
-    /**
-     * Gets the application logs of the specified transaction.
+     * Gets the application logs of the specified transaction hash.
      *
      * @param txHash the transaction hash.
      * @return the request object.

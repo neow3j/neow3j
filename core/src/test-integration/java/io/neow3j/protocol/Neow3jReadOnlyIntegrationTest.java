@@ -987,7 +987,7 @@ public class Neow3jReadOnlyIntegrationTest {
         waitUntilTransactionIsExecuted(txHashNeoTransfer, neow3j);
 
         NeoApplicationLog applicationLog = getNeow3j()
-                .getApplicationLog(txHashNeoTransfer.toString())
+                .getApplicationLog(txHashNeoTransfer)
                 .send()
                 .getApplicationLog();
 

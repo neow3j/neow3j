@@ -207,8 +207,6 @@ public interface Neo {
 
     Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txId);
 
-    Request<?, NeoGetApplicationLog> getApplicationLog(String txId);
-
     //endregion
 
     //region StateService
