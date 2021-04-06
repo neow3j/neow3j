@@ -680,7 +680,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testInvokeFunction_empty_Params() throws IOException {
         InvocationResult result = getNeow3j()
-                .invokeFunction(neoTokenHash(), INVOKE_SYMBOL)
+                .invokeFunction(NEO_HASH, INVOKE_SYMBOL)
                 .send()
                 .getInvocationResult();
 
@@ -693,7 +693,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 singletonList(hash160(new Hash160(committeeAccountScriptHash())));
 
         InvocationResult invocResult = getNeow3j()
-                .invokeFunction(neoTokenHash(), INVOKE_BALANCE, parameters)
+                .invokeFunction(NEO_HASH, INVOKE_BALANCE, parameters)
                 .send()
                 .getInvocationResult();
 
@@ -714,7 +714,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .build();
 
         InvocationResult invoc = getNeow3j()
-                .invokeFunction(neoTokenHash(), "transfer", params, signer)
+                .invokeFunction(NEO_HASH, "transfer", params, signer)
                 .send()
                 .getInvocationResult();
 

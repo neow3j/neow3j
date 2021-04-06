@@ -534,47 +534,15 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Invokes the function with {@code functionName} of the smart contract with the given script
      * hash.
      *
-     * @param contractHash the contract script hash to invoke.
-     * @param functionName the function to invoke.
-     * @param signers      the signers.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(String contractHash,
-            String functionName, Signer... signers) {
-        return invokeFunction(new Hash160(contractHash), functionName, null, signers);
-    }
-
-    /**
-     * Invokes the function with {@code functionName} of the smart contract with the given script
-     * hash.
-     *
      * @param contractHash the contract hash to invoke.
      * @param functionName the function to invoke.
      * @param signers      the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash,
-            String functionName, Signer... signers) {
+    public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
+            Signer... signers) {
         return invokeFunction(contractHash, functionName, null, signers);
-    }
-
-    /**
-     * Invokes the function with {@code functionName} of the smart contract with the given hash
-     * value.
-     *
-     * @param contractHash   the contract hash to invoke.
-     * @param functionName   the function to invoke.
-     * @param contractParams the parameters of the function.
-     * @param signers        the signers.
-     * @return the request object.
-     */
-    @Override
-    public Request<?, NeoInvokeFunction> invokeFunction(String contractHash, String functionName,
-            List<ContractParameter> contractParams, Signer... signers) {
-        return invokeFunction(new Hash160(contractHash), functionName, contractParams,
-                signers);
     }
 
     /**

@@ -326,7 +326,7 @@ public class RequestTest extends RequestTester {
     @Test
     public void testInvokeFunction() throws Exception {
         neow3j.invokeFunction(
-                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
+                new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 "balanceOf",
                 singletonList(
                         hash160(new Hash160(
@@ -353,20 +353,6 @@ public class RequestTest extends RequestTester {
     public void testInvokeFunction_without_Params() throws Exception {
         neow3j.invokeFunction(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
-                "decimals"
-        ).send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"invokefunction\"," +
-                "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\",\"decimals\",[]]," +
-                "\"id\":1}"
-        );
-    }
-
-    @Test
-    public void testInvokeFunction_without_Params_fromString() throws Exception {
-        neow3j.invokeFunction(
-                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
                 "decimals"
         ).send();
 
