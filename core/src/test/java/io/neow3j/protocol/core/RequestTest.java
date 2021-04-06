@@ -172,7 +172,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetContractState_byName() throws Exception {
-        neow3j.getContractState("NeoToken").send();
+        neow3j.getNativeContractState("NeoToken").send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getcontractstate\"," +

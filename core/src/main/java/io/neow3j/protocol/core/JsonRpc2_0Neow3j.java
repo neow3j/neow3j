@@ -321,18 +321,18 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets the contract information by the contract's name.
+     * Gets the native contract information by its name.
      * <p>
-     * This RPC call only works for native contracts.
+     * This RPC only works for native contracts.
      *
-     * @param contractName the name of the contract or its script hash as a String.
+     * @param nativeContractName the name of the native contract.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetContractState> getContractState(String contractName) {
+    public Request<?, NeoGetContractState> getNativeContractState(String nativeContractName) {
         return new Request<>(
                 "getcontractstate",
-                singletonList(contractName),
+                singletonList(nativeContractName),
                 neow3jService,
                 NeoGetContractState.class);
     }

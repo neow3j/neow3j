@@ -227,7 +227,7 @@ public class SmartContract {
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public ContractManifest getManifest() throws IOException {
-        ContractState contractState = neow.getContractState(scriptHash.toString()).send()
+        ContractState contractState = neow.getContractState(scriptHash).send()
                 .getContractState();
         return contractState.getManifest();
     }

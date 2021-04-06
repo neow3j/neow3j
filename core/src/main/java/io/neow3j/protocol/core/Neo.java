@@ -90,7 +90,7 @@ public interface Neo {
 
     Request<?, NeoGetContractState> getContractState(Hash160 hash160);
 
-    Request<?, NeoGetContractState> getContractState(String contractName);
+    Request<?, NeoGetContractState> getNativeContractState(String contractName);
 
     Request<?, NeoGetMemPool> getMemPool();
 
