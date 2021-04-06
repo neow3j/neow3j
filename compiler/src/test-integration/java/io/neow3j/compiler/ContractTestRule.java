@@ -44,9 +44,6 @@ import static org.junit.Assert.assertThat;
 
 public class ContractTestRule implements TestRule {
 
-    public static final String VM_STATE_HALT = NeoVMStateType.HALT.jsonValue();
-    public static final String VM_STATE_FAULT = NeoVMStateType.FAULT.jsonValue();
-
     private NeoTestContainer neoTestContainer;
     private final String fullyQualifiedClassName;
     private Account defaultAccount;
@@ -115,7 +112,7 @@ public class ContractTestRule implements TestRule {
         NeoApplicationLog appLog = neow3j.getApplicationLog(
                 response.getSendRawTransaction().getHash()).send().getApplicationLog();
         NeoApplicationLog.Execution execution = appLog.getExecutions().get(0);
-        if (execution.getState().equals(VM_STATE_FAULT)) {
+        if (execution.getState().equals(NeoVMStateType.FAULT)) {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
@@ -324,7 +321,7 @@ public class ContractTestRule implements TestRule {
     public void assertVMExitedWithHalt(Hash256 hash) throws IOException {
         NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
         assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
-                is(VM_STATE_HALT));
+                is(NeoVMStateType.HALT));
     }
 
     public void signWithCommitteeAccount() {

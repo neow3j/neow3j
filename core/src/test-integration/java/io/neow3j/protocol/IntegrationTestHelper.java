@@ -28,6 +28,4 @@ public class IntegrationTestHelper {
     static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
     static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
 
-    static final String VM_STATE_HALT = NeoVMStateType.HALT.jsonValue();
-
 }

@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.NeoTestContainer;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.methods.response.NeoSendFrom;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
@@ -28,7 +29,6 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
-import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -163,7 +163,7 @@ public class Neow3jWriteIntegrationTest {
         Await.waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
         Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash())
                 .send().getApplicationLog().getExecutions().get(0);
-        assertThat(execution.getState(), is(VM_STATE_HALT));
+        assertThat(execution.getState(), is(NeoVMStateType.HALT));
 
         Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT);
         assertThat(neow3j.invokeFunction(

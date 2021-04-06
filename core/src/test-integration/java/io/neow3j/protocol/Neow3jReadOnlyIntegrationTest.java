@@ -18,7 +18,6 @@ import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
-import static io.neow3j.protocol.IntegrationTestHelper.VM_STATE_HALT;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
@@ -50,6 +49,7 @@ import io.neow3j.contract.Hash256;
 import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
@@ -734,7 +734,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(invoc);
         assertNotNull(invoc.getScript());
-        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertThat(invoc.getState(), is(NeoVMStateType.HALT));
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
         assertTrue(invoc.getStack().get(0).getBoolean());
@@ -760,7 +760,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(invoc);
         assertThat(invoc.getScript(), is(Base64.encode(script)));
-        assertThat(invoc.getState(), is(VM_STATE_HALT));
+        assertThat(invoc.getState(), is(NeoVMStateType.HALT));
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
         assertNotNull(invoc.getStack());
@@ -1010,7 +1010,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         NeoApplicationLog.Execution execution = applicationLog.getExecutions().get(0);
         assertThat(execution.getTrigger(), is(APPLICATION_LOG_TRIGGER));
-        assertThat(execution.getState(), is(VM_STATE_HALT));
+        assertThat(execution.getState(), is(NeoVMStateType.HALT));
         assertNull(execution.getException());
         assertThat(execution.getGasConsumed(), is("9977780"));
         assertNotNull(execution.getStack());
