@@ -46,7 +46,6 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void testGetAndSetMinimumDeploymentFee() throws Throwable {
-        System.out.println("testing get and set minimum deployment fee.");
         BigInteger initialDeploymentFee = new BigInteger("1000000000");
         BigInteger minimumDeploymentFee = contractManagement.getMinimumDeploymentFee();
 
