@@ -89,7 +89,7 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Hash160 ownerOf(byte[] tokenId) throws IOException {
-        return callFunctionReturningScriptHash(OWNER_OF, singletonList(byteArray(tokenId)));
+        return callFunctionReturningScriptHash(OWNER_OF, byteArray(tokenId));
     }
 
     /**
