@@ -6,6 +6,10 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.transaction.Signer.feeOnly;
+import static io.neow3j.transaction.Signer.global;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
@@ -71,7 +75,7 @@ public class TransactionBuilderTest {
     private static final Hash160 NEO_TOKEN_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     private static final String NEP17_TRANSFER = "transfer";
 
-    private static final String SCRIPT_NEO_INVOKEFUNCTION_SYMBOL = Numeric.toHexStringNoPrefix(
+    private static final String SCRIPT_NEO_INVOKEFUNCTION_SYMBOL = toHexStringNoPrefix(
             new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, "symbol", new ArrayList<>())
                     .toArray());
 
@@ -116,7 +120,7 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1L)
                 .wallet(Wallet.withAccounts(account1))
                 .script(new byte[]{1, 2, 3})
-                .signers(Signer.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1));
 
         Transaction t = b.nonce(nonce).buildTransaction();
         assertThat(t.getNonce(), is(nonce));
@@ -140,7 +144,7 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1L)
                 .wallet(Wallet.withAccounts(account1))
                 .script(new byte[]{1, 2, 3})
-                .signers(Signer.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1.getScriptHash()));
         try {
             Long nonce = Integer.toUnsignedLong(-1) + 1;
             b.nonce(nonce);
@@ -171,7 +175,7 @@ public class TransactionBuilderTest {
                 .validUntilBlock(-1L)
                 .wallet(Wallet.withAccounts(account1))
                 .script(new byte[]{1, 2, 3})
-                .signers(Signer.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1));
     }
 
     @Test
@@ -182,7 +186,7 @@ public class TransactionBuilderTest {
                 .validUntilBlock((long) Math.pow(2, 32))
                 .wallet(Wallet.withAccounts(account1))
                 .script(new byte[]{1, 2, 3})
-                .signers(Signer.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1));
     }
 
     @Test
@@ -194,7 +198,7 @@ public class TransactionBuilderTest {
         Transaction transaction = new TransactionBuilder(neow)
                 .wallet(Wallet.withAccounts(account1))
                 .script(new byte[]{1, 2, 3})
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .buildTransaction();
 
         assertThat(transaction.getNonce(), greaterThanOrEqualTo(0L));
@@ -217,20 +221,20 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow);
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("concerning the same account");
-        b.signers(Signer.global(account1.getScriptHash()),
-                Signer.calledByEntry(account1.getScriptHash()));
+        b.signers(global(account1),
+                calledByEntry(account1));
     }
 
     @Test
     public void overrideSigner() {
         TransactionBuilder b = new TransactionBuilder(neow);
-        b.signers(Signer.global(account1.getScriptHash()));
+        b.signers(global(account1));
         assertThat(b.getSigners(), hasSize(1));
-        assertThat(b.getSigners().get(0), is(Signer.global(account1.getScriptHash())));
+        assertThat(b.getSigners().get(0), is(global(account1)));
 
-        b.signers(Signer.calledByEntry(account2.getScriptHash()));
+        b.signers(calledByEntry(account2));
         assertThat(b.getSigners(), hasSize(1));
-        assertThat(b.getSigners().get(0), is(Signer.calledByEntry(account2.getScriptHash())));
+        assertThat(b.getSigners().get(0), is(calledByEntry(account2)));
     }
 
     @Test
@@ -239,8 +243,7 @@ public class TransactionBuilderTest {
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(
                 new StringContains("Can't add multiple signers with the fee-only witness scope"));
-        b.signers(Signer.feeOnly(account1.getScriptHash()),
-                Signer.feeOnly(account2.getScriptHash()));
+        b.signers(feeOnly(account1), feeOnly(account2));
     }
 
     @Test
@@ -257,7 +260,7 @@ public class TransactionBuilderTest {
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
-                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(wallet.getDefaultAccount()))
                 .buildTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
@@ -283,7 +286,7 @@ public class TransactionBuilderTest {
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
-                .signers(Signer.feeOnly(multiSigAccount.getScriptHash()))
+                .signers(feeOnly(multiSigAccount))
                 .buildTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
@@ -307,7 +310,7 @@ public class TransactionBuilderTest {
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
-                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(wallet.getDefaultAccount()))
                 .buildTransaction();
     }
 
@@ -324,7 +327,7 @@ public class TransactionBuilderTest {
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
-                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(wallet.getDefaultAccount()))
                 .wallet(wallet)
                 .attributes(attr1)
                 .attributes(attr2)
@@ -366,7 +369,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(wallet.getDefaultAccount()))
                 .buildTransaction();
 
         assertThat(tx.getValidUntilBlock(),
@@ -382,7 +385,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(wallet.getDefaultAccount()))
                 .validUntilBlock(1000)
                 .buildTransaction();
 
@@ -398,7 +401,7 @@ public class TransactionBuilderTest {
 
         TransactionBuilder builder = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
-                .signers(Signer.feeOnly(w.getAccounts().get(0).getScriptHash()))
+                .signers(feeOnly(w.getAccounts().get(0)))
                 .wallet(w)
                 .validUntilBlock(1000);
 
@@ -423,7 +426,7 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(Signer.feeOnly(multiSigAcc.getScriptHash()))
+                .signers(feeOnly(multiSigAcc))
                 .validUntilBlock(1000);
 
         exceptionRule.expect(TransactionConfigurationException.class);
@@ -446,13 +449,12 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(Signer.feeOnly(dummyMultiSig.getScriptHash()));
+                .signers(feeOnly(dummyMultiSig));
         // The first signing account for the multi-sig is not in the wallet.
         // The sign method should execute normally and ignore the absence.
         b.sign();
-        assertThat(b.transaction.getWitnesses().get(0).getScriptHash(),
-                is(dummyMultiSig.getScriptHash()));
-        assertThat(Numeric.toHexStringNoPrefix(b.transaction.getScript()),
+        assertThat(b.transaction.getWitnesses().get(0), is(dummyMultiSig));
+        assertThat(toHexStringNoPrefix(b.transaction.getScript()),
                 is(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL));
     }
 
@@ -465,13 +467,12 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(Signer.feeOnly(wallet.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(wallet.getDefaultAccount()))
                 .validUntilBlock(1000)
                 .buildTransaction();
 
         assertThat(tx.getSigners(), hasSize(1));
-        assertThat(tx.getSigners().get(0).getScriptHash(),
-                is(wallet.getDefaultAccount().getScriptHash()));
+        assertThat(tx.getSigners().get(0), is(wallet.getDefaultAccount()));
         assertThat(tx.getSigners().get(0).getScopes(),
                 contains(WitnessScope.NONE));
     }
@@ -482,7 +483,7 @@ public class TransactionBuilderTest {
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account acc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
         Wallet wallet = Wallet.withAccounts(acc);
-        Signer signer = Signer.calledByEntry(acc.getScriptHash());
+        Signer signer = calledByEntry(acc);
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
@@ -511,7 +512,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(Signer.feeOnly(senderAcc.getScriptHash()))
+                .signers(feeOnly(senderAcc))
                 .validUntilBlock(1000)
                 .buildTransaction();
 
@@ -532,25 +533,21 @@ public class TransactionBuilderTest {
         Wallet wallet = Wallet.withAccounts(senderAcc);
         Account other = Account.create();
         wallet.addAccounts(other);
-        Signer signer = Signer.calledByEntry(other.getScriptHash());
+        Signer signer = calledByEntry(other);
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(Signer.feeOnly(senderAcc.getScriptHash()),
-                        signer)
+                .signers(feeOnly(senderAcc), signer)
                 .validUntilBlock(1000)
                 .buildTransaction();
 
         assertThat(tx.getSigners(), hasSize(2));
-        assertThat(tx.getSigners().get(0).getScriptHash(),
-                is(senderAcc.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes(),
-                contains(WitnessScope.NONE));
-        assertThat(tx.getSigners().get(1).getScriptHash(),
-                is(signer.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(senderAcc.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.NONE));
+        assertThat(tx.getSigners().get(1).getScriptHash(), is(signer.getScriptHash()));
         assertThat(tx.getSigners().get(1).getScopes(), is(signer.getScopes()));
     }
 
@@ -563,8 +560,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()),
-                        Signer.calledByEntry(account2.getScriptHash()))
+                .signers(calledByEntry(account1), calledByEntry(account2))
                 .validUntilBlock(1000)
                 .sign();
 
@@ -588,7 +584,7 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(Signer.calledByEntry(signer.getScriptHash()))
+                .signers(calledByEntry(signer))
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("No signers were set for which an account " +
@@ -609,7 +605,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(Signer.calledByEntry(signer.getScriptHash()))
+                .signers(calledByEntry(signer))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .buildTransaction();
         // Don't add any witnesses, so it has one signer but no witness.
@@ -634,7 +630,7 @@ public class TransactionBuilderTest {
                         integer(5),
                         any(null))
                 .wallet(w)
-                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(w.getDefaultAccount()))
                 .sign();
 
         NeoSendRawTransaction response = tx.send();
@@ -667,7 +663,7 @@ public class TransactionBuilderTest {
                         integer(5),
                         any(null))
                 .wallet(w)
-                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(w.getDefaultAccount()))
                 .validUntilBlock(100)
                 .sign();
 
@@ -702,7 +698,7 @@ public class TransactionBuilderTest {
                         integer(1),
                         any(null))
                 .wallet(w)
-                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(w.getDefaultAccount()))
                 .validUntilBlock(100)
                 .sign();
 
@@ -730,7 +726,8 @@ public class TransactionBuilderTest {
 
         // The script that's in the `invokefunction_transfer_neo.json` response file.
         String scriptInResponse =
-                "CxUMFJQTQyOSE/oOdl8QJ850L0jbd5qWDBQGSl3MDxYsg0c9Aok46V+3dhMechTAHwwIdHJhbnNmZXIMFIOrBnmtVcBQoTrUP1k26nP16x72QWJ9W1I=";
+                "CxUMFJQTQyOSE/oOdl8QJ850L0jbd5qWDBQGSl3MDxYsg0c9Aok46V" +
+                        "+3dhMechTAHwwIdHJhbnNmZXIMFIOrBnmtVcBQoTrUP1k26nP16x72QWJ9W1I=";
         assertThat(i.getResult().getScript(), is(scriptInResponse));
     }
 
@@ -756,7 +753,7 @@ public class TransactionBuilderTest {
                         integer(2_000_000),
                         any(null))
                 .wallet(w)
-                .signers(Signer.calledByEntry(w.getDefaultAccount().getScriptHash()))
+                .signers(calledByEntry(w.getDefaultAccount()))
                 .validUntilBlock(2000000)
                 .doIfSenderCannotCoverFees((fee, balance) -> {
                     assertThat(fee, is(expectedFees));
@@ -796,7 +793,7 @@ public class TransactionBuilderTest {
                         any(null))
                 .wallet(w)
                 .validUntilBlock(2000000)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .throwIfSenderCannotCoverFees(
                         () -> new IllegalStateException("test throwIfSenderCannotCoverFees"));
 
@@ -867,7 +864,7 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .wallet(Wallet.withAccounts(account1))
                 .script(Numeric.hexStringToByteArray("0c00120c1493ad1572"))
-                .signers(Signer.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1));
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("Instruction out of bounds.");
         b.buildTransaction();
@@ -882,7 +879,7 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .wallet(Wallet.create())
                 .script(Numeric.hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
-                .signers(Signer.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1));
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("The vm exited due to the following exception: Value was " +
                 "either too large or too small for an Int32.");
@@ -898,12 +895,12 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .wallet(w)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .getUnsignedTransaction();
 
         assertThat(tx.getVersion(), is((byte) 0));
         assertThat(tx.getSigners(), hasSize(1));
-        assertThat(tx.getSigners().get(0), is(Signer.calledByEntry(account1.getScriptHash())));
+        assertThat(tx.getSigners().get(0), is(calledByEntry(account1)));
         assertThat(tx.getWitnesses(), hasSize(0));
     }
 
@@ -916,8 +913,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void testSetFirstSigner() {
-        Signer s1 = Signer.global(account1.getScriptHash());
-        Signer s2 = Signer.calledByEntry(account2.getScriptHash());
+        Signer s1 = global(account1);
+        Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
@@ -932,8 +929,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void testSetFirstSigner_account() {
-        Signer s1 = Signer.global(account1.getScriptHash());
-        Signer s2 = Signer.calledByEntry(account2.getScriptHash());
+        Signer s1 = global(account1);
+        Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
@@ -948,8 +945,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void testSetFirstSigner_feeOnlyPresent() {
-        Signer s1 = Signer.feeOnly(account1.getScriptHash());
-        Signer s2 = Signer.calledByEntry(account2.getScriptHash());
+        Signer s1 = feeOnly(account1);
+        Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
@@ -964,7 +961,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testSetFirstSigner_notPresent() {
-        Signer s1 = Signer.global(account1.getScriptHash());
+        Signer s1 = global(account1);
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
@@ -985,7 +982,8 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
-        Hash256 txHash = new Hash256("0570dc3a7dcca42d295d75caeef084c2452e69fd9e663f4d63ce4d970b49836a");
+        Hash256 txHash =
+                new Hash256("0570dc3a7dcca42d295d75caeef084c2452e69fd9e663f4d63ce4d970b49836a");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 new BigInteger("1000"), true))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
@@ -998,7 +996,7 @@ public class TransactionBuilderTest {
                         any(null))
                 .nonce(0L)
                 .wallet(w)
-                .signers(Signer.calledByEntry(w.getDefaultAccount().getScriptHash()))
+                .signers(calledByEntry(w.getDefaultAccount()))
                 .sign();
 
         tx.send();
@@ -1028,7 +1026,7 @@ public class TransactionBuilderTest {
                         any(null))
                 .nonce(0L)
                 .wallet(w)
-                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
+                .signers(feeOnly(w.getDefaultAccount()))
                 .sign();
 
         exceptionRule.expect(IllegalStateException.class);
@@ -1071,13 +1069,14 @@ public class TransactionBuilderTest {
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
                 .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .wallet(w)
                 .sign();
         tx.send();
         NeoApplicationLog applicationLog = tx.getApplicationLog();
         assertThat(applicationLog.getTransactionId(),
-                is(new Hash256("0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1")));
+                is(new Hash256(
+                        "0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1")));
     }
 
     @Test
@@ -1090,7 +1089,7 @@ public class TransactionBuilderTest {
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
                 .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .wallet(w)
                 .sign();
 
@@ -1111,7 +1110,7 @@ public class TransactionBuilderTest {
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
                 .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .wallet(w)
                 .sign();
         tx.send();
