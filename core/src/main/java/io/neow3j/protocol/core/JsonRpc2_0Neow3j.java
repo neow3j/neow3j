@@ -580,19 +580,19 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Invokes a script.
      *
-     * @param script  the script to invoke.
-     * @param signers the signers.
+     * @param scriptHex the script to invoke.
+     * @param signers   the signers.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoInvokeScript> invokeScript(String script, Signer... signers) {
+    public Request<?, NeoInvokeScript> invokeScript(String scriptHex, Signer... signers) {
         List<?> params;
         if (signers.length > 0) {
-            params = asList(script, stream(signers)
+            params = asList(scriptHex, stream(signers)
                     .map(TransactionSigner::new)
                     .collect(Collectors.toList()));
         } else {
-            params = singletonList(script);
+            params = singletonList(scriptHex);
         }
         return new Request<>(
                 "invokescript",
