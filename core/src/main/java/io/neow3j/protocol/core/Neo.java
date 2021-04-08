@@ -48,7 +48,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
-import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.protocol.core.methods.response.TransactionSendToken;
 import io.neow3j.transaction.Signer;
 
 import java.math.BigInteger;
@@ -172,15 +172,15 @@ public interface Neo {
     Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to,
             BigInteger amount);
 
-    Request<?, NeoSendFrom> sendFrom(Hash160 from, TransactionSendAsset txSendAsset);
+    Request<?, NeoSendFrom> sendFrom(Hash160 from, TransactionSendToken txSendToken);
 
-    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
+    Request<?, NeoSendMany> sendMany(List<TransactionSendToken> txSendTokens);
 
-    Request<?, NeoSendMany> sendMany(Hash160 from, List<TransactionSendAsset> txSendAsset);
+    Request<?, NeoSendMany> sendMany(Hash160 from, List<TransactionSendToken> txSendTokens);
 
     Request<?, NeoSendToAddress> sendToAddress(Hash160 assetId, Hash160 to, BigInteger amount);
 
-    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
+    Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken);
 
     //endregion
 

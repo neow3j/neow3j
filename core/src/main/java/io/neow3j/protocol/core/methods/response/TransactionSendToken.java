@@ -4,34 +4,35 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.contract.Hash160;
 
+import java.math.BigInteger;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TransactionSendAsset {
+public class TransactionSendToken {
 
     @JsonProperty("asset")
-    private Hash160 asset;
+    private Hash160 token;
 
     @JsonProperty("value")
-    private String value;
+    private BigInteger value;
 
     @JsonProperty("address")
     private String address;
 
-    public TransactionSendAsset() {
+    public TransactionSendToken() {
     }
 
-    public TransactionSendAsset(Hash160 asset, String value, String address) {
-        this.asset = asset;
+    public TransactionSendToken(Hash160 token, BigInteger value, String address) {
+        this.token = token;
         this.value = value;
         this.address = address;
     }
 
-    public Hash160 getAsset() {
-        return asset;
+    public Hash160 getToken() {
+        return token;
     }
 
-    public String getValue() {
+    public BigInteger getValue() {
         return value;
     }
 
@@ -44,24 +45,24 @@ public class TransactionSendAsset {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof TransactionSendAsset)) {
+        if (!(o instanceof TransactionSendToken)) {
             return false;
         }
-        TransactionSendAsset that = (TransactionSendAsset) o;
-        return Objects.equals(getAsset(), that.getAsset()) &&
+        TransactionSendToken that = (TransactionSendToken) o;
+        return Objects.equals(getToken(), that.getToken()) &&
                 Objects.equals(getValue(), that.getValue()) &&
                 Objects.equals(getAddress(), that.getAddress());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAsset(), getValue(), getAddress());
+        return Objects.hash(getToken(), getValue(), getAddress());
     }
 
     @Override
     public String toString() {
-        return "TransactionSendAsset{" +
-                "asset='" + asset + '\'' +
+        return "TransactionSendToken{" +
+                "token='" + token + '\'' +
                 ", value='" + value + '\'' +
                 ", address='" + address + '\'' +
                 '}';

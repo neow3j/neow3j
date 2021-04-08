@@ -56,7 +56,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
-import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.protocol.core.methods.response.TransactionSendToken;
 import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.transaction.Signer;
@@ -809,7 +809,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Transfers an amount of an asset from an address to another address.
+     * Transfers an amount of a token from an account to another account.
      *
      * @param tokenHash the token hash of the NEP-17 contract.
      * @param from      the transferring account's script hash.
@@ -831,28 +831,28 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Transfers an amount of a token from an account to another account.
      *
      * @param from        the transferring account's script hash.
-     * @param txSendAsset a {@link TransactionSendAsset} object containing the token hash, the
+     * @param txSendToken a {@link TransactionSendToken} object containing the token hash, the
      *                    transferring account's script hash and the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendFrom> sendFrom(Hash160 from, TransactionSendAsset txSendAsset) {
-        return sendFrom(from, txSendAsset.getAsset(), Hash160.fromAddress(txSendAsset.getAddress()),
-                new BigInteger(txSendAsset.getValue()));
+    public Request<?, NeoSendFrom> sendFrom(Hash160 from, TransactionSendToken txSendToken) {
+        return sendFrom(txSendToken.getToken(), from, Hash160.fromAddress(txSendToken.getAddress()),
+                txSendToken.getValue());
     }
 
     /**
      * Initiates multiple transfers to multiple accounts from the open wallet in a transaction.
      *
-     * @param txSendAsset a list of {@link TransactionSendAsset} objects, that each contains the
-     *                    token hash, the recipient and the transfer amount.
+     * @param txSendTokens a list of {@link TransactionSendToken} objects, that each contains the
+     *                     token hash, the recipient and the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset) {
+    public Request<?, NeoSendMany> sendMany(List<TransactionSendToken> txSendTokens) {
         return new Request<>(
                 "sendmany",
-                singletonList(txSendAsset.stream()
+                singletonList(txSendTokens.stream()
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList())),
                 neow3jService,
@@ -860,26 +860,28 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Initiates multiple transfers to multiple addresses from one specific address in a
+     * Initiates multiple transfers to multiple accounts from one specific account in a
      * transaction.
      *
-     * @param from        the transferring account's script hash.
-     * @param txSendAsset a list of {@link TransactionSendAsset} objects, that each contains the
-     *                    token hash, the recipient and the transfer amount.
+     * @param from         the transferring account's script hash.
+     * @param txSendTokens a list of {@link TransactionSendToken} objects, that each contains the
+     *                     token hash, the recipient and the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendMany> sendMany(Hash160 from, List<TransactionSendAsset> txSendAsset) {
+    public Request<?, NeoSendMany> sendMany(Hash160 from, List<TransactionSendToken> txSendTokens) {
         return new Request<>(
                 "sendmany",
                 asList(from.toAddress(),
-                        txSendAsset.stream().filter(Objects::nonNull).collect(Collectors.toList())),
+                        txSendTokens.stream()
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList())),
                 neow3jService,
                 NeoSendMany.class);
     }
 
     /**
-     * Transfers an amount of a token asset to another address.
+     * Transfers an amount of a token to another account.
      *
      * @param tokenHash the token hash of the NEP-17 contract.
      * @param to        the recipient.
@@ -891,7 +893,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
             BigInteger amount) {
         return new Request<>(
                 "sendtoaddress",
-                Stream.of(tokenHash, to, amount)
+                Stream.of(tokenHash, to.toAddress(), amount)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()),
                 neow3jService,
@@ -901,14 +903,14 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Transfers an amount of a token asset to another address.
      *
-     * @param txSendAsset a {@link TransactionSendAsset} object containing the token hash, the
+     * @param txSendToken a {@link TransactionSendToken} object containing the token hash, the
      *                    recipient and the transfer amount.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset) {
-        return sendToAddress(txSendAsset.getAsset(), Hash160.fromAddress(txSendAsset.getAddress()),
-                new BigInteger(txSendAsset.getValue()));
+    public Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken) {
+        return sendToAddress(txSendToken.getToken(), Hash160.fromAddress(txSendToken.getAddress()),
+                txSendToken.getValue());
     }
 
     // ApplicationLogs

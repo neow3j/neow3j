@@ -105,7 +105,8 @@ public class Neow3jReadOnlyIntegrationTest {
     private static final BigInteger TX_AMOUNT_NEO = new BigInteger("2500");
     private static final BigInteger TX_AMOUNT_GAS = new BigInteger("1000");
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
-    private static final Hash160 TX_RECIPIENT_1 = new Hash160("NSEV4gPHGUs5SAR2sqvCEi47XXhKuAh1J9");
+    private static final Hash160 TX_RECIPIENT_1 =
+            Hash160.fromAddress("NSEV4gPHGUs5SAR2sqvCEi47XXhKuAh1J9");
     private static final int TX_LENGTH = 504;
 
     private static final String CALC_NETWORK_FEE_TX =
@@ -297,7 +298,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(block);
         assertNull(block.getTransactions());
         assertThat(block.getIndex(), is(BLOCK_0_IDX.longValue()));
-        assertThat(block.getHash().toString(), is(BLOCK_0_HASH));
+        assertThat(block.getHash(), is(BLOCK_0_HASH));
     }
 
     @Test
@@ -895,7 +896,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetNep17Transfers.Nep17Transfer transfer = nep17TransferWrapper.getSent().get(0);
         assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
         assertThat(transfer.getAssetHash(), is(NEO_HASH));
-        assertThat(transfer.getTransferAddress(), is(TX_RECIPIENT_1));
+        assertThat(transfer.getTransferAddress(), is(TX_RECIPIENT_1.toAddress()));
         assertThat(transfer.getAmount(), is(TX_AMOUNT_NEO));
         assertThat(transfer.getBlockIndex(), greaterThanOrEqualTo(1L));
         assertThat(transfer.getTransferNotifyIndex(), is(1L));
@@ -906,8 +907,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
         assertThat(transfer.getAssetHash(), is(GAS_HASH));
         assertNull(transfer.getTransferAddress());
-        assertThat(new BigInteger(transfer.getAmount()),
-                greaterThanOrEqualTo(new BigInteger("50000000")));
+        assertThat(transfer.getAmount(), greaterThanOrEqualTo(new BigInteger("50000000")));
         assertThat(transfer.getBlockIndex(), greaterThanOrEqualTo(1L));
         assertThat(transfer.getTransferNotifyIndex(), is(0L));
         assertThat(transfer.getTxHash(), instanceOf(Hash256.class));

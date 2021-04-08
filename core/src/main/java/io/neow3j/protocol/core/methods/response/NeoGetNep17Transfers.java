@@ -8,6 +8,7 @@ import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.Response;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
@@ -94,7 +95,7 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
         private String transferAddress;
 
         @JsonProperty("amount")
-        private String amount;
+        private BigInteger amount;
 
         @JsonProperty("blockindex")
         private long blockIndex;
@@ -109,7 +110,7 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
         }
 
         public Nep17Transfer(long timestamp, Hash160 assetHash, String transferAddress,
-                String amount, long blockIndex, long transferNotifyIndex, Hash256 txHash) {
+                BigInteger amount, long blockIndex, long transferNotifyIndex, Hash256 txHash) {
             this.timestamp = timestamp;
             this.assetHash = assetHash;
             this.transferAddress = transferAddress;
@@ -131,7 +132,7 @@ public class NeoGetNep17Transfers extends Response<NeoGetNep17Transfers.Nep17Tra
             return transferAddress;
         }
 
-        public String getAmount() {
+        public BigInteger getAmount() {
             return amount;
         }
 
