@@ -29,8 +29,7 @@ public class FungibleTokenIntegrationTest {
     private static FungibleToken fungibleToken;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer =
-            new NeoTestContainer("/node-config/config.json");
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -42,9 +41,9 @@ public class FungibleTokenIntegrationTest {
 
     /*
      * In this test case 14 NEO should be transferred from all accounts.
-     * Result: Account 1 should transfer 8 NEO and the remaining accounts should transfer 6 NEO.
-     * In this test case either account 2 or account 3 should transfer 6 NEO - the order of the
-     * remaining accounts is not enforced.
+     * Result: Account 1 should transfer 10 NEO and the remaining accounts should transfer 4 NEO.
+     * Either account 2 or account 3 should transfer 4 NEO - the order of the remaining accounts
+     * is not enforced.
      */
     @Test
     public void testTransfer() throws Throwable {
@@ -129,7 +128,7 @@ public class FungibleTokenIntegrationTest {
 
     /*
      * In this test case 36 NEO should be transferred from all accounts.
-     * Result: Account 1, 2 and 3 should transfer 8 NEO each.
+     * Result: Account 1, 2 and 3 should transfer 12 NEO each.
      */
     @Test
     public void testTransfer_allFundsUsed_fromAddress() throws Throwable {
@@ -168,8 +167,8 @@ public class FungibleTokenIntegrationTest {
     }
 
     /*
-     * In this test case 16 neo should be transferred from accounts 3 and 2 (order matters!).
-     * Result: Account 3 should transfer 10 neo and account 2 should transfer 6 neo.
+     * In this test case 16 NEO should be transferred from accounts 3 and 2 (order matters!).
+     * Result: Account 3 should transfer 10 NEO and account 2 should transfer 6 NEO.
      */
     @Test
     public void testTransferFromSpecificAccounts() throws Throwable {
@@ -189,7 +188,7 @@ public class FungibleTokenIntegrationTest {
         Hash256 txHash = fungibleToken
                 .transferFromSpecificAccounts(wallet,
                         COMMITTEE_ACCOUNT.getScriptHash(),
-                        new BigDecimal("14"),
+                        new BigDecimal("16"),
                         a3.getScriptHash(),
                         a2.getScriptHash())
                 .sign()
@@ -203,9 +202,9 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceOf_a2 = fungibleToken.getBalanceOf(a2);
         BigInteger balanceOf_a3 = fungibleToken.getBalanceOf(a3);
 
-        assertThat(balanceOf_wallet, is(new BigInteger("16")));
+        assertThat(balanceOf_wallet, is(new BigInteger("14")));
         assertThat(balanceOf_a1, is(new BigInteger("10")));
-        assertThat(balanceOf_a2, is(new BigInteger("6")));
+        assertThat(balanceOf_a2, is(new BigInteger("4")));
         assertThat(balanceOf_a3, is(BigInteger.ZERO));
     }
 

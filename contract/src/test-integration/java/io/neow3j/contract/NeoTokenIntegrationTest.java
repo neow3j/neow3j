@@ -34,8 +34,7 @@ public class NeoTokenIntegrationTest {
     private static NeoToken neoToken;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer =
-            new NeoTestContainer("/node-config/config.json");
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeClass
     public static void setUp() throws Throwable {

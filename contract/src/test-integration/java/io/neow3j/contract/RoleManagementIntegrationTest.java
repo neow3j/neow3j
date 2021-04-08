@@ -30,8 +30,7 @@ public class RoleManagementIntegrationTest {
     private static RoleManagement roleManagement;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer =
-            new NeoTestContainer("/node-config/config.json");
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeClass
     public static void setUp() {

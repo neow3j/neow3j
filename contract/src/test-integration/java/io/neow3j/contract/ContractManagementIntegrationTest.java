@@ -35,8 +35,7 @@ public class ContractManagementIntegrationTest {
             Paths.get("/contracts", "TestContract.manifest.json");
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer =
-            new NeoTestContainer("/node-config/config.json");
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeClass
     public static void setUp() {

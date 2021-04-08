@@ -49,8 +49,7 @@ public class NameServiceIntegrationTest {
     private static final long BUFFER_SECONDS = 3600;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer =
-            new NeoTestContainer("/node-config/config.json");
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeClass
     public static void setUp() throws Throwable {
