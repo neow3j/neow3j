@@ -8,8 +8,10 @@ import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
+import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -19,11 +21,14 @@ import io.neow3j.NeoTestContainer;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.wallet.Account;
+import io.neow3j.wallet.Wallet;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +57,8 @@ public class NeoTokenIntegrationTest {
 
     @Test
     public void testRegisterAndUnregisterCandidate() throws Throwable {
-        Map<ECKeyPair.ECPublicKey, Integer> candidates = neoToken.getCandidates();
-        assertThat(candidates.entrySet(), hasSize(0));
+        Map<ECKeyPair.ECPublicKey, BigInteger> candidates = neoToken.getCandidates();
+        assertThat(candidates.keySet(), hasSize(0));
 
         Hash256 txHash = neoToken.registerCandidate(CLIENT_1.getECKeyPair().getPublicKey())
                 .wallet(CLIENTS_WALLET)
@@ -65,8 +70,9 @@ public class NeoTokenIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         candidates = neoToken.getCandidates();
-        assertThat(candidates.entrySet(), hasSize(1));
-        assertThat(candidates.get(CLIENT_1.getECKeyPair().getPublicKey()), greaterThanOrEqualTo(0));
+        assertThat(candidates.keySet(), hasSize(1));
+        assertThat(candidates.get(CLIENT_1.getECKeyPair().getPublicKey()),
+                greaterThanOrEqualTo(BigInteger.ZERO));
 
         txHash = neoToken.unregisterCandidate(CLIENT_1.getECKeyPair().getPublicKey())
                 .wallet(CLIENTS_WALLET)
@@ -78,7 +84,7 @@ public class NeoTokenIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         candidates = neoToken.getCandidates();
-        assertThat(candidates.entrySet(), hasSize(0));
+        assertThat(candidates.keySet(), hasSize(0));
     }
 
     @Test
@@ -92,14 +98,27 @@ public class NeoTokenIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
-        txHash = neoToken.vote(CLIENT_2, CLIENT_1.getECKeyPair().getPublicKey())
-                .wallet(CLIENTS_WALLET)
-                .signers(calledByEntry(CLIENT_2.getScriptHash()))
+        Map<ECKeyPair.ECPublicKey, BigInteger> candidates = neoToken.getCandidates();
+        assertThat(candidates.keySet(), hasSize(1));
+        assertThat(candidates.keySet(), contains(CLIENT_1.getECKeyPair().getPublicKey()));
+        assertThat(candidates.get(CLIENT_1.getECKeyPair().getPublicKey()), is(BigInteger.ZERO));
+
+        Account voterAccount = Account.create();
+        fundAccountsWithGas(neow3j, voterAccount);
+        fundAccountsWithNeo(neow3j, new BigDecimal("22"), voterAccount);
+
+        txHash = neoToken.vote(voterAccount, CLIENT_1.getECKeyPair().getPublicKey())
+                .wallet(Wallet.withAccounts(voterAccount))
+                .signers(calledByEntry(voterAccount.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        BigInteger voteCount = neoToken.getBalanceOf(voterAccount);
+        candidates = neoToken.getCandidates();
+        assertThat(candidates.get(CLIENT_1.getECKeyPair().getPublicKey()), is(voteCount));
 
         txHash = neoToken.unregisterCandidate(CLIENT_1.getECKeyPair().getPublicKey())
                 .wallet(CLIENTS_WALLET)
@@ -123,8 +142,8 @@ public class NeoTokenIntegrationTest {
     public void testGetNextBlockValidators() throws IOException {
         List<ECKeyPair.ECPublicKey> nextBlockValidators = neoToken.getNextBlockValidators();
         assertThat(nextBlockValidators, hasSize(1));
-        assertThat(nextBlockValidators.get(0).getEncoded(true),
-                is(DEFAULT_ACCOUNT.getECKeyPair().getPublicKey().getEncoded(true)));
+        assertThat(nextBlockValidators.get(0),
+                is(DEFAULT_ACCOUNT.getECKeyPair().getPublicKey()));
     }
 
     @Test
@@ -151,12 +170,12 @@ public class NeoTokenIntegrationTest {
     @Test
     public void testSetAndGetRegisterPrice() throws Throwable {
         BigInteger expectedInitialRegisterPrice = new BigInteger("100000000000");
-        BigInteger expectedNewRegisterPrice = new BigInteger("80000000000");
+        BigInteger expectedNewRegisterPrice = new BigInteger("50000000000");
 
         BigInteger registerPrice = neoToken.getRegisterPrice();
         assertThat(registerPrice, is(expectedInitialRegisterPrice));
 
-        Hash256 txHash = neoToken.setRegisterPrice(new BigInteger("80000000000"))
+        Hash256 txHash = neoToken.setRegisterPrice(new BigInteger("50000000000"))
                 .wallet(COMMITTEE_WALLET)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
