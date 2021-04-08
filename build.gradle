@@ -333,13 +333,15 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     }
 
     afterEvaluate {
-        getClassDirectories().from(files(classDirectories.files.collect {
+        classDirectories.setFrom(files(getClassDirectories().files.collect {
             fileTree(
                     dir: it,
                     // here we specify which path/modules should be
                     // excluded from the jacoco reports
                     exclude: [
-                            'test-properties/**'
+                            '**/io/neow3j/devpack/**',
+                            '**/io/neow3j/NeoTestContainer*',
+                            '**/io/neow3j/TestProperties*',
                     ]
             )
         }))
