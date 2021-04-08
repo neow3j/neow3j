@@ -166,11 +166,11 @@ public class NeoTokenTest {
         setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
                 NEOTOKEN_SCRIPTHASH, "getCandidates");
 
-        Map<ECPublicKey, Integer> result = new NeoToken(neow).getCandidates();
+        Map<ECPublicKey, BigInteger> result = new NeoToken(neow).getCandidates();
         assertThat(result.size(), is(2));
         result.forEach((key, value) -> {
             assertThat(key, notNullValue());
-            assertThat(value, is(0));
+            assertThat(value, is(BigInteger.ZERO));
         });
     }
 
