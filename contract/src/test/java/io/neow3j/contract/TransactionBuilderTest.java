@@ -453,7 +453,8 @@ public class TransactionBuilderTest {
         // The first signing account for the multi-sig is not in the wallet.
         // The sign method should execute normally and ignore the absence.
         b.sign();
-        assertThat(b.transaction.getWitnesses().get(0), is(dummyMultiSig));
+        assertThat(b.transaction.getWitnesses().get(0).getScriptHash(),
+                is(dummyMultiSig.getScriptHash()));
         assertThat(toHexStringNoPrefix(b.transaction.getScript()),
                 is(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL));
     }
@@ -472,7 +473,8 @@ public class TransactionBuilderTest {
                 .buildTransaction();
 
         assertThat(tx.getSigners(), hasSize(1));
-        assertThat(tx.getSigners().get(0), is(wallet.getDefaultAccount()));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
+                is(wallet.getDefaultAccount().getScriptHash()));
         assertThat(tx.getSigners().get(0).getScopes(),
                 contains(WitnessScope.NONE));
     }
