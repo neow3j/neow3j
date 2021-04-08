@@ -605,8 +605,8 @@ public class RequestTest extends RequestTester {
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendmany\"," +
                 "\"params\":[" +
-                "[{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"100\",\"address\":\"NRkkHsxkzFxGz77mJtJgYZ3FnBm8baU5Um\"}," +
-                "{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"10\",\"address\":\"NNFGNNK1HXSSnA7yKLzRpr8YXwcdgTrsCu\"}]" +
+                "[{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":100,\"address\":\"NRkkHsxkzFxGz77mJtJgYZ3FnBm8baU5Um\"}," +
+                "{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":10,\"address\":\"NNFGNNK1HXSSnA7yKLzRpr8YXwcdgTrsCu\"}]" +
                 "]," +
                 "\"id\":1}");
     }
@@ -644,12 +644,12 @@ public class RequestTest extends RequestTester {
                      "[" +
                      "   {" +
                      "       \"asset\": \"de5f57d430d3dece511cf975a8d37848cb9e0525\", " +
-                     "       \"value\": \"100\"," +
+                     "       \"value\": 100," +
                      "       \"address\": \"Nhsi2q3hkByxcH2uBQw7cjc2qEpzXSEKTC\"" +
                      "   }," +
                      "   {" +
                      "       \"asset\": \"de5f57d430d3dece511cf975a8d37848cb9e0525\", " +
-                     "       \"value\": \"10\"," +
+                     "       \"value\": 10," +
                      "       \"address\": \"NcwVWxJZh9fxncJ9Sq8msVLotJDsAD3ZD8\"}" +
                      "   ]" +
                      "]," +
