@@ -1,8 +1,8 @@
 package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.committee;
-import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
@@ -42,15 +42,15 @@ public class RoleManagementIntegrationTest {
     @Test
     public void testDesignateByRoleAndGetDesignated_stateValidator() throws Throwable {
         Account account = Account.create();
-        Hash256 txHash =
-                roleManagement.designateAsRole(Role.STATE_VALIDATOR,
+        Hash256 txHash = roleManagement
+                .designateAsRole(Role.STATE_VALIDATOR,
                         singletonList(account.getECKeyPair().getPublicKey()))
-                        .wallet(committeeWallet)
-                        .signers(calledByEntry(committee.getScriptHash()))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
@@ -68,15 +68,15 @@ public class RoleManagementIntegrationTest {
     @Test
     public void testDesignateByRoleAndGetDesignated_oracle() throws Throwable {
         Account account = Account.create();
-        Hash256 txHash =
-                roleManagement.designateAsRole(Role.ORACLE,
+        Hash256 txHash = roleManagement
+                .designateAsRole(Role.ORACLE,
                         singletonList(account.getECKeyPair().getPublicKey()))
-                        .wallet(committeeWallet)
-                        .signers(calledByEntry(committee.getScriptHash()))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
@@ -94,15 +94,15 @@ public class RoleManagementIntegrationTest {
     @Test
     public void testDesignateByRoleAndGetDesignated_fsAlphabetNode() throws Throwable {
         Account account = Account.create();
-        Hash256 txHash =
-                roleManagement.designateAsRole(Role.NEO_FS_ALPHABET_NODE,
+        Hash256 txHash = roleManagement
+                .designateAsRole(Role.NEO_FS_ALPHABET_NODE,
                         singletonList(account.getECKeyPair().getPublicKey()))
-                        .wallet(committeeWallet)
-                        .signers(calledByEntry(committee.getScriptHash()))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction

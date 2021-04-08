@@ -56,6 +56,14 @@ public class TestProperties {
         return getValue("defaultAccountVerificationScript");
     }
 
+    public static String client1AccountWIF() {
+        return getValue("client1AccountWIF");
+    }
+
+    public static String client2AccountWIF() {
+        return getValue("client2AccountWIF");
+    }
+
     public static String neo3PrivateNetContainerImg() {
         return getValue("neo3PrivateNetContainerImg");
     }

@@ -1,10 +1,10 @@
 package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.client1;
-import static io.neow3j.contract.IntegrationTestHelper.client2;
-import static io.neow3j.contract.IntegrationTestHelper.committee;
-import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
@@ -37,7 +37,7 @@ public class PolicyContractIntegrationTest {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         policyContract = new PolicyContract(neow3j);
         // make a transaction that can be used for the tests
-        fundAccountsWithGas(neow3j, client1, client2);
+        fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
     }
 
     @Test
@@ -49,8 +49,8 @@ public class PolicyContractIntegrationTest {
         assertThat(feePerByte, is(expectedInitialFeePerByte));
 
         Hash256 txHash = policyContract.setFeePerByte(2500)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -70,8 +70,8 @@ public class PolicyContractIntegrationTest {
         assertThat(execFeeFactor, is(expectedInitialExecFeeFactor));
 
         Hash256 txHash = policyContract.setExecFeeFactor(50)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -91,8 +91,8 @@ public class PolicyContractIntegrationTest {
         assertThat(feePerByte, is(expectedInitialStoragePrice));
 
         Hash256 txHash = policyContract.setStoragePrice(300000)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -112,8 +112,8 @@ public class PolicyContractIntegrationTest {
         assertFalse(isBlocked);
 
         Hash256 txHash = policyContract.blockAccount(blockAccount.getScriptHash())
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -124,8 +124,8 @@ public class PolicyContractIntegrationTest {
         assertTrue(isBlocked);
 
         txHash = policyContract.unblockAccount(blockAccount.getScriptHash())
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -145,8 +145,8 @@ public class PolicyContractIntegrationTest {
         assertFalse(isBlocked);
 
         Hash256 txHash = policyContract.blockAccount(blockAccount.getAddress())
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -157,8 +157,8 @@ public class PolicyContractIntegrationTest {
         assertTrue(isBlocked);
 
         txHash = policyContract.unblockAccount(blockAccount.getAddress())
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()

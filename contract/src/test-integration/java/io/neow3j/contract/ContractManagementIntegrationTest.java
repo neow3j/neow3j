@@ -1,8 +1,8 @@
 package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.committee;
-import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.contract.SmartContract.getContractHash;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static io.neow3j.transaction.Signer.calledByEntry;
@@ -54,8 +54,8 @@ public class ContractManagementIntegrationTest {
         BigInteger newDeploymentFee = new BigInteger("2000000000");
         Hash256 txHash = contractManagement
                 .setMinimumDeploymentFee(newDeploymentFee)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -77,15 +77,15 @@ public class ContractManagementIntegrationTest {
                 .readValue(manifestFile, ContractManifest.class);
 
         Hash256 txHash = contractManagement.deploy(nef, manifest)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
         Hash160 contractHash = getContractHash(
-                committee.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
+                COMMITTEE_ACCOUNT.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
         NeoGetContractState.ContractState contractState =
                 neow3j.getContractState(contractHash).send().getContractState();
         assertThat(contractState.getManifest(), is(manifest));

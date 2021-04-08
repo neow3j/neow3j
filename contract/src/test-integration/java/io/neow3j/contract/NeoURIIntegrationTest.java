@@ -2,12 +2,12 @@ package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.GAS_HASH;
-import static io.neow3j.contract.IntegrationTestHelper.client1;
-import static io.neow3j.contract.IntegrationTestHelper.client2;
-import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
-import static io.neow3j.contract.IntegrationTestHelper.walletClients12;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -38,7 +38,7 @@ public class NeoURIIntegrationTest {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         neoToken = new NeoToken(neow3j);
         gasToken = new GasToken(neow3j);
-        fundAccountsWithGas(neow3j, client1, client2);
+        fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class NeoURIIntegrationTest {
 
         Hash256 txHash = new NeoURI(neow3j)
                 .asset(GAS_HASH)
-                .wallet(committeeWallet)
+                .wallet(COMMITTEE_WALLET)
                 .to(account.getScriptHash())
                 .amount("0.00000001")
                 .buildTransfer()
@@ -73,7 +73,7 @@ public class NeoURIIntegrationTest {
 
         Hash256 txHash = NeoURI.fromURI(uriString)
                 .neow3j(neow3j)
-                .wallet(committeeWallet)
+                .wallet(COMMITTEE_WALLET)
                 .buildTransfer()
                 .sign()
                 .send()
@@ -91,13 +91,13 @@ public class NeoURIIntegrationTest {
         BigInteger neoBalance = neoToken.getBalanceOf(account);
         assertThat(neoBalance, is(BigInteger.ZERO));
 
-        fundAccountsWithNeo(neow3j, BigDecimal.TEN, client2);
+        fundAccountsWithNeo(neow3j, BigDecimal.TEN, CLIENT_2);
 
         String uriString = "neo:" + account.getAddress() + "?asset=neo&amount=1";
 
         Hash256 txHash = NeoURI.fromURI(uriString)
                 .neow3j(neow3j)
-                .wallet(walletClients12)
+                .wallet(CLIENTS_WALLET)
                 .buildTransfer()
                 .sign()
                 .send()

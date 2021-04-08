@@ -2,9 +2,9 @@ package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.contract.IntegrationTestHelper.client1;
-import static io.neow3j.contract.IntegrationTestHelper.client2;
-import static io.neow3j.contract.IntegrationTestHelper.committee;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
@@ -37,7 +37,7 @@ public class FungibleTokenIntegrationTest {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         fungibleToken = new FungibleToken(NEO_HASH, neow3j);
         // make a transaction that can be used for the tests
-        fundAccountsWithGas(neow3j, client1, client2);
+        fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
     }
 
     /*
@@ -61,12 +61,14 @@ public class FungibleTokenIntegrationTest {
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("30")));
 
-        Hash256 txHash =
-                fungibleToken.transfer(wallet, committee.getAddress(), new BigDecimal("14"))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+        Hash256 txHash = fungibleToken
+                .transfer(wallet,
+                        COMMITTEE_ACCOUNT.getAddress(),
+                        new BigDecimal("14"))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
@@ -104,12 +106,14 @@ public class FungibleTokenIntegrationTest {
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("24")));
 
-        Hash256 txHash =
-                fungibleToken.transfer(wallet, committee.getScriptHash(), new BigDecimal("8"))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+        Hash256 txHash = fungibleToken
+                .transfer(wallet,
+                        COMMITTEE_ACCOUNT.getScriptHash(),
+                        new BigDecimal("8"))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
@@ -142,12 +146,14 @@ public class FungibleTokenIntegrationTest {
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("36")));
 
-        Hash256 txHash =
-                fungibleToken.transfer(wallet, committee.getScriptHash(), new BigDecimal("36"))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+        Hash256 txHash = fungibleToken
+                .transfer(wallet,
+                        COMMITTEE_ACCOUNT.getScriptHash(),
+                        new BigDecimal("36"))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
@@ -180,13 +186,16 @@ public class FungibleTokenIntegrationTest {
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("30")));
 
-        Hash256 txHash =
-                fungibleToken.transferFromSpecificAccounts(wallet, committee.getScriptHash(),
-                        new BigDecimal("14"), a3.getScriptHash(), a2.getScriptHash())
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+        Hash256 txHash = fungibleToken
+                .transferFromSpecificAccounts(wallet,
+                        COMMITTEE_ACCOUNT.getScriptHash(),
+                        new BigDecimal("14"),
+                        a3.getScriptHash(),
+                        a2.getScriptHash())
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
@@ -220,13 +229,14 @@ public class FungibleTokenIntegrationTest {
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("15")));
 
-        Hash256 txHash =
-                fungibleToken.transferFromDefaultAccount(wallet, committee.getScriptHash(),
+        Hash256 txHash = fungibleToken
+                .transferFromDefaultAccount(wallet,
+                        COMMITTEE_ACCOUNT.getScriptHash(),
                         new BigDecimal("5"))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
@@ -252,12 +262,14 @@ public class FungibleTokenIntegrationTest {
         Wallet wallet = Wallet.withAccounts(a1); // funds the account with 10_000 Gas
         FungibleToken gasToken = new FungibleToken(GasToken.SCRIPT_HASH, neow3j);
 
-        Hash256 txHash =
-                gasToken.transfer(wallet, a2.getScriptHash(), new BigDecimal("1.00000001"))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+        Hash256 txHash = gasToken
+                .transfer(wallet,
+                        a2.getScriptHash(),
+                        new BigDecimal("1.00000001"))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         BigInteger balanceOf_a2 = gasToken.getBalanceOf(a2);

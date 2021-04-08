@@ -1,8 +1,12 @@
 package io.neow3j.contract;
 
+import static io.neow3j.TestProperties.client1AccountWIF;
+import static io.neow3j.TestProperties.client2AccountWIF;
+import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.TestProperties.gasTokenHash;
 import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static io.neow3j.wallet.Account.fromWIF;
 import static java.util.Collections.singletonList;
 
@@ -18,17 +22,13 @@ public class IntegrationTestHelper {
     static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
     static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
 
-    static final Account singleSigCommitteeMember =
-            fromWIF("L24Qst64zASL2aLEKdJtRLnbnTbqpcRNWkWJ3yhDh2CLUtLdwYK2");
-    static final Account committee = Account.createMultiSigAccount(
-            singletonList(singleSigCommitteeMember.getECKeyPair().getPublicKey()), 1);
-    static final Wallet committeeWallet =
-            Wallet.withAccounts(singleSigCommitteeMember, committee);
-    static final Account client1 =
-            fromWIF("L3gSLs2CSRYss1zoTmSB9hYAxqimn7Br5yDomH8FDb6NDsupeRVK");
-    static final Account client2 =
-            fromWIF("L4oDbG4m9f7cnHyawQ4HWJJSrcVDZ8k3E4YxL7Ran89FL2t31hya");
-    static final Wallet walletClients12 = Wallet.withAccounts(client1, client2);
+    static final Account DEFAULT_ACCOUNT = fromWIF(defaultAccountWIF());
+    static final Account COMMITTEE_ACCOUNT =
+            createMultiSigAccount(singletonList(DEFAULT_ACCOUNT.getECKeyPair().getPublicKey()), 1);
+    static final Wallet COMMITTEE_WALLET = Wallet.withAccounts(DEFAULT_ACCOUNT, COMMITTEE_ACCOUNT);
+    static final Account CLIENT_1 = fromWIF(client1AccountWIF());
+    static final Account CLIENT_2 = fromWIF(client2AccountWIF());
+    static final Wallet CLIENTS_WALLET = Wallet.withAccounts(CLIENT_1, CLIENT_2);
 
     static void fundAccountsWithGas(Neow3j neow3j, Account... accounts) throws Throwable {
         for (Account account : accounts) {
@@ -47,7 +47,7 @@ public class IntegrationTestHelper {
     static void transferFromGenesisToAccount(Neow3j neow3j, FungibleToken token,
             BigDecimal amount, Account a) throws Throwable {
         Hash256 txHash =
-                token.transfer(committeeWallet, a.getScriptHash(), amount)
+                token.transfer(COMMITTEE_WALLET, a.getScriptHash(), amount)
                         .sign()
                         .send()
                         .getSendRawTransaction()

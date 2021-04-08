@@ -1,12 +1,12 @@
 package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.client1;
-import static io.neow3j.contract.IntegrationTestHelper.client2;
-import static io.neow3j.contract.IntegrationTestHelper.committee;
-import static io.neow3j.contract.IntegrationTestHelper.committeeWallet;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.contract.IntegrationTestHelper.walletClients12;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.greaterThan;
@@ -57,7 +57,7 @@ public class NameServiceIntegrationTest {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         nameService = new NeoNameService(getNeow3j());
         // make a transaction that can be used for the tests
-        fundAccountsWithGas(neow3j, client1, client2);
+        fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
         addRoot();
         registerDomainFromCommittee(DOMAIN);
         setRecordFromCommittee(DOMAIN, RecordType.A, A_RECORD);
@@ -69,8 +69,8 @@ public class NameServiceIntegrationTest {
 
     private static void addRoot() throws Throwable {
         Hash256 txHash = nameService.addRoot(ROOT_DOMAIN)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -79,7 +79,7 @@ public class NameServiceIntegrationTest {
     }
 
     private static void registerDomainFromCommittee(String domain) throws Throwable {
-        register(domain, committee, committeeWallet);
+        register(domain, COMMITTEE_ACCOUNT, COMMITTEE_WALLET);
     }
 
     private static void register(String domain, Account owner, Wallet w) throws Throwable {
@@ -95,7 +95,7 @@ public class NameServiceIntegrationTest {
 
     private static void setRecordFromCommittee(String domain, RecordType type, String data)
             throws Throwable {
-        setRecord(domain, type, data, committeeWallet, committee);
+        setRecord(domain, type, data, COMMITTEE_WALLET, COMMITTEE_ACCOUNT);
     }
 
     private static void setRecord(String domain, RecordType type, String data, Wallet w,
@@ -129,12 +129,12 @@ public class NameServiceIntegrationTest {
     @Test
     public void testOwnerOf() throws IOException {
         Hash160 owner = nameService.ownerOf(DOMAIN);
-        assertThat(owner, is(committee.getScriptHash()));
+        assertThat(owner, is(COMMITTEE_ACCOUNT.getScriptHash()));
     }
 
     @Test
     public void testBalanceOf() throws IOException {
-        BigInteger bigInteger = nameService.balanceOf(committee.getScriptHash());
+        BigInteger bigInteger = nameService.balanceOf(COMMITTEE_ACCOUNT.getScriptHash());
         assertThat(bigInteger, greaterThanOrEqualTo(BigInteger.ONE));
     }
 
@@ -163,8 +163,8 @@ public class NameServiceIntegrationTest {
     @Test
     public void testAddRoot() throws Throwable {
         Hash256 txHash = nameService.addRoot("root")
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -185,8 +185,8 @@ public class NameServiceIntegrationTest {
     public void testSetPrice() throws Throwable {
         BigInteger newPrice = new BigInteger("12345");
         Hash256 txHash = nameService.setPrice(newPrice)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -203,9 +203,9 @@ public class NameServiceIntegrationTest {
         boolean availableBefore = nameService.isAvailable(domain);
         assertTrue(availableBefore);
 
-        Hash256 txHash = nameService.register(domain, committee.getScriptHash())
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+        Hash256 txHash = nameService.register(domain, COMMITTEE_ACCOUNT.getScriptHash())
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -227,8 +227,8 @@ public class NameServiceIntegrationTest {
         assertThat(propertiesBefore.getExpiration(), greaterThan(lessThanInOneYear));
 
         Hash256 txHash = nameService.renew(domain)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -245,19 +245,19 @@ public class NameServiceIntegrationTest {
     @Test
     public void testSetAdmin() throws Throwable {
         String domain = "admin.neo";
-        register(domain, client1, walletClients12);
+        register(domain, CLIENT_1, CLIENTS_WALLET);
         try {
-            setRecord(domain, RecordType.A, A_RECORD, walletClients12, client2);
+            setRecord(domain, RecordType.A, A_RECORD, CLIENTS_WALLET, CLIENT_2);
             fail();
         } catch (TransactionConfigurationException ignored) {
             // setRecord should throw an exception, since client2 should not be able to create a
             // record.
         }
 
-        Hash256 txHash = nameService.setAdmin(domain, client2.getScriptHash())
-                .wallet(walletClients12)
-                .signers(calledByEntry(client1.getScriptHash()),
-                        calledByEntry(client2.getScriptHash()))
+        Hash256 txHash = nameService.setAdmin(domain, CLIENT_2.getScriptHash())
+                .wallet(CLIENTS_WALLET)
+                .signers(calledByEntry(CLIENT_1.getScriptHash()),
+                        calledByEntry(CLIENT_2.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -265,7 +265,7 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         // Now as admin, client2 should be able to set a record.
-        setRecord(domain, RecordType.A, A_RECORD, walletClients12, client2);
+        setRecord(domain, RecordType.A, A_RECORD, CLIENTS_WALLET, CLIENT_2);
         String aRecord = nameService.getRecord(domain, RecordType.A);
         assertThat(aRecord, is(A_RECORD));
     }
@@ -307,8 +307,8 @@ public class NameServiceIntegrationTest {
         assertThat(textRecordForDelete, is("textrecordfordelete"));
 
         Hash256 txHash = nameService.deleteRecord(domain, RecordType.TXT)
-                .wallet(committeeWallet)
-                .signers(calledByEntry(committee.getScriptHash()))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -328,10 +328,10 @@ public class NameServiceIntegrationTest {
         String domainForTransfer = "transfer.neo";
         registerDomainFromCommittee(domainForTransfer);
         Hash160 ownerBefore = nameService.ownerOf(domainForTransfer);
-        assertThat(ownerBefore, is(committee.getScriptHash()));
+        assertThat(ownerBefore, is(COMMITTEE_ACCOUNT.getScriptHash()));
 
         Hash256 txHash =
-                nameService.transfer(committeeWallet, client1.getScriptHash(), domainForTransfer)
+                nameService.transfer(COMMITTEE_WALLET, CLIENT_1.getScriptHash(), domainForTransfer)
                         .sign()
                         .send()
                         .getSendRawTransaction()
@@ -339,7 +339,7 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         Hash160 ownerAfter = nameService.ownerOf(domainForTransfer);
-        assertThat(ownerAfter, is(client1.getScriptHash()));
+        assertThat(ownerAfter, is(CLIENT_1.getScriptHash()));
     }
 
 }
