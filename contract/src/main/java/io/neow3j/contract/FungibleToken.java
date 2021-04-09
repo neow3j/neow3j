@@ -424,7 +424,7 @@ public class FungibleToken extends Token {
         }
         byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
 
-        return new TransactionBuilder(neow)
+        return new TransactionBuilder(neow3j)
                 .wallet(wallet)
                 .script(concatenatedScript)
                 .signers(signers.toArray(new Signer[]{}));

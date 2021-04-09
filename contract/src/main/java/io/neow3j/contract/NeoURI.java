@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import static io.neow3j.utils.AddressUtils.isValidAddress;
 
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Strings;
 import io.neow3j.wallet.Wallet;
 
@@ -25,14 +24,14 @@ public class NeoURI {
     private Neow3j neow3j;
     private Wallet wallet;
     private Hash160 recipient;
-    private Hash160 asset;
+    private Hash160 tokenHash;
     private BigDecimal amount;
 
     private static final String NEO_SCHEME = "neo";
     private static final int MIN_NEP9_URI_LENGTH = 38;
 
-    private static final String NEO_ASSET = "neo";
-    private static final String GAS_ASSET = "gas";
+    private static final String NEO_TOKEN_STRING = "neo";
+    private static final String GAS_TOKEN_STRING = "gas";
 
     public NeoURI() {
     }
@@ -78,14 +77,14 @@ public class NeoURI {
                     throw new IllegalArgumentException("This uri contains invalid queries.");
                 }
                 if (singleQueryParts[0].equals("asset") &&
-                        neoURI.asset == null) {
+                        neoURI.tokenHash == null) {
                     String assetID = singleQueryParts[1];
-                    if (assetID.equals(NEO_ASSET)) {
-                        neoURI.asset = NeoToken.SCRIPT_HASH;
-                    } else if (assetID.equals(GAS_ASSET)) {
-                        neoURI.asset = GasToken.SCRIPT_HASH;
+                    if (assetID.equals(NEO_TOKEN_STRING)) {
+                        neoURI.tokenHash = NeoToken.SCRIPT_HASH;
+                    } else if (assetID.equals(GAS_TOKEN_STRING)) {
+                        neoURI.tokenHash = GasToken.SCRIPT_HASH;
                     } else {
-                        neoURI.asset = new Hash160(assetID);
+                        neoURI.tokenHash = new Hash160(assetID);
                     }
                 } else if (singleQueryParts[0].equals("amount") &&
                         neoURI.amount == null) {
@@ -120,21 +119,22 @@ public class NeoURI {
         }
 
         int amountScale = amount.stripTrailingZeros().scale();
-        if (isNeoToken(asset) && amountScale > NeoToken.DECIMALS) {
+        if (isNeoToken(tokenHash) && amountScale > NeoToken.DECIMALS) {
             throw new IllegalArgumentException("The Neo token does not support any decimal " +
                     "places.");
-        } else if (isGasToken(asset) && amountScale > GasToken.DECIMALS) {
+        } else if (isGasToken(tokenHash) && amountScale > GasToken.DECIMALS) {
             throw new IllegalArgumentException("The Gas token does not support more than " +
                     GasToken.DECIMALS + " decimal places.");
         } else {
-            int decimals = new FungibleToken(asset, neow3j).getDecimals();
+            int decimals = new FungibleToken(tokenHash, neow3j).getDecimals();
             if (amountScale > decimals) {
-                throw new IllegalArgumentException("The token '" + asset + "' does not support " +
-                        "more than " + decimals + " decimal places.");
+                throw new IllegalArgumentException(
+                        "The token '" + tokenHash + "' does not support " +
+                                "more than " + decimals + " decimal places.");
             }
         }
 
-        return new FungibleToken(asset, neow3j).transfer(wallet, recipient, amount);
+        return new FungibleToken(tokenHash, neow3j).transfer(wallet, recipient, amount);
     }
 
     private boolean isNeoToken(Hash160 asset) {
@@ -172,40 +172,40 @@ public class NeoURI {
     }
 
     /**
-     * Sets the asset.
+     * Sets the token.
      *
-     * @param asset the asset script hash as big endian byte array.
+     * @param token the token hash as big endian byte array.
      * @return this NeoURI object.
      */
-    public NeoURI asset(byte[] asset) {
-        this.asset = new Hash160(asset);
+    public NeoURI token(byte[] token) {
+        this.tokenHash = new Hash160(token);
         return this;
     }
 
     /**
-     * Sets the asset.
+     * Sets the token.
      *
-     * @param asset the asset.
+     * @param token the token hash.
      * @return this NeoURI object.
      */
-    public NeoURI asset(Hash160 asset) {
-        this.asset = asset;
+    public NeoURI token(Hash160 token) {
+        this.tokenHash = token;
         return this;
     }
 
     /**
-     * Sets the asset.
+     * Sets the token.
      *
-     * @param asset the asset.
+     * @param token the token hash, 'neo' or 'gas'.
      * @return this NeoURI object.
      */
-    public NeoURI asset(String asset) {
-        if (asset.equals("neo")) {
-            this.asset = NeoToken.SCRIPT_HASH;
-        } else if (asset.equals("gas")) {
-            this.asset = GasToken.SCRIPT_HASH;
+    public NeoURI token(String token) {
+        if (token.equals("neo")) {
+            this.tokenHash = NeoToken.SCRIPT_HASH;
+        } else if (token.equals("gas")) {
+            this.tokenHash = GasToken.SCRIPT_HASH;
         } else {
-            this.asset = new Hash160(asset);
+            this.tokenHash = new Hash160(token);
         }
         return this;
     }
@@ -217,17 +217,6 @@ public class NeoURI {
      * @return this NeoURI object.
      */
     public NeoURI amount(String amount) {
-        this.amount = new BigDecimal(amount);
-        return this;
-    }
-
-    /**
-     * Sets the amount.
-     *
-     * @param amount the amount.
-     * @return this NeoURI object.
-     */
-    public NeoURI amount(Integer amount) {
         this.amount = new BigDecimal(amount);
         return this;
     }
@@ -278,13 +267,13 @@ public class NeoURI {
 
     private String buildQueryPart() {
         List<String> query = new ArrayList<>();
-        if (asset != null) {
-            if (asset.equals(NeoToken.SCRIPT_HASH)) {
+        if (tokenHash != null) {
+            if (tokenHash.equals(NeoToken.SCRIPT_HASH)) {
                 query.add("asset=neo");
-            } else if (asset.equals(GasToken.SCRIPT_HASH)) {
+            } else if (tokenHash.equals(GasToken.SCRIPT_HASH)) {
                 query.add("asset=gas");
             } else {
-                query.add("asset=" + asset.toString());
+                query.add("asset=" + tokenHash.toString());
             }
         }
         if (amount != null) {
@@ -337,21 +326,21 @@ public class NeoURI {
     }
 
     /**
-     * Gets the recipient address.
-     *
-     * @return the recipient address.
-     */
-    public String getRecipient() {
-        return recipient.toAddress();
-    }
-
-    /**
      * Gets the recipient address as script hash.
      *
      * @return the script hash of the recipient address.
      */
-    public Hash160 getAddressAsScriptHash() {
+    public Hash160 getRecipient() {
         return recipient;
+    }
+
+    /**
+     * Gets the recipient address.
+     *
+     * @return the recipient address.
+     */
+    public String getRecipientAddress() {
+        return recipient.toAddress();
     }
 
     /**
@@ -359,8 +348,8 @@ public class NeoURI {
      *
      * @return the asset.
      */
-    public Hash160 getAsset() {
-        return asset;
+    public Hash160 getToken() {
+        return tokenHash;
     }
 
     /**
@@ -368,13 +357,13 @@ public class NeoURI {
      *
      * @return the asset as string.
      */
-    public String getAssetAsString() {
-        if (asset.equals(NeoToken.SCRIPT_HASH)) {
-            return NEO_ASSET;
-        } else if (asset.equals(GasToken.SCRIPT_HASH)) {
-            return GAS_ASSET;
+    public String getTokenAsString() {
+        if (tokenHash.equals(NeoToken.SCRIPT_HASH)) {
+            return NEO_TOKEN_STRING;
+        } else if (tokenHash.equals(GasToken.SCRIPT_HASH)) {
+            return GAS_TOKEN_STRING;
         }
-        return asset.toString();
+        return tokenHash.toString();
     }
 
     /**
@@ -382,8 +371,8 @@ public class NeoURI {
      *
      * @return the asset as address.
      */
-    public String getAssetAsAddress() {
-        return asset.toAddress();
+    public String getTokenAsAddress() {
+        return tokenHash.toAddress();
     }
 
     /**

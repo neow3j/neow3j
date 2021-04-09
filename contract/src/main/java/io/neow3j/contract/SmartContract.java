@@ -28,44 +28,47 @@ import static java.util.Arrays.asList;
 public class SmartContract {
 
     protected Hash160 scriptHash;
-    protected Neow3j neow;
+    protected Neow3j neow3j;
 
     /**
      * Constructs a {@code SmartContract} representing the smart contract with the given script
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash the smart contract's script hash.
-     * @param neow       the {@link Neow3j} instance to use for invocations.
+     * @param neow3j       the {@link Neow3j} instance to use for invocations.
      */
-    public SmartContract(Hash160 scriptHash, Neow3j neow) {
+    public SmartContract(Hash160 scriptHash, Neow3j neow3j) {
         if (scriptHash == null) {
             throw new IllegalArgumentException("The contract script hash must not be null.");
         }
-        if (neow == null) {
+        if (neow3j == null) {
             throw new IllegalArgumentException("The Neow3j object must not be null.");
         }
         this.scriptHash = scriptHash;
-        this.neow = neow;
+        this.neow3j = neow3j;
     }
 
     /**
      * Initializes a {@link TransactionBuilder} for an invocation of this contract with the
      * provided function and parameters. The order of the parameters is relevant.
      *
-     * @param function           the function to invoke.
-     * @param contractParameters the parameters to pass with the invocation.
+     * @param function the function to invoke.
+     * @param params   the parameters to pass with the invocation.
      * @return a {@link TransactionBuilder} allowing to set further details of the invocation.
      */
-    public TransactionBuilder invokeFunction(String function,
-            ContractParameter... contractParameters) {
+    public TransactionBuilder invokeFunction(String function, ContractParameter... params) {
 
         if (Strings.isEmpty(function)) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        ScriptBuilder b = new ScriptBuilder().contractCall(scriptHash, function,
-                asList(contractParameters));
-        return new TransactionBuilder(neow).script(b.toArray());
+        byte[] script = new ScriptBuilder()
+                .contractCall(
+                        scriptHash,
+                        function,
+                        asList(params))
+                .toArray();
+        return new TransactionBuilder(neow3j).script(script);
     }
 
     /**
@@ -209,7 +212,7 @@ public class SmartContract {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        return neow.invokeFunction(scriptHash.toString(), function, params, signers).send();
+        return neow3j.invokeFunction(scriptHash.toString(), function, params, signers).send();
     }
 
     /**
@@ -228,7 +231,7 @@ public class SmartContract {
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public ContractManifest getManifest() throws IOException {
-        ContractState contractState = neow.getContractState(scriptHash).send()
+        ContractState contractState = neow3j.getContractState(scriptHash).send()
                 .getContractState();
         return contractState.getManifest();
     }
@@ -265,7 +268,8 @@ public class SmartContract {
                         .opCode(OpCode.ABORT)
                         .pushData(sender.toLittleEndianArray())
                         .pushInteger(nefCheckSum)
-                        .pushData(contractName).toArray());
+                        .pushData(contractName)
+                        .toArray());
     }
 
 }
