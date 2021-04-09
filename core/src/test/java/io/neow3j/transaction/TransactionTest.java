@@ -1,6 +1,8 @@
 package io.neow3j.transaction;
 
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.transaction.Signer.feeOnly;
+import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
@@ -257,7 +259,7 @@ public class TransactionTest {
         neow.setNetworkMagicNumber(769);
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.feeOnly(account1));
+        signers.add(feeOnly(account1));
         Transaction tx = new Transaction(neow, (byte) 0,
                 0L,
                 0L,
@@ -270,7 +272,7 @@ public class TransactionTest {
 
         byte[] txHexWithoutWitness = hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
-        byte[] expectedData = ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
+        byte[] expectedData = concatenate(neow.getNetworkMagicNumber(),
                 sha256(txHexWithoutWitness));
         assertThat(tx.getHashData(), is(expectedData));
     }

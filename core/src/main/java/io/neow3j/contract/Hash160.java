@@ -125,7 +125,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * @return the address.
      */
     public String toAddress() {
-        return scriptHashToAddress(reverseArray(hash));
+        return scriptHashToAddress(hash);
     }
 
     /**
