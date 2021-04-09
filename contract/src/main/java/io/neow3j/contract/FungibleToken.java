@@ -64,27 +64,6 @@ public class FungibleToken extends Token {
     }
 
     /**
-     * Gets the token balance for the given account address.
-     * <p>
-     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
-     * 1*10^8 GAS fractions.
-     * <p>
-     * The balance is not cached locally. Every time this method is called requests are sent to the
-     * Neo node.
-     *
-     * @param address the address of the account to fetch the balance for.
-     * @return the token balance.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a number.
-     */
-    public BigInteger getBalanceOf(String address) throws IOException,
-            UnexpectedReturnTypeException {
-        return getBalanceOf(Hash160.fromAddress(address));
-    }
-
-    /**
      * Gets the token balance for the given account script hash.
      * <p>
      * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
