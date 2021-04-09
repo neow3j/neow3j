@@ -1,9 +1,16 @@
 package io.neow3j.compiler;
 
+import io.neow3j.compiler.sourcelookup.ISourceContainer;
 import io.neow3j.contract.NefFile;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
+
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import io.neow3j.utils.ClassUtils;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
@@ -41,8 +48,9 @@ public class CompilationUnit {
     // The main contract class
     private ClassNode contractClass;
 
-    // Maps fully qualified class names to their source files (aboslute file paths).
-    private final Map<String, String> sourceFileMap = new HashMap<>();
+    // Maps fully qualified class names to their source files.
+    private final Map<String, File> sourceFileMap = new HashMap<>();
+    private final List<ISourceContainer> sourceContainers = new ArrayList<>();
 
     public CompilationUnit(ClassLoader classLoader) {
         this.classLoader = classLoader;
@@ -107,21 +115,42 @@ public class CompilationUnit {
     /**
      * Gets the absolute path of the source file corresponding to the given class.
      *
-     * @param fullyQualifiedClassName The name of the class.
+     * @param classNode The class.
      * @return the absolute path of the source file.
      */
-    protected String getSourceFile(String fullyQualifiedClassName) {
-        return sourceFileMap.get(fullyQualifiedClassName);
+    protected File getSourceFile(ClassNode classNode) {
+        if (sourceFileMap.containsKey(classNode.name)) {
+            return sourceFileMap.get(classNode.name);
+        }
+        String filePath = extractFilePathWithPackage(classNode);
+        for (ISourceContainer container : sourceContainers) {
+            List<File> sources = container.findSourceElements(filePath);
+            if (!sources.isEmpty()) {
+                // TODO: Handle duplicates.
+                sourceFileMap.put(classNode.name, sources.get(0));
+                return sources.get(0);
+            }
+        }
+        // If we cannot find a source for a class we remember that in the source map as well to
+        // save time the next time this class is searched for.
+        sourceFileMap.put(classNode.name, null);
+        return null;
     }
 
-    /**
-     * Adds the given mapping between the compiled class and the source file.
-     *
-     * @param className  The fully qualified name of the class.
-     * @param sourceFile The absolute path to the source file that the class was compiled from.
-     */
-    protected void addClassToSourceMapping(String className, String sourceFile) {
-        sourceFileMap.put(className, sourceFile);
+    // Extracts the path of the source file of the given class node. The source file's name is
+    // taken from the node's `sourceFile` variable, a ".java" is appended, and the package name is
+    // prepended.
+    private String extractFilePathWithPackage(ClassNode classNode) {
+        int idx = classNode.name.lastIndexOf('/');
+        String packageName = classNode.name.substring(0, idx+1); // includes last slash.
+        String sourceFileName = classNode.sourceFile;
+        if (!classNode.sourceFile.contains(".java")) {
+            sourceFileName = sourceFileName + ".java";
+        }
+        return (packageName + sourceFileName).replace('/', File.separatorChar);
     }
 
+    public void addSourceContainers(List<ISourceContainer> sourceContainers) {
+        this.sourceContainers.addAll(sourceContainers);
+    }
 }
