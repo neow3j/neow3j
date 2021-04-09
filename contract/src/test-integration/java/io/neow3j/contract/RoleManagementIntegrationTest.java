@@ -58,7 +58,7 @@ public class RoleManagementIntegrationTest {
         BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
-                roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, nextBlockIndex.intValue());
+                roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, nextBlockIndex);
 
         assertThat(designatedByRole, hasSize(1));
         assertThat(designatedByRole.get(0), is(account.getECKeyPair().getPublicKey()));
@@ -84,7 +84,7 @@ public class RoleManagementIntegrationTest {
         BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
-                roleManagement.getDesignatedByRole(Role.ORACLE, nextBlockIndex.intValue());
+                roleManagement.getDesignatedByRole(Role.ORACLE, nextBlockIndex);
 
         assertThat(designatedByRole, hasSize(1));
         assertThat(designatedByRole.get(0), is(account.getECKeyPair().getPublicKey()));
@@ -110,8 +110,7 @@ public class RoleManagementIntegrationTest {
         BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
-                roleManagement.getDesignatedByRole(Role.NEO_FS_ALPHABET_NODE,
-                        nextBlockIndex.intValue());
+                roleManagement.getDesignatedByRole(Role.NEO_FS_ALPHABET_NODE, nextBlockIndex);
 
         assertThat(designatedByRole, hasSize(1));
         assertThat(designatedByRole.get(0), is(account.getECKeyPair().getPublicKey()));
