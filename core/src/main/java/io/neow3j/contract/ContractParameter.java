@@ -16,6 +16,7 @@ import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -265,6 +266,16 @@ public class ContractParameter {
      */
     public static ContractParameter integer(BigInteger integer) {
         return new ContractParameter(INTEGER, integer);
+    }
+
+    /**
+     * Creates a hash160 parameter from the given account.
+     *
+     * @param account an account.
+     * @return the contract parameter.
+     */
+    public static ContractParameter hash160(Account account) {
+        return hash160(account.getScriptHash());
     }
 
     /**
