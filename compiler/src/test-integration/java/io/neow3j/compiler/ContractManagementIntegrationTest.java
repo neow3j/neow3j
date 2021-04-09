@@ -83,7 +83,7 @@ public class ContractManagementIntegrationTest {
         Hash160 contractHash = SmartContract.getContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState result =
-                ct.getNeow3j().getContractState(contractHash.toString()).send();
+                ct.getNeow3j().getContractState(contractHash).send();
         assertThat(result.getContractState(), notNullValue());
     }
 
@@ -109,7 +109,7 @@ public class ContractManagementIntegrationTest {
         Hash160 contractHash = SmartContract.getContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState result =
-                ct.getNeow3j().getContractState(contractHash.toString()).send();
+                ct.getNeow3j().getContractState(contractHash).send();
         assertThat(result.getContractState(), notNullValue());
     }
 
@@ -131,7 +131,7 @@ public class ContractManagementIntegrationTest {
         Hash160 contractHash = SmartContract.getContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState contractState =
-                ct.getNeow3j().getContractState(contractHash.toString()).send();
+                ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
         // Compile updated version of contract
@@ -153,7 +153,7 @@ public class ContractManagementIntegrationTest {
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         // Check one update has been performed
-        contractState = ct.getNeow3j().getContractState(contractHash.toString()).send();
+        contractState = ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(1));
     }
 
@@ -175,7 +175,7 @@ public class ContractManagementIntegrationTest {
         Hash160 contractHash = SmartContract.getContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
         NeoGetContractState contractState =
-                ct.getNeow3j().getContractState(contractHash.toString()).send();
+                ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
         // Compile updated version of contract
@@ -198,7 +198,7 @@ public class ContractManagementIntegrationTest {
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         // Check one update has been performed
-        contractState = ct.getNeow3j().getContractState(contractHash.toString()).send();
+        contractState = ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(1));
     }
 
@@ -227,7 +227,7 @@ public class ContractManagementIntegrationTest {
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         NeoGetContractState contractState =
-                ct.getNeow3j().getContractState(contractHash.toString()).send();
+                ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getError().getMessage(), is("Unknown contract"));
     }
 

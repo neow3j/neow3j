@@ -2347,15 +2347,19 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetNep17Transfers getNep17Transfers = deserialiseResponse(NeoGetNep17Transfers.class);
-        assertThat(getNep17Transfers.getNep17Transfer().getSent(), is(notNullValue()));
-        assertThat(getNep17Transfers.getNep17Transfer().getSent(), hasSize(2));
-        assertThat(getNep17Transfers.getNep17Transfer().getSent(),
+
+        List<NeoGetNep17Transfers.Nep17Transfer> sent =
+                getNep17Transfers.getNep17Transfer().getSent();
+
+        assertThat(sent, is(notNullValue()));
+        assertThat(sent, hasSize(2));
+        assertThat(sent,
                 containsInAnyOrder(
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1554283931L,
                                 new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
-                                "100000000000",
+                                new BigInteger("100000000000"),
                                 368082L,
                                 0L,
                                 new Hash256("240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564")
@@ -2364,22 +2368,25 @@ public class ResponseTest extends ResponseTester {
                                 1554880287L,
                                 new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
-                                "100000000000",
+                                new BigInteger("100000000000"),
                                 397769L,
                                 0L,
                                 new Hash256("12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834")
                         )
                 ));
 
-        assertThat(getNep17Transfers.getNep17Transfer().getReceived(), is(notNullValue()));
-        assertThat(getNep17Transfers.getNep17Transfer().getReceived(), hasSize(1));
-        assertThat(getNep17Transfers.getNep17Transfer().getReceived(),
+        List<NeoGetNep17Transfers.Nep17Transfer> received =
+                getNep17Transfers.getNep17Transfer().getReceived();
+
+        assertThat(received, is(notNullValue()));
+        assertThat(received, hasSize(1));
+        assertThat(received,
                 hasItem(
                         new NeoGetNep17Transfers.Nep17Transfer(
                                 1555651816L,
                                 new Hash160("600c4f5200db36177e3e8a09e9f18e2fc7d12a0f"),
                                 "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
-                                "1000000",
+                                new BigInteger("1000000"),
                                 436036L,
                                 0L,
                                 new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")
@@ -2387,19 +2394,19 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         // First Sent Entry
-        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTimestamp(), is(1554283931L));
-        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getAssetHash(),
+        assertThat(sent.get(0).getTimestamp(), is(1554283931L));
+        assertThat(sent.get(0).getAssetHash(),
                 is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
-        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(0).getTransferAddress(),
+        assertThat(sent.get(0).getTransferAddress(),
                 is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
 
         // Second Sent Entry
-        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(1).getAmount(), is("100000000000"));
-        assertThat(getNep17Transfers.getNep17Transfer().getSent().get(1).getBlockIndex(), is(397769L));
+        assertThat(sent.get(1).getAmount(), is(new BigInteger("100000000000")));
+        assertThat(sent.get(1).getBlockIndex(), is(397769L));
 
         // Received Entry
-        assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTransferNotifyIndex(), is(0L));
-        assertThat(getNep17Transfers.getNep17Transfer().getReceived().get(0).getTxHash(),
+        assertThat(received.get(0).getTransferNotifyIndex(), is(0L));
+        assertThat(received.get(0).getTxHash(),
                 is(new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")));
     }
 

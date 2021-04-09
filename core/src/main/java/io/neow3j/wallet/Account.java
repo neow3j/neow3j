@@ -224,7 +224,7 @@ public class Account {
     public Map<Hash160, BigInteger> getNep17Balances(Neow3j neow3j)
             throws IOException {
 
-        NeoGetNep17Balances result = neow3j.getNep17Balances(getAddress()).send();
+        NeoGetNep17Balances result = neow3j.getNep17Balances(getScriptHash()).send();
         Map<Hash160, BigInteger> balances = new HashMap<>();
         result.getBalances().getBalances().forEach(b ->
                 balances.put(b.getAssetHash(), new BigInteger(b.getAmount())));
