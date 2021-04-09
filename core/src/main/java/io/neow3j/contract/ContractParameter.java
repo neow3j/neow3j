@@ -2,17 +2,10 @@ package io.neow3j.contract;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
@@ -20,7 +13,6 @@ import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,11 +25,9 @@ import static io.neow3j.model.types.ContractParameterType.MAP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Contract parameters are used for example in contract invocations and represent an input
- * parameter. They can also represent an output type and value.
+ * Contract parameters represent an input parameter for contract invocations.
  */
 @JsonSerialize(using = ContractParameterSerializer.class)
-@JsonDeserialize(using = ContractParameterDeserializer.class)
 @SuppressWarnings("unchecked")
 public class ContractParameter {
 
@@ -67,10 +57,22 @@ public class ContractParameter {
         this(null, paramType, value);
     }
 
+    /**
+     * Creates a contract parameter from the given value.
+     *
+     * @param value any object value.
+     * @return the contract parameter.
+     */
     public static ContractParameter any(Object value) {
         return new ContractParameter(ContractParameterType.ANY, value);
     }
 
+    /**
+     * Creates a string parameter from the given value.
+     *
+     * @param value the string value.
+     * @return the contract parameter.
+     */
     public static ContractParameter string(String value) {
         return new ContractParameter(ContractParameterType.STRING, value);
     }
@@ -116,7 +118,7 @@ public class ContractParameter {
      * The {@code Map} argument can hold any types that can be cast to one of the available
      * {@link ContractParameterType}s. The types {@link ContractParameterType#ARRAY} and
      * {@link ContractParameterType#MAP} are not supported as map keys.
-     *
+     * <p>
      * The first example below uses regular Java types that can automatically be wrapped into a
      * {@code ContractParameter}.
      * <pre>
@@ -133,6 +135,7 @@ public class ContractParameter {
      * map.put(ContractParameter.integer("two"), ContractParameter.integer(2));
      * ContractParameter param = map(map);
      * </pre>
+     *
      * @param map The map entries.
      * @return the contract parameter.
      */
@@ -479,100 +482,6 @@ public class ContractParameter {
             }
         }
 
-    }
-
-    protected static class ContractParameterDeserializer
-            extends ParameterDeserializer<ContractParameter> {
-
-        @Override
-        public ContractParameter newInstance(String name, ContractParameterType type,
-                Object value) {
-            return new ContractParameter(name, type, value);
-        }
-
-    }
-
-    protected static abstract class ParameterDeserializer<T extends ContractParameter>
-            extends StdDeserializer<T> {
-
-        public ParameterDeserializer() {
-            this(null);
-        }
-
-        public ParameterDeserializer(Class<T> vc) {
-            super(vc);
-        }
-
-        public abstract T newInstance(String name, ContractParameterType type, Object value);
-
-        @Override
-        public T deserialize(JsonParser jp, DeserializationContext ctxt)
-                throws IOException {
-
-            JsonNode node = jp.getCodec().readTree(jp);
-            return deserializeParameter(node, jp);
-        }
-
-        private T deserializeParameter(JsonNode param, JsonParser jp)
-                throws JsonProcessingException {
-
-            JsonNode nameNode = param.get("name");
-            String name = null;
-            if (nameNode != null) {
-                name = nameNode.asText();
-            }
-
-            JsonNode typeNode = param.get("type");
-            ContractParameterType type = null;
-            if (typeNode != null) {
-                type = jp.getCodec().treeToValue(typeNode, ContractParameterType.class);
-            }
-
-            JsonNode valueNode = param.get("value");
-            Object value = null;
-            if (valueNode != null) {
-                value = deserializeValue(valueNode, type, jp);
-            }
-            return newInstance(name, type, value);
-        }
-
-        private Object deserializeValue(JsonNode value, ContractParameterType type, JsonParser jp)
-                throws JsonProcessingException {
-
-            switch (type) {
-                case SIGNATURE:
-                case HASH256:
-                case PUBLIC_KEY:
-                    // Expected to be a hexadecimal string.
-                    return Numeric.hexStringToByteArray(value.asText());
-                case BYTE_ARRAY:
-                    // Expected to be a Base64-encoded byte array.
-                    return Base64.decode(value.asText());
-                case STRING:
-                    return value.asText();
-                case BOOLEAN:
-                    return value.asBoolean();
-                case INTEGER:
-                    return new BigInteger(value.asText());
-                case HASH160:
-                    // The script hash value is expected to be a big-endian hex string.
-                    return new Hash160(value.asText());
-                case ARRAY:
-                    if (value.isArray()) {
-                        List<ContractParameter> arr = new ArrayList<>(value.size());
-                        for (final JsonNode param : value) {
-                            arr.add(deserializeParameter(param, jp));
-                        }
-                        return arr.toArray(new ContractParameter[]{});
-                    }
-                case INTEROP_INTERFACE:
-                    // We assume that the interop interface parameter holds a plain string.
-                    return value.asText();
-                default:
-                    throw new UnsupportedOperationException("Parameter type '" + type +
-                            "' not supported.");
-            }
-        }
     }
 
 }
