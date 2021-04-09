@@ -1,37 +1,39 @@
 package io.neow3j.devpack.gradle;
 
-import java.nio.file.Path;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.options.Option;
 
 abstract public class Neow3jCompileTask extends DefaultTask {
 
-    public static final String NEOW3J_COMPILE_TASK_NAME = "neow3jCompile";
-    public static final String NEOW3J_COMPILER_OPTIONS_NAME = "neow3jCompiler";
-    public static final String NEOW3J_DEFAULT_OUTPUT_DIR = "neow3j";
+    static final String CLASSNAME_NAME = "className";
+    private static final String DEBUG_NAME = "debug";
+    private static final String OUTPUTDIR_NAME = "outputDir";
 
     @Input
-    abstract public Property<String> getClassName();
-
-    @Input
-    @Optional
-    abstract public Property<Boolean> getDebug();
-
-    @Input
-    @Optional
-    abstract public Property<Path> getOutputDir();
+    @Option(option = CLASSNAME_NAME, description = "Sets the smart contract class name (fully " +
+            "qualified name) to be compiled.")
+    public abstract Property<String> getClassName();
 
     @Input
     @Optional
-    abstract public Property<Path> getProjectBuildDir();
+    @Option(option = DEBUG_NAME, description = "Sets whether the neow3j compiler should generate "
+            + "debugging symbols.")
+    public abstract Property<Boolean> getDebug();
+
+    @Input
+    @Optional
+    @Option(option = OUTPUTDIR_NAME, description = "Sets the output directory for the compiled "
+            + "smart contract.")
+    public abstract RegularFileProperty getOutputDir();
 
     @TaskAction
     public void execute() {
         Neow3jCompileAction action = new Neow3jCompileAction();
         action.execute(this);
     }
-
 }

@@ -1,88 +1,52 @@
 package io.neow3j.devpack.gradle;
 
-import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
-import static io.neow3j.contract.ContractUtils.writeNefFile;
-import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILER_OPTIONS_NAME;
-import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_DEFAULT_OUTPUT_DIR;
-import static io.neow3j.devpack.gradle.Neow3jPluginOptions.CLASSNAME_NAME;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getBuildDirURL;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsDirsURL;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSetsFilesURL;
-import static java.nio.file.Files.createDirectories;
-import static java.util.Optional.ofNullable;
-
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
+import io.neow3j.compiler.sourcelookup.DirectorySourceContainer;
+import io.neow3j.compiler.sourcelookup.ISourceContainer;
+import org.gradle.api.Action;
+import org.gradle.api.logging.configuration.ShowStacktrace;
+import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.tasks.SourceSetContainer;
+
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import org.gradle.api.Action;
-import org.gradle.api.logging.configuration.ShowStacktrace;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeNefFile;
+import static io.neow3j.devpack.gradle.Neow3jCompileTask.CLASSNAME_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPlugin.EXTENSION_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getOutputDirs;
+import static java.lang.String.format;
+import static java.nio.file.Files.createDirectories;
 
 public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
     @Override
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
-        String canonicalClassName = ofNullable(neow3jPluginCompile.getClassName().getOrNull())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("The parameter "
-                                + "'" + CLASSNAME_NAME + "' needs to be set in the "
-                                + "'" + NEOW3J_COMPILER_OPTIONS_NAME + "' "
-                                + "declaration in your build.gradle file.")
-                );
+        if (!neow3jPluginCompile.getClassName().isPresent()) {
+            throw new IllegalArgumentException(format("The parameter '%s' needs to be set in the " +
+                            "'%s' declaration in your build.gradle file.",
+                    CLASSNAME_NAME, EXTENSION_NAME));
+        }
+        String canonicalClassName = neow3jPluginCompile.getClassName().get();
+        File projectBuildDir = neow3jPluginCompile.getProject().getBuildDir();
+        Boolean debugSymbols = neow3jPluginCompile.getDebug().get();
+        File outputDir = neow3jPluginCompile.getOutputDir().getAsFile().get();
 
-        // default value is 'true' for generating debug symbols if not specified
-        Boolean debugSymbols = neow3jPluginCompile.getDebug().getOrElse(true);
-
-        File projectBuildDir = ofNullable(
-                neow3jPluginCompile.getProjectBuildDir()
-                        .map(Path::toFile).getOrNull())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("The project build directory needs "
-                                + "to be set to the task."));
-
-        Path outputDir = neow3jPluginCompile.getOutputDir().getOrElse(
-                Paths.get(projectBuildDir.getAbsolutePath(), NEOW3J_DEFAULT_OUTPUT_DIR));
-
-        List<URL> clDirs = new ArrayList<>();
-
-        // adding the source sets dir of the project
-        List<URL> sourceSetDirsURL = getSourceSetsDirsURL(neow3jPluginCompile.getProject());
-        clDirs.addAll(sourceSetDirsURL);
-
-        // adding the build dir of the project
-        URL buildDirsURL = getBuildDirURL(projectBuildDir);
-        clDirs.add(buildDirsURL);
-
-        URL[] clDirsArray = clDirs.stream().toArray(URL[]::new);
-        URLClassLoader compilerClassLoader = new URLClassLoader(clDirsArray,
-                this.getClass().getClassLoader());
-
-        // Get the absolute path of the source file
-        String setOfSourceSetFilesPath = getSourceSetsFilesURL(
-                neow3jPluginCompile.getProject()).stream()
-                .map(URL::getPath)
-                .filter(s -> s.contains(canonicalClassName.replace(".", "/")))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Couldn't find the source file "
-                        + "belonging to " + canonicalClassName));
-
-        Compiler n = new Compiler(compilerClassLoader);
+        URLClassLoader classLoader = constructClassLoader(neow3jPluginCompile, projectBuildDir);
+        CompilationUnit compilationUnit = compile(neow3jPluginCompile, canonicalClassName,
+                debugSymbols, classLoader);
 
         try {
-            // compile
-            CompilationUnit compilationUnit;
-            if (debugSymbols) {
-                compilationUnit = n.compileClass(canonicalClassName, setOfSourceSetFilesPath);
-            } else {
-                compilationUnit = n.compileClass(canonicalClassName);
-            }
-
-            Path outDir = createDirectories(outputDir);
+            Path outDir = createDirectories(outputDir.toPath());
             String contractName = compilationUnit.getManifest().getName();
             if (contractName == null || contractName.length() == 0) {
                 throw new IllegalStateException("No contract name is set in the contract's "
@@ -106,17 +70,65 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             }
 
         } catch (Exception e) {
-            System.out.println("Compilation failed.");
+            System.out.println("Smart contract compilation failed.");
             ShowStacktrace showStacktrace = neow3jPluginCompile.getProject().getGradle()
                     .getStartParameter().getShowStacktrace();
-            RuntimeException r;
             if (showStacktrace.equals(ShowStacktrace.ALWAYS)) {
-                r = new RuntimeException(e);
+                throw new RuntimeException(e);
             } else {
-                r = new RuntimeException(e.getMessage());
+                throw new RuntimeException(e.getMessage());
             }
-            throw r;
         }
+    }
+
+    private CompilationUnit compile(Neow3jCompileTask neow3jPluginCompile,
+            String canonicalClassName, Boolean debugSymbols, URLClassLoader classLoader) {
+        Compiler n = new Compiler(classLoader);
+        CompilationUnit compilationUnit;
+        try {
+            if (debugSymbols) {
+                List<ISourceContainer> containers = constructSourceContainers(neow3jPluginCompile);
+                compilationUnit = n.compile(canonicalClassName, containers);
+            } else {
+                compilationUnit = n.compile(canonicalClassName);
+            }
+        } catch (Exception e) {
+            System.out.println("Smart contract compilation failed.");
+            ShowStacktrace showStacktrace = neow3jPluginCompile.getProject().getGradle()
+                    .getStartParameter().getShowStacktrace();
+            if (showStacktrace.equals(ShowStacktrace.ALWAYS)) {
+                throw new RuntimeException(e);
+            } else {
+                throw new RuntimeException(e.getMessage());
+            }
+        }
+        return compilationUnit;
+    }
+
+    private List<ISourceContainer> constructSourceContainers(Neow3jCompileTask neow3jPluginCompile) {
+        SourceSetContainer sourceSets = neow3jPluginCompile.getProject().getConvention()
+                .getPlugin(JavaPluginConvention.class).getSourceSets();
+        Set<File> sourceDirs = new HashSet<>();
+        sourceSets.forEach(sc -> sourceDirs.addAll(sc.getAllJava().getSrcDirs()));
+        return sourceDirs.stream()
+                .map(sd -> new DirectorySourceContainer(sd, false))
+                .collect(Collectors.toList());
+    }
+
+    private URLClassLoader constructClassLoader(Neow3jCompileTask neow3jPluginCompile,
+            File projectBuildDir) {
+        List<File> classDirs = getOutputDirs(neow3jPluginCompile.getProject());
+        classDirs.add(projectBuildDir);
+        URL[] classDirURLs = classDirs.stream().map(f -> {
+            try {
+                return f.toURI().toURL();
+            } catch (MalformedURLException e) {
+                System.out.printf("Error converting '%s' to URL: %s", f.getAbsolutePath(), e);
+            }
+            return null;
+        }).toArray(URL[]::new);
+
+        return new URLClassLoader(classDirURLs, this.getClass().getClassLoader());
     }
 
 }

@@ -16,6 +16,8 @@ import java.util.zip.ZipOutputStream;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPluginConvention;
 
+import static java.util.Optional.ofNullable;
+
 public class Neow3jPluginUtils {
 
     protected static final String NEF_SUFFIX = ".nef";
@@ -23,48 +25,13 @@ public class Neow3jPluginUtils {
     protected static final String NEFDBGNFO_SUFFIX = ".nefdbgnfo";
     protected static final String DEBUG_JSON_SUFFIX = ".debug.json";
 
-    static URL getBuildDirURL(File buildDir) {
-        try {
-            return buildDir.toURI().toURL();
-        } catch (MalformedURLException e) {
-            System.out.println("Error on converting ("
-                    + buildDir.getAbsolutePath() + ") to URL: " + e);
-        }
-        return null;
-    }
-
-    static List<URL> getSourceSetsFilesURL(Project project) {
+    static List<File> getOutputDirs(Project project) {
         final JavaPluginConvention pluginConv = project.getConvention()
                 .getPlugin(JavaPluginConvention.class);
-        List<URL> urls = new ArrayList<>();
-        pluginConv.getSourceSets().forEach(ss -> {
-            ss.getAllSource().forEach(f -> {
-                try {
-                    urls.add(f.toURI().toURL());
-                } catch (Exception e) {
-                    System.out.println("Error on converting ("
-                            + f.getAbsolutePath() + ") to URL: " + e);
-                }
-            });
-        });
-        return urls;
-    }
-
-    static List<URL> getSourceSetsDirsURL(Project project) {
-        final JavaPluginConvention pluginConv = project.getConvention()
-                .getPlugin(JavaPluginConvention.class);
-        List<URL> urls = new ArrayList<>();
-        pluginConv.getSourceSets().forEach(ss -> {
-            ss.getOutput().getClassesDirs().forEach(f -> {
-                try {
-                    urls.add(f.toURI().toURL());
-                } catch (Exception e) {
-                    System.out.println("Error on converting ("
-                            + f.getAbsolutePath() + ") to URL: " + e);
-                }
-            });
-        });
-        return urls;
+        List<File> dirs = new ArrayList<>();
+        pluginConv.getSourceSets()
+                .forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
+        return dirs;
     }
 
     static void writeToFile(File file, byte[] content) throws IOException {

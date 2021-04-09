@@ -1,6 +1,6 @@
 package io.neow3j.devpack.gradle;
 
-import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILE_TASK_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
 import static org.gradle.testkit.runner.TaskOutcome.FAILED;
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS;
 import static org.hamcrest.CoreMatchers.not;
@@ -40,7 +40,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // build success/failure check
-        assertEquals(SUCCESS, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
         assertTrue(testCase.getBuildNeow3jOutputDir().exists());
 
         // check whether NEF file was generated
@@ -74,7 +74,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // build success/failure check
-        assertEquals(SUCCESS, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
         assertTrue(testCase.getBuildNeow3jOutputDir().exists());
 
         // check whether NEF file was generated
@@ -105,7 +105,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // check whether the compilation miserably failed :-)
-        assertEquals(FAILED, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
         assertFalse(testCase.getBuildNeow3jOutputDir().exists());
     }
 
@@ -125,7 +125,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // check whether the compilation miserably failed :-)
-        assertEquals(FAILED, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
         assertFalse(testCase.getBuildNeow3jOutputDir().exists());
     }
 
@@ -146,7 +146,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // build success/failure check
-        assertEquals(SUCCESS, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
         assertTrue(testCase.getBuildNeow3jOutputDir().exists());
 
         // check whether NEF file was generated
@@ -179,7 +179,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // check whether the compilation miserably failed :-)
-        assertEquals(FAILED, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
         assertFalse(testCase.getBuildNeow3jOutputDir().exists());
         assertThat(
                 buildResult.getOutput(),
@@ -208,7 +208,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // check whether the compilation miserably failed :-)
-        assertEquals(FAILED, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
         assertFalse(testCase.getBuildNeow3jOutputDir().exists());
         assertThat(
                 buildResult.getOutput(),
@@ -226,8 +226,8 @@ public class Neow3jCompilePluginIntegrationTest {
 
         String buildFileContent = "" +
                 "neow3jCompiler {" + "\n" +
-                "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
-                "    outputDir=" + "\"" + newOutputDir.getAbsolutePath() + "\"" + "\n" +
+                "    className=\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
+                "    outputDir=file(\"" + newOutputDir.getAbsolutePath() + "\")" + "\n" +
                 "}" + "\n";
 
         GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
@@ -242,7 +242,7 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // build success/failure check
-        assertEquals(SUCCESS, buildResult.task(":" + NEOW3J_COMPILE_TASK_NAME).getOutcome());
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
         assertTrue(testCase.getBuildNeow3jOutputDir().exists());
         assertEquals(testCase.getBuildNeow3jOutputDir(), newOutputDir);
 

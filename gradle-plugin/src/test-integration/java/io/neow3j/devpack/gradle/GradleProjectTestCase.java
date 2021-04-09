@@ -1,8 +1,8 @@
 package io.neow3j.devpack.gradle;
 
 import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
-import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_COMPILE_TASK_NAME;
-import static io.neow3j.devpack.gradle.Neow3jCompileTask.NEOW3J_DEFAULT_OUTPUT_DIR;
+import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPlugin.DEFAULT_OUTPUT_DIR;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.NEFDBGNFO_SUFFIX;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.NEF_SUFFIX;
 import static io.neow3j.devpack.gradle.TestCaseUtils.appendFile;
@@ -51,7 +51,7 @@ public class GradleProjectTestCase {
         this.defaultBaseBuildOutputDir = this.projectRootDir
                 .newFolder(DEFAULT_BUILD_OUTPUT_DIR_NAME);
         this.buildNeow3jOutputDir = Paths.get(defaultBaseBuildOutputDir.getAbsolutePath(),
-                NEOW3J_DEFAULT_OUTPUT_DIR).toFile();
+                DEFAULT_OUTPUT_DIR).toFile();
         this.smartContractPackageDir = projectRootDir.newFolder("src", "main",
                 "java", "io", "neow3j", "devpack", "gradle");
         this.smartContractPackageDir.mkdirs();
@@ -139,7 +139,7 @@ public class GradleProjectTestCase {
     }
 
     public GradleProjectTestCase runBuild() {
-        this.withGradleArgument(NEOW3J_COMPILE_TASK_NAME);
+        this.withGradleArgument(TASK_NAME);
         try {
             this.gradleBuildResult = GradleRunner.create()
                     .withProjectDir(this.projectRootDir.getRoot())
