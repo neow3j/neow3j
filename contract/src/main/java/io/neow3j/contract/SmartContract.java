@@ -19,6 +19,7 @@ import java.util.List;
 import static io.neow3j.model.types.StackItemType.BOOLEAN;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.INTEGER;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
 
 /**
@@ -147,8 +148,8 @@ public class SmartContract {
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting a
-     * script hash as the return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a script
+     * hash as the return type.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
@@ -158,10 +159,10 @@ public class SmartContract {
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as
      *                                       script hash.
      */
-    public Hash160 callFunctionReturningScriptHash(String function, List<ContractParameter> params)
+    public Hash160 callFunctionReturningScriptHash(String function, ContractParameter... params)
             throws IOException {
 
-        StackItem stackItem = callInvokeFunction(function, params)
+        StackItem stackItem = callInvokeFunction(function, asList(params))
                 .getInvocationResult().getStack().get(0);
         return extractScriptHash(stackItem);
     }
@@ -171,7 +172,7 @@ public class SmartContract {
             throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
         }
         try {
-            return new Hash160(item.getHexString());
+            return new Hash160(reverseHexString(item.getHexString()));
         } catch (StackItemCastException | IllegalArgumentException e) {
             throw new UnexpectedReturnTypeException("Return type did not contain script hash in " +
                     "expected format.", e);
@@ -208,7 +209,7 @@ public class SmartContract {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        return neow.invokeFunction(scriptHash.toString(), function, params, signers).send();
+        return neow.invokeFunction(scriptHash, function, params, signers).send();
     }
 
     /**
@@ -227,7 +228,7 @@ public class SmartContract {
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public ContractManifest getManifest() throws IOException {
-        ContractState contractState = neow.getContractState(scriptHash.toString()).send()
+        ContractState contractState = neow.getContractState(scriptHash).send()
                 .getContractState();
         return contractState.getManifest();
     }

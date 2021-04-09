@@ -167,21 +167,24 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the public keys of currently registered validator candidates and their NEO balances.
+     * Gets the public keys of the currently registered validator candidates and their
+     * corresponding vote count.
+     * <p>
+     * The vote count is based on the summed up NEO balances of the respective candidate's voters.
      *
-     * @return the candidate public keys and their NEO balances.
+     * @return the candidate public keys and their corresponding vote count.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
      * @throws UnexpectedReturnTypeException if the return type is not an array or the array
      *                                       elements are not public keys and node counts.
      */
-    public Map<ECPublicKey, Integer> getCandidates() throws IOException {
+    public Map<ECPublicKey, BigInteger> getCandidates() throws IOException {
         StackItem arrayItem = callInvokeFunction(GET_CANDIDATES)
                 .getInvocationResult().getStack().get(0);
         if (!arrayItem.getType().equals(ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
-        Map<ECPublicKey, Integer> validators = new HashMap<>();
+        Map<ECPublicKey, BigInteger> validators = new HashMap<>();
         for (StackItem valItem : arrayItem.getList()) {
             if (!valItem.getType().equals(STRUCT)) {
                 throw new UnexpectedReturnTypeException(valItem.getType(), STRUCT);
@@ -191,7 +194,7 @@ public class NeoToken extends FungibleToken {
             if (!nrItem.getType().equals(INTEGER)) {
                 throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
             }
-            validators.put(key, nrItem.getInteger().intValue());
+            validators.put(key, nrItem.getInteger());
         }
         return validators;
     }
@@ -267,8 +270,7 @@ public class NeoToken extends FungibleToken {
     }
 
     private boolean isCandidate(ECPublicKey publicKey) throws IOException {
-        Map<ECPublicKey, Integer> candidates = getCandidates();
-        return candidates.containsKey(publicKey);
+        return getCandidates().containsKey(publicKey);
     }
 
     /**

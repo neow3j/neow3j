@@ -48,7 +48,7 @@ import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
 import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
 import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
-import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.protocol.core.methods.response.TransactionSendToken;
 import io.neow3j.transaction.Signer;
 
 import java.math.BigInteger;
@@ -68,13 +68,9 @@ public interface Neo {
 
     Request<?, NeoGetBlock> getBlock(Hash256 blockHash, boolean returnFullTransactionObjects);
 
-    Request<?, NeoGetRawBlock> getRawBlock(Hash256 blockHash);
-
-    Request<?, NeoGetBlock> getBlock(String blockHash, boolean returnFullTransactionObjects);
-
-    Request<?, NeoGetRawBlock> getRawBlock(String blockHash);
-
     Request<?, NeoGetBlock> getBlock(BigInteger blockIndex, boolean returnFullTransactionObjects);
+
+    Request<?, NeoGetRawBlock> getRawBlock(Hash256 blockHash);
 
     Request<?, NeoGetRawBlock> getRawBlock(BigInteger blockIndex);
 
@@ -82,43 +78,31 @@ public interface Neo {
 
     Request<?, NeoBlockCount> getBlockCount();
 
-    Request<?, NeoGetBlock> getBlockHeader(Hash256 hash);
-
-    Request<?, NeoGetBlock> getBlockHeader(String hash);
+    Request<?, NeoGetBlock> getBlockHeader(Hash256 blockHash);
 
     Request<?, NeoGetBlock> getBlockHeader(BigInteger blockIndex);
 
-    Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 hash);
-
-    Request<?, NeoGetRawBlock> getRawBlockHeader(String hash);
+    Request<?, NeoGetRawBlock> getRawBlockHeader(Hash256 blockHash);
 
     Request<?, NeoGetRawBlock> getRawBlockHeader(BigInteger blockIndex);
 
     Request<?, NeoGetNativeContracts> getNativeContracts();
 
-    Request<?, NeoGetContractState> getContractState(Hash160 hash160);
+    Request<?, NeoGetContractState> getContractState(Hash160 contractHash);
 
-    Request<?, NeoGetContractState> getContractState(String contractName);
+    Request<?, NeoGetContractState> getNativeContractState(String contractName);
 
     Request<?, NeoGetMemPool> getMemPool();
 
     Request<?, NeoGetRawMemPool> getRawMemPool();
 
-    Request<?, NeoGetTransaction> getTransaction(Hash256 txId);
+    Request<?, NeoGetTransaction> getTransaction(Hash256 txHash);
 
-    Request<?, NeoGetTransaction> getTransaction(String txId);
+    Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txHash);
 
-    Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txId);
+    Request<?, NeoGetStorage> getStorage(Hash160 contractHash, String keyHexString);
 
-    Request<?, NeoGetRawTransaction> getRawTransaction(String txId);
-
-    Request<?, NeoGetStorage> getStorage(Hash160 contractAddress, String keyHexString);
-
-    Request<?, NeoGetStorage> getStorage(String contractAddress, String keyHexString);
-
-    Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txId);
-
-    Request<?, NeoGetTransactionHeight> getTransactionHeight(String txId);
+    Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txHash);
 
     Request<?, NeoGetNextBlockValidators> getNextBlockValidators();
 
@@ -142,27 +126,18 @@ public interface Neo {
 
     //region SmartContract Methods
 
-    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractScriptHash, String functionName,
+    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
             Signer... signers);
 
-    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
-            Signer... signers);
-
-    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractScriptHash, String functionName,
+    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
             List<ContractParameter> params, Signer... signers);
 
-    Request<?, NeoInvokeFunction> invokeFunction(String contractScriptHash, String functionName,
-            List<ContractParameter> params, Signer... signers);
+    Request<?, NeoInvokeScript> invokeScript(String scriptHex, Signer... signers);
 
-    Request<?, NeoInvokeScript> invokeScript(String script, Signer... signers);
-
-    Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 contractScriptHash,
+    Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 contractHash,
             List<ContractParameter> methodParameters, Signer... signers);
 
-    Request<?, NeoInvokeContractVerify> invokeContractVerify(String contractScriptHash,
-            List<ContractParameter> methodParameters, Signer... signers);
-
-    Request<?, NeoGetUnclaimedGas> getUnclaimedGas(String address);
+    Request<?, NeoGetUnclaimedGas> getUnclaimedGas(Hash160 scriptHash);
 
     //endregion
 
@@ -180,11 +155,9 @@ public interface Neo {
 
     Request<?, NeoOpenWallet> openWallet(String walletPath, String password);
 
-    Request<?, NeoDumpPrivKey> dumpPrivKey(String address);
+    Request<?, NeoDumpPrivKey> dumpPrivKey(Hash160 scriptHash);
 
-    Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 assetId);
-
-    Request<?, NeoGetWalletBalance> getWalletBalance(String assetId);
+    Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 tokenHash);
 
     Request<?, NeoGetNewAddress> getNewAddress();
 
@@ -196,43 +169,36 @@ public interface Neo {
 
     Request<?, NeoListAddress> listAddress();
 
-    Request<?, NeoSendFrom> sendFrom(String fromAddress, String assetId, String toAddress,
-            String value);
+    Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to,
+            BigInteger amount);
 
-    Request<?, NeoSendFrom> sendFrom(String fromAddress, Hash160 assetId, String toAddress,
-            String value);
+    Request<?, NeoSendFrom> sendFrom(Hash160 from, TransactionSendToken txSendToken);
 
-    Request<?, NeoSendFrom> sendFrom(String fromAddress, TransactionSendAsset txSendAsset);
+    Request<?, NeoSendMany> sendMany(List<TransactionSendToken> txSendTokens);
 
-    Request<?, NeoSendMany> sendMany(List<TransactionSendAsset> txSendAsset);
+    Request<?, NeoSendMany> sendMany(Hash160 from, List<TransactionSendToken> txSendTokens);
 
-    Request<?, NeoSendMany> sendMany(String fromAddress, List<TransactionSendAsset> txSendAsset);
+    Request<?, NeoSendToAddress> sendToAddress(Hash160 tokenHash, Hash160 to, BigInteger amount);
 
-    Request<?, NeoSendToAddress> sendToAddress(String assetId, String toAddress, String value);
-
-    Request<?, NeoSendToAddress> sendToAddress(Hash160 assetId, String toAddress, String value);
-
-    Request<?, NeoSendToAddress> sendToAddress(TransactionSendAsset txSendAsset);
+    Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken);
 
     //endregion
 
     //region RpcNep17Tracker
 
-    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address);
+    Request<?, NeoGetNep17Balances> getNep17Balances(Hash160 scriptHash);
 
-    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date until);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash);
 
-    Request<?, NeoGetNep17Transfers> getNep17Transfers(String address, Date from, Date to);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date until);
 
-    Request<?, NeoGetNep17Balances> getNep17Balances(String address);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date from, Date to);
 
     //endregion
 
     //region ApplicationLogs
 
-    Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txId);
-
-    Request<?, NeoGetApplicationLog> getApplicationLog(String txId);
+    Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txHash);
 
     //endregion
 
@@ -240,8 +206,7 @@ public interface Neo {
 
     Request<?, NeoGetStateRoot> getStateRoot(BigInteger blockIndex);
 
-    Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractScriptHash,
-            String storageKeyHex);
+    Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractHash, String storageKeyHex);
 
     Request<?, NeoVerifyProof> verifyProof(Hash256 rootHash, String proofDataHex);
 

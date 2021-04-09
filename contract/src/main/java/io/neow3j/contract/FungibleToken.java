@@ -188,8 +188,7 @@ public class FungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount,
-            ContractParameter data)
-            throws IOException {
+            ContractParameter data) throws IOException {
         return transfer(wallet, Hash160.fromAddress(to), amount, data);
     }
 
@@ -214,8 +213,8 @@ public class FungibleToken extends Token {
     public TransactionBuilder transfer(Wallet wallet, Hash160 to, BigDecimal amount,
             ContractParameter data) throws IOException {
         if (amount.signum() < 0) {
-            throw new IllegalArgumentException(
-                    "The parameter amount must be greater than or equal to 0");
+            throw new IllegalArgumentException("The parameter amount must be greater than or " +
+                    "equal to 0");
         }
         if (!amountDecimalsIsValid(amount)) {
             throw new IllegalArgumentException("The amount contains more decimal places than this" +
