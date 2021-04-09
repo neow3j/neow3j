@@ -43,7 +43,7 @@ public class AddressUtils {
      * Transforms the given address into its script hash.
      *
      * @param address The address.
-     * @return the script hash byte array in little-endian order.
+     * @return the script hash byte array in big-endian order.
      */
     public static byte[] addressToScriptHash(String address) {
         if (!isValidAddress(address)) {
@@ -52,7 +52,7 @@ public class AddressUtils {
         byte[] data = Base58.decode(address);
         byte[] buffer = new byte[20];
         System.arraycopy(data, 1, buffer, 0, 20);
-        return buffer;
+        return reverseArray(buffer);
     }
 
     /**

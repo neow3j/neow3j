@@ -1,7 +1,11 @@
 package io.neow3j.crypto;
 
+import static io.neow3j.contract.ScriptBuilder.buildVerificationScript;
 import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toBytesPadded;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ScriptBuilder;
@@ -10,7 +14,6 @@ import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -79,7 +82,7 @@ public class ECKeyPair {
      * @return the NEO address of the public key.
      */
     public String getAddress() {
-        byte[] script = ScriptBuilder.buildVerificationScript(this.publicKey.getEncoded(true));
+        byte[] script = buildVerificationScript(this.publicKey.getEncoded(true));
         return Hash160.fromScript(script).toAddress();
     }
 
@@ -205,14 +208,14 @@ public class ECKeyPair {
      * @return the WIF of this ECKeyPair.
      */
     public String exportAsWIF() {
-        byte[] data = ArrayUtils.concatenate(
+        byte[] data = concatenate(
                 new byte[]{(byte) 0x80},
-                Numeric.toBytesPadded(getPrivateKey().getInt(), NeoConstants.PRIVATE_KEY_SIZE),
+                toBytesPadded(getPrivateKey().getInt(), NeoConstants.PRIVATE_KEY_SIZE),
                 new byte[]{(byte) 0x01}
         );
         byte[] checksum = hash256(data, 0, data.length);
         byte[] first4Bytes = Arrays.copyOfRange(checksum, 0, 4);
-        data = ArrayUtils.concatenate(data, first4Bytes);
+        data = concatenate(data, first4Bytes);
         String wif = Base58.encode(data);
         Arrays.fill(data, (byte) 0);
         return wif;
@@ -253,7 +256,7 @@ public class ECKeyPair {
                         + NeoConstants.PRIVATE_KEY_SIZE + " bytes, but required " +
                         key.toString(16).length() / 2 + "bytes.");
             }
-            this.privateKey = Numeric.toBytesPadded(key, NeoConstants.PRIVATE_KEY_SIZE);
+            this.privateKey = toBytesPadded(key, NeoConstants.PRIVATE_KEY_SIZE);
         }
 
         /**
@@ -334,7 +337,7 @@ public class ECKeyPair {
          * @param publicKey The public key in hex format.
          */
         public ECPublicKey (String publicKey) {
-            this(Numeric.hexStringToByteArray(publicKey));
+            this(hexStringToByteArray(publicKey));
         }
 
         /**
@@ -373,7 +376,7 @@ public class ECKeyPair {
          * @param publicKey The public key.
          */
         public ECPublicKey(BigInteger publicKey) {
-            this(Numeric.toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE));
+            this(toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE));
         }
 
         /**

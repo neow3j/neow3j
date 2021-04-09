@@ -53,7 +53,7 @@ public class AddressUtilsTest {
         String script =
             "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
         // sha256AndThenRipemd160 returns little-endian
-        byte[] expected = sha256AndThenRipemd160(hexStringToByteArray(script));
+        byte[] expected = reverseArray(sha256AndThenRipemd160(hexStringToByteArray(script)));
         assertArrayEquals(scriptHash, expected);
     }
 
