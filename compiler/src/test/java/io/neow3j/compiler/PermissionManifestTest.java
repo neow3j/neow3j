@@ -30,7 +30,7 @@ public class PermissionManifestTest {
     @Test
     public void withPermissionsAnnotation() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(PermissionManifestTestContract.class.getName());
+                .compile(PermissionManifestTestContract.class.getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
         assertThat(permissions, hasSize(2));
         assertThat(permissions.get(0).getContract(), is(CONTRACT_HASH_1));
@@ -44,7 +44,7 @@ public class PermissionManifestTest {
     @Test
     public void withPermissionsAnnotationSingleContractHash() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(PermissionManifestTestContractWithSingleAnnotationContractHash.class
+                .compile(PermissionManifestTestContractWithSingleAnnotationContractHash.class
                         .getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
         assertThat(permissions, hasSize(1));
@@ -57,7 +57,7 @@ public class PermissionManifestTest {
     @Test
     public void withPermissionsAnnotationSingleGroupPubKey() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(PermissionManifestTestContractWithSingleAnnotationGroupPubKey.class
+                .compile(PermissionManifestTestContractWithSingleAnnotationGroupPubKey.class
                         .getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
         assertThat(permissions, hasSize(1));
@@ -70,7 +70,7 @@ public class PermissionManifestTest {
     @Test
     public void withPermissionsAnnotationWrapper() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(
+                .compile(
                         PermissionManifestTestContractWithPermissionsAnnotation.class.getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
         assertThat(permissions, hasSize(2));
@@ -85,7 +85,7 @@ public class PermissionManifestTest {
     @Test
     public void withoutPermissionsAnnotation() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(PermissionManifestTestContractWithoutAnnotation.class.getName());
+                .compile(PermissionManifestTestContractWithoutAnnotation.class.getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
         assertThat(permissions, hasSize(1));
         assertThat(permissions.get(0).getContract(), is("*"));
@@ -99,7 +99,7 @@ public class PermissionManifestTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Invalid contract hash or public key:", "invalidContractHashOrPubKey")));
         new Compiler()
-                .compileClass(
+                .compile(
                         PermissionManifestTestContractWithNotValidContractHashNorGroupKey.class
                                 .getName());
     }

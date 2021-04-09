@@ -18,7 +18,7 @@ public class InstanceVariablesTest {
         expected.expectMessage(new StringContainsInOrder(Arrays.asList(
                 IllegalUseOfInstanceInitializer.class.getSimpleName(),
                 "has an explicit instance constructor")));
-        new Compiler().compileClass(IllegalUseOfInstanceInitializer.class.getName());
+        new Compiler().compile(IllegalUseOfInstanceInitializer.class.getName());
     }
 
     @Test
@@ -27,7 +27,7 @@ public class InstanceVariablesTest {
         expected.expectMessage(new StringContainsInOrder(Arrays.asList(
                 IllegalUseOfInstanceVariables.class.getSimpleName(),
                 "has non-static fields")));
-        new Compiler().compileClass(IllegalUseOfInstanceVariables.class.getName());
+        new Compiler().compile(IllegalUseOfInstanceVariables.class.getName());
     }
 
     static class IllegalUseOfInstanceInitializer {

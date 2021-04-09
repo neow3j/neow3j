@@ -42,7 +42,6 @@ import org.objectweb.asm.tree.TryCatchBlockNode;
  */
 public class NeoMethod {
 
-
     // The ASM counterpart of this method.
     private final MethodNode asmMethod;
 

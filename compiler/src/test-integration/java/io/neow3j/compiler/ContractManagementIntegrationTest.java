@@ -63,7 +63,7 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void deployWithoutData() throws Throwable {
-        CompilationUnit compUnit = new Compiler().compileClass(
+        CompilationUnit compUnit = new Compiler().compile(
                 ContractManagementIntegrationTestContractToDeployWithoutData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
@@ -89,7 +89,7 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void deployWithData() throws Throwable {
-        CompilationUnit compUnit = new Compiler().compileClass(
+        CompilationUnit compUnit = new Compiler().compile(
                 ContractManagementIntegrationTestContractToDeployWithData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
@@ -115,7 +115,7 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void updateWithoutData() throws Throwable {
-        CompilationUnit compUnit = new Compiler().compileClass(
+        CompilationUnit compUnit = new Compiler().compile(
                 ContractManagementIntegrationTestContractToUpdateWithoutData.class.getName());
 
         // Deploy contract
@@ -135,7 +135,7 @@ public class ContractManagementIntegrationTest {
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
         // Compile updated version of contract
-        compUnit = new Compiler().compileClass(
+        compUnit = new Compiler().compile(
                 ContractManagementIntegrationTestContractUpdatedWithoutData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
@@ -159,7 +159,7 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void updateWithData() throws Throwable {
-        CompilationUnit compUnit = new Compiler().compileClass(
+        CompilationUnit compUnit = new Compiler().compile(
                 ContractManagementIntegrationTestContractToUpdateWithData.class.getName());
 
         // Deploy contract
@@ -179,7 +179,7 @@ public class ContractManagementIntegrationTest {
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
         // Compile updated version of contract
-        compUnit = new Compiler().compileClass(
+        compUnit = new Compiler().compile(
                 ContractManagementIntegrationTestContractUpdatedWithData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
@@ -204,7 +204,7 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void destroy() throws Throwable {
-        CompilationUnit res = new Compiler().compileClass(
+        CompilationUnit res = new Compiler().compile(
                 ContractManagementIntegrationTestContractToDestroy.class.getName());
         NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
                 .deploy(res.getNefFile(), res.getManifest())

@@ -14,7 +14,7 @@ public class ThrowExceptionTest {
 
     @Test
     public void exceptionWithStringLiteralArgument() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(
+        CompilationUnit res = new Compiler().compile(
                 ExceptionWithStringLiteralArgument.class.getName());
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -30,7 +30,7 @@ public class ThrowExceptionTest {
 
     @Test
     public void exceptionWithoutArgument() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(ExceptionWithoutArgument.class.getName());
+        CompilationUnit res = new Compiler().compile(ExceptionWithoutArgument.class.getName());
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(byteStream);
@@ -45,7 +45,7 @@ public class ThrowExceptionTest {
 
     @Test
     public void exceptionWithStringVariableArgument() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(
+        CompilationUnit res = new Compiler().compile(
                 ExceptionWithStringVariableArgument.class.getName());
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -61,7 +61,7 @@ public class ThrowExceptionTest {
 
     @Test
     public void exceptionWithStringReturnValueFromMethodCall() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(
+        CompilationUnit res = new Compiler().compile(
                 ExceptionWithStringReturnValueFromMethod.class.getName());
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();

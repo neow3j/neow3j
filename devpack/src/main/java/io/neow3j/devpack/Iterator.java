@@ -15,11 +15,13 @@ import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_VALUE;
  * would have to first put them into a {@link List} or a {@link Map} as shown in the following
  * example:
  * <pre>
+ * {@literal
  * ...
- * List<ByteString> list = new io.neow3j.devpack.List<>();
- * iterator.next();
- * list.add(iterator.getValue());
+ *  List<ByteString> list = new io.neow3j.devpack.List<>();
+ *  iterator.next();
+ *  list.add(iterator.getValue());
  * ...
+ * }
  * </pre>
  */
 public class Iterator<V> implements InteropInterface {
