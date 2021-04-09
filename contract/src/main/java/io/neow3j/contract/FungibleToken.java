@@ -321,41 +321,6 @@ public class FungibleToken extends Token {
      * Creates a transfer transaction that uses only the wallet's default account to cover the
      * token amount.
      *
-     * @param wallet    the wallet from which to send the tokens from.
-     * @param toAddress the address of the receiver.
-     * @param amount    the amount to transfer as a decimal number (not token fractions).
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String toAddress,
-            BigDecimal amount) throws IOException {
-        return transferFromDefaultAccount(wallet, Hash160.fromAddress(toAddress), amount, null);
-    }
-
-    /**
-     * Creates a transfer transaction that uses only the wallet's default account to cover the
-     * token amount.
-     * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
-     * additional fees. Otherwise, use the method without a contract parameter for data.
-     *
-     * @param wallet    the wallet from which to send the tokens from.
-     * @param toAddress the address of the receiver.
-     * @param amount    the amount to transfer as a decimal number (not token fractions).
-     * @param data      the data that is passed to the {@code onPayment} method of the receiving
-     *                  smart contract.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String toAddress,
-            BigDecimal amount, ContractParameter data) throws IOException {
-        return transferFromDefaultAccount(wallet, Hash160.fromAddress(toAddress), amount, data);
-    }
-
-    /**
-     * Creates a transfer transaction that uses only the wallet's default account to cover the
-     * token amount.
-     *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).

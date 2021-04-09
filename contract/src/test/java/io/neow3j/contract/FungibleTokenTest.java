@@ -102,24 +102,6 @@ public class FungibleTokenTest {
     }
 
     @Test
-    public void transferFromDefaultAccountShouldAddAccountAsSigner_RecipientAsAddress() throws Throwable {
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash(),
-                "invokefunction_balanceOf_300000000.json");
-
-        Transaction tx = gasToken.transferFromDefaultAccount(
-                Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE)
-                .buildTransaction();
-
-        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(tx.getSender(), is(account1.getScriptHash()));
-    }
-
-    @Test
     public void transferFromDefaultAccountShouldCreateTheCorrectScript() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -161,7 +143,7 @@ public class FungibleTokenTest {
 
         Transaction tx = gasToken.transferFromDefaultAccount(
                 Wallet.withAccounts(account1, account2),
-                RECIPIENT_SCRIPT_HASH.toAddress(),
+                RECIPIENT_SCRIPT_HASH,
                 BigDecimal.ONE, integer(42))
                 .buildTransaction();
 
