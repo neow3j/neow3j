@@ -174,57 +174,6 @@ public class FungibleToken extends Token {
      * amount and so on. If the amount can be covered by the specified accounts, all necessary
      * transfers are packed in one transaction.
      *
-     * @param wallet    the wallet from which to send the tokens from.
-     * @param toAddress the address of the receiver.
-     * @param amount    the amount to transfer as a decimal number (not token fractions).
-     * @param from      the script hashes of the accounts in the wallet that should be used to cover
-     *                  the amount.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String toAddress,
-            BigDecimal amount, Hash160... from) throws IOException {
-        return transferFromSpecificAccounts(wallet, Hash160.fromAddress(toAddress), amount, null,
-                from);
-    }
-
-    /**
-     * Creates a transfer transaction that uses the provided accounts.
-     * <p>
-     * The accounts are used in the order provided to cover the transaction amount. If the first
-     * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered by the specified accounts, all necessary
-     * transfers are packed in one transaction.
-     * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
-     * additional fees. Otherwise, use the method without a contract parameter for data.
-     *
-     * @param wallet    the wallet from which to send the tokens from.
-     * @param toAddress the address of the receiver.
-     * @param amount    the amount to transfer as a decimal number (not token fractions).
-     * @param data      the data that is passed to the {@code onPayment} method of the receiving
-     *                  smart contract.
-     * @param from      the script hashes of the accounts in the wallet that should be used to cover
-     *                  the amount.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String toAddress,
-            BigDecimal amount, ContractParameter data, String... from) throws IOException {
-        Hash160[] fromScriptHashes =
-                Arrays.stream(from).map(Hash160::fromAddress).toArray(Hash160[]::new);
-        return transferFromSpecificAccounts(wallet, Hash160.fromAddress(toAddress), amount, data,
-                fromScriptHashes);
-    }
-
-    /**
-     * Creates a transfer transaction that uses the provided accounts.
-     * <p>
-     * The accounts are used in the order provided to cover the transaction amount. If the first
-     * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered by the specified accounts, all necessary
-     * transfers are packed in one transaction.
-     *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer as a decimal number (not token fractions).

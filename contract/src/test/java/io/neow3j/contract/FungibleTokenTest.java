@@ -160,7 +160,8 @@ public class FungibleTokenTest {
                 .toArray();
 
         Transaction tx = gasToken.transferFromDefaultAccount(
-                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
+                Wallet.withAccounts(account1, account2),
+                RECIPIENT_SCRIPT_HASH.toAddress(),
                 BigDecimal.ONE, integer(42))
                 .buildTransaction();
 
@@ -168,33 +169,7 @@ public class FungibleTokenTest {
     }
 
     @Test
-    public void transferFromSpecificAccount_RecipientAsAddress() throws Throwable {
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
-        setUpWireMockForInvokeFunction("balanceOf",
-                "invokefunction_balanceOf_300000000.json");
-
-        byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
-                        asList(hash160(account1.getScriptHash()),
-                                hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(100000000), // 1 GAS
-                                any(null)))
-                .toArray();
-
-        Transaction tx = gasToken.transferFromSpecificAccounts(
-                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
-                BigDecimal.ONE, account1.getScriptHash())
-                .buildTransaction();
-
-        assertThat(tx.getScript(), is(expectedScript));
-    }
-
-    @Test
-    public void transferFromSpecificAccount_RecipientAsScriptHash_dataParam() throws Throwable {
+    public void transferFromSpecificAccount_withDataParam() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -210,8 +185,11 @@ public class FungibleTokenTest {
                 .toArray();
 
         Transaction tx = gasToken.transferFromSpecificAccounts(
-                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
-                BigDecimal.ONE, hash160(account1.getScriptHash()), account1.getAddress())
+                Wallet.withAccounts(account1, account2),
+                RECIPIENT_SCRIPT_HASH,
+                BigDecimal.ONE,
+                hash160(account1.getScriptHash()),
+                account1.getScriptHash())
                 .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
