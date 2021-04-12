@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.compiler.DebugInfo.Event;
-import io.neow3j.compiler.sourcelookup.DirectorySourceContainer;
 import io.neow3j.compiler.sourcelookup.MockSourceContainer;
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
@@ -96,9 +95,7 @@ public class ContractEventsTest {
 
     @Test
     public void eventNamesAndParametersShouldBeSetCorrectlyInManifest() throws IOException {
-        CompilationUnit res = new Compiler().compile(EventsContract.class.getName(), asList(
-                new MockSourceContainer(new File("/path/to/src/file/io/neow3j/compiler" +
-                        "/ContractEventsTest$EventsContract.java"))));
+        CompilationUnit res = new Compiler().compile(EventsContract.class.getName());
 
         List<ContractEvent> manifestEvents = res.getManifest().getAbi().getEvents();
         assertThat(manifestEvents.get(0).getName(), is("event1"));
