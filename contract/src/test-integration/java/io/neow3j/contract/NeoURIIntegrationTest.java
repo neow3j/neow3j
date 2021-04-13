@@ -50,7 +50,7 @@ public class NeoURIIntegrationTest {
                 .token(GAS_HASH)
                 .wallet(COMMITTEE_WALLET)
                 .to(account.getScriptHash())
-                .amount("0.00000001")
+                .amount(new BigDecimal("0.00000001"))
                 .buildTransfer()
                 .sign()
                 .send()
