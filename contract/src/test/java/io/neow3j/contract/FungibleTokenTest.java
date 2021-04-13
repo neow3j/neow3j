@@ -11,6 +11,7 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
@@ -68,13 +69,13 @@ public class FungibleTokenTest {
         gasToken = new FungibleToken(new Hash160(gasTokenHash()), neow);
 
         account1 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
         account2 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
         account3 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "3a100280baf46ea7db17bc01b53365891876b4a2db11028dbc1ccb8c782725f8")));
         multiSigAccount = createMultiSigAccount(
                 asList(account1.getECKeyPair().getPublicKey(),

@@ -19,6 +19,7 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.MAP;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Numeric.toHexString;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
@@ -70,8 +71,8 @@ public class NonFungibleToken extends Token {
         Hash160 tokenOwner = ownerOf(tokenID);
         if (!wallet.holdsAccount(tokenOwner)) {
             throw new IllegalArgumentException("The provided wallet does not contain the account " +
-                    "that owns the token with ID " + Numeric.toHexString(tokenID) + ". The " +
-                    "address of the owner of this token is " + tokenOwner.toAddress() + ".");
+                    "that owns the token with ID " + toHexString(tokenID) + ". The address of the" +
+                    " owner of this token is " + tokenOwner.toAddress() + ".");
         }
 
         return invokeFunction(TRANSFER,

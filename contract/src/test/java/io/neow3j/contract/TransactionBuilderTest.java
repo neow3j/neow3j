@@ -9,7 +9,9 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.transaction.Signer.feeOnly;
 import static io.neow3j.transaction.Signer.global;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
@@ -99,13 +101,14 @@ public class TransactionBuilderTest {
         WireMock.configureFor(port);
         neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         neow.setNetworkMagicNumber(769);
-        account1 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
+        account1 = new Account(ECKeyPair.create(hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
-        account2 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
+        account2 = new Account(ECKeyPair.create(hexStringToByteArray(
                 "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
-        multiSigAcc = Account.createMultiSigAccount(asList(
-                account1.getECKeyPair().getPublicKey(),
-                account2.getECKeyPair().getPublicKey()),
+        multiSigAcc = createMultiSigAccount(
+                asList(
+                        account1.getECKeyPair().getPublicKey(),
+                        account2.getECKeyPair().getPublicKey()),
                 2);
         recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
     }
@@ -257,7 +260,7 @@ public class TransactionBuilderTest {
         HighPriorityAttribute attr = new HighPriorityAttribute();
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
                 .signers(feeOnly(wallet.getDefaultAccount()))
@@ -275,7 +278,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("getcommittee", "getcommittee.json");
         ContractTestHelper.setUpWireMockForGetBlockCount(1000);
 
-        Account multiSigAccount = Account.createMultiSigAccount(
+        Account multiSigAccount = createMultiSigAccount(
                 asList(account2.getECKeyPair().getPublicKey(),
                         account1.getECKeyPair().getPublicKey()),
                 1);
@@ -283,7 +286,7 @@ public class TransactionBuilderTest {
         HighPriorityAttribute attr = new HighPriorityAttribute();
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
                 .signers(feeOnly(multiSigAccount))
@@ -307,7 +310,7 @@ public class TransactionBuilderTest {
                 "priority.");
 
         new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
                 .signers(feeOnly(wallet.getDefaultAccount()))
@@ -326,7 +329,7 @@ public class TransactionBuilderTest {
         HighPriorityAttribute attr2 = new HighPriorityAttribute();
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .signers(feeOnly(wallet.getDefaultAccount()))
                 .wallet(wallet)
                 .attributes(attr1)
@@ -367,7 +370,7 @@ public class TransactionBuilderTest {
         ContractTestHelper.setUpWireMockForGetBlockCount(1000);
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .signers(feeOnly(wallet.getDefaultAccount()))
                 .buildTransaction();
@@ -383,7 +386,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .signers(feeOnly(wallet.getDefaultAccount()))
                 .validUntilBlock(1000)
@@ -400,7 +403,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         TransactionBuilder builder = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .signers(feeOnly(w.getAccounts().get(0)))
                 .wallet(w)
                 .validUntilBlock(1000);
@@ -416,7 +419,7 @@ public class TransactionBuilderTest {
         Account a2 = Account.create();
         List<ECPublicKey> keys = asList(w.getAccounts().get(0).getECKeyPair().getPublicKey(),
                 a2.getECKeyPair().getPublicKey());
-        Account multiSigAcc = Account.createMultiSigAccount(keys, 2);
+        Account multiSigAcc = createMultiSigAccount(keys, 2);
         w.addAccounts(a2);
         w.addAccounts(multiSigAcc);
         a2.encryptPrivateKey("neo");
@@ -424,7 +427,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
                 .signers(feeOnly(multiSigAcc))
                 .validUntilBlock(1000);
@@ -441,13 +444,13 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         // Dummy multi-sig that only requires one signature.
-        Account dummyMultiSig = Account.createMultiSigAccount(asList(
+        Account dummyMultiSig = createMultiSigAccount(asList(
                 account1.getECKeyPair().getPublicKey(),
                 account2.getECKeyPair().getPublicKey()),
                 1);
         Wallet w = Wallet.withAccounts(dummyMultiSig, account2);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
                 .signers(feeOnly(dummyMultiSig));
         // The first signing account for the multi-sig is not in the wallet.
@@ -466,7 +469,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .signers(feeOnly(wallet.getDefaultAccount()))
                 .validUntilBlock(1000)
@@ -490,7 +493,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .signers(signer)
                 .validUntilBlock(1000)
@@ -512,7 +515,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .signers(feeOnly(senderAcc))
                 .validUntilBlock(1000)
@@ -540,7 +543,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .signers(feeOnly(senderAcc), signer)
                 .validUntilBlock(1000)
@@ -560,7 +563,7 @@ public class TransactionBuilderTest {
 
         Wallet w = Wallet.withAccounts(account1, account2);
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
                 .signers(calledByEntry(account1), calledByEntry(account2))
                 .validUntilBlock(1000)
@@ -584,7 +587,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
                 .signers(calledByEntry(signer))
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
@@ -605,7 +608,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
                 .signers(calledByEntry(signer))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
@@ -819,12 +822,12 @@ public class TransactionBuilderTest {
                 SCRIPT_NEO_INVOKEFUNCTION_SYMBOL,
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
-        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
 
         NeoInvokeScript response = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
                 .callInvokeScript();
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("NEO"));
@@ -836,7 +839,7 @@ public class TransactionBuilderTest {
                 SCRIPT_NEO_INVOKEFUNCTION_SYMBOL,
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
-        ECKeyPair senderPair = ECKeyPair.create(Numeric.hexStringToByteArray(privateKey));
+        ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
         Wallet w = Wallet.withAccounts(sender);
 
@@ -865,7 +868,7 @@ public class TransactionBuilderTest {
                 "DAASDBSTrRVy");
         TransactionBuilder b = new TransactionBuilder(neow)
                 .wallet(Wallet.withAccounts(account1))
-                .script(Numeric.hexStringToByteArray("0c00120c1493ad1572"))
+                .script(hexStringToByteArray("0c00120c1493ad1572"))
                 .signers(calledByEntry(account1));
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("Instruction out of bounds.");
@@ -880,7 +883,7 @@ public class TransactionBuilderTest {
                 "DA5PcmFjbGVDb250cmFjdEEa93tn");
         TransactionBuilder b = new TransactionBuilder(neow)
                 .wallet(Wallet.create())
-                .script(Numeric.hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
+                .script(hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
                 .signers(calledByEntry(account1));
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("The vm exited due to the following exception: Value was " +
@@ -896,7 +899,7 @@ public class TransactionBuilderTest {
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new TransactionBuilder(neow)
                 .wallet(w)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .signers(calledByEntry(account1))
                 .getUnsignedTransaction();
 
@@ -918,7 +921,7 @@ public class TransactionBuilderTest {
         Signer s1 = global(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
@@ -934,7 +937,7 @@ public class TransactionBuilderTest {
         Signer s1 = global(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
@@ -950,7 +953,7 @@ public class TransactionBuilderTest {
         Signer s1 = feeOnly(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
@@ -965,7 +968,7 @@ public class TransactionBuilderTest {
     public void testSetFirstSigner_notPresent() {
         Signer s1 = global(account1);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(Numeric.hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(Wallet.create())
                 .signers(s1);
         assertThat(b.getSigners().get(0), is(s1));
