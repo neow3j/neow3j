@@ -249,31 +249,4 @@ public class FungibleTokenIntegrationTest {
         assertThat(balanceOf_a3, is(new BigInteger("5")));
     }
 
-    /*
-     * Checks that the transfer method correctly uses the decimal amount to transfer.
-     */
-    @Test
-    public void testTransfer_decimals() throws Throwable {
-        Account a1 = Account.create();
-        Account a2 = Account.create();
-        fundAccountsWithGas(neow3j, a1);
-
-        Wallet wallet = Wallet.withAccounts(a1); // funds the account with 10_000 Gas
-        FungibleToken gasToken = new FungibleToken(GasToken.SCRIPT_HASH, neow3j);
-
-        Hash256 txHash = gasToken
-                .transfer(wallet,
-                        a2.getScriptHash(),
-                        gasToken.toFractions(new BigDecimal("1.00000001")))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, neow3j);
-
-        BigInteger balanceOf_a2 = gasToken.getBalanceOf(a2);
-
-        assertThat(balanceOf_a2, is(new BigInteger("100000001")));
-    }
-
 }
