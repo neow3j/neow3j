@@ -7,11 +7,10 @@ import java.util.List;
 public interface ISourceContainer {
 
     /**
-     * Searches this container for the source file(s) with the given name. Returns multiple files
-     * if multiple items with the same name are found.
+     * Searches this container for the source file with the given name. Returns the first match.
      *
      * @param name The name of the file.
-     * @return a list of sources files found matching the given name.
+     * @return a source file matching the given name or null if no match was found.
      */
     File findSourceFile(String name);
 
