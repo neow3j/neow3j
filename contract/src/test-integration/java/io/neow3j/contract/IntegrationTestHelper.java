@@ -15,6 +15,7 @@ import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public class IntegrationTestHelper {
 
@@ -31,21 +32,23 @@ public class IntegrationTestHelper {
     static final Wallet CLIENTS_WALLET = Wallet.withAccounts(CLIENT_1, CLIENT_2);
 
     static void fundAccountsWithGas(Neow3j neow3j, Account... accounts) throws Throwable {
+        GasToken gasToken = new GasToken(neow3j);
+        BigInteger fractions = gasToken.toFractions(new BigDecimal("100000"));
         for (Account account : accounts) {
-            transferFromGenesisToAccount(neow3j, new GasToken(neow3j), new BigDecimal("100000"),
-                    account);
+            transferFromGenesisToAccount(neow3j, new GasToken(neow3j), fractions, account);
         }
     }
 
-    static void fundAccountsWithNeo(Neow3j neow3j, BigDecimal amount, Account... accounts)
+    static void fundAccountsWithNeo(Neow3j neow3j, BigInteger amount, Account... accounts)
             throws Throwable {
+        NeoToken neoToken = new NeoToken(neow3j);
         for (Account account : accounts) {
-            transferFromGenesisToAccount(neow3j, new NeoToken(neow3j), amount, account);
+            transferFromGenesisToAccount(neow3j, neoToken, amount, account);
         }
     }
 
     static void transferFromGenesisToAccount(Neow3j neow3j, FungibleToken token,
-            BigDecimal amount, Account a) throws Throwable {
+            BigInteger amount, Account a) throws Throwable {
         Hash256 txHash =
                 token.transfer(COMMITTEE_WALLET, a.getScriptHash(), amount)
                         .sign()

@@ -94,7 +94,7 @@ public class FungibleTokenTest {
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
 
         Transaction tx = gasToken.transferFromDefaultAccount(
-                Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
+                Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH, new BigInteger("1"))
                 .buildTransaction();
 
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
@@ -119,7 +119,9 @@ public class FungibleTokenTest {
                 .toArray();
 
         Transaction tx = gasToken.transferFromDefaultAccount(
-                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
+                Wallet.withAccounts(account1, account2),
+                RECIPIENT_SCRIPT_HASH,
+                new BigInteger("100000000"))
                 .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
@@ -138,14 +140,15 @@ public class FungibleTokenTest {
                 .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
                         asList(hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(100000000),
+                                integer(250),
                                 integer(42)))
                 .toArray();
 
         Transaction tx = gasToken.transferFromDefaultAccount(
                 Wallet.withAccounts(account1, account2),
                 RECIPIENT_SCRIPT_HASH,
-                BigDecimal.ONE, integer(42))
+                new BigInteger("250"),
+                integer(42))
                 .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
@@ -170,7 +173,7 @@ public class FungibleTokenTest {
         Transaction tx = gasToken.transferFromSpecificAccounts(
                 Wallet.withAccounts(account1, account2),
                 RECIPIENT_SCRIPT_HASH,
-                BigDecimal.ONE,
+                gasToken.toFractions(new BigDecimal("1.0")),
                 hash160(account1.getScriptHash()),
                 account1.getScriptHash())
                 .buildTransaction();
@@ -221,7 +224,7 @@ public class FungibleTokenTest {
         exceptionRule.expect(InsufficientFundsException.class);
         exceptionRule.expectMessage("default account does not hold enough tokens");
         gasToken.transferFromDefaultAccount(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("4"));
+                new BigInteger("400000000"));
     }
 
     @Test
@@ -229,62 +232,7 @@ public class FungibleTokenTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount must be greater than or equal to 0");
         neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("-1"));
-    }
-
-    @Test
-    public void testTransferInvalidDecimalsInAmount() throws Throwable {
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                "handle");
-        neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("0.1"));
-    }
-
-    @Test
-    public void testTransferInvalidDecimalsInAmount_trailingZeros() throws IOException {
-        setUpWireMockForBalanceOf(account1.getScriptHash(),
-                "invokefunction_balanceOf_300000000.json");
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
-
-        try {
-            // Trailing zeros should be ignored - this code should not produce any exception.
-            neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1),
-                    RECIPIENT_SCRIPT_HASH, new BigDecimal("1.0"));
-        } catch (Exception e) {
-            fail();
-        }
-    }
-
-    @Test
-    public void testInvalidDecimals_TransferFromDefaultAccount() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                "handle");
-        neoToken.transferFromDefaultAccount(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("1.1"));
-    }
-
-    @Test
-    public void testInvalidDecimals_TransferFromSpecificAccounts() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                "handle");
-        gasToken.transferFromSpecificAccounts(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("0.0000000002"), account1.getScriptHash());
-    }
-
-    @Test
-    public void testInvalidDecimals_Transfer() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount contains more decimal places than this token can " +
-                "handle");
-        neoToken.transfer(Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("0.2"));
+                new BigInteger("-1"));
     }
 
     /*
@@ -324,7 +272,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("7"));
+                account2, account3), RECIPIENT_SCRIPT_HASH, new BigInteger("7"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -354,7 +302,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2, account3),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("7"));
+                RECIPIENT_SCRIPT_HASH, new BigInteger("7"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -394,7 +342,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2, account3),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("12"));
+                RECIPIENT_SCRIPT_HASH, new BigInteger("12"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -421,7 +369,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("4"));
+                RECIPIENT_SCRIPT_HASH, new BigInteger("4"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -446,7 +394,7 @@ public class FungibleTokenTest {
         TransactionBuilder b = neoToken.transfer(
                 Wallet.withAccounts(account1, account2),
                 RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("4"),
+                new BigInteger("4"),
                 byteArray(new byte[]{0x42}));
 
         assertThat(b.getScript(), is(expectedScript));
@@ -475,7 +423,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
-                account2, account3), RECIPIENT_SCRIPT_HASH, new BigDecimal("1"));
+                account2, account3), RECIPIENT_SCRIPT_HASH, new BigInteger("1"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -511,7 +459,7 @@ public class FungibleTokenTest {
 
         Wallet w = Wallet.withAccounts(multiSigAccount, account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("5"), asList(multiSigAccount, account1), null);
+                new BigInteger("5"), asList(multiSigAccount, account1), null);
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -526,8 +474,7 @@ public class FungibleTokenTest {
     @Test
     public void testTransfer_MultiSig_NotEnoughSignersPresent() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(multiSigAccount.getScriptHash(),
@@ -542,7 +489,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(multiSigAccount, account1),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
+                RECIPIENT_SCRIPT_HASH, new BigInteger("2"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -561,14 +508,14 @@ public class FungibleTokenTest {
 
         exceptionRule.expect(InsufficientFundsException.class);
         exceptionRule.expectMessage("wallet does not hold enough tokens");
-        neoToken.transfer(wallet, RECIPIENT_SCRIPT_HASH, new BigDecimal("2"));
+        neoToken.transfer(wallet, RECIPIENT_SCRIPT_HASH, new BigInteger("2"));
     }
 
     @Test
     public void testTransfer_InvalidAmount() throws IOException {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount must be greater than or equal to 0");
-        neoToken.transfer(Wallet.create(), RECIPIENT_SCRIPT_HASH, new BigDecimal(-1));
+        neoToken.transfer(Wallet.create(), RECIPIENT_SCRIPT_HASH, new BigInteger("-1"));
     }
 
     @Test
@@ -576,15 +523,13 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
-        setUpWireMockForInvokeFunction("symbol",
-                "invokefunction_symbol_neo.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol_neo.json");
 
         exceptionRule.expect(InsufficientFundsException.class);
         exceptionRule.expectMessage("wallet does not hold enough tokens");
         neoToken.transfer(Wallet.withAccounts(account1, account2, account3),
-                RECIPIENT_SCRIPT_HASH, new BigDecimal("20"));
+                RECIPIENT_SCRIPT_HASH, new BigInteger("20"));
     }
 
     /*
@@ -595,8 +540,7 @@ public class FungibleTokenTest {
     public void testTransferFromSpecificAccounts() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals.json");
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
         setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_3.json");
 
@@ -615,7 +559,7 @@ public class FungibleTokenTest {
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("5"), asList(account3, account2), null);
+                new BigInteger("5"), asList(account3, account2), null);
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -641,7 +585,7 @@ public class FungibleTokenTest {
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("4"), asList(account2, account3), null);
+                new BigInteger("4"), asList(account2, account3), null);
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -670,7 +614,7 @@ public class FungibleTokenTest {
 
         Wallet w = Wallet.withAccounts(account1, account2, account3);
         TransactionBuilder b = neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("1"), asList(account2, account3), null);
+                new BigInteger("1"), asList(account2, account3), null);
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -690,7 +634,7 @@ public class FungibleTokenTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("does not have the corresponding private keys in the " +
                 "wallet");
-        neoToken.transferFromSpecificAccounts(wallet, RECIPIENT_SCRIPT_HASH, new BigDecimal("2"),
+        neoToken.transferFromSpecificAccounts(wallet, RECIPIENT_SCRIPT_HASH, new BigInteger("2"),
                 multiSigAccount.getScriptHash());
     }
 
@@ -711,7 +655,7 @@ public class FungibleTokenTest {
         exceptionRule.expect(InsufficientFundsException.class);
         exceptionRule.expectMessage("wallet does not hold enough tokens");
         neoToken.buildMultiTransferInvocation(w, RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("12"), asList(account1, account3), null);
+                new BigInteger("12"), asList(account1, account3), null);
     }
 
     @Test
@@ -719,7 +663,7 @@ public class FungibleTokenTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("account address must be provided to build an invocation");
         neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("1"));
+                new BigInteger("1"));
     }
 
     @Test
@@ -727,7 +671,7 @@ public class FungibleTokenTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("amount must be greater than or equal to 0");
         neoToken.transferFromSpecificAccounts(Wallet.create(), RECIPIENT_SCRIPT_HASH,
-                new BigDecimal("-2"), account1.getScriptHash());
+                new BigInteger("-2"), account1.getScriptHash());
     }
 
 }

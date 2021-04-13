@@ -105,7 +105,7 @@ public class NeoTokenIntegrationTest {
 
         Account voterAccount = Account.create();
         fundAccountsWithGas(neow3j, voterAccount);
-        fundAccountsWithNeo(neow3j, new BigDecimal("22"), voterAccount);
+        fundAccountsWithNeo(neow3j, new BigInteger("22"), voterAccount);
 
         txHash = neoToken.vote(voterAccount, CLIENT_1.getECKeyPair().getPublicKey())
                 .wallet(Wallet.withAccounts(voterAccount))

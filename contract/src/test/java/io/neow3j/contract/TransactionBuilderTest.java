@@ -1073,7 +1073,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("getapplicationlog", "getapplicationlog.json");
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
-                .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
+                .transfer(w, account1.getScriptHash(), BigInteger.ONE)
                 .signers(calledByEntry(account1))
                 .wallet(w)
                 .sign();
@@ -1093,7 +1093,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
-                .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
+                .transfer(w, account1.getScriptHash(), BigInteger.ONE)
                 .signers(calledByEntry(account1))
                 .wallet(w)
                 .sign();
@@ -1114,7 +1114,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("getapplicationlog", "getapplicationlog_unknowntx.json");
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new NeoToken(neow)
-                .transfer(w, account1.getScriptHash(), BigDecimal.ONE)
+                .transfer(w, account1.getScriptHash(), BigInteger.ONE)
                 .signers(calledByEntry(account1))
                 .wallet(w)
                 .sign();
