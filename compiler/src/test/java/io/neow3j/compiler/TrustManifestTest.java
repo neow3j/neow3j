@@ -27,7 +27,7 @@ public class TrustManifestTest {
     @Test
     public void withTrustsAnnotation() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(TrustManifestTestContract.class.getName());
+                .compile(TrustManifestTestContract.class.getName());
         List<String> trusts = unit.getManifest().getTrusts();
         assertThat(trusts, hasSize(2));
         assertThat(trusts, hasItems(CONTRACT_HASH_1, CONTRACT_HASH_1));
@@ -36,7 +36,7 @@ public class TrustManifestTest {
     @Test
     public void withTrustsAnnotationSingle() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(TrustManifestTestContractWithSingleAnnotation.class.getName());
+                .compile(TrustManifestTestContractWithSingleAnnotation.class.getName());
         List<String> trusts = unit.getManifest().getTrusts();
         assertThat(trusts, hasSize(1));
         assertThat(trusts, hasItems(CONTRACT_HASH_1));
@@ -45,7 +45,7 @@ public class TrustManifestTest {
     @Test
     public void withTrustsAnnotationWrapper() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(TrustManifestTestContractWithTrustsAnnotation.class.getName());
+                .compile(TrustManifestTestContractWithTrustsAnnotation.class.getName());
         List<String> trusts = unit.getManifest().getTrusts();
         assertThat(trusts, hasSize(2));
         assertThat(trusts, hasItems(CONTRACT_HASH_1, GROUP_PUBKEY_1));
@@ -54,7 +54,7 @@ public class TrustManifestTest {
     @Test
     public void withoutTrustsAnnotation() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(TrustManifestTestContractWithoutAnnotation.class.getName());
+                .compile(TrustManifestTestContractWithoutAnnotation.class.getName());
         List<String> trusts = unit.getManifest().getTrusts();
         assertThat(trusts, hasSize(0));
     }
@@ -65,7 +65,7 @@ public class TrustManifestTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Invalid contract hash or public key:", "invalidContractHashOrPubKey")));
         new Compiler()
-                .compileClass(TrustManifestTestContractWithNotValidContractHashNorGroupKey.class
+                .compile(TrustManifestTestContractWithNotValidContractHashNorGroupKey.class
                         .getName());
     }
 

@@ -19,7 +19,7 @@ public class MethodTokensTest {
     @Test
     public void multipleMethodTokensShouldShowUpInTheNefFileButWithoutDuplicates()
             throws IOException {
-        CompilationUnit compUnit = new Compiler().compileClass(
+        CompilationUnit compUnit = new Compiler().compile(
                 MultipleMethodTokensContract.class.getName());
         List<MethodToken> tokens = compUnit.getNefFile().getMethodTokens();
         assertThat(tokens, hasSize(4));
@@ -43,7 +43,7 @@ public class MethodTokensTest {
     @Test
     public void singleMethodTokenShouldShowUpInTheNefFileButWithoutDuplicates()
             throws IOException {
-        CompilationUnit compUnit = new Compiler().compileClass(
+        CompilationUnit compUnit = new Compiler().compile(
                 SingleMethodTokenContract.class.getName());
         List<MethodToken> tokens = compUnit.getNefFile().getMethodTokens();
         assertThat(tokens, hasSize(1));

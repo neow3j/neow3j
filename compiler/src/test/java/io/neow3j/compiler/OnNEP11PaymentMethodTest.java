@@ -30,7 +30,7 @@ public class OnNEP11PaymentMethodTest {
             throws IOException {
 
         CompilationUnit unit = new Compiler()
-                .compileClass(OnNep11PaymentMethodTestContract.class.getName());
+                .compile(OnNep11PaymentMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods().stream()
                 .filter(m -> m.getName().equals(ONNEP11PAYMENT_METHOD_NAME))
                 .collect(Collectors.toList());
@@ -49,7 +49,7 @@ public class OnNEP11PaymentMethodTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "onPayment", "required to have", Hash160.class.getName(), int.class.getName(),
                 String.class.getName(), void.class.getName())));
-        new Compiler().compileClass(
+        new Compiler().compile(
                 OnNep11PaymentMethodIllegalReturnTypeTestContract.class.getName());
     }
 
@@ -59,7 +59,7 @@ public class OnNEP11PaymentMethodTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "onPayment", "required to have", Hash160.class.getName(), int.class.getName(),
                 String.class.getName(), void.class.getName())));
-        new Compiler().compileClass(
+        new Compiler().compile(
                 OnNep11PaymentMethodIllegalParametersTestContract.class.getName());
     }
 
@@ -68,7 +68,7 @@ public class OnNEP11PaymentMethodTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList("multiple methods", ONNEP11PAYMENT_METHOD_NAME)));
-        new Compiler().compileClass(MultipleOnNep11PaymentMethodsTestContract.class.getName());
+        new Compiler().compile(MultipleOnNep11PaymentMethodsTestContract.class.getName());
     }
 
     static class OnNep11PaymentMethodTestContract {

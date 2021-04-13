@@ -33,7 +33,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 IllegalArgumentException.class.getCanonicalName(),
                 Exception.class.getCanonicalName())));
-        new Compiler().compileClass(UnsupportedException.class.getName());
+        new Compiler().compile(UnsupportedException.class.getName());
     }
 
     @Test
@@ -42,28 +42,28 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList("catch",
                 RuntimeException.class.getCanonicalName(),
                 Exception.class.getCanonicalName())));
-        new Compiler().compileClass(UnsupportedExceptionInCatchClause.class.getName());
+        new Compiler().compile(UnsupportedExceptionInCatchClause.class.getName());
     }
 
     @Test
     public void throwExceptionIfExceptionWithMoreThanOneArgumentIsUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContains("You provided 2 arguments."));
-        new Compiler().compileClass(UnsupportedNumberOfExceptionArguments.class.getName());
+        new Compiler().compile(UnsupportedNumberOfExceptionArguments.class.getName());
     }
 
     @Test
     public void throwExceptionIfExceptionWithANonStringArgumentIsUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContains("You provided a non-string argument."));
-        new Compiler().compileClass(UnsupportedExceptionArgument.class.getName());
+        new Compiler().compile(UnsupportedExceptionArgument.class.getName());
     }
 
     @Test
     public void throwExceptionIfTwoEventsAreGivenTheSameName() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList("Two events", "transfer")));
-        new Compiler().compileClass(DuplicateUseOfEventDisplayName.class.getName());
+        new Compiler().compile(DuplicateUseOfEventDisplayName.class.getName());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList("Script hash", "8",
                 "CustomContractInterface")));
-        new Compiler().compileClass(InvalidScriptHashContractInterfaceContract.class.getName());
+        new Compiler().compile(InvalidScriptHashContractInterfaceContract.class.getName());
     }
 
     @Test
@@ -142,13 +142,13 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 this.getClass().getSimpleName() + ".java", // the file name
                 "privateMethod", "safe")));
-        new Compiler().compileClass(PrivateMethodMarkedAsSafe.class.getName());
+        new Compiler().compile(PrivateMethodMarkedAsSafe.class.getName());
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 this.getClass().getSimpleName() + ".java", // the file name
                 "protectedMethod", "safe")));
-        new Compiler().compileClass(ProtectedMethodMarkedAsSafe.class.getName());
+        new Compiler().compile(ProtectedMethodMarkedAsSafe.class.getName());
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
@@ -162,7 +162,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 CompilerExceptionsTest.class.getSimpleName(),
                 "Local variables are not supported in the static constructor")));
-        new Compiler().compileClass(LocalVariableInStaticConstructorContract.class.getName());
+        new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
     }
 
     static class UnsupportedInheritanceInConstructor {

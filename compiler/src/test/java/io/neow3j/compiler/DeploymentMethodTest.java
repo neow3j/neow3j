@@ -29,7 +29,7 @@ public class DeploymentMethodTest {
             throws IOException {
 
         CompilationUnit unit = new Compiler()
-                .compileClass(DeploymentMethodTestContract.class.getName());
+                .compile(DeploymentMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods().stream()
                 .filter(m -> m.getName().equals(DEPLOY_METHOD_NAME))
                 .collect(Collectors.toList());
@@ -42,18 +42,18 @@ public class DeploymentMethodTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList("doDeploy", "Object", "boolean", "void")));
-        new Compiler().compileClass(DeploymentMethodIllegalReturnTypeTestContract.class.getName());
+        new Compiler().compile(DeploymentMethodIllegalReturnTypeTestContract.class.getName());
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList("doDeploy", "Object", "boolean", "void")));
-        new Compiler().compileClass(
+        new Compiler().compile(
                 DeploymentMethodIllegalParameterTypeTestContract.class.getName());
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "doDeploy", "Object", "Boolean", "void")));
-        new Compiler().compileClass(
+        new Compiler().compile(
                 DeploymentMethodMissingParameterTestContract.class.getName());
     }
 
@@ -62,7 +62,7 @@ public class DeploymentMethodTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList("multiple methods", DEPLOY_METHOD_NAME)));
-        new Compiler().compileClass(MultipleDeploymentMethodsTestContract.class.getName());
+        new Compiler().compile(MultipleDeploymentMethodsTestContract.class.getName());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class DeploymentMethodTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList("annotatedMethod", "multiple annotations", "specific method signature")));
-        new Compiler().compileClass(MultipleMethodSignatureAnnotationsTestContract.class.getName());
+        new Compiler().compile(MultipleMethodSignatureAnnotationsTestContract.class.getName());
     }
 
     static class DeploymentMethodTestContract {

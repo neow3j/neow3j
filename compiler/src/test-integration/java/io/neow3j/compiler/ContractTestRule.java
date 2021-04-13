@@ -92,7 +92,7 @@ public class ContractTestRule implements TestRule {
     }
 
     protected SmartContract deployContract(String fullyQualifiedName) throws Throwable {
-        CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
+        CompilationUnit res = new Compiler().compile(fullyQualifiedName);
         NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)

@@ -9,10 +9,13 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.contract.Hash160;
 import io.neow3j.utils.ClassUtils;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.objectweb.asm.Type;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -64,17 +67,18 @@ public class DebugInfo {
     }
 
     public static DebugInfo buildDebugInfo(CompilationUnit compUnit) {
-        // Build method information.
         List<Method> methods = new ArrayList<>();
         List<String> documents = new ArrayList<>();
         for (NeoMethod neoMethod : compUnit.getNeoModule().getSortedMethods()) {
-            String sourceFilePath = compUnit.getSourceFile(neoMethod.getOwnerClassName());
-            if (sourceFilePath == null) {
+            File sourceFile = compUnit.getSourceFile(neoMethod.getOwnerClass());
+            if (sourceFile == null) {
+                // If the source file was not found, we simply don't add debugging information
+                // for that method.
                 continue;
             }
-            int docIdx = documents.indexOf(sourceFilePath);
+            int docIdx = documents.indexOf(sourceFile.getAbsolutePath());
             if (docIdx == -1) {
-                documents.add(sourceFilePath);
+                documents.add(sourceFile.getAbsolutePath());
                 docIdx = documents.size() - 1;
             }
             String name = ClassUtils.getFullyQualifiedNameForInternalName(

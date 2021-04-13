@@ -1,16 +1,20 @@
 package io.neow3j.compiler;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.compiler.DebugInfo.Method;
+import io.neow3j.compiler.sourcelookup.MockSourceContainer;
 import io.neow3j.devpack.List;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+
+import java.io.File;
 import java.io.IOException;
 import org.junit.Test;
 
@@ -18,7 +22,7 @@ public class ListTest {
 
     @Test
     public void listsShouldBeRepresentedAsArraysInTheContractManifest() throws IOException {
-        CompilationUnit unit = new Compiler().compileClass(ListTestContract.class.getName());
+        CompilationUnit unit = new Compiler().compile(ListTestContract.class.getName());
         java.util.List<ContractMethod> methods = unit.getManifest().getAbi().getMethods();
 
         ContractMethod method = methods.stream().filter(m -> m.getName().equals("returnList"))
@@ -40,8 +44,10 @@ public class ListTest {
 
     @Test
     public void listsShouldBeRepresentedAsArraysInTheDebugInfo() throws IOException {
-        CompilationUnit unit = new Compiler().compileClass(ListTestContract.class.getName(),
-                "/path/to/src/file/io/neow3j/compiler/ListTest$ListTestContract.java");
+        CompilationUnit unit = new Compiler().compile(ListTestContract.class.getName(),
+                asList(new MockSourceContainer(new File("/path/to/src/file/io/neow3j/compiler" +
+                        "/ListTest$ListTestContract.java"))));
+
         java.util.List<Method> methods = unit.getDebugInfo().getMethods();
         DebugInfo.Method method = methods.stream().filter(m -> m.getName().contains("returnList"))
                 .findFirst().get();

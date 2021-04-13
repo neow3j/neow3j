@@ -15,13 +15,13 @@ public class ContractNameTest {
 
     @Test
     public void contractNameSetWithDisplayNameAnnotation() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(ContractNameTestContract.class.getName());
+        CompilationUnit res = new Compiler().compile(ContractNameTestContract.class.getName());
         assertThat(res.getManifest().getName(), is("Contract Name"));
     }
 
     @Test
     public void contractNameSetWithoutDisplayNameAnnotation() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(ContractNameTestContractWithoutAnnotation.class.getName());
+        CompilationUnit res = new Compiler().compile(ContractNameTestContractWithoutAnnotation.class.getName());
         assertThat(res.getManifest().getName(), is(
                 "ContractNameTest$ContractNameTestContractWithoutAnnotation"));
     }
