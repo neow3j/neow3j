@@ -47,7 +47,7 @@ public class NeoURIIntegrationTest {
         assertThat(gasBalance, is(BigInteger.ZERO));
 
         Hash256 txHash = new NeoURI(neow3j)
-                .asset(GAS_HASH)
+                .token(GAS_HASH)
                 .wallet(COMMITTEE_WALLET)
                 .to(account.getScriptHash())
                 .amount("0.00000001")

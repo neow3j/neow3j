@@ -62,7 +62,7 @@ public class FungibleTokenIntegrationTest {
 
         Hash256 txHash = fungibleToken
                 .transfer(wallet,
-                        COMMITTEE_ACCOUNT.getAddress(),
+                        COMMITTEE_ACCOUNT.getScriptHash(),
                         new BigDecimal("14"))
                 .sign()
                 .send()
@@ -71,7 +71,7 @@ public class FungibleTokenIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
-        BigInteger balanceOf_a1 = fungibleToken.getBalanceOf(a1.getAddress());
+        BigInteger balanceOf_a1 = fungibleToken.getBalanceOf(a1);
         BigInteger balanceOf_a2 = fungibleToken.getBalanceOf(a2);
         BigInteger balanceOf_a3 = fungibleToken.getBalanceOf(a3);
 

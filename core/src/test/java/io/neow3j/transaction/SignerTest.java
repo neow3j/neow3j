@@ -1,5 +1,9 @@
 package io.neow3j.transaction;
 
+import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,6 +13,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -17,36 +22,43 @@ import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.Signer.Builder;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
-import io.neow3j.utils.Numeric;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import io.neow3j.wallet.Account;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class SignerTest {
 
+    private Account acc;
     private Hash160 accScriptHash;
     private Hash160 contract1;
     private Hash160 contract2;
     private ECPublicKey groupPubKey1;
     private ECPublicKey groupPubKey2;
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Before
     public void setUp() {
-        accScriptHash = Hash160.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
-        contract1 = Hash160.fromScript(Numeric.hexStringToByteArray("d802a401"));
-        contract2 = Hash160.fromScript(Numeric.hexStringToByteArray("c503b112"));
+        acc = Account.fromWIF("Kzt94tAAiZSgH7Yt4i25DW6jJFprZFPSqTgLr5dWmWgKDKCjXMfZ");
+        accScriptHash = acc.getScriptHash();
+        contract1 = Hash160.fromScript(hexStringToByteArray("d802a401"));
+        contract2 = Hash160.fromScript(hexStringToByteArray("c503b112"));
         String encPubKey1 = "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7";
         String encPubKey2 = "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60";
-        groupPubKey1 = new ECKeyPair.ECPublicKey(Numeric.hexStringToByteArray(encPubKey1));
-        groupPubKey2 = new ECKeyPair.ECPublicKey(Numeric.hexStringToByteArray(encPubKey2));
+        groupPubKey1 = new ECKeyPair.ECPublicKey(hexStringToByteArray(encPubKey1));
+        groupPubKey2 = new ECKeyPair.ECPublicKey(hexStringToByteArray(encPubKey2));
     }
 
     @Test
     public void createSignerWithCallByEntryWitnessScope() {
-        Signer signer = Signer.calledByEntry(accScriptHash);
+        Signer signer = calledByEntry(accScriptHash);
         assertThat(signer.getScriptHash(), is(accScriptHash));
         assertThat(signer.getScopes(), hasSize(1));
         assertThat(signer.getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
@@ -115,27 +127,23 @@ public class SignerTest {
         assertTrue(signer.getAllowedContracts().isEmpty());
     }
 
-
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingEmptySigner() {
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("No account has been set.");
         new Signer.Builder().build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingSignerWithoutScopes() {
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("No scope has been defined.");
         new Signer.Builder()
                 .account(accScriptHash)
                 .build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
-    public void failBuildingSignerWithoutAccount() {
-        new Signer.Builder()
-                .scopes(WitnessScope.CALLED_BY_ENTRY)
-                .build();
-    }
-
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingSignerWithGlobalAndAnyOtherScope() {
         try {
             new Signer.Builder()
@@ -157,6 +165,10 @@ public class SignerTest {
             // continue
         }
 
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("The global witness scope cannot be combined with other " +
+                "scopes.");
+
         new Signer.Builder()
                 .account(accScriptHash)
                 .scopes(WitnessScope.GLOBAL)
@@ -164,24 +176,33 @@ public class SignerTest {
                 .build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingCustomContractsSignerWithoutSpecifyingAllowedContracts() {
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("allowed contracts must not be empty");
+
         new Signer.Builder()
                 .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
                 .build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingCustomGroupsSignerWithoutSpecifyingAllowedContracts() {
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("allowed groups must not be empty");
+
         new Signer.Builder()
                 .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_GROUPS)
                 .build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingSignerWithTooManyContracts() {
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("A signer's scope can only contain 16 contracts.");
+
         Hash160[] contracts = new Hash160[17];
         for (int i = 0; i <= 16; i++) {
             contracts[i] = new Hash160("3ab0be8672e25cf475219d018ded961ec684ca88");
@@ -193,7 +214,7 @@ public class SignerTest {
                 .build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingSignerWithTooManyContractsAddedSeparately() {
         Builder b = new Signer.Builder()
                 .account(accScriptHash)
@@ -203,17 +224,27 @@ public class SignerTest {
         for (int i = 0; i <= 15; i++) {
             contracts[i] = new Hash160("3ab0be8672e25cf475219d018ded961ec684ca88");
         }
+
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("A signer's scope can only contain " +
+                NeoConstants.MAX_SIGNER_SUBITEMS + " contracts.");
+
         b.allowedContracts(contracts).build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingSignerWithTooManyGroups() {
-        ECPublicKey publicKey = new ECPublicKey(Numeric.hexStringToByteArray(
+        ECPublicKey publicKey = new ECPublicKey(hexStringToByteArray(
                 "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
         ECPublicKey[] groups = new ECPublicKey[17];
         for (int i = 0; i <= 16; i++) {
             groups[i] = publicKey;
         }
+
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("A signer's scope can only contain " +
+                NeoConstants.MAX_SIGNER_SUBITEMS + " groups.");
+
         new Signer.Builder()
                 .account(accScriptHash)
                 .scopes(WitnessScope.CUSTOM_CONTRACTS)
@@ -221,9 +252,9 @@ public class SignerTest {
                 .build();
     }
 
-    @Test(expected = SignerConfigurationException.class)
+    @Test
     public void failBuildingSignerWithTooManyGroupsAddedSeparately() {
-        ECPublicKey publicKey = new ECPublicKey(Numeric.hexStringToByteArray(
+        ECPublicKey publicKey = new ECPublicKey(hexStringToByteArray(
                 "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
         Builder b = new Signer.Builder()
                 .account(accScriptHash)
@@ -233,6 +264,11 @@ public class SignerTest {
         for (int i = 0; i <= 15; i++) {
             groups[i] = publicKey;
         }
+
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("A signer's scope can only contain " +
+                NeoConstants.MAX_SIGNER_SUBITEMS + " groups.");
+
         b.allowedGroups(groups).build();
     }
 
@@ -243,9 +279,9 @@ public class SignerTest {
         Signer.global(accScriptHash).serialize(writer);
         byte[] actual = outStream.toByteArray();
         String expected = ""
-                + Numeric.reverseHexString(accScriptHash.toString())
-                + Numeric.toHexStringNoPrefix(WitnessScope.GLOBAL.byteValue());
-        assertThat(Numeric.toHexStringNoPrefix(actual), is(expected));
+                + reverseHexString(accScriptHash.toString())
+                + toHexStringNoPrefix(WitnessScope.GLOBAL.byteValue());
+        assertThat(toHexStringNoPrefix(actual), is(expected));
     }
 
     @Test
@@ -256,12 +292,12 @@ public class SignerTest {
                 .allowedContracts(contract1, contract2)
                 .build();
         byte[] actual = s.toArray();
-        byte[] expected = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(accScriptHash.toString())
-                + Numeric.toHexStringNoPrefix(WitnessScope.CUSTOM_CONTRACTS.byteValue())
+        byte[] expected = hexStringToByteArray(""
+                + reverseHexString(accScriptHash.toString())
+                + toHexStringNoPrefix(WitnessScope.CUSTOM_CONTRACTS.byteValue())
                 + "02" // array length 2
-                + Numeric.reverseHexString(contract1.toString())
-                + Numeric.reverseHexString(contract2.toString()));
+                + reverseHexString(contract1.toString())
+                + reverseHexString(contract2.toString()));
         assertArrayEquals(expected, actual);
     }
 
@@ -276,12 +312,12 @@ public class SignerTest {
                 .build()
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
-        byte[] expected = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(accScriptHash.toString())
-                + Numeric.toHexStringNoPrefix(WitnessScope.CUSTOM_GROUPS.byteValue())
+        byte[] expected = hexStringToByteArray(""
+                + reverseHexString(accScriptHash.toString())
+                + toHexStringNoPrefix(WitnessScope.CUSTOM_GROUPS.byteValue())
                 + "02" // array length 2
-                + Numeric.toHexStringNoPrefix(groupPubKey1.toArray())
-                + Numeric.toHexStringNoPrefix(groupPubKey2.toArray()));
+                + toHexStringNoPrefix(groupPubKey1.toArray())
+                + toHexStringNoPrefix(groupPubKey2.toArray()));
         assertArrayEquals(expected, actual);
     }
 
@@ -297,29 +333,29 @@ public class SignerTest {
                 .build()
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
-        byte[] expected = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(accScriptHash.toString())
+        byte[] expected = hexStringToByteArray(""
+                + reverseHexString(accScriptHash.toString())
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
-                + Numeric.reverseHexString(contract1.toString())
-                + Numeric.reverseHexString(contract2.toString())
+                + reverseHexString(contract1.toString())
+                + reverseHexString(contract2.toString())
                 + "02" // array length 2
-                + Numeric.toHexStringNoPrefix(groupPubKey1.toArray())
-                + Numeric.toHexStringNoPrefix(groupPubKey2.toArray()));
+                + toHexStringNoPrefix(groupPubKey1.toArray())
+                + toHexStringNoPrefix(groupPubKey2.toArray()));
         assertArrayEquals(expected, actual);
     }
 
     @Test
     public void deserialize() throws DeserializationException {
-        byte[] data = Numeric.hexStringToByteArray(""
-                + Numeric.reverseHexString(accScriptHash.toString())
+        byte[] data = hexStringToByteArray(""
+                + reverseHexString(accScriptHash.toString())
                 + "31" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
-                + Numeric.reverseHexString(contract1.toString())
-                + Numeric.reverseHexString(contract2.toString())
+                + reverseHexString(contract1.toString())
+                + reverseHexString(contract2.toString())
                 + "02" // array length 2
-                + Numeric.toHexStringNoPrefix(groupPubKey1.toArray())
-                + Numeric.toHexStringNoPrefix(groupPubKey2.toArray()));
+                + toHexStringNoPrefix(groupPubKey1.toArray())
+                + toHexStringNoPrefix(groupPubKey2.toArray()));
 
         Signer c = NeoSerializableInterface.from(data, Signer.class);
         assertThat(c.getScriptHash(), is(accScriptHash));
@@ -331,31 +367,40 @@ public class SignerTest {
         assertThat(c.getAllowedGroups(), containsInAnyOrder(groupPubKey1, groupPubKey2));
     }
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void failDeserializingWithTooManyContracts() throws DeserializationException {
         StringBuilder serialized = new StringBuilder(""
-                + Numeric.reverseHexString(accScriptHash.toString())
+                + reverseHexString(accScriptHash.toString())
                 + "11" // calledByEntry, custom contracts
                 + "11"); // array length 17 (0x11)
         // Add one too many contract script hashes.
         for (int i = 0; i <= 17; i++) {
-            serialized.append(Numeric.reverseHexString(contract1.toString()));
+            serialized.append(reverseHexString(contract1.toString()));
         }
-        byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
+        byte[] serializedBytes = hexStringToByteArray(serialized.toString());
+
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage("A signer's scope can only contain " +
+                NeoConstants.MAX_SIGNER_SUBITEMS + " contracts.");
+
         NeoSerializableInterface.from(serializedBytes, Signer.class);
     }
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void failDeserializingWithTooManyContractGroups() throws DeserializationException {
         StringBuilder serialized = new StringBuilder(""
-                + Numeric.reverseHexString(accScriptHash.toString())
+                + reverseHexString(accScriptHash.toString())
                 + "21" // calledByEntry, custom contracts
                 + "11"); // array length 17 (0x11)
         // Add one too many contract group public keys.
         for (int i = 0; i <= 17; i++) {
-            serialized.append(Numeric.toHexStringNoPrefix(groupPubKey1.toArray()));
+            serialized.append(toHexStringNoPrefix(groupPubKey1.toArray()));
         }
-        byte[] serializedBytes = Numeric.hexStringToByteArray(serialized.toString());
+        byte[] serializedBytes = hexStringToByteArray(serialized.toString());
+
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage("A signer's scope can only contain " +
+                NeoConstants.MAX_SIGNER_SUBITEMS + " groups.");
         NeoSerializableInterface.from(serializedBytes, Signer.class);
     }
 
@@ -379,9 +424,33 @@ public class SignerTest {
     }
 
     @Test
+    public void builderWithAccount() {
+        Signer signer1 = new Signer.Builder()
+                .account(acc)
+                .scopes(WitnessScope.GLOBAL)
+                .build();
+        Signer signer2 = new Signer.Builder()
+                .account(accScriptHash)
+                .scopes(WitnessScope.GLOBAL)
+                .build();
+        assertThat(signer1, equalTo(signer2));
+    }
+
+    @Test
+    public void testFeeOnlyWithOtherScope() {
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage("The fee-only witness scope cannot be combined with other " +
+                "scopes.");
+         new Signer.Builder()
+                .account(accScriptHash)
+                .scopes(WitnessScope.NONE, WitnessScope.CALLED_BY_ENTRY)
+                .build();
+    }
+
+    @Test
     public void equals() {
-        Signer signer1 = Signer.calledByEntry(accScriptHash);
-        Signer signer2 = Signer.calledByEntry(accScriptHash);
+        Signer signer1 = calledByEntry(accScriptHash);
+        Signer signer2 = calledByEntry(accScriptHash);
         assertThat(signer1, equalTo(signer2));
 
         signer1 = new Signer.Builder()

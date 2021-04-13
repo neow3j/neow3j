@@ -1,23 +1,23 @@
 package io.neow3j.contract;
 
+import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.ArrayUtils.trimTrailingBytes;
+import static io.neow3j.utils.Numeric.toBigInt;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.model.types.CallFlags;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -133,7 +133,7 @@ public class NefFile extends NeoSerializable {
      * @return the check sum.
      */
     public long getCheckSumAsInteger() {
-        return Numeric.toBigInt(ArrayUtils.reverseArray(checkSum)).longValue();
+        return toBigInt(reverseArray(checkSum)).longValue();
     }
 
     /**
@@ -201,9 +201,9 @@ public class NefFile extends NeoSerializable {
         byte[] serialized = file.toArray();
         // Get nef file bytes without the checksum.
         int fileSizeWithoutCheckSum = serialized.length - CHECKSUM_SIZE;
-        byte[] nefFileBytes = ArrayUtils.getFirstNBytes(serialized, fileSizeWithoutCheckSum);
+        byte[] nefFileBytes = getFirstNBytes(serialized, fileSizeWithoutCheckSum);
         // Hash the nef file bytes and from that the first bytes as the checksum.
-        return ArrayUtils.getFirstNBytes(Hash.hash256(nefFileBytes), CHECKSUM_SIZE);
+        return getFirstNBytes(hash256(nefFileBytes), CHECKSUM_SIZE);
     }
 
     public static NefFile readFromFile(File nefFile) throws DeserializationException, IOException {

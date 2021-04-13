@@ -64,27 +64,6 @@ public class FungibleToken extends Token {
     }
 
     /**
-     * Gets the token balance for the given account address.
-     * <p>
-     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
-     * 1*10^8 GAS fractions.
-     * <p>
-     * The balance is not cached locally. Every time this method is called requests are sent to the
-     * Neo node.
-     *
-     * @param address the address of the account to fetch the balance for.
-     * @return the token balance.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a number.
-     */
-    public BigInteger getBalanceOf(String address) throws IOException,
-            UnexpectedReturnTypeException {
-        return getBalanceOf(Hash160.fromAddress(address));
-    }
-
-    /**
      * Gets the token balance for the given account script hash.
      * <p>
      * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as
@@ -138,24 +117,6 @@ public class FungibleToken extends Token {
      * <p>
      * The default account is used first to cover the amount. If it cannot cover the full amount,
      * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
-     * the amount can be covered, all necessary transfers are packed in one transaction.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount)
-            throws IOException {
-        return transfer(wallet, Hash160.fromAddress(to), amount, null);
-    }
-
-    /**
-     * Creates a transfer transaction that uses all accounts in the wallet to cover the amount.
-     * <p>
-     * The default account is used first to cover the amount. If it cannot cover the full amount,
-     * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
      * the amount can be covered, all necessary transfers packed in one transaction.
      *
      * @param wallet the wallet from which to send the tokens from.
@@ -167,29 +128,6 @@ public class FungibleToken extends Token {
     public TransactionBuilder transfer(Wallet wallet, Hash160 to, BigDecimal amount)
             throws IOException {
         return transfer(wallet, to, amount, null);
-    }
-
-    /**
-     * Creates a transfer transaction that uses all accounts in the wallet to cover the amount.
-     * <p>
-     * The default account is used first to cover the amount. If it cannot cover the full amount,
-     * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
-     * the amount can be covered, all necessary transfers are packed in one transaction.
-     * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
-     * additional fees. Otherwise, use the method without a contract parameter for data.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @param data   the data that is passed to the {@code onPayment} method of the receiving
-     *               smart contract.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transfer(Wallet wallet, String to, BigDecimal amount,
-            ContractParameter data) throws IOException {
-        return transfer(wallet, Hash160.fromAddress(to), amount, data);
     }
 
     /**
@@ -226,56 +164,6 @@ public class FungibleToken extends Token {
         accountsOrdered.remove(wallet.getDefaultAccount());
         accountsOrdered.add(0, wallet.getDefaultAccount()); // Start with default account.
         return buildMultiTransferInvocation(wallet, to, amount, accountsOrdered, data);
-    }
-
-    /**
-     * Creates a transfer transaction that uses the provided accounts.
-     * <p>
-     * The accounts are used in the order provided to cover the transaction amount. If the first
-     * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered by the specified accounts, all necessary
-     * transfers are packed in one transaction.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @param from   the script hashes of the accounts in the wallet that should be used to cover
-     *               the amount.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String to,
-            BigDecimal amount, Hash160... from) throws IOException {
-        return transferFromSpecificAccounts(wallet, Hash160.fromAddress(to), amount, null, from);
-    }
-
-    /**
-     * Creates a transfer transaction that uses the provided accounts.
-     * <p>
-     * The accounts are used in the order provided to cover the transaction amount. If the first
-     * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered by the specified accounts, all necessary
-     * transfers are packed in one transaction.
-     * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
-     * additional fees. Otherwise, use the method without a contract parameter for data.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @param data   the data that is passed to the {@code onPayment} method of the receiving
-     *               smart contract.
-     * @param from   the script hashes of the accounts in the wallet that should be used to cover
-     *               the amount.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, String to,
-            BigDecimal amount, ContractParameter data, String... from) throws IOException {
-        Hash160[] fromScriptHashes =
-                Arrays.stream(from).map(Hash160::fromAddress).toArray(Hash160[]::new);
-        return transferFromSpecificAccounts(wallet, Hash160.fromAddress(to), amount, data,
-                fromScriptHashes);
     }
 
     /**
@@ -423,45 +311,10 @@ public class FungibleToken extends Token {
         }
         byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
 
-        return new TransactionBuilder(neow)
+        return new TransactionBuilder(neow3j)
                 .wallet(wallet)
                 .script(concatenatedScript)
                 .signers(signers.toArray(new Signer[]{}));
-    }
-
-    /**
-     * Creates a transfer transaction that uses only the wallet's default account to cover the
-     * token amount.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
-            BigDecimal amount) throws IOException {
-        return transferFromDefaultAccount(wallet, Hash160.fromAddress(to), amount, null);
-    }
-
-    /**
-     * Creates a transfer transaction that uses only the wallet's default account to cover the
-     * token amount.
-     * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
-     * additional fees. Otherwise, use the method without a contract parameter for data.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
-     * @param data   the data that is passed to the {@code onPayment} method of the receiving
-     *               smart contract.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, String to,
-            BigDecimal amount, ContractParameter data) throws IOException {
-        return transferFromDefaultAccount(wallet, Hash160.fromAddress(to), amount, data);
     }
 
     /**
