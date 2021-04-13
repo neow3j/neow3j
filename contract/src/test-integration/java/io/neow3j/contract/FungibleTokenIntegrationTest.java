@@ -56,14 +56,14 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(BigInteger.ZERO));
 
-        fundAccountsWithNeo(neow3j, new BigDecimal(10), a1, a2, a3);
+        fundAccountsWithNeo(neow3j, BigInteger.TEN, a1, a2, a3);
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("30")));
 
         Hash256 txHash = fungibleToken
                 .transfer(wallet,
                         COMMITTEE_ACCOUNT.getScriptHash(),
-                        new BigDecimal("14"))
+                        new BigInteger("14"))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -101,14 +101,14 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(BigInteger.ZERO));
 
-        fundAccountsWithNeo(neow3j, new BigDecimal(8), a1, a2, a3);
+        fundAccountsWithNeo(neow3j, new BigInteger("8"), a1, a2, a3);
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("24")));
 
         Hash256 txHash = fungibleToken
                 .transfer(wallet,
                         COMMITTEE_ACCOUNT.getScriptHash(),
-                        new BigDecimal("8"))
+                        new BigInteger("8"))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -141,14 +141,14 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(BigInteger.ZERO));
 
-        fundAccountsWithNeo(neow3j, new BigDecimal(12), a1, a2, a3);
+        fundAccountsWithNeo(neow3j, new BigInteger("12"), a1, a2, a3);
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("36")));
 
         Hash256 txHash = fungibleToken
                 .transfer(wallet,
                         COMMITTEE_ACCOUNT.getScriptHash(),
-                        new BigDecimal("36"))
+                        new BigInteger("36"))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -181,7 +181,7 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(BigInteger.ZERO));
 
-        fundAccountsWithNeo(neow3j, new BigDecimal(10), a1, a2, a3);
+        fundAccountsWithNeo(neow3j, new BigInteger("10"), a1, a2, a3);
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("30")));
 
@@ -224,7 +224,7 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(BigInteger.ZERO));
 
-        fundAccountsWithNeo(neow3j, new BigDecimal(5), a1, a2, a3);
+        fundAccountsWithNeo(neow3j, new BigInteger("5"), a1, a2, a3);
         balanceOf_wallet = fungibleToken.getBalanceOf(wallet);
         assertThat(balanceOf_wallet, is(new BigInteger("15")));
 
@@ -264,7 +264,7 @@ public class FungibleTokenIntegrationTest {
         Hash256 txHash = gasToken
                 .transfer(wallet,
                         a2.getScriptHash(),
-                        new BigDecimal("1.00000001"))
+                        gasToken.toFractions(new BigDecimal("1.00000001")))
                 .sign()
                 .send()
                 .getSendRawTransaction()

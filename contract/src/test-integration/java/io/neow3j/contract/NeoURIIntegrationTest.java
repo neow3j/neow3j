@@ -90,7 +90,7 @@ public class NeoURIIntegrationTest {
         BigInteger neoBalance = neoToken.getBalanceOf(account);
         assertThat(neoBalance, is(BigInteger.ZERO));
 
-        fundAccountsWithNeo(neow3j, BigDecimal.TEN, CLIENT_2);
+        fundAccountsWithNeo(neow3j, BigInteger.TEN, CLIENT_2);
 
         String uriString = "neo:" + account.getAddress() + "?asset=neo&amount=1";
 
