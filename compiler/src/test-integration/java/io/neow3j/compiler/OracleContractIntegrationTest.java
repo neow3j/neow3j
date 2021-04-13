@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.contract.GasToken;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +41,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static io.neow3j.TestProperties.oracleContractHash;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.contract.Token.toFractions;
 import static io.neow3j.protocol.core.methods.response.OracleResponseCode.TIMEOUT;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -67,7 +70,7 @@ public class OracleContractIntegrationTest {
     public void performRequest() throws Throwable {
         // GAS and NEO needed to register a candidate.
         Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(),
-                new BigInteger("10000"));
+                toFractions(new BigDecimal("10000"), GasToken.DECIMALS));
         Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(),
                 new BigInteger("10000"));
         Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
