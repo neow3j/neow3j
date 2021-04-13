@@ -44,33 +44,11 @@ public class VerificationMethodIntegrationTest {
     }
 
     @Test
-    public void callVerifyWithContractOwner_fromString() throws Throwable {
-        NeoInvokeContractVerify response = ct.getNeow3j()
-                .invokeContractVerify(ct.getContract().getScriptHash().toString(),
-                        singletonList(string("hello, world!")),
-                        Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
-                .send();
-
-        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
-    }
-
-    @Test
     public void callVerifyWithOtherSigner() throws Throwable {
         NeoInvokeContractVerify response = ct.getNeow3j().invokeContractVerify(
                 ct.getContract().getScriptHash(),
                 singletonList(string("hello, world!")),
                 Signer.calledByEntry(ct.getCommittee().getScriptHash()))
-                .send();
-
-        assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
-    }
-
-    @Test
-    public void callVerifyWithOtherSigner_fromString() throws Throwable {
-        NeoInvokeContractVerify response = ct.getNeow3j()
-                .invokeContractVerify(ct.getContract().getScriptHash().toString(),
-                        singletonList(string("hello, world!")),
-                        Signer.calledByEntry(ct.getCommittee().getScriptHash()))
                 .send();
 
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());

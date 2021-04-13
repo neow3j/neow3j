@@ -212,7 +212,7 @@ public class SmartContract {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        return neow3j.invokeFunction(scriptHash.toString(), function, params, signers).send();
+        return neow3j.invokeFunction(scriptHash, function, params, signers).send();
     }
 
     /**
