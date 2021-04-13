@@ -188,7 +188,7 @@ public class FungibleTokenIntegrationTest {
         Hash256 txHash = fungibleToken
                 .transferFromSpecificAccounts(wallet,
                         COMMITTEE_ACCOUNT.getScriptHash(),
-                        new BigDecimal("16"),
+                        new BigInteger("16"),
                         a3.getScriptHash(),
                         a2.getScriptHash())
                 .sign()
@@ -231,7 +231,7 @@ public class FungibleTokenIntegrationTest {
         Hash256 txHash = fungibleToken
                 .transferFromDefaultAccount(wallet,
                         COMMITTEE_ACCOUNT.getScriptHash(),
-                        new BigDecimal("5"))
+                        new BigInteger("5"))
                 .sign()
                 .send()
                 .getSendRawTransaction()

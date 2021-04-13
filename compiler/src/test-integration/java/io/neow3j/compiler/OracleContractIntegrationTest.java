@@ -66,8 +66,10 @@ public class OracleContractIntegrationTest {
     @Test
     public void performRequest() throws Throwable {
         // GAS and NEO needed to register a candidate.
-        Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(), "10000");
-        Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), "10000");
+        Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(),
+                new BigInteger("10000"));
+        Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(),
+                new BigInteger("10000"));
         Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
         Await.waitUntilTransactionIsExecuted(neoTxHash, ct.getNeow3j());
 

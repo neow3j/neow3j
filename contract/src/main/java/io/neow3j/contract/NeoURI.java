@@ -118,6 +118,8 @@ public class NeoURI {
             throw new IllegalStateException("Amount is not set.");
         }
 
+        FungibleToken token = new FungibleToken(tokenHash, neow3j);
+
         int amountScale = amount.stripTrailingZeros().scale();
         if (isNeoToken(tokenHash) && amountScale > NeoToken.DECIMALS) {
             throw new IllegalArgumentException("The Neo token does not support any decimal " +
@@ -126,15 +128,14 @@ public class NeoURI {
             throw new IllegalArgumentException("The Gas token does not support more than " +
                     GasToken.DECIMALS + " decimal places.");
         } else {
-            int decimals = new FungibleToken(tokenHash, neow3j).getDecimals();
+            int decimals = token.getDecimals();
             if (amountScale > decimals) {
-                throw new IllegalArgumentException(
-                        "The token '" + tokenHash + "' does not support " +
-                                "more than " + decimals + " decimal places.");
+                throw new IllegalArgumentException("The token '" + tokenHash + "' does not " +
+                        "support more than " + decimals + " decimal places.");
             }
         }
 
-        return new FungibleToken(tokenHash, neow3j).transfer(wallet, recipient, amount);
+        return token.transfer(wallet, recipient, token.toFractions(amount));
     }
 
     private boolean isNeoToken(Hash160 asset) {

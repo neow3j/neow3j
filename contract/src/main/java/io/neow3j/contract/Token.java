@@ -84,30 +84,66 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Gets the {@code amount} in fractions of the token.
+     * Converts a token amount from a decimal point number to its fraction value.
+     * <p>
+     * Use this method to convert e.g. 1.5 GAS to its fraction value 150_000_000.
      *
-     * @param amount the amount.
-     * @return the amount in fractions.
+     * @param amount the token amount in decimals.
+     * @return the token amount in fractions.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    protected BigInteger getAmountAsBigInteger(BigDecimal amount)
-            throws IOException {
-        BigDecimal factor = BigDecimal.TEN.pow(getDecimals());
-        return amount.multiply(factor).toBigInteger();
+    public BigInteger toFractions(BigDecimal amount) throws IOException {
+        return toFractions(amount, getDecimals());
+    }
+
+
+    /**
+     * Converts a token amount from a decimal point number to its fraction value according to the
+     * specified token decimals.
+     * <p>
+     * Use this method to convert e.g. a token amount of 25.5 for a token with 4 decimals to
+     * 255_000.
+     *
+     * @param amount the token amount in decimals.
+     * @return the token amount in fractions.
+     */
+    public static BigInteger toFractions(BigDecimal amount, int decimals) {
+        if (amount.stripTrailingZeros().scale() > decimals) {
+            throw new IllegalArgumentException("The provided amount has too many decimal points. " +
+                    "Make sure the decimals of the provided amount do not exceed the supported " +
+                    "token decimals.");
+        }
+
+        BigInteger factor = BigInteger.TEN.pow(decimals);
+        BigDecimal fractions = amount.multiply(new BigDecimal(factor));
+
+        return fractions.toBigInteger();
     }
 
     /**
-     * Gets the {@code amount} of the token as a decimal number (not token fractions).
+     * Converts a token amount from a fraction value to its decimal point value.
+     * <p>
+     * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
      *
-     * @param amount the amount.
-     * @return the amount as a decimal number (not token fractions).
+     * @param amount the token amount in fractions.
+     * @return the token amount in decimals.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    protected BigDecimal getAmountAsBigDecimal(BigInteger amount)
-            throws IOException {
-        BigDecimal a = new BigDecimal(amount);
-        BigDecimal divisor = BigDecimal.TEN.pow(getDecimals());
-        return a.divide(divisor);
+    public BigDecimal toDecimals(BigInteger amount) throws IOException {
+        return toDecimals(amount, getDecimals());
+    }
+
+    /**
+     * Converts a token amount from a fraction value to its decimal point value according to the
+     * specified token decimals.
+     * <p>
+     * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
+     *
+     * @param amount the token amount in fractions.
+     * @return the token amount in decimals.
+     */
+    public static BigDecimal toDecimals(BigInteger amount, int decimals) {
+        return new BigDecimal(amount, decimals);
     }
 
 }

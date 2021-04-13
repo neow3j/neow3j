@@ -27,6 +27,7 @@ import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.NeoTestContainer.getNodeUrl;
@@ -226,10 +227,9 @@ public class ContractTestRule implements TestRule {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    public Hash256 transferGas(Hash160 to, String amount) throws Throwable {
+    public Hash256 transferGas(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
-        return gasToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
-                committee.getScriptHash())
+        return gasToken.transferFromSpecificAccounts(wallet, to, amount, committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -245,10 +245,9 @@ public class ContractTestRule implements TestRule {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    public Hash256 transferNeo(Hash160 to, String amount) throws Throwable {
+    public Hash256 transferNeo(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
-        return neoToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
-                committee.getScriptHash())
+        return neoToken.transferFromSpecificAccounts(wallet, to, amount, committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
