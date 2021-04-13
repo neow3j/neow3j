@@ -1,14 +1,11 @@
 package io.neow3j.contract;
 
-import static io.neow3j.utils.AddressUtils.isValidAddress;
-
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.utils.Strings;
 import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.IllegalFormatException;
@@ -65,7 +62,7 @@ public class NeoURI {
         NeoURI neoURI = new NeoURI();
 
         // Add the address
-        neoURI.to(beginTx[1]);
+        neoURI.to(Hash160.fromAddress(beginTx[1]));
 
         // Add the optional parts of the uri - asset and amount.
         if (baseAndQuery.length == 2) {
@@ -147,21 +144,6 @@ public class NeoURI {
     }
 
     /**
-     * Sets the recipient's address.
-     *
-     * @param recipientAddress the recipient's address.
-     * @return this NeoURI object.
-     */
-    public NeoURI to(String recipientAddress) {
-        if (!isValidAddress(recipientAddress)) {
-            throw new IllegalArgumentException("Invalid address used.");
-        }
-
-        recipient = Hash160.fromAddress(recipientAddress);
-        return this;
-    }
-
-    /**
      * Sets the recipient's script hash.
      *
      * @param recipient the recipient's script hash.
@@ -169,17 +151,6 @@ public class NeoURI {
      */
     public NeoURI to(Hash160 recipient) {
         this.recipient = recipient;
-        return this;
-    }
-
-    /**
-     * Sets the token.
-     *
-     * @param token the token hash as big endian byte array.
-     * @return this NeoURI object.
-     */
-    public NeoURI token(byte[] token) {
-        this.tokenHash = new Hash160(token);
         return this;
     }
 
@@ -213,28 +184,9 @@ public class NeoURI {
 
     /**
      * Sets the amount.
-     *
-     * @param amount the amount.
-     * @return this NeoURI object.
-     */
-    public NeoURI amount(String amount) {
-        this.amount = new BigDecimal(amount);
-        return this;
-    }
-
-    /**
-     * Sets the amount.
-     *
-     * @param amount the amount.
-     * @return this NeoURI object.
-     */
-    public NeoURI amount(BigInteger amount) {
-        this.amount = new BigDecimal(amount);
-        return this;
-    }
-
-    /**
-     * Sets the amount.
+     * <p>
+     * Make sure to use decimals and not token fractions. E.g. for GAS use 1.5 instead of
+     * 150_000_000.
      *
      * @param amount the amount.
      * @return this NeoURI object.
@@ -274,11 +226,11 @@ public class NeoURI {
             } else if (tokenHash.equals(GasToken.SCRIPT_HASH)) {
                 query.add("asset=gas");
             } else {
-                query.add("asset=" + tokenHash.toString());
+                query.add("asset=" + tokenHash);
             }
         }
         if (amount != null) {
-            query.add("amount=" + amount.toString());
+            query.add("amount=" + amount);
         }
         return Strings.join(query, "&");
     }
