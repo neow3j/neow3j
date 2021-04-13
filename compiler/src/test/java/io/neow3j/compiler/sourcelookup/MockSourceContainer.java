@@ -1,9 +1,6 @@
 package io.neow3j.compiler.sourcelookup;
 
 import java.io.File;
-import java.util.List;
-
-import static java.util.Arrays.asList;
 
 public class MockSourceContainer implements ISourceContainer {
 
@@ -14,7 +11,7 @@ public class MockSourceContainer implements ISourceContainer {
     }
 
     @Override
-    public List<File> findSourceElements(String name) {
-        return asList(fileToReturn);
+    public File findSourceFile(String name) {
+        return fileToReturn;
     }
 }

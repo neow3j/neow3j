@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.neow3j.utils.ClassUtils;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
@@ -113,10 +112,12 @@ public class CompilationUnit {
     }
 
     /**
-     * Gets the absolute path of the source file corresponding to the given class.
+     * Gets the source file corresponding to the given class if available in this compilation's
+     * source containers. Only returns the first occurrence of a match.
+     * <p>
      *
-     * @param classNode The class.
-     * @return the absolute path of the source file.
+     * @param classNode The class to get the source file for.
+     * @return the matching source file found in the source containers, or null if if not found.
      */
     protected File getSourceFile(ClassNode classNode) {
         if (sourceFileMap.containsKey(classNode.name)) {
@@ -124,11 +125,10 @@ public class CompilationUnit {
         }
         String filePath = extractFilePathWithPackage(classNode);
         for (ISourceContainer container : sourceContainers) {
-            List<File> sources = container.findSourceElements(filePath);
-            if (!sources.isEmpty()) {
-                // TODO: Handle duplicates.
-                sourceFileMap.put(classNode.name, sources.get(0));
-                return sources.get(0);
+            File sourceFile = container.findSourceFile(filePath);
+            if (sourceFile != null) {
+                sourceFileMap.put(classNode.name, sourceFile);
+                return sourceFile;
             }
         }
         // If we cannot find a source for a class we remember that in the source map as well to

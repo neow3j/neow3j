@@ -1,25 +1,23 @@
 package io.neow3j.compiler.sourcelookup;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A source container that is a simple directory, its contents and sub-directories.
+ */
 public class DirectorySourceContainer extends CompositeSourceContainer {
 
-    // root directory
     private File directory;
-    // whether to search sub-folders
-    private boolean searchSubDirs = false;
+    private boolean searchSubDirs;
 
     /**
-     * Constructs an external folder container for the
-     * directory identified by the given path.
+     * Constructs a new source container with the given directory as its root directory.
      *
-     * @param directory     path to a directory in the local file system
-     * @param searchSubDirs whether folders within the root directory
-     *                      should be searched for source elements
+     * @param directory     The directory in the local file system
+     * @param searchSubDirs Whether subdirectories within the root directory should be searched
+     *                      for source files.
      */
     public DirectorySourceContainer(File directory, boolean searchSubDirs) {
         this.directory = directory;
@@ -27,39 +25,37 @@ public class DirectorySourceContainer extends CompositeSourceContainer {
     }
 
     /**
-     * Looks for the given file name. The name can be a single file name or a path, e.g., a
-     * package structure like {@code io/neow3j/compiler/Compiler.java}.
+     * Looks for the given file name in this container's root directory and subdirectories
+     * (depending on configuration). Only returns the first occurrence of a match.
+     * <p>
+     * The name can be a single file name or a path, e.g., a package structure like
+     * {@code io/neow3j/compiler/Compiler.java}. In the latter case, the whole path will be matched.
      *
-     * @param name the name of the source element to search for.
-     * @return
+     * @param name the name of the source file to search for.
+     * @return The list of found source files matching the name.
      */
     @Override
-    public List<File> findSourceElements(String name) {
-        ArrayList<File> sources = new ArrayList<>();
+    public File findSourceFile(String name) {
         File file = new File(directory, name);
         if (file.exists() && file.isFile()) {
-            sources.add(file);
+            return file;
         }
-
-        if (sources.isEmpty() && searchSubDirs) {
-            List<ISourceContainer> containers = getSourceContainers();
-            for (ISourceContainer container : containers) {
-                List<File> nestedSources = container.findSourceElements(name);
-                if (nestedSources == null || nestedSources.size() == 0) {
-                    continue;
+        if (searchSubDirs) {
+            for (ISourceContainer container : getSourceContainers()) {
+                file = container.findSourceFile(name);
+                if (file != null) {
+                    return file;
                 }
-                // Only add the first occurence that has been found.
-                // TODO: Handle duplicates.
-                sources.add(nestedSources.get(0));
             }
         }
-        return sources;
+        return null;
     }
 
     /**
-     * Recursively
+     * If this container is configured to search through subdirectories, this method returns
+     * new {@code DirectorySourceContainer}s for each of its subdirectories.
      *
-     * @return
+     * @return The list of source containers made up of this container's subdirectories.
      */
     @Override
     protected List<ISourceContainer> createSourceContainers() {
