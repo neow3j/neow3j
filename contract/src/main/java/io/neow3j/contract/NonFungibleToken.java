@@ -5,18 +5,14 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.protocol.core.methods.response.NFTokenState;
-import io.neow3j.protocol.exceptions.StackItemCastException;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Map;
 
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.MAP;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Numeric.toHexString;
