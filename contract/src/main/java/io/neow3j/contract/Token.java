@@ -70,7 +70,7 @@ public class Token extends SmartContract {
      * <p>
      * The return value is retrieved form the neo-node only once and then cached.
      *
-     * @return the the number of fractions.
+     * @return the number of fractions.
      * @throws IOException                   if there was a problem fetching information from the
      *                                       Neo node.
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something
@@ -84,7 +84,8 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Converts a token amount from a decimal point number to its fraction value.
+     * Converts the token amount from a decimal point number to the amount in token fractions
+     * according to this token's number of decimals.
      * <p>
      * Use this method to convert e.g. 1.5 GAS to its fraction value 150_000_000.
      *
@@ -98,8 +99,8 @@ public class Token extends SmartContract {
 
 
     /**
-     * Converts a token amount from a decimal point number to its fraction value according to the
-     * specified token decimals.
+     * Converts the token amount from a decimal point number to its amount in token fractions
+     * according to the specified number of decimals.
      * <p>
      * Use this method to convert e.g. a token amount of 25.5 for a token with 4 decimals to
      * 255_000.
@@ -121,7 +122,8 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Converts a token amount from a fraction value to its decimal point value.
+     * Converts the token amount from token fractions to its decimal point value according to
+     * this token's number of decimals.
      * <p>
      * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
      *
@@ -134,8 +136,8 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Converts a token amount from a fraction value to its decimal point value according to the
-     * specified token decimals.
+     * Converts the token amount from token fractions to its decimal point value according to the
+     * specified number of decimals.
      * <p>
      * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
      *
