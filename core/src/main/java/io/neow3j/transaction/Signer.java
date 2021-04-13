@@ -9,12 +9,14 @@ import io.neow3j.io.IOUtils;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import static java.util.Arrays.asList;
 
 /**
  * A signer of a transaction. It defines a scope in which the signer's signature is valid.
@@ -32,7 +34,7 @@ public class Signer extends NeoSerializable {
     private List<WitnessScope> scopes;
 
     /**
-     * The script hashes of contracts that are allowed to use the witness.
+     * The contract hashes of the contracts that are allowed to use the witness.
      */
     private List<Hash160> allowedContracts;
 
@@ -56,25 +58,22 @@ public class Signer extends NeoSerializable {
     }
 
     /**
-     * Creates a Signer for the given account with fee only witness scope ({@link
-     * WitnessScope#NONE}).
+     * Creates a signer for the given account with fee only witness scope
+     * ({@link WitnessScope#NONE}).
      *
-     * @param address The originator of the witness.
-     * @return {@link Signer}
+     * @param account The signer account.
+     * @return the signer.
      */
-    public static Signer feeOnly(String address) {
-        return new Builder()
-                .account(Hash160.fromAddress(address))
-                .scopes(WitnessScope.NONE)
-                .build();
+    public static Signer feeOnly(Account account) {
+        return feeOnly(account.getScriptHash());
     }
 
     /**
-     * Creates a Signer for the given account with fee only witness scope ({@link
-     * WitnessScope#NONE}).
+     * Creates a signer for the given account with fee only witness scope
+     * ({@link WitnessScope#NONE}).
      *
-     * @param account The originator of the witness.
-     * @return {@link Signer}
+     * @param account The script hash of the signer account.
+     * @return the signer.
      */
     public static Signer feeOnly(Hash160 account) {
         return new Builder()
@@ -84,25 +83,22 @@ public class Signer extends NeoSerializable {
     }
 
     /**
-     * Creates a Signer for the given account with the most restrictive witness scope ({@link
-     * WitnessScope#CALLED_BY_ENTRY}).
+     * Creates a signer for the given account with the most restrictive witness scope
+     * ({@link WitnessScope#CALLED_BY_ENTRY}).
      *
-     * @param address The originator of the witness.
-     * @return {@link Signer}
+     * @param account The signer account.
+     * @return the signer.
      */
-    public static Signer calledByEntry(String address) {
-        return new Builder()
-                .account(Hash160.fromAddress(address))
-                .scopes(WitnessScope.CALLED_BY_ENTRY)
-                .build();
+    public static Signer calledByEntry(Account account) {
+        return calledByEntry(account.getScriptHash());
     }
 
     /**
-     * Creates a Signer for the given account with the most restrictive witness scope ({@link
-     * WitnessScope#CALLED_BY_ENTRY}).
+     * Creates a signer for the given account with the most restrictive witness scope
+     * ({@link WitnessScope#CALLED_BY_ENTRY}).
      *
-     * @param account The originator of the witness.
-     * @return {@link Signer}
+     * @param account The script hash of the signer account.
+     * @return the signer.
      */
     public static Signer calledByEntry(Hash160 account) {
         return new Builder()
@@ -112,25 +108,22 @@ public class Signer extends NeoSerializable {
     }
 
     /**
-     * Creates a Signer for the given account with global witness scope ({@link
-     * WitnessScope#GLOBAL}).
+     * Creates a signer for the given account with global witness scope
+     * ({@link WitnessScope#GLOBAL}).
      *
-     * @param address The originator of the witness.
-     * @return {@link Signer}
+     * @param account The account.
+     * @return the signer.
      */
-    public static Signer global(String address) {
-        return new Builder()
-                .account(Hash160.fromAddress(address))
-                .scopes(WitnessScope.GLOBAL)
-                .build();
+    public static Signer global(Account account) {
+        return global(account.getScriptHash());
     }
 
     /**
-     * Creates a Signer for the given account with global witness scope ({@link
-     * WitnessScope#GLOBAL}).
+     * Creates a signer for the given account with global witness scope
+     * ({@link WitnessScope#GLOBAL}).
      *
-     * @param account The originator of the witness.
-     * @return {@link Signer}
+     * @param account The account's script hash.
+     * @return the signer.
      */
     public static Signer global(Hash160 account) {
         return new Builder()
@@ -242,18 +235,18 @@ public class Signer extends NeoSerializable {
         /**
          * Sets the account for which this Signer object specifies the witness scopes.
          *
-         * @param address the account's address
+         * @param account The account.
          * @return this builder.
          */
-        public Builder account(String address) {
-            this.account = Hash160.fromAddress(address);
+        public Builder account(Account account) {
+            this.account = account.getScriptHash();
             return this;
         }
 
         /**
          * Sets the account for which this Signer object specifies the witness scopes.
          *
-         * @param account the account's script hash
+         * @param account The account's script hash.
          * @return this builder.
          */
         public Builder account(Hash160 account) {
@@ -267,11 +260,11 @@ public class Signer extends NeoSerializable {
          * Note that the global ({@link WitnessScope#GLOBAL}) scope cannot be mixed with any other
          * scopes.
          *
-         * @param scopes one or more witness scopes.
+         * @param scopes One or more witness scopes.
          * @return this builder.
          */
         public Builder scopes(WitnessScope... scopes) {
-            this.scopes.addAll(Arrays.asList(scopes));
+            this.scopes.addAll(asList(scopes));
             return this;
         }
 
@@ -281,7 +274,7 @@ public class Signer extends NeoSerializable {
          * When adding contracts here the {@link WitnessScope#CUSTOM_CONTRACTS} scope is added
          * automatically.
          *
-         * @param contracts one or more contract script hashes.
+         * @param contracts One or more contract script hashes.
          * @return this builder.
          */
         public Builder allowedContracts(Hash160... contracts) {
@@ -293,7 +286,7 @@ public class Signer extends NeoSerializable {
                 throw new SignerConfigurationException("A signer's scope can only contain "
                         + NeoConstants.MAX_SIGNER_SUBITEMS + " contracts.");
             }
-            this.allowedContracts.addAll(Arrays.asList(contracts));
+            this.allowedContracts.addAll(asList(contracts));
             return this;
         }
 
@@ -303,7 +296,7 @@ public class Signer extends NeoSerializable {
          * When adding groups here the {@link WitnessScope#CUSTOM_GROUPS} scope is added
          * automatically.
          *
-         * @param groups one or more group public keys as elliptic curve points.
+         * @param groups One or more group public keys as elliptic curve points.
          * @return this builder.
          */
         public Builder allowedGroups(ECKeyPair.ECPublicKey... groups) {
@@ -314,14 +307,14 @@ public class Signer extends NeoSerializable {
                 throw new SignerConfigurationException("A signer's scope can only contain "
                         + NeoConstants.MAX_SIGNER_SUBITEMS + " groups.");
             }
-            this.allowedGroups.addAll(Arrays.asList(groups));
+            this.allowedGroups.addAll(asList(groups));
             return this;
         }
 
         /**
          * Builds the signer.
          *
-         * @return the signer.
+         * @return The signer.
          * @throws SignerConfigurationException if either
          *                                      <ul>
          *                                        <li>no account has been set</li>

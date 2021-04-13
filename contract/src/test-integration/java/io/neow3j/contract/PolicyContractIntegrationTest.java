@@ -47,7 +47,7 @@ public class PolicyContractIntegrationTest {
         BigInteger feePerByte = policyContract.getFeePerByte();
         assertThat(feePerByte, is(expectedInitialFeePerByte));
 
-        Hash256 txHash = policyContract.setFeePerByte(2500)
+        Hash256 txHash = policyContract.setFeePerByte(new BigInteger("2500"))
                 .wallet(COMMITTEE_WALLET)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
@@ -68,7 +68,7 @@ public class PolicyContractIntegrationTest {
         BigInteger execFeeFactor = policyContract.getExecFeeFactor();
         assertThat(execFeeFactor, is(expectedInitialExecFeeFactor));
 
-        Hash256 txHash = policyContract.setExecFeeFactor(50)
+        Hash256 txHash = policyContract.setExecFeeFactor(new BigInteger("50"))
                 .wallet(COMMITTEE_WALLET)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()
@@ -89,7 +89,7 @@ public class PolicyContractIntegrationTest {
         BigInteger feePerByte = policyContract.getStoragePrice();
         assertThat(feePerByte, is(expectedInitialStoragePrice));
 
-        Hash256 txHash = policyContract.setStoragePrice(300000)
+        Hash256 txHash = policyContract.setStoragePrice(new BigInteger("300000"))
                 .wallet(COMMITTEE_WALLET)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
                 .sign()

@@ -1,5 +1,8 @@
 package io.neow3j.contract;
 
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -30,7 +33,7 @@ public class NefFileTest {
 
     // Same for both test contracts:
     //  0x3346454e;
-    private static final String MAGIC = Numeric.reverseHexString("3346454e");
+    private static final String MAGIC = reverseHexString("3346454e");
     private final static String TESTCONTRACT_COMPILER = "neon-3.0.0.0";
     private final static String TESTCONTRACT_COMPILER_HEX =
             "6e656f77336a2d332e302e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -66,23 +69,23 @@ public class NefFileTest {
 
     @Test
     public void newNefFile() {
-        byte[] script = Numeric.hexStringToByteArray(TESTCONTRACT_SCRIPT);
+        byte[] script = hexStringToByteArray(TESTCONTRACT_SCRIPT);
         NefFile nef = new NefFile(TESTCONTRACT_COMPILER, script, null);
         assertThat(nef.getCompiler(), is(TESTCONTRACT_COMPILER));
         assertThat(nef.getScript(), is(script));
         assertThat(nef.getMethodTokens(), is(empty()));
-        assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is(TESTCONTRACT_CHECKSUM));
+        assertThat(toHexStringNoPrefix(nef.getCheckSum()), is(TESTCONTRACT_CHECKSUM));
     }
 
     @Test
     public void newNefFileWithMethodTokens() {
-        byte[] script = Numeric.hexStringToByteArray(TESTCONTRACT_WITH_TOKENS_SCRIPT);
+        byte[] script = hexStringToByteArray(TESTCONTRACT_WITH_TOKENS_SCRIPT);
         NefFile nef = new NefFile(TESTCONTRACT_COMPILER, script, TESTCONTRACT_METHOD_TOKENS);
         assertThat(nef.getCompiler(), is(TESTCONTRACT_COMPILER));
         assertThat(nef.getScript(), is(script));
         assertThat(nef.getMethodTokens(),
                 containsInAnyOrder(TESTCONTRACT_METHOD_TOKENS.toArray(new MethodToken[]{})));
-        assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()),
+        assertThat(toHexStringNoPrefix(nef.getCheckSum()),
                 is(TESTCONTRACT_WITH_TOKENS_CHECKSUM));
     }
 
@@ -91,7 +94,7 @@ public class NefFileTest {
         expectedException.expect(IllegalArgumentException.class);
         NefFile nef = new NefFile(
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 65 bytes
-                Numeric.hexStringToByteArray(TESTCONTRACT_SCRIPT),
+                hexStringToByteArray(TESTCONTRACT_SCRIPT),
                 null);
     }
 
@@ -103,8 +106,8 @@ public class NefFileTest {
         File file = new File(Objects.requireNonNull(NefFileTest.class.getClassLoader()
                 .getResource(TESTCONTRACT_FILE)).toURI());
         NefFile nef = NefFile.readFromFile(file);
-        assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()), is(TESTCONTRACT_CHECKSUM));
-        assertThat(nef.getScript(), is(Numeric.hexStringToByteArray(TESTCONTRACT_SCRIPT)));
+        assertThat(toHexStringNoPrefix(nef.getCheckSum()), is(TESTCONTRACT_CHECKSUM));
+        assertThat(nef.getScript(), is(hexStringToByteArray(TESTCONTRACT_SCRIPT)));
     }
 
     @Test
@@ -127,10 +130,10 @@ public class NefFileTest {
         NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
         assertThat(nef.getCompiler(), is(TESTCONTRACT_COMPILER));
         assertThat(nef.getScript(),
-                is(Numeric.hexStringToByteArray(TESTCONTRACT_WITH_TOKENS_SCRIPT)));
+                is(hexStringToByteArray(TESTCONTRACT_WITH_TOKENS_SCRIPT)));
         assertThat(nef.getMethodTokens(),
                 containsInAnyOrder(TESTCONTRACT_METHOD_TOKENS.toArray(new MethodToken[]{})));
-        assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()),
+        assertThat(toHexStringNoPrefix(nef.getCheckSum()),
                 is(TESTCONTRACT_WITH_TOKENS_CHECKSUM));
 
         // serialize
@@ -148,9 +151,9 @@ public class NefFileTest {
         NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
         assertThat(nef.getCompiler(), is(TESTCONTRACT_COMPILER));
         assertThat(nef.getScript(),
-                is(Numeric.hexStringToByteArray(TESTCONTRACT_SCRIPT)));
+                is(hexStringToByteArray(TESTCONTRACT_SCRIPT)));
         assertThat(nef.getMethodTokens(), is(empty()));
-        assertThat(Numeric.toHexStringNoPrefix(nef.getCheckSum()),
+        assertThat(toHexStringNoPrefix(nef.getCheckSum()),
                 is(TESTCONTRACT_CHECKSUM));
 
         // serialize
@@ -167,7 +170,7 @@ public class NefFileTest {
                      + RESERVED_BYTES
                      + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
                      + TESTCONTRACT_CHECKSUM;
-        byte[] nefBytes = Numeric.hexStringToByteArray(nef);
+        byte[] nefBytes = hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("magic"));
         NeoSerializableInterface.from(nefBytes, NefFile.class);
@@ -182,7 +185,7 @@ public class NefFileTest {
                      + RESERVED_BYTES
                      + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
                      + "00000000";
-        byte[] nefBytes = Numeric.hexStringToByteArray(nef);
+        byte[] nefBytes = hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("checksum"));
         NeoSerializableInterface.from(nefBytes, NefFile.class);
@@ -197,7 +200,7 @@ public class NefFileTest {
                      + RESERVED_BYTES
                      + "00" // empty script
                      + TESTCONTRACT_CHECKSUM;
-        byte[] nefBytes = Numeric.hexStringToByteArray(nef);
+        byte[] nefBytes = hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("Script can't be empty"));
         NeoSerializableInterface.from(nefBytes, NefFile.class);
@@ -213,23 +216,23 @@ public class NefFileTest {
 
     @Test
     public void deserializeNeoTokenNefFile() throws DeserializationException {
-        byte[] nefBytes = Numeric.hexStringToByteArray(
+        byte[] nefBytes = hexStringToByteArray(
                 "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
         NefFile nef = NeoSerializableInterface.from(nefBytes, NefFile.class);
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
-        assertThat(nef.getScript(), is(Numeric.hexStringToByteArray("00fd411af77b67")));
+        assertThat(nef.getScript(), is(hexStringToByteArray("00fd411af77b67")));
         assertThat(nef.getMethodTokens(), is(empty()));
         assertThat(nef.getCheckSumAsInteger(), is(3921333105L));
     }
 
     @Test
     public void readNeoNefFileFromStackItem() throws DeserializationException, IOException {
-        byte[] nefBytes = Numeric.hexStringToByteArray(
+        byte[] nefBytes = hexStringToByteArray(
                 "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
         ByteStringStackItem stackItem = new ByteStringStackItem(nefBytes);
         NefFile nef = NefFile.readFromStackitem(stackItem);
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
-        assertThat(nef.getScript(), is(Numeric.hexStringToByteArray("00fd411af77b67")));
+        assertThat(nef.getScript(), is(hexStringToByteArray("00fd411af77b67")));
         assertThat(nef.getMethodTokens(), is(empty()));
         assertThat(nef.getCheckSumAsInteger(), is(3921333105L));
     }

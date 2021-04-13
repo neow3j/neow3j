@@ -9,7 +9,7 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -22,6 +22,9 @@ import java.util.Objects;
 import static io.neow3j.model.types.ContractParameterType.ARRAY;
 import static io.neow3j.model.types.ContractParameterType.INTEGER;
 import static io.neow3j.model.types.ContractParameterType.MAP;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -194,10 +197,10 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(String hexString) {
-        if (!Numeric.isValidHexString(hexString)) {
+        if (!isValidHexString(hexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
-        return byteArray(Numeric.hexStringToByteArray(hexString));
+        return byteArray(hexStringToByteArray(hexString));
     }
 
     /**
@@ -218,10 +221,10 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter signature(String signatureHexString) {
-        if (!Numeric.isValidHexString(signatureHexString)) {
+        if (!isValidHexString(signatureHexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
-        return signature(Numeric.hexStringToByteArray(signatureHexString));
+        return signature(hexStringToByteArray(signatureHexString));
     }
 
     /**
@@ -269,6 +272,16 @@ public class ContractParameter {
     }
 
     /**
+     * Creates a hash160 parameter from the given account.
+     *
+     * @param account an account.
+     * @return the contract parameter.
+     */
+    public static ContractParameter hash160(Account account) {
+        return hash160(account.getScriptHash());
+    }
+
+    /**
      * Creates a hash160 parameter from the given script hash.
      *
      * @param hash a script hash
@@ -288,10 +301,10 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter hash256(String hashHexString) {
-        if (!Numeric.isValidHexString(hashHexString)) {
+        if (!isValidHexString(hashHexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
-        return hash256(Numeric.hexStringToByteArray(hashHexString));
+        return hash256(hexStringToByteArray(hashHexString));
     }
 
     /**
@@ -328,7 +341,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter publicKey(String publicKey) {
-        return publicKey(Numeric.hexStringToByteArray(publicKey));
+        return publicKey(hexStringToByteArray(publicKey));
     }
 
     /**
@@ -438,7 +451,7 @@ public class ContractParameter {
                     // Here we expect a simple byte array which is converted to a hex string. The
                     // byte order is not changed.
                     gen.writeStringField("value",
-                            Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
+                            toHexStringNoPrefix((byte[]) p.getValue()));
                     break;
                 case BYTE_ARRAY:
                     gen.writeStringField("value", Base64.encode((byte[]) p.getValue()));

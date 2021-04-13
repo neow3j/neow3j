@@ -19,6 +19,7 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.MAP;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Numeric.toHexString;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
@@ -65,13 +66,13 @@ public class NonFungibleToken extends Token {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 to,
-            byte[] tokenID) throws IOException {
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to, byte[] tokenID)
+            throws IOException {
         Hash160 tokenOwner = ownerOf(tokenID);
         if (!wallet.holdsAccount(tokenOwner)) {
             throw new IllegalArgumentException("The provided wallet does not contain the account " +
-                    "that owns the token with ID " + Numeric.toHexString(tokenID) + ". The " +
-                    "address of the owner of this token is " + tokenOwner.toAddress() + ".");
+                    "that owns the token with ID " + toHexString(tokenID) + ". The address of the" +
+                    " owner of this token is " + tokenOwner.toAddress() + ".");
         }
 
         return invokeFunction(TRANSFER,
@@ -99,7 +100,7 @@ public class NonFungibleToken extends Token {
      * decimals is returned as 50 (= 0.5 * 10^2) token fractions.
      * <p>
      * The balance is not cached locally. Every time this method is called requests are send to
-     * the neo-node.
+     * the Neo node.
      *
      * @param owner the script hash of the account to fetch the balance for.
      * @return the token balance of the given account.

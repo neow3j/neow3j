@@ -11,6 +11,7 @@ import static io.neow3j.contract.ContractTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
@@ -68,13 +69,13 @@ public class FungibleTokenTest {
         gasToken = new FungibleToken(new Hash160(gasTokenHash()), neow);
 
         account1 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
         account2 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
         account3 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "3a100280baf46ea7db17bc01b53365891876b4a2db11028dbc1ccb8c782725f8")));
         multiSigAccount = createMultiSigAccount(
                 asList(account1.getECKeyPair().getPublicKey(),
@@ -94,24 +95,6 @@ public class FungibleTokenTest {
 
         Transaction tx = gasToken.transferFromDefaultAccount(
                 Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH, BigDecimal.ONE)
-                .buildTransaction();
-
-        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
-        assertThat(tx.getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
-        assertThat(tx.getSender(), is(account1.getScriptHash()));
-    }
-
-    @Test
-    public void transferFromDefaultAccountShouldAddAccountAsSigner_RecipientAsAddress() throws Throwable {
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash(),
-                "invokefunction_balanceOf_300000000.json");
-
-        Transaction tx = gasToken.transferFromDefaultAccount(
-                Wallet.withAccounts(account1), RECIPIENT_SCRIPT_HASH.toAddress(), BigDecimal.ONE)
                 .buildTransaction();
 
         assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
@@ -160,7 +143,8 @@ public class FungibleTokenTest {
                 .toArray();
 
         Transaction tx = gasToken.transferFromDefaultAccount(
-                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
+                Wallet.withAccounts(account1, account2),
+                RECIPIENT_SCRIPT_HASH,
                 BigDecimal.ONE, integer(42))
                 .buildTransaction();
 
@@ -168,33 +152,7 @@ public class FungibleTokenTest {
     }
 
     @Test
-    public void transferFromSpecificAccount_RecipientAsAddress() throws Throwable {
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals",
-                "invokefunction_decimals_gas.json");
-        setUpWireMockForInvokeFunction("balanceOf",
-                "invokefunction_balanceOf_300000000.json");
-
-        byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
-                        asList(hash160(account1.getScriptHash()),
-                                hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(100000000), // 1 GAS
-                                any(null)))
-                .toArray();
-
-        Transaction tx = gasToken.transferFromSpecificAccounts(
-                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
-                BigDecimal.ONE, account1.getScriptHash())
-                .buildTransaction();
-
-        assertThat(tx.getScript(), is(expectedScript));
-    }
-
-    @Test
-    public void transferFromSpecificAccount_RecipientAsScriptHash_dataParam() throws Throwable {
+    public void transferFromSpecificAccount_withDataParam() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -210,8 +168,11 @@ public class FungibleTokenTest {
                 .toArray();
 
         Transaction tx = gasToken.transferFromSpecificAccounts(
-                Wallet.withAccounts(account1, account2), RECIPIENT_SCRIPT_HASH.toAddress(),
-                BigDecimal.ONE, hash160(account1.getScriptHash()), account1.getAddress())
+                Wallet.withAccounts(account1, account2),
+                RECIPIENT_SCRIPT_HASH,
+                BigDecimal.ONE,
+                hash160(account1.getScriptHash()),
+                account1.getScriptHash())
                 .buildTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
@@ -229,7 +190,7 @@ public class FungibleTokenTest {
     public void testGetBalanceOfAccount_address() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash(),
                 "invokefunction_balanceOf_300000000.json");
-        assertThat(gasToken.getBalanceOf(account1.getAddress()), is(new BigInteger("300000000")));
+        assertThat(gasToken.getBalanceOf(account1), is(new BigInteger("300000000")));
     }
 
     @Test
@@ -393,7 +354,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2, account3),
-                RECIPIENT_SCRIPT_HASH.toAddress(), new BigDecimal("7"));
+                RECIPIENT_SCRIPT_HASH, new BigDecimal("7"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -450,7 +411,9 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                .contractCall(
+                        new Hash160(neoTokenHash()),
+                        NEP17_TRANSFER,
                         asList(hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(4),
@@ -471,16 +434,20 @@ public class FungibleTokenTest {
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
+                .contractCall(
+                        new Hash160(neoTokenHash()),
+                        NEP17_TRANSFER,
                         asList(hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(4),
                                 byteArray(new byte[]{0x42})))
                 .toArray();
 
-        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2),
-                RECIPIENT_SCRIPT_HASH.toAddress(),
-                new BigDecimal("4"), byteArray(new byte[]{0x42}));
+        TransactionBuilder b = neoToken.transfer(
+                Wallet.withAccounts(account1, account2),
+                RECIPIENT_SCRIPT_HASH,
+                new BigDecimal("4"),
+                byteArray(new byte[]{0x42}));
 
         assertThat(b.getScript(), is(expectedScript));
     }

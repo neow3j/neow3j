@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.List;
 
 import static io.neow3j.TestProperties.roleManagementHash;
@@ -50,7 +51,8 @@ public class RoleManagementTest {
 
         // Check if the role has been successfully assigned.
         List<ECKeyPair.ECPublicKey> pubKeys = new io.neow3j.contract.RoleManagement(ct.getNeow3j())
-                .getDesignatedByRole(io.neow3j.protocol.core.Role.STATE_VALIDATOR, blockIndex + 1);
+                .getDesignatedByRole(io.neow3j.protocol.core.Role.STATE_VALIDATOR,
+                        BigInteger.valueOf(blockIndex + 1));
         assertThat(pubKeys.get(0).getEncoded(true), is(pubKey));
 
         // Test if the designate can be fetched via a smart contract call.

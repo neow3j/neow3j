@@ -147,20 +147,20 @@ public class NeoURITest {
     @Test
     public void fromURI_nonNativeToken() {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_NON_NATIVE);
-        assertThat(neoURI.getAsset(), is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
+        assertThat(neoURI.getToken(), is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
     }
 
     @Test
     public void fromURI_Getter() {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT).buildURI();
 
-        assertThat("getAddress()", neoURI.getRecipient(), is(RECIPIENT_ADDRESS));
-        assertThat("getAddressAsScriptHash()", neoURI.getAddressAsScriptHash(),
+        assertThat("getAddress()", neoURI.getRecipientAddress(), is(RECIPIENT_ADDRESS));
+        assertThat("getAddressAsScriptHash()", neoURI.getRecipient(),
                 is(RECIPIENT_SCRIPT_HASH));
-        assertThat("getAsset()", neoURI.getAssetAsString(),
+        assertThat("getAsset()", neoURI.getTokenAsString(),
                 isOneOf(NeoToken.SCRIPT_HASH.toString(), "neo"));
-        assertThat("getAssetAsScriptHash()", neoURI.getAsset(), is(NeoToken.SCRIPT_HASH));
-        assertThat("getAssetAsAddress()", neoURI.getAssetAsAddress(),
+        assertThat("getAssetAsScriptHash()", neoURI.getToken(), is(NeoToken.SCRIPT_HASH));
+        assertThat("getAssetAsAddress()", neoURI.getTokenAsAddress(),
                 is(NeoToken.SCRIPT_HASH.toAddress()));
         assertThat("getAmount()", neoURI.getAmount(), is(AMOUNT));
         assertThat("getAmountAsString()", neoURI.getAmountAsString(), is(AMOUNT.toString()));
@@ -171,10 +171,10 @@ public class NeoURITest {
         String BEGIN_TX_ASSET_GAS = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas";
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_GAS).buildURI();
 
-        assertThat("getAsset()", neoURI.getAssetAsString(),
+        assertThat("getAsset()", neoURI.getTokenAsString(),
                 isOneOf(GasToken.SCRIPT_HASH.toString(), "gas"));
-        assertThat("getAssetAsScriptHash()", neoURI.getAsset(), is(GasToken.SCRIPT_HASH));
-        assertThat("getAssetAsAddress()", neoURI.getAssetAsAddress(),
+        assertThat("getAssetAsScriptHash()", neoURI.getToken(), is(GasToken.SCRIPT_HASH));
+        assertThat("getAssetAsAddress()", neoURI.getTokenAsAddress(),
                 is(GasToken.SCRIPT_HASH.toAddress()));
     }
 
@@ -216,7 +216,7 @@ public class NeoURITest {
     public void buildURI_asset() {
         NeoURI neoURI = new NeoURI()
                 .to(RECIPIENT_ADDRESS)
-                .asset("neo")
+                .token("neo")
                 .buildURI();
 
         String BEGIN_TX_ASSET = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo";
@@ -228,7 +228,7 @@ public class NeoURITest {
     public void buildURI_asset_fromByteArray() {
         NeoURI neoURI = new NeoURI()
                 .to(RECIPIENT_ADDRESS)
-                .asset(hexStringToByteArray("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"))
+                .token(hexStringToByteArray("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"))
                 .buildURI();
 
         String beginTxAsset =
@@ -263,18 +263,6 @@ public class NeoURITest {
     }
 
     @Test
-    public void buildURI_amount_Integer() {
-        NeoURI neoURI = new NeoURI()
-                .to(RECIPIENT_ADDRESS)
-                .amount(15)
-                .buildURI();
-
-        String beginTxAmount = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=15";
-        assertThat("getURI()", neoURI.getURI(), is(URI.create(beginTxAmount)));
-        assertThat("getURIAsString()", neoURI.getURIAsString(), is(beginTxAmount));
-    }
-
-    @Test
     public void buildURI_amount_BigInteger() {
         NeoURI neoURI = new NeoURI()
                 .to(RECIPIENT_ADDRESS)
@@ -290,7 +278,7 @@ public class NeoURITest {
     public void buildURI_asset_amount() {
         NeoURI neoURI = new NeoURI()
                 .to(RECIPIENT_ADDRESS)
-                .asset("neo")
+                .token("neo")
                 .amount(AMOUNT)
                 .buildURI();
 
@@ -302,8 +290,8 @@ public class NeoURITest {
     public void buildURI_asset_amount_addMultipleTimes() {
         NeoURI neoURI = new NeoURI()
                 .to(RECIPIENT_ADDRESS)
-                .asset("gas")
-                .asset("neo")
+                .token("gas")
+                .token("neo")
                 .amount("90")
                 .amount(AMOUNT)
                 .buildURI();
@@ -327,7 +315,7 @@ public class NeoURITest {
 
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
-                .asset(NeoToken.SCRIPT_HASH)
+                .token(NeoToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
@@ -353,10 +341,10 @@ public class NeoURITest {
 
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
-                .asset(GasToken.SCRIPT_HASH)
+                .token(GasToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
-                .amount(2)
+                .amount(new BigInteger("2"))
                 .buildTransfer();
 
         assertThat(b.getScript(), is(expectedScript));
@@ -377,7 +365,7 @@ public class NeoURITest {
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Recipient is not set.");
         new NeoURI(neow3j)
-                .asset(NeoToken.SCRIPT_HASH)
+                .token(NeoToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .amount(AMOUNT)
                 .buildTransfer();
@@ -388,7 +376,7 @@ public class NeoURITest {
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Wallet is not set.");
         new NeoURI(neow3j)
-                .asset(NeoToken.SCRIPT_HASH)
+                .token(NeoToken.SCRIPT_HASH)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
                 .buildTransfer();
@@ -399,7 +387,7 @@ public class NeoURITest {
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("Amount is not set.");
         new NeoURI(neow3j)
-                .asset(NeoToken.SCRIPT_HASH)
+                .token(NeoToken.SCRIPT_HASH)
                 .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .buildTransfer();
@@ -411,7 +399,7 @@ public class NeoURITest {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
                 "balanceOf");
         TransactionBuilder b = new NeoURI(neow3j)
-                .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
@@ -426,7 +414,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("The token 'b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c' does " +
                 "not support more than 2 decimal places.");
         new NeoURI(neow3j)
-                .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(new BigDecimal("0.001"))
@@ -439,7 +427,7 @@ public class NeoURITest {
         exceptionRule.expect(UnexpectedReturnTypeException.class);
         exceptionRule.expectMessage("Got stack item of type Boolean but expected Integer.");
         new NeoURI(neow3j)
-                .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .wallet(WALLET)
                 .to(RECIPIENT_ADDRESS)
                 .amount(AMOUNT)
@@ -449,24 +437,24 @@ public class NeoURITest {
     @Test
     public void getAsset() {
         assertThat(new NeoURI(neow3j)
-                        .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                        .getAsset(),
+                        .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                        .getToken(),
                 is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
     }
 
     @Test
     public void getAssetAsString() {
         assertThat(new NeoURI(neow3j)
-                        .asset("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                        .getAssetAsString(),
+                        .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                        .getTokenAsString(),
                 is("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c"));
     }
 
     @Test
     public void getAssetAsAddress() {
         assertThat(new NeoURI(neow3j)
-                        .asset("d6c712eb53b1a130f59fd4e5864bdac27458a509")
-                        .getAssetAsAddress(),
+                        .token("d6c712eb53b1a130f59fd4e5864bdac27458a509")
+                        .getTokenAsAddress(),
                 is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
     }
 

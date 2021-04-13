@@ -11,6 +11,7 @@ import static io.neow3j.contract.ContractTestHelper.loadFile;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
@@ -68,7 +69,7 @@ public class NeoTokenTest {
         WireMock.configureFor(port);
         neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
-        account1 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
+        account1 = new Account(ECKeyPair.create(hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
     }
 
@@ -191,7 +192,7 @@ public class NeoTokenTest {
 
         List<ECPublicKey> result = new NeoToken(neow).getCommittee();
         String expKeyHex = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
-        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
+        ECPublicKey expKey = new ECPublicKey(hexStringToByteArray(expKeyHex));
         assertThat(result, contains(expKey));
     }
 
@@ -211,7 +212,7 @@ public class NeoTokenTest {
 
         List<ECPublicKey> result = new NeoToken(neow).getNextBlockValidators();
         String expKeyHex = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
-        ECPublicKey expKey = new ECPublicKey(Numeric.hexStringToByteArray(expKeyHex));
+        ECPublicKey expKey = new ECPublicKey(hexStringToByteArray(expKeyHex));
         assertThat(result, contains(expKey));
     }
 
