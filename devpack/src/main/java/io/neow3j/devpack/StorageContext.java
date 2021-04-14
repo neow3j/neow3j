@@ -39,6 +39,17 @@ public class StorageContext implements InteropInterface {
      * @param prefix The prefix.
      * @return the {@link StorageMap}
      */
+    public StorageMap createMap(String prefix) {
+        return new StorageMap(this, Helper.toByteArray(prefix));
+    }
+
+    /**
+     * Creates a new {@link StorageMap} from entries with the given prefix in this
+     * <tt>StorageContext</tt>.
+     *
+     * @param prefix The prefix.
+     * @return the {@link StorageMap}
+     */
     public StorageMap createMap(byte[] prefix) {
         return new StorageMap(this, prefix);
     }
