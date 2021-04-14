@@ -95,7 +95,7 @@ public class ContractEventsTest {
 
     @Test
     public void eventNamesAndParametersShouldBeSetCorrectlyInManifest() throws IOException {
-        CompilationUnit res = new Compiler().compile(EventsContract.class.getName());
+        CompilationUnit res = new Compiler().compile(ContractEventsTestContract.class.getName());
 
         List<ContractEvent> manifestEvents = res.getManifest().getAbi().getEvents();
         assertThat(manifestEvents.get(0).getName(), is("event1"));
@@ -114,23 +114,21 @@ public class ContractEventsTest {
 
     @Test
     public void eventNamesAndParametersShouldBeSetCorrectlyInDebugInfo() throws IOException {
-        CompilationUnit res = new Compiler().compile(EventsContract.class.getName(), asList(
-                new MockSourceContainer(new File("/path/to/src/file/io/neow3j/compiler" +
-                        "/ContractEventsTest$EventsContract.java"))));
+        CompilationUnit res = new Compiler().compile(ContractEventsTestContract.class.getName(),
+                asList(new MockSourceContainer(new File("/path/to/src/file/SourceFile.java"))));
 
         List<Event> debugInfoEvents = res.getDebugInfo().getEvents();
-        assertThat(debugInfoEvents.get(0).getName(),
-                is("ContractEventsTest$EventsContract,event1"));
-        assertThat(debugInfoEvents.get(0).getId(),
-                is("io.neow3j.compiler.ContractEventsTest$EventsContract#event1"));
+        String fqClassName = ContractEventsTestContract.class.getName();
+        String shortName = fqClassName.substring(fqClassName.lastIndexOf('.') + 1);
+
+        assertThat(debugInfoEvents.get(0).getName(), is(shortName + ",event1"));
+        assertThat(debugInfoEvents.get(0).getId(), is(fqClassName + "#event1"));
         String a1 = "arg1,String";
         String a2 = "arg2,Integer";
         assertThat(debugInfoEvents.get(0).getParams(), contains(a1, a2));
 
-        assertThat(debugInfoEvents.get(1).getName(),
-                is("ContractEventsTest$EventsContract,displayName"));
-        assertThat(debugInfoEvents.get(1).getId(),
-                is("io.neow3j.compiler.ContractEventsTest$EventsContract#event2"));
+        assertThat(debugInfoEvents.get(1).getName(), is(shortName + ",displayName"));
+        assertThat(debugInfoEvents.get(1).getId(), is(fqClassName + "#event2"));
         a1 = "arg1,String";
         a2 = "arg2,Integer";
         String a3 = "arg3,Boolean";
@@ -139,7 +137,7 @@ public class ContractEventsTest {
         assertThat(debugInfoEvents.get(1).getParams(), contains(a1, a2, a3, a4, a5));
     }
 
-    public static class EventsContract {
+    public static class ContractEventsTestContract {
 
         private static Event2Args<String, Integer> event1;
 
