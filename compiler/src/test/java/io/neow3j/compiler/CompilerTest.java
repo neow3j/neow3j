@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
@@ -56,6 +57,7 @@ public class CompilerTest {
         // Byte arrays
         assertClassIsMappedToType(byte[].class, ContractParameterType.BYTE_ARRAY);
         assertClassIsMappedToType(Byte[].class, ContractParameterType.BYTE_ARRAY);
+        assertClassIsMappedToType(ByteString.class, ContractParameterType.BYTE_ARRAY);
 
         // Arrays
         assertClassIsMappedToType(String[].class, ContractParameterType.ARRAY);
@@ -109,6 +111,7 @@ public class CompilerTest {
         // Byte arrays
         assertClassIsMappedToType(byte[].class, StackItemType.BUFFER);
         assertClassIsMappedToType(Byte[].class, StackItemType.BUFFER);
+        assertClassIsMappedToType(ByteString.class, StackItemType.BYTE_STRING);
 
         // Arrays
         assertClassIsMappedToType(String[].class, StackItemType.ARRAY);

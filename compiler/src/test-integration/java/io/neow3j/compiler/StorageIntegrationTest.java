@@ -353,21 +353,21 @@ public class StorageIntegrationTest {
             Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
                     FindOptions.None);
             it.next();
-            return it.getValue();
+            return it.get();
         }
 
         public static Map.Entry<ByteString, ByteString> findByByteArrayPrefix(byte[] prefix) {
             Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
                     FindOptions.None);
             it.next();
-            return it.getValue();
+            return it.get();
         }
 
         public static Map.Entry<ByteString, ByteString> findByStringPrefix(String prefix) {
             Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
                     FindOptions.None);
             it.next();
-            return it.getValue();
+            return it.get();
         }
 
         public static io.neow3j.devpack.List<ByteString> findWithFindOptionValuesOnly() {
@@ -375,9 +375,9 @@ public class StorageIntegrationTest {
             Iterator<ByteString> it = Storage.find(ctx, hexToBytes("01"), FindOptions.ValuesOnly);
             io.neow3j.devpack.List<ByteString> list = new io.neow3j.devpack.List<>();
             it.next();
-            list.add(it.getValue());
+            list.add(it.get());
             it.next();
-            list.add(it.getValue());
+            list.add(it.get());
             return list;
         }
 
@@ -388,10 +388,10 @@ public class StorageIntegrationTest {
                     hexToBytes("01"), findOption);
             io.neow3j.devpack.Map<ByteString, ByteString> map = new io.neow3j.devpack.Map<>();
             it.next();
-            io.neow3j.devpack.Map.Entry<ByteString, ByteString> entry = it.getValue();
+            io.neow3j.devpack.Map.Entry<ByteString, ByteString> entry = it.get();
             map.put(entry.key, entry.value);
             it.next();
-            entry = it.getValue();
+            entry = it.get();
             map.put(entry.key, entry.value);
             return map;
         }

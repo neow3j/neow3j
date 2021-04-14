@@ -14,6 +14,7 @@ import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.ScriptBuilder;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Map;
@@ -98,7 +99,8 @@ public class Compiler {
             return ContractParameterType.BOOLEAN;
         }
         if (typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())) {
+                || typeName.equals(byte[].class.getTypeName())
+                || typeName.equals(ByteString.class.getTypeName())) {
             return ContractParameterType.BYTE_ARRAY;
         }
         if (typeName.equals(Void.class.getTypeName())
@@ -155,7 +157,8 @@ public class Compiler {
         if (typeName.equals(String.class.getTypeName())
                 || typeName.equals(Hash160.class.getTypeName())
                 || typeName.equals(Hash256.class.getTypeName())
-                || typeName.equals(ECPoint.class.getTypeName())) {
+                || typeName.equals(ECPoint.class.getTypeName())
+                || typeName.equals(ByteString.class.getTypeName())) {
             return StackItemType.BYTE_STRING;
         }
         if (typeName.equals(Integer.class.getTypeName())
