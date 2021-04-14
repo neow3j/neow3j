@@ -55,12 +55,12 @@ public class Iterator<V> implements InteropInterface {
     public native boolean next();
 
     /**
-     * Gets the value of the element at the current {@code Iterator} position.
+     * Gets the the element at the current {@code Iterator} position.
      *
      * @return the value.
      */
     @Syscall(SYSTEM_ITERATOR_VALUE)
-    public native V getValue();
+    public native V get();
 
 }
 

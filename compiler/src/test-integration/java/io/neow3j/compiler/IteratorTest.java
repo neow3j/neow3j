@@ -61,7 +61,7 @@ public class IteratorTest {
             int[] values = new int[ints.length];
             int i = 0;
             while (it.next()) {
-                values[i++] = it.getValue();
+                values[i++] = it.get();
             }
             return values;
         }
@@ -77,8 +77,8 @@ public class IteratorTest {
             int[] keysAndValues = new int[ints1.length * 2];
             int i = 0;
             while (it.next()) {
-                keysAndValues[i++] = it.getValue().key;
-                keysAndValues[i++] = it.getValue().value;
+                keysAndValues[i++] = it.get().key;
+                keysAndValues[i++] = it.get().value;
             }
             return keysAndValues;
         }
