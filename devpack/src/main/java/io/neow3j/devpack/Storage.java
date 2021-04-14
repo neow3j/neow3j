@@ -214,8 +214,30 @@ public class Storage {
     /**
      * Returns an iterator over the values found under the given key prefix.
      * <p>
-     * The types that the {@code Iterator} contains are dependent on the find options used. They
-     * are documented in {@link FindOptions}.
+     * The types that the {@code Iterator} contains are dependent on the find options used.
+     * <ul>
+     *     <li>
+     *         With {@link FindOptions#None} an {@code Iterator<Map.Entry<ByteString, ByteString>>}
+     *         will be returned, where each {@code Map.Entry} is a key-value pair found under the
+     *         given prefix. The prefix is part of the key.
+     *     </li>
+     *     <li>
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
+     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
+     *         part of the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#RemovePrefix} the results will be an
+     *          {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each {@code Map.Entry}
+     *          is a key-value pair found under the given prefix but the prefix is removed from
+     *          the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#ValuesOnly} the results will be an
+     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
+     *          under the given prefix.
+     *     </li>
+     * </ul>
      *
      * @param context     The storage context to get the values from.
      * @param prefix      The key prefix.
@@ -229,8 +251,30 @@ public class Storage {
     /**
      * Returns an iterator over the values found under the given key prefix.
      * <p>
-     * The types that the {@code Iterator} contains are dependent on the find options used. They
-     * are documented in {@link FindOptions}.
+     * The types that the {@code Iterator} contains are dependent on the find options used.
+     * <ul>
+     *     <li>
+     *         With {@link FindOptions#None} an {@code Iterator<Map.Entry<ByteString, ByteString>>}
+     *         will be returned, where each {@code Map.Entry} is a key-value pair found under the
+     *         given prefix. The prefix is part of the key.
+     *     </li>
+     *     <li>
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
+     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
+     *         part of the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#RemovePrefix} the results will be an
+     *          {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each {@code Map.Entry}
+     *          is a key-value pair found under the given prefix but the prefix is removed from
+     *          the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#ValuesOnly} the results will be an
+     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
+     *          under the given prefix.
+     *     </li>
+     * </ul>
      *
      * @param context     The storage context to get the values from.
      * @param prefix      The key prefix.
@@ -244,8 +288,30 @@ public class Storage {
     /**
      * Returns an iterator over the values found under the given key prefix.
      * <p>
-     * The types that the {@code Iterator} contains are dependent on the find options used. They
-     * are documented in {@link FindOptions}.
+     * The types that the {@code Iterator} contains are dependent on the find options used.
+     * <ul>
+     *     <li>
+     *         With {@link FindOptions#None} an {@code Iterator<Map.Entry<ByteString, ByteString>>}
+     *         will be returned, where each {@code Map.Entry} is a key-value pair found under the
+     *         given prefix. The prefix is part of the key.
+     *     </li>
+     *     <li>
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
+     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
+     *         part of the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#RemovePrefix} the results will be an
+     *          {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each {@code Map.Entry}
+     *          is a key-value pair found under the given prefix but the prefix is removed from
+     *          the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#ValuesOnly} the results will be an
+     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
+     *          under the given prefix.
+     *     </li>
+     * </ul>
      *
      * @param context     The storage context to get the values from.
      * @param prefix      The key prefix.
