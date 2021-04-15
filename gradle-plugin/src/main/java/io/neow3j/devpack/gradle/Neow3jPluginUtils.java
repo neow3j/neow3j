@@ -5,8 +5,6 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,8 +13,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPluginConvention;
-
-import static java.util.Optional.ofNullable;
 
 public class Neow3jPluginUtils {
 
