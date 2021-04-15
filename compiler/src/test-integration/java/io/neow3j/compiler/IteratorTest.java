@@ -2,7 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
-import io.neow3j.devpack.Map.Entry;
+import io.neow3j.devpack.Iterator.Struct;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.ClassRule;
@@ -72,7 +72,7 @@ public class IteratorTest {
             for (int i = 0; i < ints1.length; i++) {
                 map.put(ints1[i], ints2[i]);
             }
-            Iterator<Entry<Integer, Integer>> it = Iterator.create(map);
+            Iterator<Struct<Integer, Integer>> it = Iterator.create(map);
 
             int[] keysAndValues = new int[ints1.length * 2];
             int i = 0;

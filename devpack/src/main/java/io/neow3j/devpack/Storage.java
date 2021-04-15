@@ -1,9 +1,9 @@
 package io.neow3j.devpack;
 
 import io.neow3j.constants.OpCode;
-import io.neow3j.devpack.Map.Entry;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
+import io.neow3j.model.types.StackItemType;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_DELETE;
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_FIND;
@@ -53,6 +53,15 @@ public class Storage {
      */
     @Syscall(SYSTEM_STORAGE_GET)
     public static native ByteString get(StorageContext context, String key);
+
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native int getInt(StorageContext context, String key);
 
     /**
      * Returns the value corresponding to the given key.
@@ -217,8 +226,8 @@ public class Storage {
      * The types that the {@code Iterator} contains are dependent on the find options used.
      * <ul>
      *     <li>
-     *         With {@link FindOptions#None} an {@code Iterator<Map.Entry<ByteString, ByteString>>}
-     *         will be returned, where each {@code Map.Entry} is a key-value pair found under the
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
+     *         will be returned, where each {@code Struct} is a key-value pair found under the
      *         given prefix. The prefix is part of the key.
      *     </li>
      *     <li>
@@ -228,7 +237,7 @@ public class Storage {
      *     </li>
      *     <li>
      *          With {@link FindOptions#RemovePrefix} the results will be an
-     *          {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each {@code Map.Entry}
+     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
      *          is a key-value pair found under the given prefix but the prefix is removed from
      *          the key.
      *     </li>
@@ -239,7 +248,7 @@ public class Storage {
      *     </li>
      * </ul>
      *
-     * @param context     The storage context to get the values from.
+     * @param context     The storage context to use.
      * @param prefix      The key prefix.
      * @param findOptions Controls the kind of iterator to return. Use the values of
      *                    {@link FindOptions}.
@@ -254,8 +263,8 @@ public class Storage {
      * The types that the {@code Iterator} contains are dependent on the find options used.
      * <ul>
      *     <li>
-     *         With {@link FindOptions#None} an {@code Iterator<Map.Entry<ByteString, ByteString>>}
-     *         will be returned, where each {@code Map.Entry} is a key-value pair found under the
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
+     *         will be returned, where each {@code Struct} is a key-value pair found under the
      *         given prefix. The prefix is part of the key.
      *     </li>
      *     <li>
@@ -265,7 +274,7 @@ public class Storage {
      *     </li>
      *     <li>
      *          With {@link FindOptions#RemovePrefix} the results will be an
-     *          {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each {@code Map.Entry}
+     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
      *          is a key-value pair found under the given prefix but the prefix is removed from
      *          the key.
      *     </li>
@@ -276,11 +285,11 @@ public class Storage {
      *     </li>
      * </ul>
      *
-     * @param context     The storage context to get the values from.
+     * @param context     The storage context to use.
      * @param prefix      The key prefix.
      * @param findOptions Controls the kind of iterator to return. Use the values of
      *                    {@link FindOptions}.
-     * @return an iterator over key, values or key-value pairs found under the given prefix.
+     * @return an iterator over key, values, or key-value pairs found under the given prefix.
      */
     @Syscall(SYSTEM_STORAGE_FIND)
     public static native Iterator find(StorageContext context, ByteString prefix, byte findOptions);
@@ -291,8 +300,8 @@ public class Storage {
      * The types that the {@code Iterator} contains are dependent on the find options used.
      * <ul>
      *     <li>
-     *         With {@link FindOptions#None} an {@code Iterator<Map.Entry<ByteString, ByteString>>}
-     *         will be returned, where each {@code Map.Entry} is a key-value pair found under the
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
+     *         will be returned, where each {@code Struct} is a key-value pair found under the
      *         given prefix. The prefix is part of the key.
      *     </li>
      *     <li>
@@ -302,7 +311,7 @@ public class Storage {
      *     </li>
      *     <li>
      *          With {@link FindOptions#RemovePrefix} the results will be an
-     *          {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each {@code Map.Entry}
+     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
      *          is a key-value pair found under the given prefix but the prefix is removed from
      *          the key.
      *     </li>
@@ -313,7 +322,7 @@ public class Storage {
      *     </li>
      * </ul>
      *
-     * @param context     The storage context to get the values from.
+     * @param context     The storage context to use.
      * @param prefix      The key prefix.
      * @param findOptions Controls the kind of iterator to return. Use the values of
      *                    {@link FindOptions}.
