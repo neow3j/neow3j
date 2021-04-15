@@ -35,11 +35,8 @@ public class Neow3jPluginUtils {
     }
 
     static void writeToFile(File file, byte[] content) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(file);
-        try {
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(content);
-        } finally {
-            outputStream.close();
         }
     }
 
