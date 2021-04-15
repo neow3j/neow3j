@@ -105,7 +105,8 @@ public class Token extends SmartContract {
      * Use this method to convert e.g. a token amount of 25.5 for a token with 4 decimals to
      * 255_000.
      *
-     * @param amount the token amount in decimals.
+     * @param amount the token amount.
+     * @param decimals the token decimal points.
      * @return the token amount in fractions.
      */
     public static BigInteger toFractions(BigDecimal amount, int decimals) {
@@ -142,6 +143,7 @@ public class Token extends SmartContract {
      * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
      *
      * @param amount the token amount in fractions.
+     * @param decimals the token decimal points.
      * @return the token amount in decimals.
      */
     public static BigDecimal toDecimals(BigInteger amount, int decimals) {

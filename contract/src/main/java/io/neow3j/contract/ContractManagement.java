@@ -26,7 +26,7 @@ public class ContractManagement extends SmartContract {
     private static final String DEPLOY = "deploy";
 
     /**
-     * Constructs a new <tt>ManagementContract</tt> that uses the given {@link Neow3j} instance for
+     * Constructs a new {@link ContractManagement} that uses the given {@link Neow3j} instance for
      * invocations.
      *
      * @param neow the {@link Neow3j} instance to use for invocations.

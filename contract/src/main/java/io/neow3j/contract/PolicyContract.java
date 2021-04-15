@@ -27,7 +27,7 @@ public class PolicyContract extends SmartContract {
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
 
     /**
-     * Constructs a new <tt>PolicyContract</tt> that uses the given {@link Neow3j} instance for
+     * Constructs a new {@link PolicyContract} that uses the given {@link Neow3j} instance for
      * invocations.
      *
      * @param neow the {@link Neow3j} instance to use for invocations.
