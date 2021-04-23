@@ -1,5 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
+
 /**
  * Represents a transaction and provides transaction-related information. It is returned for example
  * when calling {@link io.neow3j.devpack.contracts.LedgerContract#getTransaction(Hash256)} .
@@ -60,4 +63,17 @@ public class Transaction {
         networkFee = 0;
         validUntilBlock = 0;
     }
+
+    /**
+     * Compares this transaction to the given object. The comparison happens by reference only.
+     * I.e., if you retrieve the same transaction twice, e.g., with
+     * {@link io.neow3j.devpack.contracts.LedgerContract#getTransaction(Hash256)}, then comparing
+     * the two will return false.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same transaction. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 }
