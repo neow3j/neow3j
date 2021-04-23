@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.neow3j.model.types.ContractParameterType.ARRAY;
+import static io.neow3j.model.types.ContractParameterType.HASH256;
 import static io.neow3j.model.types.ContractParameterType.INTEGER;
 import static io.neow3j.model.types.ContractParameterType.MAP;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
@@ -297,7 +298,7 @@ public class ContractParameter {
     /**
      * Creates a hash256 parameter from the given hex string.
      *
-     * @param hashHexString a 256-bit hash in hexadecimal and little-endian order.
+     * @param hashHexString a 256-bit hash in hexadecimal and big-endian order.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(String hashHexString) {
@@ -314,13 +315,13 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter hash256(Hash256 hash) {
-        return hash256(hash.toLittleEndianArray());
+        return new ContractParameter(HASH256, hash);
     }
 
     /**
      * Creates a hash256 parameter from the given bytes.
      *
-     * @param hash a 256-bit hash in little-endian order.
+     * @param hash a 256-bit hash in big-endian order.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(byte[] hash) {
@@ -328,7 +329,7 @@ public class ContractParameter {
             throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes but was " +
                     hash.length + " bytes.");
         }
-        return new ContractParameter(ContractParameterType.HASH256, hash);
+        return hash256(new Hash256(hash));
     }
 
     /**
@@ -446,7 +447,6 @@ public class ContractParameter {
         private void serializeValue(ContractParameter p, JsonGenerator gen) throws IOException {
             switch (p.getParamType()) {
                 case SIGNATURE:
-                case HASH256:
                 case PUBLIC_KEY:
                     // Here we expect a simple byte array which is converted to a hex string. The
                     // byte order is not changed.
@@ -462,9 +462,9 @@ public class ContractParameter {
                     break;
                 case INTEGER:
                     // Convert to a string, i.e. in the final json the number has quotes around it.
+                case HASH256:
                 case HASH160:
-                    // In case of a script hash the value is of type ScriptHash, of which the
-                    // toString() method returns a big-endian hex string of the hash.
+                    // In case of a hash, the toString() method returns a big-endian hex string.
                 case INTEROP_INTERFACE:
                     // We assume that the interop interface parameter holds a plain string.
                 case STRING:
